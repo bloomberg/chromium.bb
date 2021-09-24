@@ -134,36 +134,27 @@ float ComputeClippedRatio(const float* const* audio,
 }
 
 void LogClippingPredictorMetrics(const ClippingPredictorEvaluator& evaluator) {
-  RTC_LOG(LS_INFO) << "Clipping predictor metrics: TP "
-                   << evaluator.true_positives() << " TN "
-                   << evaluator.true_negatives() << " FP "
-                   << evaluator.false_positives() << " FN "
-                   << evaluator.false_negatives();
-  const float precision_denominator =
-      evaluator.true_positives() + evaluator.false_positives();
-  const float recall_denominator =
-      evaluator.true_positives() + evaluator.false_negatives();
-  if (precision_denominator > 0 && recall_denominator > 0) {
-    const float precision = evaluator.true_positives() / precision_denominator;
-    const float recall = evaluator.true_positives() / recall_denominator;
-    RTC_LOG(LS_INFO) << "Clipping predictor metrics: P " << precision << " R "
-                     << recall;
-    const float f1_score_denominator = precision + recall;
-    if (f1_score_denominator > 0.0f) {
-      const float f1_score = 2 * precision * recall / f1_score_denominator;
-      RTC_LOG(LS_INFO) << "Clipping predictor metrics: F1 " << f1_score;
-      RTC_HISTOGRAM_COUNTS_LINEAR("WebRTC.Audio.Agc.ClippingPredictor.F1Score",
-                                  std::round(f1_score * 100.0f), /*min=*/0,
-                                  /*max=*/100,
-                                  /*bucket_count=*/50);
-    }
+  absl::optional<ClippingPredictionMetrics> metrics =
+      ComputeClippingPredictionMetrics(evaluator.counters());
+  if (metrics.has_value()) {
+    RTC_LOG(LS_INFO) << "Clipping predictor metrics: P " << metrics->precision
+                     << " R " << metrics->recall << " F1 score "
+                     << metrics->f1_score;
+    RTC_DCHECK_GE(metrics->f1_score, 0.0f);
+    RTC_DCHECK_LE(metrics->f1_score, 1.0f);
+    RTC_HISTOGRAM_COUNTS_LINEAR(
+        /*name=*/"WebRTC.Audio.Agc.ClippingPredictor.F1Score",
+        /*sample=*/std::round(metrics->f1_score * 100.0f),
+        /*min=*/0,
+        /*max=*/100,
+        /*bucket_count=*/50);
   }
 }
 
 void LogClippingMetrics(int clipping_rate) {
   RTC_LOG(LS_INFO) << "Input clipping rate: " << clipping_rate << "%";
-  RTC_HISTOGRAM_COUNTS_LINEAR("WebRTC.Audio.Agc.InputClippingRate",
-                              clipping_rate, /*min=*/0, /*max=*/100,
+  RTC_HISTOGRAM_COUNTS_LINEAR(/*name=*/"WebRTC.Audio.Agc.InputClippingRate",
+                              /*sample=*/clipping_rate, /*min=*/0, /*max=*/100,
                               /*bucket_count=*/50);
 }
 
@@ -597,7 +588,7 @@ void AgcManagerDirect::AnalyzePreProcess(const float* const* audio,
       const auto step = clipping_predictor_->EstimateClippedLevelStep(
           channel, stream_analog_level_, clipped_level_step_,
           channel_agcs_[channel]->min_mic_level(), kMaxMicLevel);
-      if (use_clipping_predictor_step_ && step.has_value()) {
+      if (step.has_value()) {
         predicted_step = std::max(predicted_step, step.value());
         clipping_predicted = true;
       }
@@ -618,23 +609,27 @@ void AgcManagerDirect::AnalyzePreProcess(const float* const* audio,
       clipping_predictor_log_counter_ = 0;
     }
   }
-  if (clipping_detected || clipping_predicted) {
-    int step = clipped_level_step_;
-    if (clipping_detected) {
-      RTC_DLOG(LS_INFO) << "[agc] Clipping detected. clipped_ratio="
-                        << clipped_ratio;
+  if (clipping_detected) {
+    RTC_DLOG(LS_INFO) << "[agc] Clipping detected. clipped_ratio="
+                      << clipped_ratio;
+  }
+  int step = clipped_level_step_;
+  if (clipping_predicted) {
+    predicted_step = std::max(predicted_step, clipped_level_step_);
+    RTC_DLOG(LS_INFO) << "[agc] Clipping predicted. step=" << predicted_step;
+    if (use_clipping_predictor_step_) {
+      step = predicted_step;
     }
-    if (clipping_predicted) {
-      step = std::max(predicted_step, clipped_level_step_);
-      RTC_DLOG(LS_INFO) << "[agc] Clipping predicted. step=" << step;
-    }
+  }
+  if (clipping_detected ||
+      (clipping_predicted && use_clipping_predictor_step_)) {
     for (auto& state_ch : channel_agcs_) {
       state_ch->HandleClipping(step);
     }
     frames_since_clipped_ = 0;
     if (!!clipping_predictor_) {
       clipping_predictor_->Reset();
-      clipping_predictor_evaluator_.Reset();
+      clipping_predictor_evaluator_.RemoveExpectations();
     }
   }
   AggregateChannelLevels();

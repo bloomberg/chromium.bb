@@ -38,7 +38,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -94,12 +93,10 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings,
     : settings_(settings), controller_(controller) {
   ChromeKeyboardControllerClient::Get()->AddObserver(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+
+  session_observation_.Observe(session_manager::SessionManager::Get());
 
   for (size_t i = 0; i < kLoginAcceleratorDataLength; ++i) {
     ui::Accelerator accelerator(kLoginAcceleratorData[i].keycode,
@@ -304,29 +301,26 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE:
-    case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN: {
-      OnLoginPromptVisible();
-      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                        content::NotificationService::AllSources());
-      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                        content::NotificationService::AllSources());
-      break;
-    }
-    case chrome::NOTIFICATION_APP_TERMINATING: {
-      // In some tests, WebUILoginView remains after LoginScreenClientImpl gets
-      // deleted on shutdown. It should unregister itself before the deletion
-      // happens.
-      if (observing_system_tray_focus_) {
-        LoginScreenClientImpl::Get()->RemoveSystemTrayObserver(this);
-        observing_system_tray_focus_ = false;
-      }
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type)
+      << "Unexpected notification " << type;
+
+  // In some tests, WebUILoginView remains after LoginScreenClientImpl gets
+  // deleted on shutdown. It should unregister itself before the deletion
+  // happens.
+  if (observing_system_tray_focus_) {
+    LoginScreenClientImpl::Get()->RemoveSystemTrayObserver(this);
+    observing_system_tray_focus_ = false;
   }
+}
+
+void WebUILoginView::OnNetworkErrorScreenShown() {
+  OnLoginPromptVisible();
+  session_observation_.Reset();
+}
+
+void WebUILoginView::OnLoginOrLockScreenVisible() {
+  OnLoginPromptVisible();
+  session_observation_.Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -82,8 +82,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Terminal system app commands
-#define IDC_TERMINAL_SPLIT_HORIZONTAL   34070
-#define IDC_TERMINAL_SPLIT_VERTICAL     34071
+#define IDC_TERMINAL_LINUX   34070
+#define IDC_TERMINAL_SSH     34071
 
 // Move window to other user commands
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34080
@@ -163,7 +163,8 @@
 #define IDC_FOCUS_PREVIOUS_PANE         39005
 #define IDC_FOCUS_BOOKMARKS             39006
 #define IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY 39007
-#define IDC_FOCUS_HELP_BUBBLE 39008
+#define IDC_FOCUS_HELP_BUBBLE           39008
+#define IDC_FOCUS_WEB_CONTENTS_PANE     39009
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000

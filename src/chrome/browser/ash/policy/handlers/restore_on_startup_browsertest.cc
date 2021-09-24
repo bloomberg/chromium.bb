@@ -26,7 +26,9 @@
 namespace policy {
 
 namespace {
-const char kStartUpURL1[] = "chrome://help/";
+// We should not use "chrome://help/" here, because it will be rewritten into
+// "chrome://settings/help".
+const char kStartUpURL1[] = "chrome://settings/help";
 const char kStartUpURL2[] = "chrome://version/";
 }  // namespace
 
@@ -50,8 +52,8 @@ void RestoreOnStartupTest::GetMandatoryPoliciesValue(
   policy->SetInteger(key::kRestoreOnStartup,
                      SessionStartupPref::kPrefValueURLs);
   base::ListValue urls;
-  urls.AppendString(kStartUpURL1);
-  urls.AppendString(kStartUpURL2);
+  urls.Append(kStartUpURL1);
+  urls.Append(kStartUpURL2);
   policy->SetKey(key::kRestoreOnStartupURLs, std::move(urls));
 }
 
@@ -70,14 +72,13 @@ void RestoreOnStartupTest::VerifyStartUpURLs() {
 // Verify that the policies are honored on a new user's login.
 IN_PROC_BROWSER_TEST_F(RestoreOnStartupTest, PRE_LogInAndVerify) {
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+  LogIn();
   VerifyStartUpURLs();
 }
 
 // Verify that the policies are honored on an existing user's login.
 IN_PROC_BROWSER_TEST_F(RestoreOnStartupTest, LogInAndVerify) {
-  ash::LoginScreenTestApi::SubmitPassword(AccountId::FromUserEmail(kAccountId),
-                                          kAccountPassword,
+  ash::LoginScreenTestApi::SubmitPassword(account_id(), "7654321",
                                           true /* check_if_submittable */);
   chromeos::test::WaitForPrimaryUserSessionStart();
   VerifyStartUpURLs();

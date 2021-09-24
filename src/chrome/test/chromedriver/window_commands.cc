@@ -261,12 +261,12 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
   return dict;
 }
 
-Status GetVisibleCookies(Session* session,
+Status GetVisibleCookies(Session* for_session,
                          WebView* web_view,
                          std::list<Cookie>* cookies) {
   std::string current_page_url;
   Status status =
-      GetUrl(web_view, session->GetCurrentFrameId(), &current_page_url);
+      GetUrl(web_view, for_session->GetCurrentFrameId(), &current_page_url);
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> internal_cookies;
@@ -274,7 +274,7 @@ Status GetVisibleCookies(Session* session,
   if (status.IsError())
     return status;
   std::list<Cookie> cookies_tmp;
-  for (size_t i = 0; i < internal_cookies->GetSize(); ++i) {
+  for (size_t i = 0; i < internal_cookies->GetList().size(); ++i) {
     base::DictionaryValue* cookie_dict;
     if (!internal_cookies->GetDictionary(i, &cookie_dict))
       return Status(kUnknownError, "DevTools returns a non-dictionary cookie");
@@ -313,8 +313,8 @@ Status ScrollCoordinateInToView(
     int* offset_y) {
   std::unique_ptr<base::Value> value;
   base::ListValue args;
-  args.AppendInteger(x);
-  args.AppendInteger(y);
+  args.Append(x);
+  args.Append(y);
   Status status = web_view->CallFunction(
       std::string(),
       "function(x, y) {"
@@ -906,7 +906,7 @@ Status ExecuteSwitchToFrame(Session* session,
     } else {
       return Status(kInvalidArgument, "invalid 'id'");
     }
-    args.AppendString(xpath);
+    args.Append(xpath);
   }
   std::string frame;
   Status status = web_view->GetFrameByFunction(
@@ -930,7 +930,7 @@ Status ExecuteSwitchToFrame(Session* session,
       "}";
   base::ListValue new_args;
   new_args.Append(element->CreateDeepCopy());
-  new_args.AppendString(chrome_driver_id);
+  new_args.Append(chrome_driver_id);
   result.reset(NULL);
   status = web_view->CallFunction(
       session->GetCurrentFrameId(), kSetFrameIdentifier, new_args, &result);
@@ -1280,7 +1280,7 @@ Status ProcessInputActionSequence(
   }
 
   bool found = false;
-  for (size_t i = 0; i < session->active_input_sources.GetSize(); i++) {
+  for (size_t i = 0; i < session->active_input_sources.GetList().size(); i++) {
     session->active_input_sources.GetDictionary(i, &source);
     DCHECK(source);
 
@@ -1346,7 +1346,7 @@ Status ProcessInputActionSequence(
     return Status(kInvalidArgument, "'actions' must be an array");
 
   std::unique_ptr<base::ListValue> actions_result(new base::ListValue);
-  for (size_t i = 0; i < actions->GetSize(); i++) {
+  for (size_t i = 0; i < actions->GetList().size(); i++) {
     std::unique_ptr<base::DictionaryValue> action(new base::DictionaryValue());
 
     const base::DictionaryValue* action_item;
@@ -1568,7 +1568,7 @@ Status ExecutePerformActions(Session* session,
 
   // the processed actions
   std::vector<std::vector<std::unique_ptr<base::DictionaryValue>>> actions_list;
-  for (size_t i = 0; i < actions_input->GetSize(); i++) {
+  for (size_t i = 0; i < actions_input->GetList().size(); i++) {
     // proccess input action sequence
     const base::DictionaryValue* action_sequence;
     if (!actions_input->GetDictionary(i, &action_sequence))
@@ -1702,8 +1702,8 @@ Status ExecutePerformActions(Session* session,
                   session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
                 }
 
-                Status status = web_view->DispatchKeyEvents(
-                    dispatch_key_events, async_dispatch_event);
+                status = web_view->DispatchKeyEvents(dispatch_key_events,
+                                                     async_dispatch_event);
                 if (status.IsError())
                   return status;
               }
@@ -2025,7 +2025,7 @@ Status ExecuteGetStorageItem(const char* storage,
   if (!params.GetString("key", &key))
     return Status(kInvalidArgument, "'key' must be a string");
   base::ListValue args;
-  args.AppendString(key);
+  args.Append(key);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { return %s[key]; }", storage),
@@ -2064,8 +2064,8 @@ Status ExecuteSetStorageItem(const char* storage,
   if (!params.GetString("value", &storage_value))
     return Status(kInvalidArgument, "'value' must be a string");
   base::ListValue args;
-  args.AppendString(key);
-  args.AppendString(storage_value);
+  args.Append(key);
+  args.Append(storage_value);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key, value) { %s[key] = value; }", storage),
@@ -2083,7 +2083,7 @@ Status ExecuteRemoveStorageItem(const char* storage,
   if (!params.GetString("key", &key))
     return Status(kInvalidArgument, "'key' must be a string");
   base::ListValue args;
-  args.AppendString(key);
+  args.Append(key);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       base::StringPrintf("function(key) { %s.removeItem(key) }", storage),

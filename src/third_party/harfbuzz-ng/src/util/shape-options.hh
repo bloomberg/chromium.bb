@@ -108,7 +108,7 @@ struct shape_options_t
     if (!hb_shape_full (font, buffer, features, num_features, shapers))
     {
       if (error)
-	*error = "all shapers failed.";
+	*error = "All shapers failed.";
       goto fail;
     }
 
@@ -235,7 +235,6 @@ struct shape_options_t
       hb_buffer_clear_contents (fragment);
       copy_buffer_properties (fragment, buffer);
 
-      /* TODO: Add pre/post context text. */
       hb_buffer_flags_t flags = hb_buffer_get_flags (fragment);
       if (0 < text_start)
 	flags = (hb_buffer_flags_t) (flags & ~HB_BUFFER_FLAG_BOT);
@@ -247,7 +246,7 @@ struct shape_options_t
       if (!hb_shape_full (font, fragment, features, num_features, shapers))
       {
 	if (error)
-	  *error = "all shapers failed while shaping fragment.";
+	  *error = "All shapers failed while shaping fragment.";
 	hb_buffer_destroy (reconstruction);
 	hb_buffer_destroy (fragment);
 	return false;
@@ -322,15 +321,18 @@ parse_shapers (const char *name G_GNUC_UNUSED,
   shape_options_t *shape_opts = (shape_options_t *) data;
   char **shapers = g_strsplit (arg, ",", 0);
 
-  for (char **shaper = shapers; *shaper; shaper++) {
+  for (char **shaper = shapers; *shaper; shaper++)
+  {
     bool found = false;
     for (const char **hb_shaper = hb_shape_list_shapers (); *hb_shaper; hb_shaper++) {
-      if (strcmp (*shaper, *hb_shaper) == 0) {
+      if (strcmp (*shaper, *hb_shaper) == 0)
+      {
 	found = true;
 	break;
       }
     }
-    if (!found) {
+    if (!found)
+    {
       g_set_error (error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
 		   "Unknown or unsupported shaper: %s", *shaper);
       g_strfreev (shapers);
@@ -418,7 +420,7 @@ shape_options_t::add_options (option_parser_t *parser)
 			      G_OPTION_ARG_CALLBACK,	(gpointer) &parse_shapers,	"Hidden duplicate of --shapers",	nullptr},
     {"shapers",		0, 0, G_OPTION_ARG_CALLBACK,	(gpointer) &parse_shapers,	"Set comma-separated list of shapers to try","list"},
     {"direction",	0, 0, G_OPTION_ARG_STRING,	&this->direction,		"Set text direction (default: auto)",	"ltr/rtl/ttb/btt"},
-    {"language",	0, 0, G_OPTION_ARG_STRING,	&this->language,		"Set text language (default: $LANG)",	"langstr"},
+    {"language",	0, 0, G_OPTION_ARG_STRING,	&this->language,		"Set text language (default: $LANG)",	"BCP 47 tag"},
     {"script",		0, 0, G_OPTION_ARG_STRING,	&this->script,			"Set text script (default: auto)",	"ISO-15924 tag"},
     {"bot",		0, 0, G_OPTION_ARG_NONE,	&this->bot,			"Treat text as beginning-of-paragraph",	nullptr},
     {"eot",		0, 0, G_OPTION_ARG_NONE,	&this->eot,			"Treat text as end-of-paragraph",	nullptr},
@@ -429,7 +431,8 @@ shape_options_t::add_options (option_parser_t *parser)
     {"cluster-level",	0, 0, G_OPTION_ARG_INT,		&this->cluster_level,		"Cluster merging level (default: 0)",	"0/1/2"},
     {"normalize-glyphs",0, 0, G_OPTION_ARG_NONE,	&this->normalize_glyphs,	"Rearrange glyph clusters in nominal order",	nullptr},
     {"verify",		0, 0, G_OPTION_ARG_NONE,	&this->verify,			"Perform sanity checks on shaping results",	nullptr},
-    {"num-iterations", 'n', 0, G_OPTION_ARG_INT,	&this->num_iterations,		"Run shaper N times (default: 1)",	"N"},
+    {"num-iterations", 'n', G_OPTION_FLAG_IN_MAIN,
+			      G_OPTION_ARG_INT,		&this->num_iterations,		"Run shaper N times (default: 1)",	"N"},
     {nullptr}
   };
   parser->add_group (entries,

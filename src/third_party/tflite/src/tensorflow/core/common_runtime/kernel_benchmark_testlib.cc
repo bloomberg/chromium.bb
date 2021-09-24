@@ -36,7 +36,6 @@ limitations under the License.
 #include "tensorflow/core/platform/byte_order.h"
 #include "tensorflow/core/platform/cpu_info.h"
 #include "tensorflow/core/platform/logging.h"
-#include "tensorflow/core/platform/test_benchmark.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/public/session_options.h"
 #include "tensorflow/core/public/version.h"
@@ -48,7 +47,8 @@ namespace test {
 // TODO(hongm): Convert `g` and `init` to using std::unique_ptr.
 Benchmark::Benchmark(const string& device, Graph* g,
                      const SessionOptions* options, Graph* init,
-                     Rendezvous* rendez, const char* executor_type) {
+                     Rendezvous* rendez, const char* executor_type,
+                     bool old_benchmark_api) {
   auto cleanup = gtl::MakeCleanup([g, init]() {
     delete g;
     delete init;
@@ -59,7 +59,8 @@ Benchmark::Benchmark(const string& device, Graph* g,
     options = &default_options;
   }
 
-  testing::StopTiming();
+  CHECK(!old_benchmark_api) << "Expected new API only";
+  old_benchmark_api_ = false;
   string t = absl::AsciiStrToUpper(device);
   // Allow NewDevice to allocate a new threadpool with different number of
   // threads for each new benchmark.
@@ -90,7 +91,7 @@ Benchmark::Benchmark(const string& device, Graph* g,
   pflr_ = std::unique_ptr<ProcessFunctionLibraryRuntime>(
       new ProcessFunctionLibraryRuntime(
           device_mgr_.get(), Env::Default(), nullptr, graph_def_version,
-          flib_def_.get(), OptimizerOptions(), pool_, nullptr, nullptr, nullptr,
+          flib_def_.get(), OptimizerOptions(), pool_, nullptr, nullptr,
           Rendezvous::Factory()));
 
   flr_ = pflr_->GetFLR(device_->name());
@@ -120,6 +121,9 @@ Benchmark::Benchmark(const string& device, Graph* g,
   TF_CHECK_OK(NewExecutor(executor_type, params, *g, &exec_));
 }
 
+Benchmark::Benchmark(const string& device, Graph* g, bool old_benchmark_api)
+    : Benchmark(device, g, nullptr, nullptr, nullptr, "", old_benchmark_api) {}
+
 Benchmark::~Benchmark() {
   if (device_) {
     rendez_->Unref();
@@ -133,7 +137,9 @@ Benchmark::~Benchmark() {
   }
 }
 
-void Benchmark::Run(int iters) { RunWithRendezvousArgs({}, {}, iters); }
+void Benchmark::Run(benchmark::State& state) {
+  RunWithRendezvousArgs({}, {}, state);
+}
 
 string GetRendezvousKey(const Node* node) {
   string send_device;
@@ -143,16 +149,19 @@ string GetRendezvousKey(const Node* node) {
   string tensor_name;
   TF_CHECK_OK(GetNodeAttr(node->attrs(), "tensor_name", &tensor_name));
   uint64 send_device_incarnation;
-  TF_CHECK_OK(GetNodeAttr(node->attrs(), "send_device_incarnation",
-                          reinterpret_cast<int64*>(&send_device_incarnation)));
+  TF_CHECK_OK(
+      GetNodeAttr(node->attrs(), "send_device_incarnation",
+                  reinterpret_cast<int64_t*>(&send_device_incarnation)));
   return Rendezvous::CreateKey(send_device, send_device_incarnation,
                                recv_device, tensor_name, FrameAndIter(0, 0));
 }
 
 void Benchmark::RunWithRendezvousArgs(
     const std::vector<std::pair<string, Tensor>>& inputs,
-    const std::vector<string>& outputs, int iters) {
-  if (!device_ || iters == 0) {
+    const std::vector<string>& outputs, benchmark::State& state) {
+  CHECK(!old_benchmark_api_)
+      << "This method should only be called with new benchmark API";
+  if (!device_ || state.max_iterations == 0) {
     return;
   }
   Tensor unused;  // In benchmark, we don't care the return value.
@@ -181,8 +190,9 @@ void Benchmark::RunWithRendezvousArgs(
   TF_CHECK_OK(device_->Sync());
   VLOG(3) << kWarmupRuns << " warmup runs done.";
 
-  testing::StartTiming();
-  while (iters-- > 0) {
+  // Benchmark loop. Timer starts automatically at the beginning of the loop
+  // and ends automatically after the last iteration.
+  for (auto s : state) {
     for (const auto& p : inputs) {
       Rendezvous::ParsedKey parsed;
       TF_CHECK_OK(Rendezvous::ParseKey(p.first, &parsed));
@@ -195,9 +205,7 @@ void Benchmark::RunWithRendezvousArgs(
       TF_CHECK_OK(rendez_->Recv(parsed, Rendezvous::Args(), &unused, &is_dead));
     }
   }
-
   TF_CHECK_OK(device_->Sync());
-  testing::StopTiming();
 }
 
 }  // end namespace test

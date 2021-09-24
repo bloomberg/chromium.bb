@@ -50,6 +50,7 @@ class ReadLaterPageHandler : public read_later::mojom::PageHandler,
   void AddCurrentTab() override;
   void RemoveEntry(const GURL& url) override;
   void ShowContextMenuForURL(const GURL& url, int32_t x, int32_t y) override;
+  void UpdateCurrentPageActionButtonState() override;
   void ShowUI() override;
   void CloseUI() override;
 
@@ -95,7 +96,7 @@ class ReadLaterPageHandler : public read_later::mojom::PageHandler,
   absl::optional<GURL> active_tab_url_;
   read_later::mojom::CurrentPageActionButtonState
       current_page_action_button_state_ =
-          read_later::mojom::CurrentPageActionButtonState::kAdd;
+          read_later::mojom::CurrentPageActionButtonState::kDisabled;
 
   base::Clock* clock_;
 

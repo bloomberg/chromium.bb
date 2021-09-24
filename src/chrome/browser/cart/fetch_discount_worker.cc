@@ -7,6 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/cart/cart_discount_fetcher.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -160,7 +161,8 @@ void FetchDiscountWorker::ReadyToFetch(
       base::BindOnce(&FetchInBackground, std::move(pending_factory),
                      std::move(fetcher), std::move(done_fetching_callback),
                      std::move(proto_pairs), is_oauth_fetch,
-                     std::move(access_token_str)));
+                     std::move(access_token_str),
+                     g_browser_process->GetApplicationLocale()));
 }
 
 void FetchDiscountWorker::FetchInBackground(
@@ -169,14 +171,15 @@ void FetchDiscountWorker::FetchInBackground(
     AfterFetchingCallback after_fetching_callback,
     std::vector<CartDB::KeyAndValue> proto_pairs,
     const bool is_oauth_fetch,
-    const std::string access_token_str) {
+    const std::string access_token_str,
+    const std::string fetch_for_locale) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   auto done_fetching_callback = base::BindOnce(
       &DoneFetchingInBackground, std::move(after_fetching_callback));
   fetcher->Fetch(std::move(pending_factory), std::move(done_fetching_callback),
                  std::move(proto_pairs), is_oauth_fetch,
-                 std::move(access_token_str));
+                 std::move(access_token_str), std::move(fetch_for_locale));
 }
 
 // TODO(meiliang): Follow up to use BindPostTask.
@@ -234,7 +237,7 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
 
     if (!discounts.count(cart_url)) {
       cart_discount_proto->clear_discount_text();
-      cart_discount_proto->clear_discount_info();
+      cart_discount_proto->clear_rule_discount_info();
       updater->update(cart_url, std::move(cart_proto), is_tester);
       continue;
     }
@@ -243,15 +246,17 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     std::string merchant_id = merchant_discounts.merchant_id;
     cart_discount_proto->set_merchant_id(merchant_id);
 
-    const std::vector<cart_db::DiscountInfoProto>& discount_infos =
-        merchant_discounts.discount_list;
+    const std::vector<cart_db::RuleDiscountInfoProto>& discount_infos =
+        merchant_discounts.rule_discount_list;
     cart_discount_proto->set_discount_text(
         merchant_discounts.highest_discount_string);
-    *cart_discount_proto->mutable_discount_info() = {discount_infos.begin(),
-                                                     discount_infos.end()};
+    *cart_discount_proto->mutable_rule_discount_info() = {
+        discount_infos.begin(), discount_infos.end()};
 
     updater->update(cart_url, std::move(cart_proto), is_tester);
   }
+
+  // TODO(crbug.com/1240341): Update the coupon proto.
 
   if (base::GetFieldTrialParamByFeatureAsBool(
           ntp_features::kNtpChromeCartModule,

@@ -642,8 +642,9 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       safe_browsing::SetSafeBrowsingState(
-          pref_service, value ? safe_browsing::STANDARD_PROTECTION
-                              : safe_browsing::NO_SAFE_BROWSING);
+          pref_service,
+          value ? safe_browsing::SafeBrowsingState::STANDARD_PROTECTION
+                : safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING);
 #endif
       break;
     case SettingType::UKM_ENABLED: {
@@ -682,22 +683,25 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return safe_browsing::IsSafeBrowsingEnabled(*pref_service);
-#endif
+#else
       return false;
+#endif
     case SettingType::UKM_ENABLED:
       return pref_service->GetBoolean(prefs::kUkmEnabled);
     case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return pref_service->GetBoolean(
           ::prefs::kSafeBrowsingScoutReportingEnabled);
-#endif
+#else
       return false;
+#endif
     case SettingType::REAL_TIME_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
       return pref_service->GetBoolean(
           unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
-#endif
+#else
       return false;
+#endif
     case SettingType::NETWORK_PREDICTION_ENABLED:
       return pref_service->GetBoolean(prefs::kNoStatePrefetchEnabled);
   }

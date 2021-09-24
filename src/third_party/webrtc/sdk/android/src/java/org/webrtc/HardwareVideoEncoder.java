@@ -16,8 +16,8 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.opengl.GLES20;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.Surface;
+import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -149,6 +149,8 @@ class HardwareVideoEncoder implements VideoEncoder {
   private boolean useSurfaceMode;
 
   // --- Only accessed from the encoding thread.
+  // Presentation timestamp of next frame to encode.
+  private long nextPresentationTimestampUs;
   // Presentation timestamp of the last requested (or forced) key frame.
   private long lastKeyFrameNs;
 
@@ -223,6 +225,7 @@ class HardwareVideoEncoder implements VideoEncoder {
   private VideoCodecStatus initEncodeInternal() {
     encodeThreadChecker.checkIsOnValidThread();
 
+    nextPresentationTimestampUs = 0;
     lastKeyFrameNs = -1;
 
     try {
@@ -238,7 +241,8 @@ class HardwareVideoEncoder implements VideoEncoder {
       format.setInteger(MediaFormat.KEY_BIT_RATE, adjustedBitrate);
       format.setInteger(KEY_BITRATE_MODE, VIDEO_ControlRateConstant);
       format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
-      format.setInteger(MediaFormat.KEY_FRAME_RATE, bitrateAdjuster.getCodecConfigFramerate());
+      format.setFloat(
+          MediaFormat.KEY_FRAME_RATE, (float) bitrateAdjuster.getAdjustedFramerateFps());
       format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, keyFrameIntervalSec);
       if (codecType == VideoCodecMimeType.H264) {
         String profileLevelId = params.get(VideoCodecInfo.H264_FMTP_PROFILE_LEVEL_ID);
@@ -375,11 +379,18 @@ class HardwareVideoEncoder implements VideoEncoder {
                                        .setRotation(videoFrame.getRotation());
     outputBuilders.offer(builder);
 
+    long presentationTimestampUs = nextPresentationTimestampUs;
+    // Round frame duration down to avoid bitrate overshoot.
+    long frameDurationUs =
+        (long) (TimeUnit.SECONDS.toMicros(1) / bitrateAdjuster.getAdjustedFramerateFps());
+    nextPresentationTimestampUs += frameDurationUs;
+
     final VideoCodecStatus returnValue;
     if (useSurfaceMode) {
-      returnValue = encodeTextureBuffer(videoFrame);
+      returnValue = encodeTextureBuffer(videoFrame, presentationTimestampUs);
     } else {
-      returnValue = encodeByteBuffer(videoFrame, videoFrameBuffer, bufferSize);
+      returnValue =
+          encodeByteBuffer(videoFrame, presentationTimestampUs, videoFrameBuffer, bufferSize);
     }
 
     // Check if the queue was successful.
@@ -391,7 +402,8 @@ class HardwareVideoEncoder implements VideoEncoder {
     return returnValue;
   }
 
-  private VideoCodecStatus encodeTextureBuffer(VideoFrame videoFrame) {
+  private VideoCodecStatus encodeTextureBuffer(
+      VideoFrame videoFrame, long presentationTimestampUs) {
     encodeThreadChecker.checkIsOnValidThread();
     try {
       // TODO(perkj): glClear() shouldn't be necessary since every pixel is covered anyway,
@@ -401,7 +413,7 @@ class HardwareVideoEncoder implements VideoEncoder {
       VideoFrame derotatedFrame =
           new VideoFrame(videoFrame.getBuffer(), 0 /* rotation */, videoFrame.getTimestampNs());
       videoFrameDrawer.drawFrame(derotatedFrame, textureDrawer, null /* additionalRenderMatrix */);
-      textureEglBase.swapBuffers(videoFrame.getTimestampNs());
+      textureEglBase.swapBuffers(TimeUnit.MICROSECONDS.toNanos(presentationTimestampUs));
     } catch (RuntimeException e) {
       Logging.e(TAG, "encodeTexture failed", e);
       return VideoCodecStatus.ERROR;
@@ -409,12 +421,9 @@ class HardwareVideoEncoder implements VideoEncoder {
     return VideoCodecStatus.OK;
   }
 
-  private VideoCodecStatus encodeByteBuffer(
-      VideoFrame videoFrame, VideoFrame.Buffer videoFrameBuffer, int bufferSize) {
+  private VideoCodecStatus encodeByteBuffer(VideoFrame videoFrame, long presentationTimestampUs,
+      VideoFrame.Buffer videoFrameBuffer, int bufferSize) {
     encodeThreadChecker.checkIsOnValidThread();
-    // Frame timestamp rounded to the nearest microsecond.
-    long presentationTimestampUs = (videoFrame.getTimestampNs() + 500) / 1000;
-
     // No timeout.  Don't block for an input buffer, drop frames if the encoder falls behind.
     int index;
     try {
@@ -457,6 +466,13 @@ class HardwareVideoEncoder implements VideoEncoder {
       framerate = MAX_VIDEO_FRAMERATE;
     }
     bitrateAdjuster.setTargets(bitrateAllocation.getSum(), framerate);
+    return VideoCodecStatus.OK;
+  }
+
+  @Override
+  public VideoCodecStatus setRates(RateControlParameters rcParameters) {
+    encodeThreadChecker.checkIsOnValidThread();
+    bitrateAdjuster.setTargets(rcParameters.bitrate.getSum(), rcParameters.framerateFps);
     return VideoCodecStatus.OK;
   }
 

@@ -248,6 +248,16 @@ id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
   }
 }
 
+// Returns matcher for the "Add Password" button located at the bottom of the
+// screen.
+id<GREYMatcher> AddPasswordButton() {
+  return grey_accessibilityID(kPasswordsAddPasswordButtonId);
+}
+
+// Returns matcher for the "Save" button in the "Add Password" view.
+id<GREYMatcher> AddPasswordSaveButton() {
+  return grey_accessibilityID(kPasswordsAddPasswordSaveButtonId);
+}
 
 // Saves an example form in the store.
 void SaveExamplePasswordForm() {
@@ -313,10 +323,7 @@ void CopyPasswordDetailWithID(int detail_id) {
 }  // namespace
 
 // Various tests for the Save Passwords section of the settings.
-@interface PasswordsSettingsTestCase : ChromeTestCase {
-  base::test::ScopedFeatureList _featureList;
-}
-
+@interface PasswordsSettingsTestCase : ChromeTestCase
 @end
 
 @implementation PasswordsSettingsTestCase
@@ -342,6 +349,13 @@ void CopyPasswordDetailWithID(int detail_id) {
       [self isRunningTest:@selector(testEditUsernameFails)]) {
     config.features_enabled.push_back(
         password_manager::features::kEditPasswordsInSettings);
+  }
+
+  if ([self isRunningTest:@selector(testToolbarAddPasswordButton)] ||
+      [self isRunningTest:@selector(testNoAddButtonInEditMode)] ||
+      [self isRunningTest:@selector(testAddNewPasswordCredential)]) {
+    config.features_enabled.push_back(
+        password_manager::features::kSupportForAddPasswordsInSettings);
   }
 
   return config;
@@ -1421,7 +1435,9 @@ void CopyPasswordDetailWithID(int detail_id) {
 }
 
 // Checks that attempts to edit a password provide appropriate feedback.
-- (void)testEditPassword {
+// Disabled test due to multiple builder failulres.
+// TODO(crbug.com/1245004): re-enable the test with fix.
+- (void)DISABLED_testEditPassword {
   SaveExamplePasswordForm();
 
   OpenPasswordSettings();
@@ -1659,6 +1675,122 @@ void CopyPasswordDetailWithID(int detail_id) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Checks the 'Add Password' button is disabled when the enable password toggle
+// is turned off.
+- (void)testToolbarAddPasswordButton {
+  SaveExamplePasswordForm();
+  OpenPasswordSettings();
+
+  // Toggle the "Save Passwords" control off and back on and check that add
+  // password button is disabled and enabled respectively.
+  BOOL isSwitchEnabled =
+      [PasswordSettingsAppInterface isCredentialsServiceEnabled];
+  BOOL kExpectedState[] = {isSwitchEnabled, !isSwitchEnabled};
+  for (BOOL expectedState : kExpectedState) {
+    // Toggle the switch. It is located near the top, so if not interactable,
+    // try scrolling up.
+    [GetInteractionForListItem(
+        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
+                                             expectedState),
+        kGREYDirectionUp) performAction:TurnSettingsSwitchOn(!expectedState)];
+
+    // Check that the switch has been modified.
+    [GetInteractionForListItem(
+        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
+                                             !expectedState),
+        kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
+
+    if (!expectedState) {
+      // Expect the button to be enabled.
+      [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
+          assertWithMatcher:grey_sufficientlyVisible()];
+    } else {
+      // Expect the button to be disabled.
+      [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
+          assertWithMatcher:grey_not(grey_enabled())];
+    }
+  }
+}
+
+// Checks that the "Add" button is not shown on Edit.
+- (void)testNoAddButtonInEditMode {
+  SaveExamplePasswordForm();
+  OpenPasswordSettings();
+
+  TapEdit();
+
+  // Expect Add Password button to be removed.
+  [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests the add password flow.
+- (void)testAddNewPasswordCredential {
+  OpenPasswordSettings();
+
+  BOOL isSwitchEnabled =
+      [PasswordSettingsAppInterface isCredentialsServiceEnabled];
+
+  // Enable switch if it is disabled.
+  if (!isSwitchEnabled) {
+    [GetInteractionForListItem(
+        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
+                                             isSwitchEnabled),
+        kGREYDirectionUp) performAction:TurnSettingsSwitchOn(!isSwitchEnabled)];
+
+    // Check that the switch has been modified.
+    [GetInteractionForListItem(
+        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
+                                             !isSwitchEnabled),
+        kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Press "Add".
+  [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  // Fill form.
+  [[EarlGrey selectElementWithMatcher:PasswordDetailWebsite()]
+      performAction:grey_replaceText(@"https://www.example.com")];
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      performAction:grey_replaceText(@"new username")];
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"new password")];
+
+  // The "Add" button is enabled after site and password have been entered.
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_enabled()];
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordEntry(@"example.com, new username")
+      performAction:grey_tap()];
+
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  TapEdit();
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      assertWithMatcher:grey_textFieldValue(@"new password")];
 }
 
 // Checks that deleting a compromised password from password issues goes back

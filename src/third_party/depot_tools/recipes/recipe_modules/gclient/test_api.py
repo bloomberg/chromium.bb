@@ -32,5 +32,5 @@ class GclientTestApi(recipe_test_api.RecipeTestApi):
   @staticmethod
   def gen_revision(project):
     """Hash project to bogus deterministic revision values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return h.hexdigest()

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -69,8 +70,16 @@ class HistoryClustersTabHelper
   // recorded page end metrics.
   void RecordPageEndMetricsIfNeeded(int64_t navigation_id);
 
-  // content::WebContentsObserver implementation. Will complete any incomplete
-  // visits associated with navigations made in this tab.
+  // content::WebContentsObserver implementation.
+
+  // Will update this page's associated `HistoryClustersMetricsLogger`.
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  // Will complete any incomplete visits associated with navigations made in
+  // this tab.
   void WebContentsDestroyed() override;
 
   // Helper functions to return the memories and history services.

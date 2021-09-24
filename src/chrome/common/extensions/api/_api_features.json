@@ -89,6 +89,8 @@
       "web_page",
       "blessed_web_page"
     ],
+    "disallow_for_service_workers": true,
+    "max_manifest_version": 2,
     // Any webpage can use the app API.
     "matches": ["<all_urls>"]
   },
@@ -118,7 +120,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://bookmarks/*"
+      "chrome://bookmarks/*",
+      "chrome://read-later.top-chrome/*"
     ]
   }],
   "bookmarks": [{
@@ -751,6 +754,10 @@
     "channel": "trunk",
     "min_manifest_version": 3
   },
+  "scripting.updateContentScripts": {
+    "channel": "trunk",
+    "min_manifest_version": 3
+  },
   "search": {
     "dependencies": ["permission:search"],
     "contexts": ["blessed_extension"]
@@ -901,12 +908,22 @@
     "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "wallpaper": {
+  "wallpaper": [{
     "dependencies": ["permission:wallpaper"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://file-manager/*"
+    ]
+  }],
   "wallpaperPrivate": {
     "dependencies": ["permission:wallpaperPrivate"],
+    "contexts": ["blessed_extension"]
+  },
+  "webAuthenticationProxy": {
+    "dependencies": ["permission:webAuthenticationProxy"],
     "contexts": ["blessed_extension"]
   },
   "webNavigation": {
@@ -957,7 +974,8 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
-      "chrome://tab-strip.top-chrome/*"
+      "chrome://tab-strip.top-chrome/*",
+      "chrome://file-manager/*"
     ]
   }, {
     "channel": "stable",

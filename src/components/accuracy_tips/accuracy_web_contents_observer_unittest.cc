@@ -31,7 +31,7 @@ namespace {
 void ReturnNone(const GURL&, AccuracyCheckCallback callback) {
   std::move(callback).Run(AccuracyTipStatus::kNone);
 }
-void ReturnIsMisinformation(const GURL&, AccuracyCheckCallback callback) {
+void ReturnIsNewsRelated(const GURL&, AccuracyCheckCallback callback) {
   std::move(callback).Run(AccuracyTipStatus::kShowAccuracyTip);
 }
 }  // namespace
@@ -90,11 +90,11 @@ TEST_F(AccuracyWebContentsObserverTest,
                                AccuracyTipStatus::kNone, 1);
 }
 
-TEST_F(AccuracyWebContentsObserverTest, CheckServiceOnNavigationToBadSite) {
+TEST_F(AccuracyWebContentsObserverTest, CheckServiceOnNavigationToSiteInList) {
   AccuracyWebContentsObserver::CreateForWebContents(web_contents(), service());
   GURL url("https://accuracytip.com");
   EXPECT_CALL(*service(), CheckAccuracyStatus(url, _))
-      .WillOnce(Invoke(&ReturnIsMisinformation));
+      .WillOnce(Invoke(&ReturnIsNewsRelated));
   EXPECT_CALL(*service(), MaybeShowAccuracyTip(web_contents()));
   content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
                                                              url);
@@ -108,7 +108,7 @@ TEST_F(AccuracyWebContentsObserverTest,
   AccuracyWebContentsObserver::CreateForWebContents(web_contents(), service());
   GURL url("http://accuracytip.com");
   EXPECT_CALL(*service(), CheckAccuracyStatus(url, _))
-      .WillOnce(Invoke(&ReturnIsMisinformation));
+      .WillOnce(Invoke(&ReturnIsNewsRelated));
   EXPECT_CALL(*service(), MaybeShowAccuracyTip(web_contents())).Times(0);
   content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
                                                              url);

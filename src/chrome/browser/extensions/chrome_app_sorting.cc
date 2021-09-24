@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
@@ -79,14 +79,7 @@ ChromeAppSorting::ChromeAppSorting(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       default_ordinals_created_(false) {
   ExtensionIdList extensions;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
-  std::unique_ptr<extensions::ExtensionPrefs::ExtensionsInfo> extensions_info =
-      prefs->GetInstalledExtensionsInfo();
-  for (size_t i = 0; i < extensions_info->size(); ++i) {
-    ExtensionInfo* info = extensions_info->at(i).get();
-    if (!prefs->IsFromBookmark(info->extension_id))
-      extensions.push_back(info->extension_id);
-  }
+  ExtensionPrefs::Get(browser_context_)->GetExtensions(&extensions);
   InitializePageOrdinalMap(extensions);
   MigrateAppIndex(extensions);
 }
@@ -201,20 +194,9 @@ void ChromeAppSorting::InitializePageOrdinalMapFromWebApps() {
     return;
 
   web_app_registrar_ = &web_app_provider->registrar();
-  web_app_sync_bridge_ =
-      web_app_provider->registry_controller().AsWebAppSyncBridge();
+  web_app_sync_bridge_ = &web_app_provider->sync_bridge();
   app_registrar_observation_.Observe(&web_app_provider->registrar());
   InitializePageOrdinalMap(web_app_registrar_->GetAppIds());
-}
-
-void ChromeAppSorting::SetWebAppRegistrarForTesting(
-    const web_app::WebAppRegistrar* web_app_registrar) {
-  web_app_registrar_ = web_app_registrar;
-}
-
-void ChromeAppSorting::SetWebAppSyncBridgeForTesting(
-    web_app::WebAppSyncBridge* sync_bridge) {
-  web_app_sync_bridge_ = sync_bridge;
 }
 
 void ChromeAppSorting::FixNTPOrdinalCollisions() {

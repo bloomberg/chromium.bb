@@ -877,12 +877,36 @@ void CompilerMSL::build_implicit_builtins()
 	if (need_position)
 	{
 		// If we can get away with returning void from entry point, we don't need to care.
-		// If there is at least one other stage output, we need to return [[position]].
-		need_position = false;
+		// If there is at least one other stage output, we need to return [[position]],
+		// so we need to create one if it doesn't appear in the SPIR-V. Before adding the
+		// implicit variable, check if it actually exists already, but just has not been used
+		// or initialized, and if so, mark it as active, and do not create the implicit variable.
+		bool has_output = false;
 		ir.for_each_typed_id<SPIRVariable>([&](uint32_t, SPIRVariable &var) {
 			if (var.storage == StorageClassOutput && interface_variable_exists_in_entry_point(var.self))
-				need_position = true;
+			{
+				has_output = true;
+
+				// Check if the var is the Position builtin
+				if (has_decoration(var.self, DecorationBuiltIn) && get_decoration(var.self, DecorationBuiltIn) == BuiltInPosition)
+					active_output_builtins.set(BuiltInPosition);
+
+				// If the var is a struct, check if any members is the Position builtin
+				auto &var_type = get_variable_element_type(var);
+				if (var_type.basetype == SPIRType::Struct)
+				{
+					auto mbr_cnt = var_type.member_types.size();
+					for (uint32_t mbr_idx = 0; mbr_idx < mbr_cnt; mbr_idx++)
+					{
+						auto builtin = BuiltInMax;
+						bool is_builtin = is_member_builtin(var_type, mbr_idx, &builtin);
+						if (is_builtin && builtin == BuiltInPosition)
+							active_output_builtins.set(BuiltInPosition);
+					}
+				}
+			}
 		});
+		need_position = has_output && !active_output_builtins.get(BuiltInPosition);
 	}
 
 	if (need_position)
@@ -4262,9 +4286,6 @@ void CompilerMSL::emit_store_statement(uint32_t lhs_expression, uint32_t rhs_exp
 		// In this case, we just flip transpose states, and emit the store, a transpose must be in the RHS expression, if any.
 		if (is_matrix(type) && lhs_e && lhs_e->need_transpose)
 		{
-			if (!rhs_e)
-				SPIRV_CROSS_THROW("Need to transpose right-side expression of a store to row-major matrix, but it is "
-				                  "not a SPIRExpression.");
 			lhs_e->need_transpose = false;
 
 			if (rhs_e && rhs_e->need_transpose)
@@ -8490,13 +8511,27 @@ void CompilerMSL::emit_array_copy(const string &lhs, uint32_t lhs_id, uint32_t r
 
 	// Special considerations for stage IO variables.
 	// If the variable is actually backed by non-user visible device storage, we use array templates for those.
+	//
+	// Another special consideration is given to thread local variables which happen to have Offset decorations
+	// applied to them. Block-like types do not use array templates, so we need to force POD path if we detect
+	// these scenarios. This check isn't perfect since it would be technically possible to mix and match these things,
+	// and for a fully correct solution we might have to track array template state through access chains as well,
+	// but for all reasonable use cases, this should suffice.
+	// This special case should also only apply to Function/Private storage classes.
+	// We should not check backing variable for temporaries.
 	auto *lhs_var = maybe_get_backing_variable(lhs_id);
 	if (lhs_var && lhs_storage == StorageClassStorageBuffer && storage_class_array_is_thread(lhs_var->storage))
 		lhs_is_array_template = true;
+	else if (lhs_var && (lhs_storage == StorageClassFunction || lhs_storage == StorageClassPrivate) &&
+	         type_is_block_like(get<SPIRType>(lhs_var->basetype)))
+		lhs_is_array_template = false;
 
 	auto *rhs_var = maybe_get_backing_variable(rhs_id);
 	if (rhs_var && rhs_storage == StorageClassStorageBuffer && storage_class_array_is_thread(rhs_var->storage))
 		rhs_is_array_template = true;
+	else if (rhs_var && (rhs_storage == StorageClassFunction || rhs_storage == StorageClassPrivate) &&
+	         type_is_block_like(get<SPIRType>(rhs_var->basetype)))
+		rhs_is_array_template = false;
 
 	// If threadgroup storage qualifiers are *not* used:
 	// Avoid spvCopy* wrapper functions; Otherwise, spvUnsafeArray<> template cannot be used with that storage qualifier.
@@ -13880,18 +13915,21 @@ string CompilerMSL::bitcast_glsl_op(const SPIRType &out_type, const SPIRType &in
 	assert(out_type.basetype != SPIRType::Boolean);
 	assert(in_type.basetype != SPIRType::Boolean);
 
-	bool integral_cast = type_is_integral(out_type) && type_is_integral(in_type);
-	bool same_size_cast = out_type.width == in_type.width;
+	bool integral_cast = type_is_integral(out_type) && type_is_integral(in_type) && (out_type.vecsize == in_type.vecsize);
+	bool same_size_cast = (out_type.width * out_type.vecsize) == (in_type.width * in_type.vecsize);
 
-	if (integral_cast && same_size_cast)
+	// Bitcasting can only be used between types of the same overall size.
+	// And always formally cast between integers, because it's trivial, and also
+	// because Metal can internally cast the results of some integer ops to a larger
+	// size (eg. short shift right becomes int), which means chaining integer ops
+	// together may introduce size variations that SPIR-V doesn't know about.
+	if (same_size_cast && !integral_cast)
 	{
-		// Trivial bitcast case, casts between integers.
-		return type_to_glsl(out_type);
+		return "as_type<" + type_to_glsl(out_type) + ">";
 	}
 	else
 	{
-		// Fall back to the catch-all bitcast in MSL.
-		return "as_type<" + type_to_glsl(out_type) + ">";
+		return type_to_glsl(out_type);
 	}
 }
 

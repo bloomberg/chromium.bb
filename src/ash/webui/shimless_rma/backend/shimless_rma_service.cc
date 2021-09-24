@@ -5,9 +5,11 @@
 #include "ash/webui/shimless_rma/backend/shimless_rma_service.h"
 
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/webui/shimless_rma/backend/version_updater.h"
 #include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
 #include "ash/webui/shimless_rma/mojom/shimless_rma_mojom_traits.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chromeos/dbus/rmad/rmad.pb.h"
 #include "chromeos/dbus/rmad/rmad_client.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -34,9 +36,8 @@ class RmadObserver : chromeos::RmadClient::Observer {
   void Error(rmad::RmadErrorCode error) override {}
 
   // Called when calibration progress is updated.
-  void CalibrationProgress(
-      rmad::CheckCalibrationState::CalibrationStatus::Component component,
-      double progress) override {}
+  void CalibrationProgress(rmad::RmadComponent component,
+                           double progress) override {}
 
   // Called when provisioning progress is updated.
   void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
@@ -56,6 +57,9 @@ ShimlessRmaService::ShimlessRmaService() {
   chromeos::RmadClient::Get()->AddObserver(this);
   GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
+  version_updater_.SetStatusCallback(
+      base::BindRepeating(&ShimlessRmaService::OnOsUpdateStatusCallback,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ShimlessRmaService::~ShimlessRmaService() {
@@ -128,27 +132,41 @@ void ShimlessRmaService::GetCurrentOsVersion(
 }
 
 void ShimlessRmaService::CheckForOsUpdates(CheckForOsUpdatesCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kWelcome) {
+    LOG(ERROR) << "CheckForOsUpdates called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(false);
+    return;
+  }
   // TODO(gavindodd): Get actual Chrome update available value.
-  std::move(callback).Run(false);
+  // Currently there is no way to check for update availability, only to check
+  // and install any update available. See b/197793656
+  std::move(callback).Run(true);
 }
 
 void ShimlessRmaService::UpdateOs(UpdateOsCallback callback) {
   if (state_proto_.state_case() != rmad::RmadState::kWelcome) {
     LOG(ERROR) << "UpdateOs called from incorrect state "
                << state_proto_.state_case();
+    std::move(callback).Run(false);
+    return;
+  }
+  std::move(callback).Run(version_updater_.UpdateOs());
+}
+
+void ShimlessRmaService::UpdateOsSkipped(UpdateOsSkippedCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kWelcome) {
+    LOG(ERROR) << "UpdateOsSkipped called from incorrect state "
+               << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  // TODO(gavindodd): Trigger a chrome update.
-  TransitionNextStateGeneric(std::move(callback));
-}
-
-void ShimlessRmaService::UpdateOsSkipped(UpdateOsCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kWelcome) {
-    LOG(ERROR) << "UpdateOs called from incorrect state "
-               << state_proto_.state_case();
-    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+  if (!version_updater_.IsIdle()) {
+    LOG(ERROR) << "UpdateOsSkipped called while UpdateEngine active";
+    // Override the rmad state (kWelcome) with the mojo sub-state for OS
+    // updates.
+    std::move(callback).Run(mojom::RmaState::kUpdateOs,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -271,9 +289,8 @@ void ShimlessRmaService::GetComponentList(GetComponentListCallback callback) {
     LOG(ERROR) << "GetComponentList called from incorrect state "
                << state_proto_.state_case();
   } else {
-    components.reserve(
-        state_proto_.components_repair().component_repair_size());
-    for (auto component : state_proto_.components_repair().component_repair()) {
+    components.reserve(state_proto_.components_repair().components_size());
+    for (auto component : state_proto_.components_repair().components()) {
       int component_id = component.component();
       LOG(ERROR) << "Component: " << component_id;
       components.push_back(component);
@@ -293,12 +310,12 @@ void ShimlessRmaService::SetComponentList(
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  state_proto_.mutable_components_repair()->clear_component_repair();
-  state_proto_.mutable_components_repair()->mutable_component_repair()->Reserve(
+  state_proto_.mutable_components_repair()->clear_components();
+  state_proto_.mutable_components_repair()->mutable_components()->Reserve(
       component_list.size());
   for (auto& component : component_list) {
     rmad::ComponentsRepairState_ComponentRepairStatus* proto_component =
-        state_proto_.mutable_components_repair()->add_component_repair();
+        state_proto_.mutable_components_repair()->add_components();
     proto_component->set_component(component.component());
     proto_component->set_repair_status(component.repair_status());
   }
@@ -372,6 +389,34 @@ void ShimlessRmaService::ReimageFromUsb(ReimageFromUsbCallback callback) {
   }
   state_proto_.mutable_update_ro_firmware()->set_update(
       rmad::UpdateRoFirmwareState::RMAD_UPDATE_FIRMWARE_RECOVERY_UTILITY);
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::ShutdownForRestock(
+    ShutdownForRestockCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRestock) {
+    LOG(ERROR) << "ShutdownForRestock called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_restock()->set_choice(
+      rmad::RestockState::RMAD_RESTOCK_SHUTDOWN_AND_RESTOCK);
+  TransitionNextStateGeneric(std::move(callback));
+}
+void ShimlessRmaService::ContinueFinalizationAfterRestock(
+    ContinueFinalizationAfterRestockCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRestock) {
+    LOG(ERROR)
+        << "ContinueFinalizationAfterRestock called from incorrect state "
+        << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_restock()->set_choice(
+      rmad::RestockState::RMAD_RESTOCK_CONTINUE_RMA);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -478,9 +523,15 @@ void ShimlessRmaService::Error(rmad::RmadErrorCode error) {
   }
 }
 
-void ShimlessRmaService::CalibrationProgress(
-    rmad::CheckCalibrationState::CalibrationStatus::Component component,
-    double progress) {
+void ShimlessRmaService::OsUpdateProgress(update_engine::Operation operation,
+                                          double progress) {
+  if (os_update_observer_.is_bound()) {
+    os_update_observer_->OnOsUpdateProgressUpdated(operation, progress);
+  }
+}
+
+void ShimlessRmaService::CalibrationProgress(rmad::RmadComponent component,
+                                             double progress) {
   if (calibration_observer_.is_bound()) {
     calibration_observer_->OnCalibrationUpdated(component, progress);
   }
@@ -509,6 +560,11 @@ void ShimlessRmaService::PowerCableState(bool plugged_in) {
 void ShimlessRmaService::ObserveError(
     ::mojo::PendingRemote<mojom::ErrorObserver> observer) {
   error_observer_.Bind(std::move(observer));
+}
+
+void ShimlessRmaService::ObserveOsUpdateProgress(
+    ::mojo::PendingRemote<mojom::OsUpdateObserver> observer) {
+  os_update_observer_.Bind(std::move(observer));
 }
 
 void ShimlessRmaService::ObserveCalibrationProgress(
@@ -611,5 +667,17 @@ void ShimlessRmaService::OnNetworkListResponse(
   std::move(callback).Run(mojom::RmaState::kConfigureNetwork,
                           rmad::RmadErrorCode::RMAD_ERROR_OK);
 }
+
+void ShimlessRmaService::OnOsUpdateStatusCallback(
+    update_engine::Operation operation,
+    double progress,
+    bool rollback,
+    bool powerwash,
+    const std::string& version,
+    int64_t update_size) {
+  // TODO(gavindodd): Pass errors and any other needed data.
+  OsUpdateProgress(operation, progress);
+}
+
 }  // namespace shimless_rma
 }  // namespace ash

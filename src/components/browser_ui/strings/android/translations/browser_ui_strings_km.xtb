@@ -18,7 +18,6 @@
 <translation id="1384959399684842514">បានផ្អាកការទាញយក</translation>
 <translation id="1415402041810619267">បានបង្រួម URL</translation>
 <translation id="1446450296470737166">អនុញ្ញាតឲ្យមានការគ្រប់គ្រងពេញលេញលើឧបករណ៍ MIDI</translation>
-<translation id="1509960214886564027">មុខងារ​នៅលើ​គេហទំព័រ​ជាច្រើន​អាចដំណើរការមិន​ត្រឹមត្រូវ</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1644574205037202324">ប្រវត្តិ</translation>
 <translation id="1647582022260550163">តើអ្នក​ពិតជាចង់​កំណត់​ការអនុញ្ញាត​ឡើងវិញ និង​សម្អាតទិន្នន័យ​គេហទំព័រនិង​ខូគីមែនឬ?</translation>
@@ -37,6 +36,7 @@
 <translation id="1984937141057606926">បានអនុញ្ញាត លើកលែងតែភាគីទីបី</translation>
 <translation id="1989112275319619282">រុករក</translation>
 <translation id="1994173015038366702">URL គេហទំព័រ</translation>
+<translation id="2004697686368036666">មុខងារ​នៅលើ​គេហទំព័រ​មួយចំនួន​អាចនឹងមិនដំណើរការទេ</translation>
 <translation id="2025115093177348061">AR</translation>
 <translation id="2030769033451695672">ចុចដើម្បីត្រឡប់ទៅ <ph name="URL_OF_THE_CURRENT_TAB" /> វិញ</translation>
 <translation id="2079545284768500474">ត្រឡប់វិញ</translation>
@@ -258,8 +258,8 @@
 <translation id="7846076177841592234">បោះបង់ការជ្រើសរើស</translation>
 <translation id="7846621471902887024">អ្នក​នឹងត្រូវនាំចេញ​ពី​គេហទំព័រ​ទាំងអស់។</translation>
 <translation id="7882806643839505685">អនុញ្ញាតសំឡេងសម្រាប់ទំព័រជាក់លាក់។</translation>
+<translation id="7940722705963108451">រំលឹក​ខ្ញុំ</translation>
 <translation id="7986741934819883144">ជ្រើស​រើសទំ​នាក់ទំនង</translation>
-<translation id="7993619969781047893">មុខងារ​នៅលើ​គេហទំព័រ​មួយចំនួន​អាចដំណើរការ​មិន​ត្រឹមត្រូវ</translation>
 <translation id="7999064672810608036">តើអ្នកប្រាកដទេដែលចង់សម្អាតទិន្នន័យមូលដ្ឋានទាំងអស់រាប់ទាំងខុឃី ហើយកំណត់ការអនុញ្ញាតទាំងឡាយសម្រាប់គេហទំព័រនេះឡើងវិញនោះ?</translation>
 <translation id="8007176423574883786">បានបិទសម្រាប់ឧបករណ៍នេះ</translation>
 <translation id="802154636333426148">បានបរាជ័យក្នុងការទាញយក</translation>
@@ -269,6 +269,7 @@
 <translation id="8116925261070264013">បានបិទសំឡេង</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
 <translation id="8131740175452115882">អះអាង</translation>
+<translation id="8154912474061769055">មុខងារ​នៅលើ​គេហទំព័រ​ជាច្រើន​អាចនឹងមិនដំណើរការទេ</translation>
 <translation id="8197286292360124385">បាន​អនុញ្ញាត <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">បន្ត</translation>
 <translation id="8206354486702514201">ការកំណត់នេះត្រូវបានអនុវត្តដោយអ្នកគ្រប់គ្រងរបស់អ្នក។</translation>
@@ -295,6 +296,7 @@
 <translation id="8676374126336081632">ជម្រះការបញ្ចូល</translation>
 <translation id="868929229000858085">ស្វែងរក​ទំនាក់ទំនង​របស់អ្នក</translation>
 <translation id="8702612070107455751">រាល់​​ទិន្នន័យគេហទំព័រ​ដែលបានរក្សាទុកលើឧបករណ៍នឹង​ត្រូវបាន​សម្អាត។</translation>
+<translation id="8712637175834984815">យល់ហើយ</translation>
 <translation id="8719283222052720129">បើកការអនុញ្ញាត​សម្រាប់ <ph name="APP_NAME" /> នៅក្នុង​<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" />។</translation>
 <translation id="8725066075913043281">ព្យាយាមម្តងទៀត</translation>
 <translation id="8730621377337864115">រួចរាល់</translation>

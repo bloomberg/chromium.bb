@@ -184,8 +184,8 @@ xcode = struct(
     x12e262 = xcode_enum("12e262"),
     # in use by ios-webkit-tot
     x12e262wk = xcode_enum("12e262wk"),
-    # Default Xcode 13 for chromium iOS (Xcode 13.0 beta 4).
-    x13main = xcode_enum("13a5201ixc"),
+    # Default Xcode 13 for chromium iOS (Xcode 13.0 beta 5).
+    x13main = xcode_enum("13a5212g"),
     # Xcode 13.0 latest beta (beta 5).
     x13latestbeta = xcode_enum("13a5212g"),
 )
@@ -289,7 +289,7 @@ def _isolated_property(*, isolated_server):
 
     return isolated or None
 
-def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace):
+def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace, cache_silo, ensure_verified):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
     if instance:
@@ -314,6 +314,11 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_servi
     publish_trace = defaults.get_value("reclient_publish_trace", publish_trace)
     if publish_trace:
         reclient["publish_trace"] = True
+    if cache_silo:
+        reclient["cache_silo"] = cache_silo
+    ensure_verified = defaults.get_value("reclient_ensure_verified", ensure_verified)
+    if ensure_verified:
+        reclient["ensure_verified"] = True
     return reclient or None
 
 ################################################################################
@@ -359,6 +364,8 @@ defaults = args.defaults(
     reclient_rewrapper_env = None,
     reclient_profiler_service = None,
     reclient_publish_trace = None,
+    reclient_cache_silo = None,
+    reclient_ensure_verified = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -410,6 +417,8 @@ def builder(
         reclient_rewrapper_env = args.DEFAULT,
         reclient_profiler_service = args.DEFAULT,
         reclient_publish_trace = args.DEFAULT,
+        reclient_cache_silo = None,
+        reclient_ensure_verified = None,
         **kwargs):
     """Define a builder.
 
@@ -558,6 +567,9 @@ def builder(
       * reclient_profiler_service - a string indicating service name for
         re-client's cloud profiler.
       * reclient_publish_trace - If True, it publish trace by rpl2cloudtrace.
+      * reclient_cache_silo - A string indicating a cache siling key to use for
+        remote caching.
+      * reclient_ensure_verified - If True, it verifies build artifacts.
       * kwargs - Additional keyword arguments to forward on to `luci.builder`.
     """
 
@@ -706,6 +718,8 @@ def builder(
         rewrapper_env = reclient_rewrapper_env,
         profiler_service = reclient_profiler_service,
         publish_trace = reclient_publish_trace,
+        cache_silo = reclient_cache_silo,
+        ensure_verified = reclient_ensure_verified,
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
@@ -726,6 +740,13 @@ def builder(
             path = xcode.cache_path,
         )]
         properties.setdefault("xcode_build_version", xcode.version)
+
+    experiments = kwargs.get("experiments", {})
+
+    # TODO(crbug.com/1143122): remove this after migration.
+    if "chromium.chromium_tests.use_rbe_cas" not in experiments:
+        experiments["chromium.chromium_tests.use_rbe_cas"] = 50
+    kwargs["experiments"] = experiments
 
     history_options = None
     resultdb_index_by_timestamp = defaults.get_value(
@@ -755,8 +776,8 @@ def builder(
 
     # Add a bootstrap node for the builder so the _bootstrap_properties
     # generator can determine which builders are being bootstrapped
-    if bootstrap:
-        graph.add_node(_bootstrap_key(bucket, name))
+    if executable in _BOOTSTRAPPABLE_RECIPES:
+        graph.add_node(_bootstrap_key(bucket, name), props = {"bootstrap": bootstrap})
 
     builder_name = "{}/{}".format(bucket, name)
 
@@ -809,12 +830,18 @@ def builder(
 
     return builder
 
-# Bootstrapping is currently under development, it's not for general use yet
-_BOOTSTRAP_ALLOWLIST = {e: True for e in [
-    ("ci", "linux-bootstrap"),
-    ("ci", "linux-bootstrap-tests"),
-    ("try", "linux-bootstrap"),
-]}
+# A recipe can (but doesn't have to) be marked as bootstrappable if the
+# following conditions are true:
+# * chromium_bootstrap.update_gclient_config is called to update the gclient
+#   config that is used for bot_update.
+# * If the recipe does analysis to reduce compilation/testing, it skips analysis
+#   and performs a full build if chromium_bootstrap.skip_analysis_reasons is
+#   non-empty.
+_BOOTSTRAPPABLE_RECIPES = [
+    "recipe:chromium",
+    "recipe:chromium/orchestrator",
+    "recipe:chromium_trybot",
+]
 
 _NON_BOOTSTRAPPED_PROPERTIES = [
     # Sheriff-o-Matic queries for builder_group in the input properties to find
@@ -832,11 +859,15 @@ def _bootstrap_key(bucket_name, builder_name):
 def _bootstrap_properties(ctx):
     """Update builder properties for bootstrapping.
 
-    For builders that have opted in to bootstrapping, their properties will be
-    moved to a separate file. The bootstrapper will read this file at build-time
-    and update the build's properties with the contents of the file. The
-    builder's properties within the buildbucket configuration will be modified
-    with the properties that control the bootstrapper itself.
+    For builders whose recipe supports bootstrapping, their properties will be
+    written out to a separate file. This is done even if the builder is not
+    being bootstrapped so that the properties file will exist already when it is
+    flipped to being bootstrapped.
+
+    For builders that have opted in to bootstrapping, this file will be read at
+    build-time and update the build's properties with the contents of the file.
+    The builder's properties within the buildbucket configuration will be
+    modified with the properties that control the bootstrapper itself.
 
     The builders that have opted in to bootstrapping is determined by examining
     the lucicfg graph to find a bootstrap node for a given builder. These nodes
@@ -857,13 +888,11 @@ def _bootstrap_properties(ctx):
         bucket_name = bucket.name
         for builder in bucket.swarming.builders:
             builder_name = builder.name
-            bootstrap = graph.node(_bootstrap_key(bucket_name, builder_name))
-            if not bootstrap:
+            bootstrap_node = graph.node(_bootstrap_key(bucket_name, builder_name))
+            if not bootstrap_node:
                 continue
 
-            if (bucket_name, builder_name) not in _BOOTSTRAP_ALLOWLIST:
-                fail("{}/{} is not approved for bootstrapping at this time"
-                    .format(bucket_name, builder_name))
+            bootstrap = bootstrap_node.props.bootstrap
 
             properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
             non_bootstrapped_properties = {
@@ -878,6 +907,7 @@ def _bootstrap_properties(ctx):
                     "properties_file": "infra/config/generated/{}".format(properties_file),
                     "exe": builder.exe,
                 },
+                "led_builder_is_bootstrapped": True,
             }
             builder_properties = json.decode(builder.properties)
             for p in _NON_BOOTSTRAPPED_PROPERTIES:
@@ -885,11 +915,12 @@ def _bootstrap_properties(ctx):
                     non_bootstrapped_properties[p] = builder_properties.pop(p)
             ctx.output[properties_file] = json.indent(json.encode(builder_properties), indent = "  ")
 
-            builder.properties = json.encode(non_bootstrapped_properties)
+            if bootstrap:
+                builder.properties = json.encode(non_bootstrapped_properties)
 
-            builder.exe.cipd_package = "infra/chromium/bootstrapper/${platform}"
-            builder.exe.cipd_version = "latest"
-            builder.exe.cmd = ["bootstrapper"]
+                builder.exe.cipd_package = "infra/chromium/bootstrapper/${platform}"
+                builder.exe.cipd_version = "latest"
+                builder.exe.cmd = ["bootstrapper"]
 
 lucicfg.generator(_bootstrap_properties)
 

@@ -162,6 +162,9 @@ class ScriptExecutor : public ActionDelegate,
   std::string GetStatusMessage() const override;
   void SetBubbleMessage(const std::string& message) override;
   std::string GetBubbleMessage() const override;
+  void SetTtsMessage(const std::string& message) override;
+  TtsButtonState GetTtsButtonState() const override;
+  void MaybePlayTtsMessage() override;
   void FindElement(const Selector& selector,
                    ElementFinder::Callback callback) const override;
   void FindAllElements(const Selector& selector,
@@ -243,6 +246,7 @@ class ScriptExecutor : public ActionDelegate,
   void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   const ClientSettings& GetSettings() const override;
+  void SetClientSettings(const ClientSettingsProto& client_settings) override;
   bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,

@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 
 class SkMatrix;
 
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   static scoped_refptr<Image> LoadPlatformResource(
       int resource_id,
-      ui::ResourceScaleFactor scale_factor = ui::SCALE_FACTOR_100P);
+      ui::ResourceScaleFactor scale_factor = ui::k100Percent);
 
   static PaintImage ResizeAndOrientImage(
       const PaintImage&,
@@ -296,9 +296,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                     const cc::PaintFlags&,
                     const FloatRect& dst_rect,
                     const FloatRect& src_rect,
-                    const ImageDrawOptions& draw_options,
-                    ImageClampingMode,
-                    ImageDecodingMode) = 0;
+                    const ImageDrawOptions& draw_options) = 0;
 
   // Apply this Image as a shader to the passed PaintFlags. This is currently
   // only used by GraphicsContext::DrawImageRRect() and to match the semantics

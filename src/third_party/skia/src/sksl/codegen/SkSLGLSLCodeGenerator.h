@@ -53,11 +53,9 @@ namespace SkSL {
  */
 class GLSLCodeGenerator : public CodeGenerator {
 public:
-    GLSLCodeGenerator(const Context* context, const Program* program, ErrorReporter* errors,
-                      OutputStream* out)
-    : INHERITED(program, errors, out)
-    , fLineEnding("\n")
-    , fContext(*context) {}
+    GLSLCodeGenerator(const Context* context, const Program* program, OutputStream* out)
+    : INHERITED(context, program, out)
+    , fLineEnding("\n") {}
 
     bool generateCode() override;
 
@@ -179,7 +177,6 @@ protected:
     const ShaderCapsClass& caps() const { return fContext.fCaps; }
 
     const char* fLineEnding;
-    const Context& fContext;
     StringStream fExtensions;
     StringStream fGlobals;
     StringStream fExtraFunctions;
@@ -192,7 +189,6 @@ protected:
     bool fFoundDerivatives = false;
     bool fFoundExternalSamplerDecl = false;
     bool fFoundRectSamplerDecl = false;
-    bool fFoundGSInvocations = false;
     bool fSetupClockwise = false;
     bool fSetupFragPosition = false;
     bool fSetupFragCoordWorkaround = false;

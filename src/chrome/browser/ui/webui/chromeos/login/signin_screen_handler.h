@@ -138,10 +138,6 @@ class SigninScreenHandler
   // configurations like MSAN, where it otherwise triggers on every run.
   void SetOfflineTimeoutForTesting(base::TimeDelta offline_timeout);
 
-  // Gets the keyboard remapped pref value for `pref_name` key. Returns true if
-  // successful, otherwise returns false.
-  bool GetKeyboardRemappedPrefValue(const std::string& pref_name, int* value);
-
  private:
   friend class GaiaScreenHandler;
   friend class ash::LoginDisplayHostMojo;
@@ -211,11 +207,6 @@ class SigninScreenHandler
   void AuthenticateExistingUser(const AccountId& account_id,
                                 const std::string& password,
                                 bool authenticated_by_pin);
-
-  // Returns true iff
-  // (i)   log in is restricted to some user list,
-  // (ii)  all users in the restricted list are present.
-  bool AllAllowlistedUsersPresent();
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible();

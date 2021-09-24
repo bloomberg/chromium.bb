@@ -55,11 +55,12 @@ public class DangerousDownloadDialog {
      */
     public void show(Context context, ModalDialogManager modalDialogManager, String fileName,
             long totalBytes, int iconId, Callback<Boolean> callback) {
-        String message =
-                context.getResources().getString(R.string.dangerous_download_dialog_text, fileName);
-        if (totalBytes > 0) {
-            message += "\n\n(" + DownloadUtils.getStringForBytes(context, totalBytes) + ")";
-        }
+        String message = totalBytes > 0
+                ? context.getResources().getString(
+                        R.string.dangerous_download_dialog_text, fileName)
+                : context.getResources().getString(
+                        R.string.dangerous_download_dialog_text_with_size, fileName,
+                        DownloadUtils.getStringForBytes(context, totalBytes));
 
         PropertyModel propertyModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
@@ -67,17 +68,17 @@ public class DangerousDownloadDialog {
                                 new ModalDialogProperties.Controller() {
                                     @Override
                                     public void onClick(PropertyModel model, int buttonType) {
-                                        boolean isConfirm = buttonType
-                                                == ModalDialogProperties.ButtonType.POSITIVE;
+                                        boolean acceptDownload = buttonType
+                                                == ModalDialogProperties.ButtonType.NEGATIVE;
                                         if (callback != null) {
-                                            callback.onResult(isConfirm);
+                                            callback.onResult(acceptDownload);
                                         }
                                         modalDialogManager.dismissDialog(model,
-                                                isConfirm ? DialogDismissalCause
-                                                                    .POSITIVE_BUTTON_CLICKED
-                                                          : DialogDismissalCause
-                                                                    .NEGATIVE_BUTTON_CLICKED);
-                                        recordDangerousDownloadDialogEvent(isConfirm
+                                                acceptDownload ? DialogDismissalCause
+                                                                         .NEGATIVE_BUTTON_CLICKED
+                                                               : DialogDismissalCause
+                                                                         .POSITIVE_BUTTON_CLICKED);
+                                        recordDangerousDownloadDialogEvent(acceptDownload
                                                         ? DangerousDownloadDialogEvent
                                                                   .DANGEROUS_DOWNLOAD_DIALOG_CONFIRM
                                                         : DangerousDownloadDialogEvent
@@ -104,13 +105,14 @@ public class DangerousDownloadDialog {
                                         R.string.dangerous_download_dialog_title))
                         .with(ModalDialogProperties.MESSAGE, message)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                context.getResources().getString(R.string.cancel))
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
                                 context.getResources().getString(
                                         R.string.dangerous_download_dialog_confirm_text))
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
-                                context.getResources().getString(R.string.cancel))
                         .with(ModalDialogProperties.TITLE_ICON,
                                 ResourcesCompat.getDrawable(
                                         context.getResources(), iconId, context.getTheme()))
+                        .with(ModalDialogProperties.PRIMARY_BUTTON_FILLED, true)
                         .build();
 
         modalDialogManager.showDialog(propertyModel, ModalDialogManager.ModalDialogType.APP);

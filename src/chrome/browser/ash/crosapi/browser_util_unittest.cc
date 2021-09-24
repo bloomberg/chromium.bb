@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using crosapi::browser_util::LacrosLaunchSwitch;
+using crosapi::browser_util::LacrosSelection;
 using user_manager::User;
 using version_info::Channel;
 
@@ -46,26 +47,12 @@ const auto policy_enum_to_value =
         {LacrosLaunchSwitch::kLacrosOnly, "lacros_only"},
     });
 
-// This implementation of RAII for LacrosLaunchSwitch and LacrosAllowed is to
-// make it easy reset the state between runs.
+// This implementation of RAII for LacrosLaunchSwitch is to make it easy reset
+// the state between runs.
 class ScopedLacrosLaunchSwitchCache {
  public:
   explicit ScopedLacrosLaunchSwitchCache(
       LacrosLaunchSwitch lacros_launch_switch) {
-    SetLacrosAvailability(lacros_launch_switch);
-  }
-  explicit ScopedLacrosLaunchSwitchCache(bool lacros_allowed) {
-    BackupLacrosAllowed();
-    g_browser_process->local_state()->SetBoolean(prefs::kLacrosAllowed,
-                                                 lacros_allowed);
-    policy::PolicyMap policy;
-    browser_util::CacheLacrosLaunchSwitch(policy);
-  }
-  ScopedLacrosLaunchSwitchCache(LacrosLaunchSwitch lacros_launch_switch,
-                                bool lacros_allowed) {
-    BackupLacrosAllowed();
-    g_browser_process->local_state()->SetBoolean(prefs::kLacrosAllowed,
-                                                 lacros_allowed);
     SetLacrosAvailability(lacros_launch_switch);
   }
   ScopedLacrosLaunchSwitchCache(const ScopedLacrosLaunchSwitchCache&) = delete;
@@ -73,20 +60,9 @@ class ScopedLacrosLaunchSwitchCache {
       const ScopedLacrosLaunchSwitchCache&) = delete;
   ~ScopedLacrosLaunchSwitchCache() {
     browser_util::ClearLacrosLaunchSwitchCacheForTest();
-    if (lacros_allowed_.has_value()) {
-      g_browser_process->local_state()->SetBoolean(prefs::kLacrosAllowed,
-                                                   lacros_allowed_.value());
-    }
   }
 
  private:
-  void BackupLacrosAllowed() {
-    auto* local_state = g_browser_process->local_state();
-    if (local_state->HasPrefPath(prefs::kLacrosAllowed)) {
-      lacros_allowed_ = local_state->GetInteger(prefs::kLacrosAllowed);
-    }
-  }
-
   void SetLacrosAvailability(LacrosLaunchSwitch lacros_launch_switch) {
     policy::PolicyMap policy;
     base::Value in_value(
@@ -96,8 +72,6 @@ class ScopedLacrosLaunchSwitchCache {
                in_value.Clone(), nullptr);
     browser_util::CacheLacrosLaunchSwitch(policy);
   }
-
-  absl::optional<bool> lacros_allowed_;
 };
 
 class BrowserUtilTest : public testing::Test {
@@ -194,22 +168,15 @@ TEST_F(BrowserUtilTest, ManagedAccountLacrosEnabled) {
   testing_profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(
       true);
   {
-    ScopedLacrosLaunchSwitchCache cache(/*lacros_allowed=*/true);
+    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kSideBySide);
     EXPECT_TRUE(browser_util::IsLacrosEnabled(Channel::CANARY));
   }
   {
-    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kSideBySide,
-                                        /*lacros_allowed=*/false);
+    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosPrimary);
     EXPECT_TRUE(browser_util::IsLacrosEnabled(Channel::CANARY));
   }
   {
-    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosPrimary,
-                                        /*lacros_allowed=*/false);
-    EXPECT_TRUE(browser_util::IsLacrosEnabled(Channel::CANARY));
-  }
-  {
-    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosOnly,
-                                        /*lacros_allowed=*/false);
+    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosOnly);
     EXPECT_TRUE(browser_util::IsLacrosEnabled(Channel::CANARY));
   }
 }
@@ -220,17 +187,8 @@ TEST_F(BrowserUtilTest, ManagedAccountLacrosDisabled) {
   AddRegularUser("user@managedchrome.com");
   testing_profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(
       true);
-
-  {
-    ScopedLacrosLaunchSwitchCache cache(/*lacros_allowed=*/false);
-    EXPECT_FALSE(browser_util::IsLacrosEnabled(Channel::CANARY));
-  }
-
-  {
-    ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosDisallowed,
-                                        /*lacros_allowed=*/true);
-    EXPECT_FALSE(browser_util::IsLacrosEnabled(Channel::CANARY));
-  }
+  ScopedLacrosLaunchSwitchCache cache(LacrosLaunchSwitch::kLacrosDisallowed);
+  EXPECT_FALSE(browser_util::IsLacrosEnabled(Channel::CANARY));
 }
 
 TEST_F(BrowserUtilTest, BlockedForChildUser) {
@@ -712,6 +670,22 @@ TEST_F(BrowserUtilTest,
 
   EXPECT_FALSE(browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
       lock_screen_profile.get()));
+}
+
+TEST_F(BrowserUtilTest, StatefulLacrosSelectionUpdateChannel) {
+  // Assert that when no Lacros stability switch is specified, we return the
+  // "unknown" channel.
+  ASSERT_EQ(Channel::UNKNOWN, browser_util::GetLacrosSelectionUpdateChannel(
+                                  LacrosSelection::kStateful));
+
+  // Assert that when a Lacros stability switch is specified, we return the
+  // relevant channel name associated to that switch value.
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  cmdline->AppendSwitchNative(browser_util::kLacrosStabilitySwitch,
+                              browser_util::kLacrosStabilityMoreStable);
+  ASSERT_EQ(Channel::BETA, browser_util::GetLacrosSelectionUpdateChannel(
+                               LacrosSelection::kStateful));
+  cmdline->RemoveSwitch(browser_util::kLacrosStabilitySwitch);
 }
 
 }  // namespace crosapi

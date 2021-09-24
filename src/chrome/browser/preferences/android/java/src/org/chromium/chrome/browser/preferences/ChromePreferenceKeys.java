@@ -406,6 +406,13 @@ public final class ChromePreferenceKeys {
             "Chrome.NTPExploreOfflineCard.HasExploreOfflineContent";
 
     /**
+     * Indicates whether First run field trial was enabled during FRE. This experiment is configured
+     * by client side code in {@link
+     * org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial}.
+     */
+    public static final String FIRST_RUN_FIELD_TRIAL_GROUP = "Chrome.FirstRun.FieldTrialEnabled";
+
+    /**
      * The Feed articles visibility. This value is used as a pre-native cache and should be kept
      * consistent with {@link Pref.ARTICLES_LIST_VISIBLE}.
      */
@@ -813,6 +820,12 @@ public final class ChromePreferenceKeys {
             "org.chromium.chrome.browser.searchwidget.NUM_CONSECUTIVE_CRASHES";
     public static final String SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME =
             "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
+    public static final String SEARCH_WIDGET_SEARCH_ENGINE_URL =
+            "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_URL";
+    public static final String SEARCH_WIDGET_IS_GOOGLE_LENS_AVAILABLE =
+            "org.chromium.chrome.browser.searchwidget.IS_GOOGLE_LENS_AVAILABLE";
+    public static final String SEARCH_WIDGET_IS_INCOGNITO_AVAILABLE =
+            "org.chromium.chrome.browser.searchwidget.IS_INCOGNITO_AVAILABLE";
 
     // Tracks which GUIDs there is an active notification for.
     public static final String SEND_TAB_TO_SELF_ACTIVE_NOTIFICATIONS =
@@ -954,19 +967,6 @@ public final class ChromePreferenceKeys {
     public static final String VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP =
             "should_register_vr_assets_component_on_startup";
 
-    /**
-     * Name of the shared preference for the version number of the dynamically loaded dex.
-     */
-    public static final String WEBAPK_EXTRACTED_DEX_VERSION =
-            "org.chromium.chrome.browser.webapps.extracted_dex_version";
-
-    /**
-     * Name of the shared preference for the Android OS version at the time that the dex was last
-     * extracted from Chrome's assets and optimized.
-     */
-    public static final String WEBAPK_LAST_SDK_VERSION =
-            "org.chromium.chrome.browser.webapps.last_sdk_version";
-
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
@@ -1068,6 +1068,7 @@ public final class ChromePreferenceKeys {
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,
+                FIRST_RUN_FIELD_TRIAL_GROUP,
                 FIRST_RUN_SKIPPED_BY_POLICY,
                 FLAGS_CACHED.pattern(),
                 FLAGS_CACHED_SAFE_VALUES_BOOL.pattern(),

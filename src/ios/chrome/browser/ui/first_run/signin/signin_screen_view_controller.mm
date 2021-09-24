@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
+#import "ios/chrome/browser/ui/elements/activity_overlay_view.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
@@ -31,6 +32,9 @@ const CGFloat kIdentityTopMargin = 16;
 // the given name, or the email address if no given name.
 @property(nonatomic, copy) NSString* personalizedButtonPrompt;
 
+// Scrim displayed above the view when the UI is disabled.
+@property(nonatomic, strong) ActivityOverlayView* overlay;
+
 @end
 
 @implementation SigninScreenViewController
@@ -52,8 +56,12 @@ const CGFloat kIdentityTopMargin = 16;
     self.primaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION);
   }
-  self.secondaryActionString =
-      l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN);
+
+  // No secondary action button for forced signin mode.
+  if (!self.forcedSignin) {
+    self.secondaryActionString =
+        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN);
+  }
 
   [self.specificContentView addSubview:self.identityControl];
 
@@ -101,22 +109,40 @@ const CGFloat kIdentityTopMargin = 16;
   return _identityControl;
 }
 
-#pragma mark - SignInScreenConsumer
-
-- (void)setUserImage:(UIImage*)userImage {
-  [self.identityControl setIdentityAvatar:userImage];
+- (ActivityOverlayView*)overlay {
+  if (!_overlay) {
+    _overlay = [[ActivityOverlayView alloc] init];
+    _overlay.translatesAutoresizingMaskIntoConstraints = NO;
+  }
+  return _overlay;
 }
+
+#pragma mark - SignInScreenConsumer
 
 - (void)setSelectedIdentityUserName:(NSString*)userName
                               email:(NSString*)email
-                          givenName:(NSString*)givenName {
+                          givenName:(NSString*)givenName
+                             avatar:(UIImage*)avatar {
+  DCHECK(email);
+  DCHECK(avatar);
   self.personalizedButtonPrompt = givenName ? givenName : email;
   [self updateUIForIdentityAvailable:YES];
   [self.identityControl setIdentityName:userName email:email];
+  [self.identityControl setIdentityAvatar:avatar];
 }
 
 - (void)noIdentityAvailable {
   [self updateUIForIdentityAvailable:NO];
+}
+
+- (void)setUIEnabled:(BOOL)UIEnabled {
+  if (UIEnabled) {
+    [self.overlay removeFromSuperview];
+  } else {
+    [self.view addSubview:self.overlay];
+    AddSameConstraints(self.view, self.overlay);
+    [self.overlay.indicator startAnimating];
+  }
 }
 
 #pragma mark - Private

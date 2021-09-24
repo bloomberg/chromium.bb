@@ -23,8 +23,9 @@ limitations under the License.
 #include "tensorflow/core/distributed_runtime/rendezvous_mgr_interface.h"
 #include "tensorflow/core/distributed_runtime/tensor_coding.h"
 #include "tensorflow/core/distributed_runtime/worker_session.h"
+#include "tensorflow/core/framework/collective.h"
 #include "tensorflow/core/platform/tracing.h"
-#include "tensorflow/core/profiler/lib/profiler_session.h"
+#include "tensorflow/core/profiler/lib/device_profiler_session.h"
 
 namespace tensorflow {
 
@@ -35,7 +36,7 @@ Worker::Worker(WorkerEnv* env) : env_(env), recent_request_ids_(100000) {
   StatusGroup::ConfigureLogHistory();
 }
 
-void Worker::GetStatusAsync(const GetStatusRequest* request,
+void Worker::GetStatusAsync(CallOptions* opts, const GetStatusRequest* request,
                             GetStatusResponse* response, bool fail_fast,
                             StatusCallback done) {
   const DeviceMgr* dm = env_->device_mgr;
@@ -53,7 +54,8 @@ void Worker::CreateWorkerSessionAsync(const CreateWorkerSessionRequest* request,
                                       StatusCallback done) {
   Status s = env_->session_mgr->CreateSession(
       request->session_handle(), request->server_def(),
-      request->cluster_device_attributes(), request->isolate_session_state());
+      request->cluster_device_attributes(), request->isolate_session_state(),
+      request->master_task(), request->master_incarnation());
   done(s);
 }
 
@@ -104,7 +106,7 @@ void Worker::DeregisterGraphAsync(const DeregisterGraphRequest* request,
   done(s);
 }
 
-void Worker::AbortStep(int64 step_id) {
+void Worker::AbortStep(int64_t step_id) {
   Rendezvous* rendez = env_->rendezvous_mgr->Find(step_id);
   SchedNonBlockingClosureAfter(1000000, [rendez, step_id]() {
     // Delay a bit before aborting the step. This way, the root
@@ -160,7 +162,7 @@ MutableRunGraphResponseWrapper* Worker::CreateRunGraphResponse() {
 void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
                         MutableRunGraphResponseWrapper* response,
                         StatusCallback done) {
-  const int64 step_id = request->step_id();
+  const int64_t step_id = request->step_id();
   TRACEPRINTF("RunGraph: %lld", step_id);
   Status s = recent_request_ids_.TrackUnique(request->request_id(),
                                              "RunGraph (Worker)", request);
@@ -194,10 +196,10 @@ void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
       request->exec_opts().record_costs()) {
     collector = new StepStatsCollector(response->mutable_step_stats());
   }
-  ProfilerSession* profiler_session = nullptr;
+  DeviceProfilerSession* device_profiler_session = nullptr;
   if (collector && request->exec_opts().record_timeline()) {
     // If timeline was requested, assume we want hardware level tracing.
-    profiler_session = ProfilerSession::Create().release();
+    device_profiler_session = DeviceProfilerSession::Create().release();
   }
   CancellationManager* cm = new CancellationManager;
   opts->SetCancelCallback([this, cm, step_id]() {
@@ -213,7 +215,7 @@ void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
     opts->ClearCancelCallback();
     delete cm;
     delete collector;
-    delete profiler_session;
+    delete device_profiler_session;
     delete out;
     done(errors::Aborted("Call was aborted"));
     return;
@@ -222,7 +224,7 @@ void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
       request->graph_handle(), step_id, session.get(), request->exec_opts(),
       collector, response, cm, in,
       [this, step_id, response, session, cm, out, token, collector,
-       profiler_session, opts, done](const Status& status) {
+       device_profiler_session, opts, done](const Status& status) {
         Status s = status;
         if (s.ok()) {
           s = session->graph_mgr()->RecvOutputs(step_id, out);
@@ -232,10 +234,9 @@ void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
         cancellation_manager_.DeregisterCallback(token);
         delete cm;
 
-        if (profiler_session) {
-          RunMetadata run_metadata;
-          profiler_session->CollectData(&run_metadata).IgnoreError();
-          response->mutable_step_stats()->MergeFrom(run_metadata.step_stats());
+        if (device_profiler_session) {
+          device_profiler_session->CollectData(response->mutable_step_stats())
+              .IgnoreError();
         }
 
         if (s.ok()) {
@@ -248,7 +249,7 @@ void Worker::DoRunGraph(CallOptions* opts, RunGraphRequestWrapper* request,
 
         if (collector) collector->Finalize();
         delete collector;
-        delete profiler_session;
+        delete device_profiler_session;
         delete out;
         done(s);
       });
@@ -259,7 +260,7 @@ void Worker::DoPartialRunGraph(CallOptions* opts,
                                RunGraphRequestWrapper* request,
                                MutableRunGraphResponseWrapper* response,
                                StatusCallback done) {
-  const int64 step_id = request->step_id();
+  const int64_t step_id = request->step_id();
   const string& graph_handle = request->graph_handle();
   TRACEPRINTF("PartialRunGraph: %lld", step_id);
   Status s = recent_request_ids_.TrackUnique(
@@ -348,7 +349,7 @@ void Worker::DoPartialRunGraph(CallOptions* opts,
 void Worker::CleanupGraphAsync(const CleanupGraphRequest* request,
                                CleanupGraphResponse* response,
                                StatusCallback done) {
-  const int64 step_id = request->step_id();
+  const int64_t step_id = request->step_id();
   env_->rendezvous_mgr->Cleanup(step_id);
   if (env_->collective_executor_mgr) {
     env_->collective_executor_mgr->Cleanup(step_id);
@@ -394,9 +395,36 @@ void Worker::CompleteGroupAsync(CallOptions* opts,
                                 const CompleteGroupRequest* request,
                                 CompleteGroupResponse* response,
                                 StatusCallback done) {
+  if (!request->has_device_attributes()) {
+    done(errors::Internal(
+        "CompleteGroupRequest device_attributes is not set. Make sure you're "
+        "running the same version of Tensorflow on all workers."));
+    return;
+  }
   if (env_->collective_executor_mgr) {
+    auto group_params = new CollGroupParams();
+    group_params->group_key = request->group_key();
+    group_params->group_size = request->group_size();
+    group_params->device_type = DeviceType(request->device_type());
     env_->collective_executor_mgr->GetParamResolver()->CompleteGroupAsync(
-        request, response, &cancellation_manager_, done);
+        request->device_attributes(), group_params, &cancellation_manager_,
+        [response, group_params, done = std::move(done)](const Status& s) {
+          if (s.ok()) {
+            response->set_group_key(group_params->group_key);
+            response->set_group_size(group_params->group_size);
+            response->set_device_type(group_params->device_type.type_string());
+            response->set_num_tasks(group_params->num_tasks);
+            for (const DeviceAttributes& device : group_params->devices) {
+              *response->add_device_attributes() = device;
+            }
+            response->set_communicator_key(
+                group_params->runtime_details.communicator_key);
+          } else {
+            LOG(ERROR) << "Bad status from CompleteGroupDistributed: " << s;
+          }
+          delete group_params;
+          done(s);
+        });
   } else {
     done(
         errors::Internal("Runtime not initialized with CollectiveExecutorMgr"));

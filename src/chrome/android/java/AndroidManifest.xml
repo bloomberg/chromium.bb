@@ -930,7 +930,6 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
-        {% if channel in ['canary', 'default'] %}
         <!-- Quick Action Search widget -->
         <receiver
             android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderSmall"
@@ -966,21 +965,6 @@ by a child template that "extends" this file.
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/quick_action_search_widget_dino_info" />
-        </receiver>
-        {% endif %}
-
-        <receiver
-            android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.ui.quickactionsearchwidget.START_TEXT_QUERY" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.ui.quickactionsearchwidget.START_VOICE_QUERY" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.ui.quickactionsearchwidget.START_DINO_GAME" />
-            </intent-filter>
         </receiver>
 
         <!-- Bookmarks widget -->
@@ -1143,6 +1127,15 @@ by a child template that "extends" this file.
 
         <activity
             android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$TrampolineActivity"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:exported="false"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:documentLaunchMode="always"
+            android:noHistory="true"/>
+
+        <activity
+            android:name="org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager$TrampolineActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:exported="false"
             android:autoRemoveFromRecents="true"

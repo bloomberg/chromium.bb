@@ -356,13 +356,14 @@ void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
   }
 }
 
-void LocalFrameClientImpl::DispatchDidFinishDocumentLoad() {
+void LocalFrameClientImpl::DispatchDidDispatchDOMContentLoadedEvent() {
   // TODO(dglazkov): Sadly, workers are WebLocalFrameClients, and they can
-  // totally destroy themselves when didFinishDocumentLoad is invoked, and in
-  // turn destroy the fake WebLocalFrame that they create, which means that you
-  // should not put any code touching `this` after the two lines below.
+  // totally destroy themselves when DidDispatchDOMContentLoadedEvent is
+  // invoked, and in turn destroy the fake WebLocalFrame that they create, which
+  // means that you should not put any code touching `this` after the two lines
+  // below.
   if (web_frame_->Client())
-    web_frame_->Client()->DidFinishDocumentLoad();
+    web_frame_->Client()->DidDispatchDOMContentLoadedEvent();
 }
 
 void LocalFrameClientImpl::DispatchDidLoadResourceFromMemoryCache(
@@ -572,9 +573,6 @@ void LocalFrameClientImpl::BeginNavigation(
             network::mojom::blink::WebSandboxFlags::kDownloads);
     navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
   }
-
-  navigation_info->blocking_downloads_in_sandbox_enabled =
-      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
 
   // The frame has navigated either by itself or by the action of the
   // |origin_window| when it is defined. |source_location| represents the
@@ -789,6 +787,17 @@ String LocalFrameClientImpl::UserAgent() {
   return user_agent_;
 }
 
+String LocalFrameClientImpl::ReducedUserAgent() {
+  WebString override =
+      web_frame_->Client() ? web_frame_->Client()->UserAgentOverride() : "";
+  if (!override.IsEmpty())
+    return override;
+
+  if (reduced_user_agent_.IsEmpty())
+    reduced_user_agent_ = Platform::Current()->ReducedUserAgent();
+  return reduced_user_agent_;
+}
+
 absl::optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
   bool ua_override_on = web_frame_->Client() &&
                         !web_frame_->Client()->UserAgentOverride().IsEmpty();
@@ -835,8 +844,10 @@ RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
 }
 
 RemoteFrame* LocalFrameClientImpl::CreateFencedFrame(
-    HTMLFencedFrameElement* fenced_frame) {
-  return web_frame_->CreateFencedFrame(fenced_frame);
+    HTMLFencedFrameElement* fenced_frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
+        receiver) {
+  return web_frame_->CreateFencedFrame(fenced_frame, std::move(receiver));
 }
 
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(

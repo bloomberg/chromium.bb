@@ -215,7 +215,7 @@ class FileSystemAccessManagerImplTest : public testing::Test {
         }));
     serialize_loop.Run();
 
-    manager_->DeserializeHandle(kTestStorageKey.origin(), serialized,
+    manager_->DeserializeHandle(kTestStorageKey, serialized,
                                 token_remote.InitWithNewPipeAndPassReceiver());
     base::RunLoop resolve_loop;
     FileSystemAccessTransferTokenImpl* result;
@@ -349,7 +349,7 @@ class FileSystemAccessManagerImplTest : public testing::Test {
   const int kFrameRoutingId = 2;
   const GlobalRenderFrameHostId kFrameId{kProcessId, kFrameRoutingId};
   const FileSystemAccessManagerImpl::BindingContext kBindingContext = {
-      kTestStorageKey.origin(), kTestURL, kFrameId};
+      kTestStorageKey, kTestURL, kFrameId};
 
   BrowserTaskEnvironment task_environment_;
 
@@ -503,8 +503,13 @@ TEST_F(FileSystemAccessManagerImplTest,
             storage::AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                                      test_swap_url));
 
+  auto lock = manager_->TakeWriteLock(
+      test_file_url, FileSystemAccessWriteLockManager::WriteLockType::kShared);
+  ASSERT_TRUE(lock.has_value());
+
   mojo::Remote<blink::mojom::FileSystemAccessFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 std::move(lock.value()),
                                  FileSystemAccessManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_),
                                  /*auto_close=*/false));
@@ -536,8 +541,13 @@ TEST_F(FileSystemAccessManagerImplTest, FileWriterCloseDoesNotAbortOnDestruct) {
             storage::AsyncFileTestHelper::CreateFileWithData(
                 file_system_context_.get(), test_swap_url, "foo", 3));
 
+  auto lock = manager_->TakeWriteLock(
+      test_file_url, FileSystemAccessWriteLockManager::WriteLockType::kShared);
+  ASSERT_TRUE(lock.has_value());
+
   mojo::Remote<blink::mojom::FileSystemAccessFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 std::move(lock.value()),
                                  FileSystemAccessManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_),
                                  /*auto_close=*/false));
@@ -580,8 +590,13 @@ TEST_F(FileSystemAccessManagerImplTest,
             storage::AsyncFileTestHelper::CreateFileWithData(
                 file_system_context_.get(), test_swap_url, "foo", 3));
 
+  auto lock = manager_->TakeWriteLock(
+      test_file_url, FileSystemAccessWriteLockManager::WriteLockType::kShared);
+  ASSERT_TRUE(lock.has_value());
+
   mojo::Remote<blink::mojom::FileSystemAccessFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 std::move(lock.value()),
                                  FileSystemAccessManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_),
                                  /*auto_close=*/false));
@@ -613,8 +628,13 @@ TEST_F(FileSystemAccessManagerImplTest,
             storage::AsyncFileTestHelper::CreateFileWithData(
                 file_system_context_.get(), test_swap_url, "foo", 3));
 
+  auto lock = manager_->TakeWriteLock(
+      test_file_url, FileSystemAccessWriteLockManager::WriteLockType::kShared);
+  ASSERT_TRUE(lock.has_value());
+
   mojo::Remote<blink::mojom::FileSystemAccessFileWriter> writer_remote(
       manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 std::move(lock.value()),
                                  FileSystemAccessManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_),
                                  /*auto_close=*/true));
@@ -1123,8 +1143,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenFile) {
 
   mojo::Remote<blink::mojom::FileSystemAccessManager> manager_remote;
   FileSystemAccessManagerImpl::BindingContext binding_context = {
-      kTestStorageKey.origin(), kTestURL,
-      web_contents_->GetMainFrame()->GetGlobalId()};
+      kTestStorageKey, kTestURL, web_contents_->GetMainFrame()->GetGlobalId()};
   manager_->BindReceiver(binding_context,
                          manager_remote.BindNewPipeAndPassReceiver());
 
@@ -1203,8 +1222,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_SaveFile) {
 
   mojo::Remote<blink::mojom::FileSystemAccessManager> manager_remote;
   FileSystemAccessManagerImpl::BindingContext binding_context = {
-      kTestStorageKey.origin(), kTestURL,
-      web_contents_->GetMainFrame()->GetGlobalId()};
+      kTestStorageKey, kTestURL, web_contents_->GetMainFrame()->GetGlobalId()};
   manager_->BindReceiver(binding_context,
                          manager_remote.BindNewPipeAndPassReceiver());
 
@@ -1285,8 +1303,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_OpenDirectory) {
 
   mojo::Remote<blink::mojom::FileSystemAccessManager> manager_remote;
   FileSystemAccessManagerImpl::BindingContext binding_context = {
-      kTestStorageKey.origin(), kTestURL,
-      web_contents_->GetMainFrame()->GetGlobalId()};
+      kTestStorageKey, kTestURL, web_contents_->GetMainFrame()->GetGlobalId()};
   manager_->BindReceiver(binding_context,
                          manager_remote.BindNewPipeAndPassReceiver());
 
@@ -1359,8 +1376,7 @@ TEST_F(FileSystemAccessManagerImplTest, ChooseEntries_InvalidStartInID) {
 
   mojo::Remote<blink::mojom::FileSystemAccessManager> manager_remote;
   FileSystemAccessManagerImpl::BindingContext binding_context = {
-      kTestStorageKey.origin(), kTestURL,
-      web_contents_->GetMainFrame()->GetGlobalId()};
+      kTestStorageKey, kTestURL, web_contents_->GetMainFrame()->GetGlobalId()};
   manager_->BindReceiver(binding_context,
                          manager_remote.BindNewPipeAndPassReceiver());
 

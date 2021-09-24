@@ -7,14 +7,15 @@
 #include "ash/constants/ash_pref_names.h"
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chromeos/components/camera_app_ui/resources/strings/grit/chromeos_camera_app_strings.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_camera_app_resources.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -41,9 +42,11 @@ std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForCameraSystemWebApp() {
            IDR_CHROMEOS_CAMERA_APP_IMAGES_CAMERA_APP_ICONS_192_PNG},
       },
       *info);
-  info->theme_color = 0xff000000;
+  info->theme_color = cros_styles::ResolveColor(
+      cros_styles::ColorName::kGoogleGrey900, /*is_dark_mode=*/true,
+      /*use_debug_colors=*/false);
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->open_as_window = true;
+  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
   return info;
 }
 

@@ -6,6 +6,7 @@
 
 #import <AppKit/AppKit.h>
 #import <CoreText/CoreText.h>
+#include "third_party/blink/public/common/font_access/font_enumeration_table.pb.h"
 
 #include <cmath>
 #include <limits>
@@ -19,7 +20,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/types/pass_key.h"
 #include "content/browser/font_access/font_enumeration_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -139,29 +139,13 @@ FontEnumerationCacheMac::FontEnumerationCacheMac(
 
 FontEnumerationCacheMac::~FontEnumerationCacheMac() = default;
 
-void FontEnumerationCacheMac::SchedulePrepareFontEnumerationCache() {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kFontAccess));
+blink::FontEnumerationTable FontEnumerationCacheMac::ComputeFontEnumerationData(
+    const std::string& locale) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  scoped_refptr<base::SequencedTaskRunner> results_task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-
-  results_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FontEnumerationCacheMac::PrepareFontEnumerationCache,
-                     // Safe because this is an initialized singleton.
-                     base::Unretained(this)));
-}
-
-void FontEnumerationCacheMac::PrepareFontEnumerationCache() {
-  DCHECK(!enumeration_cache_built_->IsSet());
+  blink::FontEnumerationTable font_enumeration_table;
 
   @autoreleasepool {
-    // Metrics.
-    const base::ElapsedTimer start_timer;
-    auto font_enumeration_table =
-        std::make_unique<blink::FontEnumerationTable>();
-
     CFTypeRef values[1] = {kCFBooleanTrue};
     base::ScopedCFTypeRef<CFDictionaryRef> options(CFDictionaryCreate(
         kCFAllocatorDefault,
@@ -177,7 +161,6 @@ void FontEnumerationCacheMac::PrepareFontEnumerationCache() {
 
     // Used to filter duplicates.
     std::set<std::string> fonts_seen;
-    int duplicate_count = 0;
 
     for (CFIndex i = 0; i < CFArrayGetCount(font_descs); ++i) {
       CTFontDescriptorRef fd = base::mac::CFCast<CTFontDescriptorRef>(
@@ -194,12 +177,11 @@ void FontEnumerationCacheMac::PrepareFontEnumerationCache() {
       std::string postscript_name =
           base::SysCFStringRefToUTF8(cf_postscript_name.get());
 
-      if (fonts_seen.count(postscript_name) != 0) {
-        ++duplicate_count;
-        // Skip duplicates.
+      auto it_and_success = fonts_seen.emplace(postscript_name);
+      if (!it_and_success.second) {
+        // Skip duplicate.
         continue;
       }
-      fonts_seen.insert(postscript_name);
 
       // These defaults should map to the default web values when passed to the
       // CTXXXToWebYYY functions.
@@ -220,7 +202,7 @@ void FontEnumerationCacheMac::PrepareFontEnumerationCache() {
       }
 
       blink::FontEnumerationTable_FontMetadata* metadata =
-          font_enumeration_table->add_fonts();
+          font_enumeration_table.add_fonts();
       metadata->set_postscript_name(std::move(postscript_name));
       metadata->set_full_name(base::SysCFStringRefToUTF8(cf_full_name.get()));
       metadata->set_family(base::SysCFStringRefToUTF8(cf_family.get()));
@@ -230,14 +212,7 @@ void FontEnumerationCacheMac::PrepareFontEnumerationCache() {
       metadata->set_stretch(CTWidthToWebStretch(width));
     }
 
-    BuildEnumerationCache(std::move(font_enumeration_table));
-
-    base::UmaHistogramCounts100(
-        "Fonts.AccessAPI.EnumerationCache.DuplicateFontCount", duplicate_count);
-    base::UmaHistogramMediumTimes("Fonts.AccessAPI.EnumerationTime",
-                                  start_timer.Elapsed());
-    // Respond to pending and future requests.
-    StartCallbacksTaskQueue();
+    return font_enumeration_table;
   }
 }
 

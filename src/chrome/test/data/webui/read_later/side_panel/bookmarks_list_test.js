@@ -12,7 +12,7 @@ import {BookmarksListElement, LOCAL_STORAGE_OPEN_FOLDERS_KEY} from 'chrome://rea
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
 import {TestBookmarksApiProxy} from './test_bookmarks_api_proxy.js';
 
@@ -150,6 +150,31 @@ suite('SidePanelBookmarksListTest', () => {
     assertEquals('New bookmark', childFolderBookmarks[0].textContent);
   });
 
+  test('AddsCreatedBookmarkForNewFolder', () => {
+    // Create a new folder without a children array.
+    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1000', {
+      id: '1000',
+      title: 'New folder',
+      index: 0,
+      parentId: '0',
+    });
+    flush();
+
+    // Create a new bookmark within that folder.
+    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1001', {
+      id: '1001',
+      title: 'New bookmark in new folder',
+      index: 0,
+      parentId: '1000',
+      url: 'http://google.com',
+    });
+    flush();
+
+    const rootFolderElement = getFolderElements(bookmarksList)[0];
+    const newFolder = getFolderElements(rootFolderElement)[0];
+    assertEquals(1, newFolder.folder.children.length);
+  });
+
   test('MovesBookmarks', () => {
     const movedBookmark = folders[0].children[1].children[0];
     bookmarksApi.callbackRouter.onMoved.dispatchEvent(movedBookmark.id, {
@@ -167,6 +192,30 @@ suite('SidePanelBookmarksListTest', () => {
     const childFolder = getFolderElements(bookmarksBarFolder)[0];
     const childFolderBookmarks = getBookmarkElements(childFolder);
     assertEquals(0, childFolderBookmarks.length);
+  });
+
+  test('MovesBookmarksIntoNewFolder', () => {
+    // Create a new folder without a children array.
+    bookmarksApi.callbackRouter.onCreated.dispatchEvent('1000', {
+      id: '1000',
+      title: 'New folder',
+      index: 0,
+      parentId: '0',
+    });
+    flush();
+
+    const movedBookmark = folders[0].children[1].children[0];
+    bookmarksApi.callbackRouter.onMoved.dispatchEvent(movedBookmark.id, {
+      index: 0,
+      parentId: '1000',
+      oldParentId: folders[0].children[1].id,
+      oldIndex: 0,
+    });
+    flush();
+
+    const bookmarksBarFolder = getFolderElements(bookmarksList)[0];
+    const newFolder = getFolderElements(bookmarksBarFolder)[0];
+    assertEquals(1, newFolder.folder.children.length);
   });
 
   test('DefaultsToFirstFolderBeingOpen', () => {

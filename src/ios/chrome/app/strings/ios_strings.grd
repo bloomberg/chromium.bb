@@ -225,9 +225,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_MESSAGE" desc="Alert title to ask if the user really wants to cancel sign-in and sync.">
         Cancel Sync? You can turn on sync anytime in Settings.
       </message>
-      <message name="IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CONFIRM_MAIN_BUTTON" desc="Button title to confirm sign-in and sync after reviewing the sync settings. Related IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_MAIN_BUTTON.">
-        Confirm
-      </message>
       <message name="IDS_IOS_SHOW_ALL_PASSWORDS" desc="Button title in the keyboard accessory bar to open the list of all saved passwords. [Length: 20em] [iOS only]">
         Show All...
       </message>
@@ -390,8 +387,11 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS" desc="Title for the bandwidth management panel in settings [Length: 30em] [iOS only]">
         Bandwidth
       </message>
-      <message name="IDS_IOS_BLOCK_POPUPS" desc="Title for the view and option in Settings for blocking pop-up. [Length: 15em] [iOS only]">
+      <message name="IDS_IOS_BLOCK_POPUPS" desc="Title for the view and option in Settings for blocking pop-ups. [Length: 15em] [iOS only]">
         Block Pop-ups
+      </message>
+      <message name="IDS_IOS_SHOW_LINK_PREVIEWS" desc="Title for the view and option in Settings for showing link previews. [Length: unlimited] [iOS only]" meaning="Title for the Chrome Settings option for showing link previews. [Length: unlimited]">
+        Show Link Previews
       </message>
       <message name="IDS_IOS_BLUETOOTH_USAGE_DESCRIPTION" desc="Specifies the reason for using the device's bluetooth capabilities.">
         This lets you discover relevant web pages based on your surroundings.
@@ -627,6 +627,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CLEAR_SAVED_PASSWORDS" desc="Label for the option in settings to clear saved passwords. In titlecase. [Length: 20em] [iOS only]">
         Saved Passwords
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_ADDTOPHOTOS" desc="The name of the Add to Photos As command in the content area context menu">
+        Add to Photos
+      </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST" desc="The iOS menu item for adding a link to the reading list.">
         Add to Reading List
       </message>
@@ -715,6 +718,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog [Length: 29em] [iOS only]">
         Content Settings
       </message>
+      <message name="IDS_IOS_CONTEXT_MENU_SEARCHFORIMAGE" desc="Context menu text for option to perform a search for image [Length: 25em] [iOS only]">
+        Search for Image
+      </message>
       <message name="IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE" desc="Context menu text for option to perform a search for image [Length: 25em] [iOS only]">
         Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for This Image
       </message>
@@ -747,23 +753,6 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE" desc="The title of the continue button on the disconnect dialog [Length: 20em].">
         Sign Out
-      </message>
-      <message name="IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE" desc="The title of the continue and clear browsing data button on the disconnect dialog [iOS only].">
-        Sign Out and Clear Data from this Device
-      </message>
-     <message name="IDS_IOS_DISCONNECT_NON_MANAGED_ACCOUNT_FOOTER_INFO_MOBILE" desc="The information text on the disconnect footer describing signout for non-managed accounts [Length: 400em].">
-      By signing out, your bookmarks, history, passwords, and other Chrome data will no longer be synced to your Google Account.
-      </message>
-      <message name="IDS_IOS_DISCONNECT_MANAGED_ACCOUNT_FOOTER_INFO_MOBILE" desc="The information text on the disconnect footer describing signout for managed accounts [Length: 400em].">
-      By signing out, your bookmarks, history, passwords, and other Chrome data will no longer be synced to your Google Account.
-
-Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex></ph>, your Chrome data will be deleted from this device when signing out. Your synced data will remain in your Google Account.
-      </message>
-      <message name="IDS_IOS_DISCONNECT_DESTRUCTIVE_DIALOG_INFO_MOBILE" desc="The information text on the disconnect dialog describing signout and clearing data [Length: 400em].">
-      This will sign you out, turn off sync, and clear all Chrome data from this device. Your synced data will remain in your Google Account.
-      </message>
-      <message name="IDS_IOS_DISCONNECT_KEEP_DATA_DIALOG_INFO_MOBILE" desc="The information text on the disconnect dialog describing signout without removing synced data [Length: 400em].">
-      This will sign you out and turn off sync, but your bookmarks, history, passwords and other Chrome data will remain on this device.
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_INFO_MOBILE" desc="The information text on the disconnect dialog [Length: 400em].">
         Changes to your bookmarks, history, passwords, and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.
@@ -1005,16 +994,13 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL" desc="Feature detail text in the settings for the user enable or disable. Related with 'Help improve Chrome's features and performance' feature. [iOS only]">
         Automatically sends usage statistics and crash reports to Google.
       </message>
-      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT" desc="Invite the user to sign-in and explains the benefit. [iOS only]">
-        Sync and personalize across devices.
-      </message>
-      <message name="IDS_IOS_GOOGLE_SERVICES_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync and all the Google services. [Length: 26em] [iOS only]">
-        Sync and Google Services
-      </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Google services. [Length: 26em] [iOS only]">
         Google Services
       </message>
       <message name="IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [Length: 26em] [iOS only]">
+        Sync
+      </message>
+      <message name="IDS_IOS_SYNC_SETTINGS_TITLE" desc="Title for the navigation item in Advanced Settings. [Length: 26em] [iOS only]">
         Sync
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_STATUS" desc="Error displayed when the sync is disabled by the enterprise policy. The user doesn't have a regular gmail account.">
@@ -1383,6 +1369,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC" desc="Title of the button to sign out and turn off sync. [iOS only]">
         Sign Out and Turn Off Sync
+      </message>
+      <message name="IDS_IOS_OPTIONS_ACCOUNTS_RESTRICTED_IDENTITIES" desc="Message shown in the settings account switcher when enterprise policy has restricted some unseen identities. [iOS only]">
+        You can only sign in with accounts that are approved by your administrator. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Advanced section of the Settings page.  [Length: 20em] [iOS only]">
         Advanced
@@ -1809,7 +1798,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Unread
       </message>
       <message name="IDS_IOS_RECENT_TABS_DISABLED_BY_ORGANIZATION" desc="This message is shown in the Other Devices section of the Recent Tabs view if browser sign-in is disabled via policy by the device's administrator / organization.">
-        Turned off by your organization.
+        Turned off by your organization
       </message>
       <message name="IDS_IOS_RECENT_TABS_DISCLOSURE_VIEW_COLLAPSED_HINT" desc="The accessibility hint spoken to signify that the given cell expands the given section when tapped.">
         Expands the section.
@@ -1891,6 +1880,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.
+      </message>
+      <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_SYNC_EVERYTHING_MESSAGE" desc="Text displayed to inform the user that the setting 'sync everything' is managed by an Enterprise policy. [iOS only]">
+        Your organization doesn't allow for you to sync everything.
       </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
         Your organization signed you out
@@ -2058,9 +2050,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_MANAGED_DESC" desc="Description text for when the device has updates managed by an administrator">
        Managed by your administrator
       </message>
-      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_INFO" desc="String in the popover for the Safe Browsing check to direct the user to the Sync and Google Services page if Safe Browsing is disabled">
-        To turn on Safe Browsing, open <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph> and tap Safe Browsing.
-      </message>
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_OPEN_SAFE_BROWSING_INFO" desc="String in the popover for the Safe Browsing check to direct the user to the Google Services page if Safe Browsing is disabled">
         To turn on Safe Browsing, open <ph name="BEGIN_LINK">BEGIN_LINK</ph>Google Services<ph name="END_LINK">END_LINK</ph> and tap Safe Browsing.
       </message>
@@ -2226,6 +2215,9 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAYS" desc="Text label for the Send Tab To Self modal dialog that shows the last active time of a user's devicet. [iOS only]">
         Active <ph name="Days">$1<ex>2</ex></ph> Days Ago
       </message>
+      <message name="IDS_SEND_TAB_TO_SELF_MANAGE_DEVICES_LINK" desc="Text with a link to a page where the user can manage the devices they can share a tab to.">
+        <ph name="BEGIN_LINK">BEGIN_LINK</ph>Your devices<ph name="END_LINK">END_LINK</ph> · <ph name="EMAIL">$1<ex>foo@gmail.com</ex></ph>
+      </message>
       <message name="IDS_IOS_SHARE_MESSAGES_COMPLETE" desc="Message shown when message share has been sent. [Length: Unknown. Keep it short.] [iOS only]">
         Message sent.
       </message>
@@ -2322,6 +2314,12 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SIGN_IN_FAILURE_TITLE" desc="Title displayed when sign in fails due to an authentication issue. [iOS only]">
         Can't Sign In
       </message>
+      <message name="IDS_IOS_SIGN_IN_INVALID_ACCOUNT_MESSAGE" desc="Message of the alert displayed when the user sign in with a restricted account.">
+        Your device is managed. You can only sign in with your organization's account.
+      </message>
+      <message name="IDS_IOS_SIGN_IN_INVALID_ACCOUNT_TITLE" desc="Title of the alert displayed when the user sign in with a restricted account.">
+        Sign in with a Valid Account
+      </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE" desc="The subtitle for the setting item to Sign in to Chrome [iOS only]">
         Get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
@@ -2330,6 +2328,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON" desc="The subtitle for the setting item of the signed in user when sync is on [iOS only]">
         Sync is on
+      </message>
+      <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE_SYNC_MANAGED" desc="The subtitle for the setting item of the signed in user when sync is managed by policies [iOS only]">
+        To sync and personalize across devices, turn on sync.
       </message>
       <message name="IDS_IOS_SIGN_TRUSTED_VAULT_ERROR_DIALOG_TITLE" desc="Alert title to display an error after a reauthentication, related to IDS_IOS_SIGN_TRUSTED_VAULT_ERROR_DIALOG_MESSAGE [iOS only]">
         Authentication Error
@@ -2481,20 +2482,11 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_SYNC_NEEDS_VERIFICATION_TITLE" desc="Title of the error message shown when sync needs to verify the user. [iOS only]">
         Sync Needs To Verify It's You
       </message>
-      <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
-        Initial sync setup was not finished. Sync is off.
-      </message>
-      <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_BUTTON" desc="Button title to invite the user to review sync settings. The sign-in flow has been interrupted and the user never confirmed Sync.">
-        Open Settings
-      </message>
-      <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
-        To start sync, turn on "Sync your Chrome data".
+      <message name="IDS_IOS_SYNC_SETTINGS_DISABLED_POPOVER_TEXT" desc="This text is shown when sync is disabled by an enterprise policy and the user taps on the info pop-over of the Sync button in the settings.">
+       Your organization requires you to turn off sync.
       </message>
       <message name="IDS_IOS_SYNC_SETUP_IN_PROGRESS" desc="The message to display when the sync setup is in progress and sync isn't available yet. [Length: 60em] [iOS only]">
         Setup in progress…
-      </message>
-      <message name="IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
-        Initial Sync Setup Not Finished
       </message>
       <message name="IDS_IOS_SYNC_SIGN_IN_AGAIN_BUTTON" desc="Button title displayed when the signed in user needs sign in again. [Length: 20em] [iOS only]">
         Sign in again
@@ -2504,6 +2496,18 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_SYNC_UPDATE_CREDENTIALS_BUTTON" desc="Button title displayed when the signed in user needs to update its credentials. [Length: 20em] [iOS only]">
         Update
+      </message>
+      <message name="IDS_IOS_SYNC_SYNC_DISABLED" desc="The header message in a one-time alert when sync is disabled by policy [iOS only].">
+        Your organization turned off sync.
+      </message>
+      <message name="IDS_IOS_SYNC_SYNC_DISABLED_DESCRIPTION" desc="The description in a one-time alert when sync is disabled by policy [iOS only].">
+        When sync is off, you can still see all your bookmarks, history, passwords and other settings on this device. If you make changes, they won’t sync to your account.
+      </message>
+      <message name="IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE" desc="The text in the 'Continue' button, displayed in a one-time alert when sync is disabled by policy.">
+        Continue
+      </message>
+      <message name="IDS_IOS_SYNC_SYNC_DISABLED_LEARN_MORE" desc="The text in the 'Learn More' button, displayed in a one-time alert when sync is disabled by policy.">
+        Learn More
       </message>
       <message name="IDS_IOS_TAB_GRID_DONE_BUTTON" desc="Title of the Done button in the tab grid UI. [iOS only]">
         Done

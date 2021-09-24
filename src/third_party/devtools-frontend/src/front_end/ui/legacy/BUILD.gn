@@ -4,7 +4,15 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("./visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "emptyWidget.css",
+    "inspectorCommon.css",
+  ]
+}
 
 devtools_module("ui") {
   sources = [
@@ -95,7 +103,6 @@ copy_to_gen("legacy_css") {
     "infobar.css",
     "inlineButton.css",
     "inspectorCommon.css",
-    "inspectorScrollbars.css",
     "inspectorSyntaxHighlight.css",
     "inspectorSyntaxHighlightDark.css",
     "inspectorViewTabbedPane.css",

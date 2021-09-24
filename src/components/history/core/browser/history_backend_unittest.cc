@@ -1656,7 +1656,7 @@ TEST_F(HistoryBackendTest, SetFlocAllowed) {
 
   EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
             got_content_annotations.annotation_flags);
-  EXPECT_EQ(-1, got_content_annotations.model_annotations.floc_protected_score);
+  EXPECT_EQ(-1, got_content_annotations.model_annotations.visibility_score);
   EXPECT_TRUE(got_content_annotations.model_annotations.categories.empty());
   EXPECT_EQ(
       -1, got_content_annotations.model_annotations.page_topics_model_version);
@@ -1669,8 +1669,7 @@ TEST_F(HistoryBackendTest, SetFlocAllowed) {
   EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(
-      -1,
-      results[0].content_annotations().model_annotations.floc_protected_score);
+      -1, results[0].content_annotations().model_annotations.visibility_score);
   EXPECT_TRUE(
       results[0].content_annotations().model_annotations.categories.empty());
   EXPECT_EQ(-1, results[0]
@@ -1710,8 +1709,7 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
 
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
             got_content_annotations.annotation_flags);
-  EXPECT_EQ(0.5f,
-            got_content_annotations.model_annotations.floc_protected_score);
+  EXPECT_EQ(0.5f, got_content_annotations.model_annotations.visibility_score);
   EXPECT_THAT(
       got_content_annotations.model_annotations.categories,
       ElementsAre(
@@ -1734,7 +1732,7 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(
       0.5f,
-      results[0].content_annotations().model_annotations.floc_protected_score);
+      results[0].content_annotations().model_annotations.visibility_score);
   EXPECT_THAT(
       results[0].content_annotations().model_annotations.categories,
       ElementsAre(
@@ -1783,8 +1781,7 @@ TEST_F(HistoryBackendTest, AddRelatedSearches) {
 
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
             got_content_annotations.annotation_flags);
-  EXPECT_EQ(-1.0f,
-            got_content_annotations.model_annotations.floc_protected_score);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
   ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
   EXPECT_EQ(
       -1, got_content_annotations.model_annotations.page_topics_model_version);
@@ -1801,8 +1798,7 @@ TEST_F(HistoryBackendTest, AddRelatedSearches) {
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
             got_content_annotations.annotation_flags);
-  EXPECT_EQ(-1.0f,
-            got_content_annotations.model_annotations.floc_protected_score);
+  EXPECT_EQ(-1.0f, got_content_annotations.model_annotations.visibility_score);
   ASSERT_TRUE(got_content_annotations.model_annotations.categories.empty());
   EXPECT_EQ(
       -1, got_content_annotations.model_annotations.page_topics_model_version);
@@ -1850,8 +1846,7 @@ TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
 
   EXPECT_EQ(VisitContentAnnotationFlag::kFlocEligibleRelaxed,
             got_content_annotations.annotation_flags);
-  EXPECT_EQ(0.5f,
-            got_content_annotations.model_annotations.floc_protected_score);
+  EXPECT_EQ(0.5f, got_content_annotations.model_annotations.visibility_score);
   EXPECT_THAT(
       got_content_annotations.model_annotations.categories,
       ElementsAre(
@@ -1874,7 +1869,7 @@ TEST_F(HistoryBackendTest, MixedContentAnnotationsRequestTypes) {
             results[0].content_annotations().annotation_flags);
   EXPECT_EQ(
       0.5f,
-      results[0].content_annotations().model_annotations.floc_protected_score);
+      results[0].content_annotations().model_annotations.visibility_score);
   EXPECT_THAT(
       results[0].content_annotations().model_annotations.categories,
       ElementsAre(
@@ -2096,7 +2091,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
 
   // Check visit_source table is created and empty.
   s.Assign(db.GetUniqueStatement(
-      "SELECT name FROM sqlite_master WHERE name='visit_source'"));
+      "SELECT name FROM sqlite_schema WHERE name='visit_source'"));
   ASSERT_TRUE(s.Step());
   s.Assign(db.GetUniqueStatement("SELECT * FROM visit_source LIMIT 10"));
   EXPECT_FALSE(s.Step());
@@ -3328,44 +3323,54 @@ TEST_F(HistoryBackendTest, AnnotatedVisits) {
   EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
   EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
-  // Annotated visits without an associated visit should not be added.
+  // `GetAnnotatedVisits()` should still succeed to fetch visits that lack
+  // annotations. They just won't have annotations attached.
   backend_->AddContextAnnotationsForVisit(4, {true});
   EXPECT_EQ(add_url_and_visit("http://3.com/"),
             (std::pair<URLID, VisitID>{3, 4}));
-  EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
+  EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
+  // Context annotations added before the visit itself are discarded.
   EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
-  // Annotated visits associated with a removed visit should not be added.
+  // Annotations associated with a removed visit should not be added.
   EXPECT_EQ(add_url_and_visit("http://4.com/"),
             (std::pair<URLID, VisitID>{4, 5}));
   delete_visit(5);
   backend_->AddContextAnnotationsForVisit(5, {true});
-  EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 3u);
+  EXPECT_EQ(backend_->GetAnnotatedVisits(query_options).size(), 4u);
+  EXPECT_EQ(get_annotated_visit_row_count_in_db(), 3u);
 
   // Verify only the correct annotated visits are retrieved ordered recent
   // visits first.
   auto annotated_visits = backend_->GetAnnotatedVisits(query_options);
-  ASSERT_EQ(annotated_visits.size(), 3u);
-  EXPECT_EQ(annotated_visits[0].url_row.id(), 1);
-  EXPECT_EQ(annotated_visits[0].url_row.url(), "http://1.com/");
-  EXPECT_EQ(annotated_visits[0].visit_row.visit_id, 3);
-  EXPECT_EQ(annotated_visits[0].visit_row.url_id, 1);
+  ASSERT_EQ(annotated_visits.size(), 4u);
+  EXPECT_EQ(annotated_visits[0].url_row.id(), 3);
+  EXPECT_EQ(annotated_visits[0].url_row.url(), "http://3.com/");
+  EXPECT_EQ(annotated_visits[0].visit_row.visit_id, 4);
+  EXPECT_EQ(annotated_visits[0].visit_row.url_id, 3);
   EXPECT_EQ(annotated_visits[0].context_annotations.omnibox_url_copied, false);
   EXPECT_EQ(annotated_visits[0].referring_visit_of_redirect_chain_start, 0);
-  EXPECT_EQ(annotated_visits[1].url_row.id(), 2);
-  EXPECT_EQ(annotated_visits[1].url_row.url(), "http://2.com/");
-  EXPECT_EQ(annotated_visits[1].visit_row.visit_id, 2);
-  EXPECT_EQ(annotated_visits[1].visit_row.url_id, 2);
-  EXPECT_EQ(annotated_visits[1].context_annotations.omnibox_url_copied, true);
+  EXPECT_EQ(annotated_visits[1].url_row.id(), 1);
+  EXPECT_EQ(annotated_visits[1].url_row.url(), "http://1.com/");
+  EXPECT_EQ(annotated_visits[1].visit_row.visit_id, 3);
+  EXPECT_EQ(annotated_visits[1].visit_row.url_id, 1);
+  EXPECT_EQ(annotated_visits[1].context_annotations.omnibox_url_copied, false);
   EXPECT_EQ(annotated_visits[1].referring_visit_of_redirect_chain_start, 0);
-  EXPECT_EQ(annotated_visits[2].url_row.id(), 1);
-  EXPECT_EQ(annotated_visits[2].url_row.url(), "http://1.com/");
-  EXPECT_EQ(annotated_visits[2].visit_row.visit_id, 1);
-  EXPECT_EQ(annotated_visits[2].visit_row.url_id, 1);
+  EXPECT_EQ(annotated_visits[2].url_row.id(), 2);
+  EXPECT_EQ(annotated_visits[2].url_row.url(), "http://2.com/");
+  EXPECT_EQ(annotated_visits[2].visit_row.visit_id, 2);
+  EXPECT_EQ(annotated_visits[2].visit_row.url_id, 2);
   EXPECT_EQ(annotated_visits[2].context_annotations.omnibox_url_copied, true);
   EXPECT_EQ(annotated_visits[2].referring_visit_of_redirect_chain_start, 0);
+  EXPECT_EQ(annotated_visits[3].url_row.id(), 1);
+  EXPECT_EQ(annotated_visits[3].url_row.url(), "http://1.com/");
+  EXPECT_EQ(annotated_visits[3].visit_row.visit_id, 1);
+  EXPECT_EQ(annotated_visits[3].visit_row.url_id, 1);
+  EXPECT_EQ(annotated_visits[3].context_annotations.omnibox_url_copied, true);
+  EXPECT_EQ(annotated_visits[3].referring_visit_of_redirect_chain_start, 0);
 
   delete_url(2);
+  delete_url(3);
   delete_visit(3);
   // Annotated visits should be unfetchable if their associated URL or visit is
   // removed. Notably, because of that, the row count in the DB and the fetched

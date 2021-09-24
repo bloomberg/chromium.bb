@@ -21,6 +21,7 @@
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
@@ -1550,12 +1551,12 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
     }
     if (GetParam().gaia_api_calls[i] == 'U') {
       std::vector<CoreAccountId> accounts_to_send;
-      for (int i = 0; GetParam().cookies_after_reconcile[i] != '\0'; ++i) {
-        char cookie = GetParam().cookies_after_reconcile[i];
+      for (int j = 0; GetParam().cookies_after_reconcile[j] != '\0'; ++j) {
+        char cookie = GetParam().cookies_after_reconcile[j];
         std::string account_to_send = GaiaIdForAccountKey(cookie);
         accounts_to_send.push_back(PickAccountIdForAccount(
             account_to_send,
-            accounts_[GetParam().cookies_after_reconcile[i]].email));
+            accounts_[GetParam().cookies_after_reconcile[j]].email));
       }
       const signin::MultiloginParameters ml_params(
           gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
@@ -1990,7 +1991,7 @@ TEST_F(AccountReconcilorMirrorTest, StartReconcileContentSettingsNonGaiaUrl) {
 }
 
 TEST_F(AccountReconcilorMirrorTest,
-       StartReconcileContentSettingsInvalidPattern) {
+       StartReconcileContentSettingsWildcardPattern) {
   const CoreAccountId account_id =
       ConnectProfileToAccount("user@gmail.com").account_id;
   identity_test_env()->SetRefreshTokenForAccount(account_id);
@@ -1998,11 +1999,8 @@ TEST_F(AccountReconcilorMirrorTest,
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
 
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder =
-      ContentSettingsPattern::CreateBuilder();
-  builder->Invalid();
-
-  SimulateCookieContentSettingsChanged(reconcilor, builder->Build());
+  SimulateCookieContentSettingsChanged(reconcilor,
+                                       ContentSettingsPattern::Wildcard());
   ASSERT_TRUE(reconcilor->is_reconcile_started_);
 }
 

@@ -24,6 +24,7 @@ import numpy as np
 
 from tensorflow.python import tf2
 from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
@@ -35,6 +36,28 @@ from tensorflow.python.platform import test as test_lib
 
 # TODO(yangzihao): Currently matmul autotuning is disabled by default. Use
 # os.environ["TF_MATMUL_AUTOTUNE_ENABLE"] = "1" to enable it.
+
+
+class MatMulMixedType(test_lib.TestCase):
+  """Simple test for tf.matmul where Tout is different from T."""
+
+  def testBatchMatMulV3OutputType(self):
+    # TODO(shivaniagrawal): uint8 is not supported for mixed matmul type in XLA.
+    for (a_dtype, b_dtype) in [(np.int8, np.int8), (np.uint8, np.uint8)]:
+      a = np.array([[1, 2], [3, 4]], dtype=a_dtype)
+      b = np.array([[1, 2], [3, 4]], dtype=b_dtype)
+      c = math_ops.batch_mat_mul_v3(a, b, adj_y=True, Tout=np.int32)
+      self.assertAllEqual((2, 2), c.shape)
+      self.assertAllEqual([[5, 11], [11, 25]], c)
+
+  def testBatchMatMulV3MixedPrec(self):
+    # TODO(shivaniagrawal): uint8 is not supported for mixed matmul type in XLA.
+    np_bf16 = dtypes.bfloat16.as_numpy_dtype
+    a = np.array([[1, 2], [3, 4]], dtype=np.int8)
+    b = np.array([[1, 2], [3, 4]], dtype=np_bf16)
+    c = math_ops.batch_mat_mul_v3(a, b, adj_y=True, Tout=np_bf16)
+    self.assertAllEqual((2, 2), c.shape)
+    self.assertAllEqual([[5, 11], [11, 25]], c)
 
 
 class MatVecTest(test_lib.TestCase):
@@ -70,6 +93,7 @@ class MatMulTest(test_lib.TestCase):
 
 def _GetMatMulTest(a_np_, b_np_, use_static_shape_, **kwargs_):
 
+  @test_util.run_without_tensor_float_32("Tests matmul")
   def Test(self):
     np_val = np.matrix(a_np_) * np.matrix(b_np_)
 
@@ -195,15 +219,17 @@ except AttributeError:
 class MatMulInfixOperatorTest(test_lib.TestCase):
 
   def testMismatchedShape(self):
-    with self.assertRaisesRegexp(
-        Exception, "(Shape must be rank 2 but is rank 1|is not a matrix)"):
+    with self.assertRaisesRegex(
+        Exception, (r"(In\[0\] and In\[1\] has different ndims|In\[0\] "
+                    r"ndims must be >= 2|Shape must be rank 2 but is rank 1)")):
       infix_matmul(
           ops.convert_to_tensor([10.0, 20.0, 30.0]),
           ops.convert_to_tensor([[40.0, 50.0], [60.0, 70.0]]))
 
   def testMismatchedDimensions(self):
-    with self.assertRaisesRegexp(
-        Exception, "(Dimensions must be equal|Matrix size-incompatible)"):
+    with self.assertRaisesRegex(
+        Exception,
+        r"(In\[0\] mismatch In\[1\] shape|Dimensions must be equal)"):
       infix_matmul(
           ops.convert_to_tensor([[10.0, 20.0, 30.0]]),
           ops.convert_to_tensor([[40.0, 50.0], [60.0, 70.0]]))
@@ -233,10 +259,6 @@ if __name__ == "__main__":
   # TF2 does not support placeholders under eager so we skip it
   for use_static_shape in set([True, tf2.enabled()]):
     for dtype in dtypes_to_test:
-      if not use_static_shape and (dtype == np.int32 or dtype == np.int64):
-        # TODO(rmlarsen): Re-enable this test when we have fixed the underlying
-        # bug in Windows (b/35935459).
-        continue
       for m in sizes:
         for n in sizes:
           for k in sizes:

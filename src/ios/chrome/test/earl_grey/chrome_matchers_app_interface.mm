@@ -500,10 +500,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kSettingsDoneButtonId);
 }
 
-+ (id<GREYMatcher>)syncSettingsConfirmButton {
-  return grey_accessibilityID(kSyncSettingsConfirmButtonId);
-}
-
 + (id<GREYMatcher>)autofillCreditCardEditTableView {
   return grey_accessibilityID(kAutofillCreditCardEditTableViewId);
 }
@@ -582,11 +578,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)settingsPrivacyTableView {
   return grey_accessibilityID(kPrivacyTableViewId);
-}
-
-+ (id<GREYMatcher>)accountsSyncButton {
-  return grey_allOf(grey_accessibilityID(kSettingsAccountsTableViewSyncCellId),
-                    grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)contentSettingsButton {

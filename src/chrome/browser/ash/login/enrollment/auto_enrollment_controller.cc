@@ -63,16 +63,6 @@ namespace {
 // enrollment check.
 constexpr int kInitialEnrollmentModulusPowerLimit = 6;
 
-// If the modulus requested by the server is higher or equal to
-// `1<<kInitialEnrollmentModulusPowerOutdatedServer`, assume that the server
-// does not know initial enrollment yet.
-// This is currently set to `14`, the server was requesting `16` for FRE on
-// 2018-05-25.
-// TODO(pmarko): Remove this mechanism when the server version supporting
-// Initial Enrollment has been in production for a while
-// (https://crbug.com/846645).
-const int kInitialEnrollmentModulusPowerOutdatedServer = 14;
-
 const int kMaxRequestStateKeysTries = 10;
 
 // Maximum time to wait for the auto-enrollment check to reach a decision.
@@ -301,9 +291,6 @@ const char AutoEnrollmentController::kInitialEnrollmentNever[] = "never";
 const char AutoEnrollmentController::kInitialEnrollmentOfficialBuild[] =
     "official";
 
-const char AutoEnrollmentController::kEnablePsmAlways[] = "always";
-const char AutoEnrollmentController::kEnablePsmNever[] = "never";
-
 // static
 bool AutoEnrollmentController::IsFREEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -351,29 +338,9 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
 }
 
 // static
-bool AutoEnrollmentController::IsPsmEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  if (!command_line->HasSwitch(switches::kEnterpriseEnablePsm))
-    return true;  // Enabled by default.
-
-  std::string command_line_mode =
-      command_line->GetSwitchValueASCII(switches::kEnterpriseEnablePsm);
-  if (command_line_mode.empty() || command_line_mode == kEnablePsmAlways)
-    return true;
-
-  if (command_line_mode == kEnablePsmNever) {
-    return false;
-  }
-
-  LOG(FATAL) << "Unknown PSM enablement mode: " << command_line_mode << ".";
-  return false;
-}
-
-// static
 bool AutoEnrollmentController::ShouldUseFakePsmRlweClient() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnterpriseUseFakePsmRlweClient);
+      switches::kEnterpriseUseFakePsmRlweClientForTesting);
 }
 
 // static
@@ -411,8 +378,8 @@ AutoEnrollmentController::GetFRERequirement() {
 
 AutoEnrollmentController::AutoEnrollmentController()
     : system_clock_sync_waiter_(std::make_unique<SystemClockSyncWaiter>()) {
-  // Create the PSM RLWE client factory depending on whether
-  // switches::kEnterpriseUseFakePsmRlweClient is set.
+  // Create the PSM (private set membership) RLWE client factory depending on
+  // whether switches::kEnterpriseUseFakePsmRlweClient is set.
   if (ShouldUseFakePsmRlweClient()) {
     psm_rlwe_client_factory_ = std::make_unique<
         policy::FakePrivateMembershipRlweClient::FactoryImpl>();
@@ -776,7 +743,6 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       serial_number, rlz_brand_code, power_initial, power_limit,
-      kInitialEnrollmentModulusPowerOutdatedServer,
       psm_rlwe_client_factory_.get());
 
   LOG(WARNING) << "Starting auto-enrollment client for Initial Enrollment.";

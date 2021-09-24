@@ -80,9 +80,7 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
     return self._make_gerrit_response_json([self._gerrit_change_data(**kwargs)])
 
   def update_files_response_data(self, **kwargs):
-    data = self._gerrit_change_data(**kwargs)
-    data.pop('revisions')
-    return self._make_gerrit_response_json(data)
+    return self._make_gerrit_response_json(self._gerrit_change_data(**kwargs))
 
   def get_empty_changes_response_data(self):
     return self._make_gerrit_response_json([])

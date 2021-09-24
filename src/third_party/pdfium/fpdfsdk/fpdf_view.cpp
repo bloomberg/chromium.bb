@@ -66,23 +66,33 @@
 #include "public/fpdf_edit.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
-static_assert(WindowsPrintMode::kModeEmf == FPDF_PRINTMODE_EMF,
-              "WindowsPrintMode::kModeEmf value mismatch");
-static_assert(WindowsPrintMode::kModeTextOnly == FPDF_PRINTMODE_TEXTONLY,
-              "WindowsPrintMode::kModeTextOnly value mismatch");
-static_assert(WindowsPrintMode::kModePostScript2 == FPDF_PRINTMODE_POSTSCRIPT2,
-              "WindowsPrintMode::kModePostScript2 value mismatch");
-static_assert(WindowsPrintMode::kModePostScript3 == FPDF_PRINTMODE_POSTSCRIPT3,
-              "WindowsPrintMode::kModePostScript3 value mismatch");
-static_assert(WindowsPrintMode::kModePostScript2PassThrough ==
+static_assert(static_cast<int>(WindowsPrintMode::kEmf) == FPDF_PRINTMODE_EMF,
+              "WindowsPrintMode::kEmf value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kTextOnly) ==
+                  FPDF_PRINTMODE_TEXTONLY,
+              "WindowsPrintMode::kTextOnly value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kPostScript2) ==
+                  FPDF_PRINTMODE_POSTSCRIPT2,
+              "WindowsPrintMode::kPostScript2 value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kPostScript3) ==
+                  FPDF_PRINTMODE_POSTSCRIPT3,
+              "WindowsPrintMode::kPostScript3 value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kPostScript2PassThrough) ==
                   FPDF_PRINTMODE_POSTSCRIPT2_PASSTHROUGH,
-              "WindowsPrintMode::kModePostScript2PassThrough value mismatch");
-static_assert(WindowsPrintMode::kModePostScript3PassThrough ==
+              "WindowsPrintMode::kPostScript2PassThrough value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kPostScript3PassThrough) ==
                   FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH,
-              "WindowsPrintMode::kModePostScript3PassThrough value mismatch");
-static_assert(WindowsPrintMode::kModeEmfImageMasks ==
+              "WindowsPrintMode::kPostScript3PassThrough value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kEmfImageMasks) ==
                   FPDF_PRINTMODE_EMF_IMAGE_MASKS,
-              "WindowsPrintMode::kModeEmfImageMasks value mismatch");
+              "WindowsPrintMode::kEmfImageMasks value mismatch");
+static_assert(static_cast<int>(WindowsPrintMode::kPostScript3Type42) ==
+                  FPDF_PRINTMODE_POSTSCRIPT3_TYPE42,
+              "WindowsPrintMode::kPostScript3Type42 value mismatch");
+static_assert(
+    static_cast<int>(WindowsPrintMode::kPostScript3Type42PassThrough) ==
+        FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH,
+    "WindowsPrintMode::kPostScript3Type42PassThrough value mismatch");
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -219,8 +229,10 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_SetPrintTextWithGDI(FPDF_BOOL use_gdi) {
 #endif  // PDFIUM_PRINT_TEXT_WITH_GDI
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode) {
-  if (mode < FPDF_PRINTMODE_EMF || mode > FPDF_PRINTMODE_EMF_IMAGE_MASKS)
+  if (mode < FPDF_PRINTMODE_EMF ||
+      mode > FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH) {
     return FALSE;
+  }
 
   g_pdfium_print_mode = static_cast<WindowsPrintMode>(mode);
   return TRUE;
@@ -511,13 +523,15 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
   // individually is inefficient and unlikely to significantly improve spool
   // size.
   const bool bEnableImageMasks =
-      g_pdfium_print_mode == WindowsPrintMode::kModeEmfImageMasks;
+      g_pdfium_print_mode == WindowsPrintMode::kEmfImageMasks;
   const bool bNewBitmap = pPage->BackgroundAlphaNeeded() ||
                           (pPage->HasImageMask() && !bEnableImageMasks) ||
                           pPage->GetMaskBoundingBoxes().size() > 100;
   const bool bHasMask = pPage->HasImageMask() && !bNewBitmap;
+  auto* render_data = CPDF_DocRenderData::FromDocument(pPage->GetDocument());
   if (!bNewBitmap && !bHasMask) {
-    pContext->m_pDevice = std::make_unique<CPDF_WindowsRenderDevice>(dc);
+    pContext->m_pDevice = std::make_unique<CPDF_WindowsRenderDevice>(
+        dc, render_data->GetPSFontTracker());
     CPDFSDK_RenderPageWithContext(pContext, pPage, start_x, start_y, size_x,
                                   size_y, rotate, flags,
                                   /*color_scheme=*/nullptr,
@@ -544,20 +558,20 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
                                 /*pause=*/nullptr);
 
   if (!bHasMask) {
-    CPDF_WindowsRenderDevice WinDC(dc);
+    CPDF_WindowsRenderDevice win_dc(dc, render_data->GetPSFontTracker());
     bool bitsStretched = false;
-    if (WinDC.GetDeviceType() == DeviceType::kPrinter) {
+    if (win_dc.GetDeviceType() == DeviceType::kPrinter) {
       auto pDst = pdfium::MakeRetain<CFX_DIBitmap>();
       if (pDst->Create(size_x, size_y, FXDIB_Format::kRgb32)) {
         memset(pDst->GetBuffer(), -1, pBitmap->GetPitch() * size_y);
         pDst->CompositeBitmap(0, 0, size_x, size_y, pBitmap, 0, 0,
                               BlendMode::kNormal, nullptr, false);
-        WinDC.StretchDIBits(pDst, 0, 0, size_x, size_y);
+        win_dc.StretchDIBits(pDst, 0, 0, size_x, size_y);
         bitsStretched = true;
       }
     }
     if (!bitsStretched)
-      WinDC.SetDIBits(pBitmap, 0, 0);
+      win_dc.SetDIBits(pBitmap, 0, 0);
     return;
   }
 
@@ -578,7 +592,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
   pOwnedContext = std::make_unique<CPDF_PageRenderContext>();
   pContext = pOwnedContext.get();
   pPage->SetRenderContext(std::move(pOwnedContext));
-  pContext->m_pDevice = std::make_unique<CPDF_WindowsRenderDevice>(dc);
+  pContext->m_pDevice = std::make_unique<CPDF_WindowsRenderDevice>(
+      dc, render_data->GetPSFontTracker());
   pContext->m_pOptions = std::make_unique<CPDF_RenderOptions>();
   pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
@@ -1048,9 +1063,9 @@ FPDF_GetNamedDestByName(FPDF_DOCUMENT document, FPDF_BYTESTRING name) {
 
 #ifdef PDF_ENABLE_V8
 FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags() {
-  // Reduce exposure since no PDF should contain web assembly.
   // Use interpreted JS only to avoid RWX pages in our address space.
-  return "--no-expose-wasm --jitless";
+  // Reduce exposure since no PDF should contain web assembly.
+  return "--jitless --no-expose-wasm";
 }
 
 FPDF_EXPORT void* FPDF_CALLCONV FPDF_GetArrayBufferAllocatorSharedInstance() {

@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -351,7 +353,7 @@ PhysicalRect FixedAttachmentPositioningArea(
 
   if (const auto* layout_view = DynamicTo<LayoutView>(obj)) {
     if (!(layout_view->GetBackgroundPaintLocation() &
-          kBackgroundPaintInScrollingContents))
+          kBackgroundPaintInContentsSpace))
       return rect;
     // The LayoutView is the only object that can paint a fixed background into
     // its scrolling contents layer, so it gets a special adjustment here.
@@ -428,6 +430,25 @@ BackgroundImageGeometry::BackgroundImageGeometry(const LayoutNGTableCell& cell,
   cell_using_container_background_ = true;
   element_positioning_area_offset_ = cell_offset;
   positioning_size_override_ = table_part_size;
+}
+
+BackgroundImageGeometry::BackgroundImageGeometry(
+    const NGPhysicalBoxFragment& fragment)
+    : box_(To<LayoutBoxModelObject>(fragment.GetLayoutObject())),
+      positioning_box_(box_) {
+  DCHECK(box_);
+  DCHECK(box_->IsBox());
+  // Specialized constructor should be used for LayoutView.
+  DCHECK(!IsA<LayoutView>(box_));
+
+  if (!fragment.IsOnlyForNode()) {
+    // The element is block-fragmented. We need to calculate the correct
+    // background offset within an imaginary box where all the fragments have
+    // been stitched together.
+    element_positioning_area_offset_ =
+        OffsetInStitchedFragments(fragment, &positioning_size_override_);
+    box_has_multiple_fragments_ = true;
+  }
 }
 
 void BackgroundImageGeometry::ComputeDestRectAdjustments(
@@ -601,7 +622,8 @@ void BackgroundImageGeometry::ComputePositioningArea(
   } else {
     unsnapped_dest_rect_ = paint_rect;
 
-    if (painting_view_ || cell_using_container_background_)
+    if (painting_view_ || cell_using_container_background_ ||
+        box_has_multiple_fragments_)
       unsnapped_positioning_area.size = positioning_size_override_;
     else
       unsnapped_positioning_area = unsnapped_dest_rect_;
@@ -626,11 +648,12 @@ void BackgroundImageGeometry::ComputePositioningArea(
     //   the whole canvas).
     // * We are painting table cells using the table background, or the table
     //   has collapsed borders
+    // * We are painting a block-fragmented box.
     // * There is a border image, because it may not be opaque or may be outset.
     bool disallow_border_derived_adjustment =
         !ShouldPaintSelfBlockBackground(paint_phase) ||
         fill_layer.Composite() != CompositeOperator::kCompositeSourceOver ||
-        painting_view_ || painting_table_cell_ ||
+        painting_view_ || painting_table_cell_ || box_has_multiple_fragments_ ||
         positioning_box_->StyleRef().BorderImage().GetImage() ||
         positioning_box_->StyleRef().BorderCollapse() ==
             EBorderCollapse::kCollapse;

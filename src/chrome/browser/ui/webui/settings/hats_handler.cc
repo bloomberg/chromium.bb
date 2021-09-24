@@ -57,7 +57,7 @@ HatsHandler::HatsHandler() = default;
 HatsHandler::~HatsHandler() = default;
 
 void HatsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "trustSafetyInteractionOccurred",
       base::BindRepeating(&HatsHandler::HandleTrustSafetyInteractionOccurred,
                           base::Unretained(this)));
@@ -67,7 +67,7 @@ void HatsHandler::HandleTrustSafetyInteractionOccurred(
     const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   auto interaction =
       static_cast<TrustSafetyInteraction>(args->GetList()[0].GetInt());
 

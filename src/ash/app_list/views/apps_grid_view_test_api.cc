@@ -75,8 +75,8 @@ void AppsGridViewTestApi::LayoutToIdealBounds() {
 gfx::Rect AppsGridViewTestApi::GetItemTileRectOnCurrentPageAt(int row,
                                                               int col) const {
   int slot = row * (view_->cols()) + col;
-  gfx::Rect bounds_in_ltr = view_->GetExpectedTileBounds(
-      GridIndex(view_->pagination_model()->selected_page(), slot));
+  gfx::Rect bounds_in_ltr =
+      view_->GetExpectedTileBounds(GridIndex(view_->GetSelectedPage(), slot));
   // `GetExpectedTileBounds()` returns expected bounds for item at provided grid
   // index in LTR UI. Make sure this method returns mirrored bounds in RTL UI.
   return view_->GetMirroredRect(bounds_in_ltr);
@@ -87,12 +87,12 @@ void AppsGridViewTestApi::PressItemAt(int index) {
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
 }
 
-int AppsGridViewTestApi::TilesPerPage() const {
-  return view_->TilesPerPage();
+int AppsGridViewTestApi::TilesPerPage(int page) const {
+  return view_->TilesPerPage(page);
 }
 
 int AppsGridViewTestApi::AppsOnPage(int page) const {
-  return view_->GetItemsNumOfPage(page);
+  return view_->GetNumberOfItemsOnPage(page);
 }
 
 AppListItemView* AppsGridViewTestApi::GetViewAtIndex(GridIndex index) const {
@@ -108,6 +108,11 @@ AppListItemView* AppsGridViewTestApi::GetViewAtVisualIndex(int page,
     return nullptr;
   }
   return view_structure[page][slot];
+}
+
+const std::string& AppsGridViewTestApi::GetNameAtVisualIndex(int page,
+                                                             int slot) const {
+  return GetViewAtVisualIndex(page, slot)->item()->name();
 }
 
 gfx::Rect AppsGridViewTestApi::GetItemTileRectAtVisualIndex(int page,

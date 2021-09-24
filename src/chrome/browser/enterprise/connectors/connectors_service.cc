@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/reporting_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "components/embedder_support/user_agent_utils.h"
@@ -41,39 +42,24 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/url_constants.h"
 #include "device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
+#include "extensions/common/constants.h"
 #endif
 
 namespace enterprise_connectors {
 
 namespace {
 
-const enterprise_management::PolicyData* GetProfilePolicyData(
-    Profile* profile) {
-  DCHECK(profile);
-  auto* manager =
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      profile->GetUserCloudPolicyManagerAsh();
-#else
-      profile->GetUserCloudPolicyManager();
-#endif
-  if (manager && manager->core()->store() &&
-      manager->core()->store()->has_policy()) {
-    return manager->core()->store()->policy();
-  }
-  return nullptr;
-}
-
 void PopulateBrowserMetadata(bool include_device_info,
                              ClientMetadata::Browser* browser_proto) {
   base::FilePath browser_id;
   if (base::PathService::Get(base::DIR_EXE, &browser_id))
     browser_proto->set_browser_id(browser_id.AsUTF8Unsafe());
-  browser_proto->set_user_agent(embedder_support::GetUserAgent());
   browser_proto->set_chrome_version(version_info::GetVersionNumber());
   if (include_device_info)
     browser_proto->set_machine_user(policy::GetOSUsername());
@@ -82,7 +68,7 @@ void PopulateBrowserMetadata(bool include_device_info,
 void PopulateDeviceMetadata(const ReportingSettings& reporting_settings,
                             Profile* profile,
                             ClientMetadata::Device* device_proto) {
-  if (!reporting_settings.per_profile)
+  if (!reporting_settings.per_profile && !device_proto->has_dm_token())
     device_proto->set_dm_token(reporting_settings.dm_token);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string client_id;
@@ -99,31 +85,18 @@ void PopulateDeviceMetadata(const ReportingSettings& reporting_settings,
   device_proto->set_name(policy::GetDeviceName());
 }
 
-void PopulateProfileMetadata(const ReportingSettings& reporting_settings,
-                             Profile* profile,
-                             ClientMetadata::Profile* profile_proto) {
-  if (reporting_settings.per_profile)
-    profile_proto->set_dm_token(reporting_settings.dm_token);
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  if (identity_manager) {
-    profile_proto->set_gaia_email(
-        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
-            .email);
+bool IsURLExemptFromAnalysis(const GURL& url) {
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return true;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      extension_misc::IsSystemUIApp(url.host_piece())) {
+    return true;
   }
-  profile_proto->set_profile_path(profile->GetPath().AsUTF8Unsafe());
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile->GetPath());
-  if (entry) {
-    profile_proto->set_profile_name(base::UTF16ToUTF8(entry->GetName()));
-  }
-  const enterprise_management::PolicyData* profile_policy =
-      GetProfilePolicyData(profile);
-  if (profile_policy) {
-    if (profile_policy->has_device_id())
-      profile_proto->set_client_id(profile_policy->device_id());
-  }
+#endif
+
+  return false;
 }
 
 }  // namespace
@@ -261,6 +234,9 @@ absl::optional<AnalysisSettings> ConnectorsService::GetAnalysisSettings(
     const GURL& url,
     AnalysisConnector connector) {
   if (!ConnectorsEnabled())
+    return absl::nullopt;
+
+  if (IsURLExemptFromAnalysis(url))
     return absl::nullopt;
 
   absl::optional<AnalysisSettings> settings =
@@ -546,14 +522,13 @@ std::unique_ptr<ClientMetadata> ConnectorsService::BuildClientMetadata() {
   bool include_device_info = !reporting_settings.value().per_profile;
   Profile* profile = Profile::FromBrowserContext(context_);
 
-  auto metadata = std::make_unique<ClientMetadata>();
+  auto metadata = std::make_unique<ClientMetadata>(
+      reporting::GetContextAsClientMetadata(profile));
   PopulateBrowserMetadata(include_device_info, metadata->mutable_browser());
   if (include_device_info) {
     PopulateDeviceMetadata(reporting_settings.value(), profile,
                            metadata->mutable_device());
   }
-  PopulateProfileMetadata(reporting_settings.value(), profile,
-                          metadata->mutable_profile());
 
   return metadata;
 }

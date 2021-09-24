@@ -78,7 +78,7 @@ void GcmInternalsUIMessageHandler::ReturnResults(
 void GcmInternalsUIMessageHandler::RequestAllInfo(
     const base::ListValue* args) {
   AllowJavascript();
-  if (args->GetSize() != 1) {
+  if (args->GetList().size() != 1) {
     NOTREACHED();
     return;
   }
@@ -107,7 +107,7 @@ void GcmInternalsUIMessageHandler::RequestAllInfo(
 }
 
 void GcmInternalsUIMessageHandler::SetRecording(const base::ListValue* args) {
-  if (args->GetSize() != 1) {
+  if (args->GetList().size() != 1) {
     NOTREACHED();
     return;
   }
@@ -146,11 +146,11 @@ void GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished(
 void GcmInternalsUIMessageHandler::RegisterMessages() {
   // It is safe to use base::Unretained here, since web_ui owns this message
   // handler.
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       gcm_driver::kGetGcmInternalsInfo,
       base::BindRepeating(&GcmInternalsUIMessageHandler::RequestAllInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       gcm_driver::kSetGcmInternalsRecording,
       base::BindRepeating(&GcmInternalsUIMessageHandler::SetRecording,
                           base::Unretained(this)));

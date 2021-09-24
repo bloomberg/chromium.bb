@@ -56,7 +56,7 @@ public class DropdownItemBase implements DropdownItem {
 
     @Override
     public int getLabelFontColorResId() {
-        return R.color.default_text_color_list;
+        return R.color.default_text_color_list_baseline;
     }
 
     @Override

@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Detectouse un firewall</translation>
 <translation id="1075811647922107217">Tamaño da páxina</translation>
+<translation id="1119447706177454957">Erro interno</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Este dispositivo (<ph name="DEVICE_TYPE" />) está xestionado por <ph name="MANAGER" />.</translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Portal cativo</translation>
 <translation id="2006864819935886708">Conectividade</translation>
 <translation id="2008685064673031089">Busca principal</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Máis configuracións</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versión <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Memoria dispoñible: <ph name="AVAILABLE_MEMORY" /> GB de <ph name="TOTAL_MEMORY" /> GB</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
 <translation id="2157959690810728433">EN COLA</translation>
 <translation id="2161394479394250669">Cancelar traballo de impresión</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> ppp</translation>
 <translation id="2338501278241028356">Activa o Bluetooth para detectar dispositivos situados nas proximidades</translation>
 <translation id="2364498172489649528">Aprobou</translation>
+<translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Enviar informe de comentarios</translation>
+<translation id="2407209115954268704">Estado do bloqueo da SIM</translation>
 <translation id="2418150275289244458">Abrir en Configuración</translation>
 <translation id="2446553403094072641">Precisión do punto flotante</translation>
 <translation id="2448312741937722512">Tipo</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Caché</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="315116470104423982">Datos móbiles</translation>
+<translation id="3156846309055100599">Escaneando páxina <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Detectouse un portal cativo</translation>
 <translation id="3188257591659621405">Os meus ficheiros</translation>
 <translation id="3199982728237701504">Alimentador de documentos (a dúas caras)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567">Quitaranse os traballos de impresión de máis de <ph name="NUMBER_OF_DAYS" /> días</translation>
 <translation id="4003384961948020559">Produciuse un erro: a saída da impresora está chea</translation>
 <translation id="4034824040120875894">Impresora</translation>
+<translation id="409427325554347132">Gardar detalles da proba</translation>
 <translation id="4131410914670010031">Branco e negro</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4155551848414053977">Asegúrate de que o escáner estea acendido e dispoñible a través da túa rede ou mediante unha conexión directa</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">O contrasinal caduca en <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Non hai ningunha tarefa de impresión en curso</translation>
 <translation id="4244962993387259361">Como mínimo, precísanse 500 MB de espazo para executar unha proba de memoria. Se queres liberar espazo, vai a Configuración &gt; Xestión do almacenamento.</translation>
+<translation id="4258281355379922695">Latencia de HTTP</translation>
+<translation id="4271957103967917607">Ver pantalla completa</translation>
 <translation id="4289540628985791613">Visión xeral</translation>
 <translation id="4297501883039923494">Detívose (produciuse un erro descoñecido)</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imaxes</translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">Configuración IP</translation>
 <translation id="4548483925627140043">Non se atopou o sinal</translation>
 <translation id="455835558791489930">Batería de <ph name="CHARGE_VALUE" /> mAh</translation>
+<translation id="4561801978359312462">SIM desbloqueada</translation>
 <translation id="4562494484721939086">Sen servizo</translation>
 <translation id="458794348635939462">Produciuse un erro ao resolver todos os hosts</translation>
 <translation id="4593212453765072419">Requírese autenticación proxy</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Para cancelar o traballo de impresión, preme Intro.</translation>
+<translation id="463791356324567266">Cancelando escaneo…</translation>
 <translation id="4646949265910132906">Conexión wifi segura</translation>
-<translation id="4652335678334611408">Gardar rexistro da sesión</translation>
 <translation id="4654549501020883054">Cambiar todos os días</translation>
 <translation id="4665014895760275686">Fabricante</translation>
 <translation id="467510802200863975">Os contrasinais non coinciden</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Ocultar informe</translation>
 <translation id="500920857929044050">Deter proba</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM bloqueada (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5088172560898466307">Nome do host do servidor</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Mostrar no cartafol</translation>
 <translation id="5212543919916444558">Non atopo nada na pantalla co que che poida axudar.
 Proba a tocar o micrófono para preguntarme algo.</translation>
+<translation id="5212593641110061691">Tabloide</translation>
 <translation id="5222676887888702881">Pechar sesión</translation>
 <translation id="5234764350956374838">Rexeitar</translation>
 <translation id="5252456968953390977">Itinerancia</translation>
@@ -248,6 +260,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Queda {0} intento}other{Quedan {0} intentos}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Non se puido completar o escaneamento</translation>
+<translation id="5502931783115429516">Android non se está executando</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="5701381305118179107">Centrar</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Estado do portal</translation>
+<translation id="5784136236926853061">Latencia de HTTP alta</translation>
 <translation id="5832805196449965646">Engadir unha persoa</translation>
 <translation id="583281660410589416">Descoñecido</translation>
 <translation id="5849570051105887917">Código do fornecedor de orixe</translation>
+<translation id="5860033963881614850">Non</translation>
 <translation id="5866840822086176774">Moi forte</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5916084858004523819">Prohibida</translation>
@@ -281,6 +296,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6146993107019042706">Para finalizar, introduce o teu novo contrasinal</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">A capacidade da batería diminúe co uso</translation>
 <translation id="6191293864534840972">Os servidores de nomes teñen un formato incorrecto</translation>
 <translation id="6223752125779001553">Non hai ningún escáner dispoñible</translation>
@@ -302,6 +318,7 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="6527081081771465939">Descoñécese o protocolo de seguranza da wifi</translation>
 <translation id="65587193855025101">Superficie plana</translation>
 <translation id="6564646048574748301">Produciuse un erro: non se puido acceder á impresora</translation>
+<translation id="6566314079205407217">Escaneo de varias páxinas</translation>
 <translation id="6574762126505704998">Completar</translation>
 <translation id="6575134580692778371">Non configurado</translation>
 <translation id="6596816719288285829">Enderezo IP</translation>
@@ -341,9 +358,11 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Colección de fondos de pantalla</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
 <translation id="7359657277149375382">Tipo de ficheiro</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">Latencia de HTTP moi alta</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{A operación rematou. Escaneouse 1 páxina}other{A operación rematou. Escaneáronse {NUMBER_OF_PAGES} páxinas}}</translation>
 <translation id="7469648432129124067">Detectouse un portal</translation>
@@ -351,9 +370,11 @@ Proba a tocar o micrófono para preguntarme algo.</translation>
 <translation id="7490813197707563893">Enderezo MAC</translation>
 <translation id="7497215489070763236">Certificado de CA do servidor</translation>
 <translation id="7502658306369382406">Enderezo IPv6</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Rutinas de diagnóstico</translation>
 <translation id="7561454561030345039">O teu administrador xestiona esta acción</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">Ping ARC</translation>
 <translation id="7595982850646262331">Tempo restante: <ph name="TIME_VALUE" /></translation>
 <translation id="7620771111601174153">Máis información no Centro de axuda</translation>
 <translation id="763165478673169849">Última hora de restablecemento</translation>

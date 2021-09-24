@@ -77,12 +77,14 @@ class ReadLaterItemContextMenu : public ui::SimpleMenuModel,
         browser_(browser),
         reading_list_model_(reading_list_model),
         url_(url) {
+    // Context menus have bookmark strings to keep consistent with Bookmark tab
+    // in the side panel.
     AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-                        IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+                        IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB);
     AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
+                        IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW);
     AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-                        IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+                        IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
     AddSeparator(ui::NORMAL_SEPARATOR);
 
     if (reading_list_model->GetEntryByURL(url)->IsRead()) {
@@ -100,10 +102,9 @@ class ReadLaterItemContextMenu : public ui::SimpleMenuModel,
     switch (command_id) {
       case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
         content::OpenURLParams params(url_, content::Referrer(),
-                                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
         browser_->OpenURL(params);
-        reading_list_model_->SetReadStatus(url_, true);
         break;
       }
 
@@ -112,7 +113,6 @@ class ReadLaterItemContextMenu : public ui::SimpleMenuModel,
                                       WindowOpenDisposition::NEW_WINDOW,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
         browser_->OpenURL(params);
-        reading_list_model_->SetReadStatus(url_, true);
         break;
       }
 
@@ -258,12 +258,14 @@ void ReadLaterPageHandler::ShowContextMenuForURL(const GURL& url,
                                   browser, reading_list_model_, url));
 }
 
+void ReadLaterPageHandler::UpdateCurrentPageActionButtonState() {
+  page_->CurrentPageActionButtonStateChanged(current_page_action_button_state_);
+}
+
 void ReadLaterPageHandler::ShowUI() {
   auto embedder = read_later_ui_->embedder();
-  if (embedder) {
+  if (embedder)
     embedder->ShowUI();
-    UpdateCurrentPageActionButton();
-  }
 }
 
 void ReadLaterPageHandler::CloseUI() {
@@ -375,7 +377,8 @@ std::string ReadLaterPageHandler::GetTimeSinceLastUpdate(
 }
 
 void ReadLaterPageHandler::UpdateCurrentPageActionButton() {
-  if (web_contents_->GetVisibility() == content::Visibility::HIDDEN)
+  if (web_contents_->GetVisibility() == content::Visibility::HIDDEN ||
+      Profile::FromWebUI(web_ui_)->IsGuestSession())
     return;
 
   const absl::optional<GURL> url = GetActiveTabURL();

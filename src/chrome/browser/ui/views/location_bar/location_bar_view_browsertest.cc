@@ -238,12 +238,12 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
   ASSERT_TRUE(helper);
   LocationBarView* location_bar_view = GetLocationBarView();
 
-  ui_test_utils::NavigateToURL(browser(), kMockSecureURL);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kMockSecureURL));
   EXPECT_EQ(security_state::SECURE, helper->GetSecurityLevel());
   EXPECT_FALSE(location_bar_view->location_icon_view()->ShouldShowLabel());
   EXPECT_TRUE(location_bar_view->location_icon_view()->GetText().empty());
 
-  ui_test_utils::NavigateToURL(browser(), kMockNonsecureURL);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kMockNonsecureURL));
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
   EXPECT_TRUE(location_bar_view->location_icon_view()->ShouldShowLabel());
   EXPECT_TRUE(base::LowerCaseEqualsASCII(
@@ -407,7 +407,7 @@ class LockIconPolicyTest : public policy::PolicyTest {
 
   void NavigateAndExpectIcon(const GURL& url,
                              const gfx::VectorIcon& expected_vector_icon) {
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
         expected_vector_icon, gfx::kFaviconSize, gfx::kPlaceholderColor);
     gfx::ImageSkia icon =

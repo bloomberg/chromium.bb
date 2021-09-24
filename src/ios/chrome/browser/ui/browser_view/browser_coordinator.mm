@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
@@ -41,7 +42,7 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
-#import "ios/chrome/browser/ui/commands/policy_signout_commands.h"
+#import "ios/chrome/browser/ui/commands/policy_change_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/share_highlight_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
@@ -88,8 +89,9 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -103,7 +105,7 @@
                                   PageInfoCommands,
                                   PasswordBreachCommands,
                                   PasswordProtectionCommands,
-                                  PolicySignoutPromptCommands,
+                                  PolicyChangeCommands,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
@@ -216,6 +218,9 @@
 @property(nonatomic, strong)
     UserPolicySignoutCoordinator* policySignoutPromptCoordinator;
 
+// The coordinator that manages alerts for enterprise sync policy changes.
+@property(nonatomic, strong) AlertCoordinator* syncDisabledAlertCoordinator;
+
 @end
 
 @implementation BrowserCoordinator {
@@ -251,7 +256,7 @@
     @protocol(DefaultBrowserPromoNonModalCommands),
     @protocol(FindInPageCommands), @protocol(PageInfoCommands),
     @protocol(PasswordBreachCommands), @protocol(PasswordProtectionCommands),
-    @protocol(TextZoomCommands), @protocol(PolicySignoutPromptCommands)
+    @protocol(TextZoomCommands), @protocol(PolicyChangeCommands)
   ];
 
   for (Protocol* protocol in protocols) {
@@ -329,6 +334,10 @@
                          browser:self.browser];
   [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];
   [self.badgePopupMenuCoordinator start];
+}
+
+- (void)dismissPopupMenu {
+  [self.badgePopupMenuCoordinator stop];
 }
 
 #pragma mark - Private
@@ -441,23 +450,23 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
 
-    self.infobarBannerOverlayContainerCoordinator =
-        [[OverlayContainerCoordinator alloc]
-            initWithBaseViewController:self.viewController
-                               browser:self.browser
-                              modality:OverlayModality::kInfobarBanner];
-    [self.infobarBannerOverlayContainerCoordinator start];
-    self.viewController.infobarBannerOverlayContainerViewController =
-        self.infobarBannerOverlayContainerCoordinator.viewController;
+  self.infobarBannerOverlayContainerCoordinator =
+      [[OverlayContainerCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser
+                            modality:OverlayModality::kInfobarBanner];
+  [self.infobarBannerOverlayContainerCoordinator start];
+  self.viewController.infobarBannerOverlayContainerViewController =
+      self.infobarBannerOverlayContainerCoordinator.viewController;
 
-    self.infobarModalOverlayContainerCoordinator =
-        [[OverlayContainerCoordinator alloc]
-            initWithBaseViewController:self.viewController
-                               browser:self.browser
-                              modality:OverlayModality::kInfobarModal];
-    [self.infobarModalOverlayContainerCoordinator start];
-    self.viewController.infobarModalOverlayContainerViewController =
-        self.infobarModalOverlayContainerCoordinator.viewController;
+  self.infobarModalOverlayContainerCoordinator =
+      [[OverlayContainerCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser
+                            modality:OverlayModality::kInfobarModal];
+  [self.infobarModalOverlayContainerCoordinator start];
+  self.viewController.infobarModalOverlayContainerViewController =
+      self.infobarModalOverlayContainerCoordinator.viewController;
 }
 
 // Stops child coordinators.
@@ -1060,7 +1069,7 @@
   [self.passwordProtectionCoordinator startWithCompletion:completion];
 }
 
-#pragma mark - PolicySignoutPromptCommands
+#pragma mark - PolicyChangeCommands
 
 - (void)showPolicySignoutPrompt {
   if (!self.policySignoutPromptCoordinator) {
@@ -1070,6 +1079,45 @@
     self.policySignoutPromptCoordinator.delegate = self;
   }
   [self.policySignoutPromptCoordinator start];
+}
+
+- (void)showSyncDisabledAlert {
+  if (self.syncDisabledAlertCoordinator) {
+    [self.syncDisabledAlertCoordinator stop];
+  }
+  self.syncDisabledAlertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:l10n_util::GetNSString(
+                                     IDS_IOS_SYNC_SYNC_DISABLED)
+                         message:l10n_util::GetNSString(
+                                     IDS_IOS_SYNC_SYNC_DISABLED_DESCRIPTION)];
+
+  __weak BrowserCoordinator* weakSelf = self;
+  [self.syncDisabledAlertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)
+                action:^{
+                  [weakSelf.syncDisabledAlertCoordinator stop];
+                  weakSelf.syncDisabledAlertCoordinator = nil;
+                }
+                 style:UIAlertActionStyleCancel];
+  [self.syncDisabledAlertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_SYNC_SYNC_DISABLED_LEARN_MORE)
+                action:^{
+                  if (weakSelf) {
+                    UrlLoadParams params =
+                        UrlLoadParams::InNewTab(GURL(kChromeUIManagementURL));
+                    UrlLoadingBrowserAgent::FromBrowser(weakSelf.browser)
+                        ->Load(params);
+                    [weakSelf.syncDisabledAlertCoordinator stop];
+                    weakSelf.syncDisabledAlertCoordinator = nil;
+                  }
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.syncDisabledAlertCoordinator start];
 }
 
 #pragma mark - UserPolicySignoutCoordinatorDelegate

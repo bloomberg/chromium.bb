@@ -21,7 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 
@@ -112,7 +112,7 @@ const char* const kDefaultAppOrder[] = {
 
     web_app::kHelpAppId,
     extension_misc::kCalculatorAppId,
-    web_app::kA4AppId,
+    web_app::kCursiveAppId,
     web_app::kCanvasAppId,
     extension_misc::kTextEditorAppId,
     web_app::kYoutubeTVAppId,
@@ -228,7 +228,7 @@ void ExternalLoader::Load() {
       ReadExternalOrdinalFile(ordinals_file);
   if (ordinals_value) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    for (size_t i = 0; i < ordinals_value->GetSize(); ++i) {
+    for (size_t i = 0; i < ordinals_value->GetList().size(); ++i) {
       std::string app_id;
       base::DictionaryValue* dict = NULL;
       if (ordinals_value->GetString(i, &app_id)) {

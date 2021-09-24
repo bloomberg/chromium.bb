@@ -72,6 +72,51 @@
 
 #include "layer/test_layer.h"
 
+// handle checking
+template <typename T>
+void handle_assert_has_value(T const& handle) {
+    ASSERT_TRUE(handle != VK_NULL_HANDLE);
+}
+template <typename T>
+void handle_assert_null(T const& handle) {
+    ASSERT_TRUE(handle == VK_NULL_HANDLE);
+}
+template <typename T>
+void handle_assert_has_values(std::vector<T> const& handles) {
+    for (auto const& handle : handles) {
+        ASSERT_TRUE(handle != VK_NULL_HANDLE);
+    }
+}
+template <typename T>
+void handle_assert_no_values(std::vector<T> const& handles) {
+    for (auto const& handle : handles) {
+        ASSERT_TRUE(handle == VK_NULL_HANDLE);
+    }
+}
+template <typename T>
+void handle_assert_no_values(size_t length, T handles[]) {
+    for (size_t i = 0; i < length; i++) {
+        ASSERT_TRUE(handles[i] == VK_NULL_HANDLE);
+    }
+}
+template <typename T>
+void handle_assert_equal(T const& left, T const& right) {
+    ASSERT_EQ(left, right);
+}
+template <typename T>
+void handle_assert_equal(std::vector<T> const& left, std::vector<T> const& right) {
+    ASSERT_EQ(left.size(), right.size());
+    for (size_t i = 0; i < left.size(); i++) {
+        ASSERT_EQ(left[i], right[i]);
+    }
+}
+template <typename T>
+void handle_assert_equal(size_t count, T left[], T right[]) {
+    for (size_t i = 0; i < count; i++) {
+        ASSERT_EQ(left[i], right[i]);
+    }
+}
+
 namespace detail {
 struct PlatformShimWrapper {
     PlatformShimWrapper(DebugMode debug_mode = DebugMode::none) noexcept;
@@ -169,4 +214,15 @@ struct MultipleICDShim : public FrameworkEnvironment {
     fs::path get_test_icd_path(int index) noexcept;
 
     std::vector<detail::TestICDHandle> icds;
+};
+
+struct FakeBinaryICDShim : public FrameworkEnvironment {
+    FakeBinaryICDShim(TestICDDetails read_icd_details, TestICDDetails fake_icd_details,
+                      DebugMode debug_mode = DebugMode::none) noexcept;
+
+    TestICD& get_test_icd() noexcept;
+    TestICD& get_new_test_icd() noexcept;
+    fs::path get_test_icd_path() noexcept;
+
+    detail::TestICDHandle real_icd;
 };

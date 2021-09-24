@@ -1079,6 +1079,34 @@ TEST_F(UserDataUtilTextValueTest, EscapeDataFromProfile) {
   EXPECT_EQ(result, "^Jo\\.h\\*n$");
 }
 
+TEST_F(UserDataUtilTextValueTest, RequestLocalizedProfileData) {
+  autofill::AutofillProfile contact(base::GenerateGUID(),
+                                    autofill::test::kEmptyOrigin);
+  autofill::test::SetProfileInfo(&contact, "John", /* middle name */ "", "Doe",
+                                 "", "", "", "", "", "", "", "CH", "");
+  user_model_.SetSelectedAutofillProfile(
+      "contact", std::make_unique<autofill::AutofillProfile>(contact),
+      &user_data_);
+
+  AutofillValue autofill_value;
+  autofill_value.mutable_profile()->set_identifier("contact");
+  autofill_value.mutable_value_expression()->add_chunk()->set_key(
+      static_cast<int>(autofill::ServerFieldType::ADDRESS_HOME_COUNTRY));
+
+  std::string result_default;
+  EXPECT_TRUE(
+      GetFormattedClientValue(autofill_value, &user_data_, &result_default)
+          .ok());
+  EXPECT_EQ(result_default, "Switzerland");
+
+  autofill_value.set_locale("de-CH");
+  std::string result_localized;
+  EXPECT_TRUE(
+      GetFormattedClientValue(autofill_value, &user_data_, &result_localized)
+          .ok());
+  EXPECT_EQ(result_localized, "Schweiz");
+}
+
 TEST_F(UserDataUtilTextValueTest, RequestDataFromUnknownCreditCard) {
   AutofillValue autofill_value;
   autofill_value.mutable_value_expression()->add_chunk()->set_key(
@@ -1198,44 +1226,11 @@ TEST_F(UserDataUtilTextValueTest,
   EXPECT_EQ(result, "01 January");
 }
 
-TEST_F(UserDataUtilTextValueTest, GetCredentialsFromDifferentDomainFails) {
+TEST_F(UserDataUtilTextValueTest, GetUsername) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
   ElementFinder::Result element;
-  content::WebContentsTester::For(web_contents_.get())
-      ->NavigateAndCommit(GURL("https://www.other.com"));
-  element.container_frame_host = web_contents_->GetMainFrame();
-
-  EXPECT_CALL(*this,
-              OnResult(EqualsStatus(ClientStatus(PASSWORD_ORIGIN_MISMATCH)),
-                       std::string()))
-      .Times(2);
-
-  PasswordManagerValue password_value;
-  password_value.set_credential_type(PasswordManagerValue::PASSWORD);
-
-  GetPasswordManagerValue(password_value, element, &user_data_,
-                          &mock_website_login_manager_,
-                          base::BindOnce(&UserDataUtilTextValueTest::OnResult,
-                                         base::Unretained(this)));
-
-  PasswordManagerValue username_value;
-  username_value.set_credential_type(PasswordManagerValue::USERNAME);
-
-  GetPasswordManagerValue(username_value, element, &user_data_,
-                          &mock_website_login_manager_,
-                          base::BindOnce(&UserDataUtilTextValueTest::OnResult,
-                                         base::Unretained(this)));
-}
-
-TEST_F(UserDataUtilTextValueTest, GetUsernameFromSameDomain) {
-  user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
-      GURL("https://www.example.com"), "username");
-
-  ElementFinder::Result element;
-  content::WebContentsTester::For(web_contents_.get())
-      ->NavigateAndCommit(GURL("https://www.example.com"));
   element.container_frame_host = web_contents_->GetMainFrame();
 
   PasswordManagerValue password_manager_value;
@@ -1249,13 +1244,11 @@ TEST_F(UserDataUtilTextValueTest, GetUsernameFromSameDomain) {
                                          base::Unretained(this)));
 }
 
-TEST_F(UserDataUtilTextValueTest, GetStoredPasswordFromSameDomain) {
+TEST_F(UserDataUtilTextValueTest, GetStoredPassword) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
   ElementFinder::Result element;
-  content::WebContentsTester::For(web_contents_.get())
-      ->NavigateAndCommit(GURL("https://www.example.com"));
   element.container_frame_host = web_contents_->GetMainFrame();
 
   PasswordManagerValue password_manager_value;

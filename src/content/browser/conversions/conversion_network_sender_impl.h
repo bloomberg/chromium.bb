@@ -5,17 +5,13 @@
 #ifndef CONTENT_BROWSER_CONVERSIONS_CONVERSION_NETWORK_SENDER_IMPL_H_
 #define CONTENT_BROWSER_CONVERSIONS_CONVERSION_NETWORK_SENDER_IMPL_H_
 
-#include <stdint.h>
 #include <list>
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "content/browser/conversions/conversion_reporter_impl.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-class GURL;
 
 namespace net {
 class HttpResponseHeaders;
@@ -51,7 +47,7 @@ class CONTENT_EXPORT ConversionNetworkSenderImpl
   // seconds.
   // |sent_callback| is run after the request finishes, whether or not it
   // succeeded,
-  void SendReport(const ConversionReport& report,
+  void SendReport(ConversionReport report,
                   ReportSentCallback sent_callback) override;
 
   // Tests inject a TestURLLoaderFactory so they can mock the network response.
@@ -64,11 +60,8 @@ class CONTENT_EXPORT ConversionNetworkSenderImpl
 
   // Called when headers are available for a sent report.
   void OnReportSent(UrlLoaderList::iterator it,
-                    GURL report_url,
-                    std::string report_body,
+                    ConversionReport report,
                     ReportSentCallback sent_callback,
-                    int64_t conversion_id,
-                    base::Time original_report_time,
                     scoped_refptr<net::HttpResponseHeaders> headers);
 
   // Reports that are actively being sent.

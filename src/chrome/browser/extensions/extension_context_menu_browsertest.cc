@@ -103,7 +103,9 @@ constexpr char kPersistentExtensionId[] = "knldjmfmopnpolahpmmgbagdohdnhkik";
 class ExtensionContextMenuBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
-  ExtensionContextMenuBrowserTest() = default;
+  explicit ExtensionContextMenuBrowserTest(
+      ContextType context_type = ContextType::kNone)
+      : ExtensionBrowserTest(context_type) {}
   ~ExtensionContextMenuBrowserTest() override = default;
   ExtensionContextMenuBrowserTest(const ExtensionContextMenuBrowserTest&) =
       delete;
@@ -267,7 +269,8 @@ class ExtensionContextMenuLazyTest
     : public ExtensionContextMenuBrowserTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  ExtensionContextMenuLazyTest() = default;
+  ExtensionContextMenuLazyTest()
+      : ExtensionContextMenuBrowserTest(GetParam()) {}
   ~ExtensionContextMenuLazyTest() override = default;
   ExtensionContextMenuLazyTest(const ExtensionContextMenuLazyTest&) = delete;
   ExtensionContextMenuLazyTest& operator=(const ExtensionContextMenuLazyTest&) =
@@ -281,19 +284,10 @@ class ExtensionContextMenuLazyTest
   }
 
  protected:
-  const extensions::Extension* LoadExtensionWithParamOptions(
-      const base::FilePath& path,
-      LoadOptions options) {
-    if (GetParam() == ContextType::kServiceWorker)
-      options.load_as_service_worker = true;
-
-    return LoadExtension(path, options);
-  }
-
   const extensions::Extension* LoadContextMenuExtension(
       base::StringPiece subdirectory) {
     base::FilePath extension_dir = GetRootDir().AppendASCII(subdirectory);
-    return LoadExtensionWithParamOptions(extension_dir, {});
+    return LoadExtension(extension_dir);
   }
 
   // Helper to load an extension from context_menus/top_level/|subdirectory| in
@@ -302,14 +296,13 @@ class ExtensionContextMenuLazyTest
       base::StringPiece subdirectory) {
     base::FilePath extension_dir =
         GetRootDir().AppendASCII("top_level").AppendASCII(subdirectory);
-    return LoadExtensionWithParamOptions(extension_dir, {});
+    return LoadExtension(extension_dir, {});
   }
 
   const extensions::Extension* LoadContextMenuExtensionWithIncognitoFlags(
       base::StringPiece subdirectory) {
     base::FilePath extension_dir = GetRootDir().AppendASCII(subdirectory);
-    return LoadExtensionWithParamOptions(extension_dir,
-                                         {.allow_in_incognito = true});
+    return LoadExtension(extension_dir, {.allow_in_incognito = true});
   }
 
   // This creates an extension that starts |enabled| and then switches to
@@ -640,9 +633,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, TopLevel) {
   //   Ze Extension with multiple Context Menus
   //     Context Menu #1
   //     Context Menu #2
-  // TODO(crbug.com/1208359): Service Worker version is very flaky.
-  if (GetParam() == ContextType::kServiceWorker)
-    return;
 
   // Load extensions and wait until it's created a single menu item.
   ExtensionTestMessageListener listener1("created item", false);
@@ -756,8 +746,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuPersistentTest, Separators) {
   // of items at the top-level (but they'll get pushed into an auto-generated
   // parent).
   ExtensionTestMessageListener listener1("test1 create finished", false);
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(extension->GetResourceURL("test1.html")));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(extension->GetResourceURL("test1.html"))));
   EXPECT_TRUE(listener1.WaitUntilSatisfied());
 
   GURL url("http://www.google.com/");
@@ -784,8 +774,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuPersistentTest, Separators) {
   // Now run our second test - navigate to test2.html which creates an explicit
   // parent node and populates that with the same items as in test1.
   ExtensionTestMessageListener listener2("test2 create finished", false);
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(extension->GetResourceURL("test2.html")));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(extension->GetResourceURL("test2.html"))));
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
   menu =
       TestRenderViewContextMenu::Create(GetWebContents(), url, GURL(), GURL());
@@ -822,16 +812,16 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, TargetURLs) {
                                     std::string("item1")));
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_MAC)
-// Flakily hangs on Linux/CrOS/Windows/Mac - http://crbug.com/1035062
-#define MAYBE_IncognitoSplit DISABLED_IncognitoSplit
-#else
-#define MAYBE_IncognitoSplit IncognitoSplit
-#endif
+// TODO(http://crbug.com/1035062): This test is flaky only with the event
+// page-based version. Remove this once that's fixed.
+using ExtensionContextMenuSWTest = ExtensionContextMenuLazyTest;
+
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ExtensionContextMenuSWTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 // Tests adding of context menus in incognito mode.
-IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, MAYBE_IncognitoSplit) {
+IN_PROC_BROWSER_TEST_P(ExtensionContextMenuSWTest, IncognitoSplit) {
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",
                                                  false);
@@ -905,7 +895,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, ClickInFrame) {
   ExtensionTestMessageListener listener("created items", false);
   ASSERT_TRUE(LoadContextMenuExtension("frames"));
   GURL url_with_frame("data:text/html,<iframe name='child'>");
-  ui_test_utils::NavigateToURL(browser(), url_with_frame);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_with_frame));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
   // Click on a menu item in the main frame.

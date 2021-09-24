@@ -188,12 +188,12 @@ export enum MIME_TYPE {
   EVENTSTREAM = 'text/event-stream',
 }
 
-export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implements
+export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     TextUtils.ContentProvider.ContentProvider {
   private requestIdInternal: string;
   private backendRequestIdInternal?: Protocol.Network.RequestId;
   private readonly documentURLInternal: string;
-  private readonly frameIdInternal: string;
+  private readonly frameIdInternal: Protocol.Page.FrameId|null;
   private readonly loaderIdInternal: Protocol.Network.LoaderId|null;
   private readonly initiatorInternal: Protocol.Network.Initiator|null|undefined;
   private redirectSourceInternal: NetworkRequest|null;
@@ -281,7 +281,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
 
   private constructor(
       requestId: string, backendRequestId: Protocol.Network.RequestId|undefined, url: string, documentURL: string,
-      frameId: string, loaderId: Protocol.Network.LoaderId|null, initiator: Protocol.Network.Initiator|null) {
+      frameId: Protocol.Page.FrameId|null, loaderId: Protocol.Network.LoaderId|null,
+      initiator: Protocol.Network.Initiator|null) {
     super();
 
     this.requestIdInternal = requestId;
@@ -353,20 +354,21 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
   }
 
   static create(
-      backendRequestId: Protocol.Network.RequestId, url: string, documentURL: string, frameId: string,
-      loaderId: Protocol.Network.LoaderId|null, initiator: Protocol.Network.Initiator|null): NetworkRequest {
+      backendRequestId: Protocol.Network.RequestId, url: string, documentURL: string,
+      frameId: Protocol.Page.FrameId|null, loaderId: Protocol.Network.LoaderId|null,
+      initiator: Protocol.Network.Initiator|null): NetworkRequest {
     return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator);
   }
 
   static createForWebSocket(
       backendRequestId: Protocol.Network.RequestId, requestURL: string,
       initiator?: Protocol.Network.Initiator): NetworkRequest {
-    return new NetworkRequest(backendRequestId, backendRequestId, requestURL, '', '', null, initiator || null);
+    return new NetworkRequest(backendRequestId, backendRequestId, requestURL, '', null, null, initiator || null);
   }
 
   static createWithoutBackendRequest(
       requestId: string, url: string, documentURL: string, initiator: Protocol.Network.Initiator|null): NetworkRequest {
-    return new NetworkRequest(requestId, undefined, url, documentURL, '', null, initiator);
+    return new NetworkRequest(requestId, undefined, url, documentURL, null, null, initiator);
   }
 
   identityCompare(other: NetworkRequest): number {
@@ -418,7 +420,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     return this.parsedURLInternal;
   }
 
-  get frameId(): Protocol.Page.FrameId {
+  get frameId(): Protocol.Page.FrameId|null {
     return this.frameIdInternal;
   }
 
@@ -705,6 +707,11 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     }
 
     this.timingInternal = timingInfo;
+    this.dispatchEventToListeners(Events.TimingChanged, this);
+  }
+
+  private setConnectTimingFromExtraInfo(connectTiming: Protocol.Network.ConnectTiming): void {
+    this.startTimeInternal = connectTiming.requestTime;
     this.dispatchEventToListeners(Events.TimingChanged, this);
   }
 
@@ -1333,6 +1340,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper implement
     this.hasExtraRequestInfoInternal = true;
     this.setRequestHeadersText('');  // Mark request headers as non-provisional
     this.clientSecurityStateInternal = extraRequestInfo.clientSecurityState;
+    this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
   }
 
   hasExtraRequestInfo(): boolean {
@@ -1451,6 +1459,17 @@ export enum Events {
   EventSourceMessageAdded = 'EventSourceMessageAdded',
   TrustTokenResultAdded = 'TrustTokenResultAdded',
 }
+
+export type EventTypes = {
+  [Events.FinishedLoading]: NetworkRequest,
+  [Events.TimingChanged]: NetworkRequest,
+  [Events.RemoteAddressChanged]: NetworkRequest,
+  [Events.RequestHeadersChanged]: void,
+  [Events.ResponseHeadersChanged]: void,
+  [Events.WebsocketFrameAdded]: WebSocketFrame,
+  [Events.EventSourceMessageAdded]: EventSourceMessage,
+  [Events.TrustTokenResultAdded]: void,
+};
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -1646,6 +1665,7 @@ export interface ExtraRequestInfo {
   requestHeaders: NameValue[];
   includedRequestCookies: Cookie[];
   clientSecurityState?: Protocol.Network.ClientSecurityState;
+  connectTiming: Protocol.Network.ConnectTiming;
 }
 
 export interface ExtraResponseInfo {

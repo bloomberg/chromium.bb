@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Download.BandwidthOverallBytesPerSecond2" units="bytes/second"
-    expires_after="2021-12-31">
+    expires_after="2022-03-06">
   <owner>qinmin@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <summary>
@@ -222,6 +222,37 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dtrainor@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>The size of successfully completed downloads.</summary>
+</histogram>
+
+<histogram name="Download.DuplicateDialogEvent.{Type}"
+    enum="DuplicateDownloadEvent" expires_after="M99">
+  <owner>qinmin@chromium.org</owner>
+  <owner>clank-downloads@chromium.org</owner>
+  <summary>
+    Records user interactions on the duplicate download dialog on Android,
+    either for a regular download or an offline page. One user interaction could
+    trigger multiple histograms to be recorded. For example, clicking the text
+    link could record both the link click histogram and the dialog dismiss
+    histogram.
+  </summary>
+  <token key="Type">
+    <variant name="Download"/>
+    <variant name="OfflinePage"/>
+  </token>
+</histogram>
+
+<histogram name="Download.DuplicateInfobarEvent.{Type}"
+    enum="DuplicateDownloadEvent" expires_after="M99">
+  <owner>qinmin@chromium.org</owner>
+  <owner>clank-downloads@chromium.org</owner>
+  <summary>
+    Records user interactions on the duplicate download infobar on Android,
+    either for a regular download or an offline page.
+  </summary>
+  <token key="Type">
+    <variant name="Download"/>
+    <variant name="OfflinePage"/>
+  </token>
 </histogram>
 
 <histogram name="Download.DuplicateInProgressDownloadIdCount"
@@ -941,6 +972,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Download.Service.Files.FreeDiskSpace" units="%"
     expires_after="2021-09-05">
+  <obsolete>
+    Deprecated 09/2021
+  </obsolete>
   <owner>xingliu@chromium.org</owner>
   <summary>
     The percentage of free disk space to total disk space. Recorded during

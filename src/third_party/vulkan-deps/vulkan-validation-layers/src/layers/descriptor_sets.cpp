@@ -337,7 +337,9 @@ bool cvdescriptorset::ValidateDescriptorSetLayoutCreateInfo(
     const uint32_t max_push_descriptors, const bool descriptor_indexing_ext,
     const VkPhysicalDeviceVulkan12Features *core12_features,
     const VkPhysicalDeviceInlineUniformBlockFeaturesEXT *inline_uniform_block_features,
-    const VkPhysicalDeviceInlineUniformBlockPropertiesEXT *inline_uniform_block_props, const DeviceExtensions *device_extensions) {
+    const VkPhysicalDeviceInlineUniformBlockPropertiesEXT *inline_uniform_block_props,
+    const VkPhysicalDeviceAccelerationStructureFeaturesKHR *acceleration_structure_features,
+    const DeviceExtensions *device_extensions) {
     bool skip = false;
     layer_data::unordered_set<uint32_t> bindings;
     uint64_t total_descriptors = 0;
@@ -548,6 +550,19 @@ bool cvdescriptorset::ValidateDescriptorSetLayoutCreateInfo(
                             "vkCreateDescriptorSetLayout(): pBindings[%u] can't have VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT "
                             "for %s since descriptorBindingInlineUniformBlockUpdateAfterBind is not enabled.",
                             i, string_VkDescriptorType(binding_info.descriptorType));
+                    }
+                    if ((binding_info.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR ||
+                         binding_info.descriptorType == VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV) &&
+                        !acceleration_structure_features->descriptorBindingAccelerationStructureUpdateAfterBind) {
+                        skip |= val_obj->LogError(val_obj->device,
+                                                  "VUID-VkDescriptorSetLayoutBindingFlagsCreateInfo-"
+                                                  "descriptorBindingAccelerationStructureUpdateAfterBind-03570",
+                                                  "vkCreateDescriptorSetLayout(): pBindings[%" PRIu32
+                                                  "] can't have VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT "
+                                                  "for %s if "
+                                                  "VkPhysicalDeviceAccelerationStructureFeaturesKHR::"
+                                                  "descriptorBindingAccelerationStructureUpdateAfterBind is not enabled.",
+                                                  i, string_VkDescriptorType(binding_info.descriptorType));
                     }
                 }
 
@@ -770,7 +785,7 @@ void cvdescriptorset::DescriptorSet::Destroy() {
     BASE_NODE::Destroy();
 }
 
-static std::string StringDescriptorReqViewType(descriptor_req req) {
+static std::string StringDescriptorReqViewType(DescriptorReqFlags req) {
     std::string result("");
     for (unsigned i = 0; i <= VK_IMAGE_VIEW_TYPE_CUBE_ARRAY; i++) {
         if (req & (1 << i)) {
@@ -784,7 +799,7 @@ static std::string StringDescriptorReqViewType(descriptor_req req) {
     return result;
 }
 
-static char const *StringDescriptorReqComponentType(descriptor_req req) {
+static char const *StringDescriptorReqComponentType(DescriptorReqFlags req) {
     if (req & DESCRIPTOR_REQ_COMPONENT_TYPE_SINT) return "SINT";
     if (req & DESCRIPTOR_REQ_COMPONENT_TYPE_UINT) return "UINT";
     if (req & DESCRIPTOR_REQ_COMPONENT_TYPE_FLOAT) return "FLOAT";
@@ -2070,8 +2085,7 @@ bool CoreChecks::ValidateImageUpdate(VkImageView image_view, VkImageLayout image
 
     // KHR_maintenance1 allows rendering into 2D or 2DArray views which slice a 3D image,
     // but not binding them to descriptor sets.
-    if (image_node->createInfo.imageType == VK_IMAGE_TYPE_3D && (iv_state->create_info.viewType == VK_IMAGE_VIEW_TYPE_2D ||
-                                                                 iv_state->create_info.viewType == VK_IMAGE_VIEW_TYPE_2D_ARRAY)) {
+    if (iv_state->IsDepthSliced()) {
         *error_code = "VUID-VkDescriptorImageInfo-imageView-00343";
         *error_msg = "ImageView must not be a 2D or 2DArray view of a 3D image";
         return false;

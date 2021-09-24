@@ -243,6 +243,28 @@ LocalFrameClient* FrameLoader::Client() const {
   return frame_->Client();
 }
 
+ClientRedirectPolicy CalculateClientRedirectPolicy(
+    ClientNavigationReason client_navigation_reason,
+    WebFrameLoadType frame_load_type) {
+  if (client_navigation_reason == ClientNavigationReason::kNone ||
+      client_navigation_reason == ClientNavigationReason::kFormSubmissionGet ||
+      client_navigation_reason == ClientNavigationReason::kFormSubmissionPost ||
+      client_navigation_reason == ClientNavigationReason::kAnchorClick) {
+    return ClientRedirectPolicy::kNotClientRedirect;
+  }
+  // If the ClientRedirectReason is kFrameNavigation, only treat as a client
+  // redirect if the WebFrameLoadType is kReplaceCurrentItem. If this check is
+  // not applied, an anchor location change is classified as client redirect
+  // and an incorrect redirect chain is formed. On deleting one entry of this
+  // redirect chain, the whole chain gets deleted. This result in
+  // deletion of multiple items on deleting one item in history.
+  // https://crbug.com/1138096
+  if (client_navigation_reason == ClientNavigationReason::kFrameNavigation &&
+      frame_load_type != WebFrameLoadType::kReplaceCurrentItem)
+    return ClientRedirectPolicy::kNotClientRedirect;
+  return ClientRedirectPolicy::kClientRedirect;
+}
+
 void FrameLoader::SetDefersLoading(LoaderFreezeMode mode) {
   if (frame_->GetDocument())
     frame_->GetDocument()->Fetcher()->SetDefersLoading(mode);
@@ -344,11 +366,11 @@ void FrameLoader::FinishedParsing() {
 
   progress_tracker_->FinishedParsing();
 
-  frame_->GetLocalFrameHostRemote().DidFinishDocumentLoad();
+  frame_->GetLocalFrameHostRemote().DidDispatchDOMContentLoadedEvent();
 
   if (Client()) {
     ScriptForbiddenScope forbid_scripts;
-    Client()->DispatchDidFinishDocumentLoad();
+    Client()->DispatchDidDispatchDOMContentLoadedEvent();
   }
 
   if (Client()) {
@@ -651,7 +673,9 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (same_document_navigation) {
     DCHECK(origin_window);
     document_loader_->CommitSameDocumentNavigation(
-        url, frame_load_type, nullptr, request.ClientRedirect(),
+        url, frame_load_type, nullptr,
+        CalculateClientRedirectPolicy(request.ClientRedirectReason(),
+                                      frame_load_type),
         resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
         /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
         nullptr /* extra_data */);
@@ -772,7 +796,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // plumbing the correct CSP to the browser.
   using CSPDisposition = network::mojom::CSPDisposition;
   CSPDisposition should_check_main_world_csp =
-      ContentSecurityPolicy::ShouldBypassMainWorld(
+      ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(
           request.JavascriptWorld().get())
           ? CSPDisposition::DO_NOT_CHECK
           : CSPDisposition::CHECK;
@@ -792,7 +816,9 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       resource_request, request.GetFrameType(), origin_window,
       nullptr /* document_loader */, navigation_type,
       request.GetNavigationPolicy(), frame_load_type,
-      request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
+      CalculateClientRedirectPolicy(request.ClientRedirectReason(),
+                                    frame_load_type) ==
+          ClientRedirectPolicy::kClientRedirect,
       request.GetTriggeringEventInfo(), request.Form(),
       should_check_main_world_csp, request.GetBlobURLToken(),
       request.GetInputStartTime(), request.HrefTranslate().GetString(),
@@ -893,6 +919,11 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
   //
   // Similar to the missing archive resource case above, synthesise a resource
   // to commit.
+  //
+  // WebNavigationParams::FillStaticResponse() fills the response of |params|
+  // using |params|'s |url| which is the initial URL even after redirections. So
+  // updates the URL to the current URL before calling FillStaticResponse().
+  params->url = params->response.CurrentRequestUrl();
   WebNavigationParams::FillStaticResponse(
       params, "text/html", "UTF-8",
       "<html><body>"
@@ -1254,6 +1285,13 @@ void FrameLoader::RestoreScrollPositionAndViewState(
 
 String FrameLoader::UserAgent() const {
   String user_agent = Client()->UserAgent();
+  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
+                                &user_agent);
+  return user_agent;
+}
+
+String FrameLoader::ReducedUserAgent() const {
+  String user_agent = Client()->ReducedUserAgent();
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
                                 &user_agent);
   return user_agent;
@@ -1659,6 +1697,13 @@ inline void FrameLoader::TakeObjectSnapshot() const {
     return;
   }
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this, this);
+}
+
+mojo::PendingRemote<blink::mojom::CodeCacheHost>
+FrameLoader::CreateWorkerCodeCacheHost() {
+  if (!document_loader_)
+    return mojo::NullRemote();
+  return document_loader_->CreateWorkerCodeCacheHost();
 }
 
 }  // namespace blink

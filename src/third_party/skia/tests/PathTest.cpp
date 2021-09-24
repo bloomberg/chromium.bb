@@ -2232,7 +2232,6 @@ static void test_is_closed_rect(skiatest::Reporter* reporter) {
 
     const SkRect testRect = SkRect::MakeXYWH(10, 10, 50, 70);
     const SkRect emptyRect = SkRect::MakeEmpty();
-    SkPath path;
     for (int start = 0; start < 4; ++start) {
         for (auto dir : {SkPathDirection::kCCW, SkPathDirection::kCW}) {
             SkPath path;
@@ -2313,7 +2312,7 @@ static void test_is_closed_rect(skiatest::Reporter* reporter) {
         }
     }
     // down, up, left, close
-    path.reset();
+    SkPath path;
     path.moveTo(1, 1);
     path.lineTo(1, 2);
     path.lineTo(1, 1);
@@ -3242,10 +3241,10 @@ static void test_range_iter(skiatest::Reporter* reporter) {
         SkPoint lastPt;
         lastMoveTo.set(0, 0);
         lastPt.set(0, 0);
-        for (auto [nextVerb, pts, w] : SkPathPriv::Iterate(path)) {
-            REPORTER_ASSERT(reporter, nextVerb == expectedVerbs[numIterVerbs]);
+        for (auto [verb, pts, w] : SkPathPriv::Iterate(path)) {
+            REPORTER_ASSERT(reporter, verb == expectedVerbs[numIterVerbs]);
             numIterVerbs++;
-            switch (nextVerb) {
+            switch (verb) {
                 case SkPathVerb::kMove:
                     REPORTER_ASSERT(reporter, numIterPts < numPoints);
                     REPORTER_ASSERT(reporter, pts[0] == expectedPts[numIterPts]);

@@ -39,9 +39,9 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
-#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -216,7 +216,8 @@ class AutofillTest : public InProcessBrowserTest {
     NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
-
+    // Shortcut explicit save prompts and automatically accept.
+    personal_data_manager()->set_auto_accept_address_imports_for_testing(true);
     WindowedPersonalDataManagerObserver observer(browser());
 
     std::string js = GetJSToFillForm(data) + submit_js;
@@ -246,12 +247,12 @@ class AutofillTest : public InProcessBrowserTest {
     std::vector<std::string> lines = base::SplitString(
         data, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     int parsed_profiles = 0;
-    for (size_t i = 0; i < lines.size(); ++i) {
-      if (base::StartsWith(lines[i], "#", base::CompareCase::SENSITIVE))
+    for (const auto& line : lines) {
+      if (base::StartsWith(line, "#", base::CompareCase::SENSITIVE))
         continue;
 
       std::vector<std::string> fields = base::SplitString(
-          lines[i], "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+          line, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (fields.empty())
         continue;  // Blank line.
 
@@ -425,8 +426,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
   data4["PHONE_HOME_WHOLE_NUMBER"] = "+21 08450 777 777";
   profiles.push_back(data4);
 
-  for (size_t i = 0; i < profiles.size(); ++i)
-    FillFormAndSubmit("autofill_test_form.html", profiles[i]);
+  for (const auto& profile : profiles)
+    FillFormAndSubmit("autofill_test_form.html", profile);
 
   ASSERT_EQ(2u, personal_data_manager()->GetProfiles().size());
   int us_address_index = personal_data_manager()->GetProfiles()[0]->GetRawInfo(
@@ -570,46 +571,6 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
   ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillTest, PiiMetrics) {
-  auto web_feature_waiter =
-      std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
-          web_contents());
-  web_feature_waiter->AddWebFeatureExpectation(
-      blink::mojom::WebFeature::kAnyPiiFieldDetected_PredictedTypeMatch);
-  web_feature_waiter->AddWebFeatureExpectation(
-      blink::mojom::WebFeature::kPhoneFieldDetected_PredictedTypeMatch);
-  web_feature_waiter->AddWebFeatureExpectation(
-      blink::mojom::WebFeature::kEmailFieldDetected_PredictedTypeMatch);
-  web_feature_waiter->AddWebFeatureExpectation(
-      blink::mojom::WebFeature::kEmailFieldDetected_PatternMatch);
-
-  GURL url =
-      embedded_test_server()->GetURL("/autofill/duplicate_profiles_test.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // The page sometimes unexpectedly loses focus, which would prevent future
-  // triggering of the end-editing event. So we force a page focus event here.
-  // TODO(yaoxia): figure out why the page sometimes loses focus here.
-  web_contents()->GetRenderWidgetHostView()->Focus();
-
-  const char kEditPhoneAndEmailFieldScript[] = R"(
-    let phone_input = document.getElementById('PHONE_HOME_WHOLE_NUMBER');
-    phone_input.focus();
-    phone_input.value = '408-871-4567';
-    phone_input.blur();
-
-    let email_input = document.getElementById('EMAIL_ADDRESS');
-    email_input.focus();
-    email_input.value = 'abc@def.com';
-    email_input.blur();
-  )";
-
-  ASSERT_TRUE(
-      content::ExecuteScript(web_contents(), kEditPhoneAndEmailFieldScript));
-
-  web_feature_waiter->Wait();
 }
 
 // Test that profiles merge for aggregated data with same address.

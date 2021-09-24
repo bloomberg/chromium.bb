@@ -143,6 +143,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/field_trials_provider.h"
@@ -159,6 +160,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/entropy_provider.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/metrics/structured/neutrino_logging.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace metrics {
 
@@ -315,11 +320,19 @@ void MetricsService::EnableRecording() {
     OpenNewLog();
 
   delegating_provider_.OnRecordingEnabled();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This must be after OnRecordingEnabled() to ensure that the structured
+  // logging has been enabled.
+  metrics::structured::NeutrinoDevicesLogWithClientId(
+      state_manager_->client_id(),
+      metrics::structured::NeutrinoDevicesLocation::kEnableRecording);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  // Fill in the system profile in the log and persist it (to prefs, .pma and
-  // crashpad). This includes running the providers so that information like
-  // field trials and hardware info is provided. If Chrome crashes before this
-  // log is completed, the .pma file will have this system profile.
+  // Fill in the system profile in the log and persist it (to prefs, .pma
+  // and crashpad). This includes running the providers so that information
+  // like field trials and hardware info is provided. If Chrome crashes
+  // before this log is completed, the .pma file will have this system
+  // profile.
   RecordCurrentEnvironment(log_manager_.current_log(), /*complete=*/false);
 
   base::RemoveActionCallback(action_callback_);
@@ -498,9 +511,17 @@ void MetricsService::InitializeMetricsState() {
   if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
     provider.LogCrash(
         state_manager_->clean_exit_beacon()->browser_last_live_timestamp());
-    // Reset flag, and wait until we call LogNeedForCleanShutdown() before
-    // monitoring.
+#if defined(OS_ANDROID)
+    // Android can have background sessions in which Chrome may not come to the
+    // foreground, so signal that Chrome should stop watching for crashes. If
+    // and when the app enters the foreground, Chrome starts watching for
+    // crashes via MetricsService::OnAppEnterForeground().
+    //
+    // TODO(crbug/1243895): Watch for crashes here by skipping the call to
+    // WriteBeaconValue() in sessions in which Chrome will come to the
+    // foreground.
     state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
+#endif  // defined(OS_ANDROID)
   }
 
   // HasPreviousSessionData is called first to ensure it is never bypassed.

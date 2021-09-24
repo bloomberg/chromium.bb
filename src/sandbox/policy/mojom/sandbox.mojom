@@ -28,19 +28,44 @@ enum Sandbox {
   // - On Linux/ChromeOS, the CDM is preloaded in the zygote sandbox.
   kCdm,
 
+  // Runs with the same rights as the browser. Usually needed to improve
+  // stability by hosting code that interacts with third party code in another
+  // process.
+  kNoSandbox,
+
+  // Hosts the GPU service and can talk to GPU drivers and other OS APIs which
+  // may not be expecting untrusted input.
+  kGpu,
+
   // Composits PDF and XPS documents.
   kPrintCompositor,
 
+  // Like kUtility but allows loading of speech recognition libraries.
+  kSpeechRecognition,
+
   // Equivalent to no sandbox on all non-Fuchsia platforms.
   // Minimally privileged sandbox on Fuchsia.
-  // TODO(crbug.com/1236898) Fix this mapping.
+  [EnableIf=is_fuchsia]
   kVideoCapture,
+
+  // Allows access to file contents and Windows APIs for parsing icons from PE
+  // files.
+  [EnableIf=is_win]
+  kIconReader,
 
   // Allows LPAC capabilities for the Windws Media Foundation CDM, including
   // internet and private network access, COM, Identity & others. Allows access
   // to files in the `mediaFoundationCdmFiles` Chromium lpac.
   [EnableIf=is_win]
   kMediaFoundationCdm,
+
+  // Launches elevated. Used by the RemovableStorageWriter.
+  [EnableIf=is_win]
+  kNoSandboxAndElevatedPrivileges,
+
+  // Like kUtility, but patches GDI during child startup in pdf_child_init.
+  [EnableIf=is_win]
+  kPdfConversion,
 
   // |kXrCompositing| hosts XR Device Service on Windows.
   [EnableIf=is_win]
@@ -58,4 +83,8 @@ enum Sandbox {
   // Chrome branded builds.
   [EnableIf=is_chromeos_ash]
   kLibassistant,
+
+  // Like kUtility but allows access to IOSurface on macOS.
+  [EnableIf=is_mac]
+  kMirroring,
 };

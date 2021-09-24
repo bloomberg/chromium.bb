@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Pindai kode batang</translation>
 <translation id="3892148308691398805">Salin teks</translation>
-<translation id="4000398125663085899">Foto dan video baru kini akan disimpan ke folder di aplikasi File: File saya &gt; Kamera</translation>
 <translation id="4118525110028899586">Jeda rekaman</translation>
 <translation id="4121305183798804752">Dokumen terdeteksi</translation>
 <translation id="4269820728363426813">Salin URL</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Buka galeri</translation>
 <translation id="520537883758714667">Pemindaian dokumen kini tersedia</translation>
 <translation id="5268823927180092501">Aktifkan mode dokumen di semua kamera</translation>
-<translation id="5422455049771430511">Foto dan video Anda punya tempat baru</translation>
 <translation id="5444515100983837161">Tempatkan semua sisi dokumen ke dalam bingkai. Pemindaian akan berfungsi baik jika dokumen dan latar belakang memiliki warna yang berbeda.</translation>
 <translation id="5671277269877808209">Persegi</translation>
 <translation id="5746169159649715125">Simpan sebagai PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Mode pakar</translation>
 <translation id="5869546221129391014">Kisi</translation>
 <translation id="5975083100439434680">Perkecil</translation>
-<translation id="6040143037577758943">Tutup</translation>
 <translation id="6073451960410192870">Berhenti merekam</translation>
 <translation id="6197807149213783179">Simpan metadata</translation>
 <translation id="6233780560267770709">3 kali 3</translation>
@@ -125,5 +122,6 @@ Jika masukan Anda berkaitan dengan kualitas gambar atau video, lampirkan contoh 
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="9045010116236796332">Tempatkan semua sisi dokumen ke dalam bingkai</translation>
 <translation id="9045155556724273246">10 detik</translation>
+<translation id="906331135292332864">Memproses gambar ...</translation>
 <translation id="945522503751344254">Kirim masukan</translation>
 </translationbundle>

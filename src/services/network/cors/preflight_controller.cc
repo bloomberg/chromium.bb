@@ -8,16 +8,20 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/cors/cors_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/devtools_observer_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
@@ -150,6 +154,75 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   return preflight_request;
 }
 
+// Performs a CORS access check on the CORS-preflight response parameters.
+// According to the note at https://fetch.spec.whatwg.org/#cors-preflight-fetch
+// step 6, even for a preflight check, |credentials_mode| should be checked on
+// the actual request rather than preflight one.
+absl::optional<CorsErrorStatus> CheckPreflightAccess(
+    const GURL& response_url,
+    const int response_status_code,
+    const absl::optional<std::string>& allow_origin_header,
+    const absl::optional<std::string>& allow_credentials_header,
+    mojom::CredentialsMode actual_credentials_mode,
+    const url::Origin& origin) {
+  // Step 7 of https://fetch.spec.whatwg.org/#cors-preflight-fetch
+  auto error_status =
+      CheckAccess(response_url, allow_origin_header, allow_credentials_header,
+                  actual_credentials_mode, origin);
+  const bool has_ok_status = IsOkStatus(response_status_code);
+
+  AccessCheckResult result = (error_status || !has_ok_status)
+                                 ? AccessCheckResult::kNotPermittedInPreflight
+                                 : AccessCheckResult::kPermittedInPreflight;
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult", result);
+  if (!network::IsOriginPotentiallyTrustworthy(origin)) {
+    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult.NotSecureRequestor",
+                              result);
+  }
+
+  // Prefer using a preflight specific error code.
+  if (error_status) {
+    switch (error_status->cors_error) {
+      case mojom::CorsError::kWildcardOriginNotAllowed:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightWildcardOriginNotAllowed;
+        break;
+      case mojom::CorsError::kMissingAllowOriginHeader:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMissingAllowOriginHeader;
+        break;
+      case mojom::CorsError::kMultipleAllowOriginValues:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMultipleAllowOriginValues;
+        break;
+      case mojom::CorsError::kInvalidAllowOriginValue:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowOriginValue;
+        break;
+      case mojom::CorsError::kAllowOriginMismatch:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightAllowOriginMismatch;
+        break;
+      case mojom::CorsError::kInvalidAllowCredentials:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowCredentials;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else if (!has_ok_status) {
+    error_status = absl::make_optional<CorsErrorStatus>(
+        mojom::CorsError::kPreflightInvalidStatus);
+  } else {
+    return absl::nullopt;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError",
+                            error_status->cors_error);
+  return error_status;
+}
+
 std::unique_ptr<PreflightResult> CreatePreflightResult(
     const GURL& final_url,
     const mojom::URLResponseHead& head,
@@ -233,13 +306,8 @@ class PreflightController::PreflightLoader final {
 
     if (devtools_observer_) {
       DCHECK(devtools_request_id_);
-      auto request_info = network::mojom::URLRequestDevToolsInfo::New(
-          preflight_request->method, preflight_request->url,
-          preflight_request->priority, preflight_request->referrer_policy,
-          preflight_request->trust_token_params
-              ? preflight_request->trust_token_params->Clone()
-              : nullptr,
-          request.has_user_gesture);
+      network::mojom::URLRequestDevToolsInfoPtr request_info =
+          network::ExtractDevToolsInfo(*preflight_request);
       devtools_observer_->OnCorsPreflightRequest(
           *devtools_request_id_, preflight_request->headers,
           std::move(request_info), original_request_.url,
@@ -296,8 +364,10 @@ class PreflightController::PreflightLoader final {
                             const mojom::URLResponseHead& head) {
     if (devtools_observer_) {
       DCHECK(devtools_request_id_);
+      mojom::URLResponseHeadDevToolsInfoPtr head_info =
+          ExtractDevToolsInfo(head);
       devtools_observer_->OnCorsPreflightResponse(
-          *devtools_request_id_, original_request_.url, head.Clone());
+          *devtools_request_id_, original_request_.url, std::move(head_info));
       devtools_observer_->OnCorsPreflightRequestCompleted(
           *devtools_request_id_, network::URLLoaderCompletionStatus(net::OK));
     }
@@ -399,6 +469,20 @@ PreflightController::CreatePreflightResultForTesting(
     absl::optional<CorsErrorStatus>* detected_error_status) {
   return CreatePreflightResult(final_url, head, original_request, tainted,
                                detected_error_status);
+}
+
+// static
+absl::optional<CorsErrorStatus>
+PreflightController::CheckPreflightAccessForTesting(
+    const GURL& response_url,
+    const int response_status_code,
+    const absl::optional<std::string>& allow_origin_header,
+    const absl::optional<std::string>& allow_credentials_header,
+    mojom::CredentialsMode actual_credentials_mode,
+    const url::Origin& origin) {
+  return CheckPreflightAccess(response_url, response_status_code,
+                              allow_origin_header, allow_credentials_header,
+                              actual_credentials_mode, origin);
 }
 
 PreflightController::PreflightController(NetworkService* network_service)

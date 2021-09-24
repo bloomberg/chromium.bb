@@ -92,25 +92,6 @@ TEST_F(ComputedStyleTest, ClipPathEqual) {
   EXPECT_EQ(*style1, *style2);
 }
 
-TEST_F(ComputedStyleTest, FocusRingWidth) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-  EXPECT_EQ(3, style->FocusRingStrokeWidth());
-  EXPECT_EQ(2, style->FocusRingOuterStrokeWidth());
-  EXPECT_EQ(1, style->FocusRingInnerStrokeWidth());
-  style->SetEffectiveZoom(3.5);
-  style->SetOutlineWidth(4);
-  EXPECT_EQ(3.5, style->FocusRingStrokeWidth());
-}
-
-TEST_F(ComputedStyleTest, FocusRingOutset) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetOutlineStyle(EBorderStyle::kSolid);
-  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-  style->SetEffectiveZoom(4.75);
-  EXPECT_EQ(4, style->OutlineOutsetExtent());
-}
-
 TEST_F(ComputedStyleTest, SVGStackingContext) {
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   style->UpdateIsStackingContextWithoutContainment(false, false, true);
@@ -753,14 +734,11 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
   auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
 
-  EXPECT_FALSE(style->HasNonInheritedLightDarkValue());
-
   StyleCascade cascade1(state);
   cascade1.MutableMatchResult().AddMatchedProperties(bgimage_declaration);
   cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
   cascade1.Apply();
   EXPECT_TRUE(style->HasBackgroundImage());
-  EXPECT_TRUE(style->HasNonInheritedLightDarkValue());
 
   style = CreateComputedStyle();
   state.SetStyle(style);
@@ -770,7 +748,6 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
   cascade2.Apply();
   EXPECT_FALSE(style->HasBackgroundImage());
-  EXPECT_TRUE(style->HasNonInheritedLightDarkValue());
 }
 
 TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {

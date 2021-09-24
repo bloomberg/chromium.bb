@@ -16,6 +16,7 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -75,7 +76,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     explicit TestApi(AppListView* view);
     ~TestApi();
 
-    AppsGridView* GetRootAppsGridView();
+    PagedAppsGridView* GetRootAppsGridView();
 
    private:
     AppListView* const view_;
@@ -92,6 +93,22 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     ~ScopedAccessibilityAnnouncementLock() {
       --view_->accessibility_event_disablers_;
     }
+
+   private:
+    AppListView* const view_;
+  };
+
+  // Used to prevent the app list contents from being reset when the app list
+  // shows. Only one instance can exist at a time. This class is useful when:
+  // (1) the app list close animation is reversed, and
+  // (2) the contents before the close animation starts should be kept.
+  class ScopedContentsResetDisabler {
+   public:
+    explicit ScopedContentsResetDisabler(AppListView* view);
+    ScopedContentsResetDisabler(const ScopedContentsResetDisabler&) = delete;
+    ScopedContentsResetDisabler& operator=(const ScopedContentsResetDisabler&) =
+        delete;
+    ~ScopedContentsResetDisabler();
 
    private:
     AppListView* const view_;
@@ -208,9 +225,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
   void OnThemeChanged() override;
-
-  // WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -486,7 +500,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   PagedAppsGridView* GetRootAppsGridView();
 
   // Gets the apps grid view within the folder view owned by this view.
-  PagedAppsGridView* GetFolderAppsGridView();
+  AppsGridView* GetFolderAppsGridView();
 
   // Gets the AppListStateTransitionSource for |app_list_state_| to
   // |target_state|. If we are not interested in recording a state transition
@@ -611,6 +625,9 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Used for announcing accessibility alerts.
   std::unique_ptr<AppListA11yAnnouncer> a11y_announcer_;
+
+  // If true, the contents view is not reset when showing the app list.
+  bool disable_contents_reset_when_showing_ = false;
 
   // Records the presentation time for app launcher dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

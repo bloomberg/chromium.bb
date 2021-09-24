@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_test_view_delegate.h"
@@ -13,6 +14,8 @@
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/model/search/test_search_result.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_bubble_search_page.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
@@ -24,6 +27,7 @@
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/privacy_container_view.h"
+#include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
@@ -304,6 +308,121 @@ class AppListPresenterTest
   base::test::ScopedFeatureList feature_list_;
 };
 
+// Tests all tablet/clamshell classic/bubble launcher combinations.
+class AppListBubbleAndTabletTest
+    : public AshTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  AppListBubbleAndTabletTest() = default;
+  AppListBubbleAndTabletTest(const AppListBubbleAndTabletTest&) = delete;
+  AppListBubbleAndTabletTest& operator=(const AppListBubbleAndTabletTest&) =
+      delete;
+  ~AppListBubbleAndTabletTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(features::kAppListBubble,
+                                              app_list_bubble_param());
+    AppListView::SetShortAnimationForTesting(true);
+    AshTestBase::SetUp();
+
+    auto model = std::make_unique<test::AppListTestModel>();
+    app_list_test_model_ = model.get();
+    Shell::Get()->app_list_controller()->SetAppListModelForTest(
+        std::move(model));
+
+    // Make the display big enough to hold the app list.
+    UpdateDisplay("1024x768");
+  }
+
+  // testing::Test:
+  void TearDown() override {
+    AshTestBase::TearDown();
+    AppListView::SetShortAnimationForTesting(false);
+  }
+
+  // Whether we should use the AppListBubble flag.
+  bool app_list_bubble_param() { return std::get<0>(GetParam()); }
+
+  // Whether we should run the test in tablet mode.
+  bool tablet_mode_param() { return std::get<1>(GetParam()); }
+
+  // Bubble launcher is visible in clamshell mode with kAppListBubble enabled.
+  bool should_show_bubble_launcher() {
+    return app_list_bubble_param() && !tablet_mode_param();
+  }
+  // Zero state be shown in clamshell mode and in tablet mode when bubble
+  // launcher is not enabled.
+  bool should_show_zero_state_search() { return !app_list_bubble_param(); }
+
+  void MaybeRefreshAppListSearchResultPage() {
+    // Bubble launcher has an AppListBubbleSearchPage which does not need to be
+    // refreshed like the SearchResultViewPage.
+    if (!should_show_bubble_launcher()) {
+      GetAppListTestHelper()
+          ->GetAppListView()
+          ->app_list_main_view()
+          ->contents_view()
+          ->search_result_page_view()
+          ->OnSearchResultContainerResultsChanged();
+    }
+  }
+
+  bool AppListSearchResultPageVisible() {
+    return should_show_bubble_launcher()
+               ? GetAppListTestHelper()->GetBubbleSearchPage()->GetVisible()
+               : GetAppListTestHelper()
+                     ->GetAppListView()
+                     ->app_list_main_view()
+                     ->contents_view()
+                     ->search_result_page_view()
+                     ->GetVisible();
+  }
+
+  void EnsureLauncherShown() {
+    auto* helper = GetAppListTestHelper();
+    if (should_show_bubble_launcher()) {
+      Shell::Get()->app_list_controller()->bubble_presenter_for_test()->Show(
+          GetPrimaryDisplay().id());
+    } else if (tablet_mode_param()) {
+      // App list is always visible in tablet mode so we do not need to show it.
+    } else {
+      // Show fullscreen so folders are available.
+      helper->ShowAndRunLoop(GetPrimaryDisplayId());
+      helper->GetAppListView()->SetState(AppListViewState::kFullscreenAllApps);
+    }
+    if (should_show_bubble_launcher()) {
+      apps_grid_view_ = helper->GetScrollableAppsGridView();
+    } else {
+      apps_grid_view_ = helper->GetRootPagedAppsGridView();
+    }
+    DCHECK(apps_grid_view_);
+  }
+
+  gfx::Point SearchBoxCenterPoint() {
+    SearchBoxView* search_box_view =
+        should_show_bubble_launcher()
+            ? GetAppListTestHelper()->GetBubbleSearchBoxView()
+            : GetAppListTestHelper()->GetAppListView()->search_box_view();
+    return search_box_view->GetBoundsInScreen().CenterPoint();
+  }
+
+  AppListFolderView* folder_view() {
+    auto* helper = GetAppListTestHelper();
+    return should_show_bubble_launcher() ? helper->GetBubbleFolderView()
+                                         : helper->GetFullscreenFolderView();
+  }
+
+  bool AppListIsInFolderView() {
+    return GetAppListTestHelper()->IsInFolderView();
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  test::AppListTestModel* app_list_test_model_ = nullptr;
+  AppsGridView* apps_grid_view_ = nullptr;
+};
+
 // Used to test app_list behavior with a populated apps_grid
 class PopulatedAppListTest : public AshTestBase,
                              public testing::WithParamInterface<bool> {
@@ -425,6 +544,35 @@ INSTANTIATE_TEST_SUITE_P(All, PopulatedAppListTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          PopulatedAppListWithVKEnabledTest,
                          testing::Bool());
+
+// Instantiate the values in the parameterized tests. First boolean is used to
+// determine whether we should use the kAppListBubble feature flag. The second
+// boolean is to determine whether we should run the test in tablet mode.
+INSTANTIATE_TEST_SUITE_P(All,
+                         AppListBubbleAndTabletTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
+// Tests that Zero State Search is only shown when needed.
+TEST_P(AppListBubbleAndTabletTest, LauncherSearchZeroState) {
+  EnableTabletMode(tablet_mode_param());
+  EnsureLauncherShown();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Tap Search Box to activate it and check search result view visibility.
+  generator->GestureTapAt(SearchBoxCenterPoint());
+  MaybeRefreshAppListSearchResultPage();
+  EXPECT_EQ(should_show_zero_state_search(), AppListSearchResultPageVisible());
+
+  // Type a character into the textfield and check visibility.
+  generator->PressKey(ui::VKEY_A, 0);
+  MaybeRefreshAppListSearchResultPage();
+  EXPECT_TRUE(AppListSearchResultPageVisible());
+
+  // Delete the character in the textfield and check visibility.
+  generator->PressKey(ui::VKEY_BACK, 0);
+  MaybeRefreshAppListSearchResultPage();
+  EXPECT_EQ(should_show_zero_state_search(), AppListSearchResultPageVisible());
+}
 
 // Verifies that context menu click should not activate the search box
 // (see https://crbug.com/941428).
@@ -806,7 +954,7 @@ TEST_P(AppListPresenterTest,
   SanityCheckSearchResultsAnchoredDialogBounds(confirmation_dialog);
 
   // Verify that transition to apps page hides the removal confirmation dialog.
-  views::test::WidgetClosingObserver widget_close_waiter(confirmation_dialog);
+  views::test::WidgetDestroyedWaiter widget_close_waiter(confirmation_dialog);
   GetAppListView()->SetState(AppListViewState::kFullscreenAllApps);
 
   widget_close_waiter.Wait();
@@ -851,7 +999,7 @@ TEST_P(AppListPresenterTest, RemoveSuggestionDialogBoundsUpdateWhenVKHidden) {
       search_result_page()->anchored_dialog_for_test()->widget();
   SanityCheckSearchResultsAnchoredDialogBounds(confirmation_dialog);
 
-  views::test::WidgetClosingObserver widget_close_waiter(confirmation_dialog);
+  views::test::WidgetDestroyedWaiter widget_close_waiter(confirmation_dialog);
 
   // Go to peeking state, and verify the keyboard is not reshown.
   GetAppListView()->SetState(AppListViewState::kPeeking);
@@ -894,7 +1042,7 @@ TEST_P(PopulatedAppListTest, MouseDragAppsGridViewHandledByAppList) {
 TEST_P(PopulatedAppListTest,
        MouseDragAppsGridViewHandledByPaginationController) {
   InitializeAppsGrid();
-  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage() + 1);
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
   EXPECT_EQ(2, apps_grid_view_->pagination_model()->total_pages());
 
   // Calculate the drag start/end points. |drag_start_point| is between the
@@ -926,7 +1074,7 @@ TEST_P(PopulatedAppListTest,
 // (e.g. on screen rotation).
 TEST_P(PopulatedAppListTest, CancelItemDragOnMouseCaptureLoss) {
   InitializeAppsGrid();
-  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage() + 1);
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -1212,7 +1360,7 @@ TEST_P(PopulatedAppListTest, ScreenRotationDuringAppsGridItemDrag) {
   UpdateDisplay("1200x600");
 
   InitializeAppsGrid();
-  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage() + 1);
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -1258,7 +1406,7 @@ TEST_P(PopulatedAppListTest,
   UpdateDisplay("1200x600");
 
   InitializeAppsGrid();
-  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage() + 1);
+  app_list_test_model_->PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -1405,24 +1553,27 @@ TEST_P(PopulatedAppListTest, ScreenRotationDuringAppsGridItemReparentDrag) {
 }
 
 // Tests that app list folder item reparenting drag to another folder.
-TEST_P(PopulatedAppListTest, AppsGridItemReparentToFolderDrag) {
+TEST_P(AppListBubbleAndTabletTest, AppsGridItemReparentToFolderDrag) {
   UpdateDisplay("1200x600");
 
-  InitializeAppsGrid();
   app_list_test_model_->PopulateApps(2);
   AppListFolderItem* folder =
       app_list_test_model_->CreateAndPopulateFolderWithApps(3);
   app_list_test_model_->PopulateApps(10);
+  EnableTabletMode(tablet_mode_param());
+  EnsureLauncherShown();
 
   // Tap the folder item to show it.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->GestureTapAt(
-      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().CenterPoint());
+  AppListItemView* folder_item = apps_grid_view_->GetItemViewAt(2);
+  ASSERT_TRUE(folder_item);
+  event_generator->GestureTapAt(folder_item->GetBoundsInScreen().CenterPoint());
   ASSERT_TRUE(AppListIsInFolderView());
 
   // Start dragging the first item in the active folder.
   AppListItemView* dragged_view =
       folder_view()->items_grid_view()->GetItemViewAt(0);
+  ASSERT_TRUE(dragged_view);
   event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
   event_generator->PressTouch();
   ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
@@ -4205,11 +4356,11 @@ TEST_P(AppListPresenterHomeLauncherTest, LayerOnSecondPage) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(start_point);
   generator->PressLeftButton();
-  AppsGridView* apps_grid_view = GetAppListView()
-                                     ->app_list_main_view()
-                                     ->contents_view()
-                                     ->apps_container_view()
-                                     ->apps_grid_view();
+  PagedAppsGridView* apps_grid_view = GetAppListView()
+                                          ->app_list_main_view()
+                                          ->contents_view()
+                                          ->apps_container_view()
+                                          ->apps_grid_view();
 
   // Drags the mouse a bit above (twice as shelf's height). This should show the
   // item vaguely.

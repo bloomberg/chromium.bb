@@ -71,6 +71,12 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
   SigninUI* GetSigninUI() override;
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                    int* value) const final;
+  void AddWizardCreatedObserverForTests(
+      base::RepeatingClosure on_created) final;
+  bool IsWizardControllerCreated() const final;
+  WizardContext* GetWizardContextForTesting() final;
 
  private:
   class FakeBaseScreen;
@@ -78,6 +84,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   // SessionManager is required by the constructor of WizardController.
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<FakeBaseScreen> fake_screen_;
+  std::unique_ptr<WizardContext> wizard_context_;
   std::unique_ptr<WizardController> wizard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);

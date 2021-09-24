@@ -5,8 +5,8 @@
 #include <string>
 #include <utility>
 
-#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
+#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,17 +17,17 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_data_retriever.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -225,6 +225,7 @@ void UpdateFinalizerClientData(
 
 void WebAppInstallTask::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool overwrite_existing_manifest_fields,
     ForInstallableSite for_installable_site,
     webapps::WebappInstallSource install_source,
     OnceInstallCallback callback) {
@@ -245,6 +246,8 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   WebAppInstallFinalizer::FinalizeOptions options;
   options.install_source = install_source;
   options.locally_installed = true;
+  options.overwrite_existing_manifest_fields =
+      overwrite_existing_manifest_fields;
 
   UpdateFinalizerClientData(install_params_, &options);
 
@@ -496,13 +499,12 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
 void WebAppInstallTask::ApplyParamsToWebApplicationInfo(
     const WebAppInstallParams& install_params,
     WebApplicationInfo& web_app_info) {
-  if (install_params.user_display_mode != DisplayMode::kUndefined) {
-    web_app_info.open_as_window =
-        install_params.user_display_mode != DisplayMode::kBrowser;
-  }
-  if (!install_params.override_manifest_id.has_value()) {
+  if (install_params.user_display_mode != DisplayMode::kUndefined)
+    web_app_info.user_display_mode = install_params.user_display_mode;
+
+  if (!install_params.override_manifest_id.has_value())
     web_app_info.manifest_id = install_params.override_manifest_id;
-  }
+
   // If `additional_search_terms` was a manifest property, it would be
   // sanitized while parsing the manifest. Since it's not, we sanitize it
   // here.
@@ -704,7 +706,7 @@ void WebAppInstallTask::OnIconsRetrieved(
   DCHECK(web_app_info);
 
   PopulateProductIcons(web_app_info.get(), &icons_map);
-  PopulateShortcutItemIcons(web_app_info.get(), icons_map);
+  PopulateOtherIcons(web_app_info.get(), icons_map);
 
   install_finalizer_->FinalizeInstall(
       *web_app_info, finalize_options,
@@ -721,7 +723,7 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
   DCHECK(web_app_info);
 
   PopulateProductIcons(web_app_info.get(), &icons_map);
-  PopulateShortcutItemIcons(web_app_info.get(), icons_map);
+  PopulateOtherIcons(web_app_info.get(), icons_map);
 
   if (background_installation_) {
     DCHECK(!dialog_callback_);
@@ -749,7 +751,7 @@ void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
   if (update_product_icons)
     PopulateProductIcons(web_app_info.get(), &icons_map);
 
-  PopulateShortcutItemIcons(web_app_info.get(), icons_map);
+  PopulateOtherIcons(web_app_info.get(), icons_map);
 
   install_finalizer_->FinalizeUpdate(
       *web_app_info, web_contents(),
@@ -782,15 +784,17 @@ void WebAppInstallTask::OnDialogCompleted(
   WebAppInstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
   finalize_options.locally_installed = true;
+  finalize_options.overwrite_existing_manifest_fields = true;
+
   if (install_params_) {
     finalize_options.locally_installed = install_params_->locally_installed;
+    finalize_options.overwrite_existing_manifest_fields =
+        install_params_->force_reinstall;
 
     UpdateFinalizerClientData(install_params_, &finalize_options);
 
-    if (install_params_->user_display_mode != DisplayMode::kUndefined) {
-      web_app_info_copy.open_as_window =
-          install_params_->user_display_mode != DisplayMode::kBrowser;
-    }
+    if (install_params_->user_display_mode != DisplayMode::kUndefined)
+      web_app_info_copy.user_display_mode = install_params_->user_display_mode;
   }
 
   install_finalizer_->FinalizeInstall(
@@ -878,29 +882,28 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
 
   auto hooks_created_callback =
       base::BindOnce(&WebAppInstallTask::OnOsHooksCreated, GetWeakPtr(),
-                     web_app_info->open_as_window, app_id);
+                     web_app_info->user_display_mode, app_id);
 
   os_integration_manager_->InstallOsHooks(app_id,
                                           std::move(hooks_created_callback),
                                           std::move(web_app_info), options);
 }
 
-void WebAppInstallTask::OnOsHooksCreated(
-    bool open_as_window,
-    const AppId& app_id,
-    const OsHooksResults os_hooks_results) {
+void WebAppInstallTask::OnOsHooksCreated(DisplayMode user_display_mode,
+                                         const AppId& app_id,
+                                         const OsHooksErrors os_hook_errors) {
   if (ShouldStopInstall())
     return;
 
   DCHECK(registrar_);
   registrar_->NotifyWebAppInstalledWithOsHooks(app_id);
   if (!background_installation_) {
-    const bool can_reparent_tab = install_finalizer_->CanReparentTab(
-        app_id, os_hooks_results[OsHookType::kShortcuts]);
+    bool error = os_hook_errors[OsHookType::kShortcuts];
+    const bool can_reparent_tab =
+        install_finalizer_->CanReparentTab(app_id, !error);
 
-    if (can_reparent_tab && open_as_window) {
-      install_finalizer_->ReparentTab(
-          app_id, os_hooks_results[OsHookType::kShortcuts], web_contents());
+    if (can_reparent_tab && (user_display_mode != DisplayMode::kBrowser)) {
+      install_finalizer_->ReparentTab(app_id, !error, web_contents());
     }
   }
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);

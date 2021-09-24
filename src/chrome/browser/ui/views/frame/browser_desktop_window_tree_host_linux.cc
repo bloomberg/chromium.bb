@@ -69,6 +69,10 @@ BrowserDesktopWindowTreeHostLinux::BrowserDesktopWindowTreeHostLinux(
   browser_frame->set_frame_type(browser_frame->UseCustomFrame()
                                     ? views::Widget::FrameType::kForceCustom
                                     : views::Widget::FrameType::kForceNative);
+
+  theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
+  if (auto* linux_ui = views::LinuxUI::instance())
+    scale_observation_.Observe(linux_ui);
 }
 
 BrowserDesktopWindowTreeHostLinux::~BrowserDesktopWindowTreeHostLinux() =
@@ -89,6 +93,11 @@ int BrowserDesktopWindowTreeHostLinux::GetMinimizeButtonOffset() const {
 
 bool BrowserDesktopWindowTreeHostLinux::UsesNativeSystemMenu() const {
   return false;
+}
+
+void BrowserDesktopWindowTreeHostLinux::FrameTypeChanged() {
+  DesktopWindowTreeHostPlatform::FrameTypeChanged();
+  UpdateFrameHints();
 }
 
 bool BrowserDesktopWindowTreeHostLinux::SupportsMouseLock() {
@@ -222,6 +231,8 @@ void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
       window->SetOpaqueRegion({gfx::ToEnclosedRect(opaque_bounds)});
     }
   }
+
+  SizeConstraintsChanged();
 #endif
 }
 
@@ -285,6 +296,15 @@ void BrowserDesktopWindowTreeHostLinux::OnWindowStateChanged(
     browser_view_->FullscreenStateChanging();
   }
 
+  UpdateFrameHints();
+}
+
+void BrowserDesktopWindowTreeHostLinux::OnNativeThemeUpdated(
+    ui::NativeTheme* observed_theme) {
+  UpdateFrameHints();
+}
+
+void BrowserDesktopWindowTreeHostLinux::OnDeviceScaleFactorChanged() {
   UpdateFrameHints();
 }
 

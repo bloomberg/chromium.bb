@@ -26,7 +26,11 @@ SystemWebAppDelegate::SystemWebAppDelegate(
       internal_name_(internal_name),
       install_url_(install_url),
       profile_(profile),
-      origin_trials_map_(origin_trials_map) {}
+      origin_trials_map_(origin_trials_map) {
+  DCHECK(!(ShouldShowNewWindowMenuOption() && ShouldBeSingleWindow()))
+      << "App can't show 'new window' menu option and be a single window at "
+         "the same time.";
+}
 
 SystemWebAppDelegate::~SystemWebAppDelegate() = default;
 
@@ -103,5 +107,26 @@ bool SystemWebAppDelegate::IsAppEnabled() const {
 gfx::Rect SystemWebAppDelegate::GetDefaultBounds(Browser* browser) const {
   return {};
 }
+
+bool SystemWebAppDelegate::HasCustomTabMenuModel() const {
+  return false;
+}
+
+std::unique_ptr<ui::SimpleMenuModel> SystemWebAppDelegate::GetTabMenuModel(
+    ui::SimpleMenuModel::Delegate* delegate) const {
+  return nullptr;
+}
+
+bool SystemWebAppDelegate::ShouldShowTabContextMenuShortcut(
+    Profile* profile,
+    int command_id) const {
+  return true;
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool SystemWebAppDelegate::HasTitlebarTerminalSelectNewTabButton() const {
+  return false;
+}
+#endif
 
 }  // namespace web_app

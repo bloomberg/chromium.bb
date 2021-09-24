@@ -538,12 +538,14 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
        healthd::DiagnosticRoutineEnum::kHttpsFirewall,
        healthd::DiagnosticRoutineEnum::kHttpsLatency,
        healthd::DiagnosticRoutineEnum::kLanConnectivity,
-       healthd::DiagnosticRoutineEnum::kSignalStrength});
+       healthd::DiagnosticRoutineEnum::kSignalStrength,
+       healthd::DiagnosticRoutineEnum::kArcHttp,
+       healthd::DiagnosticRoutineEnum::kArcPing});
 
   base::RunLoop run_loop;
   system_routine_controller_->GetSupportedRoutines(base::BindLambdaForTesting(
       [&](const std::vector<mojom::RoutineType>& supported_routines) {
-        EXPECT_EQ(14u, supported_routines.size());
+        EXPECT_EQ(16u, supported_routines.size());
         EXPECT_FALSE(base::Contains(supported_routines,
                                     mojom::RoutineType::kBatteryCharge));
         EXPECT_FALSE(base::Contains(supported_routines,
@@ -580,6 +582,10 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
             base::Contains(supported_routines, mojom::RoutineType::kMemory));
         EXPECT_TRUE(base::Contains(supported_routines,
                                    mojom::RoutineType::kSignalStrength));
+        EXPECT_TRUE(
+            base::Contains(supported_routines, mojom::RoutineType::kArcHttp));
+        EXPECT_TRUE(
+            base::Contains(supported_routines, mojom::RoutineType::kArcPing));
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -714,12 +720,13 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
 
   SetRunRoutineResponse(/*id=*/1,
                         healthd::DiagnosticRoutineStatusEnum::kRunning);
+  task_environment_.RunUntilIdle();
 
   FakeRoutineRunner routine_runner;
   system_routine_controller_->RunRoutine(
       mojom::RoutineType::kCpuStress,
       routine_runner.receiver.BindNewPipeAndPassRemote());
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Assert that the first routine is not complete.
   EXPECT_TRUE(routine_runner.result.is_null());
@@ -759,7 +766,7 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   system_routine_controller_->RunRoutine(
       mojom::RoutineType::kCpuPrime,
       routine_runner_2->receiver.BindNewPipeAndPassRemote());
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   SetNonInteractiveRoutineUpdateResponse(
       /*percent_complete=*/0, healthd::DiagnosticRoutineStatusEnum::kCancelled,
@@ -767,7 +774,7 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
 
   // Close the routine_runner
   routine_runner_2.reset();
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   log_lines = GetLogLines(log.GetContents());
   EXPECT_EQ(4u, log_lines.size());
@@ -968,6 +975,26 @@ TEST_F(SystemRoutineControllerTest, CancelMemoryReleasesWakeLock) {
 
   // Confirm the wake lock is released.
   EXPECT_FALSE(IsActiveWakeLock());
+}
+
+TEST_F(SystemRoutineControllerTest, ResetReceiverOnDisconnect) {
+  ASSERT_FALSE(system_routine_controller_->ReceiverIsBound());
+  mojo::Remote<mojom::SystemRoutineController> remote;
+  system_routine_controller_->BindInterface(
+      remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(system_routine_controller_->ReceiverIsBound());
+
+  // Unbind remote to trigger disconnect and disconnect handler.
+  remote.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(system_routine_controller_->ReceiverIsBound());
+
+  // Test intent is to ensure interface can be rebound when application is
+  // reloaded using |CTRL + R|.  A disconnect should be signaled in which we
+  // will reset the receiver to its unbound state.
+  system_routine_controller_->BindInterface(
+      remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(system_routine_controller_->ReceiverIsBound());
 }
 
 }  // namespace diagnostics

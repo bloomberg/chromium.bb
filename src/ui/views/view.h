@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -1186,6 +1187,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual FocusBehavior GetFocusBehavior() const;
   void SetFocusBehavior(FocusBehavior focus_behavior);
 
+  // Set this to suppress default handling of focus for this View. By default
+  // native focus will be cleared and a11y events announced based on the new
+  // View focus.
+  // TODO(pbos): This is here to make removing focus behavior from the base
+  // implementation of OnFocus a no-op. Try to avoid new uses of this. Also
+  // investigate if this can be configured with more granularity (which event
+  // to fire on focus etc.).
+  void set_suppress_default_focus_handling() {
+    suppress_default_focus_handling_ = true;
+  }
+
   // Returns true if this view is focusable, |enabled_| and drawn.
   bool IsFocusable() const;
 
@@ -2117,6 +2129,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The focus behavior of the view in regular and accessibility mode.
   FocusBehavior focus_behavior_ = FocusBehavior::NEVER;
 
+  // This is set when focus events should be skipped after focus reaches this
+  // View.
+  bool suppress_default_focus_handling_ = false;
+
   // Context menus -------------------------------------------------------------
 
   // The menu controller.
@@ -2140,6 +2156,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Manages the accessibility interface for this View.
   mutable std::unique_ptr<ViewAccessibility> view_accessibility_;
+
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/1218186): Change this to `false` to make sure checks run
+  // once. This is to be done separately from adding functionality in case it
+  // needs to be reverted due to pre-existing failures.
+  bool has_run_accessibility_paint_checks_ = true;
+#endif
 
   // Observers -----------------------------------------------------------------
 

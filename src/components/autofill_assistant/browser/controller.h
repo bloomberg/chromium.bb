@@ -12,6 +12,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
 #include "components/autofill_assistant/browser/client.h"
@@ -55,7 +56,8 @@ class Controller : public ScriptExecutorDelegate,
                    public virtual UiDelegate,
                    public ScriptTracker::Listener,
                    private content::WebContentsObserver,
-                   public UserModel::Observer {
+                   public UserModel::Observer,
+                   public AutofillAssistantTtsController::TtsEventDelegate {
  public:
   // |web_contents|, |client|, |tick_clock| and |runtime_manager| must remain
   // valid for the lifetime of the instance. Controller will take ownership of
@@ -64,7 +66,8 @@ class Controller : public ScriptExecutorDelegate,
              Client* client,
              const base::TickClock* tick_clock,
              base::WeakPtr<RuntimeManagerImpl> runtime_manager,
-             std::unique_ptr<Service> service);
+             std::unique_ptr<Service> service,
+             std::unique_ptr<AutofillAssistantTtsController> tts_controller);
   ~Controller() override;
 
   // Let the controller know it should keep tracking script availability for the
@@ -99,6 +102,10 @@ class Controller : public ScriptExecutorDelegate,
   // Returns true if the controller is in a state where UI is necessary.
   bool NeedsUI() const { return needs_ui_; }
 
+  // Called when an accessibility service with "FEEDBACK_SPOKEN" feedback type
+  // is enabled or disabled.
+  void OnSpokenFeedbackAccessibilityServiceChanged(bool enabled);
+
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
@@ -118,6 +125,9 @@ class Controller : public ScriptExecutorDelegate,
   std::string GetStatusMessage() const override;
   void SetBubbleMessage(const std::string& message) override;
   std::string GetBubbleMessage() const override;
+  void SetTtsMessage(const std::string& message) override;
+  std::string GetTtsMessage() const override;
+  void MaybePlayTtsMessage() override;
   void SetDetails(std::unique_ptr<Details>, base::TimeDelta delay) override;
   void AppendDetails(std::unique_ptr<Details> details,
                      base::TimeDelta delay) override;
@@ -138,6 +148,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void ExpandBottomSheet() override;
   void CollapseBottomSheet() override;
+  void SetClientSettings(const ClientSettingsProto& client_settings) override;
   bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -198,6 +209,8 @@ class Controller : public ScriptExecutorDelegate,
   int GetProgress() const override;
   absl::optional<int> GetProgressActiveStep() const override;
   bool GetProgressVisible() const override;
+  bool GetTtsButtonVisible() const override;
+  TtsButtonState GetTtsButtonState() const override;
   bool GetProgressBarErrorState() const override;
   absl::optional<ShowProgressBarProto::StepProgressBarConfiguration>
   GetStepProgressBarConfiguration() const override;
@@ -220,6 +233,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetLoginOption(std::string identifier) override;
   void OnTextLinkClicked(int link) override;
   void OnFormActionLinkClicked(int link) override;
+  void OnTtsButtonClicked() override;
   void SetDateTimeRangeStartDate(
       const absl::optional<DateProto>& date) override;
   void SetDateTimeRangeStartTimeSlot(
@@ -265,6 +279,9 @@ class Controller : public ScriptExecutorDelegate,
   void ShutdownIfNecessary() override;
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnInputTextFocusChanged(bool is_text_focused) override;
+
+  // Overrides AutofillAssistantTtsController::TtsEventDelegate
+  void OnTtsEvent(AutofillAssistantTtsController::TtsEventType event) override;
 
  private:
   friend ControllerTest;
@@ -408,6 +425,13 @@ class Controller : public ScriptExecutorDelegate,
   void MakeDetailsVisible(size_t details_index);
   void NotifyDetailsChanged();
 
+  // This represents the display strings locale to be used for the currently
+  // executing set of actions. This locale is used in two ways currently:
+  // 1. Locale of backend provided display strings, if available.
+  // 2. TTS Controller uses this locale for playing TTS messages.
+  std::string GetDisplayStringsLocale();
+  void SetTtsButtonState(TtsButtonState state);
+
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
@@ -456,6 +480,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current status message, may be empty.
   std::string status_message_;
+
+  // Current TTS message to be played, may be empty.
+  std::string tts_message_;
 
   // Current bubble / tooltip message, may be empty.
   std::string bubble_message_;
@@ -579,6 +606,10 @@ class Controller : public ScriptExecutorDelegate,
   bool is_focus_on_bottom_sheet_text_input_ = false;
   bool show_feedback_chip_on_graceful_shutdown_ = false;
   bool are_chips_visible_ = true;
+
+  bool tts_enabled_ = false;
+  std::unique_ptr<AutofillAssistantTtsController> tts_controller_;
+  TtsButtonState tts_button_state_ = TtsButtonState::DEFAULT;
 
   // Only set during a ShowGenericUiAction.
   std::unique_ptr<GenericUserInterfaceProto> generic_user_interface_;

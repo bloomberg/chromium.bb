@@ -10,7 +10,7 @@ import {CrSettingsPrefs, HatsBrowserProxyImpl, loadTimeData, MetricsBrowserProxy
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {TestBrowserProxy} from '../test_browser_proxy.js';
-import {flushTasks, isChildVisible} from '../test_util.m.js';
+import {flushTasks, isChildVisible} from '../test_util.js';
 
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
@@ -37,15 +37,15 @@ suite('PrivacySandbox_PrivacySandboxSettings2Disabled', function() {
 
   setup(function() {
     testHatsBrowserProxy = new TestHatsBrowserProxy();
-    HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
+    HatsBrowserProxyImpl.setInstance(testHatsBrowserProxy);
 
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     CrSettingsPrefs.deferInitialization = true;
 
     openWindowProxy = new TestOpenWindowProxy();
-    OpenWindowProxyImpl.instance_ = openWindowProxy;
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!PrivacySandboxAppElement} */
@@ -153,7 +153,7 @@ suite('PrivacySandbox_PrivacySandboxSettings2Enabled', function() {
     document.body.innerHTML = '';
 
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
 
     testPrivacySandboxBrowserProxy =
         TestBrowserProxy.fromClass(PrivacySandboxBrowserProxy);

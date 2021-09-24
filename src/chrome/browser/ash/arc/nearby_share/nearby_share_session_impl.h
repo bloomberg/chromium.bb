@@ -24,12 +24,14 @@ class PrepareDirectoryTask;
 
 namespace arc {
 
+class ProgressBarDialogView;
+
 // Implementation of NearbyShareSession interface.
 class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
                                public aura::WindowObserver,
                                public aura::EnvObserver {
  public:
-  using SessionFinishedCallback = base::OnceCallback<void(int32_t)>;
+  using SessionFinishedCallback = base::OnceCallback<void(uint32_t)>;
 
   NearbyShareSessionImpl(
       Profile* profile,
@@ -67,6 +69,14 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   void OnPreparedDirectory(aura::Window* const arc_window,
                            base::File::Error result);
 
+  // Called once streaming shared files to local filesystem is started. At this
+  // point we show the progress bar UI to the user.
+  void OnFileStreamingStarted(aura::Window* const window);
+
+  // Called when Share Intent Info object is converted to Intent mojom object.
+  void OnConvertedShareIntentInfoToIntent(aura::Window* const arc_window,
+                                          apps::mojom::IntentPtr intent);
+
   // Calls |SharesheetService.ShowNearbyShareBubble()| to start the Chrome
   // Nearby Share user flow and display bubble in ARC window.
   void ShowNearbyShareBubbleInArcWindow(
@@ -75,6 +85,10 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
 
   // Called back once the session duration exceeds the maximum duration.
   void OnTimerFired();
+
+  // Called back if the progress bar has not updated within the update
+  // interval period.
+  void OnProgressBarIntervalElapsed();
 
   // Called when progress bar UI update is available.
   void OnProgressBarUpdate(double value);
@@ -86,6 +100,8 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   // Called when shared files are no longer used by Nearby Share and can be
   // cleaned up along with the share session.
   void OnCleanupSession();
+
+  bool IsNearbyShareBubbleVisible() const;
 
   // Android activity's task ID
   uint32_t task_id_;
@@ -107,10 +123,14 @@ class NearbyShareSessionImpl : public mojom::NearbyShareSessionHost,
   scoped_refptr<ShareInfoFileHandler> file_handler_;
 
   std::unique_ptr<webshare::PrepareDirectoryTask> prepare_directory_task_;
+  std::unique_ptr<ProgressBarDialogView> progress_bar_view_;
 
   // Timer used to wait for the ARC window to be asynchronously initialized and
   // visible.
   base::OneShotTimer window_initialization_timer_;
+
+  // Timer used to interpolate values between updates to smooth animation.
+  base::RepeatingTimer progress_bar_update_timer_;
 
   // Sequenced task runner for executing backend file IO cleanup tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

@@ -90,7 +90,13 @@ void HTMLFencedFrameElement::Navigate() {
   if (!isConnected())
     return;
 
-  KURL url = KURL(GetNonEmptyURLAttribute(html_names::kSrcAttr));
+  KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
+
+  // TODO(crbug.com/1243568): Convert empty URLs to about:blank, and more
+  // generally implement the navigation restrictions to potentially-trustworthy
+  // URLs + urn:uuids.
+  if (url.IsEmpty())
+    return;
 
   DCHECK(frame_delegate_);
   frame_delegate_->Navigate(url);
@@ -112,7 +118,7 @@ LayoutObject* HTMLFencedFrameElement::CreateLayoutObject(
     LegacyLayout legacy_layout) {
   if (features::kFencedFramesImplementationTypeParam.Get() ==
       features::FencedFramesImplementationType::kMPArch) {
-    return new LayoutIFrame(this);
+    return MakeGarbageCollected<LayoutIFrame>(this);
   }
 
   return HTMLFrameOwnerElement::CreateLayoutObject(style, legacy_layout);

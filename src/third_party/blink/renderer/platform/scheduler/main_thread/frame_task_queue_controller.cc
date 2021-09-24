@@ -99,13 +99,6 @@ void FrameTaskQueueController::CreateTaskQueue(
   queue_creation_params =
       queue_creation_params
           .SetQueueTraits(queue_traits)
-          // Freeze when keep active is currently only set for the
-          // throttleable queue.
-          // TODO(altimin): Figure out how to set this for new queues.
-          // Investigate which tasks must be kept alive, and if possible
-          // move them to an unfreezable queue and remove this override and
-          // the page scheduler KeepActive freezing override.
-          .SetFreezeWhenKeepActive(queue_traits.can_be_throttled)
           .SetFrameScheduler(frame_scheduler_impl_);
 
   scoped_refptr<MainThreadTaskQueue> task_queue =
@@ -126,11 +119,9 @@ void FrameTaskQueueController::TaskQueueCreated(
   all_task_queues_and_voters_.push_back(
       TaskQueueAndEnabledVoterPair(task_queue.get(), voter.get()));
 
-  if (voter) {
-    DCHECK(task_queue_enabled_voters_.find(task_queue) ==
-           task_queue_enabled_voters_.end());
-    task_queue_enabled_voters_.insert(task_queue, std::move(voter));
-  }
+  DCHECK(task_queue_enabled_voters_.find(task_queue) ==
+         task_queue_enabled_voters_.end());
+  task_queue_enabled_voters_.insert(task_queue, std::move(voter));
 }
 
 void FrameTaskQueueController::RemoveTaskQueueAndVoter(

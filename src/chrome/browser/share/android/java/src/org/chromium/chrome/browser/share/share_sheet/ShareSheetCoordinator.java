@@ -28,12 +28,14 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.ChromeShareExtras.DetailedContentType;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareRankingBridge;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextMetricsHelper;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
+import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleMetricsHelper.LinkToggleMetricsDetails;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -89,6 +91,8 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     private LinkToTextCoordinator mLinkToTextCoordinator;
     private ShareSheetLinkToggleCoordinator mShareSheetLinkToggleCoordinator;
     private @LinkGeneration int mLinkGenerationStatusForMetrics = LinkGeneration.MAX;
+    private LinkToggleMetricsDetails mLinkToggleMetricsDetails =
+            new LinkToggleMetricsDetails(LinkToggleState.COUNT, DetailedContentType.NOT_SPECIFIED);
 
     // This same constant is used on the C++ side, in ShareRanking, to indicate
     // the position of the special "More..." target. Don't change its value
@@ -166,12 +170,9 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         mShareParams = params;
         mChromeShareExtras = chromeShareExtras;
         mActivity = params.getWindow().getActivity().get();
-        // Update ShareSheetLinkToggleCoordinator if not a shared highlight.
-        if (mShareSheetLinkToggleCoordinator != null
-                && mShareParams.getLinkToTextSuccessful() == null) {
+        if (!shouldShowPreemptiveLinkToText(chromeShareExtras)) {
             mShareSheetLinkToggleCoordinator.setShareParamsAndExtras(params, chromeShareExtras);
-            // TODO(crbug.com/1227203): set default enabled/disabled status depending on share type
-            mShareParams = mShareSheetLinkToggleCoordinator.getShareParams(LinkToggleState.LINK);
+            mShareParams = mShareSheetLinkToggleCoordinator.getDefaultShareParams();
         }
         if (mActivity == null) return;
 
@@ -185,7 +186,8 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             }
         }
 
-        mBottomSheet = new ShareSheetBottomSheetContent(mActivity, mIconBridge, this, params);
+        mBottomSheet = new ShareSheetBottomSheetContent(
+                mActivity, mIconBridge, this, params, mFeatureEngagementTracker);
 
         mShareStartTime = shareStartTime;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
@@ -196,11 +198,14 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
 
     /**
      * Updates {@code mShareParams} from the {@link LinkToggleState}.
-     * Called when toggling between LinkToText options
+     * Called when toggling between link/no link options.
      *
-     * @param state The state from {@link LinkToggleState} to which ShareParams should be updated.
+     * @param linkToggleMetricsDetails {@link LinkToggleMetricsDetails} to record link toggle
+     *         metrics, and contains the {@link LinkToggleState} to update to.
+     * @param linkGenerationState {@link LinkGeneration} to record LinkToText metrics.
      */
-    void updateShareSheetForLinkToggle(@LinkToggleState int state) {
+    void updateShareSheetForLinkToggle(LinkToggleMetricsDetails linkToggleMetricsDetails,
+            @LinkGeneration int linkGenerationState) {
         if ((!ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
                     || mLinkToTextCoordinator == null)
                 && (!ChromeFeatureList.isEnabled(ChromeFeatureList.SHARING_HUB_LINK_TOGGLE)
@@ -208,9 +213,11 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             return;
         }
 
-        mShareParams = mShareSheetLinkToggleCoordinator.getShareParams(state);
+        mShareParams = mShareSheetLinkToggleCoordinator.getShareParams(
+                linkToggleMetricsDetails.mLinkToggleState);
         mBottomSheet.updateShareParams(mShareParams);
-        mLinkGenerationStatusForMetrics = state;
+        mLinkGenerationStatusForMetrics = linkGenerationState;
+        mLinkToggleMetricsDetails = linkToggleMetricsDetails;
         updateShareSheet(null);
     }
 
@@ -227,8 +234,9 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
 
     private void finishUpdateShareSheet(List<PropertyModel> firstPartyApps,
             List<PropertyModel> thirdPartyApps, @Nullable Runnable onUpdateFinished) {
-        mBottomSheet.createRecyclerViews(
-                firstPartyApps, thirdPartyApps, mContentTypes, mShareParams.getFileContentType());
+        mBottomSheet.createRecyclerViews(firstPartyApps, thirdPartyApps, mContentTypes,
+                mShareParams.getFileContentType(), mChromeShareExtras.getDetailedContentType(),
+                mShareSheetLinkToggleCoordinator);
         if (onUpdateFinished != null) {
             onUpdateFinished.run();
         }
@@ -244,7 +252,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     }
 
     /**
-     * If preemptive link to text generation is enable, create LinkTotextCoordinator
+     * If preemptive link to text generation is enable, create LinkToTextCoordinator
      * which will generate link to text, create a new share and show share sheet.
      * Otherwise show share sheet with the current share.
      *
@@ -254,8 +262,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
      */
     public void showInitialShareSheet(
             ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
-                && chromeShareExtras.isUserHighlightedText()) {
+        if (shouldShowPreemptiveLinkToText(chromeShareExtras)) {
             if (!chromeShareExtras.isReshareHighlightedText()) {
                 LinkToTextMetricsHelper.recordLinkToTextDiagnoseStatus(
                         LinkToTextMetricsHelper.LinkToTextDiagnoseStatus
@@ -263,13 +270,17 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             }
             String tabUrl =
                     mTabProvider.get().isInitialized() ? mTabProvider.get().getUrl().getSpec() : "";
-            mLinkToTextCoordinator =
-                    new LinkToTextCoordinator(params, mTabProvider.get(), this, chromeShareExtras,
-                            shareStartTime, getUrlToShare(params, chromeShareExtras, tabUrl));
+            mLinkToTextCoordinator = new LinkToTextCoordinator(mTabProvider.get(), this,
+                    chromeShareExtras, shareStartTime,
+                    getUrlToShare(params, chromeShareExtras, tabUrl), params.getText());
         }
-        mShareSheetLinkToggleCoordinator =
-                new ShareSheetLinkToggleCoordinator(params, chromeShareExtras, shareStartTime,
-                        mLinkToTextCoordinator, /*chromeOptionShareCallback=*/this);
+        mShareSheetLinkToggleCoordinator = new ShareSheetLinkToggleCoordinator(
+                params, chromeShareExtras, mLinkToTextCoordinator);
+        if (shouldShowPreemptiveLinkToText(chromeShareExtras)) {
+            mLinkToTextCoordinator.shareLinkToText();
+        } else {
+            showShareSheet(params, chromeShareExtras, shareStartTime);
+        }
     }
 
     private Profile getCurrentProfile() {
@@ -301,11 +312,17 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
                 getUrlToShare(shareParams, chromeShareExtras,
                         mTabProvider.get().isInitialized() ? mTabProvider.get().getUrl().getSpec()
                                                            : ""),
-                mLinkGenerationStatusForMetrics);
+                mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails);
         mIsMultiWindow = ApiCompatibilityUtils.isInMultiWindowMode(activity);
 
         return mChromeProvidedSharingOptionsProvider.getPropertyModels(
                 contentTypes, mIsMultiWindow);
+    }
+
+    private boolean shouldShowPreemptiveLinkToText(ChromeShareExtras chromeShareExtras) {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)
+                && chromeShareExtras.getDetailedContentType()
+                == DetailedContentType.HIGHLIGHTED_TEXT;
     }
 
     private PropertyModel createMorePropertyModel(
@@ -315,12 +332,8 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 (shareParams)
                         -> {
-                    RecordUserAction.record("SharingHubAndroid.MoreSelected");
-                    if (ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
-                        LinkToTextMetricsHelper.recordSharedHighlightStateMetrics(
-                                mLinkGenerationStatusForMetrics);
-                    }
+                    recordShareMetrics("SharingHubAndroid.MoreSelected",
+                            mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails);
                     mBottomSheetController.hideContent(mBottomSheet, true);
                     ShareHelper.showDefaultShareUi(params, getCurrentProfile(), saveLastUsed);
                     // Reset callback to prevent cancel() being called when the custom sheet is
@@ -363,9 +376,9 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             return;
         }
 
-        List<PropertyModel> models =
-                mPropertyModelBuilder.selectThirdPartyApps(mBottomSheet, contentTypes, params,
-                        saveLastUsed, mShareStartTime, mLinkGenerationStatusForMetrics);
+        List<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(mBottomSheet,
+                contentTypes, params, saveLastUsed, mShareStartTime,
+                mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails);
         models.add(createMorePropertyModel(activity, params, saveLastUsed));
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(models));
@@ -409,7 +422,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             models.put(name,
                     mPropertyModelBuilder.buildThirdPartyAppModel(mBottomSheet, params, r,
                             saveLastUsed, mShareStartTime, NO_LOG_INDEX,
-                            mLinkGenerationStatusForMetrics));
+                            mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails));
         }
 
         models.put(MORE_TARGET_NAME, createMorePropertyModel(activity, params, saveLastUsed));
@@ -462,6 +475,30 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
             models.add(modelMap.get(target));
         }
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(models));
+    }
+
+    static void recordShareMetrics(String featureName, @LinkGeneration int linkGenerationStatus,
+            LinkToggleMetricsDetails linkToggleMetricsDetails, long shareStartTime) {
+        recordShareMetrics(featureName, linkGenerationStatus, linkToggleMetricsDetails);
+        recordTimeToShare(shareStartTime);
+    }
+
+    private static void recordShareMetrics(String featureName,
+            @LinkGeneration int linkGenerationStatus,
+            LinkToggleMetricsDetails linkToggleMetricsDetails) {
+        RecordUserAction.record(featureName);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION)) {
+            LinkToTextMetricsHelper.recordSharedHighlightStateMetrics(linkGenerationStatus);
+        }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SHARING_HUB_LINK_TOGGLE)) {
+            ShareSheetLinkToggleMetricsHelper.recordLinkToggleSharedStateMetric(
+                    linkToggleMetricsDetails);
+        }
+    }
+
+    private static void recordTimeToShare(long shareStartTime) {
+        RecordHistogram.recordMediumTimesHistogram("Sharing.SharingHubAndroid.TimeToShare",
+                System.currentTimeMillis() - shareStartTime);
     }
 
     @VisibleForTesting

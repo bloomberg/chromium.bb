@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -36,7 +36,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/autotest_desks_api.h"
-#include "ash/public/cpp/desks_helper.h"
+#include "chromeos/ui/wm/desks/desks_helper.h"
 #endif
 
 #if defined(USE_AURA)
@@ -235,8 +235,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
       visible_on_all_desks_browser->window()->GetNativeWindow();
   ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
       aura::client::kVisibleOnAllWorkspacesKey));
-  ASSERT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(
-      visible_on_all_desks_window));
+  ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
+                  ->BelongsToActiveDesk(visible_on_all_desks_window));
 
   // Check that there are two browsers, the default one and the visible on all
   // desks browser.
@@ -262,8 +262,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
       aura::client::kVisibleOnAllWorkspacesKey));
   // Visible on all desks windows should always reside on the active desk,
   // even if there is a desk switch.
-  ASSERT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(
-      visible_on_all_desks_window));
+  ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
+                  ->BelongsToActiveDesk(visible_on_all_desks_window));
 
   RemoveInactiveDesks();
 }

@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/common/guest_view_constants.h"
@@ -150,7 +149,7 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return "abnormal";
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       return "oom killed";
 #endif
@@ -1199,17 +1198,18 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
   params.GetString(webview::kParameterUserAgentOverride, &user_agent_override);
   SetUserAgentOverride(user_agent_override);
 
-  bool allow_transparency = false;
-  if (params.GetBoolean(webview::kAttributeAllowTransparency,
-      &allow_transparency)) {
+  absl::optional<bool> allow_transparency =
+      params.FindBoolKey(webview::kAttributeAllowTransparency);
+  if (allow_transparency) {
     // We need to set the background opaque flag after navigation to ensure that
     // there is a RenderWidgetHostView available.
-    SetAllowTransparency(allow_transparency);
+    SetAllowTransparency(*allow_transparency);
   }
 
-  bool allow_scaling = false;
-  if (params.GetBoolean(webview::kAttributeAllowScaling, &allow_scaling))
-    SetAllowScaling(allow_scaling);
+  absl::optional<bool> allow_scaling =
+      params.FindBoolKey(webview::kAttributeAllowScaling);
+  if (allow_scaling)
+    SetAllowScaling(*allow_scaling);
 
   // Check for a pending zoom from before the first navigation.
   params.GetDouble(webview::kInitialZoomFactor, &pending_zoom_factor_);

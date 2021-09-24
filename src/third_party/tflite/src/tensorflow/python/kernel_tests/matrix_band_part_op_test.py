@@ -117,7 +117,7 @@ class MatrixBandPartBenchmark(test_lib.Benchmark):
             ops.device("/cpu:0"):
           matrix = variables.Variable(array_ops.ones(shape_))
           band = array_ops.matrix_band_part(matrix, limits[0], limits[1])
-          variables.global_variables_initializer().run()
+          self.evaluate(variables.global_variables_initializer())
           self.run_op_benchmark(
               sess,
               control_flow_ops.group(band),
@@ -131,7 +131,7 @@ class MatrixBandPartBenchmark(test_lib.Benchmark):
               ops.device("/gpu:0"):
             matrix = variables.Variable(array_ops.ones(shape_))
             band = array_ops.matrix_band_part(matrix, limits[0], limits[1])
-            variables.global_variables_initializer().run()
+            self.evaluate(variables.global_variables_initializer())
             self.run_op_benchmark(
                 sess,
                 control_flow_ops.group(band),
@@ -141,7 +141,7 @@ class MatrixBandPartBenchmark(test_lib.Benchmark):
 
 
 if __name__ == "__main__":
-  dtypes = (np.bool, np.int32, np.int64, np.float16,
+  dtypes = (np.bool_, np.int32, np.int64, np.float16,
             dtypes_lib.bfloat16.as_numpy_dtype, np.float32, np.float64,
             np.complex64, np.complex128)
   for dtype in dtypes:

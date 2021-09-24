@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/mwb_element_shared_style.js';
 
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -88,11 +89,28 @@ export class BookmarkFolderElement extends PolymerElement {
     return this.open_ ? 'true' : 'false';
   }
 
+  private onBookmarkAuxClick_(event: RepeaterMouseEvent) {
+    if (event.button !== 1) {
+      // Not a middle click.
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
+      middleButton: true,
+      altKey: event.altKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      shiftKey: event.shiftKey,
+    });
+  }
+
   private onBookmarkClick_(event: RepeaterMouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
-      middleButton: event.type === 'auxclick',
+      middleButton: false,
       altKey: event.altKey,
       ctrlKey: event.ctrlKey,
       metaKey: event.metaKey,
@@ -119,8 +137,12 @@ export class BookmarkFolderElement extends PolymerElement {
   }
 
   private onChildrenLengthChanged_() {
-    this.style.setProperty(
-        '--child-count', this.folder.children!.length.toString());
+    if (this.folder.children) {
+      this.style.setProperty(
+          '--child-count', this.folder.children!.length.toString());
+    } else {
+      this.style.setProperty('--child-count', '0');
+    }
   }
 
   private onDepthChanged_() {
@@ -198,3 +220,19 @@ export class BookmarkFolderElement extends PolymerElement {
 }
 
 customElements.define(BookmarkFolderElement.is, BookmarkFolderElement);
+
+interface DraggableElement extends HTMLElement {
+  dataBookmark: chrome.bookmarks.BookmarkTreeNode;
+}
+
+export function getBookmarkFromElement(element: HTMLElement) {
+  return (element as DraggableElement).dataBookmark;
+}
+
+export function isValidDropTarget(element: HTMLElement) {
+  return element.id === 'folder' || element.classList.contains('bookmark');
+}
+
+export function isBookmarkFolderElement(element: HTMLElement): boolean {
+  return element.id === 'folder';
+}

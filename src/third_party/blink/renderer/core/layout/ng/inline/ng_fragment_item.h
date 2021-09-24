@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
@@ -164,7 +165,7 @@ class CORE_EXPORT NGFragmentItem {
   }
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
   LayoutObject* GetMutableLayoutObject() const {
-    return const_cast<LayoutObject*>(layout_object_);
+    return const_cast<LayoutObject*>(layout_object_.Get());
   }
   bool IsLayoutObjectDestroyedOrMoved() const { return !layout_object_; }
   void LayoutObjectWillBeDestroyed() const;
@@ -458,6 +459,11 @@ class CORE_EXPORT NGFragmentItem {
   // This returns 1 for an NGFragmentItem not for LayoutSVGInlineText.
   float SvgScalingFactor() const;
 
+  // Return a scaled font for SVG <text>.
+  // This returns Style().GetFont() for an NGFragmentItem not for
+  // LayoutSVGInlineText.
+  const Font& ScaledFont() const;
+
   // Get a description of |this| for the debug purposes.
   String ToString() const;
 
@@ -518,7 +524,7 @@ class CORE_EXPORT NGFragmentItem {
       const AffineTransform& length_adjust) const;
   AffineTransform BuildSvgTransformForLengthAdjust() const;
 
-  const LayoutObject* layout_object_;
+  UntracedMember<const LayoutObject> layout_object_;
 
   // TODO(kojii): We can make them sub-classes if we need to make the vector of
   // pointers. Sub-classing from DisplayItemClient prohibits copying and that we

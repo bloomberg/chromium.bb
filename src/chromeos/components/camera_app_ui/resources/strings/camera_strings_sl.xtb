@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Optično branje črtne kode</translation>
 <translation id="3892148308691398805">Kopiraj besedilo</translation>
-<translation id="4000398125663085899">Nove fotografije in videoposnetki bodo zdaj shranjeni v mapo v aplikaciji Datoteke: Moje datoteke &gt; Fotoaparat.</translation>
 <translation id="4118525110028899586">Začasna zaustavitev snemanja</translation>
 <translation id="4121305183798804752">Dokument je zaznan</translation>
 <translation id="4269820728363426813">Kopiraj naslov povezave</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">V galerijo</translation>
 <translation id="520537883758714667">Optično branje dokumentov je zdaj na voljo</translation>
 <translation id="5268823927180092501">Omogočanje načina dokumentov v vseh fotoaparatih</translation>
-<translation id="5422455049771430511">Fotografije in videoposnetki imajo novi dom</translation>
 <translation id="5444515100983837161">Postavite vse robe dokumenta znotraj okvira. Optično branje deluje najbolje, če sta dokument in ozadje različnih barv.</translation>
 <translation id="5671277269877808209">Kvadratno</translation>
 <translation id="5746169159649715125">Shrani kot PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Poznavalski način</translation>
 <translation id="5869546221129391014">Mreža</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
-<translation id="6040143037577758943">Zapri</translation>
 <translation id="6073451960410192870">Ustavi snemanje</translation>
 <translation id="6197807149213783179">Shrani metapodatke</translation>
 <translation id="6233780560267770709">3 x 3</translation>
@@ -125,5 +122,6 @@
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="9045010116236796332">Postavite vse robove dokumenta znotraj okvira.</translation>
 <translation id="9045155556724273246">10 sekund</translation>
+<translation id="906331135292332864">Obdelava slike …</translation>
 <translation id="945522503751344254">Pošiljanje povratnih informacij</translation>
 </translationbundle>

@@ -412,7 +412,8 @@ class RenderFrameHostManagerTest
             nullptr /* initiator_frame_token */,
             ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
             entry->extra_headers(), frame_entry, entry, request_body,
-            nullptr /* navigation_ui_data */, absl::nullopt /* impression */);
+            nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+            false /* is_pdf */);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -833,7 +834,6 @@ TEST_P(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   navigation = NavigationSimulatorImpl::CreateBrowserInitiated(kViewSourceUrl,
                                                                contents());
 
-  navigation->set_did_create_new_entry(false);
   navigation->Start();
   request = main_test_rfh()->frame_tree_node()->navigation_request();
   CHECK(request);
@@ -2913,7 +2913,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
           entry.extra_headers(), frame_entry, &entry,
           nullptr /* request_body */, nullptr /* navigation_ui_data */,
-          absl::nullopt /* impression */);
+          absl::nullopt /* impression */, false /* is_pdf */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // As the initial RenderFrame was not live, the new RenderFrameHost should be

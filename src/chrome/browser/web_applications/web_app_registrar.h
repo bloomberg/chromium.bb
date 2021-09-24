@@ -13,13 +13,18 @@
 
 #include "base/check_op.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
+
+namespace apps {
+struct ShareTarget;
+}  // namespace apps
 
 namespace web_app {
 
@@ -144,8 +149,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   // Returns the "icons" field from the app manifest, use |WebAppIconManager| to
   // load icon bitmap data.
-  std::vector<WebApplicationIconInfo> GetAppIconInfos(
-      const AppId& app_id) const;
+  std::vector<apps::IconInfo> GetAppIconInfos(const AppId& app_id) const;
 
   // Represents which icon sizes we successfully downloaded from the IconInfos.
   SortedSizesPx GetAppDownloadedIconSizesAny(const AppId& app_id) const;
@@ -215,9 +219,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns whether the app should be opened in tabbed window mode.
   bool IsTabbedWindowModeEnabled(const AppId& app_id) const;
 
-  // TODO(crbug.com/897314): This can be removed once feature has launched.
-  bool IsInExperimentalTabbedWindowMode(const AppId& app_id) const;
-
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);
 
@@ -232,6 +233,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
                                                 bool is_locally_installed);
   void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
   void NotifyWebAppsDisabledModeChanged();
+  void NotifyWebAppLastBadgingTimeChanged(const AppId& app_id,
+                                          const base::Time& time);
   void NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
                                          const base::Time& time);
   void NotifyWebAppInstallTimeChanged(const AppId& app_id,
@@ -241,8 +244,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void NotifyWebAppInstalledWithOsHooks(const AppId& app_id);
   void NotifyWebAppUserDisplayModeChanged(const AppId& app_id,
                                           DisplayMode user_display_mode);
-  void NotifyWebAppExperimentalTabbedWindowModeChanged(const AppId& app_id,
-                                                       bool enabled);
 
   // ProfileManagerObserver:
   void OnProfileMarkedForPermanentDeletion(

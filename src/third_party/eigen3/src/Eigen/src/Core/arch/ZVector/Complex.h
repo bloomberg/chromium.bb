@@ -140,6 +140,11 @@ template<> EIGEN_STRONG_INLINE Packet1cd por     <Packet1cd>(const Packet1cd& a,
 template<> EIGEN_STRONG_INLINE Packet1cd pxor    <Packet1cd>(const Packet1cd& a, const Packet1cd& b) { return Packet1cd(vec_xor(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet1cd pandnot <Packet1cd>(const Packet1cd& a, const Packet1cd& b) { return Packet1cd(vec_and(a.v, vec_nor(b.v,b.v))); }
 template<> EIGEN_STRONG_INLINE Packet1cd ploaddup<Packet1cd>(const std::complex<double>*     from) {  return pset1<Packet1cd>(*from); }
+template<> EIGEN_STRONG_INLINE Packet1cd pcmp_eq(const Packet1cd& a, const Packet1cd& b) {
+  Packet2d eq = vec_cmpeq (a.v, b.v);
+  Packet2d tmp = { eq[1], eq[0] };
+  return (Packet1cd)pand<Packet2d>(eq, tmp);
+}
 
 template<> EIGEN_STRONG_INLINE void prefetch<std::complex<double> >(const std::complex<double> *   addr) { EIGEN_ZVECTOR_PREFETCH(addr); }
 
@@ -160,47 +165,11 @@ template<> EIGEN_STRONG_INLINE std::complex<double> predux_mul<Packet1cd>(const 
 {
   return pfirst(a);
 }
-template<> struct conj_helper<Packet1cd, Packet1cd, false,true>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    return internal::pmul(a, pconj(b));
-  }
-};
-
-template<> struct conj_helper<Packet1cd, Packet1cd, true,false>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    return internal::pmul(pconj(a), b);
-  }
-};
-
-template<> struct conj_helper<Packet1cd, Packet1cd, true,true>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    return pconj(internal::pmul(a, b));
-  }
-};
-
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet1cd,Packet2d)
 
 template<> EIGEN_STRONG_INLINE Packet1cd pdiv<Packet1cd>(const Packet1cd& a, const Packet1cd& b)
 {
-  // TODO optimize it for AltiVec
-  Packet1cd res = conj_helper<Packet1cd,Packet1cd,false,true>().pmul(a,b);
-  Packet2d s = vec_madd(b.v, b.v, p2d_ZERO_);
-  return Packet1cd(pdiv(res.v, s + vec_perm(s, s, p16uc_REVERSE64)));
+  return pdiv_complex(a, b);
 }
 
 EIGEN_STRONG_INLINE Packet1cd pcplxflip/*<Packet1cd>*/(const Packet1cd& x)
@@ -281,6 +250,17 @@ template<> EIGEN_STRONG_INLINE void prefetch<std::complex<float> >(const std::co
 
 
 #if !defined(__ARCH__) || (defined(__ARCH__) && __ARCH__ < 12)
+
+template<> EIGEN_STRONG_INLINE Packet2cf pcmp_eq(const Packet2cf& a, const Packet2cf& b) {
+  Packet4f eq = pcmp_eq<Packet4f> (a.v, b.v);
+  Packet2cf res;
+  Packet2d tmp1 = { eq.v4f[0][1], eq.v4f[0][0] };
+  Packet2d tmp2 = { eq.v4f[1][1], eq.v4f[1][0] };
+  res.v.v4f[0] = pand<Packet2d>(eq.v4f[0], tmp1);
+  res.v.v4f[1] = pand<Packet2d>(eq.v4f[1], tmp2);
+  return res;
+}
+
 template<> EIGEN_STRONG_INLINE Packet2cf pconj(const Packet2cf& a)
 {
   Packet2cf res;
@@ -321,48 +301,11 @@ template<> EIGEN_STRONG_INLINE std::complex<float> predux_mul<Packet2cf>(const P
   return res;
 }
 
-template<> struct conj_helper<Packet2cf, Packet2cf, false,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return internal::pmul(a, pconj(b));
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,false>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return internal::pmul(pconj(a), b);
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return pconj(internal::pmul(a, b));
-  }
-};
-
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
 
 template<> EIGEN_STRONG_INLINE Packet2cf pdiv<Packet2cf>(const Packet2cf& a, const Packet2cf& b)
 {
-  // TODO optimize it for AltiVec
-  Packet2cf res;
-  res.cd[0] = pdiv<Packet1cd>(a.cd[0], b.cd[0]);
-  res.cd[1] = pdiv<Packet1cd>(a.cd[1], b.cd[1]);
-  return res;
+  return pdiv_complex(a, b);
 }
 
 EIGEN_STRONG_INLINE Packet2cf pcplxflip/*<Packet2cf>*/(const Packet2cf& x)
@@ -387,6 +330,11 @@ template<> EIGEN_STRONG_INLINE Packet2cf pblend(const Selector<2>& ifPacket, con
   return result;
 }
 #else
+template<> EIGEN_STRONG_INLINE Packet2cf pcmp_eq(const Packet2cf& a, const Packet2cf& b) {
+  Packet4f eq = vec_cmpeq (a.v, b.v);
+  Packet4f tmp = { eq[1], eq[0], eq[3], eq[2] };
+  return (Packet2cf)pand<Packet4f>(eq, tmp);
+}
 template<> EIGEN_STRONG_INLINE Packet2cf pconj(const Packet2cf& a) { return Packet2cf(pxor<Packet4f>(a.v, reinterpret_cast<Packet4f>(p4ui_CONJ_XOR))); }
 template<> EIGEN_STRONG_INLINE Packet2cf pmul<Packet2cf>(const Packet2cf& a, const Packet2cf& b)
 {
@@ -435,47 +383,11 @@ template<> EIGEN_STRONG_INLINE std::complex<float> predux_mul<Packet2cf>(const P
   return pfirst<Packet2cf>(prod);
 }
 
-template<> struct conj_helper<Packet2cf, Packet2cf, false,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return internal::pmul(a, pconj(b));
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,false>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return internal::pmul(pconj(a), b);
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    return pconj(internal::pmul(a, b));
-  }
-};
-
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
 
 template<> EIGEN_STRONG_INLINE Packet2cf pdiv<Packet2cf>(const Packet2cf& a, const Packet2cf& b)
 {
-  // TODO optimize it for AltiVec
-  Packet2cf res = conj_helper<Packet2cf,Packet2cf,false,true>().pmul(a, b);
-  Packet4f s = pmul<Packet4f>(b.v, b.v);
-  return Packet2cf(pdiv(res.v, padd<Packet4f>(s, vec_perm(s, s, p16uc_COMPLEX32_REV))));
+  return pdiv_complex(a, b);
 }
 
 template<> EIGEN_STRONG_INLINE Packet2cf pcplxflip<Packet2cf>(const Packet2cf& x)

@@ -15,11 +15,12 @@ import * as Protocol from '../../../../../front_end/generated/protocol.js';
 import {createFakeSetting, enableFeatureForTest} from '../../helpers/EnvironmentHelpers.js';
 
 describe('AggregatedIssue', async () => {
+  const aggregationKey = 'key' as Issues.IssueAggregator.AggregationKey;
   it('deduplicates network requests across issues', () => {
     const issue1 = StubIssue.createFromRequestIds(['id1', 'id2']);
     const issue2 = StubIssue.createFromRequestIds(['id1']);
 
-    const aggregatedIssue = new Issues.IssueAggregator.AggregatedIssue('code');
+    const aggregatedIssue = new Issues.IssueAggregator.AggregatedIssue('code', aggregationKey);
     aggregatedIssue.addInstance(issue1);
     aggregatedIssue.addInstance(issue2);
 
@@ -32,7 +33,7 @@ describe('AggregatedIssue', async () => {
     const issue2 = StubIssue.createFromCookieNames(['cookie2']);
     const issue3 = StubIssue.createFromCookieNames(['cookie1', 'cookie2']);
 
-    const aggregatedIssue = new Issues.IssueAggregator.AggregatedIssue('code');
+    const aggregatedIssue = new Issues.IssueAggregator.AggregatedIssue('code', aggregationKey);
     aggregatedIssue.addInstance(issue1);
     aggregatedIssue.addInstance(issue2);
     aggregatedIssue.addInstance(issue3);
@@ -99,7 +100,7 @@ describe('IssueAggregator', async () => {
 
     const issues = Array.from(aggregator.aggregatedIssues());
     assert.strictEqual(issues.length, 3);
-    const issueCodes = issues.map(r => r.code()).sort((a, b) => a.localeCompare(b));
+    const issueCodes = issues.map(r => r.aggregationKey().toString()).sort((a, b) => a.localeCompare(b));
     assert.deepStrictEqual(issueCodes, ['codeA', 'codeB', 'codeC']);
   });
 
@@ -156,13 +157,13 @@ describe('IssueAggregator', async () => {
     const details1 = {
       resolution: Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked,
       reason: Protocol.Audits.HeavyAdReason.CpuPeakLimit,
-      frame: {frameId: 'main'},
+      frame: {frameId: 'main' as Protocol.Page.FrameId},
     };
     const issue1 = new IssuesManager.HeavyAdIssue.HeavyAdIssue(details1, mockModel);
     const details2 = {
       resolution: Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning,
       reason: Protocol.Audits.HeavyAdReason.NetworkTotalLimit,
-      frame: {frameId: 'main'},
+      frame: {frameId: 'main' as Protocol.Page.FrameId},
     };
     const issue2 = new IssuesManager.HeavyAdIssue.HeavyAdIssue(details2, mockModel);
 
@@ -182,6 +183,8 @@ describe('IssueAggregator', async () => {
     ]);
   });
 
+  const scriptId1 = '1' as Protocol.Runtime.ScriptId;
+
   describe('IssueAggregator', async () => {
     it('aggregates affected locations correctly', () => {
       const mockModel = new MockIssuesModel([]) as unknown as SDK.IssuesModel.IssuesModel;
@@ -195,7 +198,7 @@ describe('IssueAggregator', async () => {
         {url: 'baz', lineNumber: 1, columnNumber: 1},
       ]);
       const issue4 = StubIssue.createFromAffectedLocations([
-        {url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: '1'},
+        {url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: scriptId1},
         {url: 'foo', lineNumber: 2, columnNumber: 1},
       ]);
 
@@ -210,7 +213,7 @@ describe('IssueAggregator', async () => {
       assert.strictEqual(issues.length, 1);
       const locations = [...issues[0].sources()].sort((x, y) => JSON.stringify(x).localeCompare(JSON.stringify(y)));
       assert.deepStrictEqual(locations, [
-        {url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: '1'},
+        {url: 'bar', lineNumber: 1, columnNumber: 1, scriptId: scriptId1},
         {url: 'bar', lineNumber: 1, columnNumber: 1},
         {url: 'baz', lineNumber: 1, columnNumber: 1},
         {url: 'foo', lineNumber: 1, columnNumber: 1},

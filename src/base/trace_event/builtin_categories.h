@@ -268,6 +268,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("xr.debug"))
 
 #define INTERNAL_TRACE_LIST_BUILTIN_CATEGORY_GROUPS(X)                        \
+  X("android_webview,toplevel")                                               \
   X("base,toplevel")                                                          \
   X("benchmark,drm")                                                          \
   X("benchmark,latencyInfo,rail")                                             \
@@ -291,16 +292,21 @@
   X("browser,startup")                                                        \
   X("category1,category2")                                                    \
   X("cc,benchmark")                                                           \
+  X("cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame"))     \
   X("cc,input")                                                               \
   X("cc," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"))                     \
+  X("cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame"))     \
   X("content,navigation")                                                     \
   X("devtools.timeline,rail")                                                 \
   X("drm,hwoverlays")                                                         \
   X("dwrite,fonts")                                                           \
   X("fonts,ui")                                                               \
   X("gpu,benchmark")                                                          \
+  X("gpu,benchmark,android_webview")                                          \
+  X("gpu,benchmark,webview")                                                  \
   X("gpu,startup")                                                            \
   X("gpu,toplevel.flow")                                                      \
+  X("gpu.angle,startup")                                                      \
   X("inc2,inc")                                                               \
   X("inc,inc2")                                                               \
   X("input,benchmark")                                                        \
@@ -310,6 +316,7 @@
   X("input,views")                                                            \
   X("ipc,security")                                                           \
   X("ipc,toplevel")                                                           \
+  X("Java,devtools," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"))          \
   X("loading,rail")                                                           \
   X("loading,rail,devtools.timeline")                                         \
   X("media,gpu")                                                              \
@@ -325,6 +332,7 @@
   X("startup,rail")                                                           \
   X("ui,input")                                                               \
   X("ui,latency")                                                             \
+  X("v8," TRACE_DISABLED_BY_DEFAULT("v8.compile"))                            \
   X("v8,devtools.timeline")                                                   \
   X("v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"))          \
   X("viz,benchmark")                                                          \

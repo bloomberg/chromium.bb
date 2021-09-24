@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">វីដេអូ</translation>
 <translation id="3838931309141338733">ស្កេន​បារកូដ</translation>
 <translation id="3892148308691398805">ចម្លង​អត្ថបទ</translation>
-<translation id="4000398125663085899">រូបថត និងវីដេអូថ្មីនឹងរក្សាទុកក្នុងថតនៅក្នុងកម្មវិធី Files ឥឡូវនេះ៖ ឯកសារខ្ញុំ &gt; កាមេរ៉ា</translation>
 <translation id="4118525110028899586">ផ្អាក​ការថត</translation>
 <translation id="4121305183798804752">បានរកឃើញ​ឯកសារ</translation>
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">ចូលទៅ​កាន់សាលរូបភាព</translation>
 <translation id="520537883758714667">ឥឡូវនេះ មាន​មុខងារ​ស្កេនឯកសារ​ហើយ</translation>
 <translation id="5268823927180092501">បើក​មុខងារ​ឯកសារ​នៅលើ​កាមេរ៉ាទាំងអស់</translation>
-<translation id="5422455049771430511">រូបថត និងវីដេអូរបស់អ្នកមានកន្លែង​ទុក​ថ្មី</translation>
 <translation id="5444515100983837161">ដាក់គែម​ឯកសារ​ទាំងអស់​នៅក្នុងស៊ុម។ ការស្កេន​ដំណើរការ​បានល្អបំផុត ប្រសិនបើ​ឯកសារ និង​ផ្ទៃខាងក្រោយ​មានពណ៌ខុសគ្នា​។</translation>
 <translation id="5671277269877808209">ការ៉េ</translation>
 <translation id="5746169159649715125">រក្សាទុកជា PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">មុខងារអ្នកជំនាញ</translation>
 <translation id="5869546221129391014">ក្រឡា</translation>
 <translation id="5975083100439434680">បង្រួម</translation>
-<translation id="6040143037577758943">បិទ</translation>
 <translation id="6073451960410192870">បញ្ឈប់ការថត</translation>
 <translation id="6197807149213783179">រក្សាទុក​ទិន្នន័យ​មេតា</translation>
 <translation id="6233780560267770709">3 គុណ​នឹង 3</translation>
@@ -125,5 +122,6 @@
 <translation id="8903921497873541725">ពង្រីក</translation>
 <translation id="9045010116236796332">ដាក់គែមទាំងអស់​របស់ឯកសារ​នៅក្នុងស៊ុម</translation>
 <translation id="9045155556724273246">10 វិនាទី</translation>
+<translation id="906331135292332864">កំពុង​ដំណើរការ​រូបភាព...</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 </translationbundle>

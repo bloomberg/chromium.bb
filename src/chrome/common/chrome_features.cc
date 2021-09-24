@@ -47,6 +47,11 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Controls whether intent settings are available in App Management.
 // TODO(crbug/1226925): Do not enable flag unless this has been resolved.
 const base::Feature kAppManagementIntentSettings{
@@ -107,17 +112,11 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
-#if defined(OS_WIN)
-const base::Feature kChromeCleanupScanCompletedNotification{
-    "ChromeCleanupScanCompletedNotification",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContentSettingsRedesign{"ContentSettingsRedesign",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kConsolidatedSiteStorageControls{
+    "ConsolidatedSiteStorageControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 const base::Feature kContinuousSearch{"ContinuousSearch",
@@ -547,11 +546,6 @@ const base::Feature kIncompatibleApplicationsWarning{
 // When enabled, keeps Incognito UI consistent regardless of any selected theme.
 const base::Feature kIncognitoBrandConsistencyForAndroid{
     "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, user gets a new setting which allows them to gate their
-// existing Incognito tabs behind a reauthentication flow.
-const base::Feature kIncognitoReauthenticationForAndroid{
-    "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // When enabled, users will see updated UI in Incognito NTP
@@ -577,9 +571,6 @@ const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
-// Support sharing in Chrome OS intent handling.
-const base::Feature kIntentHandlingSharing{"IntentHandlingSharing",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 // Allow user to have preference for PWA in the intent picker.
 const base::Feature kIntentPickerPWAPersistence{
     "IntentPickerPWAPersistence", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -600,6 +591,19 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 const base::Feature kLinkDoctorDeprecationAndroid{
     "LinkDoctorDeprecationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+const base::Feature kLinuxLowMemoryMonitor{"LinuxLowMemoryMonitor",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// Values taken from the low-memory-monitor documentation and also apply to the
+// portal API:
+// https://hadess.pages.freedesktop.org/low-memory-monitor/gdbus-org.freedesktop.LowMemoryMonitor.html
+constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorModerateLevel{
+    &kLinuxLowMemoryMonitor, "moderate_level", 50};
+constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel{
+    &kLinuxLowMemoryMonitor, "critical_level", 255};
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // Enables LiteVideos, a data-saving optimization that throttles media requests
 // to reduce the bitrate of adaptive media streams. Only for Lite mode users
@@ -731,14 +735,17 @@ const base::Feature kParentAccessCodeForOnlineLogin{
 const base::Feature kPermissionAuditing{"PermissionAuditing",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables using the prediction service for permission prompts.
+// Enables using the prediction service for permission prompts. We will keep
+// this feature in order to allow us to update the holdback chance via finch.
 const base::Feature kPermissionPredictions{"PermissionPredictions",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// The holdback chance is 30% but it can also be configured/updated
+// through finch if needed.
 const base::FeatureParam<double> kPermissionPredictionsHoldbackChance(
     &kPermissionPredictions,
     "holdback_chance",
-    0.0);
+    0.3);
 
 // Enables using the prediction service for geolocation permission prompts.
 const base::Feature kPermissionGeolocationPredictions{
@@ -779,12 +786,6 @@ const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
 
 const base::Feature kPrivacyReview{"PrivacyReview",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the privacy sandbox settings page.
-const base::Feature kPrivacySandboxSettings{"PrivacySandboxSettings",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-const base::FeatureParam<std::string> kPrivacySandboxSettingsURL{
-    &kPrivacySandboxSettings, "website-url", "https://www.privacysandbox.com"};
 
 // Enables additional control set 2 on the privacy sandbox settings page.
 const base::Feature kPrivacySandboxSettings2{"PrivacySandboxSettings2",
@@ -832,14 +833,6 @@ const base::Feature kRequestDesktopSiteForTablets{
     "RequestDesktopSiteForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN)
-const base::Feature kSafetyCheckChromeCleanerChild{
-    "SafetyCheckChromeCleanerChild", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-const base::Feature kSafetyCheckWeakPasswords{"SafetyCheckWeakPasswords",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable support for multiple scheduler configurations.
 const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
@@ -875,9 +868,9 @@ const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
 
 #if defined(OS_ANDROID)
 const base::Feature kShareUsageRanking{"ShareUsageRanking",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kShareUsageRankingFixedMore{
-    "ShareUsageRankingFixedMore", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ShareUsageRankingFixedMore", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_MAC)
@@ -917,6 +910,11 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 // feature flag is available to restore the old behavior in an emergency.
 const base::Feature kSSLCipher3DES{"SSLCipher3DES",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the demo version of the Support Tool. The tool will be available in
+// chrome://support-tool. See go/support-tool-v1-design for more details.
+const base::Feature kSupportTool{"SupportTool",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables chrome://sys-internals.
@@ -1028,12 +1026,6 @@ const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_ANDROID)
-// Enables using NotificationCompat.Builder to create Android notifications.
-const base::Feature kUseNotificationCompatBuilder{
-    "UseNotificationCompatBuilder", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables user activity event logging for power management on
 // Chrome OS.
@@ -1047,7 +1039,7 @@ const base::Feature kWebAppManifestIconUpdating{
 #endif  // defined(OS_ANDROID)
 
 const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
-    "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // When enabled, the web (PWA) Kiosk session uses Lacros-chrome as the web
@@ -1129,9 +1121,6 @@ const base::Feature kUserTypeByDeviceTypeMetricsProvider{
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
     "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
-
-const base::Feature kWindowNaming{"WindowNaming",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables writing basic system profile to the persistent histograms files
 // earlier.

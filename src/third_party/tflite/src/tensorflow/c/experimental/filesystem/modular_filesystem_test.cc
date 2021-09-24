@@ -33,7 +33,6 @@ limitations under the License.
 // Windows defines the following macros to convert foo to fooA or fooW,
 // depending on the type of the string argument. We don't use these macros, so
 // undefine them here.
-#undef LoadLibrary
 #undef CopyFile
 #undef DeleteFile
 #undef TranslateName
@@ -675,8 +674,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyEmpty) {
   Status status = env_->CreateDir(dirpath);
   if (!status.ok()) GTEST_SKIP() << "CreateDir() not supported: " << status;
 
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   status = env_->DeleteRecursively(dirpath, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::OK);
   EXPECT_EQ(undeleted_files, 0);
@@ -702,8 +701,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyNotEmpty) {
   if (!status.ok())
     GTEST_SKIP() << "NewWritableFile() not supported: " << status;
 
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   status = env_->DeleteRecursively(dirpath, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::OK);
   EXPECT_EQ(undeleted_files, 0);
@@ -713,8 +712,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyNotEmpty) {
 TEST_P(ModularFileSystemTest, TestDeleteRecursivelyDoesNotExist) {
   const std::string dirpath = GetURIForPath("a_dir");
 
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   Status status =
       env_->DeleteRecursively(dirpath, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::NOT_FOUND);
@@ -729,8 +728,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyAFile) {
   if (!status.ok())
     GTEST_SKIP() << "NewWritableFile() not supported: " << status;
 
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   status = env_->DeleteRecursively(filepath, &undeleted_files, &undeleted_dirs);
   EXPECT_EQ(undeleted_files, 0);
   EXPECT_EQ(undeleted_dirs, 0);
@@ -744,7 +743,7 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyPathIsInvalid) {
     GTEST_SKIP() << "NewWritableFile() not supported: " << status;
 
   const std::string new_path = GetURIForPath("a_file/a_dir");
-  int64 undeleted_files, undeleted_dirs;
+  int64_t undeleted_files, undeleted_dirs;
   status = env_->DeleteRecursively(new_path, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::FAILED_PRECONDITION);
 }
@@ -761,8 +760,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyANestedDir) {
     GTEST_SKIP() << "RecursivelyCreateDir() not supported: " << status;
 
   const std::string path = GetURIForPath("parent/path/that");
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   status = env_->DeleteRecursively(path, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::OK);
   EXPECT_EQ(undeleted_files, 0);
@@ -785,8 +784,8 @@ TEST_P(ModularFileSystemTest, TestDeleteRecursivelyANestedFile) {
   if (!status.ok())
     GTEST_SKIP() << "NewWritableFile() not supported: " << status;
 
-  int64 undeleted_files = 0;
-  int64 undeleted_dirs = 0;
+  int64_t undeleted_files = 0;
+  int64_t undeleted_dirs = 0;
   status = env_->DeleteRecursively(filepath, &undeleted_files, &undeleted_dirs);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::OK);
   EXPECT_EQ(undeleted_files, 0);
@@ -1549,7 +1548,7 @@ TEST_P(ModularFileSystemTest, TestAppendAndTell) {
   if (!status.ok())
     GTEST_SKIP() << "NewWritableFile() not supported: " << status;
 
-  int64 position;
+  int64_t position;
   status = file->Tell(&position);
   EXPECT_PRED2(UnimplementedOrReturnsCode, status, Code::OK);
   if (!status.ok()) GTEST_SKIP() << "Tell() not supported: " << status;

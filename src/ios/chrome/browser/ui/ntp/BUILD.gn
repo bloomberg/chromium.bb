@@ -18,6 +18,15 @@ source_set("ntp") {
   deps = [ "//ios/chrome/browser/ui/util" ]
 }
 
+source_set("logo") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "logo_animation_controller.h",
+    "logo_vendor.h",
+  ]
+  frameworks = [ "UIKit.framework" ]
+}
+
 source_set("constants") {
   sources = [
     "discover_feed_constants.h",
@@ -38,6 +47,7 @@ source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":feature_flags",
+    ":logo",
     ":ntp",
     ":ntp_internal",
     "//components/feed/core/v2/public/ios:feed_ios_public",
@@ -68,7 +78,6 @@ source_set("coordinator") {
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/discover_feed",
-    "//ios/public/provider/chrome/browser/voice",
     "//ios/web/public",
   ]
 }
@@ -103,8 +112,11 @@ source_set("ntp_internal") {
     "notification_promo_whats_new.mm",
     "ntp_tile_saver.h",
     "ntp_tile_saver.mm",
+    "revamped_incognito_view.h",
+    "revamped_incognito_view.mm",
   ]
   deps = [
+    ":logo",
     ":ntp",
     "resources:incognito_icon",
     "resources:ntp_opentabs",
@@ -167,8 +179,6 @@ source_set("ntp_internal") {
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/branded_images:branded_images_api",
-    "//ios/public/provider/chrome/browser/ui",
-    "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//net",
@@ -260,20 +270,6 @@ source_set("eg2_tests") {
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
-}
-
-source_set("perf_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [ "new_tab_page_perftest.mm" ]
-  deps = [
-    "//base/test:test_support",
-    "//ios/chrome/browser/main",
-    "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/test:perf_test_support",
-    "//ios/chrome/browser/ui/browser_view",
-    "//ios/chrome/browser/ui/commands",
-  ]
 }
 
 source_set("feature_flags") {

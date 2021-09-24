@@ -63,7 +63,6 @@ if (ozone_platform_x11) {
 if (ozone_platform_scenic) {
   ozone_platforms += [ "scenic" ]
   ozone_platform_deps += [ "platform/scenic" ]
-  ozone_platform_test_deps += [ "platform/scenic:scenic_unittests" ]
 }
 
 if (ozone_platform_flatland) {
@@ -252,6 +251,7 @@ source_set("test_support_internal") {
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/platform_window:platform_window",

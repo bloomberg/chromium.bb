@@ -5,6 +5,7 @@
 #include "chromeos/services/bluetooth_config/device_cache.h"
 
 #include "chromeos/services/bluetooth_config/adapter_state_controller.h"
+#include "chromeos/services/bluetooth_config/public/cpp/cros_bluetooth_config_util.h"
 
 namespace chromeos {
 namespace bluetooth_config {
@@ -27,6 +28,19 @@ DeviceCache::GetPairedDevices() const {
   return PerformGetPairedDevices();
 }
 
+std::vector<mojom::BluetoothDevicePropertiesPtr>
+DeviceCache::GetUnpairedDevices() const {
+  // If Bluetooth is not enabled or enabling, return an empty list. This
+  // addresses an edge case: when the user disables Bluetooth, there is a short
+  // amount of time in which Bluetooth is still enabled but is in the process of
+  // turning off. We should still return an empty list in this case to ensure
+  // that the UI does not show a list of devices when the toggle is off.
+  if (!IsBluetoothEnabledOrEnabling())
+    return {};
+
+  return PerformGetUnpairedDevices();
+}
+
 void DeviceCache::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -40,11 +54,16 @@ void DeviceCache::NotifyPairedDevicesListChanged() {
     observer.OnPairedDevicesListChanged();
 }
 
+void DeviceCache::NotifyUnpairedDevicesListChanged() {
+  for (auto& observer : observers_)
+    observer.OnUnpairedDevicesListChanged();
+}
+
 bool DeviceCache::IsBluetoothEnabledOrEnabling() const {
   const mojom::BluetoothSystemState adapter_state =
       adapter_state_controller_->GetAdapterState();
-  return adapter_state == mojom::BluetoothSystemState::kEnabled ||
-         adapter_state == mojom::BluetoothSystemState::kEnabling;
+  return ::chromeos::bluetooth_config::IsBluetoothEnabledOrEnabling(
+      adapter_state);
 }
 
 }  // namespace bluetooth_config

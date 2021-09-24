@@ -157,7 +157,7 @@ void SearchResultSuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
 
 void SearchResultSuggestionChipView::OnFocus() {
   SchedulePaint();
-  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  SearchResultBaseView::OnFocus();
 }
 
 void SearchResultSuggestionChipView::OnBlur() {

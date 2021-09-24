@@ -5,7 +5,7 @@
 import 'chrome://scanning/action_toolbar.js';
 
 import {assertEquals, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
 export function actionToolbarTest() {
   /** @type {?ActionToolbarElement} */
@@ -28,14 +28,14 @@ export function actionToolbarTest() {
   // Verify the page count text updates when the number of scanned images
   // changes.
   test('totalPageCountIncrements', () => {
-    assertEquals('', actionToolbar.$$('#pageNumbers').textContent.trim());
-
-    actionToolbar.numTotalPages = 3;
-    assertEquals('', actionToolbar.$$('#pageNumbers').textContent.trim());
-
-    actionToolbar.numTotalPages = 3;
     actionToolbar.currentPageInView = 1;
+    assertEquals('', actionToolbar.$$('#pageNumbers').textContent.trim());
+
+    actionToolbar.numTotalPages = 3;
     assertEquals('1 of 3', actionToolbar.$$('#pageNumbers').textContent.trim());
+
+    actionToolbar.currentPageInView = -1;
+    assertEquals('', actionToolbar.$$('#pageNumbers').textContent.trim());
 
     actionToolbar.numTotalPages = 4;
     actionToolbar.currentPageInView = 2;

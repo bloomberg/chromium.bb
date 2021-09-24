@@ -93,7 +93,12 @@ class VkDeviceObj : public vk_testing::Device {
 // failure was encountered.
 class ErrorMonitor {
   public:
-    ErrorMonitor();
+    enum Behavior {
+        DefaultSuccess = 0,
+        DefaultIgnore,
+    };
+
+    ErrorMonitor(Behavior = Behavior::DefaultIgnore);
 
     ~ErrorMonitor() NOEXCEPT;
 
@@ -129,6 +134,13 @@ class ErrorMonitor {
 
     // ExpectSuccess now takes an optional argument allowing a custom combination of debug flags
     void ExpectSuccess(VkDebugReportFlagsEXT const message_flag_mask = kErrorBit);
+    bool ExpectingSuccess() const {
+        return (desired_message_strings_.size() == 1) &&
+               (desired_message_strings_.count("") == 1 && ignore_message_strings_.size() == 0);
+    }
+    bool NeedCheckSuccess() const {
+        return (behavior_ == Behavior::DefaultSuccess) && ExpectingSuccess();
+    }
 
     void VerifyFound();
     void VerifyNotFound();
@@ -152,6 +164,7 @@ class ErrorMonitor {
     test_platform_thread_mutex mutex_;
     bool *bailout_;
     bool message_found_;
+    Behavior behavior_;
 };
 
 struct DebugReporter {
@@ -425,22 +438,17 @@ class VkConstantBufferObj : public VkBufferObj {
     VkDeviceObj *m_device;
 };
 
-class VkRenderpassObj {
+class VkRenderpassObj : public vk_testing::RenderPass {
   public:
     VkRenderpassObj(VkDeviceObj *device, VkFormat format = VK_FORMAT_B8G8R8A8_UNORM);
     VkRenderpassObj(VkDeviceObj *device, VkFormat format, bool depthStencil);
-    ~VkRenderpassObj() NOEXCEPT;
-    VkRenderPass handle() { return m_renderpass; }
-
-  protected:
-    VkRenderPass m_renderpass;
-    VkDevice device;
 };
 
 class VkImageObj : public vk_testing::Image {
   public:
     VkImageObj(VkDeviceObj *dev);
     bool IsCompatible(VkImageUsageFlags usages, VkFormatFeatureFlags features);
+    bool IsCompatibleCheck(const VkImageCreateInfo &create_info);
 
   public:
     static VkImageCreateInfo ImageCreateInfo2D(uint32_t const width, uint32_t const height, uint32_t const mipLevels,
@@ -607,17 +615,82 @@ class VkShaderObj : public vk_testing::ShaderModule {
                 const VkSpecializationInfo *specInfo = nullptr);
     VkShaderObj(VkDeviceObj *device, const char *shaderText, VkShaderStageFlagBits stage, VkRenderFramework *framework,
                 char const *name = "main", bool debug = false, const VkSpecializationInfo *specInfo = nullptr,
-                uint32_t spirv_minor_version = 0);
+                const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
                 char const *name = "main", const VkSpecializationInfo *specInfo = nullptr,
                 const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkPipelineShaderStageCreateInfo const &GetStageCreateInfo() const;
 
-    bool InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug = false, uint32_t spirv_minor_version = 0);
+    bool InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug = false,
+                      const spv_target_env env = SPV_ENV_VULKAN_1_0);
     VkResult InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug = false,
-                             uint32_t spirv_minor_version = 0);
+                             const spv_target_env env = SPV_ENV_VULKAN_1_0);
     bool InitFromASM(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env env = SPV_ENV_VULKAN_1_0);
-    VkResult InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source);
+    VkResult InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env = SPV_ENV_VULKAN_1_0);
+
+    // These functions return a pointer to a newly created _and initialized_ VkShaderObj if initialization was successful.
+    // Otherwise, {} is returned.
+    static std::unique_ptr<VkShaderObj> CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                       const std::string &code, const char *entry_point = "main",
+                                                       const VkSpecializationInfo *spec_info = nullptr,
+                                                       const spv_target_env = SPV_ENV_VULKAN_1_0, bool debug = false);
+    static std::unique_ptr<VkShaderObj> CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                      const std::string &code, const char *entry_point = "main",
+                                                      const VkSpecializationInfo *spec_info = nullptr,
+                                                      const spv_target_env spv_env = SPV_ENV_VULKAN_1_0);
+
+    // TODO (ncesario) remove ifndef once android build consolidation changes go in
+#ifndef __ANDROID__
+    struct GlslangTargetEnv {
+        GlslangTargetEnv(const spv_target_env env) {
+            switch (env) {
+                case SPV_ENV_UNIVERSAL_1_0:
+                    language_version = glslang::EShTargetSpv_1_0;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_1:
+                    language_version = glslang::EShTargetSpv_1_1;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_2:
+                    language_version = glslang::EShTargetSpv_1_2;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_3:
+                    language_version = glslang::EShTargetSpv_1_3;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_4:
+                    language_version = glslang::EShTargetSpv_1_4;
+                    break;
+                case SPV_ENV_UNIVERSAL_1_5:
+                    language_version = glslang::EShTargetSpv_1_5;
+                    break;
+                case SPV_ENV_VULKAN_1_0:
+                    client_version = glslang::EShTargetVulkan_1_0;
+                    break;
+                case SPV_ENV_VULKAN_1_1:
+                    client_version = glslang::EShTargetVulkan_1_1;
+                    language_version = glslang::EShTargetSpv_1_3;
+                    break;
+                case SPV_ENV_VULKAN_1_2:
+                    client_version = glslang::EShTargetVulkan_1_2;
+                    language_version = glslang::EShTargetSpv_1_5;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        operator glslang::EShTargetLanguageVersion() const {
+            return language_version;
+        }
+
+        operator glslang::EShTargetClientVersion() const {
+            return client_version;
+        }
+
+      private:
+        glslang::EShTargetLanguageVersion language_version = glslang::EShTargetSpv_1_0;
+        glslang::EShTargetClientVersion client_version = glslang::EShTargetVulkan_1_0;
+    };
+#endif
 
   protected:
     VkPipelineShaderStageCreateInfo m_stage_info;

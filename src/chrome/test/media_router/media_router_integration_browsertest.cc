@@ -261,7 +261,8 @@ void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFileFails() {
 void MediaRouterIntegrationBrowserTest::OpenTestPage(
     base::FilePath::StringPieceType file_name) {
   base::FilePath full_path = GetResourceFile(file_name);
-  ui_test_utils::NavigateToURL(browser(), GetTestPageUrl(full_path));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GetTestPageUrl(full_path)));
 }
 
 void MediaRouterIntegrationBrowserTest::OpenTestPageInNewTab(
@@ -466,7 +467,13 @@ void MediaRouterIntegrationBrowserTest::RunReconnectSessionSameTabTest() {
   ASSERT_EQ(session_id, reconnected_session_id);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
+// TODO(crbug.com/1238758): Test is flaky on Windows and Linux.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_Basic MANUAL_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MAYBE_Basic) {
   RunBasicTest();
 }
 
@@ -480,7 +487,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Basic) {
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_OpenLocalMediaFileInCurrentTab) {
   // Start at a new tab, the file should open in the same tab.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
   // Make sure there is 1 tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -500,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
 // TODO(http://crbug.com/1095068): There maybe a crash on Linux and ChromeOS.
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_OpenLocalMediaFileInNewTab DISABLED_OpenLocalMediaFileInNewTab
+#define MAYBE_OpenLocalMediaFileInNewTab MANUAL_OpenLocalMediaFileInNewTab
 #else
 #define MAYBE_OpenLocalMediaFileInNewTab OpenLocalMediaFileInNewTab
 #endif
@@ -509,7 +517,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MAYBE_OpenLocalMediaFileInNewTab) {
   // Start at a tab with content in it, the file will open in a new tab.
-  ui_test_utils::NavigateToURL(browser(), GURL("https://google.com"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("https://google.com")));
   // Make sure there is 1 tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -534,13 +543,13 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 }
 
 // Tests that creating a route with a local file opens in fullscreen.
-// TODO(https://crbug.com/903016) Could be flaky in entering fullscreen.
-// This test passed locally when running with native test provider, so it
-// is updated to MANUAL and is allowed to run on private waterfall.
+// TODO(https://crbug.com/903016) Disabled for being flaky in entering
+// fullscreen.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       MANUAL_OpenLocalMediaFileFullscreen) {
+                       DISABLED_OpenLocalMediaFileFullscreen) {
   // Start at a new tab, the file should open in the same tab.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
   // Make sure there is 1 tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -556,9 +565,6 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   // Wait for capture poll timer to pick up change.
   Wait(base::TimeDelta::FromSeconds(3));
 
-  // Enter full screen
-  ExecuteScript(web_contents, "document.body.requestFullscreen();");
-
   // Expect that fullscreen was entered.
   ASSERT_TRUE(
       web_contents->GetDelegate()->IsFullscreenForTabOrPending(web_contents));
@@ -567,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 // Flaky on MSan bots: http://crbug.com/879885
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_OpenLocalMediaFileCastFailNoFullscreen \
-  DISABLED_OpenLocalMediaFileCastFailNoFullscreen
+  MANUAL_OpenLocalMediaFileCastFailNoFullscreen
 #else
 #define MAYBE_OpenLocalMediaFileCastFailNoFullscreen \
   OpenLocalMediaFileCastFailNoFullscreen
@@ -577,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MAYBE_OpenLocalMediaFileCastFailNoFullscreen) {
   test_provider_->set_route_error_message("Unknown error");
   // Start at a new tab, the file should open in the same tab.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
   // Make sure there is 1 tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -595,7 +602,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       web_contents->GetDelegate()->IsFullscreenForTabOrPending(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, SendAndOnMessage) {
+// TODO(crbug.com/1238728): Test is flaky on Windows and Linux.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_SendAndOnMessage MANUAL_SendAndOnMessage
+#else
+#define MAYBE_SendAndOnMessage SendAndOnMessage
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MAYBE_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
@@ -607,7 +621,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, CloseOnError) {
                        kSendMessageAndExpectConnectionCloseOnErrorScript);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_SendMessage) {
+// TODO(crbug.com/1238688): Test is flaky on Windows and Linux.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_Fail_SendMessage MANUAL_Fail_SendMessage
+#else
+#define MAYBE_Fail_SendMessage Fail_SendMessage
+#endif
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MAYBE_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 

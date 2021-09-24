@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Güvenlik duvarı algılandı</translation>
 <translation id="1075811647922107217">Sayfa boyutu</translation>
+<translation id="1119447706177454957">Dahili hata</translation>
 <translation id="1124772482545689468">Kullanıcı</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> tarafından yönetiliyor.</translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Giriş Portalı</translation>
 <translation id="2006864819935886708">Bağlantı</translation>
 <translation id="2008685064673031089">Birincil arama</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Daha fazla ayar</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, sürüm <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB / <ph name="TOTAL_MEMORY" /> GB kullanılabilir</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895">%<ph name="PERCENTAGE_VALUE" /></translation>
 <translation id="2157959690810728433">SIRAYA ALINDI</translation>
 <translation id="2161394479394250669">Yazdırma işini iptal et</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
 <translation id="2364498172489649528">Başarılı oldu</translation>
+<translation id="2380886658946992094">Hukuk</translation>
 <translation id="2391082728065870591">Geri Bildirim Raporu Gönder</translation>
+<translation id="2407209115954268704">SIM Kilitleme Durumu</translation>
 <translation id="2418150275289244458">Ayarlarda aç</translation>
 <translation id="2446553403094072641">Kayan nokta doğruluğu</translation>
 <translation id="2448312741937722512">Tür</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Önbellek</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="315116470104423982">Mobil veriler</translation>
+<translation id="3156846309055100599"><ph name="PAGE_NUMBER" />. sayfa taranıyor...</translation>
 <translation id="315738237743207937">Giriş portalı algılandı</translation>
 <translation id="3188257591659621405">Dosyalarım</translation>
 <translation id="3199982728237701504">Doküman Besleyici (İki taraflı)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> günden eski yazdırma işleri silinir</translation>
 <translation id="4003384961948020559">İşlem başarısız - Çıkış dolu</translation>
 <translation id="4034824040120875894">Yazıcı</translation>
+<translation id="409427325554347132">Test ayrıntılarını kaydet</translation>
 <translation id="4131410914670010031">Siyah beyaz</translation>
 <translation id="4145784616224233563">HTTP Güvenlik Duvarı</translation>
 <translation id="4155551848414053977">Tarayıcının açık ve ağınız üzerinden veya doğrudan bağlantı ile kullanılabilir olduğundan emin olun</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
 <translation id="4238516577297848345">Devam eden bir yazdırma işi yok</translation>
 <translation id="4244962993387259361">Bellek testi yapmak için en az 500 MB boş alana ihtiyacınız var. Yer açmak için Ayarlar &gt; Depolama alanı yönetimi bölümüne gidin.</translation>
+<translation id="4258281355379922695">HTTP Gecikmesi</translation>
+<translation id="4271957103967917607">Tam Ekran görüntüle</translation>
 <translation id="4289540628985791613">Genel bakış</translation>
 <translation id="4297501883039923494">Durduruldu - Bilinmeyen hata</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> Resim</translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">IP Yapılandırması</translation>
 <translation id="4548483925627140043">Sinyal bulunamadı</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh Pil</translation>
+<translation id="4561801978359312462">SIM Kilidi Açıldı</translation>
 <translation id="4562494484721939086">Hizmet yok</translation>
 <translation id="458794348635939462">Tüm ana makineler çözümlenemedi</translation>
 <translation id="4593212453765072419">Proxy kimlik doğrulaması gerekli</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /> Yazdırma işini iptal etmek için enter tuşuna basın.</translation>
+<translation id="463791356324567266">Tarama iptal ediliyor...</translation>
 <translation id="4646949265910132906">Güvenli Kablosuz Bağlantı</translation>
-<translation id="4652335678334611408">Oturum günlüğünü kaydet</translation>
 <translation id="4654549501020883054">Günlük Olarak Değiştir</translation>
 <translation id="4665014895760275686">Üretici</translation>
 <translation id="467510802200863975">Şifreler eşleşmiyor</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Raporu gizle</translation>
 <translation id="500920857929044050">Testi durdur</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM Kilitlendi (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Grup adı</translation>
 <translation id="5088172560898466307">Sunucu ana makinesinin adı</translation>
 <translation id="5089810972385038852">Eyalet</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Klasörde göster</translation>
 <translation id="5212543919916444558">Ekranınızda size yardımcı olabileceğim bir şey bulamıyorum.
 Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
+<translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5234764350956374838">Kapat</translation>
 <translation id="5252456968953390977">Dolaşım</translation>
@@ -248,6 +260,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} deneme hakkınız kaldı}other{{0} deneme hakkınız kaldı}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Tarama işlemi tamamlanamadı</translation>
+<translation id="5502931783115429516">Android çalışmıyor</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5701381305118179107">Ortala</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Portal Durumu</translation>
+<translation id="5784136236926853061">Yüksek HTTP gecikmesi</translation>
 <translation id="5832805196449965646">Kişi Ekle</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5849570051105887917">Ev sağlayıcı kodu</translation>
+<translation id="5860033963881614850">Kapalı</translation>
 <translation id="5866840822086176774">Çok güçlü</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5916084858004523819">Yasak</translation>
@@ -281,6 +296,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6146993107019042706">Bitirmek için yeni şifrenizi girin</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Daha fazla bilgi</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Pil kapasitesi kullanıldıkça azalır</translation>
 <translation id="6191293864534840972">Alan adı sunucuları geçersiz</translation>
 <translation id="6223752125779001553">Kullanılabilir tarayıcı yok</translation>
@@ -302,6 +318,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6527081081771465939">Bilinmeyen kablosuz ağ güvenlik protokolü</translation>
 <translation id="65587193855025101">Düz Yataklı</translation>
 <translation id="6564646048574748301">İşlem başarısız - Yazıcıya ulaşılamıyor</translation>
+<translation id="6566314079205407217">Çok sayfalı tarama</translation>
 <translation id="6574762126505704998">Tam kaplama</translation>
 <translation id="6575134580692778371">Yapılandırılmadı</translation>
 <translation id="6596816719288285829">IP Adresi</translation>
@@ -341,9 +358,11 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Duvar Kağıdı Koleksiyonları</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Ağ Cihazları</translation>
 <translation id="7359657277149375382">Dosya türü</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">Çok yüksek HTTP gecikmesi</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Tarama işlemi tamamlandı. 1 sayfa tarandı}other{Tarama işlemi tamamlandı. {NUMBER_OF_PAGES} sayfa tarandı}}</translation>
 <translation id="7469648432129124067">Portal algılandı</translation>
@@ -351,9 +370,11 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="7490813197707563893">MAC adresi</translation>
 <translation id="7497215489070763236">Sunucu CA sertifikası</translation>
 <translation id="7502658306369382406">IPv6 adresi</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Teşhis Rutinleri</translation>
 <translation id="7561454561030345039">Bu işlem, yöneticiniz tarafından yönetilir.</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">ARC Ping</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> kaldı</translation>
 <translation id="7620771111601174153">Yardım Merkezi'nde daha fazla bilgi edinin</translation>
 <translation id="763165478673169849">Son Sıfırlanma Zamanı</translation>

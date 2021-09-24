@@ -68,6 +68,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_ui_browser_interface_broker_registry.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
@@ -116,15 +117,9 @@
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/task_module/task_module.mojom.h"
 #include "chrome/browser/payments/payment_request_factory.h"
-#include "chrome/browser/promo_browser_command/promo_browser_command.mojom.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
-#else
-#include "chrome/browser/speech/speech_recognition_service_factory.h"
-#endif
 #include "chrome/browser/ui/webui/app_service_internals/app_service_internals.mojom.h"
 #include "chrome/browser/ui/webui/app_service_internals/app_service_internals_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
@@ -153,6 +148,7 @@
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/resources/cr_components/most_visited/most_visited.mojom.h"
+#include "ui/webui/resources/js/browser_command/browser_command.mojom.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
@@ -163,6 +159,7 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
+#include "chrome/browser/speech/speech_recognition_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -176,11 +173,19 @@
 #include "ash/webui/diagnostics_ui/mojom/system_routine_controller.mojom.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
 #include "ash/webui/file_manager/mojom/file_manager.mojom.h"
+#include "ash/webui/help_app_ui/help_app_ui.h"
+#include "ash/webui/help_app_ui/help_app_ui.mojom.h"
+#include "ash/webui/help_app_ui/search/search.mojom.h"
+#include "ash/webui/media_app_ui/media_app_ui.h"
+#include "ash/webui/media_app_ui/media_app_ui.mojom.h"
+#include "ash/webui/print_management/mojom/printing_manager.mojom.h"
+#include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "ash/webui/scanning/scanning_ui.h"
 #include "ash/webui/shimless_rma/shimless_rma.h"
 #include "chrome/browser/apps/digital_goods/digital_goods_factory_impl.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+#include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
@@ -216,17 +221,10 @@
 #include "chromeos/components/connectivity_diagnostics/connectivity_diagnostics_ui.h"
 #include "chromeos/components/eche_app_ui/eche_app_ui.h"
 #include "chromeos/components/eche_app_ui/mojom/eche_app.mojom.h"
-#include "chromeos/components/help_app_ui/help_app_ui.h"
-#include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
-#include "chromeos/components/help_app_ui/search/search.mojom.h"
 #include "chromeos/components/local_search_service/public/mojom/index.mojom.h"
-#include "chromeos/components/media_app_ui/media_app_ui.h"
-#include "chromeos/components/media_app_ui/media_app_ui.mojom.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
 #include "chromeos/components/personalization_app/personalization_app_ui.h"
-#include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
-#include "chromeos/components/print_management/print_management_ui.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
@@ -248,10 +246,14 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-#include "chromeos/components/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"  // nogncheck crbug.com/1125897
-#include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"  // nogncheck crbug.com/1125897
-#include "chromeos/components/telemetry_extension_ui/mojom/system_events_service.mojom.h"  // nogncheck crbug.com/1125897
-#include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
+#include "ash/webui/demo_mode_app_ui/demo_mode_app_ui.h"
+#include "ash/webui/demo_mode_app_ui/mojom/demo_mode_app_ui.mojom.h"
+#include "ash/webui/sample_system_web_app_ui/mojom/sample_system_web_app_ui.mojom.h"
+#include "ash/webui/sample_system_web_app_ui/sample_system_web_app_ui.h"
+#include "ash/webui/telemetry_extension_ui/mojom/diagnostics_service.mojom.h"  // nogncheck crbug.com/1125897
+#include "ash/webui/telemetry_extension_ui/mojom/probe_service.mojom.h"  // nogncheck crbug.com/1125897
+#include "ash/webui/telemetry_extension_ui/mojom/system_events_service.mojom.h"  // nogncheck crbug.com/1125897
+#include "ash/webui/telemetry_extension_ui/telemetry_extension_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -704,8 +706,8 @@ void PopulateChromeWebUIFrameBinders(
   }
 
   RegisterWebUIControllerInterfaceBinder<
-      promo_browser_command::mojom::CommandHandlerFactory, NewTabPageUI,
-      WhatsNewUI>(map);
+      browser_command::mojom::CommandHandlerFactory, NewTabPageUI, WhatsNewUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<realbox::mojom::PageHandler,
                                          NewTabPageUI>(map);
@@ -844,14 +846,14 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos_camera::mojom::CameraAppHelper, chromeos::CameraAppUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<help_app_ui::mojom::PageHandlerFactory,
-                                         chromeos::HelpAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<
+      ash::help_app::mojom::PageHandlerFactory, ash::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::local_search_service::mojom::Index, chromeos::HelpAppUI>(map);
+      chromeos::local_search_service::mojom::Index, ash::HelpAppUI>(map);
 
-  RegisterWebUIControllerInterfaceBinder<
-      chromeos::help_app::mojom::SearchHandler, chromeos::HelpAppUI>(map);
+  RegisterWebUIControllerInterfaceBinder<ash::help_app::mojom::SearchHandler,
+                                         ash::HelpAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::eche_app::mojom::SignalingMessageExchanger,
@@ -866,7 +868,11 @@ void PopulateChromeWebUIFrameBinders(
       map);
 
   RegisterWebUIControllerInterfaceBinder<
-      media_app_ui::mojom::PageHandlerFactory, chromeos::MediaAppUI>(map);
+      chromeos::eche_app::mojom::NotificationGenerator,
+      chromeos::eche_app::EcheAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::media_app_ui::mojom::PageHandlerFactory, ash::MediaAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::network_health::mojom::NetworkHealthService,
@@ -939,16 +945,19 @@ void PopulateChromeWebUIFrameBinders(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
+  if (ash::features::IsDemoModeSWAEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<
+        ash::mojom::demo_mode::PageHandlerFactory, ash::DemoModeAppUI>(map);
+  }
+
   if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
     RegisterWebUIControllerInterfaceBinder<
-        chromeos::health::mojom::DiagnosticsService,
-        chromeos::TelemetryExtensionUI>(map);
+        ash::health::mojom::DiagnosticsService, ash::TelemetryExtensionUI>(map);
+    RegisterWebUIControllerInterfaceBinder<ash::health::mojom::ProbeService,
+                                           ash::TelemetryExtensionUI>(map);
     RegisterWebUIControllerInterfaceBinder<
-        chromeos::health::mojom::ProbeService, chromeos::TelemetryExtensionUI>(
+        ash::health::mojom::SystemEventsService, ash::TelemetryExtensionUI>(
         map);
-    RegisterWebUIControllerInterfaceBinder<
-        chromeos::health::mojom::SystemEventsService,
-        chromeos::TelemetryExtensionUI>(map);
   }
 #endif
 
@@ -998,6 +1007,14 @@ void PopulateChromeWebUIFrameBinders(
         map);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void PopulateChromeWebUIFrameInterfaceBrokers(
+    content::WebUIBrowserInterfaceBrokerRegistry& registry) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
+  registry.ForWebUI<ash::SampleSystemWebAppUI>()
+      .Add<ash::mojom::sample_swa::PageHandlerFactory>();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
 }
 
 }  // namespace internal

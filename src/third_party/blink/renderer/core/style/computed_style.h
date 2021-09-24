@@ -28,6 +28,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "base/gtest_prod_util.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -705,22 +707,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // outline-width
-  float OutlineWidth() const {
+  LayoutUnit OutlineWidth() const {
     if (OutlineStyle() == EBorderStyle::kNone)
-      return 0;
+      return LayoutUnit();
     return OutlineWidthInternal();
   }
   void SetOutlineWidth(float v) { SetOutlineWidthInternal(LayoutUnit(v)); }
-  // TODO(rego): This is a temporal method that will be removed once we start
-  // using the float OutlineWidth() in the painting code.
-  uint16_t OutlineWidthInt() const {
-    if (OutlineStyle() == EBorderStyle::kNone)
-      return 0;
-    return OutlineWidthInternal().ToUnsigned();
-  }
-
-  // outline-offset
-  int16_t OutlineOffsetInt() const { return OutlineOffset().ToInt(); }
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.
@@ -1949,11 +1941,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasOutline() const {
     return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }
-  CORE_EXPORT int OutlineOutsetExtent() const;
-  CORE_EXPORT float FocusRingOuterStrokeWidth() const;
-  CORE_EXPORT float FocusRingInnerStrokeWidth() const;
-  CORE_EXPORT float FocusRingStrokeWidth() const;
-  CORE_EXPORT int FocusRingOffset() const;
   bool HasOutlineWithCurrentColor() const {
     return HasOutline() && OutlineColor().IsCurrentColor();
   }
@@ -2083,7 +2070,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool ContainsSize() const {
     return ((Contain() & kContainsSize) == kContainsSize) ||
-           IsInlineAndBlockSizeContainer() || SkipsContents();
+           IsSizeContainer() || SkipsContents();
   }
   bool ContainsInlineSize() const {
     return (Contain() & kContainsInlineSize) || IsInlineSizeContainer() ||
@@ -2114,6 +2101,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsDisplayTableBox() const { return IsDisplayTableBox(Display()); }
   bool IsDisplayFlexibleBox() const { return IsDisplayFlexibleBox(Display()); }
+  bool IsDisplayGridBox() const { return IsDisplayGridBox(Display()); }
   bool IsDisplayFlexibleOrGridBox() const {
     return IsDisplayFlexibleBox(Display()) || IsDisplayGridBox(Display());
   }
@@ -2264,6 +2252,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Animation utility functions.
+  bool HasCurrentCompositableAnimation() const {
+    return HasCurrentOpacityAnimation() || HasCurrentTransformAnimation() ||
+           HasCurrentFilterAnimation() || HasCurrentBackdropFilterAnimation() ||
+           (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+            HasCurrentBackgroundColorAnimation());
+  }
   bool ShouldCompositeForCurrentAnimations() const {
     return HasCurrentOpacityAnimation() || HasCurrentTransformAnimation() ||
            HasCurrentFilterAnimation() || HasCurrentBackdropFilterAnimation();
@@ -2654,17 +2648,9 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
-  mojom::blink::ColorScheme ComputedColorScheme() const {
+  mojom::blink::ColorScheme UsedColorScheme() const {
     return DarkColorScheme() ? mojom::blink::ColorScheme::kDark
                              : mojom::blink::ColorScheme::kLight;
-  }
-
-  mojom::blink::ColorScheme UsedColorScheme() const {
-    return ComputedColorScheme();
-  }
-
-  mojom::blink::ColorScheme UsedColorSchemeForInitialColors() const {
-    return ComputedColorScheme();
   }
 
   StyleColor InitialColorForColorScheme() const {
@@ -2710,12 +2696,10 @@ class ComputedStyle : public ComputedStyleBase,
     return ContainerType() & kContainerTypeBlockSize;
   }
   bool IsInlineOrBlockSizeContainer() const {
-    return ContainerType() &
-           (kContainerTypeInlineSize | kContainerTypeBlockSize);
+    return ContainerType() & kContainerTypeSize;
   }
-  bool IsInlineAndBlockSizeContainer() const {
-    const unsigned both = (kContainerTypeInlineSize | kContainerTypeBlockSize);
-    return (ContainerType() & both) == both;
+  bool IsSizeContainer() const {
+    return (ContainerType() & kContainerTypeSize) == kContainerTypeSize;
   }
   bool IsContentVisibilityVisible() const {
     return ContentVisibility() == EContentVisibility::kVisible;

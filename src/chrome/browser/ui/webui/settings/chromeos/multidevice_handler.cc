@@ -43,6 +43,7 @@ const char kPageContentDataPhoneHubNotificationsStateKey[] =
     "phoneHubNotificationsState";
 const char kPageContentDataPhoneHubTaskContinuationStateKey[] =
     "phoneHubTaskContinuationState";
+const char kPageContentDataPhoneHubAppsStateKey[] = "phoneHubAppsState";
 const char kPageContentDataWifiSyncStateKey[] = "wifiSyncState";
 const char kPageContentDataSmartLockStateKey[] = "smartLockState";
 const char kNotificationAccessStatus[] = "notificationAccessStatus";
@@ -81,51 +82,51 @@ MultideviceHandler::MultideviceHandler(
 MultideviceHandler::~MultideviceHandler() {}
 
 void MultideviceHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showMultiDeviceSetupDialog",
       base::BindRepeating(&MultideviceHandler::HandleShowMultiDeviceSetupDialog,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPageContentData",
       base::BindRepeating(&MultideviceHandler::HandleGetPageContent,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setFeatureEnabledState",
       base::BindRepeating(&MultideviceHandler::HandleSetFeatureEnabledState,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeHostDevice",
       base::BindRepeating(&MultideviceHandler::HandleRemoveHostDevice,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "retryPendingHostSetup",
       base::BindRepeating(&MultideviceHandler::HandleRetryPendingHostSetup,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setUpAndroidSms",
       base::BindRepeating(&MultideviceHandler::HandleSetUpAndroidSms,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSmartLockSignInEnabled",
       base::BindRepeating(&MultideviceHandler::HandleGetSmartLockSignInEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setSmartLockSignInEnabled",
       base::BindRepeating(&MultideviceHandler::HandleSetSmartLockSignInEnabled,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSmartLockSignInAllowed",
       base::BindRepeating(&MultideviceHandler::HandleGetSmartLockSignInAllowed,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAndroidSmsInfo",
       base::BindRepeating(&MultideviceHandler::HandleGetAndroidSmsInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "attemptNotificationSetup",
       base::BindRepeating(&MultideviceHandler::HandleAttemptNotificationSetup,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "cancelNotificationSetup",
       base::BindRepeating(&MultideviceHandler::HandleCancelNotificationSetup,
                           base::Unretained(this)));
@@ -383,7 +384,7 @@ MultideviceHandler::GenerateAndroidSmsInfo() {
 }
 
 void MultideviceHandler::HandleGetAndroidSmsInfo(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
@@ -476,6 +477,11 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
       static_cast<int32_t>(
           feature_states
               [multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation]));
+  page_content_dictionary->SetInteger(
+      kPageContentDataPhoneHubAppsStateKey,
+      static_cast<int32_t>(
+          feature_states[multidevice_setup::mojom::Feature::kEche]));
+
   page_content_dictionary->SetInteger(
       kPageContentDataWifiSyncStateKey,
       static_cast<int32_t>(

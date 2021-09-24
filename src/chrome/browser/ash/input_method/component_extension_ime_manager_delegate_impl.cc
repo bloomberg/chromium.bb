@@ -270,12 +270,9 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
     if (language_value->is_string()) {
       languages.insert(language_value->GetString());
     } else if (language_value->is_list()) {
-      const base::ListValue* language_list = nullptr;
-      language_value->GetAsList(&language_list);
-      for (size_t j = 0; j < language_list->GetSize(); ++j) {
-        std::string language_str;
-        if (language_list->GetString(j, &language_str))
-          languages.insert(language_str);
+      for (const base::Value& elem : language_value->GetList()) {
+        if (elem.is_string())
+          languages.insert(elem.GetString());
       }
     }
   }
@@ -403,7 +400,7 @@ void ComponentExtensionIMEManagerDelegateImpl::ReadComponentExtensionsInfo(
       continue;
     }
 
-    for (size_t i = 0; i < component_list->GetSize(); ++i) {
+    for (size_t i = 0; i < component_list->GetList().size(); ++i) {
       const base::DictionaryValue* dictionary;
       if (!component_list->GetDictionary(i, &dictionary))
         continue;

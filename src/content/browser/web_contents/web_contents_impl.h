@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/starscan_load_observer.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
@@ -203,6 +204,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   static WebContents* FromFrameTreeNodeId(int frame_tree_node_id);
   static WebContentsImpl* FromOuterFrameTreeNode(
       const FrameTreeNode* frame_tree_node);
+  static WebContentsImpl* FromRenderWidgetHostImpl(RenderWidgetHostImpl* rwh);
 
   // Complex initialization here. Specifically needed to avoid having
   // members call back into our virtual functions in the constructor.
@@ -564,10 +566,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
-  void OnInterfaceRequest(
-      RenderFrameHostImpl* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void OnDidBlockNavigation(
       const GURL& blocked_url,
       const GURL& initiator_url,
@@ -575,7 +573,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidFinishLoad(RenderFrameHostImpl* render_frame_host,
                        const GURL& url) override;
   void OnManifestUrlChanged(const PageImpl& page) override;
-  const GURL& GetMainFrameLastCommittedURL() override;
   void RenderFrameCreated(RenderFrameHostImpl* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHostImpl* render_frame_host) override;
   void ShowContextMenu(
@@ -710,7 +707,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnFrameAudioStateChanged(RenderFrameHostImpl* host,
                                 bool is_audible) override;
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
-  GetRecordAggregateWatchTimeCallback() override;
+  GetRecordAggregateWatchTimeCallback(
+      const GURL& page_main_frame_last_committed_url) override;
   std::vector<FrameTreeNode*> GetUnattachedOwnedNodes(
       RenderFrameHostImpl* owner) override;
   void RegisterProtocolHandler(RenderFrameHostImpl* source,
@@ -732,9 +730,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       ClipboardPasteContentAllowed allowed);
   void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                 float page_scale_factor) override;
-  void OnTextAutosizerPageInfoChanged(
-      RenderFrameHostImpl* source,
-      blink::mojom::TextAutosizerPageInfoPtr page_info) override;
   void BindScreenOrientation(
       RenderFrameHost* rfh,
       mojo::PendingAssociatedReceiver<device::mojom::ScreenOrientation>
@@ -766,7 +761,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url,
       const std::string& http_request,
       const std::string& mime_type,
-      network::mojom::RequestDestination request_destination) override;
+      network::mojom::RequestDestination request_destination,
+      bool include_credentials) override;
   void DomOperationResponse(const std::string& json_string) override;
   void SavableResourceLinksResponse(
       RenderFrameHostImpl* source,
@@ -825,7 +821,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void Activate() override;
   void ShowCreatedWidget(int process_id,
                          int widget_route_id,
-                         const gfx::Rect& initial_rect) override;
+                         const gfx::Rect& initial_rect,
+                         const gfx::Rect& initial_anchor_rect) override;
   void CreateMediaPlayerHostForRenderFrameHost(
       RenderFrameHostImpl* frame_host,
       mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost> receiver)
@@ -928,7 +925,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderWidgetHostImpl* GetRenderWidgetHostWithPageFocus() override;
   void FocusOwningWebContents(
       RenderWidgetHostImpl* render_widget_host) override;
-  WebContents* GetAsWebContents() override;
   void RendererUnresponsive(
       RenderWidgetHostImpl* render_widget_host,
       base::RepeatingClosure hang_monitor_restarter) override;
@@ -1719,12 +1715,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // See also UpdateTargetURL.
   void ClearTargetURL();
 
-  class AXTreeSnapshotCombiner;
-  void RecursiveRequestAXTreeSnapshotOnFrame(
-      FrameTreeNode* root_node,
-      AXTreeSnapshotCombiner* combiner,
-      mojom::SnapshotAccessibilityTreeParamsPtr params);
-
   // Called each time |fullscreen_frames_| is updated. Find the new
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
@@ -1837,9 +1827,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // the observer list then.
   WebContentsObserverList observers_;
 
-  // True if this tab was opened by another tab. This is not unset if the opener
-  // is closed.
-  bool created_with_opener_;
+  // True if this tab was opened by another window. This is true even if the tab
+  // is opened with "noopener", and won't be unset if the opener is closed.
+  bool opened_by_another_window_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<WebContentsAndroid> web_contents_android_;
@@ -2171,10 +2161,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
 
-  // Stores information from the main frame's renderer that needs to be shared
-  // with OOPIF renderers.
-  blink::mojom::TextAutosizerPageInfo text_autosizer_page_info_;
-
   // Stores the rect of the Windows Control Overlay, which contains system UX
   // affordances (e.g. close), for installed desktop Progress Web Apps (PWAs),
   // if the app specifies the 'window-controls-overlay' DisplayMode in its
@@ -2238,6 +2224,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   absl::optional<SkColor> page_base_background_color_;
 
   bool disallow_activation_navigations_ = false;
+
+  // TODO(1231679): Remove/reevaluate after the PCScan experiment is finished.
+  std::unique_ptr<StarScanLoadObserver> star_scan_load_observer_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

@@ -24,6 +24,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1119348796022671382">The themed colour mode uses colours extracted from your wallpaper to lightly colourise the interface.</translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="1148499908455722006">Open info dialogue for <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Calendar</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1165712434476988950">Device restart is required to apply the update.</translation>
 <translation id="1175572348579024023">Scroll</translation>
@@ -92,6 +93,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1611993646327628135">On</translation>
 <translation id="1615402009686901181">Administrator policy disables screen capture when confidential content is visible</translation>
 <translation id="1632985212731562677">Switch Access can be disabled in Settings &gt; Accessibility.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> devices</translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; press Search plus Space to see the result in Assistant.</translation>
 <translation id="1667964833127753507">The neutral colour mode does not use wallpaper extracted colours, replacing them by a set of neutrally toned light or dark hues.</translation>
@@ -192,6 +194,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2427507373259914951">Left click</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Show password</translation>
+<translation id="24452542372838207">Expand notification</translation>
 <translation id="2450205753526923158">Screenshot mode</translation>
 <translation id="2473177541599297363">Confirm resolution</translation>
 <translation id="2475982808118771221">An error occurred</translation>
@@ -320,6 +323,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Connected to <ph name="NUM_DEVICES" /> devices</translation>
 <translation id="3552189655002856821">Wi-Fi is turned off</translation>
 <translation id="3560866052109807830">Marker drawing tools</translation>
 <translation id="3563775809269155755">Enable hotspot</translation>
@@ -348,6 +352,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3702846122927433391">Population in Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Loading...</translation>
+<translation id="3708186454126126312">Previously connected</translation>
 <translation id="371370241367527062">Front microphone</translation>
 <translation id="3713734891607377840">Open when complete</translation>
 <translation id="3742055079367172538">Screenshot taken</translation>
@@ -403,6 +408,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="4129129681837227511">To see notifications on your lock screen, unlock to change the setting</translation>
 <translation id="4146833061457621061">Play music</translation>
 <translation id="4157822100366708405">Dark theme settings</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4195877955194704651">Automatic clicks button</translation>
 <translation id="4197790712631116042">Off</translation>
@@ -555,6 +561,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5234764350956374838">Dismiss</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
+<translation id="5253783950165989294">Connected to a device named <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="5260676007519551770">Desk 4</translation>
 <translation id="5283198616748585639">Add 1 min</translation>
 <translation id="528468243742722775">End</translation>
@@ -565,6 +572,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5314219114274263156">Screen recording taken</translation>
+<translation id="5319712128756744240">Pair new device</translation>
 <translation id="5322611492012084517">Can't find your phone</translation>
 <translation id="5329548388331921293">Connecting…</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
@@ -767,6 +775,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
 <translation id="7007983414944123363">Your PIN or password couldn't be verified. Try again.</translation>
+<translation id="7014684956566476813">Connected to a device named <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Desk 6</translation>
 <translation id="7025533177575372252">Connect your <ph name="DEVICE_NAME" /> with your phone</translation>
@@ -1000,6 +1009,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="8818320199597151042">Removing profile. Wait a few minutes.</translation>
 <translation id="8825863694328519386">Swipe from the left to go back</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Currently connected</translation>
 <translation id="8841375032071747811">Back button</translation>
 <translation id="8843682306134542540">Toggle rotation lock. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1030,6 +1040,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="9024331582947483881">full screen</translation>
 <translation id="9047624247355796468">Open settings for <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Device will be rolled back</translation>
+<translation id="9059834730836941392">Collapse notification</translation>
 <translation id="9063800855227801443">Can't capture confidential content</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9070640332319875144">Assistant settings</translation>

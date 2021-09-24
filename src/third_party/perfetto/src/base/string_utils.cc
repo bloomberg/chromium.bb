@@ -18,12 +18,12 @@
 
 #include <locale.h>
 #include <string.h>
+#include <algorithm>
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_APPLE)
 #include <xlocale.h>
 #endif
 
-#include <algorithm>
 #include <cinttypes>
 
 #include "perfetto/base/logging.h"
@@ -48,44 +48,15 @@ double StrToD(const char* nptr, char** endptr) {
 #endif
 }
 
-std::string QuoteAndEscapeControlCodes(const std::string& raw) {
-  std::string ret;
-  for (auto it = raw.cbegin(); it != raw.cend(); it++) {
-    switch (*it) {
-      case '\\':
-        ret += "\\\\";
-        break;
-      case '"':
-        ret += "\\\"";
-        break;
-      case '/':
-        ret += "\\/";
-        break;
-      case '\b':
-        ret += "\\b";
-        break;
-      case '\f':
-        ret += "\\f";
-        break;
-      case '\n':
-        ret += "\\n";
-        break;
-      case '\r':
-        ret += "\\r";
-        break;
-      case '\t':
-        ret += "\\t";
-        break;
-      default:
-        ret += *it;
-        break;
-    }
-  }
-  return '"' + ret + '"';
-}
-
 bool StartsWith(const std::string& str, const std::string& prefix) {
   return str.compare(0, prefix.length(), prefix) == 0;
+}
+
+bool StartsWithAny(const std::string& str,
+                   const std::vector<std::string>& prefixes) {
+  return std::any_of(
+      prefixes.begin(), prefixes.end(),
+      [&str](const std::string& prefix) { return StartsWith(str, prefix); });
 }
 
 bool EndsWith(const std::string& str, const std::string& suffix) {

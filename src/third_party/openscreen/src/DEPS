@@ -13,7 +13,6 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
   'quiche_git': 'https://quiche.googlesource.com',
-  'aomedia_git': 'https://aomedia.googlesource.com',
 
   # NOTE: we should only reference GitHub directly for dependencies toggled
   # with the "not build_with_chromium" condition.
@@ -162,13 +161,6 @@ deps = {
   'third_party/valijson/src': {
     'url': Var('github') + '/tristanpenman/valijson.git' +
       '@' + 'cf648930313655b19dc07ebae2f9c3fc37966a33', # Tip-of-tree
-    'condition': 'not build_with_chromium'
-  },
-
-  # Keep in sync with third_party/libaom/source/libaom in Chromium DEPS
-  'third_party/aomedia/src': {
-    'url': Var('aomedia_git') + '/aom.git' +
-      '@' + 'bb20160fbdd8226e7904541c8da70b91703e62b8',
     'condition': 'not build_with_chromium'
   }
 }

@@ -150,7 +150,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
   has_stored_data_.Init(feed::prefs::kHasStoredData, profile_prefs);
 
   web_feed_subscription_coordinator_ =
-      std::make_unique<WebFeedSubscriptionCoordinator>(this);
+      std::make_unique<WebFeedSubscriptionCoordinator>(delegate, this);
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
@@ -653,12 +653,12 @@ DebugStreamData FeedStream::GetDebugStreamData() {
   return ::feed::prefs::GetDebugStreamData(*profile_prefs_);
 }
 
-void FeedStream::ForceRefreshForDebugging() {
+void FeedStream::ForceRefreshForDebugging(const StreamType& stream_type) {
   // Avoid request throttling for debug refreshes.
   feed::prefs::SetThrottlerRequestCounts({}, *profile_prefs_);
-  task_queue_.AddTask(
-      std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
-          &FeedStream::ForceRefreshForDebuggingTask, base::Unretained(this))));
+  task_queue_.AddTask(std::make_unique<offline_pages::ClosureTask>(
+      base::BindOnce(&FeedStream::ForceRefreshForDebuggingTask,
+                     base::Unretained(this), stream_type)));
 }
 
 void FeedStream::ForceRefreshTask(const StreamType& stream_type) {
@@ -672,19 +672,13 @@ void FeedStream::ForceRefreshTask(const StreamType& stream_type) {
   }
 }
 
-void FeedStream::ForceRefreshForDebuggingTask() {
-  UnloadModel(kForYouStream);
-  store_->ClearStreamData(kForYouStream, base::DoNothing());
-  GetStream(kForYouStream)
+void FeedStream::ForceRefreshForDebuggingTask(const StreamType& stream_type) {
+  UnloadModel(stream_type);
+  store_->ClearStreamData(stream_type, base::DoNothing());
+  GetStream(stream_type)
       .surface_updater->launch_reliability_logger()
       .LogFeedLaunchOtherStart();
-  TriggerStreamLoad(kForYouStream);
-
-  if (base::FeatureList::IsEnabled(kWebFeed)) {
-    UnloadModel(kWebFeedStream);
-    store_->ClearStreamData(kWebFeedStream, base::DoNothing());
-    // WebFeed is refreshed automatically after for-you.
-  }
+  TriggerStreamLoad(stream_type);
 }
 
 std::string FeedStream::DumpStateForDebugging() {
@@ -715,6 +709,8 @@ std::string FeedStream::DumpStateForDebugging() {
   print_refresh_schedule(RefreshTaskId::kRefreshForYouFeed);
   ss << "WebFeeds: ";
   print_refresh_schedule(RefreshTaskId::kRefreshWebFeed);
+  ss << "WebFeedSubscriptions:\n";
+  subscriptions().DumpStateForDebugging(ss);
   return ss.str();
 }
 
@@ -1292,6 +1288,16 @@ void FeedStream::SetContentOrder(const StreamType& stream_type,
   task_queue_.AddTask(
       std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
           &FeedStream::ForceRefreshTask, base::Unretained(this), stream_type)));
+}
+
+ContentOrder FeedStream::GetContentOrder(const StreamType& stream_type) {
+  if (!stream_type.IsWebFeed()) {
+    NOTREACHED()
+        << "GetContentOrderFromPrefs is not supported for this stream_type "
+        << stream_type;
+    return ContentOrder::kUnspecified;
+  }
+  return GetValidWebFeedContentOrder(*profile_prefs_);
 }
 
 ContentOrder FeedStream::GetContentOrderFromPrefs(

@@ -30,10 +30,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/user_population.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -1514,12 +1514,16 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
       return extended_reporting_enabled;
     }
 
-// TODO(rsamp) Expand GAIA password pings from extended reporting to the general
-// Safe Browsing population.
-
-// Only saved password reuse warnings are shown on Android, so other types of
-// password reuse events should be gated by extended reporting.
+// Only saved password and GAIA password reuse warnings are shown to users on
+// Android, so other types of password reuse events should be gated by Safe
+// Browsing extended reporting.
 #if defined(OS_ANDROID)
+    if (password_type.account_type() ==
+            ReusedPasswordAccountType::SAVED_PASSWORD ||
+        IsSyncingGMAILPasswordWithSignedInProtectionEnabled(password_type)) {
+      return true;
+    }
+
     return extended_reporting_enabled;
 #else
     return true;
@@ -1568,7 +1572,7 @@ RequestOutcome ChromePasswordProtectionService::GetPingNotSentReason(
 
 void ChromePasswordProtectionService::FillUserPopulation(
     LoginReputationClientRequest* request_proto) {
-  *request_proto->mutable_population() = GetUserPopulation(profile_);
+  *request_proto->mutable_population() = GetUserPopulationForProfile(profile_);
 }
 
 bool ChromePasswordProtectionService::IsPrimaryAccountSyncing() const {

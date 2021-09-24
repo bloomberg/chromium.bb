@@ -67,18 +67,18 @@ void NTPTilesInternalsMessageHandler::RegisterMessages(
     NTPTilesInternalsMessageHandlerClient* client) {
   client_ = client;
 
-  client_->RegisterMessageCallback(
+  client_->RegisterDeprecatedMessageCallback(
       "registerForEvents",
       base::BindRepeating(
           &NTPTilesInternalsMessageHandler::HandleRegisterForEvents,
           base::Unretained(this)));
 
-  client_->RegisterMessageCallback(
+  client_->RegisterDeprecatedMessageCallback(
       "update",
       base::BindRepeating(&NTPTilesInternalsMessageHandler::HandleUpdate,
                           base::Unretained(this)));
 
-  client_->RegisterMessageCallback(
+  client_->RegisterDeprecatedMessageCallback(
       "viewPopularSitesJson",
       base::BindRepeating(
           &NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson,
@@ -92,14 +92,13 @@ void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
     disabled.SetBoolKey("topSites", false);
     disabled.SetBoolKey("popular", false);
     disabled.SetBoolKey("customLinks", false);
-    disabled.SetBoolKey("allowlist", false);
     client_->CallJavascriptFunction("cr.webUIListenerCallback",
                                     base::Value("receive-source-info"),
                                     disabled);
     SendTiles(NTPTilesVector(), FaviconResultMap());
     return;
   }
-  DCHECK_EQ(0u, args->GetSize());
+  DCHECK_EQ(0u, args->GetList().size());
 
   popular_sites_json_.clear();
   most_visited_sites_ = client_->MakeMostVisitedSites();
@@ -114,7 +113,7 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
   }
 
   const base::Value* dict = nullptr;
-  DCHECK_EQ(1u, args->GetSize());
+  DCHECK_EQ(1u, args->GetList().size());
   args->Get(0, &dict);
   DCHECK(dict && dict->is_dict());
 
@@ -170,7 +169,7 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
 
 void NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson(
     const base::ListValue* args) {
-  DCHECK_EQ(0u, args->GetSize());
+  DCHECK_EQ(0u, args->GetList().size());
   if (!most_visited_sites_ ||
       !most_visited_sites_->DoesSourceExist(ntp_tiles::TileSource::POPULAR)) {
     return;
@@ -189,8 +188,6 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
                    most_visited_sites_->DoesSourceExist(TileSource::TOP_SITES));
   value.SetBoolKey("customLinks", most_visited_sites_->DoesSourceExist(
                                       TileSource::CUSTOM_LINKS));
-  value.SetBoolKey("allowlist",
-                   most_visited_sites_->DoesSourceExist(TileSource::ALLOWLIST));
 
   if (most_visited_sites_->DoesSourceExist(TileSource::POPULAR)) {
     auto* popular_sites = most_visited_sites_->popular_sites();
@@ -231,22 +228,20 @@ void NTPTilesInternalsMessageHandler::SendTiles(
     entry.SetStringKey("title", tile.title);
     entry.SetStringKey("url", tile.url.spec());
     entry.SetIntKey("source", static_cast<int>(tile.source));
-    entry.SetStringKey("allowlistIconPath",
-                       tile.allowlist_icon_path.LossyDisplayName());
     if (tile.source == TileSource::CUSTOM_LINKS) {
       entry.SetBoolKey("fromMostVisited", tile.from_most_visited);
     }
 
     base::Value icon_list(base::Value::Type::LIST);
-    for (const auto& entry : kIconTypesAndNames) {
+    for (const auto& type_and_name : kIconTypesAndNames) {
       auto it = result_map.find(
-          FaviconResultMap::key_type(tile.url, entry.type_enum));
+          FaviconResultMap::key_type(tile.url, type_and_name.type_enum));
 
       if (it != result_map.end()) {
         const favicon_base::FaviconRawBitmapResult& result = it->second;
         base::Value icon(base::Value::Type::DICTIONARY);
         icon.SetStringKey("url", result.icon_url.spec());
-        icon.SetStringKey("type", entry.type_name);
+        icon.SetStringKey("type", type_and_name.type_name);
         icon.SetBoolKey("onDemand", !result.fetched_because_of_page_visit);
         icon.SetIntKey("width", result.pixel_size.width());
         icon.SetIntKey("height", result.pixel_size.height());

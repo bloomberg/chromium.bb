@@ -50,6 +50,11 @@ extern const base::Feature kApkWebAppInstalls;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppDiscoveryForOobe;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppManagementIntentSettings;
 #endif
 
@@ -84,26 +89,16 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kChromeAppsDeprecation;
 #endif
 
-#if defined(OS_WIN)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kChromeCleanupScanCompletedNotification;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kClientStorageAccessContextAuditing;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kContentSettingsRedesign;
+extern const base::Feature kConsolidatedSiteStorageControls;
 
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kContinuousSearch;
 #endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPrivacySandboxSettings;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<std::string> kPrivacySandboxSettingsURL;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrivacySandboxSettings2;
@@ -359,9 +354,6 @@ extern const base::Feature kIncompatibleApplicationsWarning;
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncognitoBrandConsistencyForAndroid;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIncognitoReauthenticationForAndroid;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -381,8 +373,6 @@ extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kIntentHandlingSharing;
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIntentPickerPWAPersistence;
 #endif  // !defined(OS_ANDROID)
 
@@ -398,6 +388,15 @@ extern const base::Feature kKernelnextVMs;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLinkDoctorDeprecationAndroid;
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kLinuxLowMemoryMonitor;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kLinuxLowMemoryMonitorModerateLevel;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel;
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLiteVideo;
@@ -544,14 +543,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kRequestDesktopSiteForTablets;
 #endif
 
-#if defined(OS_WIN)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafetyCheckChromeCleanerChild;
-#endif
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSafetyCheckWeakPasswords;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSchedulerConfiguration;
@@ -607,6 +598,9 @@ extern const base::Feature kSoundContentSetting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSSLCipher3DES;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSupportTool;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -680,11 +674,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUploadZippedSystemLogs;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kUseNotificationCompatBuilder;
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUserActivityEventLogging;
@@ -753,9 +742,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWilcoDtc;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
 #endif  // defined(OS_WIN)
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kWindowNaming;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile;

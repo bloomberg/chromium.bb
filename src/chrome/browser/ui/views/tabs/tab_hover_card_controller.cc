@@ -59,7 +59,7 @@ base::TimeDelta GetShowDelay(int tab_width) {
   static const int max_width_additiona_delay =
       base::GetFieldTrialParamByFeatureAsInt(
           features::kTabHoverCardImages,
-          features::kTabHoverCardAdditionalMaxWidthDelay, 0);
+          features::kTabHoverCardAdditionalMaxWidthDelay, 500);
 
   // Delay is calculated as a logarithmic scale and bounded by a minimum width
   // based on the width of a pinned tab and a maximum of the standard width.
@@ -156,6 +156,12 @@ TabHoverCardController::~TabHoverCardController() = default;
 // static
 bool TabHoverCardController::AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
+}
+
+// static
+bool TabHoverCardController::UseAnimations() {
+  return !disable_animations_for_testing_ &&
+         gfx::Animation::ShouldRenderRichAnimation();
 }
 
 bool TabHoverCardController::IsHoverCardVisible() const {
@@ -335,12 +341,6 @@ void TabHoverCardController::HideHoverCard() {
 
   metrics_->CardFadingOut();
   fade_animator_->FadeOut();
-}
-
-// static
-bool TabHoverCardController::UseAnimations() {
-  return !disable_animations_for_testing_ &&
-         gfx::Animation::ShouldRenderRichAnimation();
 }
 
 void TabHoverCardController::OnViewIsDeleting(views::View* observed_view) {

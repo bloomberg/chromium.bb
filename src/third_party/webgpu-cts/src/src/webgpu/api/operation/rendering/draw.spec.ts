@@ -645,3 +645,21 @@ g.test('vertex_attributes,formats')
   `
   )
   .unimplemented();
+
+g.test(`largeish_buffer`)
+  .desc(
+    `
+    Test a very large range of buffer is bound.
+    For a render pipeline that use a vertex step mode and a instance step mode vertex buffer, test
+    that :
+    - For draw, drawIndirect, drawIndexed and drawIndexedIndirect:
+        - The bound range of vertex step mode vertex buffer is significantly larger than necessary
+        - The bound range of instance step mode vertex buffer is significantly larger than necessary
+        - A large buffer is bound to an unused slot
+    - For drawIndexed and drawIndexedIndirect:
+        - The bound range of index buffer is significantly larger than necessary
+    - For drawIndirect and drawIndexedIndirect:
+        - The indirect buffer is significantly larger than necessary
+`
+  )
+  .unimplemented();

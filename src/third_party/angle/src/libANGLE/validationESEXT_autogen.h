@@ -751,6 +751,16 @@ bool ValidateLoseContextCHROMIUM(const Context *context,
 
 // GL_EXT_EGL_image_array
 
+// GL_EXT_EGL_image_storage
+bool ValidateEGLImageTargetTexStorageEXT(const Context *context,
+                                         GLenum target,
+                                         GLeglImageOES image,
+                                         const GLint *attrib_list);
+bool ValidateEGLImageTargetTextureStorageEXT(const Context *context,
+                                             GLuint texture,
+                                             GLeglImageOES image,
+                                             const GLint *attrib_list);
+
 // GL_EXT_YUV_target
 
 // GL_EXT_blend_func_extended
@@ -1053,6 +1063,8 @@ bool ValidatePrimitiveBoundingBoxEXT(const Context *context,
                                      GLfloat maxW);
 
 // GL_EXT_protected_textures
+
+// GL_EXT_pvrtc_sRGB
 
 // GL_EXT_read_format_bgra
 
@@ -1428,6 +1440,10 @@ bool ValidateTexStorage3DEXT(const Context *context,
                              GLsizei height,
                              GLsizei depth);
 
+// GL_IMG_texture_compression_pvrtc
+
+// GL_IMG_texture_compression_pvrtc2
+
 // GL_KHR_blend_equation_advanced
 bool ValidateBlendBarrierKHR(const Context *context);
 
@@ -1488,6 +1504,12 @@ bool ValidatePushDebugGroupKHR(const Context *context,
 
 // GL_KHR_parallel_shader_compile
 bool ValidateMaxShaderCompilerThreadsKHR(const Context *context, GLuint count);
+
+// GL_KHR_texture_compression_astc_hdr
+
+// GL_KHR_texture_compression_astc_ldr
+
+// GL_KHR_texture_compression_astc_sliced_3d
 
 // GL_NV_fence
 bool ValidateDeleteFencesNV(const Context *context, GLsizei n, const FenceNVID *fencesPacked);

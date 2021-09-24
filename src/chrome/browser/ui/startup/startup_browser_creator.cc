@@ -62,8 +62,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -300,6 +302,12 @@ bool ShouldShowProfilePickerAtProcessLaunch(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 #else
+
+  // Skip the profile picker when Chrome is restarted (e.g. after an update) so
+  // that the session can be restored.
+  if (StartupBrowserCreator::WasRestarted())
+    return false;
+
   // Don't show the picker if a certain profile (or an incognito window in the
   // default profile) is explicitly requested.
   if (profiles::IsGuestModeRequested(command_line,
@@ -323,9 +331,9 @@ bool ShouldShowProfilePickerAtProcessLaunch(
 // the profile id encoded in the notification launch id should be chosen over
 // the profile picker.
 #if defined(OS_WIN)
-  std::string profile_id =
-      NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
-  if (!profile_id.empty()) {
+  base::FilePath profile_basename =
+      NotificationLaunchId::GetNotificationLaunchProfileBaseName(command_line);
+  if (!profile_basename.empty()) {
     return false;
   }
 #endif  // defined(OS_WIN)
@@ -356,9 +364,9 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return profile->GetPrefs()->GetBoolean(
       prefs::kStartupBrowserWindowLaunchSuppressed);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
+#else
   return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void FinalizeWebAppLaunch(
@@ -414,6 +422,11 @@ bool IsAppLaunch(const base::CommandLine& command_line,
   return false;
 }
 
+bool CanOpenWebApp(Profile* profile) {
+  return web_app::AreWebAppsEnabled(profile) &&
+         apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile);
+}
+
 // Opens an application window or tab if the process was launched with the web
 // application command line switches. Returns true if launch succeeded (or is
 // proceeding asynchronously); otherwise, returns false to indicate that
@@ -424,6 +437,8 @@ bool MaybeLaunchApplication(
     const base::FilePath& cur_dir,
     Profile* profile,
     std::unique_ptr<LaunchModeRecorder> launch_mode_recorder) {
+  DCHECK(CanOpenWebApp(profile));
+
   std::string url_string, app_id;
   if (!IsAppLaunch(command_line, &url_string, &app_id))
     return false;
@@ -613,11 +628,8 @@ bool StartupBrowserCreator::LaunchBrowser(
 
   if (!IsSilentLaunchEnabled(command_line, profile)) {
     StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
-    const std::vector<GURL> urls_to_launch =
-        GetURLsFromCommandLine(command_line, cur_dir, profile);
-    const bool launched =
-        lwp.Launch(profile, urls_to_launch, in_synchronous_profile_launch_,
-                   std::move(launch_mode_recorder));
+    const bool launched = lwp.Launch(profile, in_synchronous_profile_launch_,
+                                     std::move(launch_mode_recorder));
     in_synchronous_profile_launch_ = false;
     if (!launched) {
       LOG(ERROR) << "launch error";
@@ -771,7 +783,9 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* init_params = chromeos::LacrosService::Get()->init_params();
   if (init_params->initial_browser_action ==
-      crosapi::mojom::InitialBrowserAction::kOpenNewTabPageWindow) {
+          crosapi::mojom::InitialBrowserAction::kOpenNewTabPageWindow ||
+      init_params->initial_browser_action ==
+          crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls) {
     pref.type = SessionStartupPref::DEFAULT;
     return pref;
   }
@@ -1117,6 +1131,13 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
   }
 
+  // Launch the browser if the profile is unable to open web apps.
+  if (!CanOpenWebApp(privacy_safe_profile)) {
+    return LaunchBrowserForLastProfiles(command_line, cur_dir, process_startup,
+                                        last_used_profile,
+                                        last_opened_profiles);
+  }
+
   // Web app Protocol handling.
   auto startup_callback = base::BindOnce(
       [](bool process_startup, const base::CommandLine& command_line,
@@ -1354,82 +1375,6 @@ bool StartupBrowserCreator::ActivatedProfile() {
   return profile_launch_observer.Get().activated_profile();
 }
 
-std::vector<GURL> GetURLsFromCommandLine(const base::CommandLine& command_line,
-                                         const base::FilePath& cur_dir,
-                                         Profile* profile) {
-  std::vector<GURL> urls;
-
-  const base::CommandLine::StringVector& params = command_line.GetArgs();
-  for (size_t i = 0; i < params.size(); ++i) {
-    base::FilePath param = base::FilePath(params[i]);
-    // Handle Vista way of searching - "? <search-term>"
-    if ((param.value().size() > 2) && (param.value()[0] == '?') &&
-        (param.value()[1] == ' ')) {
-      GURL url(GetDefaultSearchURLForSearchTerms(
-          TemplateURLServiceFactory::GetForProfile(profile),
-          param.LossyDisplayName().substr(2)));
-      if (url.is_valid()) {
-        urls.push_back(url);
-        continue;
-      }
-    }
-
-    // Otherwise, fall through to treating it as a URL.
-
-    // This will create a file URL or a regular URL.
-    // This call can (in rare circumstances) block the UI thread.
-    // Allow it until this bug is fixed.
-    //  http://code.google.com/p/chromium/issues/detail?id=60641
-    GURL url = GURL(param.MaybeAsASCII());
-
-    // http://crbug.com/371030: Only use URLFixerUpper if we don't have a valid
-    // URL, otherwise we will look in the current directory for a file named
-    // 'about' if the browser was started with a about:foo argument.
-    // http://crbug.com/424991: Always use URLFixerUpper on file:// URLs,
-    // otherwise we wouldn't correctly handle '#' in a file name.
-    if (!url.is_valid() || url.SchemeIsFile()) {
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
-      url = url_formatter::FixupRelativeFile(cur_dir, param);
-    }
-    // Exclude dangerous schemes.
-    if (!url.is_valid())
-      continue;
-
-    const GURL settings_url = GURL(chrome::kChromeUISettingsURL);
-    bool url_points_to_an_approved_settings_page = false;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // In ChromeOS, allow any settings page to be specified on the command line.
-    url_points_to_an_approved_settings_page =
-        url.GetOrigin() == settings_url.GetOrigin();
-#else
-    // Exposed for external cleaners to offer a settings reset to the
-    // user. The allowed URLs must match exactly.
-    const GURL reset_settings_url =
-        settings_url.Resolve(chrome::kResetProfileSettingsSubPage);
-    url_points_to_an_approved_settings_page = url == reset_settings_url;
-#if defined(OS_WIN)
-    // On Windows, also allow a hash for the Chrome Cleanup Tool.
-    const GURL reset_settings_url_with_cct_hash = reset_settings_url.Resolve(
-        std::string("#") +
-        settings::ResetSettingsHandler::kCctResetSettingsHash);
-    url_points_to_an_approved_settings_page =
-        url_points_to_an_approved_settings_page ||
-        url == reset_settings_url_with_cct_hash;
-#endif  // defined(OS_WIN)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    ChildProcessSecurityPolicy* policy =
-        ChildProcessSecurityPolicy::GetInstance();
-    if (policy->IsWebSafeScheme(url.scheme()) ||
-        url.SchemeIs(url::kFileScheme) ||
-        url_points_to_an_approved_settings_page ||
-        (url.spec().compare(url::kAboutBlankURL) == 0)) {
-      urls.push_back(url);
-    }
-  }
-  return urls;
-}
-
 bool HasPendingUncleanExit(Profile* profile) {
   return profile->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
          !profile_launch_observer.Get().HasBeenLaunched(profile) &&
@@ -1451,10 +1396,10 @@ StartupProfilePathInfo GetStartupProfilePath(
 // the profile id encoded in the notification launch id should be chosen over
 // all others.
 #if defined(OS_WIN)
-  std::string profile_id =
-      NotificationLaunchId::GetNotificationLaunchProfileId(command_line);
-  if (!profile_id.empty()) {
-    return {user_data_dir.Append(base::FilePath(base::UTF8ToWide(profile_id))),
+  base::FilePath profile_basename =
+      NotificationLaunchId::GetNotificationLaunchProfileBaseName(command_line);
+  if (!profile_basename.empty()) {
+    return {user_data_dir.Append(profile_basename),
             StartupProfileMode::kBrowserWindow};
   }
 #endif  // defined(OS_WIN)
@@ -1485,9 +1430,9 @@ StartupProfilePathInfo GetStartupProfilePath(
     // TODO(crbug.com/1150326): Consider resolving urls_to_launch without any
     // profile so that the guest profile does not need to get created in case
     // some URLs are passed and the picker is not shown in the end.
-    const std::vector<GURL> urls_to_launch =
-        GetURLsFromCommandLine(command_line, cur_dir, guest_profile);
-    if (urls_to_launch.empty() &&
+    StartupTabs launch_tabs = StartupTabProviderImpl().GetCommandLineTabs(
+        command_line, cur_dir, guest_profile);
+    if (launch_tabs.empty() &&
         profile_manager->GetProfile(ProfileManager::GetSystemProfilePath())) {
       // To indicate that we want to show the profile picker, return the guest
       // profile. However, we can only do this if the system profile (where the

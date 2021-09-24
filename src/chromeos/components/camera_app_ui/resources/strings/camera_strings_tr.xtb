@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Barkodu tara</translation>
 <translation id="3892148308691398805">Metni kopyala</translation>
-<translation id="4000398125663085899">Artık yeni fotoğraflar ve videolar, Dosyalar uygulamasında bir klasöre kaydedilecek: Dosyalarım &gt; Kamera</translation>
 <translation id="4118525110028899586">Kaydı duraklat</translation>
 <translation id="4121305183798804752">Doküman algılandı</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Galeriye git</translation>
 <translation id="520537883758714667">Doküman tarama artık kullanılabilir</translation>
 <translation id="5268823927180092501">Tüm kameralarda doküman modunu etkinleştir</translation>
-<translation id="5422455049771430511">Fotoğraflarınız ve videolarınız artık yeni yerinde</translation>
 <translation id="5444515100983837161">Dokümanın tüm kenarlarını çerçevenin içine yerleştirin. Dokümanla arka plan farklı renklere sahip olduğunda tarama daha iyi sonuç verir.</translation>
 <translation id="5671277269877808209">Kare</translation>
 <translation id="5746169159649715125">PDF olarak kaydet</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Uzman modu</translation>
 <translation id="5869546221129391014">Tablo</translation>
 <translation id="5975083100439434680">Uzaklaştır</translation>
-<translation id="6040143037577758943">Kapat</translation>
 <translation id="6073451960410192870">Kaydı durdur</translation>
 <translation id="6197807149213783179">Meta veriyi kaydet</translation>
 <translation id="6233780560267770709">3'e 3</translation>
@@ -125,5 +122,6 @@ Geri bildiriminiz resim ya da video kalitesi ile ilgiliyse lütfen örnek bir fo
 <translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="9045010116236796332">Dokümanın tüm kenarlarını çerçevenin içine yerleştirin</translation>
 <translation id="9045155556724273246">10 saniye</translation>
+<translation id="906331135292332864">Resim işleniyor...</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 </translationbundle>

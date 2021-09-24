@@ -148,10 +148,10 @@ function getRequiredTextureUsage(
       usage |= GPUConst.TextureUsage.COPY_SRC;
       break;
     case ReadMethod.Sample:
-      usage |= GPUConst.TextureUsage.SAMPLED;
+      usage |= GPUConst.TextureUsage.TEXTURE_BINDING;
       break;
     case ReadMethod.Storage:
-      usage |= GPUConst.TextureUsage.STORAGE;
+      usage |= GPUConst.TextureUsage.STORAGE_BINDING;
       break;
     case ReadMethod.DepthTest:
     case ReadMethod.StencilTest:
@@ -507,7 +507,7 @@ const kTestParams = kUnitCaseParamsBuilder
 
     return (
       ((usage & GPUConst.TextureUsage.RENDER_ATTACHMENT) !== 0 && !info.renderable) ||
-      ((usage & GPUConst.TextureUsage.STORAGE) !== 0 && !info.storage)
+      ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage)
     );
   })
   .combine('nonPowerOfTwo', [false, true])

@@ -3,11 +3,14 @@
     @apply --shortcut-customization-default-font;
   }
 </style>
-<navigation-view-panel id="navigationPanel"></navigation-view-panel>
+<!-- TODO(jimmyxgong): Localize this title -->
+<navigation-view-panel id="navigationPanel" title="Shortcut Customization"
+    show-tool-bar>
+</navigation-view-panel>
 
 <template is="dom-if" if="[[showEditDialog_]]" restamp>
   <accelerator-edit-dialog id="editDialog"
       description="[[dialogShortcutTitle_]]"
-      accelerators="[[dialogAccelerators_]]">
+      accelerator-infos="[[dialogAccelerators_]]">
   </accelerator-edit-dialog>
 </template>

@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numbers
 import sys
 
 import numpy as np
@@ -32,18 +33,21 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import bitwise_ops
 from tensorflow.python.ops import clip_ops
 from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import sort_ops
 from tensorflow.python.ops import special_math_ops
 from tensorflow.python.ops.numpy_ops import np_array_ops
 from tensorflow.python.ops.numpy_ops import np_arrays
 from tensorflow.python.ops.numpy_ops import np_dtypes
+from tensorflow.python.ops.numpy_ops import np_export
 from tensorflow.python.ops.numpy_ops import np_utils
 
 
-pi = np.pi
-e = np.e
-inf = np.inf
+pi = np_export.np_export_constant(__name__, 'pi', np.pi)
+e = np_export.np_export_constant(__name__, 'e', np.e)
+inf = np_export.np_export_constant(__name__, 'inf', np.inf)
 
 
 @np_utils.np_doc_only('dot')
@@ -66,11 +70,11 @@ def dot(a, b):  # pylint: disable=missing-docstring
 # TODO(wangpeng): Make element-wise ops `ufunc`s
 def _bin_op(tf_fun, a, b, promote=True):
   if promote:
-    a, b = np_array_ops._promote_dtype(a, b)  # pylint: disable=protected-access
+    a, b = np_array_ops._promote_dtype_binary(a, b)  # pylint: disable=protected-access
   else:
     a = np_array_ops.array(a)
     b = np_array_ops.array(b)
-  return np_utils.tensor_to_ndarray(tf_fun(a.data, b.data))
+  return tf_fun(a, b)
 
 
 @np_utils.np_doc('add')
@@ -126,7 +130,9 @@ def true_divide(x1, x2):  # pylint: disable=missing-function-docstring
   return _bin_op(f, x1, x2)
 
 
-divide = true_divide
+@np_utils.np_doc('divide')
+def divide(x1, x2):  # pylint: disable=missing-function-docstring
+  return true_divide(x1, x2)
 
 
 @np_utils.np_doc('floor_divide')
@@ -155,7 +161,9 @@ def mod(x1, x2):  # pylint: disable=missing-function-docstring
   return _bin_op(f, x1, x2)
 
 
-remainder = mod
+@np_utils.np_doc('remainder')
+def remainder(x1, x2):  # pylint: disable=missing-function-docstring
+  return mod(x1, x2)
 
 
 @np_utils.np_doc('divmod')
@@ -164,7 +172,13 @@ def divmod(x1, x2):  # pylint: disable=redefined-builtin
 
 
 @np_utils.np_doc('maximum')
-def maximum(x1, x2):
+def maximum(x1, x2):  # pylint: disable=missing-function-docstring
+
+  # Fast path for when maximum is used as relu.
+  if isinstance(
+      x2, numbers.Real) and not isinstance(x2, bool) and x2 == 0 and isinstance(
+          x1, np_arrays.ndarray) and x1.dtype != dtypes.bool:
+    return nn_ops.relu(np_array_ops.asarray(x1))
 
   def max_or_or(x1, x2):
     if x1.dtype == dtypes.bool:
@@ -197,21 +211,21 @@ def clip(a, a_min, a_max):  # pylint: disable=missing-docstring
     return maximum(a, a_min)
   else:
     a, a_min, a_max = np_array_ops._promote_dtype(a, a_min, a_max)  # pylint: disable=protected-access
-    return np_utils.tensor_to_ndarray(
-        clip_ops.clip_by_value(
-            *np_utils.tf_broadcast(a.data, a_min.data, a_max.data)))
+    return clip_ops.clip_by_value(*np_utils.tf_broadcast(a, a_min, a_max))
 
 
 @np_utils.np_doc('matmul')
 def matmul(x1, x2):  # pylint: disable=missing-docstring
-
   def f(x1, x2):
     try:
+      if x1._rank() == 2 and x2._rank() == 2:  # pylint: disable=protected-access
+        # Fast path for known ranks.
+        return gen_math_ops.mat_mul(x1, x2)
       return np_utils.cond(
-          math_ops.equal(array_ops.rank(x2), 1),
+          math_ops.equal(np_utils.tf_rank(x2), 1),
           lambda: math_ops.tensordot(x1, x2, axes=1),
           lambda: np_utils.cond(  # pylint: disable=g-long-lambda
-              math_ops.equal(array_ops.rank(x1), 1),
+              math_ops.equal(np_utils.tf_rank(x1), 1),
               lambda: math_ops.tensordot(  # pylint: disable=g-long-lambda
                   x1, x2, axes=[[0], [-2]]),
               lambda: math_ops.matmul(x1, x2)))
@@ -219,6 +233,12 @@ def matmul(x1, x2):  # pylint: disable=missing-docstring
       six.reraise(ValueError, ValueError(str(err)), sys.exc_info()[2])
 
   return _bin_op(f, x1, x2)
+
+
+# Exported so it can be called from Tensor.__matmul__. NumPy's matmul handles
+# batched matmul as well, so simply including promotion in TF's current
+# __matmul__ implementation was not sufficient.
+setattr(np_arrays.ndarray, '_matmul', matmul)
 
 
 @np_utils.np_doc('tensordot')
@@ -244,10 +264,11 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):  # pylint: disable=mis
 
   def f(a, b):  # pylint: disable=missing-docstring
     # We can't assign to captured variable `axisa`, so make a new variable
-    axis_a = axisa
-    axis_b = axisb
-    axis_c = axisc
-    if axis is not None:
+    if axis is None:
+      axis_a = axisa
+      axis_b = axisb
+      axis_c = axisc
+    else:
       axis_a = axis
       axis_b = axis
       axis_c = axis
@@ -317,7 +338,7 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):  # pylint: disable=mis
 
 @np_utils.np_doc_only('vdot')
 def vdot(a, b):  # pylint: disable=missing-docstring
-  a, b = np_array_ops._promote_dtype(a, b)
+  a, b = np_array_ops._promote_dtype(a, b)  # pylint: disable=protected-access
   a = np_array_ops.reshape(a, [-1])
   b = np_array_ops.reshape(b, [-1])
   if a.dtype == np_dtypes.complex128 or a.dtype == np_dtypes.complex64:
@@ -354,7 +375,7 @@ def heaviside(x1, x2):  # pylint: disable=missing-function-docstring
         array_ops.where_v2(x1 > 0, constant_op.constant(1, dtype=x2.dtype), x2))
 
   y = _bin_op(f, x1, x2)
-  if not np.issubdtype(y.dtype, np.inexact):
+  if not np.issubdtype(y.dtype.as_numpy_dtype, np.inexact):
     y = y.astype(np_dtypes.default_float_type())
   return y
 
@@ -371,13 +392,13 @@ def kron(a, b):  # pylint: disable=missing-function-docstring
   t_a = np_utils.cond(
       a.ndim < b.ndim,
       lambda: np_array_ops.reshape(  # pylint: disable=g-long-lambda
-          a.data, np_array_ops._pad_left_to(b.ndim, a.shape)),
-      lambda: a.data)
+          a, np_array_ops._pad_left_to(b.ndim, a.shape)),
+      lambda: a)
   t_b = np_utils.cond(
       b.ndim < a.ndim,
       lambda: np_array_ops.reshape(  # pylint: disable=g-long-lambda
-          b.data, np_array_ops._pad_left_to(a.ndim, b.shape)),
-      lambda: b.data)
+          b, np_array_ops._pad_left_to(a.ndim, b.shape)),
+      lambda: b)
 
   def _make_shape(shape, prepend):
     ones = array_ops.ones_like(shape)
@@ -548,7 +569,7 @@ def bitwise_xor(x1, x2):
   return _bitwise_binary_op(bitwise_ops.bitwise_xor, x1, x2)
 
 
-@np_utils.np_doc('bitwise_not')
+@np_utils.np_doc('bitwise_not', link=np_utils.AliasOf('invert'))
 def bitwise_not(x):
 
   def f(x):
@@ -575,9 +596,9 @@ def _scalar(tf_fn, x, promote_to_float=False):
     floating point type, in which case the output type is same as x.dtype.
   """
   x = np_array_ops.asarray(x)
-  if promote_to_float and not np.issubdtype(x.dtype, np.inexact):
+  if promote_to_float and not np.issubdtype(x.dtype.as_numpy_dtype, np.inexact):
     x = x.astype(np_dtypes.default_float_type())
-  return np_utils.tensor_to_ndarray(tf_fn(x.data))
+  return tf_fn(x)
 
 
 @np_utils.np_doc('log')
@@ -595,7 +616,7 @@ def sqrt(x):
   return _scalar(math_ops.sqrt, x, True)
 
 
-@np_utils.np_doc('abs')
+@np_utils.np_doc('abs', link=np_utils.AliasOf('absolute'))
 def abs(x):  # pylint: disable=redefined-builtin
   return _scalar(math_ops.abs, x)
 
@@ -752,7 +773,7 @@ def cbrt(x):
   return _scalar(f, x, True)
 
 
-@np_utils.np_doc('conjugate')
+@np_utils.np_doc('conjugate', link=np_utils.AliasOf('conj'))
 def conjugate(x):
   return _scalar(math_ops.conj, x)
 
@@ -793,7 +814,7 @@ def isreal(x):
 @np_utils.np_doc('iscomplexobj')
 def iscomplexobj(x):
   x = np_array_ops.array(x)
-  return np.issubdtype(x.dtype, np.complexfloating)
+  return np.issubdtype(x.dtype.as_numpy_dtype, np.complexfloating)
 
 
 @np_utils.np_doc('isrealobj')
@@ -829,11 +850,12 @@ nanprod = _make_nan_reduction('nanprod', np_array_ops.prod, 1)
 @np_utils.np_doc('nanmean')
 def nanmean(a, axis=None, dtype=None, keepdims=None):  # pylint: disable=missing-docstring
   a = np_array_ops.array(a)
-  if np.issubdtype(a.dtype, np.bool_) or np.issubdtype(a.dtype, np.integer):
+  if np.issubdtype(a.dtype.as_numpy_dtype, np.bool_) or np.issubdtype(
+      a.dtype.as_numpy_dtype, np.integer):
     return np_array_ops.mean(a, axis=axis, dtype=dtype, keepdims=keepdims)
   nan_mask = logical_not(isnan(a))
   if dtype is None:
-    dtype = a.dtype
+    dtype = a.dtype.as_numpy_dtype
   normalizer = np_array_ops.sum(
       nan_mask, axis=axis, dtype=dtype, keepdims=keepdims)
   return nansum(a, axis=axis, dtype=dtype, keepdims=keepdims) / normalizer
@@ -939,37 +961,16 @@ def _wrap(f, reverse=False):
   return _f
 
 
-setattr(np_arrays.ndarray, '__abs__', absolute)
-setattr(np_arrays.ndarray, '__floordiv__', _wrap(floor_divide))
-setattr(np_arrays.ndarray, '__rfloordiv__', _wrap(floor_divide, True))
-setattr(np_arrays.ndarray, '__mod__', _wrap(mod))
-setattr(np_arrays.ndarray, '__rmod__', _wrap(mod, True))
-setattr(np_arrays.ndarray, '__add__', _wrap(add))
-setattr(np_arrays.ndarray, '__radd__', _wrap(add, True))
-setattr(np_arrays.ndarray, '__sub__', _wrap(subtract))
-setattr(np_arrays.ndarray, '__rsub__', _wrap(subtract, True))
-setattr(np_arrays.ndarray, '__mul__', _wrap(multiply))
-setattr(np_arrays.ndarray, '__rmul__', _wrap(multiply, True))
-setattr(np_arrays.ndarray, '__matmul__', _wrap(matmul))
-setattr(np_arrays.ndarray, '__rmatmul__', _wrap(matmul, True))
-setattr(np_arrays.ndarray, '__pow__', _wrap(power))
-setattr(np_arrays.ndarray, '__rpow__', _wrap(power, True))
-setattr(np_arrays.ndarray, '__truediv__', _wrap(true_divide))
-setattr(np_arrays.ndarray, '__rtruediv__', _wrap(true_divide, True))
-
-
 def _comparison(tf_fun, x1, x2, cast_bool_to_int=False):
   """Helper function for comparision."""
   dtype = np_utils.result_type(x1, x2)
   # Cast x1 and x2 to the result_type if needed.
   x1 = np_array_ops.array(x1, dtype=dtype)
   x2 = np_array_ops.array(x2, dtype=dtype)
-  x1 = x1.data
-  x2 = x2.data
   if cast_bool_to_int and x1.dtype == dtypes.bool:
     x1 = math_ops.cast(x1, dtypes.int32)
     x2 = math_ops.cast(x2, dtypes.int32)
-  return np_utils.tensor_to_ndarray(tf_fun(x1, x2))
+  return tf_fun(x1, x2)
 
 
 @np_utils.np_doc('equal')
@@ -1022,7 +1023,7 @@ def array_equal(a1, a2):  # pylint: disable=missing-function-docstring
 def _logical_binary_op(tf_fun, x1, x2):
   x1 = np_array_ops.array(x1, dtype=np.bool_)
   x2 = np_array_ops.array(x2, dtype=np.bool_)
-  return np_utils.tensor_to_ndarray(tf_fun(x1.data, x2.data))
+  return tf_fun(x1, x2)
 
 
 @np_utils.np_doc('logical_and')
@@ -1043,16 +1044,7 @@ def logical_xor(x1, x2):
 @np_utils.np_doc('logical_not')
 def logical_not(x):
   x = np_array_ops.array(x, dtype=np.bool_)
-  return np_utils.tensor_to_ndarray(math_ops.logical_not(x.data))
-
-
-setattr(np_arrays.ndarray, '__invert__', logical_not)
-setattr(np_arrays.ndarray, '__lt__', _wrap(less))
-setattr(np_arrays.ndarray, '__le__', _wrap(less_equal))
-setattr(np_arrays.ndarray, '__gt__', _wrap(greater))
-setattr(np_arrays.ndarray, '__ge__', _wrap(greater_equal))
-setattr(np_arrays.ndarray, '__eq__', _wrap(equal))
-setattr(np_arrays.ndarray, '__ne__', _wrap(not_equal))
+  return math_ops.logical_not(x)
 
 
 @np_utils.np_doc('linspace')
@@ -1066,8 +1058,8 @@ def linspace(  # pylint: disable=missing-docstring
     axis=0):
   if dtype:
     dtype = np_utils.result_type(dtype)
-  start = np_array_ops.array(start, dtype=dtype).data
-  stop = np_array_ops.array(stop, dtype=dtype).data
+  start = np_array_ops.array(start, dtype=dtype)
+  stop = np_array_ops.array(stop, dtype=dtype)
   if num < 0:
     raise ValueError('Number of samples {} must be non-negative.'.format(num))
   step = ops.convert_to_tensor(np.nan)
@@ -1078,8 +1070,9 @@ def linspace(  # pylint: disable=missing-docstring
   else:
     # math_ops.linspace does not support endpoint=False so we manually handle it
     # here.
-    if num > 1:
+    if num > 0:
       step = ((stop - start) / num)
+    if num > 1:
       new_stop = math_ops.cast(stop, step.dtype) - step
       start = math_ops.cast(start, new_stop.dtype)
       result = math_ops.linspace(start, new_stop, num, axis=axis)
@@ -1088,28 +1081,27 @@ def linspace(  # pylint: disable=missing-docstring
   if dtype:
     result = math_ops.cast(result, dtype)
   if retstep:
-    return (np_arrays.tensor_to_ndarray(result),
-            np_arrays.tensor_to_ndarray(step))
+    return (result, step)
   else:
-    return np_arrays.tensor_to_ndarray(result)
+    return result
 
 
 @np_utils.np_doc('logspace')
 def logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0):
   dtype = np_utils.result_type(start, stop, dtype)
   result = linspace(
-      start, stop, num=num, endpoint=endpoint, dtype=dtype, axis=axis).data
+      start, stop, num=num, endpoint=endpoint, dtype=dtype, axis=axis)
   result = math_ops.pow(math_ops.cast(base, result.dtype), result)
   if dtype:
     result = math_ops.cast(result, dtype)
-  return np_arrays.tensor_to_ndarray(result)
+  return result
 
 
 @np_utils.np_doc('geomspace')
 def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):  # pylint: disable=missing-docstring
-  dtype = dtype or np_utils.result_type(start, stop, float(num),
-                                        np_array_ops.zeros((), dtype))
-  computation_dtype = np.promote_types(dtype, np.float32)
+  dtype = dtypes.as_dtype(dtype) if dtype else np_utils.result_type(
+      start, stop, float(num), np_array_ops.zeros((), dtype))
+  computation_dtype = np.promote_types(dtype.as_numpy_dtype, np.float32)
   start = np_array_ops.asarray(start, dtype=computation_dtype)
   stop = np_array_ops.asarray(stop, dtype=computation_dtype)
   # follow the numpy geomspace convention for negative and complex endpoints
@@ -1126,7 +1118,7 @@ def geomspace(start, stop, num=50, endpoint=True, dtype=None, axis=0):  # pylint
       axis=0)
   if axis != 0:
     res = np_array_ops.moveaxis(res, 0, axis)
-  return np_utils.tensor_to_ndarray(math_ops.cast(res, dtype))
+  return math_ops.cast(res, dtype)
 
 
 @np_utils.np_doc('ptp')
@@ -1142,14 +1134,14 @@ def concatenate(arys, axis=0):
   if not arys:
     raise ValueError('Need at least one array to concatenate.')
   dtype = np_utils.result_type(*arys)
-  arys = [np_array_ops.array(array, dtype=dtype).data for array in arys]
-  return np_arrays.tensor_to_ndarray(array_ops.concat(arys, axis))
+  arys = [np_array_ops.array(array, dtype=dtype) for array in arys]
+  return array_ops.concat(arys, axis)
 
 
 @np_utils.np_doc_only('tile')
 def tile(a, reps):  # pylint: disable=missing-function-docstring
-  a = np_array_ops.array(a).data
-  reps = np_array_ops.array(reps, dtype=dtypes.int32).reshape([-1]).data
+  a = np_array_ops.array(a)
+  reps = np_array_ops.array(reps, dtype=dtypes.int32).reshape([-1])
 
   a_rank = array_ops.rank(a)
   reps_size = array_ops.size(reps)
@@ -1160,13 +1152,12 @@ def tile(a, reps):  # pylint: disable=missing-function-docstring
       constant_values=1)
   a = array_ops.reshape(a, a_shape)
 
-  return np_arrays.tensor_to_ndarray(array_ops.tile(a, reps))
+  return array_ops.tile(a, reps)
 
 
 @np_utils.np_doc('count_nonzero')
 def count_nonzero(a, axis=None):
-  return np_arrays.tensor_to_ndarray(
-      math_ops.count_nonzero(np_array_ops.array(a).data, axis))
+  return math_ops.count_nonzero(np_array_ops.array(a), axis)
 
 
 @np_utils.np_doc('argsort')
@@ -1178,7 +1169,7 @@ def argsort(a, axis=-1, kind='quicksort', order=None):  # pylint: disable=missin
     raise ValueError("'order' argument to sort is not supported.")
   stable = (kind == 'stable')
 
-  a = np_array_ops.array(a).data
+  a = np_array_ops.array(a)
 
   def _argsort(a, axis, stable):
     if axis is None:
@@ -1204,20 +1195,19 @@ def sort(a, axis=-1, kind='quicksort', order=None):  # pylint: disable=missing-d
   a = np_array_ops.array(a)
 
   if axis is None:
-    result_t = sort_ops.sort(array_ops.reshape(a.data, [-1]), 0)
-    return np_utils.tensor_to_ndarray(result_t)
+    return sort_ops.sort(array_ops.reshape(a, [-1]), 0)
   else:
-    return np_utils.tensor_to_ndarray(sort_ops.sort(a.data, axis))
+    return sort_ops.sort(a, axis)
 
 
 def _argminmax(fn, a, axis=None):
   a = np_array_ops.array(a)
   if axis is None:
     # When axis is None numpy flattens the array.
-    a_t = array_ops.reshape(a.data, [-1])
+    a_t = array_ops.reshape(a, [-1])
   else:
-    a_t = np_array_ops.atleast_1d(a).data
-  return np_utils.tensor_to_ndarray(fn(input=a_t, axis=axis))
+    a_t = np_array_ops.atleast_1d(a)
+  return fn(input=a_t, axis=axis)
 
 
 @np_utils.np_doc('argmax')
@@ -1246,24 +1236,24 @@ def average(a, axis=None, weights=None, returned=False):  # pylint: disable=miss
                      'supported yet. Got type: %s' % type(axis))
   a = np_array_ops.array(a)
   if weights is None:  # Treat all weights as 1
-    if not np.issubdtype(a.dtype, np.inexact):
+    if not np.issubdtype(a.dtype.as_numpy_dtype, np.inexact):
       a = a.astype(
           np_utils.result_type(a.dtype, np_dtypes.default_float_type()))
-    avg = math_ops.reduce_mean(a.data, axis=axis)
+    avg = math_ops.reduce_mean(a, axis=axis)
     if returned:
       if axis is None:
-        weights_sum = array_ops.size(a.data)
+        weights_sum = array_ops.size(a)
       else:
-        weights_sum = array_ops.shape(a.data)[axis]
-      weights_sum = math_ops.cast(weights_sum, a.data.dtype)
+        weights_sum = array_ops.shape(a)[axis]
+      weights_sum = math_ops.cast(weights_sum, a.dtype)
   else:
-    if np.issubdtype(a.dtype, np.inexact):
+    if np.issubdtype(a.dtype.as_numpy_dtype, np.inexact):
       out_dtype = np_utils.result_type(a.dtype, weights)
     else:
       out_dtype = np_utils.result_type(a.dtype, weights,
                                        np_dtypes.default_float_type())
-    a = np_array_ops.array(a, out_dtype).data
-    weights = np_array_ops.array(weights, out_dtype).data
+    a = np_array_ops.array(a, out_dtype)
+    weights = np_array_ops.array(weights, out_dtype)
 
     def rank_equal_case():
       control_flow_ops.Assert(
@@ -1295,8 +1285,7 @@ def average(a, axis=None, weights=None, returned=False):  # pylint: disable=miss
 
   avg = np_array_ops.array(avg)
   if returned:
-    weights_sum = np_array_ops.broadcast_to(weights_sum,
-                                            array_ops.shape(avg.data))
+    weights_sum = np_array_ops.broadcast_to(weights_sum, array_ops.shape(avg))
     return avg, weights_sum
   return avg
 
@@ -1305,7 +1294,7 @@ def average(a, axis=None, weights=None, returned=False):  # pylint: disable=miss
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None):  # pylint: disable=missing-docstring
   if dtype:
     dtype = np_utils.result_type(dtype)
-  a = np_array_ops.asarray(a, dtype).data
+  a = np_array_ops.asarray(a, dtype)
 
   if offset == 0:
     a_shape = a.shape
@@ -1313,7 +1302,7 @@ def trace(a, offset=0, axis1=0, axis2=1, dtype=None):  # pylint: disable=missing
       rank = len(a_shape)
       if (axis1 == -2 or axis1 == rank - 2) and (axis2 == -1 or
                                                  axis2 == rank - 1):
-        return np_utils.tensor_to_ndarray(math_ops.trace(a))
+        return math_ops.trace(a)
 
   a = np_array_ops.diagonal(a, offset, axis1, axis2)
   return np_array_ops.sum(a, -1, dtype)
@@ -1332,16 +1321,17 @@ def meshgrid(*xi, **kwargs):
 
   indexing = kwargs.get('indexing', 'xy')
 
-  xi = [np_array_ops.asarray(arg).data for arg in xi]
+  xi = [np_array_ops.asarray(arg) for arg in xi]
   kwargs = {'indexing': indexing}
 
   outputs = array_ops.meshgrid(*xi, **kwargs)
-  outputs = [np_utils.tensor_to_ndarray(output) for output in outputs]
 
   return outputs
 
 
-@np_utils.np_doc('einsum')
+# Uses np_doc_only here because np.einsum (in 1.16) doesn't have argument
+# `subscripts`, even though the doc says it has.
+@np_utils.np_doc_only('einsum')
 def einsum(subscripts, *operands, **kwargs):  # pylint: disable=missing-docstring
   casting = kwargs.get('casting', 'safe')
   optimize = kwargs.get('optimize', False)
@@ -1364,7 +1354,65 @@ def einsum(subscripts, *operands, **kwargs):  # pylint: disable=missing-docstrin
     tf_optimize = 'optimal'
   else:
     raise ValueError('`optimize` method not supported: %s' % optimize)
-  operands = [x.data for x in operands]
   res = special_math_ops.einsum(subscripts, *operands, optimize=tf_optimize)
-  res = np_utils.tensor_to_ndarray(res)
   return res
+
+
+def _tensor_t(self):
+  """Returns a Tensor which is the transpose of this Tensor."""
+  return self.transpose()
+
+
+def _tensor_ndim(self):
+  """Returns the rank of the Tensor."""
+  return self.shape.ndims
+
+
+def _tensor_pos(self):
+  """Returns self, for unary operator `+`."""
+  return self
+
+
+def _tensor_size(self):
+  """Returns the number of elements in this Tensor, if fully known."""
+  if not self.shape.is_fully_defined():
+    return None
+  return np.prod(self.shape.as_list())
+
+
+def _tensor_tolist(self):
+  if isinstance(self, ops.EagerTensor):
+    return self._numpy().tolist()  # pylint: disable=protected-access
+
+  raise ValueError('Symbolic Tensors do not support the tolist API.')
+
+
+def enable_numpy_methods_on_tensor():
+  """Adds additional NumPy methods on tf.Tensor class."""
+  t = property(_tensor_t)
+  setattr(ops.Tensor, 'T', t)
+
+  ndim = property(_tensor_ndim)
+  setattr(ops.Tensor, 'ndim', ndim)
+
+  size = property(_tensor_size)
+  setattr(ops.Tensor, 'size', size)
+
+  setattr(ops.Tensor, '__pos__', _tensor_pos)
+  setattr(ops.Tensor, 'tolist', _tensor_tolist)
+
+  # TODO(b/178540516): Make a custom `setattr` that changes the method's
+  #   docstring to the TF one.
+  setattr(ops.Tensor, 'transpose', np_array_ops.transpose)
+  setattr(ops.Tensor, 'reshape', np_array_ops._reshape_method_wrapper)  # pylint: disable=protected-access
+  setattr(ops.Tensor, 'ravel', np_array_ops.ravel)
+  setattr(ops.Tensor, 'clip', clip)
+  setattr(ops.Tensor, 'astype', math_ops.cast)
+  setattr(ops.Tensor, '__round__', np_array_ops.around)
+  setattr(ops.Tensor, 'max', np_array_ops.amax)
+  setattr(ops.Tensor, 'mean', np_array_ops.mean)
+  setattr(ops.Tensor, 'min', np_array_ops.amin)
+
+  # TODO(wangpeng): Remove `data` when all uses of it are removed
+  data = property(lambda self: self)
+  setattr(ops.Tensor, 'data', data)

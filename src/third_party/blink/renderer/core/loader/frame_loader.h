@@ -140,6 +140,7 @@ class CORE_EXPORT FrameLoader final {
   void DidExplicitOpen();
 
   String UserAgent() const;
+  String ReducedUserAgent() const;
   absl::optional<blink::UserAgentMetadata> UserAgentMetadata() const;
 
   void DispatchDidClearWindowObjectInMainWorld();
@@ -229,6 +230,8 @@ class CORE_EXPORT FrameLoader final {
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);
 
   void WriteIntoTrace(perfetto::TracedValue context) const;
+
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> CreateWorkerCodeCacheHost();
 
  private:
   bool AllowRequestForThisFrame(const FrameLoadRequest&);

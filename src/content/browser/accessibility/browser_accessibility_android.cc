@@ -459,10 +459,15 @@ bool BrowserAccessibilityAndroid::CanOpenPopup() const {
 const char* BrowserAccessibilityAndroid::GetClassName() const {
   ax::mojom::Role role = GetRole();
 
-  // On Android, contenteditable needs to be handled the same as any
-  // other text field.
-  if (IsTextField())
+  if (IsTextField()) {
+    // On Android, contenteditable needs to be handled the same as any
+    // other text field.
     role = ax::mojom::Role::kTextField;
+  } else if (ui::IsAndroidTextViewCandidate(role) && HasOnlyTextChildren()) {
+    // On Android, we want to report some extra nodes as TextViews. For example,
+    // a <div> that only contains text, or a <p> that only contains text.
+    role = ax::mojom::Role::kStaticText;
+  }
 
   return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
 }
@@ -522,8 +527,9 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
       return IsLeafConsideringChildren();
     }
 
-    // Nodes with only static text can drop their children.
-    if (HasOnlyTextChildren())
+    // Nodes with only static text can drop their children, with the exception
+    // that list markers have a different role and should not be dropped.
+    if (HasOnlyTextChildren() && !HasListMarkerChild())
       return true;
   }
 
@@ -611,10 +617,10 @@ std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
   if (GetRole() == ax::mojom::Role::kSplitter)
     return text;
 
-  // Append image description strings to the text, if not running as WebView.
+  // Append image description strings to the text.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (!manager->IsRunningAsWebView()) {
+  if (manager->AllowImageDescriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -641,7 +647,7 @@ std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
 
   // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
-  if (text.empty() && (HasOnlyTextChildren() ||
+  if (text.empty() && ((HasOnlyTextChildren() && !HasListMarkerChild()) ||
                        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
     for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
       text +=
@@ -1022,10 +1028,9 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
   }
 
   // If this node is an image, check status and potentially add unlabeled role.
-  // If running inside a WebView, do not change default image role description.
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
-  if (!manager->IsRunningAsWebView()) {
+  if (manager->AllowImageDescriptions()) {
     auto status = GetData().GetImageAnnotationStatus();
     switch (status) {
       case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
@@ -1567,8 +1572,14 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kStrong:
       // No role description.
       break;
+    case ax::mojom::Role::kSubscript:
+      // No role description.
+      break;
     case ax::mojom::Role::kSuggestion:
       message_id = IDS_AX_ROLE_SUGGESTION;
+      break;
+    case ax::mojom::Role::kSuperscript:
+      // No role description.
       break;
     case ax::mojom::Role::kSwitch:
       message_id = IDS_AX_ROLE_SWITCH;
@@ -2332,6 +2343,16 @@ bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
     }
   }
   return true;
+}
+
+bool BrowserAccessibilityAndroid::HasListMarkerChild() const {
+  // This is called from IsLeaf, so don't call PlatformChildCount
+  // from within this!
+  for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
+    if (it->GetRole() == ax::mojom::Role::kListMarker)
+      return true;
+  }
+  return false;
 }
 
 bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {

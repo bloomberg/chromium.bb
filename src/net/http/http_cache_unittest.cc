@@ -739,6 +739,12 @@ TransportInfo TestTransportInfo() {
   return result;
 }
 
+// Helper function, generating valid HTTP cache key from `url`.
+// See also: HttpCache::GenerateCacheKey(..)
+std::string GenerateCacheKey(const std::string& url) {
+  return "1/0/" + url;
+}
+
 }  // namespace
 
 using HttpCacheTest = TestWithTaskEnvironment;
@@ -753,30 +759,30 @@ class HttpCacheIOCallbackTest : public HttpCacheTest {
 
   // The below functions are forwarding calls to the HttpCache class.
   int OpenEntry(HttpCache* cache,
-                const std::string& key,
+                const std::string& url,
                 HttpCache::ActiveEntry** entry,
                 HttpCache::Transaction* trans) {
-    return cache->OpenEntry(key, entry, trans);
+    return cache->OpenEntry(GenerateCacheKey(url), entry, trans);
   }
 
   int OpenOrCreateEntry(HttpCache* cache,
-                        const std::string& key,
+                        const std::string& url,
                         HttpCache::ActiveEntry** entry,
                         HttpCache::Transaction* trans) {
-    return cache->OpenOrCreateEntry(key, entry, trans);
+    return cache->OpenOrCreateEntry(GenerateCacheKey(url), entry, trans);
   }
 
   int CreateEntry(HttpCache* cache,
-                  const std::string& key,
+                  const std::string& url,
                   HttpCache::ActiveEntry** entry,
                   HttpCache::Transaction* trans) {
-    return cache->CreateEntry(key, entry, trans);
+    return cache->CreateEntry(GenerateCacheKey(url), entry, trans);
   }
 
   int DoomEntry(HttpCache* cache,
-                const std::string& key,
+                const std::string& url,
                 HttpCache::Transaction* trans) {
-    return cache->DoomEntry(key, trans);
+    return cache->DoomEntry(GenerateCacheKey(url), trans);
   }
 
   void DeactivateEntry(HttpCache* cache, ActiveEntry* entry) {
@@ -2511,11 +2517,12 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationDifferentRanges) {
   // Fetch from the cache to check that ranges 30-49 have been successfully
   // cached.
   {
-    MockTransaction transaction(kRangeGET_TransactionOK);
-    transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
-    transaction.data = "rg: 30-39 rg: 40-49 ";
+    MockTransaction range_transaction(kRangeGET_TransactionOK);
+    range_transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
+    range_transaction.data = "rg: 30-39 rg: 40-49 ";
     std::string headers;
-    RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+    RunTransactionTestWithResponse(cache.http_cache(), range_transaction,
+                                   &headers);
     Verify206Response(headers, 30, 49);
   }
 
@@ -2924,11 +2931,12 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationOverlappingRanges) {
   // Fetch from the cache to check that ranges 30-49 have been successfully
   // cached.
   {
-    MockTransaction transaction(kRangeGET_TransactionOK);
-    transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
-    transaction.data = "rg: 30-39 rg: 40-49 ";
+    MockTransaction range_transaction(kRangeGET_TransactionOK);
+    range_transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
+    range_transaction.data = "rg: 30-39 rg: 40-49 ";
     std::string headers;
-    RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+    RunTransactionTestWithResponse(cache.http_cache(), range_transaction,
+                                   &headers);
     Verify206Response(headers, 30, 49);
   }
 
@@ -3022,11 +3030,12 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationRestartDoneHeaders) {
   // Fetch from the cache to check that ranges 30-49 have been successfully
   // cached.
   {
-    MockTransaction transaction(kRangeGET_TransactionOK);
-    transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
-    transaction.data = "rg: 30-39 rg: 40-49 ";
+    MockTransaction range_transaction(kRangeGET_TransactionOK);
+    range_transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
+    range_transaction.data = "rg: 30-39 rg: 40-49 ";
     std::string headers;
-    RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+    RunTransactionTestWithResponse(cache.http_cache(), range_transaction,
+                                   &headers);
     Verify206Response(headers, 30, 49);
   }
 
@@ -3640,8 +3649,8 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelReader) {
   EXPECT_TRUE(cache.IsHeadersTransactionPresent(cache_key));
 
   // Complete the response body.
-  auto& c = context_list[0];
-  ReadAndVerifyTransaction(c->trans.get(), kSimpleGET_Transaction);
+  ReadAndVerifyTransaction(context_list[0]->trans.get(),
+                           kSimpleGET_Transaction);
 
   // Rest of the transactions should move to readers.
   EXPECT_FALSE(cache.IsWriterPresent(cache_key));
@@ -3675,8 +3684,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelReader) {
 
   // Resume network start for headers_transaction. It will doom the entry as it
   // will be a 200 and will go to network for the response body.
-  auto& context = context_list[3];
-  context->trans->ResumeNetworkStart();
+  context_list[3]->trans->ResumeNetworkStart();
 
   // The pending transactions will be added to a new entry as writers.
   base::RunLoop().RunUntilIdle();
@@ -3685,8 +3693,8 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelReader) {
 
   // Complete the rest of the transactions.
   for (int i = 2; i < kNumTransactions; ++i) {
-    auto& c = context_list[i];
-    ReadAndVerifyTransaction(c->trans.get(), kSimpleGET_Transaction);
+    ReadAndVerifyTransaction(context_list[i]->trans.get(),
+                             kSimpleGET_Transaction);
   }
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -4226,9 +4234,8 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingHuge) {
 
   // Complete all of them.
   for (int i = 0; i < kNumTransactions; i++) {
-    auto& c = context_list[i];
-    ReadRemainingAndVerifyTransaction(c->trans.get(), first_read[i],
-                                      kSimpleGET_Transaction);
+    ReadRemainingAndVerifyTransaction(context_list[i]->trans.get(),
+                                      first_read[i], kSimpleGET_Transaction);
   }
 
   // Sadly all of them have to hit the network
@@ -4711,7 +4718,7 @@ TEST_F(HttpCacheTest, SimpleGET_RacingReaders) {
   c->trans.reset();
 
   for (int i = 3; i < kNumTransactions; ++i) {
-    Context* c = context_list[i].get();
+    c = context_list[i].get();
     if (c->result == ERR_IO_PENDING)
       c->result = c->callback.WaitForResult();
     if (c->result == OK)
@@ -9299,8 +9306,8 @@ TEST_F(HttpCacheTest, RangeGET_OK_LoadOnlyFromCache) {
 TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
   MockHttpCache cache;
   disk_cache::Entry* entry;
-  ASSERT_TRUE(
-      cache.CreateBackendEntry("http://www.google.com", &entry, nullptr));
+  ASSERT_TRUE(cache.CreateBackendEntry(
+      GenerateCacheKey("http://www.google.com"), &entry, nullptr));
 
   HttpResponseInfo response;
   response.headers = base::MakeRefCounted<HttpResponseHeaders>(
@@ -12321,7 +12328,7 @@ TEST_F(HttpCacheTest, CacheEntryStatusCantConditionalize) {
             response_info.cache_entry_status);
 }
 
-TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromKey) {
+TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromHttpCacheKey) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       net::features::kSplitCacheByNetworkIsolationKey);
@@ -12331,8 +12338,34 @@ TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromKey) {
 
   for (const std::string& url : urls) {
     std::string key = ComputeCacheKey(url);
-    EXPECT_EQ(GURL(url).spec(),
-              cache.http_cache()->GetResourceURLFromHttpCacheKey(key));
+    EXPECT_EQ(GURL(url).spec(), HttpCache::GetResourceURLFromHttpCacheKey(key));
+  }
+}
+
+TEST_F(HttpCacheTest, GetResourceURLFromHttpCacheKey) {
+  const struct {
+    std::string input;
+    std::string output;
+  } kTestCase[] = {
+      // Valid input:
+      {"0/0/https://a.com/", "https://a.com/"},
+      {"0/0/https://a.com/path", "https://a.com/path"},
+      {"0/0/https://a.com/?query", "https://a.com/?query"},
+      {"0/0/https://a.com/#fragment", "https://a.com/#fragment"},
+      {"0/0/_dk_s_ https://a.com/", "https://a.com/"},
+      {"0/0/_dk_https://a.com https://b.com https://c.com/", "https://c.com/"},
+      {"0/0/_dk_shttps://a.com https://b.com https://c.com/", "https://c.com/"},
+
+      // Invalid input, producing garbage, without crashing.
+      {"", ""},
+      {"0/a.com", "0/a.com"},
+      {"https://a.com/", "a.com/"},
+      {"0/https://a.com/", "/a.com/"},
+  };
+
+  for (const auto& test : kTestCase) {
+    EXPECT_EQ(test.output,
+              HttpCache::GetResourceURLFromHttpCacheKey(test.input));
   }
 }
 
@@ -12967,54 +13000,6 @@ TEST_F(HttpCacheIOCallbackTest, FailedOpenOrCreateFollowedByOpenOrCreate) {
   // Verify that the other failed.
   ASSERT_EQ(cb.results()[1], ERR_CACHE_OPEN_OR_CREATE_FAILURE);
   ASSERT_EQ(entry2, nullptr);
-}
-
-class HttpCacheMemoryDumpTest
-    : public testing::TestWithParam<base::trace_event::MemoryDumpLevelOfDetail>,
-      public WithTaskEnvironment {};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    HttpCacheMemoryDumpTest,
-    ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
-                      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND));
-
-// Basic test to make sure HttpCache::DumpMemoryStats doesn't crash.
-TEST_P(HttpCacheMemoryDumpTest, DumpMemoryStats) {
-  MockHttpCache cache;
-  cache.FailConditionalizations();
-  RunTransactionTest(cache.http_cache(), kTypicalGET_Transaction);
-
-  HttpResponseInfo response_info;
-  RunTransactionTestWithResponseInfo(cache.http_cache(),
-                                     kTypicalGET_Transaction, &response_info);
-
-  EXPECT_FALSE(response_info.was_cached);
-  EXPECT_TRUE(response_info.network_accessed);
-  EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
-            response_info.cache_entry_status);
-
-  base::trace_event::MemoryDumpArgs dump_args = {GetParam()};
-  auto process_memory_dump =
-      std::make_unique<base::trace_event::ProcessMemoryDump>(dump_args);
-  base::trace_event::MemoryAllocatorDump* parent_dump =
-      process_memory_dump->CreateAllocatorDump(
-          "net/url_request_context/main/0x123");
-  cache.http_cache()->DumpMemoryStats(process_memory_dump.get(),
-                                      parent_dump->absolute_name());
-
-  const base::trace_event::MemoryAllocatorDump* dump =
-      process_memory_dump->GetAllocatorDump(
-          "net/url_request_context/main/0x123/http_cache");
-  ASSERT_NE(nullptr, dump);
-
-  using Entry = base::trace_event::MemoryAllocatorDump::Entry;
-  const std::vector<Entry>& entries = dump->entries();
-  ASSERT_THAT(entries,
-              Contains(AllOf(
-                  Field(&Entry::name,
-                        Eq(base::trace_event::MemoryAllocatorDump::kNameSize)),
-                  Field(&Entry::value_uint64, Gt(0UL)))));
 }
 
 TEST_F(HttpCacheTest, DnsAliasesNoRevalidation) {

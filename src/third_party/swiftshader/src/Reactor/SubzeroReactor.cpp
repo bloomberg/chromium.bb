@@ -165,7 +165,7 @@ Ice::Variable *Call(Ice::Cfg *function, Ice::CfgNode *basicBlock, Ice::Type retT
 
 // Wrapper for calls on C functions with Ice types
 template<typename Return, typename... CArgs, typename... RArgs>
-Ice::Variable *Call(Ice::Cfg *function, Ice::CfgNode *basicBlock, Return(fptr)(CArgs...), RArgs &&...args)
+Ice::Variable *Call(Ice::Cfg *function, Ice::CfgNode *basicBlock, Return(fptr)(CArgs...), RArgs &&... args)
 {
 	static_assert(sizeof...(CArgs) == sizeof...(RArgs), "Expected number of args don't match");
 
@@ -309,7 +309,7 @@ private:
 #endif
 	}
 
-	static bool detectARM()
+	constexpr static bool detectARM()
 	{
 #if defined(__arm__) || defined(__aarch64__)
 		return true;
@@ -334,10 +334,10 @@ private:
 	}
 };
 
-const bool CPUID::ARM = CPUID::detectARM();
+constexpr bool CPUID::ARM = CPUID::detectARM();
 const bool CPUID::SSE4_1 = CPUID::detectSSE4_1();
-const bool emulateIntrinsics = false;
-const bool emulateMismatchedBitCast = CPUID::ARM;
+constexpr bool emulateIntrinsics = false;
+constexpr bool emulateMismatchedBitCast = CPUID::ARM;
 
 constexpr bool subzeroDumpEnabled = false;
 constexpr bool subzeroEmitTextAsm = false;
@@ -986,7 +986,7 @@ Config Nucleus::getDefaultConfig()
 // This function lowers and produces executable binary code in memory for the input functions,
 // and returns a Routine with the entry points to these functions.
 template<size_t Count>
-static std::shared_ptr<Routine> acquireRoutine(Ice::Cfg *const (&functions)[Count], const char *const (&names)[Count], const Config::Edit &cfgEdit)
+static std::shared_ptr<Routine> acquireRoutine(Ice::Cfg *const (&functions)[Count], const char *const (&names)[Count], const Config::Edit *cfgEdit)
 {
 	// This logic is modeled after the IceCompiler, as well as GlobalContext::translateFunctions
 	// and GlobalContext::emitItems.
@@ -1089,7 +1089,7 @@ static std::shared_ptr<Routine> acquireRoutine(Ice::Cfg *const (&functions)[Coun
 	return std::shared_ptr<Routine>(handoffRoutine);
 }
 
-std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
 {
 	finalizeFunction();
 	return rr::acquireRoutine({ ::function }, { name }, cfgEdit);
@@ -4930,7 +4930,7 @@ static void coroutineEntryDestroyStub(Nucleus::CoroutineHandle handle)
 {
 }
 
-std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
 {
 	if(::coroGen)
 	{

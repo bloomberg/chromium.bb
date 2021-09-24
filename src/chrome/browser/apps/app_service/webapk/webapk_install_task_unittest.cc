@@ -16,9 +16,9 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_test_server.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_service_manager.h"
@@ -47,9 +47,9 @@ std::unique_ptr<WebApplicationInfo> BuildDefaultWebAppInfo() {
   app_info->scope = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
   app_info->manifest_url = GURL(kTestManifestUrl);
-  WebApplicationIconInfo icon;
+  apps::IconInfo icon;
   icon.square_size_px = 64;
-  icon.purpose = IconPurpose::ANY;
+  icon.purpose = apps::IconInfo::Purpose::kAny;
   icon.url = GURL(kTestAppIcon);
   app_info->icon_infos.push_back(icon);
 
@@ -351,7 +351,8 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateShortName) {
   // update.
   auto web_app_info = BuildDefaultWebAppInfo();
   web_app_info->title = u"Testy test App";
-  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info),
+                               /*overwrite_existing_manifest_fields=*/true);
   EXPECT_TRUE(UpdateWebApk(app_id));
 
   // Check that the update worked.
@@ -385,7 +386,8 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateScope) {
   // update.
   auto web_app_info = BuildDefaultWebAppInfo();
   web_app_info->scope = GURL("https://www.differentexample.com/");
-  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info),
+                               /*overwrite_existing_manifest_fields=*/true);
   EXPECT_TRUE(UpdateWebApk(app_id));
 
   // Check that the update worked.
@@ -444,7 +446,8 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateShareTarget) {
   auto web_app_info = BuildDefaultWebAppInfo();
   web_app_info->share_target->action =
       GURL("https://www.differentexample.com/");
-  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info),
+                               /*overwrite_existing_manifest_fields=*/true);
   EXPECT_TRUE(UpdateWebApk(app_id));
 
   // Check that the update worked.
@@ -476,7 +479,8 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateMultipleChanges) {
   web_app_info->title = u"Testy test App";
   web_app_info->share_target->action =
       GURL("https://www.differentexample.com/");
-  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info),
+                               /*overwrite_existing_manifest_fields=*/true);
   base::HistogramTester histograms;
   EXPECT_TRUE(UpdateWebApk(app_id));
 
@@ -553,7 +557,8 @@ TEST_F(WebApkInstallTaskTest, FailedUpdateNetworkError) {
   // update.
   auto web_app_info = BuildDefaultWebAppInfo();
   web_app_info->title = u"Testy test App";
-  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info),
+                               /*overwrite_existing_manifest_fields=*/true);
 
   base::HistogramTester histograms;
   webapk_test_server()->RespondWithError();

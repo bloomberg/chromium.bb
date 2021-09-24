@@ -420,6 +420,10 @@ BasicInteractions::BasicInteractions(ScriptExecutorDelegate* delegate)
 
 BasicInteractions::~BasicInteractions() {}
 
+const ClientSettings& BasicInteractions::GetClientSettings() {
+  return delegate_->GetSettings();
+}
+
 bool BasicInteractions::SetValue(const SetModelValueProto& proto) {
   if (proto.model_identifier().empty()) {
     DVLOG(2) << "Error setting value: model_identifier empty";
@@ -502,7 +506,6 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       return CreateLoginOptionResponse(delegate_->GetUserModel(),
                                        proto.result_model_identifier(),
                                        proto.create_login_option_response());
-      break;
     case ComputeValueProto::kStringEmpty:
       if (!proto.string_empty().has_value()) {
         DVLOG(2)

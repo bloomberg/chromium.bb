@@ -4,9 +4,11 @@
 
 #include "quic/core/http/web_transport_http3.h"
 
+#include <limits>
 #include <memory>
 
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "quic/core/http/quic_spdy_session.h"
 #include "quic/core/http/quic_spdy_stream.h"
 #include "quic/core/quic_data_reader.h"
@@ -25,7 +27,7 @@ namespace quic {
 
 namespace {
 class QUIC_NO_EXPORT NoopWebTransportVisitor : public WebTransportVisitor {
-  void OnSessionReady() override {}
+  void OnSessionReady(const spdy::SpdyHeaderBlock&) override {}
   void OnIncomingBidirectionalStreamAvailable() override {}
   void OnIncomingUnidirectionalStreamAvailable() override {}
   void OnDatagramReceived(absl::string_view /*datagram*/) override {}
@@ -85,18 +87,26 @@ void WebTransportHttp3::CloseAllAssociatedStreams() {
 
 void WebTransportHttp3::HeadersReceived(const spdy::SpdyHeaderBlock& headers) {
   if (session_->perspective() == Perspective::IS_CLIENT) {
-    auto it = headers.find(":status");
-    if (it == headers.end() || it->second != "200") {
+    int status_code;
+    if (!QuicSpdyStream::ParseHeaderStatusCode(headers, &status_code)) {
       QUIC_DVLOG(1) << ENDPOINT
                     << "Received WebTransport headers from server without "
-                       "status 200, rejecting.";
+                       "a valid status code, rejecting.";
+      return;
+    }
+    bool valid_status = status_code >= 200 && status_code <= 299;
+    if (!valid_status) {
+      QUIC_DVLOG(1) << ENDPOINT
+                    << "Received WebTransport headers from server with "
+                       "status code "
+                    << status_code << ", rejecting.";
       return;
     }
   }
 
   QUIC_DVLOG(1) << ENDPOINT << "WebTransport session " << id_ << " ready.";
   ready_ = true;
-  visitor_->OnSessionReady();
+  visitor_->OnSessionReady(headers);
   session_->ProcessBufferedWebTransportStreamsForSession(this);
 }
 
@@ -235,17 +245,14 @@ void WebTransportHttp3::OnContextClosed(
 }
 
 WebTransportHttp3UnidirectionalStream::WebTransportHttp3UnidirectionalStream(
-    PendingStream* pending,
-    QuicSpdySession* session)
+    PendingStream* pending, QuicSpdySession* session)
     : QuicStream(pending, session, READ_UNIDIRECTIONAL, /*is_static=*/false),
       session_(session),
       adapter_(session, this, sequencer()),
       needs_to_send_preamble_(false) {}
 
 WebTransportHttp3UnidirectionalStream::WebTransportHttp3UnidirectionalStream(
-    QuicStreamId id,
-    QuicSpdySession* session,
-    WebTransportSessionId session_id)
+    QuicStreamId id, QuicSpdySession* session, WebTransportSessionId session_id)
     : QuicStream(id, session, /*is_static=*/false, WRITE_UNIDIRECTIONAL),
       session_(session),
       adapter_(session, this, sequencer()),
@@ -332,6 +339,35 @@ void WebTransportHttp3UnidirectionalStream::OnClose() {
     return;
   }
   session->OnStreamClosed(id());
+}
+
+namespace {
+constexpr uint64_t kWebTransportMappedErrorCodeFirst = 0x52e4a40fa8db;
+constexpr uint64_t kWebTransportMappedErrorCodeLast = 0x52e4a40fa9e2;
+}  // namespace
+
+absl::optional<WebTransportStreamError> Http3ErrorToWebTransport(
+    uint64_t http3_error_code) {
+  // Ensure the code is within the valid range.
+  if (http3_error_code < kWebTransportMappedErrorCodeFirst ||
+      http3_error_code > kWebTransportMappedErrorCodeLast) {
+    return absl::nullopt;
+  }
+  // Exclude GREASE codepoints.
+  if ((http3_error_code - 0x21) % 0x1f == 0) {
+    return absl::nullopt;
+  }
+
+  uint64_t shifted = http3_error_code - kWebTransportMappedErrorCodeFirst;
+  uint64_t result = shifted - shifted / 0x1f;
+  QUICHE_DCHECK_LE(result, std::numeric_limits<uint8_t>::max());
+  return result;
+}
+
+uint64_t WebTransportErrorToHttp3(
+    WebTransportStreamError webtransport_error_code) {
+  return kWebTransportMappedErrorCodeFirst + webtransport_error_code +
+         webtransport_error_code / 0x1e;
 }
 
 }  // namespace quic

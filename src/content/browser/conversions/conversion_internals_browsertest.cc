@@ -69,7 +69,7 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[0].innerText === "No pending reports.") {
+          table.children[0].children[0].innerText === "No sent or pending reports.") {
         document.title = $1;
       }
     });
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
           table.children[0].children[7].innerText === "0" &&
           table.children[1].children[7].innerText === $2 &&
           table.children[0].children[8].innerText === "" &&
-          table.children[1].children[8].innerText === "13,17") {
+          table.children[1].children[8].innerText === "13, 17") {
         document.title = $3;
       }
     });
@@ -224,71 +224,6 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   SetTitleOnReportsTableEmpty(kCompleteTitle);
-  ClickRefreshButton();
-  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
-}
-
-IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
-                       WebUIShownWithNoSentReports_NoSentReportsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
-
-  TestConversionManager manager;
-  OverrideWebUIConversionManager(&manager);
-
-  std::string wait_script = R"(
-    let table = document.getElementById("sent-report-table-body");
-    let obs = new MutationObserver(() => {
-      if (table.children.length === 1 &&
-          table.children[0].children[0].innerText ===
-          "No sent reports.") {
-        document.title = $1;
-      }
-    });
-    obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
-
-  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
-  ClickRefreshButton();
-  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
-}
-
-IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
-                       WebUIShownWithSentReport_SentReportsDisplayed) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
-
-  TestConversionManager manager;
-  manager.SetSentReportsForWebUI(
-      {SentReportInfo(/*conversion_id=*/0,
-                      /*original_report_time=*/base::Time(),
-                      /*report_url=*/GURL("https://example.com/1"),
-                      /*report_body=*/"a",
-                      /*http_response_code=*/200,
-                      /*should_retry*/ false),
-       SentReportInfo(/*conversion_id=*/0,
-                      /*original_report_time=*/base::Time(),
-                      /*report_url=*/GURL("https://example.com/2"),
-                      /*report_body=*/"b",
-                      /*http_response_code=*/404,
-                      /*should_retry*/ false)});
-  OverrideWebUIConversionManager(&manager);
-
-  std::string wait_script = R"(
-    let table = document.getElementById("sent-report-table-body");
-    let obs = new MutationObserver(() => {
-      if (table.children.length === 2 &&
-          table.children[0].children[0].innerText === "https://example.com/1" &&
-          table.children[0].children[1].innerText === "a" &&
-          table.children[0].children[2].innerText === "200" &&
-          table.children[1].children[0].innerText === "https://example.com/2" &&
-          table.children[1].children[1].innerText === "b" &&
-          table.children[1].children[2].innerText === "404") {
-        document.title = $1;
-      }
-    });
-    obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
-
-  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
@@ -350,33 +285,37 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
                        WebUIShownWithPendingReports_ReportsDisplayed) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
 
-  // We use the max value of `uint64_t` here to ensure that it is properly
-  // handled as a `bigint` value in JS and doesn't run into issues with
-  // `Number.MAX_SAFE_INTEGER`.
-
   TestConversionManager manager;
-  ConversionReport report(
-      ImpressionBuilder(base::Time::Now()).SetData(100).Build(),
-      /*conversion_data=*/std::numeric_limits<uint64_t>::max(),
-      /*conversion_time=*/base::Time::Now(),
-      /*report_time=*/base::Time::Now(), /*conversion_id=*/1);
-  ConversionReport report2(
+  manager.SetSentReportsForWebUI({SentReportInfo(
+      ConversionReport(
+          ImpressionBuilder(base::Time::Now()).SetData(100).Build(),
+          /*conversion_data=*/5,
+          /*conversion_time=*/base::Time::Now(),
+          /*report_time=*/base::Time::Now(), /*priority=*/0,
+          ConversionReport::Id(1)),
+      SentReportInfo::Status::kSent,
+      /*http_response_code=*/200)});
+  manager.SetReportsForWebUI({ConversionReport(
       ImpressionBuilder(base::Time::Now())
           .SetData(200)
           .SetSourceType(StorableImpression::SourceType::kEvent)
           .Build(),
       /*conversion_data=*/7, /*conversion_time=*/base::Time::Now(),
-      /*report_time=*/base::Time::Now(), /*conversion_id=*/1);
-  manager.SetReportsForWebUI({report, report2});
+      /*report_time=*/base::Time::Now(), /*priority=*/13,
+      ConversionReport::Id(1))});
   OverrideWebUIConversionManager(&manager);
 
   std::string wait_script = R"(
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
-          table.children[0].children[1].innerText === $1 &&
-          table.children[0].children[5].innerText === "Navigation" &&
-          table.children[1].children[5].innerText === "Event") {
+          table.children[0].children[1].innerText === "https://sub.conversion.test" &&
+          table.children[0].children[2].innerText ===
+            "https://report.test/.well-known/attribution-reporting/report-attribution" &&
+          table.children[0].children[4].innerText === "13" &&
+          table.children[0].children[5].innerText === "Pending" &&
+          table.children[1].children[4].innerText === "0" &&
+          table.children[1].children[5].innerText === "Sent: HTTP 200") {
         document.title = $2;
       }
     });
@@ -396,16 +335,22 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   ConversionReport report(
       ImpressionBuilder(base::Time::Now()).SetData(100).Build(),
-      /*conversion_data=*/7, /*conversion_time=*/base::Time::Now(),
-      /*report_time=*/base::Time::Now(), /*conversion_id=*/1);
+      /*conversion_data=*/0, /*conversion_time=*/base::Time::Now(),
+      /*report_time=*/base::Time::Now(), /*priority=*/7,
+      ConversionReport::Id(1));
   manager.SetReportsForWebUI({report});
+  manager.SetSentReportsForWebUI(
+      {SentReportInfo(report, SentReportInfo::Status::kSent,
+                      /*http_response_code=*/200)});
   OverrideWebUIConversionManager(&manager);
 
+  // Verify both rows get rendered.
   std::string wait_script = R"(
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
-      if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "7") {
+      if (table.children.length === 2 &&
+          table.children[0].children[4].innerText === "7" &&
+          table.children[1].children[5].innerText === "Sent: HTTP 200") {
         document.title = $1;
       }
     });
@@ -436,8 +381,9 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   ConversionReport report(
       ImpressionBuilder(base::Time::Now()).SetData(100).Build(),
-      /*conversion_data=*/7, /*conversion_time=*/base::Time::Now(),
-      /*report_time=*/base::Time::Now(), /*conversion_id=*/1);
+      /*conversion_data=*/0, /*conversion_time=*/base::Time::Now(),
+      /*report_time=*/base::Time::Now(), /*priority=*/7,
+      ConversionReport::Id(1));
   manager.SetReportsForWebUI({report});
   OverrideWebUIConversionManager(&manager);
 
@@ -445,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
     let table = document.getElementById("report-table-body");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[1].innerText === "7") {
+          table.children[0].children[4].innerText === "7") {
         document.title = $1;
       }
     });

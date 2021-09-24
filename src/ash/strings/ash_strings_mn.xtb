@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">Загвартай хоршсон өнгөний горим нь харагдах байдлыг бага зэрэг өнгөтэй болгохын тулд дэлгэцийн зургаас гаргаж авсан өнгийг ашигладаг.</translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" />-н мэдээллийн харилцах цонхыг нээх</translation>
+<translation id="1150989369772528668">Календарь</translation>
 <translation id="1153356358378277386">Хослуулсан төхөөрөмж</translation>
 <translation id="1165712434476988950">Шинэчлэлтийг ашиглахын тулд төхөөрөмжөө дахин эхлүүлэх шаардлагатай.</translation>
 <translation id="1175572348579024023">Гүйлгэх</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">Асаалттай</translation>
 <translation id="1615402009686901181">Администраторын бодлого нь нууцлалтай контентыг харагдаж байх үед дэлгэцийн зураг авахыг идэвхгүй болгодог</translation>
 <translation id="1632985212731562677">Сэлгүүрийг Тохиргоо &gt; Хандалт хэсэгт идэвхгүй болгох боломжтой.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> төхөөрөмж</translation>
 <translation id="1654477262762802994">Дуут асуулга эхлүүлэх</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Туслахад илэрц харахын тулд Search болон Space-г дарна уу.</translation>
 <translation id="1667964833127753507">Завсрын өнгөний горим нь дэлгэцийн зургаас гаргаж авсан өнгийг ашигладаггүй тул завсрын цайвар эсвэл бараан өнгөөр орлуулдаг.</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">Зүүн талыг товших</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth төхөөрөмж нь холбогдох зөвшөөрөл хүсч байна. Хүлээж авахаасаа өмнө <ph name="PASSKEY" /> дамжуулах түлхүүр үг нь энэ төхөөрөмж дээр гарч ирсэн байгаа эсэхийг шалгана уу.</translation>
 <translation id="2435457462613246316">Нууц үг харуулах</translation>
+<translation id="24452542372838207">Мэдэгдлийг дэлгэх</translation>
 <translation id="2450205753526923158">Дэлгэцийн агшны горим</translation>
 <translation id="2473177541599297363">Нягтралыг баталгаажуулах</translation>
 <translation id="2475982808118771221">Алдаа гарлаа</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">тодорхойлолт</translation>
 <translation id="3510164367642747937">Хулганы курсорыг тодруулах</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" />-н удирддаг бүртгэл</translation>
+<translation id="353086728817903341"><ph name="NUM_DEVICES" /> төхөөрөмжид холбогдсон</translation>
 <translation id="3552189655002856821">Wi-Fi унтраалттай байна</translation>
 <translation id="3560866052109807830">Тэмдэглэгээ зурах хэрэгсэл</translation>
 <translation id="3563775809269155755">Сүлжээний цэгийг идэвхжүүлэх</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">Нигери улсын хүн ам</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Уншиж байна...</translation>
+<translation id="3708186454126126312">Өмнө нь холбогдсон</translation>
 <translation id="371370241367527062">Урд талын микрофон</translation>
 <translation id="3713734891607377840">Дуусах үед нээх</translation>
 <translation id="3742055079367172538">Дэлгэцний зургийг авсан болно (Screenshot)</translation>
@@ -404,6 +409,7 @@
 <translation id="4129129681837227511">Мэдэгдлийг түгжигдсэн дэлгэц дээрээ харахын тулд төхөөрөмжийн түгжээг тайлж, тохиргоог өөрчилнө үү</translation>
 <translation id="4146833061457621061">Хөгжим тоглуулах</translation>
 <translation id="4157822100366708405">Бараан загварын тохиргоо</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Хэл</translation>
 <translation id="4195877955194704651">Автомат даралтын товчлуур</translation>
 <translation id="4197790712631116042">Унтраалттай</translation>
@@ -556,6 +562,7 @@
 <translation id="5222676887888702881">Гарах</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="523505283826916779">Нэвтрэх боломжит байдлын тохиргоо</translation>
+<translation id="5253783950165989294"><ph name="DEVICE_NAME" /> нэртэй төхөөрөмжид холбогдсон, <ph name="BATTERY_PERCENTAGE" />% батарей</translation>
 <translation id="5260676007519551770">Дэлгэц 4</translation>
 <translation id="5283198616748585639">1 минут нэмэх</translation>
 <translation id="528468243742722775">Төгсгөл</translation>
@@ -566,6 +573,7 @@
 <translation id="5308380583665731573">Холбо</translation>
 <translation id="5313326810920013265">Bluetooth тохиргоо</translation>
 <translation id="5314219114274263156">Дэлгэцийн үйлдлийг бичсэн</translation>
+<translation id="5319712128756744240">Шинэ төхөөрөмж хослуулах</translation>
 <translation id="5322611492012084517">Таны утсыг олох боломжгүй</translation>
 <translation id="5329548388331921293">Холбогдож байна...</translation>
 <translation id="5331975486040154427">USB-C төхөөрөмж (ард талын портны зүүн тал)</translation>
@@ -768,6 +776,7 @@
 <translation id="6981982820502123353">Хандалт</translation>
 <translation id="698231206551913481">Энэ хэрэглэгчийг устгасан тохиолдолд холбоотой бүх файл болон дотоод өгөгдөл нь бүрмөсөн устах болно.</translation>
 <translation id="7007983414944123363">Таны ПИН эсвэл нууц үгийг баталгаажуулж чадсангүй. Дахин оролдоно уу.</translation>
+<translation id="7014684956566476813"><ph name="DEVICE_NAME" /> нэртэй төхөөрөмжид холбогдсон</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-д буцаж ирнэ үү.</translation>
 <translation id="70168403932084660">Дэлгэц 6</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" />-г утастайгаа холбоно уу</translation>
@@ -1002,6 +1011,7 @@
 <translation id="8818320199597151042">Профайлыг хасаж байна. Цөөн хэдэн минут хүлээнэ үү.</translation>
 <translation id="8825863694328519386">Буцахын тулд зүүн талаас шударна уу</translation>
 <translation id="8828714802988429505">90 °</translation>
+<translation id="8834539327799336565">Одоогоор холбогдсон</translation>
 <translation id="8841375032071747811">Буцах товчлуур</translation>
 <translation id="8843682306134542540">Эргүүлэлтийн түгжээг унтрааж/асаана уу. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1032,6 +1042,7 @@
 <translation id="9024331582947483881">бүтэн дэлгэц</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" />-н тохиргоог нээх</translation>
 <translation id="9056839673611986238">Төхөөрөмжийг буцаан шилжүүлнэ</translation>
+<translation id="9059834730836941392">Мэдэгдлийг буулгах</translation>
 <translation id="9063800855227801443">Нууцлалтай контентын зургийг авах боломжгүй</translation>
 <translation id="9065203028668620118">Засварлах</translation>
 <translation id="9070640332319875144">Туслагчийн тохиргоо</translation>

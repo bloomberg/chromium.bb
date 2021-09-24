@@ -37,12 +37,12 @@ the cast_receiver with `-g`, and both should be written out to files:
 
 These generated credentials can be passed in to start a session, e.g.
 ```
-./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0 -x
+./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0
 ```
 
 And then passed to the cast sender to connect and start a streaming session:
 ```
-  $ ./out/Default/cast_sender -d generated_root_cast_receiver.crt ~/video-1080-mp4.mp4
+  $ ./out/Default/cast_sender -d generated_root_cast_receiver.crt lo0 ~/video-1080-mp4.mp4
 ```
 
 When running on Mac OS X, also pass the `-x` flag to the cast receiver to

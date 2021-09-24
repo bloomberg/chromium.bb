@@ -57,6 +57,7 @@ class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
  public:
   explicit LayoutGrid(Element*);
   ~LayoutGrid() override;
+  void Trace(Visitor*) const override;
 
   static LayoutGrid* CreateAnonymous(Document*);
   const char* GetName() const override {
@@ -184,10 +185,10 @@ class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
       Grid&,
       GridTrackSizingDirection) const;
 
-  void PerformGridItemsPreLayout(const GridTrackSizingAlgorithm&) const;
+  void PerformGridItemsPreLayout(const GridTrackSizingAlgorithm*) const;
 
   void PlaceItemsOnGrid(
-      GridTrackSizingAlgorithm&,
+      GridTrackSizingAlgorithm*,
       absl::optional<LayoutUnit> available_logical_width) const;
   void PopulateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
@@ -195,9 +196,12 @@ class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
       const LayoutBox&,
       GridTrackSizingDirection,
       const GridSpan& specified_positions) const;
-  void PlaceSpecifiedMajorAxisItemsOnGrid(Grid&,
-                                          const Vector<LayoutBox*>&) const;
-  void PlaceAutoMajorAxisItemsOnGrid(Grid&, const Vector<LayoutBox*>&) const;
+  void PlaceSpecifiedMajorAxisItemsOnGrid(
+      Grid&,
+      const HeapVector<Member<LayoutBox>>&) const;
+  void PlaceAutoMajorAxisItemsOnGrid(
+      Grid&,
+      const HeapVector<Member<LayoutBox>>&) const;
   void PlaceAutoMajorAxisItemOnGrid(
       Grid&,
       LayoutBox&,
@@ -208,7 +212,7 @@ class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
   absl::optional<LayoutUnit> OverrideIntrinsicContentLogicalSize(
       GridTrackSizingDirection) const;
 
-  void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
+  void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm*,
                                           GridTrackSizingDirection) const;
   void ComputeTrackSizesForDefiniteSize(GridTrackSizingDirection,
                                         LayoutUnit free_space);
@@ -325,14 +329,14 @@ class LayoutGrid final : public LayoutBlock, public LayoutNGGridInterface {
                                 bool block_flow_is_column_axis);
 
   std::unique_ptr<Grid> grid_;
-  GridTrackSizingAlgorithm track_sizing_algorithm_;
+  Member<GridTrackSizingAlgorithm> track_sizing_algorithm_;
 
   Vector<LayoutUnit> row_positions_;
   Vector<LayoutUnit> column_positions_;
   ContentAlignmentData offset_between_columns_;
   ContentAlignmentData offset_between_rows_;
 
-  typedef HashMap<const LayoutBox*, absl::optional<wtf_size_t>>
+  typedef HeapHashMap<Member<const LayoutBox>, absl::optional<wtf_size_t>>
       OutOfFlowPositionsMap;
   OutOfFlowPositionsMap column_of_positioned_item_;
   OutOfFlowPositionsMap row_of_positioned_item_;

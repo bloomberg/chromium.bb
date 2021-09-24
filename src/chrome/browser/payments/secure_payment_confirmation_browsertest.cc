@@ -26,7 +26,6 @@
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/payments/content/payment_credential_enrollment_controller.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/secure_payment_confirmation_app.h"
 #include "components/payments/core/journey_logger.h"
@@ -48,22 +47,6 @@
 
 namespace payments {
 namespace {
-
-std::vector<uint8_t> GetEncodedIcon(const std::string& icon_file_name) {
-  base::FilePath base_path;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
-  std::string icon_as_string;
-  base::FilePath icon_file_path =
-      base_path.AppendASCII("components/test/data/payments")
-          .AppendASCII(icon_file_name);
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    CHECK(base::PathExists(icon_file_path));
-    CHECK(base::ReadFileToString(icon_file_path, &icon_as_string));
-  }
-
-  return std::vector<uint8_t>(icon_as_string.begin(), icon_as_string.end());
-}
 
 class SecurePaymentConfirmationTest
     : public PaymentRequestPlatformBrowserTestBase,
@@ -111,77 +94,35 @@ class SecurePaymentConfirmationTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-enum class APIVersion {
-  kApiV2,
-  kApiV3,
-};
-
-std::string GetNotSupportedError(APIVersion api_version) {
-  return api_version == APIVersion::kApiV3
-             ? "The operation either timed out or was not allowed. See: "
-               "https://www.w3.org/TR/webauthn-2/"
-               "#sctn-privacy-considerations-client."
-             : "The payment method \"secure-payment-confirmation\" is not "
-               "supported.";
+std::string GetNotSupportedError() {
+  return "The operation either timed out or was not allowed. See: "
+         "https://www.w3.org/TR/webauthn-2/"
+         "#sctn-privacy-considerations-client.";
 }
 
-std::string APIVersionToString(const testing::TestParamInfo<APIVersion>& info) {
-  return APIVersion::kApiV2 == info.param ? "APIV2" : "APIV3";
-}
-
-class SecurePaymentConfirmationTestWithParameter
-    : public SecurePaymentConfirmationTest,
-      public testing::WithParamInterface<APIVersion> {
- public:
-  SecurePaymentConfirmationTestWithParameter() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-    switch (GetParam()) {
-      case APIVersion::kApiV2:
-        disabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
-        break;
-      case APIVersion::kApiV3:
-        enabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
-        break;
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(APIVersion,
-                         SecurePaymentConfirmationTestWithParameter,
-                         testing::Values(APIVersion::kApiV2,
-                                         APIVersion::kApiV3),
-                         APIVersionToString);
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
-                       NoAuthenticator) {
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoAuthenticator) {
   test_controller()->SetHasAuthenticator(false);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(GetNotSupportedError(GetParam()),
+  EXPECT_EQ(GetNotSupportedError(),
             content::EvalJs(GetActiveWebContents(),
                             "getSecurePaymentConfirmationStatus()"));
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
-                       NoInstrumentInStorage) {
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoInstrumentInStorage) {
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(GetNotSupportedError(GetParam()),
+  EXPECT_EQ(GetNotSupportedError(),
             content::EvalJs(GetActiveWebContents(),
                             "getSecurePaymentConfirmationStatus()"));
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
                        CheckInstrumentInStorageAfterCanMakePayment) {
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
@@ -189,7 +130,7 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationTestWithParameter,
 
   // EvalJs waits for JavaScript promise to resolve.
   EXPECT_EQ(
-      GetNotSupportedError(GetParam()),
+      GetNotSupportedError(),
       content::EvalJs(
           GetActiveWebContents(),
           base::StringPrintf(
@@ -200,15 +141,13 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, PaymentSheetShowsApp) {
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   std::vector<uint8_t> credential_id = {'c', 'r', 'e', 'd'};
-  std::vector<uint8_t> icon = GetEncodedIcon("icon.png");
   webdata_services::WebDataServiceWrapperFactory::
       GetPaymentManifestWebDataServiceForBrowserContext(
           GetActiveWebContents()->GetBrowserContext(),
           ServiceAccessType::EXPLICIT_ACCESS)
           ->AddSecurePaymentConfirmationInstrument(
               std::make_unique<SecurePaymentConfirmationInstrument>(
-                  std::move(credential_id), "relying-party.example",
-                  u"Stub label", std::move(icon)),
+                  std::move(credential_id), "relying-party.example"),
               /*consumer=*/this);
   ResetEventWaiterForSingleEvent(TestEvent::kUIDisplayed);
   ExecuteScriptAsync(GetActiveWebContents(),
@@ -360,41 +299,12 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDisabledByFinchTest,
 #if !defined(OS_ANDROID)
 class SecurePaymentConfirmationCreationTest
     : public SecurePaymentConfirmationTest,
-      public PaymentCredentialEnrollmentController::ObserverForTest,
       public content::WebContentsObserver {
  public:
   enum Event : int {
     AUTHENTICATOR_REQUEST,
-    ENROLLMENT_DIALOG_OPENED,
     WEB_CONTENTS_DESTROYED,
   };
-
-  void RespondToFutureEnrollments(bool confirm) {
-    respond_to_future_enrollments_ = true;
-    confirm_enroll_ = confirm;
-    ObserveEnrollmentController();
-  }
-
-  void ObserveEnrollmentController() {
-    PaymentCredentialEnrollmentController::CreateForWebContents(
-        GetActiveWebContents());
-    PaymentCredentialEnrollmentController::FromWebContents(
-        GetActiveWebContents())
-        ->set_observer_for_test(this);
-  }
-
-  // PaymentCredentialEnrollmentController::ObserverForTest
-  void OnDialogOpened() override {
-    if (event_waiter_)
-      event_waiter_->OnEvent(Event::ENROLLMENT_DIALOG_OPENED);
-
-    if (respond_to_future_enrollments_) {
-      auto* controller = PaymentCredentialEnrollmentController::FromWebContents(
-          GetActiveWebContents());
-      EXPECT_EQ(nullptr, controller->GetTokenIfAvailable());
-      controller->OnResponse(confirm_enroll_);
-    }
-  }
 
   // PaymentCredential creation uses the normal Web Authentication code path
   // for creating the public key credential, rather than using
@@ -544,50 +454,15 @@ class SecurePaymentConfirmationCreationTest
   }
 
   base::HistogramTester histogram_tester_;
-  bool respond_to_future_enrollments_ = false;
-  bool confirm_enroll_ = false;
   std::unique_ptr<autofill::EventWaiter<Event>> event_waiter_;
 };
 
-class SecurePaymentConfirmationCreationTestWithParameter
-    : public SecurePaymentConfirmationCreationTest,
-      public testing::WithParamInterface<APIVersion> {
- public:
-  SecurePaymentConfirmationCreationTestWithParameter() {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-    switch (GetParam()) {
-      case APIVersion::kApiV2:
-        disabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
-        break;
-      case APIVersion::kApiV3:
-        enabled_features.push_back(features::kSecurePaymentConfirmationAPIV3);
-        break;
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(APIVersion,
-                         SecurePaymentConfirmationCreationTestWithParameter,
-                         testing::Values(APIVersion::kApiV2,
-                                         APIVersion::kApiV3),
-                         APIVersionToString);
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       UserCancelsBrowserEnrollmentDialog) {
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
+                       SuccessfulEnrollment) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
-  // Browser enrollment dialog is removed in APIV3, so the test can simulate
-  // user cancelling the browser enrollment dialog only in APIV2.
-  RespondToFutureEnrollments(/*confirm=*/false);
-  bool is_api_v3 = GetParam() == APIVersion::kApiV3;
-  std::string expected_response =
-      is_api_v3 ? "OK" : "AbortError: Request has been aborted.";
+  std::string expected_response = "OK";
 
   EXPECT_EQ(expected_response,
             content::EvalJs(GetActiveWebContents(),
@@ -595,50 +470,18 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
                                                GetDefaultIconURL())));
 
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          is_api_v3 ? 0 : 1);
+                          0);
   ExpectEnrollDialogResult(
-      SecurePaymentConfirmationEnrollDialogResult::kCanceled,
-      is_api_v3 ? 0 : 1);
-
-  if (is_api_v3) {
-    ExpectEnrollSystemPromptResult(
-        SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
-  } else {
-    ExpectNoEnrollSystemPromptResult();
-  }
-
+      SecurePaymentConfirmationEnrollDialogResult::kCanceled, 0);
+  ExpectEnrollSystemPromptResult(
+      SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-// Closing the page while the browser enrollment dialog is opened should not
-// crash.
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       WebContentsClosedDuringEnrollmentBrowserPrompt) {
-  if (GetParam() == APIVersion::kApiV3)
-    return;
-
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest, CredentialType) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  ObserveEnrollmentController();
-
-  ObserveEvent(Event::ENROLLMENT_DIALOG_OPENED);
-  ASSERT_TRUE(content::ExecJs(
-      GetActiveWebContents(),
-      content::JsReplace("createPaymentCredential($1)", GetDefaultIconURL()),
-      content::EvalJsOptions::EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
-  event_waiter_->Wait();
-
-  ObserveWebContentsDestroyed();
-  GetActiveWebContents()->Close();
-  event_waiter_->Wait();
-}
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       CredentialType) {
-  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
 
   EXPECT_EQ(
       "PublicKeyCredential",
@@ -647,11 +490,10 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
                                          GetDefaultIconURL())));
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        CreatePaymentCredential) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
 
   EXPECT_EQ("webauthn.create",
             content::EvalJs(GetActiveWebContents(),
@@ -660,10 +502,9 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
                                 GetDefaultIconURL())));
 
   // Verify that credential id size gets recorded.
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmationCredentialIdSizeInBytes", 1U);
+  int expected_enroll_histogram_value_ = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
                           expected_enroll_histogram_value_);
   ExpectEnrollDialogResult(
@@ -693,20 +534,18 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationDisableDebugTest,
   test_controller()->SetHasAuthenticator(false);
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   EXPECT_EQ(
-      "NotAllowedError: A user verifying platform authenticator is required "
-      "for payments.",
+      "NotSupportedError: A user verifying platform authenticator with "
+      "resident key support is required for 'payment' extension.",
       content::EvalJs(GetActiveWebContents(),
                       content::JsReplace("createPaymentCredential($1)",
                                          GetDefaultIconURL())));
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        LookupPaymentCredential) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   std::string credentialIdentifier =
       content::EvalJs(
           GetActiveWebContents(),
@@ -730,37 +569,28 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   EXPECT_EQ("display_name_for_instrument",
             test_controller()->app_descriptions().front().label);
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        PaymentExtension) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
 
   std::string first_credential_identifier =
       content::EvalJs(
           GetActiveWebContents(),
           "createPublicKeyCredentialWithPaymentExtensionAndReturnItsId()")
           .ExtractString();
-  if (GetParam() == APIVersion::kApiV2) {
-    EXPECT_EQ(
-        "NotReadableError: Failed to save the credential identifier for the "
-        "'payment' extension.",
-        first_credential_identifier);
-    return;
-  }
   ASSERT_EQ(std::string::npos, first_credential_identifier.find("Error"))
       << first_credential_identifier;
 
@@ -776,11 +606,7 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   NavigateTo("b.com", "/get_challenge.html");
   test_controller()->SetHasAuthenticator(true);
   confirm_payment_ = true;
-  std::string expected_result =
-      base::FeatureList::IsEnabled(features::kSecurePaymentConfirmationAPIV3)
-          ? "0.01"
-          : "The payment method \"secure-payment-confirmation\" is not "
-            "supported.";
+  std::string expected_result = "0.01";
 
   EXPECT_EQ(expected_result,
             content::EvalJs(
@@ -791,15 +617,16 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
             content::EvalJs(
                 GetActiveWebContents(),
                 content::JsReplace("getTotalAmountFromClientData($1, $2);",
-                                   second_credential_identifier, "0.01")));
+                                   second_credential_identifier, "0.01"),
+                // PaymentRequest.show() for SPC works without user gesture.
+                content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // b.com cannot create a credential with RP = "a.com".
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        RelyingPartyIsEnforced) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("b.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   EXPECT_EQ(
       "SecurityError: The relying party ID is not a registrable domain suffix "
       "of, nor equal to the current domain.",
@@ -810,10 +637,9 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
           .ExtractString());
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        ConfirmPaymentInCrossOriginIframe) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
       content::EvalJs(
@@ -844,34 +670,41 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   ASSERT_NE(nullptr, type) << response;
   EXPECT_EQ("payment.get", *type);
 
-  // TODO(https://crbug.com/1210488): Origin must be "c.com", i.e.,
-  // the URL retrieved from `http_server()->GetURL("c.com", "/")`.
   std::string* origin = value->FindStringKey("origin");
   ASSERT_NE(nullptr, origin) << response;
-  EXPECT_EQ(GURL("https://a.com"), GURL(*origin));
+  EXPECT_EQ(https_server()->GetURL("c.com", "/"), GURL(*origin));
 
-  // TODO(https://crbug.com/1210488): "crossOrigin" must be true.
   absl::optional<bool> cross_origin = value->FindBoolKey("crossOrigin");
   ASSERT_TRUE(cross_origin.has_value()) << response;
-  EXPECT_FALSE(cross_origin.value());
+  EXPECT_TRUE(cross_origin.value());
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
+  std::string* payee_origin = value->FindStringPath("payment.payeeOrigin");
+  ASSERT_NE(nullptr, payee_origin) << response;
+  EXPECT_EQ(GURL("https://example-payee-origin.test"), GURL(*payee_origin));
+
+  std::string* top_origin = value->FindStringPath("payment.topOrigin");
+  ASSERT_NE(nullptr, top_origin) << response;
+  EXPECT_EQ(https_server()->GetURL("b.com", "/"), GURL(*top_origin));
+
+  std::string* rp = value->FindStringPath("payment.rp");
+  ASSERT_NE(nullptr, rp) << response;
+  EXPECT_EQ("a.com", *rp);
+
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        ChallengeIsReturned) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
       content::EvalJs(
@@ -918,23 +751,21 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
               "getTotalAmountFromClientDataWithModifierAndShowPromise($1, $2);",
               credentialIdentifier, "0.04")));
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 4);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        UserVerificationFails) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
       content::EvalJs(
@@ -958,71 +789,22 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
           content::JsReplace("getTotalAmountFromClientData($1, $2);",
                              credentialIdentifier, "0.01")));
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 1);
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kCanceled, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       NonexistentIcon) {
-  if (GetParam() == APIVersion::kApiV3)
-    return;
-
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
-
-  EXPECT_EQ("NetworkError: Unable to download payment instrument icon.",
-            content::EvalJs(
-                GetActiveWebContents(),
-                content::JsReplace(
-                    "createCredentialAndReturnItsIdentifier($1)",
-                    https_server()->GetURL("a.com", "/nonexistent.png").spec()))
-                .ExtractString());
-
-  ExpectEnrollDialogShown(
-      SecurePaymentConfirmationEnrollDialogShown::kCouldNotShow, 1);
-  ExpectNoEnrollDialogResult();
-  ExpectNoEnrollSystemPromptResult();
-  ExpectNoFunnelCount();
-  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
-}
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       InsecureIcon) {
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
-
-  // Get the instrument icon from an insecure http server.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  std::string icon_url =
-      embedded_test_server()->GetURL("a.com", "/icon.png").spec();
-
-  EXPECT_EQ("SecurityError: 'instrument.icon' should be a secure URL",
-            content::EvalJs(
-                GetActiveWebContents(),
-                content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
-                                   icon_url))
-                .ExtractString());
-  ExpectNoEnrollDialogShown();
-  ExpectNoEnrollDialogResult();
-  ExpectNoEnrollSystemPromptResult();
-  ExpectNoFunnelCount();
-  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
-}
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        CreatePaymentCredentialTwice) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
 
   EXPECT_EQ("OK",
             content::EvalJs(GetActiveWebContents(),
@@ -1038,30 +820,25 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmationCredentialIdSizeInBytes", 2U);
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 2;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   ExpectEnrollSystemPromptResult(
       SecurePaymentConfirmationEnrollSystemPromptResult::kAccepted, 2);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
                        WebContentsClosedDuringEnrollmentOSPrompt) {
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true, /*should_hang=*/true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
 
   std::list<Event> expected_events_ =
-      (GetParam() == APIVersion::kApiV3)
-          ? std::list<Event>{Event::AUTHENTICATOR_REQUEST}
-          : std::list<Event>{Event::ENROLLMENT_DIALOG_OPENED,
-                             Event::AUTHENTICATOR_REQUEST};
+      std::list<Event>{Event::AUTHENTICATOR_REQUEST};
   event_waiter_ =
       std::make_unique<autofill::EventWaiter<Event>>(expected_events_);
   ExecuteScriptAsync(
@@ -1075,52 +852,19 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
   GetActiveWebContents()->Close();
   event_waiter_->Wait();
 
-  int expected_enroll_histogram_value_ =
-      (GetParam() == APIVersion::kApiV3) ? 0 : 1;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
-  // In V3, PaymentCredential doesn't get created since the test leaves the
-  // authentication request idle, so skip this check.
-  if (GetParam() == APIVersion::kApiV2) {
-    ExpectEnrollSystemPromptResult(
-        SecurePaymentConfirmationEnrollSystemPromptResult::kCanceled, 1);
-  }
+      expected_enroll_histogram_value);
   ExpectNoFunnelCount();
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       UserVerificationFailsThenSucceeds) {
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
+                       UserVerificationSucceeds) {
   NavigateTo("a.com", "/secure_payment_confirmation.html");
-  RespondToFutureEnrollments(/*confirm=*/true);
-
-  // SPC API V3 re-enables the WebAuthn UI for SPC. It causes the renderer to
-  // be blocked from returning the NotAllowedError until the user acknowledges
-  // the error on the UI. This can be tested if the test can fake a user
-  // acknowledgement.
-  bool is_v3 = GetParam() == APIVersion::kApiV3;
-  if (!is_v3) {
-    ReplaceFidoDiscoveryFactory(/*should_succeed=*/false);
-    EXPECT_EQ(
-        "NotAllowedError: The operation either timed out or was not allowed. "
-        "See: "
-        "https://www.w3.org/TR/webauthn-2/#sctn-privacy-considerations-client.",
-        content::EvalJs(
-            GetActiveWebContents(),
-            content::JsReplace("createCredentialAndReturnItsIdentifier($1)",
-                               GetDefaultIconURL()))
-            .ExtractString());
-
-    ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                            1);
-    ExpectEnrollDialogResult(
-        SecurePaymentConfirmationEnrollDialogResult::kAccepted, 1);
-    ExpectEnrollSystemPromptResult(
-        SecurePaymentConfirmationEnrollSystemPromptResult::kCanceled, 1);
-  }
 
   ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
   std::string credentialIdentifier =
@@ -1140,21 +884,20 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
                                         "getTotalAmountFromClientData($1, $2);",
                                         credentialIdentifier, "0.01")));
 
-  int expected_enroll_histogram_value_ = is_v3 ? 0 : 2;
+  int expected_enroll_histogram_value = 0;
   ExpectEnrollDialogShown(SecurePaymentConfirmationEnrollDialogShown::kShown,
-                          expected_enroll_histogram_value_);
+                          expected_enroll_histogram_value);
   ExpectEnrollDialogResult(
       SecurePaymentConfirmationEnrollDialogResult::kAccepted,
-      expected_enroll_histogram_value_);
+      expected_enroll_histogram_value);
   histogram_tester_.ExpectTotalCount(
       "PaymentRequest.SecurePaymentConfirmation.Funnel."
       "EnrollSystemPromptResult",
-      is_v3 ? 1 : 2);
+      1);
   histogram_tester_.ExpectBucketCount(
       "PaymentRequest.SecurePaymentConfirmation.Funnel."
       "EnrollSystemPromptResult",
-      SecurePaymentConfirmationEnrollSystemPromptResult::kCanceled,
-      is_v3 ? 0 : 1);
+      SecurePaymentConfirmationEnrollSystemPromptResult::kCanceled, 0);
   histogram_tester_.ExpectBucketCount(
       "PaymentRequest.SecurePaymentConfirmation.Funnel."
       "EnrollSystemPromptResult",
@@ -1162,72 +905,6 @@ IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
 
   ExpectFunnelCount(SecurePaymentConfirmationSystemPromptResult::kAccepted, 1);
   ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/true);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> HangRequest(
-    const base::RepeatingClosure& on_called,
-    const net::test_server::HttpRequest& request) {
-  EXPECT_EQ(request.relative_url, "/icon.png");
-  on_called.Run();
-  return std::make_unique<net::test_server::HungResponse>();
-}
-
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       WebContentsClosedDuringIconDownload) {
-  if (GetParam() == APIVersion::kApiV3)
-    return;
-
-  ReplaceFidoDiscoveryFactory(/*should_succeed=*/true);
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-
-  net::EmbeddedTestServer hanging_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  hanging_server.ServeFilesFromSourceDirectory("components/test/data/payments");
-
-  // A RunLoop must be used to wait for HangRequest instead of the EventWaiter
-  // because HangRequest is executed on a different thread.
-  base::RunLoop wait_for_icon_download;
-  hanging_server.RegisterRequestHandler(
-      base::BindRepeating(HangRequest, wait_for_icon_download.QuitClosure()));
-  ASSERT_TRUE(hanging_server.Start());
-
-  ExecuteScriptAsync(
-      GetActiveWebContents(),
-      content::JsReplace("createPaymentCredential($1)",
-                         hanging_server.GetURL("a.com", "/icon.png")));
-  wait_for_icon_download.Run();
-
-  // Expect no crash when closing the web contents mid-request.
-  ObserveWebContentsDestroyed();
-  GetActiveWebContents()->Close();
-  event_waiter_->Wait();
-
-  ExpectEnrollDialogShown(
-      SecurePaymentConfirmationEnrollDialogShown::kCouldNotShow, 1);
-  ExpectNoEnrollDialogResult();
-  ExpectNoEnrollSystemPromptResult();
-  ExpectNoFunnelCount();
-  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
-}
-
-// Expect that an error is returned when there is no RP ID. This is a
-// regression test for crbug.com/1183559.
-IN_PROC_BROWSER_TEST_P(SecurePaymentConfirmationCreationTestWithParameter,
-                       MissingRpId) {
-  NavigateTo("a.com", "/secure_payment_confirmation.html");
-
-  EXPECT_EQ(
-      "a JavaScript error: \"NotSupportedError: Required parameters missing "
-      "in `options.payment`.\"\n",
-      content::EvalJs(GetActiveWebContents(),
-                      content::JsReplace("createCredentialWithNoRpId($1)",
-                                         GetDefaultIconURL()))
-          .error);
-
-  ExpectNoEnrollDialogShown();
-  ExpectNoEnrollDialogResult();
-  ExpectNoEnrollSystemPromptResult();
-  ExpectNoFunnelCount();
-  ExpectJourneyLoggerEvent(/*spc_confirm_logged=*/false);
 }
 
 #endif  // !defined(OS_ANDROID)

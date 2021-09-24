@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "components/viz/common/quads/compositor_frame_transition_directive.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
@@ -79,6 +80,8 @@ class VIZ_SERVICE_EXPORT SurfaceAnimationManager {
 
  private:
   friend class SurfaceAnimationManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(SurfaceAnimationManagerTest, CustomRootConfig);
+  FRIEND_TEST_ALL_PREFIXES(SurfaceAnimationManagerTest, CustomSharedConfig);
 
   struct RenderPassDrawData {
     RenderPassDrawData();
@@ -134,12 +137,18 @@ class VIZ_SERVICE_EXPORT SurfaceAnimationManager {
   // Tick both the root and shared animations.
   void TickAnimations(base::TimeTicks new_time);
 
+  // Returns true if we have a running animation for root or shared elements.
+  bool HasRunningAnimations() const;
+
+  base::TimeDelta ApplySlowdownFactor(base::TimeDelta original) const;
+
   enum class State { kIdle, kAnimating, kLastFrame };
 
   TransitionDirectiveCompleteCallback sequence_id_finished_callback_;
 
   uint32_t last_processed_sequence_id_ = 0;
 
+  const int animation_slowdown_factor_ = 1;
   TransferableResourceTracker transferable_resource_tracker_;
 
   absl::optional<TransferableResourceTracker::ResourceFrame> saved_textures_;

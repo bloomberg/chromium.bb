@@ -16,6 +16,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as RequestLinkIcon from '../../ui/components/request_link_icon/request_link_icon.js';
 
 import type {IssueView} from './IssueView.js';
+import type {AggregatedIssue} from './IssueAggregator.js';
 
 const UIStrings = {
   /**
@@ -62,6 +63,7 @@ export interface CreateRequestCellOptions {
  */
 export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   private readonly parentView: IssueView;
+  protected issue: AggregatedIssue;
   protected affectedResourcesCountElement: HTMLElement;
   protected affectedResources: HTMLElement;
   private affectedResourcesCount: number;
@@ -69,13 +71,11 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
   private unresolvedFrameIds: Set<string>;
   protected requestResolver: Logs.RequestResolver.RequestResolver;
 
-  /**
-   * @param resourceName - Singular and plural of the affected resource name.
-   */
-  constructor(parent: IssueView) {
+  constructor(parent: IssueView, issue: AggregatedIssue) {
     super();
-    this.toggleOnClick = true;
     this.parentView = parent;
+    this.issue = issue;
+    this.toggleOnClick = true;
     this.affectedResourcesCountElement = this.createAffectedResourcesCounter();
 
     this.affectedResources = this.createAffectedResources();
@@ -83,6 +83,14 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     this.requestResolver = new Logs.RequestResolver.RequestResolver();
     this.frameListeners = [];
     this.unresolvedFrameIds = new Set();
+  }
+
+  /**
+   * Sets the issue to take the resources from. Does not
+   * trigger an update, the caller needs to do that explicitly.
+   */
+  setIssue(issue: AggregatedIssue): void {
+    this.issue = issue;
   }
 
   createAffectedResourcesCounter(): HTMLElement {
@@ -163,7 +171,8 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     }
   }
 
-  protected createFrameCell(frameId: Protocol.Page.FrameId, issue: IssuesManager.Issue.Issue): HTMLElement {
+  protected createFrameCell(frameId: Protocol.Page.FrameId, issueCategory: IssuesManager.Issue.IssueCategory):
+      HTMLElement {
     const frame = this.resolveFrameId(frameId);
     const url = frame && (frame.unreachableUrl() || frame.url) || i18nString(UIStrings.unknown);
 
@@ -174,7 +183,7 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
       icon.data = {iconName: 'elements_panel_icon', color: 'var(--color-link)', width: '16px', height: '16px'};
       icon.classList.add('link', 'elements-panel');
       icon.onclick = async(): Promise<void> => {
-        Host.userMetrics.issuesPanelResourceOpened(issue.getCategory(), AffectedItem.Element);
+        Host.userMetrics.issuesPanelResourceOpened(issueCategory, AffectedItem.Element);
         const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
         if (frame) {
           const ownerNode = await frame.getOwnerDOMNodeOrDocument();
@@ -183,7 +192,7 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
           }
         }
       };
-      UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.clickToRevealTheFramesDomNodeIn));
+      icon.title = i18nString(UIStrings.clickToRevealTheFramesDomNodeIn);
       frameCell.appendChild(icon);
     }
     frameCell.appendChild(document.createTextNode(url));
@@ -237,7 +246,8 @@ export abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
 
   protected appendSourceLocation(
       element: HTMLElement,
-      sourceLocation: {url: string, scriptId?: string, lineNumber: number, columnNumber?: number}|undefined,
+      sourceLocation: {url: string, scriptId?: Protocol.Runtime.ScriptId, lineNumber: number, columnNumber?: number}|
+      undefined,
       target: SDK.Target.Target|null|undefined): void {
     const sourceCodeLocation = document.createElement('td');
     sourceCodeLocation.classList.add('affected-source-location');

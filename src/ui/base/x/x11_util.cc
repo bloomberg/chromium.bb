@@ -353,6 +353,10 @@ int CoalescePendingMotionEvents(const x11::Event& x11_event,
 
   conn->ReadResponses();
   for (auto& event : conn->events()) {
+    // There may be non-input events such as ConfigureNotifyEvents and
+    // PropertyNotifyEvents that get interleaved between mouse events, so it is
+    // necessary to skip over those to coalesce as many pending motion events as
+    // possible so mouse dragging is smooth.
     if (!EventHasCoordinates(event))
       continue;
 
@@ -455,9 +459,7 @@ void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
 bool IsWindowVisible(x11::Window window) {
   TRACE_EVENT0("ui", "IsWindowVisible");
 
-  auto x11_window = static_cast<x11::Window>(window);
-  auto* connection = x11::Connection::Get();
-  auto response = connection->GetWindowAttributes({x11_window}).Sync();
+  auto response = x11::Connection::Get()->GetWindowAttributes({window}).Sync();
   if (!response || response->map_state != x11::MapState::Viewable)
     return false;
 
@@ -469,12 +471,11 @@ bool IsWindowVisible(x11::Window window) {
       return false;
   }
 
-  // Some compositing window managers (notably kwin) do not actually unmap
-  // windows on desktop switch, so we also must check the current desktop.
-  int32_t window_desktop, current_desktop;
-  return (!GetWindowDesktop(window, &window_desktop) ||
-          !GetCurrentDesktop(&current_desktop) ||
-          window_desktop == kAllDesktops || window_desktop == current_desktop);
+  // Do not check _NET_CURRENT_DESKTOP/_NET_WM_DESKTOP since some
+  // window managers (eg. i3) have per-monitor workspaces where more
+  // than one workspace can be visible at once, but only one will be
+  // "active".
+  return true;
 }
 
 bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
@@ -537,7 +538,7 @@ bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
 bool PropertyExists(x11::Window window, x11::Atom property) {
   auto response = x11::Connection::Get()
                       ->GetProperty(x11::GetPropertyRequest{
-                          .window = static_cast<x11::Window>(window),
+                          .window = window,
                           .property = property,
                           .long_length = 1,
                       })
@@ -550,7 +551,7 @@ bool GetRawBytesOfProperty(x11::Window window,
                            scoped_refptr<base::RefCountedMemory>* out_data,
                            x11::Atom* out_type) {
   auto future = x11::Connection::Get()->GetProperty(x11::GetPropertyRequest{
-      .window = static_cast<x11::Window>(window),
+      .window = window,
       .property = property,
       // Don't limit the amount of returned data.
       .long_length = std::numeric_limits<uint32_t>::max(),
@@ -1139,6 +1140,10 @@ x11::ColorMap XVisualManager::XVisualData::GetColormap() {
     colormap_ = connection->GenerateId<x11::ColorMap>();
     connection->CreateColormap({x11::ColormapAlloc::None, colormap_,
                                 connection->default_root(), info->visual_id});
+    // In single-process mode, XVisualManager may be used on multiple threads,
+    // so we need to flush colormap creation early so that other threads are
+    // able to use it.
+    connection->Flush();
   }
   return colormap_;
 }

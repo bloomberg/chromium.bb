@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -299,6 +300,8 @@ class TestingProfile : public Profile {
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
+  content::PlatformNotificationService* GetPlatformNotificationService()
+      override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
@@ -329,7 +332,8 @@ class TestingProfile : public Profile {
   bool AllowsBrowserWindows() const override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
-      ExtensionSpecialStoragePolicy* extension_special_storage_policy);
+      scoped_refptr<ExtensionSpecialStoragePolicy>
+          extension_special_storage_policy);
 #endif
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
 
@@ -383,7 +387,7 @@ class TestingProfile : public Profile {
 
   void SetCreationTimeForTesting(base::Time creation_time) override;
 
-  void RecordMainFrameNavigation() override {}
+  void RecordPrimaryMainFrameNavigation() override {}
 
   void set_profile_name(const std::string& profile_name) {
     profile_name_ = profile_name;

@@ -43,6 +43,7 @@ EOF
         manifest = name + "_generated_AndroidManifest.xml",
         custom_package = "dummy.package.for.so",
         deps = [android_library],
+        multidex = "native",
         # In some platforms we don't have an Android SDK/NDK and this target
         # can't be built. We need to prevent the build system from trying to
         # use the target in that case.
@@ -91,6 +92,9 @@ zip $$origdir/$(location :{1}.aar) LICENSE
         name = name,
         srcs = srcs,
         outs = [name + ".aar"],
+        # In some platforms we don't have an Android SDK/NDK and this target
+        # can't be built. We need to prevent the build system from trying to
+        # use the target in that case.
         tags = ["manual"],
         cmd = cmd,
     )

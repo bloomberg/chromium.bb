@@ -9,8 +9,8 @@
 #define GrGLSLVarying_DEFINED
 
 #include "include/private/GrTypesPriv.h"
+#include "src/core/SkTBlockList.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrTBlockList.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 
 class GrGeometryProcessor;
@@ -62,8 +62,6 @@ public:
     bool isInFragmentShader() const { return Scope::kVertToGeo != fScope; }
 
     const char* vsOut() const { SkASSERT(this->isInVertexShader()); return fVsOut; }
-    const char* gsIn() const { return fGsIn; }
-    const char* gsOut() const { return fGsOut; }
     const char* fsIn() const { SkASSERT(this->isInFragmentShader()); return fFsIn; }
 
     GrShaderVar vsOutVar() const {
@@ -80,8 +78,6 @@ private:
     GrSLType fType = kVoid_GrSLType;
     Scope fScope = Scope::kVertToFrag;
     const char* fVsOut = nullptr;
-    const char* fGsIn = nullptr;
-    const char* fGsOut = nullptr;
     const char* fFsIn = nullptr;
 
     friend class GrGLSLVaryingHandler;
@@ -95,8 +91,6 @@ public:
         : fVaryings(kVaryingsPerBlock)
         , fVertexInputs(kVaryingsPerBlock)
         , fVertexOutputs(kVaryingsPerBlock)
-        , fGeomInputs(kVaryingsPerBlock)
-        , fGeomOutputs(kVaryingsPerBlock)
         , fFragInputs(kVaryingsPerBlock)
         , fFragOutputs(kVaryingsPerBlock)
         , fProgramBuilder(program)
@@ -132,8 +126,7 @@ public:
     /**
      * The GP can use these calls to pass a vertex shader variable directly to 'output' in the
      * fragment shader. Though this adds code to vertex and fragment stages, 'output' is expected to
-     * be defined in the fragment shader before the call is made. This cannot be used with a
-     * geometry shader.
+     * be defined in the fragment shader before the call is made.
      * TODO it might be nicer behavior to have a flag to declare output inside these calls
      */
     void addPassThroughAttribute(const GrShaderVar& vsVar,
@@ -147,7 +140,6 @@ public:
     void finalize();
 
     void getVertexDecls(SkString* inputDecls, SkString* outputDecls) const;
-    void getGeomDecls(SkString* inputDecls, SkString* outputDecls) const;
     void getFragDecls(SkString* inputDecls, SkString* outputDecls) const;
 
 protected:
@@ -155,18 +147,15 @@ protected:
         GrSLType         fType;
         bool             fIsFlat;
         SkString         fVsOut;
-        SkString         fGsOut;
         GrShaderFlags    fVisibility;
     };
 
-    typedef GrTBlockList<VaryingInfo> VaryingList;
-    typedef GrTBlockList<GrShaderVar> VarArray;
+    typedef SkTBlockList<VaryingInfo> VaryingList;
+    typedef SkTBlockList<GrShaderVar> VarArray;
 
     VaryingList    fVaryings;
     VarArray       fVertexInputs;
     VarArray       fVertexOutputs;
-    VarArray       fGeomInputs;
-    VarArray       fGeomOutputs;
     VarArray       fFragInputs;
     VarArray       fFragOutputs;
 

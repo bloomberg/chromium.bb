@@ -46,6 +46,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
@@ -174,9 +175,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   v8::Local<v8::Context> GetScriptContextFromWorldId(
       v8::Isolate* isolate,
       int world_id) const override;
-  void RequestExecuteScriptAndReturnValue(const WebScriptSource&,
-                                          bool user_gesture,
-                                          WebScriptExecutionCallback*) override;
   void RequestExecuteV8Function(v8::Local<v8::Context>,
                                 v8::Local<v8::Function>,
                                 v8::Local<v8::Value> receiver,
@@ -187,6 +185,13 @@ class CORE_EXPORT WebLocalFrameImpl final
       int32_t world_id,
       const WebScriptSource* source_in,
       unsigned num_sources,
+      bool user_gesture,
+      ScriptExecutionType,
+      WebScriptExecutionCallback*,
+      BackForwardCacheAware back_forward_cache_aware) override;
+  void RequestExecuteScript(
+      int32_t world_id,
+      base::span<const WebScriptSource> sources,
       bool user_gesture,
       ScriptExecutionType,
       WebScriptExecutionCallback*,
@@ -417,7 +422,9 @@ class CORE_EXPORT WebLocalFrameImpl final
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>);
   RemoteFrame* AdoptPortal(HTMLPortalElement*);
 
-  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*);
+  RemoteFrame* CreateFencedFrame(
+      HTMLFencedFrameElement*,
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>);
 
   void DidChangeContentsSize(const IntSize&);
 

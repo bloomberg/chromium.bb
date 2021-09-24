@@ -96,7 +96,6 @@ constexpr char kActionMain[] = "android.intent.action.MAIN";
 
 constexpr char kAndroidClockAppId[] = "ddmmnabaeomoacfpfjgghfpocfolhjlg";
 constexpr char kAndroidFilesAppId[] = "gmiohhmfhgfclpeacmdfancbipocempm";
-constexpr char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
     kAndroidClockAppId, kSettingsAppId, kAndroidFilesAppId,
@@ -252,6 +251,7 @@ const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 const char kYoutubeAppId[] = "aniolghapcdkoolpkffememnhpphmjkl";
 const char kYoutubeMusicAppId[] = "hpdkdmlckojaocbedhffglopeafcgggc";
 const char kYoutubeMusicWebApkAppId[] = "jcmmigapnpnikbmnjknhcoageaeinihi";
+const char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
   for (auto* const id : kAppIdsHiddenInLauncher) {
@@ -494,8 +494,7 @@ std::vector<std::string> GetSelectedPackagesFromPrefs(
   const base::ListValue* selected_package_prefs =
       prefs->GetList(arc::prefs::kArcFastAppReinstallPackages);
   for (const base::Value& item : selected_package_prefs->GetList()) {
-    std::string item_str;
-    item.GetAsString(&item_str);
+    std::string item_str = item.is_string() ? item.GetString() : std::string();
     packages.push_back(std::move(item_str));
   }
 
@@ -678,10 +677,9 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
       profile->GetPrefs()->FindPreference(
           ::language::prefs::kApplicationLocale);
   DCHECK(locale_pref);
-  const bool value_exists = locale_pref->GetValue()->GetAsString(out_locale);
-  DCHECK(value_exists);
-  if (out_locale->empty())
-    *out_locale = g_browser_process->GetApplicationLocale();
+  const std::string& locale = locale_pref->GetValue()->GetString();
+  *out_locale =
+      locale.empty() ? g_browser_process->GetApplicationLocale() : locale;
 
   // |preferredLanguages| consists of comma separated locale strings. It may be
   // empty or contain empty items, but those are ignored on ARC.  If an item

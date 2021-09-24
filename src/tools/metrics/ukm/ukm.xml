@@ -2031,6 +2031,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AutofillAssistant.Timing">
+  <owner>arbesser@google.com</owner>
+  <owner>hluca@google.com</owner>
+  <owner>sandromaggi@google.com</owner>
+  <metric name="TriggerConditionEvaluationMs">
+    <summary>
+      The time it took to evaluate the trigger conditions, in milliseconds. Only
+      successful evaluations are recorded.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="BackForwardCacheDisabledForRenderFrameHostReason">
   <owner>altimin@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
@@ -4713,6 +4732,20 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="CrossOriginSubframeWithoutEmbeddingControl">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    Recorded when a subframe is embedded in a cross-origin context without
+    having a CSP frame-ancestor header or an XFO header.
+  </summary>
+  <metric name="SubframeEmbedded">
+    <summary>
+      Mesaures the number of pages with subframes embedded in cross-origin
+      contexts without having a CSP frame-ancestor header or an XFO header.
+    </summary>
+  </metric>
+</event>
+
 <event name="DataReductionProxy" singular="True">
   <owner>robertogden@chromium.org</owner>
   <summary>
@@ -6809,6 +6842,118 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="SmoothnessBad">
+    <summary>
+      The percentage of sliding windows with bad smoothness, or a
+      PercentDroppedFrames of 12% to 25%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessGood">
+    <summary>
+      The percentage of sliding windows with good smoothness, or a
+      PercentDroppedFrames of 3% to 6%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessOkay">
+    <summary>
+      The percentage of sliding windows with okay smoothness, or a
+      PercentDroppedFrames of 6% to 12%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessVeryBad25to50">
+    <summary>
+      The percentage of sliding windows with a subset of very bad smoothness, or
+      a PercentDroppedFrames of 25% to 50%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessVeryBad50to75">
+    <summary>
+      The percentage of sliding windows with a subset of very bad smoothness, or
+      a PercentDroppedFrames of 50% to 75%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessVeryBad75to100">
+    <summary>
+      The percentage of sliding windows with a subset of very bad smoothness, or
+      a PercentDroppedFrames of 75% to 100%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SmoothnessVeryGood">
+    <summary>
+      The percentage of sliding windows with very good smoothness, or a
+      PercentDroppedFrames of 0% to 3%.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="TimingSinceFCPWorstCase">
     <summary>
       The Time From FCP when the worst case happened
@@ -7389,6 +7534,40 @@ be describing additional metrics about the same event.
     <summary>
       The worse throughput of the main and the compositor thread during
       mousewheel scroll driven interactions.
+    </summary>
+  </metric>
+</event>
+
+<event name="HistoryClusters" singular="True">
+  <owner>chrome-memories@google.com</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Metrics that capture the iteractions with HistoryClusters, or Journeys, This
+    will be recorded once per visit to the HistoryClusters UI and logged when
+    the UI is closed or navigated away from.
+  </summary>
+  <metric name="FinalState" enum="HistoryClustersFinalState">
+    <summary>
+      The final state, or outcome, of an interaction on the HistoryClusters UI.
+    </summary>
+  </metric>
+  <metric name="InitialState" enum="HistoryClustersInitialState">
+    <summary>
+      The initial state that describes how an interaction with the
+      HistoryClusters UI was started.
+    </summary>
+  </metric>
+  <metric name="NumQueries">
+    <summary>
+      The number of times the user performed a query on the HistoryClusters UI
+      during this interaction. This can include partial queries that occur due
+      to the UI's query timing.
+    </summary>
+  </metric>
+  <metric name="NumTogglesToBasicHistory">
+    <summary>
+      The number of times the user toggled to the basic history page during this
+      interaction with the HistoryClusters UI.
     </summary>
   </metric>
 </event>
@@ -9417,6 +9596,13 @@ be describing additional metrics about the same event.
       Encryption type of the audio stream such as whether audio is encrypted and
       if so whether it has clear lead.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ContainerName">
     <summary>
@@ -9506,6 +9692,13 @@ be describing additional metrics about the same event.
       Encryption type of the video stream such as whether video is encrypted and
       if so whether it has clear lead.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -11052,6 +11245,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="OptimizationGuideAutotuning">
+  <obsolete>
+    Removed 8/2021.
+  </obsolete>
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -12381,6 +12577,18 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric
+      name="PaintTiming.NavigationToLargestContentfulPaint2.CrossSiteSubFrame">
+    <summary>
+      Similar to PaintTiming.NavigationToLargestContentfulPaint2, this measures
+      the time in milliseconds from the navigation start of the top-level frame
+      to the time when the page first paints the largest content (text or image)
+      in the cross-site subframe which is the top candidate of largest
+      contentful paint. This metric is computed separately from the page-level
+      LCP, it's recorded even in page loads where the page-level LCP is not that
+      cross-site LCP.
+    </summary>
   </metric>
   <metric name="PaintTiming.NavigationToLargestContentfulPaint2.MainFrame">
     <summary>
@@ -17787,7 +17995,7 @@ be describing additional metrics about the same event.
   <summary>
     Features of a web app recorded at most once per day if a user interacted
     with the web app. Recorded for installed and/or promotable (installable) web
-    apps unless noted otherwise on the metric.
+    apps unless noted otherwise on the metric. Keyed by start_url of the app.
   </summary>
   <metric name="BackgroundDuration">
     <summary>

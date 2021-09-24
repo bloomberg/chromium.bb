@@ -24,6 +24,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1119348796022671382">El modo de color mediante un tema usa colores extraídos de tu fondo de pantalla para colorear ligeramente la interfaz.</translation>
 <translation id="112308213915226829">Autoocultar estantería</translation>
 <translation id="1148499908455722006">Abre el cuadro de diálogo con información de <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1165712434476988950">Se debe reiniciar el dispositivo para aplicar la actualización.</translation>
 <translation id="1175572348579024023">Desplazarse</translation>
@@ -92,6 +93,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1611993646327628135">Sí</translation>
 <translation id="1615402009686901181">La política del administrador inhabilita la captura de pantalla cuando se muestra contenido confidencial</translation>
 <translation id="1632985212731562677">La accesibilidad con interruptores se puede inhabilitar en Configuración &gt; Accesibilidad.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1654477262762802994">Iniciar una consulta por voz</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; pulsa Buscar y la barra espaciadora para ver el resultado en el Asistente.</translation>
 <translation id="1667964833127753507">El modo de color neutro no usa los colores extraídos de un fondo de pantalla, sino que los sustituye por un conjunto de colores claros u oscuros con un tono neutro.</translation>
@@ -192,6 +194,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="2427507373259914951">Clic con el botón izquierdo</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para emparejarse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
+<translation id="24452542372838207">Mostrar notificación</translation>
 <translation id="2450205753526923158">Modo de captura de pantalla</translation>
 <translation id="2473177541599297363">Confirma la resolución</translation>
 <translation id="2475982808118771221">Se ha producido un error.</translation>
@@ -320,6 +323,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3486220673238053218">definición</translation>
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
 <translation id="3513798432020909783">Cuenta gestionada por <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Conectado a <ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="3552189655002856821">La conexión Wi‑Fi está desactivada</translation>
 <translation id="3560866052109807830">Herramientas de dibujo del marcador</translation>
 <translation id="3563775809269155755">Habilitar punto de acceso</translation>
@@ -348,6 +352,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3702846122927433391">Población de Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Cargando...</translation>
+<translation id="3708186454126126312">Conectados anteriormente</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
 <translation id="3713734891607377840">Abrir al terminar</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
@@ -404,6 +409,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4129129681837227511">Para poder ver las notificaciones desde la pantalla de bloqueo, desbloquea el dispositivo para cambiar este ajuste</translation>
 <translation id="4146833061457621061">Pon música</translation>
 <translation id="4157822100366708405">Ajustes del tema oscuro</translation>
+<translation id="4170634509222878053"><ph name="TITLE" />: <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botón de clics automáticos</translation>
 <translation id="4197790712631116042">Desactivado</translation>
@@ -556,6 +562,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5234764350956374838">Cerrar</translation>
 <translation id="523505283826916779">Ajustes de accesibilidad</translation>
+<translation id="5253783950165989294">Conectado a un dispositivo llamado <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
 <translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5283198616748585639">Añadir 1 minuto</translation>
 <translation id="528468243742722775">Finalizar</translation>
@@ -566,6 +573,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5314219114274263156">Grabación de pantalla realizada</translation>
+<translation id="5319712128756744240">Emparejar nuevo dispositivo</translation>
 <translation id="5322611492012084517">No se puede encontrar tu teléfono</translation>
 <translation id="5329548388331921293">Conectando...</translation>
 <translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
@@ -768,6 +776,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Una vez que se haya quitado este usuario, todos los archivos y datos asociados a él se eliminarán de forma permanente.</translation>
 <translation id="7007983414944123363">No se ha podido verificar tu PIN o contraseña. Inténtalo de nuevo.</translation>
+<translation id="7014684956566476813">Conectado a un dispositivo llamado <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Hora a la que puedes volver: <ph name="COME_BACK_TIME" /></translation>
 <translation id="70168403932084660">Escritorio 6</translation>
 <translation id="7025533177575372252">Conecta tu <ph name="DEVICE_NAME" /> al teléfono</translation>
@@ -1001,6 +1010,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8818320199597151042">Quitando perfil. Espera unos minutos.</translation>
 <translation id="8825863694328519386">Desliza el dedo desde la izquierda para volver</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Conectados ahora</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>
 <translation id="8843682306134542540">Activa o desactiva el bloqueo. <ph name="STATE_TEXT" />.</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
@@ -1031,6 +1041,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9024331582947483881">pantalla completa</translation>
 <translation id="9047624247355796468">Abrir la configuración de <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Se va a instalar una versión anterior en el dispositivo</translation>
+<translation id="9059834730836941392">Ocultar notificación</translation>
 <translation id="9063800855227801443">No se puede capturar contenido confidencial</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Ajustes del Asistente</translation>

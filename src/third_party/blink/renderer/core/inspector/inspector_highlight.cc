@@ -1242,22 +1242,30 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   // all the way to the left. In NG, this is not the case, and will stop sooner
   // if the tracks don't take up the full size of the grid.
   LayoutUnit rtl_offset;
-  if (layout_object->IsLayoutNGGrid())
-    rtl_offset = To<LayoutBox>(layout_object)->LogicalWidth() - columns.back();
+  if (layout_object->IsLayoutNGGrid()) {
+    const LayoutBox* layout_box = To<LayoutBox>(layout_object);
+    rtl_offset = layout_box->LogicalWidth() - columns.back() -
+                 layout_box->BorderAndPaddingLogicalRight();
+  }
 
   if (grid_highlight_config.show_track_sizes) {
     Element* element = DynamicTo<Element>(node);
     DCHECK(element);
     StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
+
     HeapHashMap<CSSPropertyName, Member<const CSSValue>> cascaded_values =
         style_resolver.CascadedValuesForElement(element, kPseudoIdNone);
+
+    auto FindCSSValue =
+        [&cascaded_values](CSSPropertyID id) -> const CSSValue* {
+      auto it = cascaded_values.find(CSSPropertyName(id));
+      return it != cascaded_values.end() ? it->value : nullptr;
+    };
     Vector<String> column_authored_values = GetAuthoredGridTrackSizes(
-        cascaded_values.DeprecatedAtOrEmptyValue(
-            CSSPropertyName(CSSPropertyID::kGridTemplateColumns)),
+        FindCSSValue(CSSPropertyID::kGridTemplateColumns),
         grid_interface->AutoRepeatCountForDirection(kForColumns));
     Vector<String> row_authored_values = GetAuthoredGridTrackSizes(
-        cascaded_values.DeprecatedAtOrEmptyValue(
-            CSSPropertyName(CSSPropertyID::kGridTemplateRows)),
+        FindCSSValue(CSSPropertyID::kGridTemplateRows),
         grid_interface->AutoRepeatCountForDirection(kForRows));
 
     grid_info->setValue(

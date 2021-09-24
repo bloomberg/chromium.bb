@@ -11,7 +11,7 @@ import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_rout
 import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks, isVisible} from '../../test_util.m.js';
+import {flushTasks, isVisible} from '../../test_util.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 
@@ -181,7 +181,8 @@ export function networkListTestSuite() {
               wifiInfoElement.$$('#ssid').value,
               fakeWifiNetwork.typeProperties.wifi.ssid);
           dx_utils.assertTextContains(
-              cellularInfoElement.$$('#name').value, fakeCellularNetwork.name);
+              cellularInfoElement.$$('#iccid').value,
+              fakeCellularNetwork.typeProperties.cellular.iccid);
 
           assertEquals(
               getConnectivityCard().activeGuid,
@@ -195,7 +196,8 @@ export function networkListTestSuite() {
           const cellularInfoElement = dx_utils.getCellularInfoElement(
               networkCardElements[0].$$('network-info'));
           dx_utils.assertTextContains(
-              cellularInfoElement.$$('#name').value, fakeCellularNetwork.name);
+              cellularInfoElement.$$('#iccid').value,
+              fakeCellularNetwork.typeProperties.cellular.iccid);
           assertEquals(
               getConnectivityCard().activeGuid,
               fakeNetworkGuidInfoList[1].activeGuid);
@@ -205,6 +207,6 @@ export function networkListTestSuite() {
   test('ConnectivityCardHiddenWithNoActiveGuid', () => {
     return initializeNetworkList(fakeNetworkGuidInfoList)
         .then(() => changeActiveGuid(''))
-        .then(() => assertFalse(isVisible(getConnectivityCard())));
+        .then(() => assertFalse(!!networkListElement.$$('connectivity-card')));
   });
 }

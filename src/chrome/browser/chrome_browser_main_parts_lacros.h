@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 
 class MetricsReportingObserver;
+class PrefsAshObserver;
 class ScopedKeepAlive;
 
 // Startup and shutdown code for Lacros. See ChromeBrowserMainParts for details.
@@ -34,6 +35,7 @@ class ChromeBrowserMainPartsLacros : public ChromeBrowserMainPartsLinux,
   void OnBrowserAdded(Browser* browser) override;
 
   std::unique_ptr<MetricsReportingObserver> metrics_reporting_observer_;
+  std::unique_ptr<PrefsAshObserver> prefs_ash_observer_;
 
   // Keeps the Lacros browser alive in the background. This is destroyed once
   // any browser window is opened.

@@ -220,7 +220,7 @@ void NetworkStateHandler::SyncStubCellularNetworks() {
 
 void NetworkStateHandler::RequestTrafficCounters(
     const std::string& service_path,
-    ShillServiceClient::ListValueCallback callback) {
+    DBusMethodCallback<base::Value> callback) {
   shill_property_handler_->RequestTrafficCounters(service_path,
                                                   std::move(callback));
 }
@@ -1151,7 +1151,7 @@ void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
 }
 
 void NetworkStateHandler::SetHostname(const std::string& hostname) {
-  NET_LOG(EVENT) << "SetHostname: " << hostname;
+  NET_LOG(EVENT) << "SetHostname";
   shill_property_handler_->SetHostname(hostname);
 }
 
@@ -1251,7 +1251,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   CHECK(!notifying_network_observers_);
   ManagedStateList* managed_list = GetManagedList(type);
   NET_LOG(DEBUG) << "UpdateManagedList: " << ManagedState::TypeToString(type)
-                 << ": " << entries.GetSize();
+                 << ": " << entries.GetList().size();
   // Create a map of existing entries. Assumes all entries in |managed_list|
   // are unique.
   std::map<std::string, std::unique_ptr<ManagedState>> managed_map;
@@ -1612,7 +1612,7 @@ void NetworkStateHandler::CheckPortalListChanged(
 }
 
 void NetworkStateHandler::HostnameChanged(const std::string& hostname) {
-  NET_LOG(EVENT) << "HostnameChanged: " << hostname;
+  NET_LOG(EVENT) << "HostnameChanged";
   hostname_ = hostname;
   for (auto& observer : observers_)
     observer.HostnameChanged(hostname);

@@ -19,6 +19,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -114,6 +115,9 @@ const char16_t kUnexpectedResult16[] = u"unexpected result";
 class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
  protected:
   EncryptedMediaSupportedTypesTest() {
+    // TODO(crbug.com/1243903): WhatsNewUI might be causing timeouts.
+    disabled_features_.push_back(features::kChromeWhatsNewUI);
+
     audio_webm_codecs_.push_back("vorbis");
 
     video_webm_codecs_.push_back("vp8");
@@ -207,6 +211,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+    feature_list_.InitWithFeatures(enabled_features_, disabled_features_);
   }
 
   void SetUpOnMainThread() override {
@@ -216,7 +222,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
     CHECK(http_test_server->Start());
     GURL gurl = http_test_server->GetURL("/test_key_system_instantiation.html");
-    ui_test_utils::NavigateToURL(browser(), gurl);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   }
 
   // Create a valid JavaScript string for the content type. Format is
@@ -283,8 +289,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   }
 
   enum class SessionType {
-    kTemporary,             // Temporary session
-    kPersistentLicense,     // Persistent license session
+    kTemporary,          // Temporary session
+    kPersistentLicense,  // Persistent license session
   };
 
   std::string GetSessionTypeString(SessionType session_type) {
@@ -398,6 +404,13 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                   robustness, encryption_scheme);
   }
 
+ protected:
+  // Features to enable or disable for the test. Must be updated in the test
+  // constructor (before SetUpDefaultCommandLine()) to take effect.
+  std::vector<base::Feature> enabled_features_;
+  std::vector<base::Feature> disabled_features_;
+  base::test::ScopedFeatureList feature_list_;
+
  private:
   const CodecVector no_codecs_;
   CodecVector audio_webm_codecs_;
@@ -424,8 +437,7 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
  protected:
   EncryptedMediaSupportedTypesExternalClearKeyTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        media::kExternalClearKeyForTesting);
+    enabled_features_.push_back(media::kExternalClearKeyForTesting);
   }
 
   ~EncryptedMediaSupportedTypesExternalClearKeyTest() override {}
@@ -434,11 +446,9 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     RegisterClearKeyCdm(command_line);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesExternalClearKeyTest);
 };
 
@@ -473,8 +483,6 @@ class EncryptedMediaSupportedTypesWidevineTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesWidevineTest);
 };
 
@@ -482,7 +490,7 @@ class EncryptedMediaSupportedTypesWidevineHwSecureTest
     : public EncryptedMediaSupportedTypesWidevineTest {
  protected:
   EncryptedMediaSupportedTypesWidevineHwSecureTest() {
-    scoped_feature_list_.InitAndEnableFeature(media::kHardwareSecureDecryption);
+    enabled_features_.push_back(media::kHardwareSecureDecryption);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -495,8 +503,6 @@ class EncryptedMediaSupportedTypesWidevineHwSecureTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesWidevineHwSecureTest);
 };
 
@@ -506,8 +512,7 @@ class EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest
     : public EncryptedMediaSupportedTypesTest {
  protected:
   EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        media::kExternalClearKeyForTesting);
+    enabled_features_.push_back(media::kExternalClearKeyForTesting);
   }
 
   ~EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest()
@@ -519,8 +524,6 @@ class EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(
       EncryptedMediaSupportedTypesClearKeyCdmRegisteredWithWrongPathTest);
 };
@@ -745,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest,
 // External Clear Key
 //
 
-// When BUILDFLAG(ENABLE_LIBRARY_CDMS), this also tests the Pepper CDM check.
+// When BUILDFLAG(ENABLE_LIBRARY_CDMS), this also tests the library CDM check.
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                        Basic) {
   EXPECT_ECK(IsSupportedByKeySystem(kExternalClearKey, kVideoWebMMimeType,
@@ -1401,6 +1404,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
 //
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesTest,
                        ClearKeyCdmNotRegistered) {
   // External Clear Key will not be supported because Clear Key CDM is not

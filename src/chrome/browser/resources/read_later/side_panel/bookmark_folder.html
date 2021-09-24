@@ -1,4 +1,4 @@
-<style include="read-later-shared-style">
+<style include="mwb-element-shared-style">
   :host {
     --row-height: 40px;
     display: block;
@@ -7,19 +7,20 @@
   }
 
   .row {
+    --row-padding-inline-start: calc(var(--node-depth) * 17px);
+    --row-icon-width: 20px;
     align-items: center;
     appearance: none;
     background: transparent;
     border: none;
     box-sizing: border-box;
     color: currentColor;
-    content-visibility: auto;
     display: grid;
     grid-template-areas: 'arrow icon title';
-    grid-template-columns: 20px 20px auto;
+    grid-template-columns: var(--row-icon-width) var(--row-icon-width) auto;
     height: var(--row-height);
     line-height: var(--row-height);
-    padding-inline-start: calc(var(--node-depth) * 17px);
+    padding-inline-start: var(--row-padding-inline-start);
     text-align: start;
     width: 100%;
   }
@@ -32,6 +33,17 @@
 
   .row:not([empty]):active {
     background-color: var(--cr-active-background-color);
+  }
+
+  .arrow,
+  .icon,
+  .title {
+    /**
+     * Keep content-visibility on inner children of .row instead of on .row
+     * as the CSS property seems to have bugs with rendering elements outside
+     * of .row when dragging elements around.
+     */
+    content-visibility: auto;
   }
 
   #arrow {
@@ -74,6 +86,31 @@
     background-image: url(chrome://theme/IDR_FOLDER_CLOSED);
   }
 
+  /**
+   * Folder icons are OS-specific. On Mac, there is a separate folder icon
+   * for dark mode; on non-Mac, there is a separate folder icon for open states
+   * and the icon for that is slightly larger. This is mirroring the icons
+   * used in chrome://bookmarks.
+   */
+<if expr="is_macosx">
+  @media (prefers-color-scheme: dark) {
+    #folderIcon {
+      background-image: url(chrome://theme/IDR_FOLDER_CLOSED_WHITE);
+    }
+  }
+</if>
+
+<if expr="not is_macosx">
+    #folderIcon {
+      height: 20px;
+      width: 20px;
+    }
+
+    #folderIcon[open] {
+      background-image: url(chrome://theme/IDR_FOLDER_OPEN);
+    }
+</if>
+
   .title {
     grid-area: title;
     overflow: hidden;
@@ -90,9 +127,38 @@
     --node-depth: var(--child-depth);
     min-height: calc(var(--child-count, 0) * var(--row-height));
   }
+
+  [drop-position='into'] {
+    background: var(--mwb-list-item-selected-background-color);
+  }
+
+  [drop-position='above'],
+  [drop-position='below'] {
+    position: relative;
+  }
+
+  [drop-position='above']::after,
+  [drop-position='below']::after {
+    background: var(--google-blue-refresh-500);
+    content: '';
+    display: block;
+    height: 2px;
+    margin-inline-start: calc(
+        var(--row-padding-inline-start) + var(--row-icon-width));
+    position: absolute;
+    top: -1px;
+    width: 100%;
+  }
+
+  [drop-position='below']::after {
+    bottom: -1px;
+    top: auto;
+  }
 </style>
 <div id="container" role="treeitem" aria-expanded="[[getAriaExpanded_(open_)]]">
   <button id="folder" class="row"
+      draggable="true"
+      data-bookmark="[[folder]]"
       empty$="[[!folder.children.length]]"
       on-click="onFolderClick_" on-contextmenu="onFolderContextMenu_">
     <div id="arrow" hidden$="[[!folder.children.length]]">
@@ -103,7 +169,7 @@
           tabindex="-1">
       </cr-icon-button>
     </div>
-    <div id="folderIcon" class="icon"></div>
+    <div id="folderIcon" class="icon" open$="[[open_]]"></div>
     <div class="title">[[folder.title]]</div>
   </button>
 
@@ -119,8 +185,9 @@
 
         <template is="dom-if" if="[[item.url]]" restamp>
           <a role="treeitem" href="[[item.url]]" class="bookmark row"
+              draggable="true" data-bookmark="[[item]]"
               on-click="onBookmarkClick_"
-              on-auxclick="onBookmarkClick_"
+              on-auxclick="onBookmarkAuxClick_"
               on-contextmenu="onBookmarkContextMenu_">
             <div
                 class="icon"

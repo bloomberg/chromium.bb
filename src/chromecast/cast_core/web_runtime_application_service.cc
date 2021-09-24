@@ -7,6 +7,7 @@
 #include "chromecast/browser/cast_web_service.h"
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/cast_core/bindings_manager_web_runtime.h"
+#include "chromecast/cast_core/grpc_webui_controller_factory.h"
 #include "chromecast/cast_core/url_rewrite_rules_adapter.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -145,11 +146,10 @@ void WebRuntimeApplicationService::OnVisibilityChange(
 void WebRuntimeApplicationService::RenderFrameCreated(
     int render_process_id,
     int render_frame_id,
-    service_manager::InterfaceProvider* frame_interfaces,
-    blink::AssociatedInterfaceProvider* frame_associated_interfaces) {
+    mojo::PendingAssociatedRemote<
+        chromecast::mojom::IdentificationSettingsManager> settings_manager) {
   mojo::AssociatedRemote<mojom::IdentificationSettingsManager>
-      remote_settings_manager;
-  frame_associated_interfaces->GetInterface(&remote_settings_manager);
+      remote_settings_manager(std::move(settings_manager));
   url_rewrite_adapter_->AddRenderFrame(std::move(remote_settings_manager));
 }
 
@@ -168,9 +168,14 @@ void WebRuntimeApplicationService::FinishLaunch(
         core_app_stub_->GetAll(&context, bindings_request, &bindings_response);
   }
 
+  // Register GrpcWebUI for handling Cast apps with URLs in the form
+  // chrome*://* that use WebUIs.
+  std::vector<std::string> hosts = {"home", "error", "cast_resources"};
+  content::WebUIControllerFactory::RegisterFactory(
+      new GrpcWebUiControllerFactory(std::move(hosts), *core_app_stub_.get()));
+
   CastWebView::CreateParams create_params;
   create_params.delegate = weak_factory_.GetWeakPtr();
-  create_params.web_contents_delegate = weak_factory_.GetWeakPtr();
   create_params.window_delegate = weak_factory_.GetWeakPtr();
 
   mojom::CastWebViewParamsPtr params = mojom::CastWebViewParams::New();
@@ -180,7 +185,7 @@ void WebRuntimeApplicationService::FinishLaunch(
   cast_web_view_ =
       web_service_->CreateWebViewInternal(create_params, std::move(params));
 
-  CastWebContents::Observer::Observe(cast_web_view_->cast_web_contents());
+  CastWebContentsObserver::Observe(cast_web_view_->cast_web_contents());
 
   bindings_manager_ = std::make_unique<BindingsManagerWebRuntime>(
       grpc_cq_, core_app_stub_.get());

@@ -11,11 +11,11 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_system_web_app_data.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_system_web_app_data.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -27,7 +27,7 @@ enum class WebappUninstallSource;
 
 namespace web_app {
 
-class AppRegistryController;
+class WebAppSyncBridge;
 class FileHandlersPermissionHelper;
 class WebAppUiManager;
 class WebApp;
@@ -54,6 +54,7 @@ class WebAppInstallFinalizer {
     webapps::WebappInstallSource install_source =
         webapps::WebappInstallSource::COUNT;
     bool locally_installed = true;
+    bool overwrite_existing_manifest_fields = true;
 
     absl::optional<WebAppChromeOsData> chromeos_data;
     absl::optional<WebAppSystemWebAppData> system_web_app_data;
@@ -132,7 +133,7 @@ class WebAppInstallFinalizer {
 
   void SetSubsystems(WebAppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
-                     AppRegistryController* registry_controller,
+                     WebAppSyncBridge* sync_bridge,
                      OsIntegrationManager* os_integration_manager);
 
   virtual void SetRemoveSourceCallbackForTesting(
@@ -148,8 +149,7 @@ class WebAppInstallFinalizer {
 
   // FileHandlersPermissionHelper uses these getters.
   WebAppRegistrar& registrar() const { return *registrar_; }
-
-  AppRegistryController& registry_controller() { return *registry_controller_; }
+  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   OsIntegrationManager& os_integration_manager() {
     return *os_integration_manager_;
   }
@@ -161,7 +161,7 @@ class WebAppInstallFinalizer {
                                              Source::Type source,
                                              UninstallWebAppCallback callback);
 
-  void OnSyncUninstallOsHooksUninstall(AppId app_id, OsHooksResults);
+  void OnSyncUninstallOsHooksUninstall(AppId app_id, OsHooksErrors);
   void OnSyncUninstallAppDataDeleted(AppId app_id, bool success);
   // Sync uninstall only finishes once both the hooks are uninstalled
   // (OnSyncUninstallOsHooksUninstall) and app data is deleted
@@ -201,10 +201,10 @@ class WebAppInstallFinalizer {
   void OnUninstallOsHooks(const AppId& app_id,
                           webapps::WebappUninstallSource uninstall_source,
                           UninstallWebAppCallback callback,
-                          OsHooksResults os_hooks_info);
+                          OsHooksErrors errors);
 
   WebAppRegistrar* registrar_ = nullptr;
-  AppRegistryController* registry_controller_ = nullptr;
+  WebAppSyncBridge* sync_bridge_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   OsIntegrationManager* os_integration_manager_ = nullptr;
 

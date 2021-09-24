@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -240,7 +240,7 @@ class WebAppBrowserFrameViewMacWindowControlsOverlayTest
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->display_mode = blink::mojom::DisplayMode::kStandalone;
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     web_app_info->title = u"A Web App";
     web_app_info->display_override = display_overrides;
 
@@ -457,8 +457,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserFrameViewMacWindowControlsOverlayTest,
 
   // Validate that the draggable region is reset on navigation and the point is
   // no longer draggable.
-  ui_test_utils::NavigateToURL(browser_view_->browser(),
-                               GURL("http://example.test/"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser_view_->browser(),
+                                           GURL("http://example.test/")));
   EXPECT_NE(frame_view_->NonClientHitTest(kPoint), HTCAPTION);
   EXPECT_TRUE(browser_view_->ShouldDescendIntoChildForEventHandling(
       browser_view_->GetWidget()->GetNativeView(), kPoint));

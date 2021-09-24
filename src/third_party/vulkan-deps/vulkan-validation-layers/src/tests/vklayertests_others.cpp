@@ -868,6 +868,14 @@ TEST_F(VkLayerTest, ReservedParameter) {
 TEST_F(VkLayerTest, DebugMarkerNameTest) {
     TEST_DESCRIPTION("Ensure debug marker object names are printed in debug report output");
 
+    if (InstanceExtensionSupported(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceExtensionSupported(gpu(), kValidationLayerName, VK_EXT_DEBUG_MARKER_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
@@ -10885,8 +10893,13 @@ TEST_F(VkLayerTest, ValidateArrayLength) {
 TEST_F(VkLayerTest, InvalidSpirvExtension) {
     TEST_DESCRIPTION("Use an invalid SPIR-V extension in OpExtension.");
 
-    app_info_.apiVersion = VK_API_VERSION_1_2;
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Vulkan >= 1.2 required\n", kSkipPrefix);
+        return;
+    }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -10911,7 +10924,12 @@ TEST_F(VkLayerTest, InvalidSpirvExtension) {
                OpReturn
                OpFunctionEnd
         )spirv";
-    const VkShaderObj vs(m_device, vertex_source, VK_SHADER_STAGE_VERTEX_BIT, this, "main", nullptr, SPV_ENV_UNIVERSAL_1_5);
+    VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
+    m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
+    if (!vs.InitFromASMTry(*this, vertex_source.c_str(), SPV_ENV_VULKAN_1_2)) {
+        printf("%s Failed to compile shader\n", kSkipPrefix);
+        return;
+    }
     const VkShaderObj fs(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, kVUID_Core_Shader_InvalidExtension);
@@ -12105,6 +12123,13 @@ TEST_F(VkLayerTest, DuplicatePhysicalDevices) {
 TEST_F(VkLayerTest, ValidateColorWriteDynamicStateDisabled) {
     TEST_DESCRIPTION("Validate VK_EXT_color_write_enable VUs when disabled");
 
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME);
@@ -12742,4 +12767,235 @@ TEST_F(VkLayerTest, CmdSetDiscardRectangleEXTRectangleCountOverflow) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdSetDiscardRectangleEXT-offset-00589");
     vkCmdSetDiscardRectangleEXT(m_commandBuffer->handle(), 0, 1, &discard_rectangles);
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, ValidateBeginQueryQueryPoolType) {
+    TEST_DESCRIPTION("Test CmdBeginQuery with invalid queryPool queryType");
+
+    if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    bool khr_acceleration_structure = false;
+    bool nv_ray_tracing = false;
+    bool ext_transform_feedback = false;
+    if (DeviceExtensionSupported(VK_KHR_MAINTENANCE3_EXTENSION_NAME) &&
+        DeviceExtensionSupported(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME) &&
+        DeviceExtensionSupported(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) &&
+        DeviceExtensionSupported(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME) &&
+        DeviceExtensionSupported(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+        khr_acceleration_structure = true;
+    }
+
+    if (DeviceExtensionSupported(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) &&
+        DeviceExtensionSupported(VK_NV_RAY_TRACING_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_NV_RAY_TRACING_EXTENSION_NAME);
+        nv_ray_tracing = true;
+    }
+    if (!khr_acceleration_structure && !nv_ray_tracing) {
+        printf("%s Extensions %s and %s are not supported.\n", kSkipPrefix, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+               VK_NV_RAY_TRACING_EXTENSION_NAME);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+        ext_transform_feedback = true;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    PFN_vkCmdBeginQueryIndexedEXT vkCmdBeginQueryIndexedEXT =
+        (PFN_vkCmdBeginQueryIndexedEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginQueryIndexedEXT");
+
+    VkQueryPoolCreateInfo query_pool_ci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    query_pool_ci.queryCount = 1;
+
+    if (khr_acceleration_structure) {
+        {
+            query_pool_ci.queryType = VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR;
+            VkQueryPool query_pool;
+            vk::CreateQueryPool(device(), &query_pool_ci, nullptr, &query_pool);
+
+            m_commandBuffer->begin();
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQuery-queryType-04728");
+            vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool, 0, 0);
+            m_errorMonitor->VerifyFound();
+
+            if (ext_transform_feedback) {
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-04728");
+                vkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool, 0, 0, 0);
+                m_errorMonitor->VerifyFound();
+            }
+            m_commandBuffer->end();
+        }
+
+        {
+            query_pool_ci.queryType = VK_QUERY_TYPE_ACCELERATION_STRUCTURE_SERIALIZATION_SIZE_KHR;
+            VkQueryPool query_pool;
+            vk::CreateQueryPool(device(), &query_pool_ci, nullptr, &query_pool);
+
+            m_commandBuffer->begin();
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQuery-queryType-04728");
+            vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool, 0, 0);
+            m_errorMonitor->VerifyFound();
+
+            if (ext_transform_feedback) {
+                m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-04728");
+                vkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool, 0, 0, 0);
+                m_errorMonitor->VerifyFound();
+            }
+            m_commandBuffer->end();
+        }
+    }
+    if (nv_ray_tracing) {
+        query_pool_ci.queryType = VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_NV;
+        VkQueryPool query_pool;
+        vk::CreateQueryPool(device(), &query_pool_ci, nullptr, &query_pool);
+
+        m_commandBuffer->begin();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQuery-queryType-04729");
+        vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool, 0, 0);
+        m_errorMonitor->VerifyFound();
+
+        if (ext_transform_feedback) {
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-04729");
+            vkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool, 0, 0, 0);
+            m_errorMonitor->VerifyFound();
+        }
+        m_commandBuffer->end();
+    }
+}
+
+TEST_F(VkLayerTest, GetQueryPoolResultsFlags) {
+    TEST_DESCRIPTION("Test GetQueryPoolResults with invalid pData and stride");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test does not run on Vulkan 1.0, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    vk_testing::QueryPool query_pool;
+    VkQueryPoolCreateInfo qpci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    qpci.queryType = VK_QUERY_TYPE_OCCLUSION;
+    qpci.queryCount = 1;
+    query_pool.init(*m_device, qpci);
+
+    const size_t out_data_size = 16;
+    uint8_t data[out_data_size];
+
+    VkQueryResultFlags flags = VK_QUERY_RESULT_WITH_STATUS_BIT_KHR | VK_QUERY_RESULT_WITH_AVAILABILITY_BIT;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetQueryPoolResults-flags-04811");
+    vk::GetQueryPoolResults(m_device->device(), query_pool.handle(), 0, 1, out_data_size, data + 1, 4, flags);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, QueryPoolResultStatusOnly) {
+    TEST_DESCRIPTION("Request result status only query result.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test does not run on Vulkan 1.0, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME)) {
+        printf("%s Video queue Extension not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkQueryPool query_pool;
+    VkQueryPoolCreateInfo query_pool_ci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    query_pool_ci.queryType = VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR;
+    query_pool_ci.queryCount = 1;
+    VkResult err = vk::CreateQueryPool(m_device->device(), &query_pool_ci, nullptr, &query_pool);
+    if (err != VK_SUCCESS) {
+        printf("%s Required query not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    const size_t out_data_size = 16;
+    uint8_t data[out_data_size];
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetQueryPoolResults-queryType-04810");
+    vk::GetQueryPoolResults(m_device->device(), query_pool, 0, 1, out_data_size, &data, sizeof(uint32_t), 0);
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyQueryPool(m_device->handle(), query_pool, NULL);
+}
+
+TEST_F(VkLayerTest, InvalidCopyQueryResults) {
+    TEST_DESCRIPTION("Test CmdCopyQueryPoolResults with unsupported query type");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test does not run on Vulkan 1.0, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkQueryPool query_pool_encode;
+    VkQueryPool query_pool_result;
+    VkQueryPoolCreateInfo qpci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    qpci.queryType = VK_QUERY_TYPE_VIDEO_ENCODE_BITSTREAM_BUFFER_RANGE_KHR;
+    qpci.queryCount = 1;
+
+    VkResult err;
+    err = vk::CreateQueryPool(m_device->device(), &qpci, nullptr, &query_pool_encode);
+    if (err != VK_SUCCESS) {
+        printf("%s Required query not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+    qpci.queryType = VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR;
+    err = vk::CreateQueryPool(m_device->device(), &qpci, nullptr, &query_pool_result);
+    if (err != VK_SUCCESS) {
+        printf("%s Required query not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferObj buffer;
+    buffer.init(*m_device, 128, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyQueryPoolResults-queryType-04812");
+    vk::CmdCopyQueryPoolResults(m_commandBuffer->handle(), query_pool_encode, 0, 1, buffer.handle(), 0, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyQueryPoolResults-queryType-04812");
+    vk::CmdCopyQueryPoolResults(m_commandBuffer->handle(), query_pool_result, 0, 1, buffer.handle(), 0, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+
+    vk::DestroyQueryPool(device(), query_pool_encode, nullptr);
+    vk::DestroyQueryPool(device(), query_pool_result, nullptr);
 }

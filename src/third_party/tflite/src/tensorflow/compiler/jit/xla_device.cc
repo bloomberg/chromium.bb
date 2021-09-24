@@ -61,6 +61,21 @@ limitations under the License.
 
 namespace tensorflow {
 
+// Default PaddedShapeFn implementation that simply returns the unpadded
+// on-device shape. This is accurate for CPU and GPU devices that neither
+// transpose nor pad tensors.
+Status DefaultPaddedShapeFn(const Tensor& tensor, xla::Shape* shape) {
+  const tensorflow::XlaTensor* xla_tensor =
+      tensorflow::XlaTensor::FromTensor(&tensor);
+  if (xla_tensor == nullptr) {
+    return TensorShapeToXLAShape(tensor.dtype(), tensor.shape(), shape);
+  }
+
+  const xla::ShapedBuffer& shaped_buffer = xla_tensor->shaped_buffer();
+  *shape = shaped_buffer.on_device_shape();
+  return Status::OK();
+}
+
 // Caches a XlaDeviceAllocator per <backend, device ordinal> pair. A
 // XlaDeviceAllocator is created on demand and is associated with a
 // XlaDevice. It outlives the device itself (for instance, the buffer
@@ -116,20 +131,6 @@ XlaDeviceAllocator* XlaDeviceAllocatorState::GetOrCreateXlaDeviceAllocator(
 
 namespace {
 
-// Default PaddedShapeFn implementation that simply returns the unpadded
-// on-device shape. This is accurate for CPU and GPU devices that neither
-// transpose nor pad tensors.
-Status DefaultPaddedShapeFn(const Tensor& tensor, xla::Shape* shape) {
-  const tensorflow::XlaTensor* xla_tensor =
-      tensorflow::XlaTensor::FromTensor(&tensor);
-  if (xla_tensor == nullptr) {
-    return TensorShapeToXLAShape(tensor.dtype(), tensor.shape(), shape);
-  }
-
-  const xla::ShapedBuffer& shaped_buffer = xla_tensor->shaped_buffer();
-  *shape = shaped_buffer.on_device_shape();
-  return Status::OK();
-}
 
 static DeviceAttributes BuildXlaDeviceAttributes(const string& name_prefix,
                                                  const string& device_name,
@@ -144,7 +145,7 @@ static DeviceAttributes BuildXlaDeviceAttributes(const string& name_prefix,
 
 XlaDevice::Metadata::Metadata(
     int device_ordinal, se::Platform* platform, const DeviceType& device_type,
-    XlaCompiler::ShapeRepresentationFn shape_representation_fn,
+    XlaHelpers::ShapeRepresentationFn shape_representation_fn,
     PaddedShapeFn padded_shape_fn, bool use_multiple_streams)
     : device_ordinal_(device_ordinal),
       device_type_(device_type),
@@ -191,6 +192,11 @@ const DeviceType& XlaDevice::Metadata::jit_device_type() const {
   return GetMetadataFromDevice(ctx->device(), metadata);
 }
 
+/* static */ mutex XlaDevice::global_mu_(LINKER_INITIALIZED);
+/* static */ std::vector<std::shared_ptr<se::Stream>>*
+    XlaDevice::global_compute_streams_ =
+        new std::vector<std::shared_ptr<se::Stream>>;
+
 XlaDevice::XlaDevice(const SessionOptions& session_options,
                      const Options& options)
     : LocalDevice(session_options,
@@ -210,9 +216,13 @@ XlaDevice::XlaDevice(const SessionOptions& session_options,
           session_options.config.intra_op_parallelism_threads()),
       use_multiple_streams_(options.use_multiple_streams),
       shape_representation_fn_(options.shape_representation_fn),
-      allowed_devices_(options.allowed_devices) {
+      allowed_devices_(options.allowed_devices),
+      use_global_compute_stream_(options.use_global_compute_stream) {
   VLOG(1) << "Created XLA device " << options.compilation_device_name << " "
-          << this;
+          << options.device_ordinal << " " << this;
+  VLOG(1) << "XlaDevice options: use_multiple_streams: "
+          << options.use_multiple_streams << " use_global_compute_stream: "
+          << options.use_global_compute_stream;
   thread_pool_.reset(new thread::ThreadPool(session_options.env, "xla_device",
                                             /*num_threads=*/1));
 
@@ -235,7 +245,7 @@ XlaDevice::~XlaDevice() {
   }
 }
 
-xla::StatusOr<xla::LocalClient*> XlaDevice::GetOrCreateClient() const {
+StatusOr<xla::LocalClient*> XlaDevice::GetOrCreateClient() const {
   // We lazily create the client because the platform commits to the
   // details of the host hardware when the client is created, so we
   // don't want to do it until we get a chance to hook the platform up
@@ -288,15 +298,36 @@ Status XlaDevice::EnsureStreamOkLocked(xla::Backend* backend,
   return Status::OK();
 }
 
-xla::StatusOr<std::pair<XlaDeviceContext*, XlaDeviceContext*>>
+StatusOr<std::pair<XlaDeviceContext*, XlaDeviceContext*>>
 XlaDevice::GetDeviceContextLocked() {
   TF_ASSIGN_OR_RETURN(xla::LocalClient * client, GetOrCreateClient());
   xla::Backend* backend = client->mutable_backend();
 
   // Ensure all our streams are valid, borrowing new streams if necessary.
   bool need_new_device_context = !device_context_;
-  TF_RETURN_IF_ERROR(EnsureStreamOkLocked(backend, "stream", &stream_,
-                                          &need_new_device_context));
+  if (use_global_compute_stream_) {
+    mutex_lock lock(global_mu_);
+    if (global_compute_streams_->size() <= device_ordinal_) {
+      global_compute_streams_->resize(device_ordinal_ + 1, nullptr);
+    }
+
+    auto& global_stream = global_compute_streams_->at(device_ordinal_);
+    if (global_stream != nullptr && global_stream->ok()) {
+      stream_ = global_stream;
+    } else {
+      // Directly create the stream here instead of borrowing from the stream
+      // pool to avoid potential lifetime issues.
+      stream_ = absl::make_unique<se::Stream>(
+          backend->stream_executors()[device_ordinal_]);
+      stream_->Init();
+      TF_RETURN_IF_ERROR(EnsureStreamOkLocked(backend, "stream", &stream_,
+                                              &need_new_device_context));
+      (*global_compute_streams_)[device_ordinal_] = stream_;
+    }
+  } else {
+    TF_RETURN_IF_ERROR(EnsureStreamOkLocked(backend, "stream", &stream_,
+                                            &need_new_device_context));
+  }
 
   std::shared_ptr<se::Stream> host_to_device_stream;
   std::shared_ptr<se::Stream> device_to_host_stream;
@@ -397,7 +428,7 @@ static void ShowXlaDeviceDeprecationWarning(
     absl::call_once(once, [] {
       LOG(INFO) << "XLA_GPU and XLA_CPU devices are deprecated and will be "
                    "removed in subsequent releases. Instead, use either "
-                   "@tf.function(experimental_compile=True) for must-compile "
+                   "@tf.function(jit_compile=True) for must-compile "
                    "semantics, or run with TF_XLA_FLAGS=--tf_xla_auto_jit=2 "
                    "for auto-clustering best-effort compilation.";
     });
@@ -572,8 +603,7 @@ XlaDeviceOpRegistrations* RegisterXlaDeviceKernels(const char* device,
   // Any op assigned to the device that isn't rewritten by the graph rewriter
   // gets executed by an XlaCompileOnDemandOp, which compiles it and executes
   // it just-in-time.
-  OpKernel* (*factory)(OpKernelConstruction*) =
-      [](OpKernelConstruction* context) -> OpKernel* {
+  auto factory = [](OpKernelConstruction* context) -> OpKernel* {
     return new XlaCompileOnDemandOp(context);
   };
   XlaOpRegistry::RegisterCompilationKernels();
@@ -582,6 +612,13 @@ XlaDeviceOpRegistrations* RegisterXlaDeviceKernels(const char* device,
            jit_device,
            /*include_compilation_only_kernels=*/false)) {
     KernelDef* def = new KernelDef(*jit_def);
+    const std::unordered_set<std::string>* constant_inputs =
+        XlaOpRegistry::CompileTimeConstantInputArgNames(def->op());
+
+    for (const std::string& arg_name : *constant_inputs) {
+      def->add_host_memory_arg(arg_name);
+    }
+
     def->set_device_type(device);
     registrations->op_kernel_registrars.emplace_back(
         new kernel_factory::OpKernelRegistrar(def, "XlaCompileOnDemandOp",

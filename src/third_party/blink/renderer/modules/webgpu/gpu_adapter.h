@@ -39,7 +39,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   GPUSupportedLimits* limits() const { return limits_; }
 
   // Software adapters are not currently supported.
-  bool isSoftware() const { return false; }
+  bool isFallbackAdapter() const { return false; }
 
   ScriptPromise requestDevice(ScriptState* script_state,
                               GPUDeviceDescriptor* descriptor);

@@ -35,6 +35,27 @@ using base::allocator::AllocatorDispatch;
 
 namespace {
 
+class SimpleScopedSpinLocker {
+ public:
+  explicit SimpleScopedSpinLocker(std::atomic<bool>& lock) : lock_(lock) {
+    // Lock. Semantically equivalent to base::Lock::Acquire().
+    bool expected = false;
+    // Weak CAS since we are in a retry loop, relaxed ordering for failure since
+    // in this case we don't imply any ordering.
+    //
+    // This matches partition_allocator/spinning_mutex.h fast path on Linux.
+    while (!lock_.compare_exchange_weak(
+        expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+      expected = false;
+    }
+  }
+
+  ~SimpleScopedSpinLocker() { lock_.store(false, std::memory_order_release); }
+
+ private:
+  std::atomic<bool>& lock_;
+};
+
 // We can't use a "static local" or a base::LazyInstance, as:
 // - static local variables call into the runtime on Windows, which is not
 //   prepared to handle it, as the first allocation happens during CRT init.
@@ -57,6 +78,10 @@ class LeakySingleton {
 
   // Replaces the instance pointer with a new one.
   void Replace(T* new_instance) {
+    SimpleScopedSpinLocker scoped_lock{initialization_lock_};
+
+    // Modify under the lock to avoid race between |if (instance)| and
+    // |instance_.store()| in GetSlowPath().
     instance_.store(new_instance, std::memory_order_release);
   }
 
@@ -87,28 +112,15 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
   // However, we don't want to use a base::Lock here, so instead we use
   // compare-and-exchange on a lock variable, which provides the same
   // guarantees.
-  //
-  // Lock.
-  bool expected = false;
-  // Semantically equivalent to base::Lock::Acquire().
-  while (!initialization_lock_.compare_exchange_strong(
-      expected, true, std::memory_order_acquire, std::memory_order_acquire)) {
-    expected = false;
-  }
+  SimpleScopedSpinLocker scoped_lock{initialization_lock_};
 
   T* instance = instance_.load(std::memory_order_relaxed);
   // Someone beat us.
-  if (instance) {
-    // Unlock.
-    initialization_lock_.store(false, std::memory_order_release);
+  if (instance)
     return instance;
-  }
 
   instance = Constructor::New(reinterpret_cast<void*>(instance_buffer_));
   instance_.store(instance, std::memory_order_release);
-
-  // Unlock.
-  initialization_lock_.store(false, std::memory_order_release);
 
   return instance;
 }
@@ -116,75 +128,32 @@ T* LeakySingleton<T, Constructor>::GetSlowPath() {
 class MainPartitionConstructor {
  public:
   static base::ThreadSafePartitionRoot* New(void* buffer) {
+    constexpr base::PartitionOptions::ThreadCache thread_cache =
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+        // With USE_BACKUP_REF_PTR, this partition is only temporary until a
+        // BRP-enabled partition is created later. Leave the ability to have
+        // a thread cache to that partition.
+        base::PartitionOptions::ThreadCache::kDisabled;
+#else
+        base::PartitionOptions::ThreadCache::kEnabled;
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#else   // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+        // Other tests, such as the ThreadCache tests create a thread cache,
+        // and only one is supported at a time.
+        base::PartitionOptions::ThreadCache::kDisabled;
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     auto* new_root = new (buffer) base::ThreadSafePartitionRoot({
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-      base::PartitionOptions::AlignedAlloc::kDisallowed,
-#else
-      base::PartitionOptions::AlignedAlloc::kAllowed,
-#endif
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
-          base::PartitionOptions::ThreadCache::kEnabled,
-#elif BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
-          // With ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL, this partition is only
-          // temporary until BackupRefPtr is re-configured at run-time. Leave
-          // the ability to have a thread cache to the main partition. (Note
-          // that ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL implies that
-          // USE_BACKUP_REF_PTR is true.)
-          base::PartitionOptions::ThreadCache::kDisabled,
-#else
-      // Other tests, such as the ThreadCache tests create a thread cache, and
-      // only one is supported at a time.
-      base::PartitionOptions::ThreadCache::kDisabled,
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
-        // !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
-          base::PartitionOptions::Quarantine::kAllowed,
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-          base::PartitionOptions::Cookies::kAllowed,
-#else
-          base::PartitionOptions::Cookies::kDisallowed,
-#endif
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC) || \
-    BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-          base::PartitionOptions::RefCount::kAllowed,
-#else
-          base::PartitionOptions::RefCount::kDisallowed,
-#endif
+        base::PartitionOptions::AlignedAlloc::kAllowed,
+        thread_cache,
+        base::PartitionOptions::Quarantine::kAllowed,
+        base::PartitionOptions::Cookie::kAllowed,
+        base::PartitionOptions::RefCount::kDisallowed,
     });
 
     return new_root;
   }
 };
-
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-class AlignedPartitionConstructor {
- public:
-  static base::ThreadSafePartitionRoot* New(void* buffer) {
-    // Since the general-purpose allocator uses the thread cache, this one
-    // cannot.
-    auto* new_root =
-        new (buffer) base::ThreadSafePartitionRoot(base::PartitionOptions {
-          base::PartitionOptions::AlignedAlloc::kAllowed,
-              base::PartitionOptions::ThreadCache::kDisabled,
-              base::PartitionOptions::Quarantine::kAllowed,
-              base::PartitionOptions::Cookies::kDisallowed,
-#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-              // Given the outer #if, this is possible only when DCHECK_IS_ON().
-              base::PartitionOptions::RefCount::kAllowed,
-#else
-            base::PartitionOptions::RefCount::kDisallowed,
-#endif
-        });
-    return new_root;
-  }
-};
-
-LeakySingleton<base::ThreadSafePartitionRoot, AlignedPartitionConstructor>
-    g_aligned_root CONSTINIT = {};
-#endif  // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-
-// Original g_root_ if it was replaced by ConfigurePartitionRefCountSupport().
-std::atomic<base::ThreadSafePartitionRoot*> g_original_root_(nullptr);
 
 LeakySingleton<base::ThreadSafePartitionRoot, MainPartitionConstructor> g_root
     CONSTINIT = {};
@@ -192,16 +161,25 @@ base::ThreadSafePartitionRoot* Allocator() {
   return g_root.Get();
 }
 
+// Original g_root_ if it was replaced by ConfigurePartitionRefCountSupport().
+std::atomic<base::ThreadSafePartitionRoot*> g_original_root(nullptr);
+
+class AlignedPartitionConstructor {
+ public:
+  static base::ThreadSafePartitionRoot* New(void* buffer) {
+    return g_root.Get();
+  }
+};
+
+LeakySingleton<base::ThreadSafePartitionRoot, AlignedPartitionConstructor>
+    g_aligned_root CONSTINIT = {};
+
 base::ThreadSafePartitionRoot* OriginalAllocator() {
-  return g_original_root_.load(std::memory_order_relaxed);
+  return g_original_root.load(std::memory_order_relaxed);
 }
 
 base::ThreadSafePartitionRoot* AlignedAllocator() {
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
   return g_aligned_root.Get();
-#else   // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-  return Allocator();
-#endif  // BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
 }
 
 #if defined(OS_WIN) && defined(ARCH_CPU_X86)
@@ -454,39 +432,90 @@ void ReconfigurePartitionAllocLazyCommit() {
   AlignedAllocator()->ConfigureLazyCommit();
 }
 
-// Note that ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL implies that
-// USE_BACKUP_REF_PTR is true.
-#if BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 alignas(base::ThreadSafePartitionRoot) uint8_t
     g_allocator_buffer_for_ref_count_config[sizeof(
         base::ThreadSafePartitionRoot)];
 
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP)
+alignas(base::ThreadSafePartitionRoot) uint8_t
+    g_allocator_buffer_for_aligned_alloc_partition[sizeof(
+        base::ThreadSafePartitionRoot)];
+#endif
+
 void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
   auto* current_root = g_root.Get();
+  // Call Get() to ensure g_aligned_root gets initialized. In some cases it is
+  // initialized with g_root, and we want to make sure it is the pre-swap
+  // value (unless explicitly overwritten below).
+  auto* current_aligned_root = g_aligned_root.Get();
+
   current_root->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
                             PartitionPurgeDiscardUnusedSystemPages);
 
+  const bool allow_aligned_alloc_in_main_root =
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP)
+      // If ref-count is to be enabled, this partition can't support
+      // AlignedAlloc. Instead, a new one is created below. Otherwise,
+      // no separate AlignedAlloc partition is created, so this one must
+      // support it.
+      !enable_ref_count;
+#else
+      // No separate AlignedAlloc partition is created, so this one must
+      // support it.
+      true;
+#endif
+  // TODO(bartekn): When enable_ref_count is false, simply enable thread cache
+  // in the existing root instead of creating a new one -- the only difference
+  // between the current and new partition is the thread cache setting.
   auto* new_root = new (g_allocator_buffer_for_ref_count_config)
       base::ThreadSafePartitionRoot({
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-        base::PartitionOptions::AlignedAlloc::kDisallowed,
-#else
-        base::PartitionOptions::AlignedAlloc::kAllowed,
-#endif
-            base::PartitionOptions::ThreadCache::kEnabled,
-            base::PartitionOptions::Quarantine::kAllowed,
-#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC)
-            base::PartitionOptions::Cookies::kAllowed,
-#else
-            base::PartitionOptions::Cookies::kDisallowed,
-#endif
-            enable_ref_count ? base::PartitionOptions::RefCount::kAllowed
-                             : base::PartitionOptions::RefCount::kDisallowed,
+          allow_aligned_alloc_in_main_root
+              ? base::PartitionOptions::AlignedAlloc::kAllowed
+              : base::PartitionOptions::AlignedAlloc::kDisallowed,
+          base::PartitionOptions::ThreadCache::kEnabled,
+          base::PartitionOptions::Quarantine::kAllowed,
+          base::PartitionOptions::Cookie::kAllowed,
+          enable_ref_count ? base::PartitionOptions::RefCount::kAllowed
+                           : base::PartitionOptions::RefCount::kDisallowed,
       });
   g_root.Replace(new_root);
-  g_original_root_ = current_root;
+  // g_original_root has to be set after g_root, because other code doesn't
+  // handle well both pointing to the same root.
+  // TODO(bartekn): Reorder, once handled well. It isn't ideal for one
+  // partition to be invisible temporarily.
+  // TODO(bartekn): Move current_root->PurgeMemory after the replacement.
+  g_original_root = current_root;
+
+  base::ThreadSafePartitionRoot* new_aligned_root =
+#if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP)
+      enable_ref_count
+          // If BRP is getting enabled, we need to create a new AlignedAlloc
+          // partition now.
+          // TODO(bartekn): Use the original root instead of creating a new one.
+          // It'd result in one less partition, but come at a cost of
+          // commingling types.
+          ? new (g_allocator_buffer_for_aligned_alloc_partition)
+                base::ThreadSafePartitionRoot({
+                    base::PartitionOptions::AlignedAlloc::kAllowed,
+                    base::PartitionOptions::ThreadCache::kDisabled,
+                    base::PartitionOptions::Quarantine::kAllowed,
+                    base::PartitionOptions::Cookie::kAllowed,
+                    base::PartitionOptions::RefCount::kDisallowed,
+                })
+          // Otherwise, the new main root can also support AlignedAlloc.
+          : g_root.Get();
+  PA_CHECK(current_aligned_root == g_original_root);
+#else   // USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP
+      // The new main root can also support AlignedAlloc.
+      g_root.Get();
+  PA_CHECK(current_aligned_root == g_original_root);
+#endif  // USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP
+  g_aligned_root.Replace(new_aligned_root);
+  // No need for g_original_aligned_root, because in cases where g_aligned_root
+  // is replaced, it must've been g_original_root.
 }
-#endif  // BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
 #if defined(PA_ALLOW_PCSCAN)
 void EnablePCScan(bool dcscan) {

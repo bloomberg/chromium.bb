@@ -82,7 +82,8 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) override;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
         ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
@@ -112,10 +113,11 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
-        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                            size_t blueprintHash,
-                                            WGPUCreateComputePipelineAsyncCallback callback,
-                                            void* userdata) override;
+        void CreateComputePipelineAsyncImpl(
+            std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
+            size_t blueprintHash,
+            WGPUCreateComputePipelineAsyncCallback callback,
+            void* userdata) override;
 
         void InitTogglesFromDriver();
         void ShutDownImpl() override;

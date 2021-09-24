@@ -65,6 +65,13 @@ class BASE_EXPORT PCScan final {
   // Initializes PCScan and prepares internal data structures.
   static void Initialize(WantedWriteProtectionMode);
 
+  // Disable/reenable PCScan. Temporal disabling can be useful in CPU demanding
+  // contexts.
+  static void Disable();
+  static void Reenable();
+  // Query if PCScan is enabled.
+  static bool IsEnabled();
+
   // Registers a root for scanning.
   static void RegisterScannableRoot(Root* root);
   // Registers a root that doesn't need to be scanned but still contains
@@ -80,9 +87,11 @@ class BASE_EXPORT PCScan final {
                                              size_t usable_size,
                                              size_t slot_size);
 
+  // Performs scanning unconditionally.
+  static void PerformScan(InvocationMode invocation_mode);
   // Performs scanning only if a certain quarantine threshold was reached.
   static void PerformScanIfNeeded(InvocationMode invocation_mode);
-
+  // Performs scanning with specified delay.
   static void PerformDelayedScan(TimeDelta delay);
 
   // Join scan from safepoint in mutator thread. As soon as PCScan is scheduled,
@@ -136,9 +145,6 @@ class BASE_EXPORT PCScan final {
 
   inline constexpr PCScan();
 
-  // Performs scanning unconditionally.
-  void PerformScan(InvocationMode invocation_mode);
-
   // Joins scan unconditionally.
   static void JoinScan();
 
@@ -191,21 +197,26 @@ ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
                                             size_t usable_size,
                                             size_t slot_size) {
   PCScan& instance = Instance();
-  auto* quarantine = QuarantineBitmapFromPointer(QuarantineBitmapType::kMutator,
-                                                 instance.epoch(), ptr);
-  const bool is_double_freed =
-      quarantine->SetBit(reinterpret_cast<uintptr_t>(ptr));
-  if (UNLIKELY(is_double_freed))
-    DoubleFreeAttempt();
-
-  const bool is_limit_reached = instance.scheduler_.AccountFreed(slot_size);
   if (instance.clear_type_ == ClearType::kEager) {
     // We need to distinguish between usable_size and slot_size in this context:
     // - for large buckets usable_size can be noticeably smaller than slot_size;
     // - usable_size is safe as it doesn't cover extras as opposed to slot_size.
-    memset(ptr, 0, usable_size);
+    // TODO(bikineev): If we start protecting quarantine memory, we can lose
+    // double-free coverage (the check below). Consider performing the
+    // double-free check before protecting if eager clearing becomes default.
+    SecureMemset(ptr, 0, usable_size);
   }
 
+  auto* state_bitmap = StateBitmapFromPointer(ptr);
+
+  // Mark the state in the state bitmap as quarantined. Make sure to do it after
+  // the clearing to avoid racing with *Scan Sweeper.
+  const bool succeeded = state_bitmap->Quarantine(
+      reinterpret_cast<uintptr_t>(ptr), instance.epoch());
+  if (UNLIKELY(!succeeded))
+    DoubleFreeAttempt();
+
+  const bool is_limit_reached = instance.scheduler_.AccountFreed(slot_size);
   if (UNLIKELY(is_limit_reached)) {
     // Perform a quick check if another scan is already in progress.
     if (instance.IsInProgress())

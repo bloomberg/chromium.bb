@@ -442,8 +442,12 @@ const char* ToString(ax::mojom::Role role) {
       return "section";
     case ax::mojom::Role::kStrong:
       return "strong";
+    case ax::mojom::Role::kSubscript:
+      return "subscript";
     case ax::mojom::Role::kSuggestion:
       return "suggestion";
+    case ax::mojom::Role::kSuperscript:
+      return "superscript";
     case ax::mojom::Role::kSvgRoot:
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
@@ -1042,10 +1046,18 @@ const char* ToString(ax::mojom::IntListAttribute int_list_attribute) {
       return "markerStarts";
     case ax::mojom::IntListAttribute::kMarkerEnds:
       return "markerEnds";
+    case ax::mojom::IntListAttribute::kCaretBounds:
+      return "caretBounds";
     case ax::mojom::IntListAttribute::kCharacterOffsets:
       return "characterOffsets";
-    case ax::mojom::IntListAttribute::kCachedLineStarts:
-      return "cachedLineStarts";
+    case ax::mojom::IntListAttribute::kLineStarts:
+      return "lineStarts";
+    case ax::mojom::IntListAttribute::kLineEnds:
+      return "lineEnds";
+    case ax::mojom::IntListAttribute::kSentenceStarts:
+      return "sentenceStarts";
+    case ax::mojom::IntListAttribute::kSentenceEnds:
+      return "sentenceEnds";
     case ax::mojom::IntListAttribute::kWordStarts:
       return "wordStarts";
     case ax::mojom::IntListAttribute::kWordEnds:
@@ -1241,8 +1253,12 @@ const char* ToString(ax::mojom::TextBoundary text_boundary) {
       return "none";
     case ax::mojom::TextBoundary::kCharacter:
       return "character";
-    case ax::mojom::TextBoundary::kFormat:
-      return "format";
+    case ax::mojom::TextBoundary::kFormatEnd:
+      return "formatEnd";
+    case ax::mojom::TextBoundary::kFormatStart:
+      return "formatStart";
+    case ax::mojom::TextBoundary::kFormatStartOrEnd:
+      return "formatStartOrEnd";
     case ax::mojom::TextBoundary::kLineEnd:
       return "lineEnd";
     case ax::mojom::TextBoundary::kLineStart:

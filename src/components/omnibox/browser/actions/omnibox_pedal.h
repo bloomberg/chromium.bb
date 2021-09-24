@@ -196,6 +196,11 @@ class OmniboxPedal : public OmniboxAction {
 
   OmniboxPedalId id() const { return id_; }
 
+  // Sometimes pedals report different IDs for metrics, either to enable
+  // feature discrimination (e.g. incognito mode) or to unify metrics
+  // of closely related pedals (e.g. a ChromeOS specialization of a pedal).
+  virtual OmniboxPedalId GetMetricsId() const;
+
   // If a sufficient set of triggering synonym groups are present in
   // match_sequence then it's a concept match and this returns true.  If a
   // required group is not present, or if match_sequence contains extraneous
@@ -204,8 +209,8 @@ class OmniboxPedal : public OmniboxAction {
   bool IsConceptMatch(TokenSequence& match_sequence) const;
 
   // OmniboxAction overrides:
-  void RecordActionShown() const override;
-  void RecordActionExecuted() const override;
+  void RecordActionShown(size_t position) const override;
+  void RecordActionExecuted(size_t position) const override;
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   const gfx::VectorIcon& GetVectorIcon() const override;
 #endif

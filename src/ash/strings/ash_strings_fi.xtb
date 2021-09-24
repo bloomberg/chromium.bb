@@ -24,6 +24,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="1119348796022671382">Teemoihin jaettu väritila käyttää taustakuvasta poimittuja värejä käyttöliittymän kevyeen väritykseen.</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
 <translation id="1148499908455722006">Avaa tietoikkuna: <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Kalenteri</translation>
 <translation id="1153356358378277386">Laiteparit</translation>
 <translation id="1165712434476988950">Laite on käynnistettävä uudelleen, jotta päivitys voidaan ottaa käyttöön.</translation>
 <translation id="1175572348579024023">Vieritä</translation>
@@ -92,6 +93,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="1611993646327628135">Päällä</translation>
 <translation id="1615402009686901181">Järjestelmänvalvojakäytäntö poistaa kuvakaappauksen käytöstä, kun näkyvissä on luottamuksellista sisältöä</translation>
 <translation id="1632985212731562677">Kytkimen käytön voi laittaa pois päältä kohdassa Asetukset &gt; Esteettömyys.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> laitetta</translation>
 <translation id="1654477262762802994">Aloita puhekysely</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; katso tulos Assistantissa painamalla Haku ja Välilyönti.</translation>
 <translation id="1667964833127753507">Neutraali väritila ei käytä taustakuvasta poimittuja värejä vaan korvaa ne vaaleilla tai tummilla neutraaleilla sävyillä.</translation>
@@ -192,6 +194,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="2427507373259914951">Ykköspainikkeen klikkaus</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
+<translation id="24452542372838207">Laajenna ilmoitus</translation>
 <translation id="2450205753526923158">Kuvakaappaustila</translation>
 <translation id="2473177541599297363">Vahvista resoluutio</translation>
 <translation id="2475982808118771221">Tapahtui virhe</translation>
@@ -320,6 +323,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3486220673238053218">määritelmä</translation>
 <translation id="3510164367642747937">Korosta hiiren osoitin</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> hallinnoi tiliä</translation>
+<translation id="353086728817903341">Yhdistetty <ph name="NUM_DEVICES" /> laitteeseen</translation>
 <translation id="3552189655002856821">Wi-Fi on poissa päältä</translation>
 <translation id="3560866052109807830">Piirtotyökalut</translation>
 <translation id="3563775809269155755">Ota hotspot käyttöön</translation>
@@ -348,6 +352,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3702846122927433391">Nigerian väkiluku</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Ladataan...</translation>
+<translation id="3708186454126126312">Aiemmin yhdistetyt</translation>
 <translation id="371370241367527062">Etumikrofoni</translation>
 <translation id="3713734891607377840">Avaa kun valmis</translation>
 <translation id="3742055079367172538">Kuvakaappaus otettu</translation>
@@ -403,6 +408,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="4129129681837227511">Jos haluat nähdä ilmoituksia lukitusnäytöllä, avaa lukitus muuttaaksesi asetusta</translation>
 <translation id="4146833061457621061">Soita musiikkia</translation>
 <translation id="4157822100366708405">Tumman teeman asetukset</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Kielet</translation>
 <translation id="4195877955194704651">Automaattinen klikkaus ‑painike</translation>
 <translation id="4197790712631116042">Poissa päältä</translation>
@@ -555,6 +561,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5234764350956374838">Hylkää</translation>
 <translation id="523505283826916779">Esteettömyysasetukset</translation>
+<translation id="5253783950165989294">Yhdistetty laitteeseen nimeltä <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" /> % virtaa</translation>
 <translation id="5260676007519551770">Pöytä 4</translation>
 <translation id="5283198616748585639">Lisää 1 min</translation>
 <translation id="528468243742722775">Loppu</translation>
@@ -565,6 +572,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5313326810920013265">Bluetooth-asetukset</translation>
 <translation id="5314219114274263156">Näytön tallennus valmis</translation>
+<translation id="5319712128756744240">Muodosta uusi laitepari</translation>
 <translation id="5322611492012084517">Puhelintasi ei löydy</translation>
 <translation id="5329548388331921293">Yhdistetään…</translation>
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
@@ -767,6 +775,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
 <translation id="7007983414944123363">PIN-koodiasi tai salasanaasi ei voitu vahvistaa. Yritä uudelleen.</translation>
+<translation id="7014684956566476813">Yhdistetty laitteeseen nimeltä <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Palaa kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Työpöytä 6</translation>
 <translation id="7025533177575372252">Yhdistä <ph name="DEVICE_NAME" /> puhelimeesi</translation>
@@ -1000,6 +1009,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="8818320199597151042">Poistetaan profiilia. Odota muutama minuutti.</translation>
 <translation id="8825863694328519386">Palaa takaisin pyyhkäisemällä vasemmasta reunasta</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Yhdistetty tällä hetkellä</translation>
 <translation id="8841375032071747811">Takaisin-painike</translation>
 <translation id="8843682306134542540">Laita kierron lukitus päälle tai pois päältä. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Haku+Esc</translation>
@@ -1030,6 +1040,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="9024331582947483881">koko näyttö</translation>
 <translation id="9047624247355796468">Avaa asetukset: <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Laite palautetaan</translation>
+<translation id="9059834730836941392">Tiivistä ilmoitus</translation>
 <translation id="9063800855227801443">Kuvakaappausta ei voi ottaa luottamuksellisesta sisällöstä</translation>
 <translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9070640332319875144">Assistantin asetukset</translation>

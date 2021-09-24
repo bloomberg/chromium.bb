@@ -322,7 +322,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2021-12-26">
+    enum="ServiceWorkerStatusCode" expires_after="2022-02-27">
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -345,7 +345,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2021-12-26">
+    enum="ServiceWorkerStatusCode" expires_after="2022-02-27">
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1046,7 +1046,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2021-12-12">
+    enum="ServiceWorkerStatusCode" expires_after="2022-02-13">
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1068,7 +1068,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>falken@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -1155,6 +1155,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The mechanism by which a service worker entered running status STOPPED.
   </summary>
+</histogram>
+
+<histogram name="ServiceWorker.{operation}Time" units="ms"
+    expires_after="2022-08-24">
+  <owner>cduvall@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The time taken to query the content settings in the browser process for the
+    ${operation} operation. This is recorded each time a sync call is made.
+  </summary>
+  <token key="operation">
+    <variant name="AllowCacheStorage"/>
+    <variant name="AllowIndexedDB"/>
+    <variant name="AllowWebLocks"/>
+    <variant name="RequestFileSystemAccess"/>
+  </token>
 </histogram>
 
 <histogram name="ServiceWorkerCache.Cache" units="ms" expires_after="M95">

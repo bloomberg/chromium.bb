@@ -529,10 +529,11 @@ void loader_log(const struct loader_instance *inst, VkFlags msg_type, int32_t ms
 // log error from to library loading
 void loader_log_load_library_error(const struct loader_instance *inst, const char *filename) {
     const char *error_message = loader_platform_open_library_error(filename);
-    // If the error is due to incompatible ELF class, report it with INFO level
-    // Discussed in Github issue 262
+    // If the error is due to incompatible architecture (eg 32 bit vs 64 bit), report it with INFO level
+    // Discussed in Github issue 262 & 644
+    // "wrong ELF class" is a linux error, " with error 193" is a windows error
     VkFlags err_flag = VULKAN_LOADER_ERROR_BIT;
-    if (strstr(error_message, "wrong ELF class:") != NULL) {
+    if (strstr(error_message, "wrong ELF class:") != NULL || strstr(error_message, " with error 193") != NULL) {
         err_flag = VULKAN_LOADER_INFO_BIT;
     }
     loader_log(inst, err_flag, 0, error_message);
@@ -2277,6 +2278,7 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
 #endif
     if (NULL == handle) {
         loader_log_load_library_error(inst, filename);
+        res = VK_ERROR_INCOMPATIBLE_DRIVER;
         goto out;
     }
 
@@ -3902,48 +3904,76 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
     size_t rel_size = 0;
     bool use_first_found_manifest = false;
 #ifndef _WIN32
-    bool xdgconfig_alloc = true;
-    bool xdgdata_alloc = true;
+    bool xdg_config_home_secenv_alloc = true;
+    bool xdg_config_dirs_secenv_alloc = true;
+    bool xdg_data_home_secenv_alloc = true;
+    bool xdg_data_dirs_secenv_alloc = true;
 #endif
 
 #ifndef _WIN32
     // Determine how much space is needed to generate the full search path
     // for the current manifest files.
-    char *xdgconfdirs = loader_secure_getenv("XDG_CONFIG_DIRS", inst);
-    char *xdgdatadirs = loader_secure_getenv("XDG_DATA_DIRS", inst);
-    char *xdgdatahome = loader_secure_getenv("XDG_DATA_HOME", inst);
-    char *home = NULL;
-    char *home_root = NULL;
-
-    if (xdgconfdirs == NULL) {
-        xdgconfig_alloc = false;
+    char *xdg_config_home = loader_secure_getenv("XDG_CONFIG_HOME", inst);
+    if (NULL == xdg_config_home) {
+        xdg_config_home_secenv_alloc = false;
     }
-    if (xdgdatadirs == NULL) {
-        xdgdata_alloc = false;
+
+    char *xdg_config_dirs = loader_secure_getenv("XDG_CONFIG_DIRS", inst);
+    if (NULL == xdg_config_dirs) {
+        xdg_config_dirs_secenv_alloc = false;
     }
 #if !defined(__Fuchsia__) && !defined(__QNXNTO__)
-    if (xdgconfdirs == NULL || xdgconfdirs[0] == '\0') {
-        xdgconfdirs = FALLBACK_CONFIG_DIRS;
-    }
-    if (xdgdatadirs == NULL || xdgdatadirs[0] == '\0') {
-        xdgdatadirs = FALLBACK_DATA_DIRS;
+    if (NULL == xdg_config_dirs || '\0' == xdg_config_dirs[0]) {
+        xdg_config_dirs = FALLBACK_CONFIG_DIRS;
     }
 #endif
 
+    char *xdg_data_home = loader_secure_getenv("XDG_DATA_HOME", inst);
+    if (NULL == xdg_data_home) {
+        xdg_data_home_secenv_alloc = false;
+    }
+
+    char *xdg_data_dirs = loader_secure_getenv("XDG_DATA_DIRS", inst);
+    if (NULL == xdg_data_dirs) {
+        xdg_data_dirs_secenv_alloc = false;
+    }
+#if !defined(__Fuchsia__) && !defined(__QNXNTO__)
+    if (NULL == xdg_data_dirs || '\0' == xdg_data_dirs[0]) {
+        xdg_data_dirs = FALLBACK_DATA_DIRS;
+    }
+#endif
+
+    char *home = NULL;
+    char *default_data_home = NULL;
+    char *default_config_home = NULL;
+
     // Only use HOME if XDG_DATA_HOME is not present on the system
-    if (NULL == xdgdatahome) {
-        home = loader_secure_getenv("HOME", inst);
-        if (home != NULL) {
-            home_root = loader_instance_heap_alloc(inst, strlen(home) + 14, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
-            if (home_root == NULL) {
+    home = loader_secure_getenv("HOME", inst);
+    if (home != NULL) {
+        if (NULL == xdg_config_home || '\0' == xdg_config_home[0]) {
+            const char config_suffix[] = "/.config";
+            default_config_home =
+                loader_instance_heap_alloc(inst, strlen(home) + strlen(config_suffix) + 1, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+            if (default_config_home == NULL) {
                 vk_result = VK_ERROR_OUT_OF_HOST_MEMORY;
                 goto out;
             }
-            strcpy(home_root, home);
-            strcat(home_root, "/.local/share");
+            strcpy(default_config_home, home);
+            strcat(default_config_home, config_suffix);
+        }
+        if (NULL == xdg_data_home || '\0' == xdg_data_home[0]) {
+            const char data_suffix[] = "/.local/share";
+            default_data_home =
+                loader_instance_heap_alloc(inst, strlen(home) + strlen(data_suffix) + 1, VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
+            if (default_data_home == NULL) {
+                vk_result = VK_ERROR_OUT_OF_HOST_MEMORY;
+                goto out;
+            }
+            strcpy(default_data_home, home);
+            strcat(default_data_home, data_suffix);
         }
     }
-#endif
+#endif  // !_WIN32
 
     if (path_override != NULL) {
         override_path = path_override;
@@ -3986,19 +4016,29 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
             search_path_size += MAXPATHLEN;
 #endif
 #ifndef _WIN32
-            search_path_size += DetermineDataFilePathSize(xdgconfdirs, rel_size);
-            search_path_size += DetermineDataFilePathSize(xdgdatadirs, rel_size);
+            // Only add the home folders if not ICD filenames or superuser
+            if (is_directory_list && !IsHighIntegrity()) {
+                if (NULL != default_config_home) {
+                    search_path_size += DetermineDataFilePathSize(default_config_home, rel_size);
+                } else {
+                    search_path_size += DetermineDataFilePathSize(xdg_config_home, rel_size);
+                }
+            }
+            search_path_size += DetermineDataFilePathSize(xdg_config_dirs, rel_size);
             search_path_size += DetermineDataFilePathSize(SYSCONFDIR, rel_size);
 #if defined(EXTRASYSCONFDIR)
             search_path_size += DetermineDataFilePathSize(EXTRASYSCONFDIR, rel_size);
 #endif
-            if (is_directory_list) {
-                if (!IsHighIntegrity()) {
-                    search_path_size += DetermineDataFilePathSize(xdgdatahome, rel_size);
-                    search_path_size += DetermineDataFilePathSize(home_root, rel_size);
+            // Only add the home folders if not ICD filenames or superuser
+            if (is_directory_list && !IsHighIntegrity()) {
+                if (NULL != default_data_home) {
+                    search_path_size += DetermineDataFilePathSize(default_data_home, rel_size);
+                } else {
+                    search_path_size += DetermineDataFilePathSize(xdg_data_home, rel_size);
                 }
             }
-#endif
+            search_path_size += DetermineDataFilePathSize(xdg_data_dirs, rel_size);
+#endif  // !_WIN32
         }
     }
 
@@ -4040,17 +4080,30 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
                     CFRelease(ref);
                 }
             }
-#endif
-            CopyDataFilePath(xdgconfdirs, relative_location, rel_size, &cur_path_ptr);
+#endif  // __APPLE__
+            // Only add the home folders if not ICD filenames or superuser
+            if (is_directory_list && !IsHighIntegrity()) {
+                if (NULL != default_config_home) {
+                    CopyDataFilePath(default_config_home, relative_location, rel_size, &cur_path_ptr);
+                } else {
+                    CopyDataFilePath(xdg_config_home, relative_location, rel_size, &cur_path_ptr);
+                }
+            }
+            CopyDataFilePath(xdg_config_dirs, relative_location, rel_size, &cur_path_ptr);
             CopyDataFilePath(SYSCONFDIR, relative_location, rel_size, &cur_path_ptr);
 #if defined(EXTRASYSCONFDIR)
             CopyDataFilePath(EXTRASYSCONFDIR, relative_location, rel_size, &cur_path_ptr);
 #endif
-            CopyDataFilePath(xdgdatadirs, relative_location, rel_size, &cur_path_ptr);
-            if (is_directory_list) {
-                CopyDataFilePath(xdgdatahome, relative_location, rel_size, &cur_path_ptr);
-                CopyDataFilePath(home_root, relative_location, rel_size, &cur_path_ptr);
+
+            // Only add the home folders if not ICD filenames or superuser
+            if (is_directory_list && !IsHighIntegrity()) {
+                if (NULL != default_data_home) {
+                    CopyDataFilePath(default_data_home, relative_location, rel_size, &cur_path_ptr);
+                } else {
+                    CopyDataFilePath(xdg_data_home, relative_location, rel_size, &cur_path_ptr);
+                }
             }
+            CopyDataFilePath(xdg_data_dirs, relative_location, rel_size, &cur_path_ptr);
         }
 
         // Remove the last path separator
@@ -4058,7 +4111,7 @@ static VkResult ReadDataFilesInSearchPaths(const struct loader_instance *inst, e
 
         assert(cur_path_ptr - search_path < (ptrdiff_t)search_path_size);
         *cur_path_ptr = '\0';
-#endif
+#endif  // !_WIN32
     }
 
     // Remove duplicate paths, or it would result in duplicate extensions, duplicate devices, etc.
@@ -4148,20 +4201,29 @@ out:
         loader_free_getenv(override_env, inst);
     }
 #ifndef _WIN32
-    if (xdgconfig_alloc) {
-        loader_free_getenv(xdgconfdirs, inst);
+    if (xdg_config_home_secenv_alloc) {
+        loader_free_getenv(xdg_config_home, inst);
     }
-    if (xdgdata_alloc) {
-        loader_free_getenv(xdgdatadirs, inst);
+    if (xdg_config_dirs_secenv_alloc) {
+        loader_free_getenv(xdg_config_dirs, inst);
     }
-    if (NULL != xdgdatahome) {
-        loader_free_getenv(xdgdatahome, inst);
+    if (xdg_data_home_secenv_alloc) {
+        loader_free_getenv(xdg_data_home, inst);
+    }
+    if (xdg_data_dirs_secenv_alloc) {
+        loader_free_getenv(xdg_data_dirs, inst);
+    }
+    if (NULL != xdg_data_home) {
+        loader_free_getenv(xdg_data_home, inst);
     }
     if (NULL != home) {
         loader_free_getenv(home, inst);
     }
-    if (NULL != home_root) {
-        loader_instance_heap_free(inst, home_root);
+    if (NULL != default_data_home) {
+        loader_instance_heap_free(inst, default_data_home);
+    }
+    if (NULL != default_config_home) {
+        loader_instance_heap_free(inst, default_config_home);
     }
 #endif
 
@@ -4665,9 +4727,12 @@ VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_t
                     loader_log(inst, VULKAN_LOADER_WARN_BIT | VULKAN_LOADER_IMPLEMENTATION_BIT, 0,
                                "loader_icd_scan: ICD JSON %s does not have an \'api_version\' field.", file_str);
                 }
-
-                res = loader_scanned_icd_add(inst, icd_tramp_list, fullpath, vers);
-                if (VK_SUCCESS != res) {
+                VkResult icd_add_res = VK_SUCCESS;
+                icd_add_res = loader_scanned_icd_add(inst, icd_tramp_list, fullpath, vers);
+                if (VK_ERROR_OUT_OF_HOST_MEMORY == icd_add_res) {
+                    res = icd_add_res;
+                    goto out;
+                } else if (VK_SUCCESS != icd_add_res) {
                     loader_log(inst, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_IMPLEMENTATION_BIT, 0,
                                "loader_icd_scan: Failed to add ICD JSON %s.  Skipping ICD JSON.", fullpath);
                     cJSON_Delete(json);
@@ -6659,6 +6724,17 @@ out:
             }
             loader_icd_destroy(ptr_instance, icd_term, pAllocator);
         }
+    } else {
+        // Check for enabled extensions here to setup the loader structures so the loader knows what extensions
+        // it needs to worry about.
+        // We do it here and again above the layers in the trampoline function since the trampoline function
+        // may think different extensions are enabled than what's down here.
+        // This is why we don't clear inside of these function calls.
+        // The clearing should actually be handled by the overall memset of the pInstance structure in the
+        // trampoline.
+        wsi_create_instance(ptr_instance, pCreateInfo);
+        debug_utils_CreateInstance(ptr_instance, pCreateInfo);
+        extensions_create_instance(ptr_instance, pCreateInfo);
     }
 
     return res;

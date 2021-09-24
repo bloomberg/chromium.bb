@@ -10,6 +10,10 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/webui/help_app_ui/help_app_manager.h"
+#include "ash/webui/help_app_ui/help_app_manager_factory.h"
+#include "ash/webui/help_app_ui/search/search_handler.h"
+#include "ash/webui/help_app_ui/url_constants.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -23,15 +27,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/help_app_ui/help_app_manager.h"
-#include "chromeos/components/help_app_ui/help_app_manager_factory.h"
-#include "chromeos/components/help_app_ui/search/search_handler.h"
-#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -79,9 +79,9 @@ void StopShowingDiscoverTabSuggestionChip(Profile* profile) {
 
 // Filter out results below the min score threshold and limit the number of
 // shown results.
-std::vector<chromeos::help_app::mojom::SearchResultPtr> FilterAndLimitResults(
-    const std::vector<chromeos::help_app::mojom::SearchResultPtr>& results) {
-  std::vector<chromeos::help_app::mojom::SearchResultPtr> clean_results;
+std::vector<ash::help_app::mojom::SearchResultPtr> FilterAndLimitResults(
+    const std::vector<ash::help_app::mojom::SearchResultPtr>& results) {
+  std::vector<ash::help_app::mojom::SearchResultPtr> clean_results;
 
   for (const auto& result : results) {
     if (clean_results.size() == kMaxShownResults) {
@@ -146,14 +146,14 @@ HelpAppResult::HelpAppResult(Profile* profile,
 HelpAppResult::HelpAppResult(
     const float& relevance,
     Profile* profile,
-    const chromeos::help_app::mojom::SearchResultPtr& result,
+    const ash::help_app::mojom::SearchResultPtr& result,
     const gfx::ImageSkia& icon,
     const std::u16string& query)
     : profile_(profile),
       url_path_(result->url_path_with_parameters),
       help_app_content_id_(result->id) {
   DCHECK(profile_);
-  set_id(chromeos::kChromeUIHelpAppURL + url_path_);
+  set_id(ash::kChromeUIHelpAppURL + url_path_);
   set_relevance(relevance);
   SetTitle(result->title);
   SetTitleTags(CalculateTags(query, result->title));
@@ -198,7 +198,7 @@ void HelpAppResult::Open(int event_flags) {
   }
   // Launch list result.
   web_app::SystemAppLaunchParams params;
-  params.url = GURL(chromeos::kChromeUIHelpAppURL + url_path_);
+  params.url = GURL(ash::kChromeUIHelpAppURL + url_path_);
   params.launch_source = apps::mojom::LaunchSource::kFromAppListQuery;
   web_app::LaunchSystemWebAppAsync(
       profile_, web_app::SystemAppType::HELP, params,
@@ -223,7 +223,7 @@ HelpAppProvider::HelpAppProvider(Profile* profile)
     return;
   }
   search_handler_ =
-      chromeos::help_app::HelpAppManagerFactory::GetForBrowserContext(profile_)
+      ash::help_app::HelpAppManagerFactory::GetForBrowserContext(profile_)
           ->search_handler();
   if (!search_handler_) {
     return;
@@ -295,7 +295,7 @@ void HelpAppProvider::ViewClosing() {
 void HelpAppProvider::OnSearchReturned(
     const std::u16string& query,
     const base::TimeTicks& start_time,
-    std::vector<chromeos::help_app::mojom::SearchResultPtr> sorted_results) {
+    std::vector<ash::help_app::mojom::SearchResultPtr> sorted_results) {
   // TODO(b/182855408): We are currently not ranking help app results.
   // Instead, we are gluing at most two to the middle of the search box.
   // Ideally, we want to always show Showoff results below a Setting, App, or

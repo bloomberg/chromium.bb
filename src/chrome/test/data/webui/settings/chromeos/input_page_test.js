@@ -12,9 +12,9 @@
 // #import {TestLanguagesBrowserProxy} from './test_os_languages_browser_proxy.m.js';
 // #import {TestLanguagesMetricsProxy} from './test_os_languages_metrics_proxy.m.js';
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-// #import {fakeDataBind} from '../../test_util.m.js';
+// #import {fakeDataBind} from '../../test_util.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 suite('input page', () => {
@@ -228,10 +228,6 @@ suite('input page', () => {
 
   suite('input page', () => {
     test('Deep link to spell check', async () => {
-      loadTimeData.overrideValues({
-        isDeepLinkingEnabled: true,
-      });
-
       const params = new URLSearchParams;
       params.append('settingId', '1207');
       settings.Router.getInstance().navigateTo(
@@ -369,6 +365,7 @@ suite('input page', () => {
     });
 
     test('suggested input methods hidden when no languages is enabled', () => {
+      languageHelper.setPrefValue('intl.accept_languages', '');
       languageHelper.setPrefValue('settings.language.preferred_languages', '');
       Polymer.dom.flush();
 
@@ -380,6 +377,7 @@ suite('input page', () => {
 
     test('suggested input methods hidden when no input methods left', () => {
       const languageCode = 'sw';
+      languageHelper.setPrefValue('intl.accept_languages', languageCode);
       languageHelper.setPrefValue(
           'settings.language.preferred_languages', languageCode);
       languageHelper.getInputMethodsForLanguage(languageCode)

@@ -139,7 +139,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const AtomicString& MimeType() const;
 
-  const KURL& OriginalUrl() const;
   const Referrer& OriginalReferrer() const;
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
@@ -298,8 +297,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void BlockParser();
   void ResumeParser();
 
-  bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
-
   UseCounterImpl& GetUseCounter() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
@@ -369,6 +366,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void SetCodeCacheHost(
       mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host);
   static void DisableCodeCacheForTesting();
+
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> CreateWorkerCodeCacheHost();
 
   HashSet<KURL> GetEarlyHintsPreloadedResources();
 
@@ -525,9 +524,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   Member<SubresourceFilter> subresource_filter_;
 
-  // A reference to actual request's url and referrer used to
-  // inititate this load.
-  KURL original_url_;
   const Referrer original_referrer_;
 
   ResourceResponse response_;

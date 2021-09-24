@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
@@ -67,11 +67,12 @@ enum class DefaultAppName {
   kShortcutCustomizationApp = 44,
   kShimlessRMAApp = 45,
   kOsFeedbackApp = 46,
-  kA4 = 47,
+  kCursive = 47,
+  kMediaAppAudio = 48,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kA4,
+  kMaxValue = kMediaAppAudio,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -210,8 +211,8 @@ namespace apps {
 
 void RecordAppLaunch(const std::string& app_id,
                      apps::mojom::LaunchSource launch_source) {
-  if (app_id == web_app::kA4AppId) {
-    RecordDefaultAppLaunch(DefaultAppName::kA4, launch_source);
+  if (app_id == web_app::kCursiveAppId) {
+    RecordDefaultAppLaunch(DefaultAppName::kCursive, launch_source);
   } else if (app_id == extension_misc::kCalculatorAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kCalculator, launch_source);
   } else if (app_id == extension_misc::kTextEditorAppId) {
@@ -232,6 +233,8 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kHelpApp, launch_source);
   } else if (app_id == web_app::kMediaAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kMediaApp, launch_source);
+  } else if (app_id == web_app::kMediaAppAudioId) {
+    RecordDefaultAppLaunch(DefaultAppName::kMediaAppAudio, launch_source);
   } else if (app_id == extension_misc::kChromeAppId) {
     RecordDefaultAppLaunch(DefaultAppName::kChrome, launch_source);
   } else if (app_id == extension_misc::kGoogleDocAppId) {

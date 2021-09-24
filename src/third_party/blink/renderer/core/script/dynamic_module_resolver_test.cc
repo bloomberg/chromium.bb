@@ -87,8 +87,6 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     return KURL(base_url, module_request);
   }
 
-  void SetAcquiringImportMapsState(AcquiringImportMapsState) final {}
-
   void FetchTree(const KURL& url,
                  ModuleType module_type,
                  ResourceFetcher*,

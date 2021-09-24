@@ -373,10 +373,11 @@ StartupProfileInfo CreatePrimaryProfile(
 // notification, the profile id encoded in the notification launch id should
 // be chosen over all others.
 #if defined(OS_WIN)
-  std::string last_used_profile_id =
-      NotificationLaunchId::GetNotificationLaunchProfileId(parsed_command_line);
-  if (!last_used_profile_id.empty()) {
-    profiles::SetLastUsedProfile(last_used_profile_id);
+  base::FilePath profile_basename =
+      NotificationLaunchId::GetNotificationLaunchProfileBaseName(
+          parsed_command_line);
+  if (!profile_basename.empty()) {
+    profiles::SetLastUsedProfile(profile_basename);
     last_used_profile_set = true;
   }
 #endif  // defined(OS_WIN)
@@ -386,7 +387,7 @@ StartupProfileInfo CreatePrimaryProfile(
       parsed_command_line.HasSwitch(switches::kProfileDirectory);
   if (!last_used_profile_set && profile_dir_specified) {
     profiles::SetLastUsedProfile(
-        parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));
+        parsed_command_line.GetSwitchValuePath(switches::kProfileDirectory));
     last_used_profile_set = true;
   }
 
@@ -1008,6 +1009,28 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif
 
+  if (command_line->HasSwitch(switches::kProfileEmail) &&
+      !command_line->HasSwitch(switches::kProfileDirectory)) {
+    // Use GetSwitchValueNative() rather than GetSwitchValueASCII() to support
+    // non-ASCII email addresses.
+    base::CommandLine::StringType email_native =
+        command_line->GetSwitchValueNative(switches::kProfileEmail);
+    if (!email_native.empty()) {
+      std::string email;
+#if defined(OS_WIN)
+      email = base::WideToUTF8(email_native);
+#else
+      email = std::move(email_native);
+#endif
+      base::FilePath profile_dir =
+          browser_process_->profile_manager()->GetProfileDirForEmail(email);
+      if (!profile_dir.empty()) {
+        command_line->AppendSwitchPath(switches::kProfileDirectory,
+                                       profile_dir.BaseName());
+      }
+    }
+  }
+
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
   // this.
   browser_process_->PreCreateThreads(parsed_command_line());
@@ -1031,7 +1054,7 @@ void ChromeBrowserMainParts::PostCreateThreads() {
   // stages.
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
-                                metrics::CallStackProfileParams::IO_THREAD));
+                                metrics::CallStackProfileParams::Thread::kIo));
 // Sampling multiple threads might cause overhead on Android and we don't want
 // to enable it unless the data is needed.
 #if !defined(OS_ANDROID)

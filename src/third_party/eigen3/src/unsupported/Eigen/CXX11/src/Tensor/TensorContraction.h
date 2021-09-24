@@ -362,7 +362,7 @@ class TensorContractionOp : public TensorBase<TensorContractionOp<Indices, LhsXp
 
 
 template<typename Derived>
-struct TensorContractionEvaluatorBase
+struct TensorContractionEvaluatorBase : internal::no_assignment_operator
 {
   typedef typename internal::traits<Derived>::Indices Indices;
   typedef typename internal::traits<Derived>::LeftArgType LeftArgType;
@@ -417,7 +417,7 @@ struct TensorContractionEvaluatorBase
 
   typedef DSizes<Index, NumDims> Dimensions;
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
+  EIGEN_STRONG_INLINE
   TensorContractionEvaluatorBase(const XprType& op, const Device& device)
       : m_leftImpl(choose(Cond<static_cast<int>(Layout) == static_cast<int>(ColMajor)>(),
                           op.lhsExpression(), op.rhsExpression()), device),
@@ -602,7 +602,7 @@ struct TensorContractionEvaluatorBase
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions& dimensions() const { return m_dimensions; }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType data) {
+  EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType data) {
     m_leftImpl.evalSubExprsIfNeeded(NULL);
     m_rightImpl.evalSubExprsIfNeeded(NULL);
     if (data) {
@@ -617,7 +617,7 @@ struct TensorContractionEvaluatorBase
 
 #ifdef EIGEN_USE_THREADS
   template <typename EvalSubExprsCallback>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
+  EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
       EvaluatorPointerType dest, EvalSubExprsCallback done) {
     m_leftImpl.evalSubExprsIfNeededAsync(nullptr, [this, done, dest](bool) {
       m_rightImpl.evalSubExprsIfNeededAsync(nullptr, [this, done, dest](bool) {
@@ -633,6 +633,7 @@ struct TensorContractionEvaluatorBase
   }
 #endif  // EIGEN_USE_THREADS
 
+#ifndef TENSOR_CONTRACTION_DISPATCH
 #define TENSOR_CONTRACTION_DISPATCH(METHOD, ALIGNMENT, ARGS) \
   if (this->m_lhs_inner_dim_contiguous) {                    \
     if (this->m_rhs_inner_dim_contiguous) {                  \
@@ -663,7 +664,9 @@ struct TensorContractionEvaluatorBase
       }                                                      \
     }                                                        \
   }
+#endif
 
+#ifndef TENSOR_CONTRACTION_ASYNC_DISPATCH
 #define TENSOR_CONTRACTION_ASYNC_DISPATCH(METHOD, DONE, ALIGNMENT, ARGS, FN) \
   if (this->m_lhs_inner_dim_contiguous) {                                    \
     if (this->m_rhs_inner_dim_contiguous) {                                  \
@@ -694,6 +697,7 @@ struct TensorContractionEvaluatorBase
       }                                                                      \
     }                                                                        \
   }
+#endif
 
   EIGEN_DEVICE_FUNC void evalTo(Scalar* buffer) const {
    static_cast<const Derived*>(this)->template evalProduct<Unaligned>(buffer);
@@ -758,7 +762,7 @@ struct TensorContractionEvaluatorBase
     const Index resIncr(1);
 
     // zero out the result buffer (which must be of size at least rows * sizeof(Scalar)
-    m_device.memset(buffer, 0, rows * sizeof(Scalar));
+    m_device.fill(buffer, buffer + rows, Scalar(0));
 
     internal::general_matrix_vector_product<Index,LhsScalar,LhsMapper,ColMajor,false,RhsScalar,RhsMapper,false>::run(
         rows, cols, lhs, rhs,
@@ -865,7 +869,7 @@ struct TensorContractionEvaluatorBase
     // If a contraction kernel does not support beta, explicitly initialize
     // output buffer with zeroes.
     if (!TensorContractionKernel::HasBeta) {
-      this->m_device.memset(buffer, 0, m * n * sizeof(Scalar));
+      this->m_device.fill(buffer, buffer + m * n, Scalar(0));
     }
 
     for(Index i2=0; i2<m; i2+=mc)
@@ -908,7 +912,7 @@ struct TensorContractionEvaluatorBase
     kernel.deallocate(this->m_device, packed_mem);
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup() {
+  EIGEN_STRONG_INLINE void cleanup() {
     m_leftImpl.cleanup();
     m_rightImpl.cleanup();
 
@@ -934,8 +938,6 @@ struct TensorContractionEvaluatorBase
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE EvaluatorPointerType data() const { return m_result; }
 
 protected:
-  // Prevent assignment
-  TensorContractionEvaluatorBase& operator = (const TensorContractionEvaluatorBase&);
   Dimensions m_dimensions;
 
   contract_t m_k_strides;
@@ -1007,7 +1009,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
   // Could we use NumDimensions here?
   typedef DSizes<Index, NumDims> Dimensions;
 
-  EIGEN_DEVICE_FUNC TensorEvaluator(const XprType& op, const Device& device) :
+  TensorEvaluator(const XprType& op, const Device& device) :
       Base(op, device) { }
 
   template <int Alignment>

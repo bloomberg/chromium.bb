@@ -7,6 +7,7 @@
     overflow-y: scroll;
   }
   cr-search-field {
+    --cr-search-field-clear-icon-fill: var(--cros-icon-color-primary);
     --cr-search-field-clear-icon-margin-end: var(--emoji-picker-search-margins);
     --cr-search-field-clear-icon-size: 20px;
     --cr-search-field-input-border-bottom: none;
@@ -15,8 +16,7 @@
     --cr-search-field-input-padding-start: 8px;
     --cr-search-field-input-padding-top: 0;
     --cr-search-field-input-width: 100%;
-    --cr-search-field-placeholder-color:
-      var(--cros-textfield-input-color-disabled);
+    --cr-search-field-placeholder-color: var(--cros-text-color-secondary);
     --cr-search-field-search-icon-display: none;
     --cr-search-field-search-icon-fill: var(--cros-text-color-secondary);
     --cr-search-field-search-icon-inline-display: block;
@@ -24,7 +24,7 @@
       var(--emoji-picker-search-margins);
     --cr-search-field-underline-display: none;
     align-items: center;
-    background-color: var(--cros-textfield-background-color);
+    background-color: var(--cros-toolbar-search-bg-color);
     border: 2px solid transparent;
     border-radius: 40px;
     height: var(--emoji-picker-search-height);
@@ -73,7 +73,7 @@
   }
 
   .no-result {
-    color: var(--cros-button-label-primary-color-disabled);
+    color: var(--cros-button-label-color-secondary-disabled);
     font-family: 'Google Sans';
     left: 50%;
     line-height: 24px;
@@ -125,7 +125,11 @@
     </template>
     <template is="dom-if" if="[[!results.length]]">
       <div class="no-result">
-        <img src="no_results.svg" id = "no-emoji-image">
+        <picture>
+          <source srcset="no_results_dark.svg"
+              media="(prefers-color-scheme: dark)">
+          <img src="no_results.svg" id = "no-emoji-image">
+        </picture>
         No emoji found
         </div>
     </template>

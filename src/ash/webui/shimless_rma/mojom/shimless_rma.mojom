@@ -54,6 +54,7 @@ enum RmaState {
   kChooseDestination,
   kChooseWriteProtectDisableMethod,
   kEnterRSUWPDisableCode,
+  kVerifyRsu,
   kWaitForManualWPDisable,
   kWPDisableComplete,
   kChooseFirmwareReimageMethod,
@@ -138,28 +139,35 @@ enum RmadErrorCode {
   kDeviceInfoInvalid = 26,
 
   // Calibration component is missing.
-  kCalibrationMissingComponent = 27,
+  kCalibrationComponentMissing = 27,
+  // Calibration componenent status is missing.
+  kCalibrationStatusMissing = 28,
+  // Calibration component cannot be calibrated.
+  kCalibrationComponentInvalid = 29,
   // Calibration failed for a component.
-  kCalibrationFailed = 28,
+  kCalibrationFailed = 30,
 
   // Provisioning failed for the device.
-  kProvisioningFailed = 29,
+  kProvisioningFailed = 31,
 
   // Device could not be powerwashed.
-  kPowerwashFailed = 30,
+  kPowerwashFailed = 32,
 
   // Device finalization failed.
-  kFinalizationFailed = 31,
+  kFinalizationFailed = 33,
 
   // Logs failed to upload because the server could not be reached.
-  kLogUploadFtpServerCannotConnect = 32,
+  kLogUploadFtpServerCannotConnect = 34,
   // Logs failed to upload because the server refused the connection.
-  kLogUploadFtpServerConnectionRejected = 33,
+  kLogUploadFtpServerConnectionRejected = 35,
   // Logs failed to upload because the connection was interrupted.
-  kLogUploadFtpServerTransferFailed = 34,
+  kLogUploadFtpServerTransferFailed = 36,
 
   // It is not possible to cancel RMA finalization process at this point.
-  kCannotCancelRma = 35,
+  kCannotCancelRma = 37,
+
+  // Logs could not be retrieved.
+  kCannotGetLog = 38,
 };
 
 // TODO(gavindodd): This is copied from
@@ -176,6 +184,23 @@ struct QrCode {
   // QR Code in row major order. Values can be 0 or 1 where 1 indicates that
   // the corresponding tile should be filled.
   array<uint8> data;
+};
+
+// Keep in sync with:
+// platform2/system_api/dbus/update_engine/update_engine.proto:Operation
+// Note: ERROR removed as it is not used by UpdateEngine - see crbug.com/977320
+enum OsUpdateOperation {
+  kIdle = 0,
+  kCheckingForUpdate = 1,
+  kUpdateAvailable = 2,
+  kDownloading = 3,
+  kVerifying = 4,
+  kFinalizing = 5,
+  kUpdatedNeedReboot = 6,
+  kReportingErrorEvent = 7,
+  kAttemptingRollback = 8,
+  kDisabled = 9,
+  kNeedPermissionToUpdate = 10,
 };
 
 // Device components
@@ -204,14 +229,15 @@ enum ComponentType {
   kWireless = 14,
 
   // Additional rmad components.
-  kGyroscope = 15,
-  kAccelerometer = 16,
-  kScreen = 17,
+  kScreen = 15,
+  kBaseAccelerometer = 16,
+  kLidAccelerometer = 17,
+  kGyroscope = 18,
 
   // Irrelevant components.
   // TODO(chenghan): Do we really need these?
-  kKeyboard = 18,
-  kPowerButton = 19,
+  kKeyboard = 19,
+  kPowerButton = 20,
 };
 
 // Component repair state
@@ -234,16 +260,6 @@ struct Component {
   ComponentRepairStatus state;
 };
 
-// This must remain in sync with
-// CalibrateComponentsState::CalibrateComponentsState in
-// //third_party/cros_system_api/dbus/rmad/rmad.proto.
-// See shimless_rma_mojom_traits.cc\h.
-enum CalibrationComponent {
-  kCalibrateUnknown = 0,
-  kAccelerometer = 1,
-  kGyroscope = 2,
-};
-
 // This must remain in sync with ProvisionDeviceState::ProvisioningStep in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
 // See shimless_rma_mojom_traits.cc\h.
@@ -260,13 +276,22 @@ interface ErrorObserver {
   OnError(RmadErrorCode error);
 };
 
+// Implemented by clients to track the progress of OS update.
+// The observer receives the current update operation and the progress in a
+// 0 - 1 range.
+interface OsUpdateObserver {
+  // OnOsUpdateProgressUpdated is called when the UpdateEngine sends a update
+  // status change signal.
+  OnOsUpdateProgressUpdated(OsUpdateOperation operation, float progress);
+};
+
 // Implemented by clients to track the progress of component calibration.
 // The observer receives the current component being calibrated and the
 // progress of all calibration in a 0 - 1 range.
 interface CalibrationObserver {
   // OnCalibrationUpdated is called whenever there is an update in the progress
   // of component calibration.
-  OnCalibrationUpdated(CalibrationComponent component, float progress);
+  OnCalibrationUpdated(ComponentType component, float progress);
 };
 
 // Implemented by clients to track the progress of device provisioning.
@@ -340,7 +365,7 @@ interface ShimlessRmaService {
   // Returns true if there is an OS update available, false otherwise.
   CheckForOsUpdates() => (bool update_available);
   // Attempts to start a Chrome OS update.
-  UpdateOs() => (RmaState state, RmadErrorCode error);
+  UpdateOs() => (bool update_started);
   // Skips OS update.
   UpdateOsSkipped() => (RmaState state, RmadErrorCode error);
 
@@ -416,6 +441,15 @@ interface ShimlessRmaService {
   ReimageFromUsb() => (RmaState state, RmadErrorCode error);
 
   ///////////////////////////////////////
+  // Methods for kRestock state.
+  //
+  // Shutdown the device so mainboard can be restocked.
+  // Note: This will only return a result if there is an error.
+  ShutdownForRestock() => (RmaState state, RmadErrorCode error);
+  // Continue RMA finalization after mainboard is used in another device.
+  ContinueFinalizationAfterRestock() => (RmaState state, RmadErrorCode error);
+
+  ///////////////////////////////////////
   // Methods for kUpdateDeviceInformation state.
   //
   // Get the list of OEM regions for this device.
@@ -453,6 +487,8 @@ interface ShimlessRmaService {
   // Registers an observer for any out of band error that occurs, such as a
   // calibration failure.
   ObserveError(pending_remote<ErrorObserver> observer);
+  // Registers an observer for updates on progress of OS update installation.
+  ObserveOsUpdateProgress(pending_remote<OsUpdateObserver> observer);
   // Registers an observer for updates on progress of component calibration.
   ObserveCalibrationProgress(pending_remote<CalibrationObserver> observer);
   // Registers an observer for updates on progress of device provisioning.

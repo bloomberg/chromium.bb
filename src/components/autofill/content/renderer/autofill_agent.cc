@@ -264,7 +264,7 @@ void AutofillAgent::DidCommitProvisionalLoad(ui::PageTransition transition) {
   SendPotentiallySubmittedFormToBrowser();
 }
 
-void AutofillAgent::DidFinishDocumentLoad() {
+void AutofillAgent::DidDispatchDOMContentLoadedEvent() {
   ProcessForms();
 }
 
@@ -822,10 +822,6 @@ void AutofillAgent::GetElementFormAndFieldDataAtIndex(
 
   FormData form;
   FormFieldData field;
-  if (base::FeatureList::IsEnabled(features::kAutofillAugmentFormsInRenderer)) {
-    form.host_frame = LocalFrameToken(frame->GetLocalFrameToken().value());
-    field.host_frame = LocalFrameToken(frame->GetLocalFrameToken().value());
-  }
 
   if (target_element.IsNull() || !target_element.IsFormControlElement()) {
     return std::move(callback).Run(form, field);
@@ -883,13 +879,6 @@ void AutofillAgent::QueryAutofillSuggestions(
           static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
                                    GetExtractDatalistMask()),
           &form, &field)) {
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillAugmentFormsInRenderer)) {
-      // |form| may be only partially initialized and may be sent to the browser
-      // in this state. Set at least the |host_frame| because sending an empty
-      // base::UnguessableToken is illegal.
-      form.host_frame = LocalFrameToken(frame->GetLocalFrameToken().value());
-    }
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(

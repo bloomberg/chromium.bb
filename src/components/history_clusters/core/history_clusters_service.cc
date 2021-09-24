@@ -80,6 +80,10 @@ class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
     // If for some reason this fails, fallback to 24 hours ago.
     if (!base::Time::FromLocalExploded(exploded_begin, &options_.begin_time))
       options_.begin_time = end_time - base::TimeDelta::FromDays(1);
+
+    // History Clusters wants a complete navigation graph and internally handles
+    // de-duplication.
+    options_.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
   }
 
   bool RunOnDBThread(history::HistoryBackend* backend,
@@ -205,7 +209,7 @@ bool DoesQueryMatchCluster(const query_parser::QueryNodeVector& find_nodes,
   }
 
   // Also extract all of the visits' URLs and titles into `find_in_words`.
-  for (const auto& visit : cluster.scored_annotated_visits) {
+  for (const auto& visit : cluster.visits) {
     GURL gurl = visit.annotated_visit.url_row.url();
 
     std::u16string url_lower =
@@ -260,7 +264,7 @@ std::vector<history::Cluster> SortClusters(
   // TODO(tommycli): Once cluster persistence is done, maybe we can eliminate
   //  this sort step, if they are stored in-order.
   for (auto& cluster : clusters) {
-    base::ranges::sort(cluster.scored_annotated_visits, [](auto& v1, auto& v2) {
+    base::ranges::sort(cluster.visits, [](auto& v1, auto& v2) {
       if (v1.score != v2.score) {
         // Use v1 > v2 to get higher scored visits BEFORE lower scored visits.
         return v1.score > v2.score;
@@ -278,14 +282,12 @@ std::vector<history::Cluster> SortClusters(
     // TODO(tommycli): If we can establish an invariant that no backend will
     //  ever return an empty cluster, we can simplify the below code.
     base::Time c1_time;
-    if (!c1.scored_annotated_visits.empty()) {
-      c1_time = c1.scored_annotated_visits.front()
-                    .annotated_visit.visit_row.visit_time;
+    if (!c1.visits.empty()) {
+      c1_time = c1.visits.front().annotated_visit.visit_row.visit_time;
     }
     base::Time c2_time;
-    if (!c1.scored_annotated_visits.empty()) {
-      c2_time = c2.scored_annotated_visits.front()
-                    .annotated_visit.visit_row.visit_time;
+    if (!c1.visits.empty()) {
+      c2_time = c2.visits.front().annotated_visit.visit_row.visit_time;
     }
 
     // Use c1 > c2 to get more recent clusters BEFORE older clusters.
@@ -314,6 +316,7 @@ std::string GetDebugJSONForVisits(
                           static_cast<int>(visit.visit_row.transition));
     debug_visit.SetIntKey("referringVisitId",
                           visit.referring_visit_of_redirect_chain_start);
+    debug_visit.SetIntKey("openerVisitId", visit.visit_row.opener_visit);
     debug_visits_list.Append(std::move(debug_visit));
   }
 
@@ -342,7 +345,7 @@ std::string GetDebugJSONForClusters(
     debug_cluster.SetKey("keywords", std::move(debug_keywords));
 
     base::ListValue debug_visits;
-    for (const auto& visit : cluster.scored_annotated_visits) {
+    for (const auto& visit : cluster.visits) {
       base::DictionaryValue debug_visit;
       debug_visit.SetIntKey("visit_id",
                             visit.annotated_visit.visit_row.visit_id);
@@ -533,19 +536,14 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
         &cache_query_task_tracker_);
   }
 
-  // Early exit for short queries after kicking off the populate request.
-  if (query.length() <= 3)
-    return false;
-
-  // Use `ALWAYS_PREFIX_SEARCH` to avoid flickering the omnibox when typing:
-  // "iron " (visible) to "iron s" (not visible) to "iron sto" (visible).
   query_parser::QueryNodeVector query_nodes;
   query_parser::QueryParser::ParseQueryNodes(
-      base::UTF8ToUTF16(query),
-      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH, &query_nodes);
+      base::UTF8ToUTF16(query), query_parser::MatchingAlgorithm::DEFAULT,
+      &query_nodes);
 
   return query_parser::QueryParser::DoesQueryMatch(all_keywords_cache_,
-                                                   query_nodes);
+                                                   query_nodes,
+                                                   /*exact=*/true);
 }
 
 void HistoryClustersService::PopulateClusterKeywordCache(

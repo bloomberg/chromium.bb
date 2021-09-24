@@ -262,6 +262,11 @@ void ReceiverSessionMessenger::OnMessage(const std::string& source_id,
     return;
   }
 
+  if (sender_message.value().type == SenderMessage::Type::kOffer ||
+      sender_message.value().type == SenderMessage::Type::kGetCapabilities) {
+    OSP_VLOG << "Received Message:\n" << message;
+  }
+
   auto it = callbacks_.find(sender_message.value().type);
   if (it == callbacks_.end()) {
     OSP_DLOG_INFO << "Received message without a callback, dropping";

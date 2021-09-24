@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -365,20 +366,45 @@ class MenuControllerTest : public ViewsTestBase,
   gfx::Rect CalculateMenuBounds(const MenuBoundsOptions& options) {
     SetUpMenuControllerForCalculateBounds(options);
     bool is_leading;
+    ui::OwnedWindowAnchor anchor;
     return menu_controller_->CalculateMenuBounds(menu_item_.get(), true,
-                                                 &is_leading);
+                                                 &is_leading, &anchor);
   }
 
   gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options,
                                       MenuItemView* menu_item) {
     SetUpMenuControllerForCalculateBounds(options);
     bool is_leading;
+    ui::OwnedWindowAnchor anchor;
     return menu_controller_->CalculateBubbleMenuBounds(menu_item, true,
-                                                       &is_leading);
+                                                       &is_leading, &anchor);
   }
 
   gfx::Rect CalculateBubbleMenuBounds(const MenuBoundsOptions& options) {
     return CalculateBubbleMenuBounds(options, menu_item_.get());
+  }
+
+  gfx::Rect CalculateExpectedMenuAnchorRect(MenuItemView* menu_item,
+                                            const gfx::Rect& item_bounds) {
+    if (menu_item->GetParentMenuItem()) {
+      gfx::Rect anchor_rect = item_bounds;
+      anchor_rect.set_size({1, 1});
+      const MenuConfig& menu_config = MenuConfig::instance();
+      const int submenu_horizontal_inset = menu_config.submenu_horizontal_inset;
+
+      const int left_of_parent = menu_item->GetBoundsInScreen().x() -
+                                 item_bounds.width() + submenu_horizontal_inset;
+
+      // TODO(1163646): handle RTL layout.
+      anchor_rect.set_x(left_of_parent + item_bounds.width());
+      anchor_rect.set_width(item_bounds.x() - anchor_rect.x());
+      return anchor_rect;
+    }
+    return menu_item->bounds();
+  }
+
+  void MenuChildrenChanged(MenuItemView* item) {
+    menu_controller_->MenuChildrenChanged(item);
   }
 
   static MenuAnchorPosition AdjustAnchorPositionForRtl(
@@ -1652,7 +1678,7 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   TestMenuDelegate* menu_delegate =
       static_cast<TestMenuDelegate*>(target->GetDelegate());
   TestMenuControllerDelegate* controller_delegate = menu_controller_delegate();
-  EXPECT_TRUE(menu_delegate->on_perform_drop_called());
+  EXPECT_TRUE(menu_delegate->is_drop_performed());
   EXPECT_FALSE(IsShowing());
   EXPECT_EQ(0, controller_delegate->on_menu_closed_called());
 }
@@ -1704,6 +1730,33 @@ TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
   submenu->Close();
   DestroyMenuItem();
   MenuHostOnDragComplete(host);
+}
+
+// Tests that getting the drop callback stops the menu from showing and
+// does not notify the controller.
+TEST_F(MenuControllerTest, AsycDropCallback) {
+  MenuController* controller = menu_controller();
+  SubmenuView* source = menu_item()->GetSubmenu();
+  MenuItemView* target = source->GetMenuItemAt(0);
+
+  SetDropMenuItem(target, MenuDelegate::DropPosition::kAfter);
+
+  ui::OSExchangeData drop_data;
+  gfx::PointF location(target->origin());
+  ui::DropTargetEvent target_event(drop_data, location, location,
+                                   ui::DragDropTypes::DRAG_MOVE);
+  auto drop_cb = controller->GetDropCallback(source, target_event);
+
+  TestMenuDelegate* menu_delegate =
+      static_cast<TestMenuDelegate*>(target->GetDelegate());
+  TestMenuControllerDelegate* controller_delegate = menu_controller_delegate();
+  EXPECT_FALSE(menu_delegate->is_drop_performed());
+  EXPECT_FALSE(IsShowing());
+  EXPECT_EQ(0, controller_delegate->on_menu_closed_called());
+
+  ui::mojom::DragOperation output_drag_op;
+  std::move(drop_cb).Run(target_event, output_drag_op);
+  EXPECT_TRUE(menu_delegate->is_drop_performed());
 }
 
 // Widget destruction and cleanup occurs on the MessageLoop after the
@@ -2736,6 +2789,20 @@ TEST_F(MenuControllerTest, ContextMenuInitializesAuraWindowWhenShown) {
   aura::Window* window = sub_menu->GetWidget()->GetNativeWindow();
   EXPECT_EQ(ui::MenuType::kRootContextMenu,
             window->GetProperty(aura::client::kMenuType));
+  ui::OwnedWindowAnchor* anchor =
+      window->GetProperty(aura::client::kOwnedWindowAnchor);
+  EXPECT_TRUE(anchor);
+  EXPECT_EQ(ui::OwnedWindowAnchorPosition::kBottomLeft,
+            anchor->anchor_position);
+  EXPECT_EQ(ui::OwnedWindowAnchorGravity::kBottomRight, anchor->anchor_gravity);
+  EXPECT_EQ((ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideX |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideY |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipY |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentRezizeY),
+            anchor->constraint_adjustment);
+  EXPECT_EQ(
+      CalculateExpectedMenuAnchorRect(menu_item(), window->GetBoundsInScreen()),
+      anchor->anchor_rect);
 
   // Checking that child menu properties are calculated correctly.
   MenuItemView* const child_menu = menu_item()->GetSubmenu()->GetMenuItemAt(0);
@@ -2748,8 +2815,19 @@ TEST_F(MenuControllerTest, ContextMenuInitializesAuraWindowWhenShown) {
   ASSERT_NE(nullptr, child_menu->GetWidget());
   window = child_menu->GetSubmenu()->GetWidget()->GetNativeWindow();
 
+  anchor = window->GetProperty(aura::client::kOwnedWindowAnchor);
+  EXPECT_TRUE(anchor);
   EXPECT_EQ(ui::MenuType::kChildMenu,
             window->GetProperty(aura::client::kMenuType));
+  EXPECT_EQ(ui::OwnedWindowAnchorPosition::kTopRight, anchor->anchor_position);
+  EXPECT_EQ(ui::OwnedWindowAnchorGravity::kBottomRight, anchor->anchor_gravity);
+  EXPECT_EQ((ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideY |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipX |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentRezizeY),
+            anchor->constraint_adjustment);
+  EXPECT_EQ(
+      CalculateExpectedMenuAnchorRect(child_menu, window->GetBoundsInScreen()),
+      anchor->anchor_rect);
 }
 
 // Tests that |aura::Window| has the correct properties when a root or a child
@@ -2763,8 +2841,21 @@ TEST_F(MenuControllerTest, RootAndChildMenusInitializeAuraWindowWhenShown) {
   OpenMenu(menu_item());
 
   aura::Window* window = sub_menu->GetWidget()->GetNativeWindow();
+  ui::OwnedWindowAnchor* anchor =
+      window->GetProperty(aura::client::kOwnedWindowAnchor);
+  EXPECT_TRUE(anchor);
   EXPECT_EQ(ui::MenuType::kRootMenu,
             window->GetProperty(aura::client::kMenuType));
+  EXPECT_EQ(ui::OwnedWindowAnchorPosition::kBottomLeft,
+            anchor->anchor_position);
+  EXPECT_EQ(ui::OwnedWindowAnchorGravity::kBottomRight, anchor->anchor_gravity);
+  EXPECT_EQ((ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideX |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipY |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentRezizeY),
+            anchor->constraint_adjustment);
+  EXPECT_EQ(
+      CalculateExpectedMenuAnchorRect(menu_item(), window->GetBoundsInScreen()),
+      anchor->anchor_rect);
 
   // Checking that child menu properties are calculated correctly.
   MenuItemView* const child_menu = menu_item()->GetSubmenu()->GetMenuItemAt(0);
@@ -2777,8 +2868,32 @@ TEST_F(MenuControllerTest, RootAndChildMenusInitializeAuraWindowWhenShown) {
   ASSERT_NE(nullptr, child_menu->GetWidget());
   window = child_menu->GetSubmenu()->GetWidget()->GetNativeWindow();
 
+  anchor = window->GetProperty(aura::client::kOwnedWindowAnchor);
+  EXPECT_TRUE(anchor);
   EXPECT_EQ(ui::MenuType::kChildMenu,
             window->GetProperty(aura::client::kMenuType));
+  EXPECT_EQ(ui::OwnedWindowAnchorPosition::kTopRight, anchor->anchor_position);
+  EXPECT_EQ(ui::OwnedWindowAnchorGravity::kBottomRight, anchor->anchor_gravity);
+  EXPECT_EQ((ui::OwnedWindowConstraintAdjustment::kAdjustmentSlideY |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipX |
+             ui::OwnedWindowConstraintAdjustment::kAdjustmentRezizeY),
+            anchor->constraint_adjustment);
+  auto anchor_rect = anchor->anchor_rect;
+  EXPECT_EQ(
+      CalculateExpectedMenuAnchorRect(child_menu, window->GetBoundsInScreen()),
+      anchor->anchor_rect);
+
+  // Try to reposition the existing menu. Its anchor must change.
+  child_menu->SetY(menu_item()->bounds().y() + 2);
+  menu_controller()->Run(owner(), nullptr, child_menu, child_menu->bounds(),
+                         MenuAnchorPosition::kTopLeft, false, false);
+  MenuChildrenChanged(child_menu);
+
+  EXPECT_EQ(
+      CalculateExpectedMenuAnchorRect(child_menu, window->GetBoundsInScreen()),
+      anchor->anchor_rect);
+  // New anchor mustn't be the same as the old one.
+  EXPECT_NE(anchor->anchor_rect, anchor_rect);
 }
 
 #endif  // defined(USE_AURA)

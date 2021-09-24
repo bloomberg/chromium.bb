@@ -241,11 +241,8 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   unsigned bitfields_;
   unsigned bitfields2_;
   unsigned bitfields3_;
-  void* pointers[4];
-  Member<void*> members[1];
-  // The following fields are in FragmentData.
-  PhysicalOffset paint_offset_;
-  std::unique_ptr<int> rare_data_;
+  void* pointers[1];
+  Member<void*> members[5];
 #if DCHECK_IS_ON()
   bool is_destroyed_;
 #endif
@@ -254,17 +251,6 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
 ASSERT_SIZE(LayoutObject, SameSizeAsLayoutObject);
 
 bool LayoutObject::affects_parent_block_ = false;
-
-void* LayoutObject::operator new(size_t sz) {
-  DCHECK(IsMainThread());
-  return WTF::Partitions::LayoutPartition()->Alloc(
-      sz, WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
-}
-
-void LayoutObject::operator delete(void* ptr) {
-  DCHECK(IsMainThread());
-  WTF::Partitions::LayoutPartition()->Free(ptr);
-}
 
 LayoutObject* LayoutObject::CreateObject(Element* element,
                                          const ComputedStyle& style,
@@ -277,7 +263,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
   // feature.
   const ContentData* content_data = style.GetContentData();
   if (!element->IsPseudoElement() && ShouldUseContentData(content_data)) {
-    LayoutImage* image = new LayoutImage(element);
+    LayoutImage* image = MakeGarbageCollected<LayoutImage>(element);
     // LayoutImageResourceStyleImage requires a style being present on the
     // image but we don't want to trigger a style change now as the node is
     // not fully attached. Moving this code to style change doesn't make sense
@@ -303,7 +289,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kContents:
       return nullptr;
     case EDisplay::kInline:
-      return new LayoutInline(element);
+      return MakeGarbageCollected<LayoutInline>(element);
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
@@ -346,7 +332,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
       DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
-      return new LayoutNGCustom(element);
+      return MakeGarbageCollected<LayoutNGCustom>(element);
   }
 
   NOTREACHED();
@@ -365,21 +351,27 @@ LayoutObject::LayoutObject(Node* node)
       node_(node),
       parent_(nullptr),
       previous_(nullptr),
-      next_(nullptr) {
+      next_(nullptr),
+      fragment_(MakeGarbageCollected<FragmentData>()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kLayoutObjectCounter);
   if (node_)
     GetFrameView()->IncrementLayoutObjectCount();
 }
 
 LayoutObject::~LayoutObject() {
+  DCHECK(bitfields_.BeingDestroyed());
 #if DCHECK_IS_ON()
-  DCHECK(!has_ax_object_);
-  DCHECK(BeingDestroyed());
+  DCHECK(is_destroyed_);
 #endif
   InstanceCounters::DecrementCounter(InstanceCounters::kLayoutObjectCounter);
-#if DCHECK_IS_ON()
-  is_destroyed_ = true;
-#endif
+}
+
+void LayoutObject::Trace(Visitor* visitor) const {
+  visitor->Trace(node_);
+  visitor->Trace(parent_);
+  visitor->Trace(previous_);
+  visitor->Trace(next_);
+  visitor->Trace(fragment_);
 }
 
 bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
@@ -721,6 +713,12 @@ bool LayoutObject::IsListMarkerForSummary() const {
     return name == "disclosure-open" || name == "disclosure-closed";
   }
   return false;
+}
+
+bool LayoutObject::IsInListMarker() const {
+  // List markers are either leaf nodes (legacy LayoutListMarker), or have
+  // exactly one leaf child. So there's no need to traverse ancestors.
+  return Parent() && Parent()->IsListMarkerIncludingAll();
 }
 
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren() const {
@@ -1139,6 +1137,11 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
       return false;
   }
 
+  // MathML subtrees can't be relayout roots because of the embellished operator
+  // and space-like logic.
+  if (object->IsMathML() && !object->IsMathMLRoot())
+    return false;
+
   if (object->ShouldApplyLayoutContainment() &&
       object->ShouldApplySizeContainment()) {
     return true;
@@ -1196,7 +1199,7 @@ void LayoutObject::SetNeedsCollectInlines() {
   if (NeedsCollectInlines())
     return;
 
-  if (UNLIKELY(IsSVGChild()))
+  if (UNLIKELY(IsSVGChild() && !IsNGSVGText() && !IsSVGInline()))
     return;
 
   // Don't mark |LayoutFlowThread| because |CollectInlines()| skips them.
@@ -2656,14 +2659,15 @@ void LayoutObject::UpdateFirstLineImageObservers(
       !has_new_first_line_style)
     return;
 
-  using FirstLineStyleMap =
-      HashMap<const LayoutObject*, scoped_refptr<const ComputedStyle>>;
-  DEFINE_STATIC_LOCAL(FirstLineStyleMap, first_line_style_map, ());
+  using FirstLineStyleMap = HeapHashMap<WeakMember<const LayoutObject>,
+                                        scoped_refptr<const ComputedStyle>>;
+  DEFINE_STATIC_LOCAL(Persistent<FirstLineStyleMap>, first_line_style_map,
+                      (MakeGarbageCollected<FirstLineStyleMap>()));
   DCHECK_EQ(bitfields_.RegisteredAsFirstLineImageObserver(),
-            first_line_style_map.Contains(this));
+            first_line_style_map->Contains(this));
   const auto* old_first_line_style =
       bitfields_.RegisteredAsFirstLineImageObserver()
-          ? first_line_style_map.at(this)
+          ? first_line_style_map->at(this)
           : nullptr;
 
   // UpdateFillImages() may indirectly call LayoutBlock::ImageChanged() which
@@ -2690,13 +2694,13 @@ void LayoutObject::UpdateFirstLineImageObservers(
           &FirstLineStyleWithoutFallback()->BackgroundLayers()));
       new_first_line_style = FirstLineStyleWithoutFallback();
       bitfields_.SetRegisteredAsFirstLineImageObserver(true);
-      first_line_style_map.Set(this, std::move(new_first_line_style));
+      first_line_style_map->Set(this, std::move(new_first_line_style));
     } else {
       bitfields_.SetRegisteredAsFirstLineImageObserver(false);
-      first_line_style_map.erase(this);
+      first_line_style_map->erase(this);
     }
     DCHECK_EQ(bitfields_.RegisteredAsFirstLineImageObserver(),
-              first_line_style_map.Contains(this));
+              first_line_style_map->Contains(this));
   }
 }
 
@@ -3043,8 +3047,16 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       new_style->SetPosition(child->StyleRef().GetPosition());
 
     if (UNLIKELY(IsA<LayoutNGTextCombine>(child))) {
-      // "text-combine-width-after-style-change.html" reaches here.
-      StyleAdjuster::AdjustStyleForTextCombine(*new_style);
+      if (new_style->IsHorizontalWritingMode()) {
+        // |LayoutNGTextCombine| will be removed when recalculating style for
+        // <br> or <wbr>.
+        // See StyleToHorizontalWritingModeWithWordBreak
+        DCHECK(child->SlowFirstChild()->IsBR() ||
+               To<LayoutText>(child->SlowFirstChild())->IsWordBreak());
+      } else {
+        // "text-combine-width-after-style-change.html" reaches here.
+        StyleAdjuster::AdjustStyleForTextCombine(*new_style);
+      }
     }
 
     UpdateAnonymousChildStyle(child, *new_style);
@@ -4013,12 +4025,10 @@ void LayoutObject::Destroy() {
   // other house keepings.
   bitfields_.SetBeingDestroyed(true);
   WillBeDestroyed();
-  DeleteThis();
-}
-
-void LayoutObject::DeleteThis() {
-  NOT_DESTROYED();
-  delete this;
+#if DCHECK_IS_ON()
+  DCHECK(!has_ax_object_);
+  is_destroyed_ = true;
+#endif
 }
 
 PositionWithAffinity LayoutObject::PositionForPoint(
@@ -4902,7 +4912,7 @@ bool LayoutObject::CanBeSelectionLeaf() const {
 void LayoutObject::InvalidateClipPathCache() {
   NOT_DESTROYED();
   SetNeedsPaintPropertyUpdate();
-  for (auto* fragment = &fragment_; fragment;
+  for (FragmentData* fragment = fragment_; fragment;
        fragment = fragment->NextFragment())
     fragment->InvalidateClipPathCache();
 }

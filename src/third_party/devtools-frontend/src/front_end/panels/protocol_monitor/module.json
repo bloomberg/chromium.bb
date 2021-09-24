@@ -1,10 +1,6 @@
 {
   "dependencies": [
     "ui/legacy",
-    "ui/legacy/components/utils",
     "ui/legacy/components/source_frame"
-  ],
-  "resources": [
-    "protocolMonitor.css"
   ]
 }

@@ -14,10 +14,12 @@ PRESUBMIT_VERSION = '2.0.0'
 USE_PYTHON3 = True
 
 _EXCLUDED_PATHS = (
+    # File needs to write to stdout to emulate a tool it's replacing.
+    r"chrome[\\/]updater[\\/]mac[\\/]ks_admin[\\/]ks_admin.mm",
     # Generated file.
     (r"^components[\\/]variations[\\/]proto[\\/]devtools[\\/]"
      r"client_variations.js"),
-    r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_rules.py",
+    r"^native_client_sdksrc[\\/]build_tools[\\/]make_rules.py",
     r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_simple.py",
     r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",
     r"^net[\\/]tools[\\/]spdyshark[\\/].*",
@@ -2259,8 +2261,8 @@ def CheckSpamLogging(input_api, output_api):
                     r"^courgette[\\/]courgette_minimal_tool\.cc$",
                     r"^courgette[\\/]courgette_tool\.cc$",
                     r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
+                    r"^fuchsia[\\/]base[\\/]init_logging.cc$",
                     r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
-                    r"^fuchsia[\\/]engine[\\/]context_provider_main.cc$",
                     r"^fuchsia[\\/]runners[\\/]common[\\/]web_component.cc$",
                     r"^headless[\\/]app[\\/]headless_shell\.cc$",
                     r"^ipc[\\/]ipc_logging\.cc$",
@@ -2685,7 +2687,6 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       'third_party/blink/renderer/platform/bindings/*',
       'third_party/protobuf/benchmarks/python/*',
       'third_party/win_build_output/*',
-      'third_party/feed_library/*',
       # These files are just used to communicate between class loaders running
       # in the same process.
       'weblayer/browser/java/org/chromium/weblayer_private/interfaces/*',

@@ -26,8 +26,10 @@ class NetworkTrayView;
 class TimeTrayItemView;
 }  // namespace tray
 
+class AshMessagePopupCollection;
 class CurrentLocaleView;
 class ImeModeView;
+class HpsNotifyView;
 class ManagedDeviceTrayItemView;
 class NotificationIconsController;
 class PrivacyScreenToastController;
@@ -160,6 +162,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
 
   std::u16string GetAccessibleNameForQuickSettingsBubble();
 
+  AshMessagePopupCollection* GetMessagePopupCollection();
+
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
@@ -170,6 +174,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
  private:
   static const base::TimeDelta kNotificationCountUpdateDelay;
 
+  friend class NotificationGroupingControllerTest;
   friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayTest;
 
@@ -209,6 +214,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   const std::unique_ptr<NotificationIconsController>
       notification_icons_controller_;
 
+  HpsNotifyView* const hps_notify_view_;
   CurrentLocaleView* const current_locale_view_;
   ImeModeView* const ime_mode_view_;
   ManagedDeviceTrayItemView* const managed_device_view_;

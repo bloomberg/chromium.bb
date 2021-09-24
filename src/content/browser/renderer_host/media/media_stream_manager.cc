@@ -74,7 +74,9 @@
 #include "media/capture/video/video_capture_system_impl.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/common/switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -451,6 +453,26 @@ void FinalizeGetMediaDeviceIDForHMAC(
                         base::BindOnce(std::move(callback), absl::nullopt));
 }
 
+#if !defined(OS_ANDROID)
+base::TimeDelta GetConditionalFocusWindow() {
+  const std::string custom_window =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          blink::switches::kConditionalFocusWindowMs);
+
+  if (!custom_window.empty()) {
+    int64_t ms;
+    if (base::StringToInt64(custom_window, &ms) && ms >= 0) {
+      return base::TimeDelta::FromMilliseconds(ms);
+    } else {
+      LOG(ERROR) << "Could not parse custom conditional focus window.";
+    }
+  }
+
+  // If this value is changed, some of the histograms associated with
+  // Conditional Focus should also change.
+  return base::TimeDelta::FromSeconds(1);
+}
+#endif
 }  // namespace
 
 // MediaStreamManager::DeviceRequest represents a request to either enumerate
@@ -724,7 +746,11 @@ MediaStreamManager::MediaStreamManager(
     media::AudioSystem* audio_system,
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
-    : audio_system_(audio_system) {
+    :
+#if !defined(OS_ANDROID)
+      conditional_focus_window_(GetConditionalFocusWindow()),
+#endif
+      audio_system_(audio_system) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
     fake_ui_factory_ = base::BindRepeating([] {
@@ -869,7 +895,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
       blink::MEDIA_DEVICE_ACCESS, controls,
       MediaDeviceSaltAndOrigin{std::string() /* salt */,
                                std::string() /* group_id_salt */,
-                               security_origin});
+                               security_origin, true /* has_focus */});
 
   request->media_access_request_cb = std::move(callback);
   const std::string& label = AddRequest(std::move(request));
@@ -1866,6 +1892,26 @@ void MediaStreamManager::PanTiltZoomPermissionChecked(
       .Run(MediaStreamRequestResult::OK, label, audio_devices, video_devices,
            pan_tilt_zoom_allowed);
 
+#if !defined(OS_ANDROID)
+  // 1. Only the first call to SetCapturedDisplaySurfaceFocus() has an
+  //    effect, so a direct call to SetCapturedDisplaySurfaceFocus()
+  //    before the scheduled task is executed would render the scheduled
+  //    task ineffectual (by design).
+  //    If conditional-focus is enabled in Blink, the application might
+  //    suppress this focus-change by calling focus(false). Otherwise,
+  //    either this following task changes focus in 1s, or the microtask
+  //    that Blink schedules does so even sooner.
+  // 2. Using base::Unretained is safe since MediaStreamManager is deleted on
+  //    the UI thread, after the IO thread has been stopped.
+  GetIOThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&MediaStreamManager::SetCapturedDisplaySurfaceFocus,
+                     base::Unretained(this), label, /*focus=*/true,
+                     /*is_from_microtask=*/false,
+                     /*is_from_timer=*/true),
+      conditional_focus_window_);
+#endif
+
   // We only start tracking once stream generation is truly complete.
   // If the CaptureHandle observable by this capturer has changed asynchronously
   // while the current task was hopping between threads/queues, an event will
@@ -2740,6 +2786,45 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
                             base::Unretained(this), label));
   }
 }
+
+#if !defined(OS_ANDROID)
+void MediaStreamManager::SetCapturedDisplaySurfaceFocus(
+    const std::string& label,
+    bool focus,
+    bool is_from_microtask,
+    bool is_from_timer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DeviceRequest* const request = FindRequest(label);
+  if (!request) {
+    return;
+  }
+
+  if (!request->ui_proxy) {
+    return;
+  }
+
+  DesktopMediaID media_id;
+  for (const auto& device : request->devices) {
+    if (blink::IsVideoInputMediaType(device.type)) {
+      media_id = DesktopMediaID::Parse(device.id);
+      break;
+    }
+  }
+
+  if (media_id.is_null()) {
+    return;
+  }
+
+  if (media_id.type != DesktopMediaID::Type::TYPE_WEB_CONTENTS &&
+      media_id.type != DesktopMediaID::Type::TYPE_WINDOW) {
+    return;  // Video device not focus-able.
+  }
+
+  request->ui_proxy->SetFocus(media_id, focus, is_from_microtask,
+                              is_from_timer);
+}
+#endif
 
 // static
 PermissionControllerImpl* MediaStreamManager::GetPermissionController(

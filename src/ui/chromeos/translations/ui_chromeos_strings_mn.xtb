@@ -95,7 +95,6 @@
 <translation id="1810764548349082891">Урьдчилан харах боломжгүй</translation>
 <translation id="1812302367230252929">Амхар галиг</translation>
 <translation id="1813278315230285598">Үйлчилгээ</translation>
-<translation id="1815861158988915678"><ph name="BEGIN_BOLD" /> Анхааруулга:<ph name="END_BOLD" /> Эдгээр файлууд нь түр зуурынх бөгөөд дискний зайг чөлөөлөх зорилгоор автоматаар устгагдаж болно. <ph name="BEGIN_LINK" /> Илүү ихийг мэдэж аваарай<ph name="END_LINK" /></translation>
 <translation id="1829129547161959350">Пенгвин</translation>
 <translation id="183183971458492120">Мэдээллийг ачаалж байна...</translation>
 <translation id="1834290891154666894">Субъектийн хоёрдогч нэрийн тохирлын оруулга буруу байна</translation>
@@ -225,6 +224,7 @@
 <translation id="299638574917407533">Франц (Канад)</translation>
 <translation id="3003189754374775221">Сүлжээ <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, дохионы хүч<ph name="SIGNAL_STRENGTH" />%, холбогдох</translation>
 <translation id="3003633581067744647">Өнгөц зургаар харах горим руу сэлгэх</translation>
+<translation id="3016566519832145558">Анхааруулга: Эдгээр файл нь түр зуурын файлууд бөгөөд дискийн зайг чөлөөлөхийн тулд автоматаар устгаж болно.</translation>
 <translation id="3029114385395636667">Докс, Хүснэгт, Үзүүлэнг офлайнаар боломжтой болгохын тулд Google Докс Офлайныг идэвхжүүлнэ үү.</translation>
 <translation id="303198083543495566">Газар зүй</translation>
 <translation id="3047197340186497470">Хятад даи</translation>
@@ -287,6 +287,7 @@
 <translation id="3549797760399244642">drive.google.com руу очно уу...</translation>
 <translation id="3553048479571901246">Файлуудыг <ph name="APP_NAME" />-р нээхийн тулд эхлээд тэдгээрийг Windows-н файлын фолдерт хуулна уу.</translation>
 <translation id="3556731189587832921">Олон улсын компьютерын гартай англи (АНУ)</translation>
+<translation id="3567221313191587603">Файлууддаа офлайнаар хандахын тулд файл сонгож, <ph name="OFFLINE_CHECKBOX_NAME" />-г асаана уу.</translation>
 <translation id="357479282490346887">Литви</translation>
 <translation id="3592251141500063301"><ph name="FILE_NAME" />-г офлайнаар ашиглах боломжтой болгож чадсангүй</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
@@ -397,6 +398,7 @@
 <translation id="4642769377300286600">Мобайл профайлыг суулгаж байна, Сүлжээ <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">Qwerty гартай чех</translation>
 <translation id="4656293982926141856">Энэ компьютер</translation>
+<translation id="4656777537938206294">Файлуудыг офлайн үед ашиглах боломжтой болгох</translation>
 <translation id="4669606053856530811">Эдгээр зүйлийг '<ph name="SOURCE_NAME" />'-н гишүүдтэй хуваалцаагүй тохиолдолд тус гишүүд хандах боломжгүй.</translation>
 <translation id="4690246192099372265">Швед</translation>
 <translation id="4693155481716051732">Сүши</translation>
@@ -577,6 +579,7 @@
 <translation id="6146563240635539929">Видео</translation>
 <translation id="6150853954427645995">Энэ файлыг интернетэд холбогдоогүй байхдаа ашиглахаар хадгалахын тулд интернетэд холбогдсоныхоо дараагаар холбогдох файл дээр очин хулганын баруун талд даран <ph name="OFFLINE_CHECKBOX_NAME" /> сонголтыг сонгоно уу.</translation>
 <translation id="6164412158936057769">Эрвээхий</translation>
+<translation id="6165508094623778733">Нэмэлт мэдээлэл авах</translation>
 <translation id="6170470584681422115">Сэндвич</translation>
 <translation id="6187719147498869044">Унгар</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" />-р нээх</translation>
@@ -927,6 +930,7 @@
 <translation id="943972244133411984">Өөрчилсөн</translation>
 <translation id="945522503751344254">Санал хүсэлт илгээх</translation>
 <translation id="947144732524271678"><ph name="FROM_ENTRY_NAME" />-с <ph name="TO_ENTRY_NAME" /> хүртэлх <ph name="ENTRY_COUNT" /> оролтын мужийг сонгосон.</translation>
+<translation id="965477715979482472">Англи хэл (Өмнөд Африк)</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">"<ph name="FILE_NAME" />" нэртэй файл аль хэдийн байна. Та үүнийг солих уу?</translation>
 <translation id="992401651319295351">Танд <ph name="RETRIES" /> оролдлого үлдлээ. Та шинэ ПИН тохируулах хүртлээ энэ сүлжээг ашиглах боломжгүй байх болно.</translation>

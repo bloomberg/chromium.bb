@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
@@ -32,13 +33,13 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_otp_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_instrument.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_federatedidentityprovider_string.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_htmlformelement_passwordcredentialdata.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -60,7 +61,6 @@
 #include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/otp_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
-#include "third_party/blink/renderer/modules/credentialmanager/payment_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -85,21 +85,17 @@ using mojom::blink::CredentialInfo;
 using mojom::blink::CredentialInfoPtr;
 using mojom::blink::CredentialManagerError;
 using mojom::blink::CredentialMediationRequirement;
+using mojom::blink::PaymentCredentialInstrument;
 using MojoPublicKeyCredentialCreationOptions =
     mojom::blink::PublicKeyCredentialCreationOptions;
 using mojom::blink::MakeCredentialAuthenticatorResponsePtr;
 using MojoPublicKeyCredentialRequestOptions =
     mojom::blink::PublicKeyCredentialRequestOptions;
 using mojom::blink::GetAssertionAuthenticatorResponsePtr;
-using payments::mojom::blink::PaymentCredentialInstrument;
 using payments::mojom::blink::PaymentCredentialStorageStatus;
-using payments::mojom::blink::PaymentCredentialUserPromptStatus;
 
 constexpr char kCryptotokenOrigin[] =
     "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
-
-static constexpr int kCoseEs256 = -7;
-static constexpr int kCoseRs256 = -257;
 
 // RequiredOriginType enumerates the requirements on the environment to perform
 // an operation.
@@ -119,6 +115,8 @@ enum class RequiredOriginType {
   kSecureAndPermittedByWebAuthGetAssertionPermissionsPolicy,
   // Similar to the enum above, checks the "otp-credentials" permissions policy.
   kSecureAndPermittedByWebOTPAssertionPermissionsPolicy,
+  // Must be a secure origin with allowed payment permission policy.
+  kSecureWithPaymentPermissionPolicy,
 };
 
 bool IsSameOriginWithAncestors(const Frame* frame) {
@@ -238,6 +236,18 @@ bool CheckSecurityRequirementsBeforeRequest(
         return false;
       }
       break;
+
+    case RequiredOriginType::kSecureWithPaymentPermissionPolicy:
+      if (!resolver->GetExecutionContext()->IsFeatureEnabled(
+              mojom::blink::PermissionsPolicyFeature::kPayment)) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNotSupportedError,
+            "The 'payment' feature is not enabled in this document. "
+            "Permissions Policy may be used to delegate Web Payment "
+            "capabilities to cross-origin child frames."));
+        return false;
+      }
+      break;
   }
 
   return true;
@@ -277,6 +287,11 @@ void AssertSecurityRequirementsBeforeResponse(
           resolver->GetExecutionContext()->IsFeatureEnabled(
               mojom::blink::PermissionsPolicyFeature::kOTPCredentials) &&
           IsAncestorChainValidForWebOTP(resolver->DomWindow()->GetFrame()));
+      break;
+
+    case RequiredOriginType::kSecureWithPaymentPermissionPolicy:
+      SECURITY_CHECK(resolver->GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::PermissionsPolicyFeature::kPayment));
       break;
   }
 }
@@ -577,6 +592,15 @@ void OnMakePublicKeyCredentialComplete(
       credential->info->id, raw_id, authenticator_response, extension_outputs));
 }
 
+bool IsForPayment(const CredentialCreationOptions* options,
+                  ExecutionContext* context) {
+  return RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
+         options->hasPublicKey() && options->publicKey()->hasExtensions() &&
+         options->publicKey()->extensions()->hasPayment() &&
+         options->publicKey()->extensions()->payment()->hasIsPayment() &&
+         options->publicKey()->extensions()->payment()->isPayment();
+}
+
 void OnSaveCredentialIdForPaymentExtension(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
     MakeCredentialAuthenticatorResponsePtr credential,
@@ -597,7 +621,8 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
     AuthenticatorStatus status,
     MakeCredentialAuthenticatorResponsePtr credential) {
   auto* resolver = scoped_resolver->Release();
-  const auto required_origin_type = RequiredOriginType::kSecure;
+  const auto required_origin_type =
+      RequiredOriginType::kSecureWithPaymentPermissionPolicy;
 
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status != AuthenticatorStatus::SUCCESS) {
@@ -611,8 +636,7 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
   auto* payment_credential_remote =
       CredentialManagerProxy::From(resolver->GetScriptState())
           ->PaymentCredential();
-  payment_credential_remote->StorePaymentCredentialAndHideUserPrompt(
-      PaymentCredentialInstrument::New(/*display_name=*/"", /*icon=*/KURL()),
+  payment_credential_remote->StorePaymentCredential(
       std::move(credential_id), rp_id_for_payment_extension,
       WTF::Bind(&OnSaveCredentialIdForPaymentExtension,
                 std::make_unique<ScopedPromiseResolver>(resolver),
@@ -724,280 +748,6 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
   resolver->Resolve(MakeGarbageCollected<OTPCredential>(otp));
 }
 
-void OnPaymentCredentialCreationComplete(
-    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-    MakeCredentialAuthenticatorResponsePtr credential,
-    PaymentCredentialStorageStatus status) {
-  auto* resolver = scoped_resolver->Release();
-
-  if (status == PaymentCredentialStorageStatus::FAILED_TO_STORE_INSTRUMENT) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kUnknownError,
-        "Failed to store payment instrument."));
-    return;
-  }
-  DCHECK(status == PaymentCredentialStorageStatus::SUCCESS);
-
-  DOMArrayBuffer* client_data_buffer =
-      VectorToDOMArrayBuffer(std::move(credential->info->client_data_json));
-  DOMArrayBuffer* raw_id =
-      VectorToDOMArrayBuffer(std::move(credential->info->raw_id));
-  DOMArrayBuffer* attestation_buffer =
-      VectorToDOMArrayBuffer(std::move(credential->attestation_object));
-  DOMArrayBuffer* authenticator_data =
-      VectorToDOMArrayBuffer(std::move(credential->info->authenticator_data));
-  DOMArrayBuffer* public_key_der = nullptr;
-  if (credential->public_key_der) {
-    public_key_der =
-        VectorToDOMArrayBuffer(std::move(credential->public_key_der.value()));
-  }
-  auto* authenticator_response =
-      MakeGarbageCollected<AuthenticatorAttestationResponse>(
-          client_data_buffer, attestation_buffer, credential->transports,
-          authenticator_data, public_key_der, credential->public_key_algo);
-
-  resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
-      credential->info->id, raw_id, authenticator_response,
-      AuthenticationExtensionsClientOutputs::Create()));
-}
-
-void OnPaymentCredentialCreationFailure(
-    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-    AuthenticatorStatus status) {
-  auto* resolver = scoped_resolver->Release();
-  resolver->Reject(CredentialManagerErrorToDOMException(
-      mojo::ConvertTo<CredentialManagerError>(status)));
-}
-
-void OnMakePublicKeyCredentialForPaymentComplete(
-    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-    const PaymentCredentialCreationOptions* options,
-    AuthenticatorStatus status,
-    MakeCredentialAuthenticatorResponsePtr credential) {
-  auto* resolver = scoped_resolver->Release();
-  const auto required_origin_type = RequiredOriginType::kSecure;
-
-  AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
-  auto* payment_credential_remote =
-      CredentialManagerProxy::From(resolver->GetScriptState())
-          ->PaymentCredential();
-  if (status == AuthenticatorStatus::SUCCESS) {
-    DCHECK(credential);
-    DCHECK(!credential->info->client_data_json.IsEmpty());
-    DCHECK(!credential->attestation_object.IsEmpty());
-
-    auto credential_id = credential->info->raw_id;
-    payment_credential_remote->StorePaymentCredentialAndHideUserPrompt(
-        PaymentCredentialInstrument::New(options->instrument()->displayName(),
-                                         KURL(options->instrument()->icon())),
-        credential_id, options->rp()->id(),
-        WTF::Bind(&OnPaymentCredentialCreationComplete,
-                  std::make_unique<ScopedPromiseResolver>(resolver),
-                  std::move(credential)));
-  } else {
-    DCHECK(!credential);
-    payment_credential_remote->HideUserPrompt(
-        WTF::Bind(&OnPaymentCredentialCreationFailure,
-                  std::make_unique<ScopedPromiseResolver>(resolver), status));
-  }
-}
-
-void DidDownloadPaymentCredentialIconAndShowUserPrompt(
-    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-    mojom::blink::PublicKeyCredentialCreationOptionsPtr mojo_options,
-    const PaymentCredentialCreationOptions* options,
-    PaymentCredentialUserPromptStatus status) {
-  auto* resolver = scoped_resolver->Release();
-  if (status == PaymentCredentialUserPromptStatus::FAILED_TO_DOWNLOAD_ICON) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNetworkError,
-        "Unable to download payment instrument icon."));
-    return;
-  }
-  if (status == PaymentCredentialUserPromptStatus::USER_CANCEL_FROM_UI) {
-    resolver->Reject(
-        CredentialManagerErrorToDOMException(CredentialManagerError::ABORT));
-    return;
-  }
-  DCHECK(status == PaymentCredentialUserPromptStatus::USER_CONFIRM_FROM_UI);
-
-  auto* authenticator =
-      CredentialManagerProxy::From(resolver->GetScriptState())->Authenticator();
-  authenticator->MakeCredential(
-      std::move(mojo_options),
-      WTF::Bind(&OnMakePublicKeyCredentialForPaymentComplete,
-                std::make_unique<ScopedPromiseResolver>(resolver),
-                WrapPersistent(options)));
-}
-
-void OnIsUserVerifyingPlatformAuthenticatorAvailableForPaymentCredentialCreate(
-    const PaymentCredentialCreationOptions* options,
-    std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-    bool is_available) {
-  // TODO(kenrb): Much of this could eventually be deduplicated with the
-  // PublicKeyCredential handling code in CredentialsContainer::create(), but
-  // it is preferable to keep these separate during the experimentation stage
-  // for SecurePaymentConfirmation because this is subject to a lot of change
-  // and possibly removal.
-
-  auto* resolver = scoped_resolver->Release();
-  if (!options->rp() || !options->rp()->hasId() || !options->instrument() ||
-      !options->instrument()->displayName() || !options->instrument()->icon()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "Required parameters missing in `options.payment`."));
-    return;
-  }
-
-  if (!IsArrayBufferOrViewBelowSizeLimit(options->challenge())) {
-    resolver->Reject(DOMException::Create(
-        "The `challenge` attribute exceeds the maximum allowed size.",
-        "RangeError"));
-    return;
-  }
-
-  auto mojo_options = mojom::blink::PublicKeyCredentialCreationOptions::New();
-  mojo_options->relying_party =
-      mojom::blink::PublicKeyCredentialRpEntity::From(*options->rp());
-  mojo_options->challenge =
-      mojo::ConvertTo<Vector<uint8_t>>(options->challenge());
-
-  if (!RuntimeEnabledFeatures::SecurePaymentConfirmationDebugEnabled()) {
-    // PaymentCredentials is only supported with user-verifying authenticators.
-    if (!is_available) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotAllowedError,
-          "A user verifying platform authenticator is required for payments.",
-          "NotAllowedError"));
-      return;
-    }
-
-    auto selection_criteria =
-        mojom::blink::AuthenticatorSelectionCriteria::New();
-    selection_criteria->authenticator_attachment =
-        mojom::blink::AuthenticatorAttachment::PLATFORM;
-    selection_criteria->resident_key =
-        mojom::blink::ResidentKeyRequirement::DISCOURAGED;
-    selection_criteria->user_verification =
-        mojom::blink::UserVerificationRequirement::REQUIRED;
-    mojo_options->authenticator_selection = std::move(selection_criteria);
-  }
-
-  Vector<mojom::blink::PublicKeyCredentialParametersPtr> parameters;
-  if (options->pubKeyCredParams().size() == 0) {
-    auto es256 = mojom::blink::PublicKeyCredentialParameters::New();
-    es256->type = mojom::blink::PublicKeyCredentialType::PUBLIC_KEY;
-    es256->algorithm_identifier = kCoseEs256;
-    auto rs256 = mojom::blink::PublicKeyCredentialParameters::New();
-    rs256->type = mojom::blink::PublicKeyCredentialType::PUBLIC_KEY;
-    rs256->algorithm_identifier = kCoseRs256;
-    parameters.push_back(std::move(es256));
-    parameters.push_back(std::move(rs256));
-  } else {
-    for (auto& parameter : options->pubKeyCredParams()) {
-      mojom::blink::PublicKeyCredentialParametersPtr normalized_parameter =
-          mojom::blink::PublicKeyCredentialParameters::From(*parameter);
-      if (normalized_parameter) {
-        parameters.push_back(std::move(normalized_parameter));
-      }
-    }
-    if (parameters.IsEmpty()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Required parameters missing in `options.pubKeyCredParams`."));
-      return;
-    }
-  }
-  mojo_options->public_key_parameters = std::move(parameters);
-
-  if (options->hasTimeout()) {
-    mojo_options->timeout =
-        base::TimeDelta::FromMilliseconds(options->timeout());
-  }
-
-  mojo_options->user = mojom::blink::PublicKeyCredentialUserEntity::New();
-  mojo_options->user->name = options->instrument()->displayName();
-
-  static constexpr wtf_size_t kRandomUserIdSize = 32;
-  mojo_options->user->id = Vector<uint8_t>(kRandomUserIdSize);
-  base::RandBytes(mojo_options->user->id.data(), kRandomUserIdSize);
-
-  mojo_options->user->display_name = options->instrument()->displayName();
-  mojo_options->user->icon = KURL(options->instrument()->icon());
-
-  if (!mojo_options->relying_party) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "Required parameters missing in `options.payment`."));
-    return;
-  }
-  if (mojo_options->user->id.size() > 64) {
-    // https://www.w3.org/TR/webauthn/#user-handle
-    v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
-    resolver->Reject(V8ThrowException::CreateTypeError(
-        isolate, "User handle exceeds 64 bytes."));
-    return;
-  }
-  if (!mojo_options->relying_party->id) {
-    mojo_options->relying_party->id =
-        resolver->GetExecutionContext()->GetSecurityOrigin()->Domain();
-  }
-
-  if (mojo_options->relying_party->icon &&
-      !IsIconURLNullOrSecure(mojo_options->relying_party->icon.value())) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kSecurityError,
-        "'rp.user.icon' should be a secure URL"));
-    return;
-  }
-
-  if (mojo_options->user->icon &&
-      !IsIconURLNullOrSecure(mojo_options->user->icon.value())) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kSecurityError,
-        "'instrument.icon' should be a secure URL"));
-    return;
-  }
-
-  mojo_options->is_payment_credential_creation = true;
-
-  // SecurePaymentConfirmationAPIV3 skips downloading instrument icon and
-  // showing user prompt.
-  if (RuntimeEnabledFeatures::SecurePaymentConfirmationAPIV3Enabled()) {
-    auto* authenticator =
-        CredentialManagerProxy::From(resolver->GetScriptState())
-            ->Authenticator();
-    authenticator->MakeCredential(
-        std::move(mojo_options),
-        WTF::Bind(&OnMakePublicKeyCredentialForPaymentComplete,
-                  std::make_unique<ScopedPromiseResolver>(resolver),
-                  WrapPersistent(options)));
-  } else {
-    // Download instrument icon and prompt the user before creating the
-    // credential.
-    auto* payment_credential_remote =
-        CredentialManagerProxy::From(resolver->GetScriptState())
-            ->PaymentCredential();
-    payment_credential_remote->DownloadIconAndShowUserPrompt(
-        PaymentCredentialInstrument::New(options->instrument()->displayName(),
-                                         KURL(options->instrument()->icon())),
-        WTF::Bind(&DidDownloadPaymentCredentialIconAndShowUserPrompt,
-                  std::make_unique<ScopedPromiseResolver>(resolver),
-                  std::move(mojo_options), WrapPersistent(options)));
-  }
-}
-
-void CreatePublicKeyCredentialForPaymentCredential(
-    const PaymentCredentialCreationOptions* options,
-    ScriptPromiseResolver* resolver) {
-  auto* authenticator =
-      CredentialManagerProxy::From(resolver->GetScriptState())->Authenticator();
-  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(WTF::Bind(
-      &OnIsUserVerifyingPlatformAuthenticatorAvailableForPaymentCredentialCreate,
-      WrapPersistent(options),
-      std::make_unique<ScopedPromiseResolver>(resolver)));
-}
-
 // Validates the "payment" extension for public key credential creation. The
 // function rejects the promise before returning in this case.
 bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
@@ -1008,16 +758,6 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
 
   const auto* context = resolver->GetExecutionContext();
   DCHECK(RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context));
-
-  if (!context->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kPayment)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "The 'payment' feature is not enabled in this document. Permissions "
-        "Policy may be used to delegate Web Payment capabilities to "
-        "cross-origin child frames."));
-    return false;
-  }
 
   if (RuntimeEnabledFeatures::SecurePaymentConfirmationDebugEnabled())
     return true;
@@ -1100,6 +840,14 @@ ScriptPromise CredentialsContainer::get(
     return promise;
   }
 
+  if (options->hasFederated()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerGetFederatedCredential);
+  } else if (options->hasPassword()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerGetPasswordCredential);
+  }
+
   if (options->hasPublicKey()) {
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
     if (!cryptotoken_origin->IsSameOriginWith(
@@ -1169,7 +917,9 @@ ScriptPromise CredentialsContainer::get(
             "creating a credential"));
         return promise;
       }
-      if (options->publicKey()->extensions()->hasPayment()) {
+      if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
+              resolver->GetExecutionContext()) &&
+          options->publicKey()->extensions()->hasPayment()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError,
             "The 'payment' extension is only valid when creating a "
@@ -1264,10 +1014,22 @@ ScriptPromise CredentialsContainer::get(
 
   Vector<KURL> providers;
   if (options->hasFederated() && options->federated()->hasProviders()) {
-    for (const auto& string : options->federated()->providers()) {
-      KURL url = KURL(NullURL(), string);
-      if (url.IsValid())
-        providers.push_back(std::move(url));
+    for (const auto& provider : options->federated()->providers()) {
+      if (provider->IsString()) {
+        KURL url = KURL(NullURL(), provider->GetAsString());
+        if (url.IsValid())
+          providers.push_back(std::move(url));
+      } else if (provider->IsFederatedIdentityProvider()) {
+        if (!RuntimeEnabledFeatures::WebIDEnabled()) {
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kNotSupportedError, "Invalid provider entry"));
+          return promise;
+        }
+        // TODO: connect this with the browser Mojo service.
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kNotSupportedError, "Not implemented"));
+        return promise;
+      }
     }
   }
 
@@ -1322,6 +1084,14 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
     return promise;
   }
 
+  if (credential->IsFederatedCredential()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerStoreFederatedCredential);
+  } else if (credential->IsPasswordCredential()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerStorePasswordCredential);
+  }
+
   const KURL& url =
       credential->IsFederatedCredential()
           ? static_cast<const FederatedCredential*>(credential)->iconURL()
@@ -1349,17 +1119,22 @@ ScriptPromise CredentialsContainer::create(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // hasPublicKey() implies that this is a WebAuthn request.
-  auto required_origin_type =
-      options->hasPublicKey() ? RequiredOriginType::kSecureAndSameWithAncestors
-                              : RequiredOriginType::kSecure;
-
+  RequiredOriginType required_origin_type;
+  if (IsForPayment(options, resolver->GetExecutionContext())) {
+    required_origin_type =
+        RequiredOriginType::kSecureWithPaymentPermissionPolicy;
+  } else {
+    // hasPublicKey() implies that this is a WebAuthn request.
+    required_origin_type = options->hasPublicKey()
+                               ? RequiredOriginType::kSecureAndSameWithAncestors
+                               : RequiredOriginType::kSecure;
+  }
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type)) {
     return promise;
   }
 
   if ((options->hasPassword() + options->hasFederated() +
-       options->hasPublicKey() + options->hasPayment()) != 1) {
+       options->hasPublicKey()) != 1) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
         "Only exactly one of 'password', 'federated', and 'publicKey' "
@@ -1368,6 +1143,8 @@ ScriptPromise CredentialsContainer::create(
   }
 
   if (options->hasPassword()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerCreatePasswordCredential);
     resolver->Resolve(
         options->password()->IsPasswordCredentialData()
             ? PasswordCredential::Create(
@@ -1379,24 +1156,10 @@ ScriptPromise CredentialsContainer::create(
     return promise;
   }
   if (options->hasFederated()) {
+    UseCounter::Count(resolver->GetExecutionContext(),
+                      WebFeature::kCredentialManagerCreateFederatedCredential);
     resolver->Resolve(
         FederatedCredential::Create(options->federated(), exception_state));
-    return promise;
-  }
-  if (options->hasPayment()) {
-    if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
-            resolver->GetExecutionContext()) &&
-        resolver->GetExecutionContext()->IsFeatureEnabled(
-            mojom::blink::PermissionsPolicyFeature::kPayment)) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kSecurePaymentConfirmation);
-      CreatePublicKeyCredentialForPaymentCredential(options->payment(),
-                                                    resolver);
-      return promise;
-    }
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "PaymentCredentialCreationOptions are not enabled."));
     return promise;
   }
   DCHECK(options->hasPublicKey());

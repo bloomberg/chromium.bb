@@ -2,57 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BackgroundManager, BackgroundSelectionType, Command, CommandHandlerRemote, CustomizeDialogPage, ModuleRegistry, NewTabPageProxy, NtpElement, PromoBrowserCommandProxy, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BackgroundManager, BackgroundSelectionType, BrowserCommandProxy, CustomizeDialogPage, ModuleRegistry, NewTabPageProxy, NtpElement, VoiceAction, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {Command, CommandHandlerRemote} from 'chrome://resources/js/browser_command/browser_command.mojom-webui.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {fakeMetricsPrivate, MetricsTracker} from 'chrome://test/new_tab_page/metrics_test_support.js';
-import {assertNotStyle, assertStyle, createTheme} from 'chrome://test/new_tab_page/test_support.js';
+import {assertNotStyle, assertStyle, createTheme, installMock} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
-import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+import {eventToPromise, flushTasks} from 'chrome://test/test_util.js';
 
 suite('NewTabPageAppTest', () => {
   /** @type {!AppElement} */
   let app;
 
-  /**
-   * @implements {WindowProxy}
-   * @extends {TestBrowserProxy}
-   */
+  /** @type {!TestBrowserProxy} */
   let windowProxy;
 
-  /**
-   * @implements {newTabPage.mojom.PageHandlerRemote}
-   * @extends {TestBrowserProxy}
-   */
+  /** @type {!TestBrowserProxy} */
   let handler;
 
-  /** @type {newTabPage.mojom.PageHandlerRemote} */
+  /** @type {!newTabPage.mojom.PageHandlerRemote} */
   let callbackRouterRemote;
 
-  /** @type {MetricsTracker} */
+  /** @type {!MetricsTracker} */
   let metrics;
 
-  /**
-   * @implements {ModuleRegistry}
-   * @extends {TestBrowserProxy}
-   */
+  /** @type {!TestBrowserProxy} */
   let moduleRegistry;
 
-  /**
-   * @implements {BackgroundManager}
-   * @extends {TestBrowserProxy}
-   */
+  /** @type {!TestBrowserProxy} */
   let backgroundManager;
 
-  /** @type {PromiseResolver} */
+  /** @type {!PromiseResolver} */
   let moduleResolver;
+
+  /** @type {URL} */
+  let url = new URL(location.href);
 
   setup(async () => {
     PolymerTest.clearBody();
 
-    windowProxy = TestBrowserProxy.fromClass(WindowProxy);
-    handler = TestBrowserProxy.fromClass(newTabPage.mojom.PageHandlerRemote);
+    windowProxy = installMock(WindowProxy);
+    handler = installMock(
+        newTabPage.mojom.PageHandlerRemote,
+        mock => NewTabPageProxy.setInstance(
+            mock, new newTabPage.mojom.PageCallbackRouter()));
     handler.setResultFor('getMostVisitedSettings', Promise.resolve({
       customLinksEnabled: false,
       shortcutsVisible: false,
@@ -70,19 +65,16 @@ suite('NewTabPageAppTest', () => {
                                                  }));
     windowProxy.setResultFor('waitForLazyRender', Promise.resolve());
     windowProxy.setResultFor('createIframeSrc', '');
-    WindowProxy.setInstance(windowProxy);
-    const callbackRouter = new newTabPage.mojom.PageCallbackRouter();
-    NewTabPageProxy.setInstance(handler, callbackRouter);
-    callbackRouterRemote = callbackRouter.$.bindNewPipeAndPassRemote();
-    backgroundManager = TestBrowserProxy.fromClass(BackgroundManager);
+    windowProxy.setResultFor('url', url);
+    callbackRouterRemote = NewTabPageProxy.getInstance()
+                               .callbackRouter.$.bindNewPipeAndPassRemote();
+    backgroundManager = installMock(BackgroundManager);
     backgroundManager.setResultFor(
         'getBackgroundImageLoadTime', Promise.resolve(0));
-    BackgroundManager.setInstance(backgroundManager);
-    moduleRegistry = TestBrowserProxy.fromClass(ModuleRegistry);
+    moduleRegistry = installMock(ModuleRegistry);
     moduleResolver = new PromiseResolver();
     moduleRegistry.setResultFor('getDescriptors', []);
     moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
-    ModuleRegistry.setInstance(moduleRegistry);
     metrics = fakeMetricsPrivate();
 
     app = document.createElement('ntp-app');
@@ -402,9 +394,9 @@ suite('NewTabPageAppTest', () => {
   });
 
   test('can show promo with browser command', async () => {
-    const promoBrowserCommandHandler =
-        TestBrowserProxy.fromClass(CommandHandlerRemote);
-    PromoBrowserCommandProxy.getInstance().handler = promoBrowserCommandHandler;
+    const promoBrowserCommandHandler = installMock(
+        CommandHandlerRemote,
+        mock => BrowserCommandProxy.getInstance().handler = mock);
     promoBrowserCommandHandler.setResultFor(
         'canExecuteCommand', Promise.resolve({canExecute: true}));
 
@@ -433,9 +425,9 @@ suite('NewTabPageAppTest', () => {
   });
 
   test('executes promo browser command', async () => {
-    const promoBrowserCommandHandler =
-        TestBrowserProxy.fromClass(CommandHandlerRemote);
-    PromoBrowserCommandProxy.getInstance().handler = promoBrowserCommandHandler;
+    const promoBrowserCommandHandler = installMock(
+        CommandHandlerRemote,
+        mock => BrowserCommandProxy.getInstance().handler = mock);
     promoBrowserCommandHandler.setResultFor(
         'executeCommand', Promise.resolve({commandExecuted: true}));
 
@@ -593,6 +585,25 @@ suite('NewTabPageAppTest', () => {
       assertEquals(1, handler.getCallCount('onModulesLoadedWithData'));
       assertEquals(
           0, app.shadowRoot.querySelectorAll('ntp-module-wrapper').length);
+    });
+  });
+
+  suite('customize URL', () => {
+    suiteSetup(() => {
+      // We inject the URL param in this suite setup so that the URL is updated
+      // before the app element gets created.
+      url.searchParams.append('customize', CustomizeDialogPage.THEMES);
+    });
+
+    test('URL opens customize dialog', () => {
+      // Act.
+      $$(app, '#customizeDialogIf').render();
+
+      // Assert.
+      assertTrue(!!$$(app, 'ntp-customize-dialog'));
+      assertEquals(
+          CustomizeDialogPage.THEMES,
+          $$(app, 'ntp-customize-dialog').selectedPage);
     });
   });
 });

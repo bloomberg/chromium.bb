@@ -144,6 +144,7 @@ namespace blink {
 namespace {
 
 constexpr size_t kMaxPostMessageUkmRecordedSourceIdsSize = 20;
+constexpr char kEventPageShowPersisted[] = "Event.PageShow.Persisted";
 
 bool ShouldRecordPostMessageIncomingFrameUkmEvent(
     ukm::SourceId source_frame_ukm_source_id,
@@ -326,7 +327,13 @@ void LocalDOMWindow::DisableEval(const String& error_message) {
 }
 
 String LocalDOMWindow::UserAgent() const {
-  return GetFrame() ? GetFrame()->Loader().UserAgent() : String();
+  if (!GetFrame())
+    return String();
+
+  if (RuntimeEnabledFeatures::UserAgentReductionEnabled(this))
+    return GetFrame()->Loader().ReducedUserAgent();
+  else
+    return GetFrame()->Loader().UserAgent();
 }
 
 UserAgentMetadata LocalDOMWindow::GetUserAgentMetadata() const {
@@ -354,7 +361,7 @@ bool LocalDOMWindow::CanExecuteScripts(
   // main world's CSP (such as for privileged isolated worlds). See
   // https://crbug.com/811528.
   if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kScripts) &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(this)) {
+      !ContentSecurityPolicy::ShouldBypassMainWorldDeprecated(this)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == kAboutToExecuteScript) {
@@ -727,11 +734,20 @@ void LocalDOMWindow::EnqueueNonPersistedPageshowEvent() {
     EnqueueWindowEvent(*PageTransitionEvent::Create(event_type_names::kPageshow,
                                                     false /* persisted */),
                        TaskType::kMiscPlatformAPI);
-    return;
+  } else {
+    DispatchEvent(*PageTransitionEvent::Create(event_type_names::kPageshow,
+                                               false /* persisted */),
+                  document_.Get());
   }
-  DispatchEvent(*PageTransitionEvent::Create(event_type_names::kPageshow,
-                                             false /* persisted */),
-                document_.Get());
+
+  // This UMA is recorded regardless of whether the event will be actually
+  // dispatched or not. It should only be possible for an enqueued page-show
+  // event to skip dispatch when the renderer exits. If this is not the case or
+  // there are other cases, we need to fix this code to only record the metric
+  // once the event is dispatched.
+  if (GetFrame() && GetFrame()->IsMainFrame()) {
+    UMA_HISTOGRAM_BOOLEAN(kEventPageShowPersisted, false);
+  }
 }
 
 void LocalDOMWindow::DispatchPersistedPageshowEvent(
@@ -741,6 +757,10 @@ void LocalDOMWindow::DispatchPersistedPageshowEvent(
   // |navigation_start| time of the back navigation.
   DispatchEvent(*PageTransitionEvent::CreatePersistedPageshow(navigation_start),
                 document_.Get());
+
+  if (GetFrame() && GetFrame()->IsMainFrame()) {
+    UMA_HISTOGRAM_BOOLEAN(kEventPageShowPersisted, true);
+  }
 }
 
 void LocalDOMWindow::DispatchPagehideEvent(
@@ -1179,6 +1199,8 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
     CountUse(WebFeature::kSameOriginIframeWindowAlert);
   }
   CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowAlert);
+  Deprecation::CountDeprecationCrossOriginIframe(
+      this, WebFeature::kCrossOriginWindowAlert);
 
   page->GetChromeClient().OpenJavaScriptAlert(GetFrame(), message);
 }
@@ -1211,6 +1233,8 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
     CountUse(WebFeature::kSameOriginIframeWindowConfirm);
   }
   CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowConfirm);
+  Deprecation::CountDeprecationCrossOriginIframe(
+      this, WebFeature::kCrossOriginWindowConfirm);
 
   return page->GetChromeClient().OpenJavaScriptConfirm(GetFrame(), message);
 }
@@ -1250,6 +1274,8 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
     CountUse(WebFeature::kSameOriginIframeWindowPrompt);
   }
   CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowPrompt);
+  Deprecation::CountDeprecationCrossOriginIframe(
+      this, WebFeature::kCrossOriginWindowAlert);
 
   return String();
 }

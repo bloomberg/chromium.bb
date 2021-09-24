@@ -585,12 +585,12 @@ void SourceBufferState::InitializeParser(const std::string& expected_codecs) {
   std::vector<VideoCodec> expected_vcodecs;
   for (const auto& codec_id : expected_codecs_parsed) {
     AudioCodec acodec = StringToAudioCodec(codec_id);
-    if (acodec != kUnknownAudioCodec) {
+    if (acodec != AudioCodec::kUnknown) {
       expected_audio_codecs_.push_back(acodec);
       continue;
     }
     VideoCodec vcodec = StringToVideoCodec(codec_id);
-    if (vcodec != kUnknownVideoCodec) {
+    if (vcodec != VideoCodec::kUnknown) {
       expected_video_codecs_.push_back(vcodec);
       continue;
     }
@@ -683,19 +683,19 @@ bool SourceBufferState::OnNewConfigs(
             std::vector<AudioDecoderConfig>{audio_config});
       } else {
         if (audio_streams_.size() > 1) {
-          auto it = audio_streams_.find(track_id);
-          if (it != audio_streams_.end())
-            stream = it->second;
+          auto stream_it = audio_streams_.find(track_id);
+          if (stream_it != audio_streams_.end())
+            stream = stream_it->second;
         } else {
           // If there is only one audio track then bytestream id might change in
           // a new init segment. So update our state and notify frame processor.
-          const auto& it = audio_streams_.begin();
-          if (it != audio_streams_.end()) {
-            stream = it->second;
-            if (it->first != track_id) {
-              track_id_changes[it->first] = track_id;
+          const auto& stream_it = audio_streams_.begin();
+          if (stream_it != audio_streams_.end()) {
+            stream = stream_it->second;
+            if (stream_it->first != track_id) {
+              track_id_changes[stream_it->first] = track_id;
               audio_streams_[track_id] = stream;
-              audio_streams_.erase(it->first);
+              audio_streams_.erase(stream_it->first);
             }
           }
         }
@@ -716,7 +716,7 @@ bool SourceBufferState::OnNewConfigs(
                << " config: " << video_config.AsHumanReadableString();
       DCHECK(video_config.IsValidConfig());
 
-      if (video_config.codec() == kCodecHEVC) {
+      if (video_config.codec() == VideoCodec::kHEVC) {
 #if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
         if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -771,19 +771,19 @@ bool SourceBufferState::OnNewConfigs(
             std::vector<VideoDecoderConfig>{video_config});
       } else {
         if (video_streams_.size() > 1) {
-          auto it = video_streams_.find(track_id);
-          if (it != video_streams_.end())
-            stream = it->second;
+          auto stream_it = video_streams_.find(track_id);
+          if (stream_it != video_streams_.end())
+            stream = stream_it->second;
         } else {
           // If there is only one video track then bytestream id might change in
           // a new init segment. So update our state and notify frame processor.
-          const auto& it = video_streams_.begin();
-          if (it != video_streams_.end()) {
-            stream = it->second;
-            if (it->first != track_id) {
-              track_id_changes[it->first] = track_id;
+          const auto& stream_it = video_streams_.begin();
+          if (stream_it != video_streams_.end()) {
+            stream = stream_it->second;
+            if (stream_it->first != track_id) {
+              track_id_changes[stream_it->first] = track_id;
               video_streams_[track_id] = stream;
-              video_streams_.erase(it->first);
+              video_streams_.erase(stream_it->first);
             }
           }
         }

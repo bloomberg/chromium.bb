@@ -35,6 +35,7 @@
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
@@ -1264,10 +1265,17 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.url);
+
+    GURL url = GURL(test.url);
+    // This is needed to bypass logic that rejects using URLRequests directly
+    // for WebSocket requests.
+    bool is_for_websockets = url.SchemeIsWSOrWSS();
+
     TestDelegate d;
     TestNetworkDelegate network_delegate;
     std::unique_ptr<URLRequest> r(context_.CreateRequest(
-        GURL(test.url), DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS,
+        is_for_websockets));
 
     net_log_.Clear();
     r->Start();
@@ -1587,7 +1595,8 @@ class URLRequestHttpJobWebSocketTest : public TestWithTaskEnvironment {
     context_.Init();
     req_ =
         context_.CreateRequest(GURL("ws://www.example.org"), DEFAULT_PRIORITY,
-                               &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
+                               &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS,
+                               /*is_for_websockets=*/true);
   }
 
   // A Network Delegate is required for the WebSocketHandshakeStreamBase

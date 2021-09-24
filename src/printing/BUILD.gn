@@ -49,7 +49,7 @@ component("printing_base") {
   }
 
   if (use_cups) {
-    configs += [ ":cups" ]
+    public_configs = [ ":cups" ]
   }
 
   configs += [ "//build/config/compiler:noshadowing" ]
@@ -77,6 +77,14 @@ if (is_linux || is_chromeos) {
       "//sandbox/policy",
       "//services/network:network_sandbox_hook",
     ]
+
+    if (use_cups) {
+      configs += [ ":cups" ]
+    }
+
+    if (is_chromeos && use_cups) {
+      deps += [ "//printing/backend" ]
+    }
   }
 }
 
@@ -105,6 +113,7 @@ component("printing") {
     "printed_document.h",
     "printing_context.cc",
     "printing_context.h",
+    "printing_context_factory_for_test.h",
     "pwg_raster_settings.h",
   ]
 
@@ -203,8 +212,6 @@ component("printing") {
   }
 
   if (use_cups) {
-    configs += [ ":cups" ]
-
     if (is_chromeos) {
       sources += [
         "printing_context_chromeos.cc",
@@ -223,6 +230,8 @@ static_library("test_support") {
   sources = [
     "image.cc",
     "image.h",
+    "test_printing_context.cc",
+    "test_printing_context.h",
   ]
 
   configs += [ "//build/config/compiler:noshadowing" ]
@@ -315,8 +324,6 @@ test("printing_unittests") {
   }
 
   if (use_cups) {
-    configs += [ ":cups" ]
-
     if (use_cups_ipp) {
       sources += [ "backend/cups_ipp_helper_unittest.cc" ]
     }

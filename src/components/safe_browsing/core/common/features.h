@@ -30,6 +30,9 @@ extern const base::Feature kAdSamplerTriggerFeature;
 // Browsing.
 extern const base::Feature kBetterTelemetryAcrossReports;
 
+// Controls whether Office documents will be scanned using //third_party maldoca
+extern const base::Feature kClientSideDetectionDocumentScanning;
+
 // Enables client side detection on Android.
 extern const base::Feature kClientSideDetectionForAndroid;
 
@@ -70,6 +73,13 @@ extern const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks;
 // and implementation are validated experimentally.
 extern const base::Feature kFileAnalysisMimeTypeSniff;
 
+// Determines the tag to pass to Omaha to get a file type policy.
+extern const base::Feature kFileTypePoliciesTag;
+
+// The parameter name used for getting the tag value from
+// `kFileTypePoliciesTag`.
+const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
+
 // Enable omitting non-user gesture from referrer chain.
 extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
 
@@ -84,7 +94,7 @@ extern const base::Feature kPasswordProtectionWithToken;
 // scanning.
 extern const base::Feature kPromptEsbForDeepScanning;
 
-// Contros whether users will see an account compromise specific warning
+// Controls whether users will see an account compromise specific warning
 // when Safe Browsing determines a file is associated with stealing cookies.
 extern const base::Feature kSafeBrowsingCTDownloadWarning;
 
@@ -165,6 +175,10 @@ bool GetShouldFillOldPhishGuardProto();
 // Returns the tag used for Client Side Phishing Detection models, as
 // computed from the current feature flags.
 std::string GetClientSideDetectionTag();
+
+// Returns the tag used for file type policies, as computed from the current
+// feature flag.
+std::string GetFileTypePoliciesTag();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_CORE_COMMON_FEATURES_H_

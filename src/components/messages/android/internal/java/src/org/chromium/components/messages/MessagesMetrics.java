@@ -99,6 +99,12 @@ public class MessagesMetrics {
                 return "AdsBlocked";
             case MessageIdentifier.DOWNLOAD_PROGRESS:
                 return "DownloadProgress";
+            case MessageIdentifier.SYNC_ERROR:
+                return "SyncError";
+            case MessageIdentifier.SHARED_HIGHLIGHTING:
+                return "SharedHighlighting";
+            case MessageIdentifier.NEAR_OOM_REDUCTION:
+                return "NearOomReduction";
             default:
                 return "Unknown";
         }

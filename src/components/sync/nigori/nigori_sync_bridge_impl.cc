@@ -308,16 +308,17 @@ std::vector<std::string> UnpackKeystoreKeys(
   if (!deserialized_keys) {
     return std::vector<std::string>();
   }
-  base::ListValue* list_value = nullptr;
-  if (!deserialized_keys->GetAsList(&list_value)) {
+  if (!deserialized_keys->is_list()) {
     return std::vector<std::string>();
   }
+  base::Value::ListView list = deserialized_keys->GetList();
 
-  std::vector<std::string> keystore_keys(list_value->GetSize());
+  std::vector<std::string> keystore_keys(list.size());
   for (size_t i = 0; i < keystore_keys.size(); ++i) {
-    if (!list_value->GetString(i, &keystore_keys[i])) {
+    if (!list[i].is_string()) {
       return std::vector<std::string>();
     }
+    keystore_keys[i] = std::move(list[i].GetString());
   }
   return keystore_keys;
 }
@@ -678,10 +679,6 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     return false;
   }
 
-  // TODO(crbug.com/1042251): having |pending_keystore_decryptor_token| without
-  // |pending_keys| means that new |keystore_decryptor_token| could be build
-  // in order to replace the potentially corrupted remote
-  // |keystore_decryptor_token|.
   if (state_.pending_keystore_decryptor_token.has_value() &&
       state_.pending_keys.has_value()) {
     // Newly arrived keystore keys could resolve pending encryption state in

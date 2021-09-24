@@ -26,19 +26,19 @@
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -60,6 +60,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/webui/help_app_ui/url_constants.h"
+#include "ash/webui/media_app_ui/url_constants.h"
 #include "ash/webui/os_feedback_ui/url_constants.h"
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
@@ -80,11 +82,9 @@
 #include "chrome/browser/ash/web_applications/shimless_rma_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/shortcut_customization_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/terminal_system_web_app_info.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
 #include "chromeos/components/connectivity_diagnostics/url_constants.h"
-#include "chromeos/components/help_app_ui/url_constants.h"
-#include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/components/personalization_app/personalization_app_url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"  // nogncheck
 #include "extensions/common/constants.h"
@@ -120,7 +120,8 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
   info_vec.emplace_back(std::make_unique<OSSettingsSystemAppDelegate>(profile));
   info_vec.emplace_back(std::make_unique<CroshSystemAppDelegate>(profile));
   info_vec.emplace_back(std::make_unique<TerminalSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<HelpAppSystemAppDelegate>(profile));
+  info_vec.emplace_back(
+      std::make_unique<ash::HelpAppSystemAppDelegate>(profile));
   info_vec.emplace_back(std::make_unique<MediaSystemAppDelegate>(profile));
   info_vec.emplace_back(
       std::make_unique<PrintManagementSystemAppDelegate>(profile));
@@ -139,6 +140,7 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
       std::make_unique<FileManagerSystemAppDelegate>(profile));
   info_vec.emplace_back(
       std::make_unique<ProjectorSystemWebAppDelegate>(profile));
+  info_vec.emplace_back(std::make_unique<AudioSystemAppDelegate>(profile));
 
 #if !defined(OFFICIAL_BUILD)
   info_vec.emplace_back(std::make_unique<TelemetrySystemAppDelegate>(profile));
@@ -266,13 +268,13 @@ void SystemWebAppManager::Shutdown() {
 void SystemWebAppManager::SetSubsystems(
     ExternallyManagedAppManager* externally_managed_app_manager,
     WebAppRegistrar* registrar,
-    AppRegistryController* registry_controller,
+    WebAppSyncBridge* sync_bridge,
     WebAppUiManager* ui_manager,
     OsIntegrationManager* os_integration_manager,
     WebAppPolicyManager* web_app_policy_manager) {
   externally_managed_app_manager_ = externally_managed_app_manager;
   registrar_ = registrar;
-  registry_controller_ = registry_controller;
+  sync_bridge_ = sync_bridge;
   ui_manager_ = ui_manager;
   os_integration_manager_ = os_integration_manager;
   web_app_policy_manager_ = web_app_policy_manager;
@@ -372,6 +374,15 @@ absl::optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
   return absl::nullopt;
 }
 
+const SystemWebAppDelegate* SystemWebAppManager::GetSystemApp(
+    SystemAppType type) const {
+  auto it = system_app_delegates_.find(type);
+  if (it == system_app_delegates_.end())
+    return nullptr;
+
+  return it->second.get();
+}
+
 std::vector<AppId> SystemWebAppManager::GetAppIds() const {
   std::vector<AppId> app_ids;
   for (const auto& app_type_to_app_info : system_app_delegates_) {
@@ -388,41 +399,11 @@ bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
   return GetSystemAppTypeForAppId(app_id).has_value();
 }
 
-bool SystemWebAppManager::IsSingleWindow(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldBeSingleWindow();
-}
-
-bool SystemWebAppManager::ShouldShowNewWindowMenuOption(
-    SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  DCHECK(!(it->second->ShouldShowNewWindowMenuOption() &&
-           it->second->ShouldBeSingleWindow()))
-      << "App can't show 'new window' menu option and be single window same "
-         "time.";
-
-  return it->second->ShouldShowNewWindowMenuOption();
-}
-
-bool SystemWebAppManager::AppShouldReceiveLaunchDirectory(
-    SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-  return it->second->ShouldIncludeLaunchDirectory();
-}
-
 const std::vector<std::string>* SystemWebAppManager::GetEnabledOriginTrials(
-    const SystemAppType type,
+    const SystemWebAppDelegate* system_app,
     const GURL& url) const {
-  const auto& origin_to_origin_trials =
-      system_app_delegates_.at(type)->GetEnabledOriginTrials();
+  DCHECK(system_app);
+  const auto& origin_to_origin_trials = system_app->GetEnabledOriginTrials();
   auto iter_trials = origin_to_origin_trials.find(url::Origin::Create(url));
 
   if (iter_trials == origin_to_origin_trials.end())
@@ -431,10 +412,10 @@ const std::vector<std::string>* SystemWebAppManager::GetEnabledOriginTrials(
   return &iter_trials->second;
 }
 
-bool SystemWebAppManager::AppHasFileHandlingOriginTrial(SystemAppType type) {
-  const auto& info = system_app_delegates_.at(type);
+bool SystemWebAppManager::AppHasFileHandlingOriginTrial(
+    const SystemWebAppDelegate* system_app) {
   const std::vector<std::string>* trials =
-      GetEnabledOriginTrials(type, info->GetInstallUrl());
+      GetEnabledOriginTrials(system_app, system_app->GetInstallUrl());
   return trials && base::Contains(*trials, kFileHandlingOriginTrial);
 }
 
@@ -450,82 +431,14 @@ void SystemWebAppManager::OnReadyToCommitNavigation(
   // System App. So the |app_id| should always have a valid associated System
   // App type.
   DCHECK(type.has_value());
+  auto* system_app = GetSystemApp(type.value());
+  DCHECK(system_app);
 
   const std::vector<std::string>* trials =
-      GetEnabledOriginTrials(type.value(), navigation_handle->GetURL());
+      GetEnabledOriginTrials(system_app, navigation_handle->GetURL());
   if (trials) {
     navigation_handle->ForceEnableOriginTrials(*trials);
   }
-}
-
-std::vector<std::string> SystemWebAppManager::GetAdditionalSearchTerms(
-    SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return {};
-
-  const auto& search_terms = it->second->GetAdditionalSearchTerms();
-
-  std::vector<std::string> search_terms_strings;
-  std::transform(search_terms.begin(), search_terms.end(),
-                 std::back_inserter(search_terms_strings),
-                 [](int term) { return l10n_util::GetStringUTF8(term); });
-  return search_terms_strings;
-}
-
-bool SystemWebAppManager::ShouldShowInLauncher(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-  return it->second->ShouldShowInLauncher();
-}
-
-bool SystemWebAppManager::ShouldShowInSearch(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-  return it->second->ShouldShowInSearch();
-}
-
-bool SystemWebAppManager::IsResizeableWindow(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldAllowResize();
-}
-
-bool SystemWebAppManager::IsMaximizableWindow(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldAllowMaximize();
-}
-
-bool SystemWebAppManager::ShouldHaveReloadButtonInMinimalUi(
-    SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldHaveReloadButtonInMinimalUi();
-}
-
-bool SystemWebAppManager::AllowScriptsToCloseWindows(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldAllowScriptsToCloseWindows();
-}
-
-bool SystemWebAppManager::ShouldHaveTabStrip(SystemAppType type) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end())
-    return false;
-
-  return it->second->ShouldHaveTabStrip();
 }
 
 absl::optional<SystemAppType> SystemWebAppManager::GetCapturingSystemAppForURL(
@@ -551,36 +464,17 @@ absl::optional<SystemAppType> SystemWebAppManager::GetCapturingSystemAppForURL(
     // TODO(crbug://1051229): Expand ShouldCaptureNavigation to take a GURL, and
     // move this into the camera one.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (type == SystemAppType::CAMERA &&
-      url.spec() != chromeos::kChromeUICameraAppMainURL)
-    return absl::nullopt;
+  if (type == SystemAppType::CAMERA) {
+    url::Replacements<char> replacements;
+    replacements.ClearQuery();
+    replacements.ClearRef();
+    if (url.ReplaceComponents(replacements).spec() !=
+        chromeos::kChromeUICameraAppMainURL)
+      return absl::nullopt;
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return type;
-}
-
-gfx::Rect SystemWebAppManager::GetDefaultBounds(SystemAppType type,
-                                                Browser* browser) const {
-  auto it = system_app_delegates_.find(type);
-  if (it == system_app_delegates_.end()) {
-    return gfx::Rect();
-  }
-
-  return it->second->GetDefaultBounds(browser);
-}
-
-gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {
-  absl::optional<SystemAppType> app_type = GetSystemAppTypeForAppId(app_id);
-
-  if (!app_type.has_value())
-    return gfx::Size();
-  auto app_type_to_app_info = system_app_delegates_.find(app_type.value());
-
-  if (app_type_to_app_info == system_app_delegates_.end()) {
-    return gfx::Size();
-  }
-
-  return app_type_to_app_info->second->GetMinimumWindowSize();
 }
 
 void SystemWebAppManager::SetSystemAppsForTesting(
@@ -694,7 +588,7 @@ void SystemWebAppManager::OnAppsSynchronized(
     if (!app_id)
       continue;
 
-    if (AppHasFileHandlingOriginTrial(type)) {
+    if (AppHasFileHandlingOriginTrial(it.second.get())) {
       os_integration_manager_->ForceEnableFileHandlingOriginTrial(
           app_id.value());
     } else {

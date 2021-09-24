@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/widget/widget.h"
@@ -26,7 +26,7 @@ class Tracker;
 class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
   static bool IsShowing();
-  static PWAConfirmationBubbleView* GetBubbleForTesting();
+  static PWAConfirmationBubbleView* GetBubble();
 
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,

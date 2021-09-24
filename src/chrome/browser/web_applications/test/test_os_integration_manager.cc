@@ -6,22 +6,22 @@
 
 #include "base/containers/contains.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
-#include "chrome/browser/web_applications/components/protocol_handler_manager.h"
-#include "chrome/browser/web_applications/components/url_handler_manager.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/test/fake_protocol_handler_manager.h"
 #include "chrome/browser/web_applications/test/fake_url_handler_manager.h"
-#include "chrome/browser/web_applications/test/test_file_handler_manager.h"
+#include "chrome/browser/web_applications/test/fake_web_app_protocol_handler_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/url_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_protocol_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 
 namespace web_app {
 TestOsIntegrationManager::TestOsIntegrationManager(
     Profile* profile,
     std::unique_ptr<WebAppShortcutManager> shortcut_manager,
-    std::unique_ptr<FileHandlerManager> file_handler_manager,
-    std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager,
+    std::unique_ptr<WebAppFileHandlerManager> file_handler_manager,
+    std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager,
     std::unique_ptr<UrlHandlerManager> url_handler_manager)
     : OsIntegrationManager(profile,
                            std::move(shortcut_manager),
@@ -32,11 +32,12 @@ TestOsIntegrationManager::TestOsIntegrationManager(
     set_shortcut_manager(std::make_unique<TestShortcutManager>(profile));
   }
   if (!this->file_handler_manager()) {
-    set_file_handler_manager(std::make_unique<TestFileHandlerManager>(profile));
+    set_file_handler_manager(
+        std::make_unique<TestWebAppFileHandlerManager>(profile));
   }
   if (!this->protocol_handler_manager()) {
     set_protocol_handler_manager(
-        std::make_unique<FakeProtocolHandlerManager>(profile));
+        std::make_unique<FakeWebAppProtocolHandlerManager>(profile));
   }
   if (!this->url_handler_manager()) {
     set_url_handler_manager(std::make_unique<FakeUrlHandlerManager>(profile));
@@ -56,12 +57,12 @@ void TestOsIntegrationManager::InstallOsHooks(
     InstallOsHooksCallback callback,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     InstallOsHooksOptions options) {
-  OsHooksResults os_hooks_results{false};
+  OsHooksErrors os_hooks_errors;
+
   last_options_ = options;
 
   if (options.os_hooks[OsHookType::kFileHandlers]) {
     ++num_create_file_handlers_calls_;
-    os_hooks_results[OsHookType::kFileHandlers] = true;
   }
 
   did_add_to_desktop_ = options.add_to_desktop;
@@ -74,13 +75,12 @@ void TestOsIntegrationManager::InstallOsHooks(
       success = it->second;
       next_create_shortcut_results_.erase(app_id);
     }
-    if (success)
-      os_hooks_results[OsHookType::kShortcutsMenu] = true;
+    if (!success)
+      os_hooks_errors[OsHookType::kShortcutsMenu] = true;
   }
 
   if (options.os_hooks[OsHookType::kRunOnOsLogin]) {
     ++num_register_run_on_os_login_calls_;
-    os_hooks_results[OsHookType::kRunOnOsLogin] = true;
   }
 
   if (options.add_to_quick_launch_bar)
@@ -88,28 +88,28 @@ void TestOsIntegrationManager::InstallOsHooks(
 
   if (options.os_hooks[OsHookType::kUrlHandlers]) {
     ++num_register_url_handlers_calls_;
-    os_hooks_results[OsHookType::kUrlHandlers] = true;
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(os_hooks_results)));
+      base::BindOnce(std::move(callback), std::move(os_hooks_errors)));
 }
 
 void TestOsIntegrationManager::UninstallOsHooks(
     const AppId& app_id,
-    const OsHooksResults& os_hooks,
+    const OsHooksOptions& os_hooks,
     UninstallOsHooksCallback callback) {
+  OsHooksErrors os_hooks_errors;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), os_hooks));
+      FROM_HERE, base::BindOnce(std::move(callback), os_hooks_errors));
 }
 
 void TestOsIntegrationManager::UninstallAllOsHooks(
     const AppId& app_id,
     UninstallOsHooksCallback callback) {
-  OsHooksResults os_hooks_results;
-  os_hooks_results.set();
-  UninstallOsHooks(app_id, os_hooks_results, std::move(callback));
+  OsHooksOptions os_hooks;
+  os_hooks.set();
+  UninstallOsHooks(app_id, os_hooks, std::move(callback));
 }
 
 void TestOsIntegrationManager::UpdateOsHooks(
@@ -122,12 +122,12 @@ void TestOsIntegrationManager::UpdateOsHooks(
 }
 
 void TestOsIntegrationManager::SetFileHandlerManager(
-    std::unique_ptr<FileHandlerManager> file_handler_manager) {
+    std::unique_ptr<WebAppFileHandlerManager> file_handler_manager) {
   set_file_handler_manager(std::move(file_handler_manager));
 }
 
 void TestOsIntegrationManager::SetProtocolHandlerManager(
-    std::unique_ptr<ProtocolHandlerManager> protocol_handler_manager) {
+    std::unique_ptr<WebAppProtocolHandlerManager> protocol_handler_manager) {
   set_protocol_handler_manager(std::move(protocol_handler_manager));
 }
 

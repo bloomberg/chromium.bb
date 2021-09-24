@@ -10,6 +10,12 @@
 
 namespace apps {
 
+namespace {
+
+constexpr uint32_t kUAFSentinelInitial = 0xabcd1234;
+
+}  // namespace
+
 AppRegistryCache::Observer::Observer(AppRegistryCache* cache) {
   Observe(cache);
 }
@@ -36,13 +42,15 @@ void AppRegistryCache::Observer::Observe(AppRegistryCache* cache) {
   }
 }
 
-AppRegistryCache::AppRegistryCache() : account_id_(EmptyAccountId()) {}
+AppRegistryCache::AppRegistryCache()
+    : account_id_(EmptyAccountId()), uaf_sentinel_(kUAFSentinelInitial) {}
 
 AppRegistryCache::~AppRegistryCache() {
   for (auto& obs : observers_) {
     obs.OnAppRegistryCacheWillBeDestroyed(this);
   }
   DCHECK(observers_.empty());
+  uaf_sentinel_ = 0;
 }
 
 void AppRegistryCache::AddObserver(Observer* observer) {
@@ -170,19 +178,20 @@ bool AppRegistryCache::IsAppTypeInitialized(
 }
 
 void AppRegistryCache::OnAppTypeInitialized() {
+  CHECK_EQ(kUAFSentinelInitial, uaf_sentinel_);
   if (in_progress_initialized_app_types_.empty()) {
     return;
   }
 
-  auto in_progress_initialized_app_types = in_progress_initialized_app_types_;
-  in_progress_initialized_app_types_.clear();
-
-  for (auto app_type : in_progress_initialized_app_types) {
+  for (auto app_type : in_progress_initialized_app_types_) {
     for (auto& obs : observers_) {
       obs.OnAppTypeInitialized(app_type);
     }
+    CHECK_EQ(kUAFSentinelInitial, uaf_sentinel_);
     initialized_app_types_.insert(app_type);
   }
+
+  in_progress_initialized_app_types_.clear();
 }
 
 }  // namespace apps

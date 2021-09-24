@@ -482,7 +482,6 @@ std::vector<std::string> DefaultRankingForLocaleAndType(
       return FlattenComponents(DefaultEnUsImageRanking());
     return FlattenComponents(DefaultEnUsTextRanking());
   }
-
   if (IsImageType(type))
     return FlattenComponents(DefaultWorldImageRanking());
   return FlattenComponents(DefaultWorldTextRanking());

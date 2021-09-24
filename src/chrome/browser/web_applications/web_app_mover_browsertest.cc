@@ -8,11 +8,11 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
@@ -72,7 +72,7 @@ class WebAppMoverBrowsertestBase : public InProcessBrowserTest {
   }
 
   AppId InstallApp(GURL url) {
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     AppId app_id;
     base::RunLoop run_loop;
@@ -92,7 +92,7 @@ class WebAppMoverBrowsertestBase : public InProcessBrowserTest {
   }
 
   WebAppProvider& GetProvider() {
-    return *WebAppProvider::Get(browser()->profile());
+    return *WebAppProvider::GetForTest(browser()->profile());
   }
 
   bool clean_up_completed_ = false;

@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -66,6 +67,7 @@
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/frame/fragment_directive.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
@@ -165,6 +167,7 @@ class IntersectionObserverController;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
+class ListedElement;
 class LocalDOMWindow;
 class LocalFrame;
 class LocalFrameView;
@@ -482,6 +485,11 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* WindowNamedItems(const AtomicString& name);
   DocumentNameCollection* DocumentNamedItems(const AtomicString& name);
   HTMLCollection* DocumentAllNamedItems(const AtomicString& name);
+
+  // The unassociated listed elements are listed elements that are not
+  // associated to a <form> element.
+  const ListedElement::List& UnassociatedListedElements() const;
+  void MarkUnassociatedListedElementsDirty();
 
   // "defaultView" attribute defined in HTML spec.
   DOMWindow* defaultView() const;
@@ -1541,6 +1549,10 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 #endif
 
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  void AssertLayoutTreeUpdatedAfterLayout();
+#endif
+
   unsigned& FlatTreeTraversalForbiddenRecursionDepth() {
     return flat_tree_traversal_forbidden_recursion_depth_;
   }
@@ -1742,6 +1754,21 @@ class CORE_EXPORT Document : public ContainerNode,
                            BeforeMatchExpandedHiddenMatchableUkmNoHandler);
   class NetworkStateObserver;
 
+  // Listed elements that are not associated to a <form> element.
+  class UnassociatedListedElementsList {
+    DISALLOW_NEW();
+
+   public:
+    void MarkDirty();
+    const ListedElement::List& Get(const Document& owner);
+    void Trace(Visitor*) const;
+
+   private:
+    ListedElement::List list_;
+    // Set this flag if the stored unassociated listed elements were changed.
+    bool dirty_ = false;
+  };
+
   friend class AXContext;
   void AddAXContext(AXContext*);
   void RemoveAXContext(AXContext*);
@@ -1779,7 +1806,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateStyleInvalidationIfNeeded();
   void UpdateStyle();
-  void UpdateStyleInternal();
   void NotifyLayoutTreeOfSubtreeChanges();
   bool ChildrenCanHaveStyle() const final;
 
@@ -2102,7 +2128,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool is_srcdoc_document_;
   bool is_mobile_document_;
 
-  LayoutView* layout_view_;
+  Member<LayoutView> layout_view_;
 
   // The last element in |top_layer_elements_| is topmost in the top layer
   // stack and is thus the one that will be visually on top.
@@ -2171,6 +2197,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<PropertyRegistry> property_registry_;
 
   Member<NetworkStateObserver> network_state_observer_;
+
+  UnassociatedListedElementsList unassociated_listed_elements_;
 
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.

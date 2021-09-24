@@ -32,6 +32,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
+import renderingOptionsStyles from './renderingOptions.css.js';
+
 const UIStrings = {
   /**
   * @description The name of a checkbox setting in the Rendering tool. This setting highlights areas
@@ -132,6 +134,10 @@ const UIStrings = {
   */
   emulatesAFocusedPage: 'Emulates a focused page.',
   /**
+  * @description Explanation text for the 'Emulate a focused page' setting in the Rendering tool.
+  */
+  emulatesAutoDarkMode: 'Enables automatic dark mode for the inspected page.',
+  /**
   * @description Explanation text for the 'Emulate CSS media type' setting in the Rendering tool.
   * This setting overrides the CSS media type on the page:
   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media#media_types
@@ -145,6 +151,10 @@ const UIStrings = {
   * @description Explanation text for the 'Forces CSS prefers-reduced-motion media' setting in the Rendering tool.
   */
   forcesCssPrefersreducedmotion: 'Forces CSS `prefers-reduced-motion` media feature',
+  /**
+   * @description Explanation text for the 'Forces CSS prefers-contrast media' setting in the Rendering tool.
+   */
+  forcesCssPreferscontrastMedia: 'Forces CSS `prefers-contrast` media feature',
   /**
   * @description Explanation text for the 'Forces CSS prefers-reduced-data media' setting in the Rendering tool.
   */
@@ -192,6 +202,11 @@ const supportsPrefersReducedData = (): boolean => {
   return window.matchMedia(query).media === query;
 };
 
+const supportsPrefersContrast = (): boolean => {
+  const query = '(prefers-contrast)';
+  return window.matchMedia(query).media === query;
+};
+
 const supportsJpegXl = async(): Promise<boolean> => {
   const JPEG_XL_IMAGE_URL = 'data:image/jxl;base64,/wp/QCQIBgEAFABLEiRhAA==';
   const promise = new Promise<boolean>((resolve): void => {
@@ -208,7 +223,6 @@ let renderingOptionsViewInstance: RenderingOptionsView;
 export class RenderingOptionsView extends UI.Widget.VBox {
   private constructor() {
     super(true);
-    this.registerRequiredCSS('entrypoints/inspector_main/renderingOptions.css');
 
     this.appendCheckbox(
         i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen),
@@ -251,6 +265,11 @@ export class RenderingOptionsView extends UI.Widget.VBox {
     this.appendSelect(
         i18nString(UIStrings.forcesCssPrefersreducedmotion),
         Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
+    if (supportsPrefersContrast()) {
+      this.appendSelect(
+          i18nString(UIStrings.forcesCssPreferscontrastMedia),
+          Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersContrast'));
+    }
     if (supportsPrefersReducedData()) {
       this.appendSelect(
           i18nString(UIStrings.forcesCssPrefersreduceddataMedia),
@@ -265,6 +284,10 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         i18nString(UIStrings.forcesVisionDeficiencyEmulation),
         Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency'));
 
+    this.contentElement.createChild('div').classList.add('panel-section-separator');
+    this.appendSelect(
+        i18nString(UIStrings.emulatesAutoDarkMode),
+        Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode'));
     this.contentElement.createChild('div').classList.add('panel-section-separator');
 
     this.appendCheckbox(
@@ -319,5 +342,9 @@ export class RenderingOptionsView extends UI.Widget.VBox {
     if (control) {
       this.contentElement.appendChild(control);
     }
+  }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([renderingOptionsStyles]);
   }
 }

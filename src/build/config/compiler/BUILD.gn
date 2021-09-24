@@ -15,6 +15,7 @@ import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/gclient_args.gni")
 import("//build/config/host_byteorder.gni")
+import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -795,6 +796,35 @@ config("compiler") {
     asmflags += cflags
     asmflags += cflags_c
   }
+
+  # Rust compiler flags setup.
+  # ---------------------------
+  rustflags = [
+    # Overflow checks are optional in Rust, but even if switched
+    # off they do not cause undefined behavior (the overflowing
+    # behavior is defined). Because containers are bounds-checked
+    # in safe Rust, they also can't provoke buffer overflows.
+    # As such these checks may be less important in Rust than C++.
+    # But in (simplistic) testing they have negligible performance
+    # overhead, and this helps to provide consistent behavior
+    # between different configurations, so we'll keep them on until
+    # we discover a reason to turn them off.
+    "-Coverflow-checks=on",
+
+    # To make Rust .d files compatible with ninja
+    "-Z",
+    "dep-info-omit-d-target",
+  ]
+  if (rust_abi_target != "") {
+    rustflags += [ "--target=$rust_abi_target" ]
+  }
+  if (use_lto_in_rustc_linking) {
+    rustflags += [ "-Clinker-plugin-lto" ]
+  }
+  if (!use_thin_lto) {
+    # Optimization - don't include bitcode if it won't be used.
+    rustflags += [ "-Cembed-bitcode=no" ]
+  }
 }
 
 # The BUILDCONFIG file sets this config on targets by default, which means when
@@ -1260,6 +1290,16 @@ config("compiler_deterministic") {
   # really need it and it can mess up the goma cache entries.
   if (is_clang && !is_nacl) {
     cflags += [ "-no-canonical-prefixes" ]
+
+    # Same for links: Let the compiler driver invoke the linker
+    # with a relative path and pass relative paths to built-in
+    # libraries. Not needed on Windows because we call the linker
+    # directly there, not through the compiler driver.
+    # We don't link on goma, so this change is just for cleaner
+    # internal linker invocations, for people who work on the build.
+    if (!is_win) {
+      ldflags += [ "-no-canonical-prefixes" ]
+    }
   }
 }
 
@@ -1600,7 +1640,7 @@ config("default_warnings") {
 
     # use_xcode_clang only refers to the iOS toolchain, host binaries use
     # chromium's clang always.
-    if (!is_nacl) {
+    if (!is_nacl || is_nacl_saigo) {
       if (is_win) {
         # TODO(thakis): https://crbug.com/617318
         # Currently goma can not handle case sensitiveness for windows well.
@@ -1611,8 +1651,7 @@ config("default_warnings") {
       }
 
       if (current_toolchain == host_toolchain || !use_xcode_clang) {
-        # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
-        # recognize.
+        # Flags Xcode 9.2 (Clang clang-900.0.39.2) does not recognize.
         cflags += [
           "-Wenum-compare-conditional",
 
@@ -1627,17 +1666,21 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1016945) Clean up, enable.
           "-Wno-builtin-assume-aligned-alignment",
-
-          # TODO(https://crbug.com/1028110): Evaluate and possible enable.
-          "-Wno-deprecated-copy",
-
-          # TODO(https://crbug.com/1203071): Clean up and enable.
-          "-Wno-unused-but-set-parameter",
-          "-Wno-unused-but-set-variable",
-
-          # TODO(https://crbug.com/1239077): Fix and re-enable.
-          "-Wno-inline-asm",
         ]
+
+        # NaCl does not support flags from ToT.
+        if (!is_nacl) {
+          cflags += [
+            # TODO(https://crbug.com/1203071): Clean up and enable.
+            "-Wno-unused-but-set-parameter",
+            "-Wno-unused-but-set-variable",
+          ]
+        }
+
+        if (is_fuchsia) {
+          # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
+          cflags += [ "-Wno-deprecated-copy" ]
+        }
 
         if (enable_wmax_tokens) {
           cflags += [ "-Wmax-tokens" ]
@@ -1713,7 +1756,7 @@ config("chromium_code") {
     # TODO(thakis): Enable this more often, https://crbug.com/346399
     # use_libfuzzer: https://crbug.com/1063180
     if (!is_nacl && !use_libfuzzer) {
-      cflags += [ "-Wunreachable-code" ]
+      cflags += [ "-Wunreachable-code-aggressive" ]
     }
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.
@@ -2089,6 +2132,11 @@ config("optimize") {
   } else {
     cflags = [ "-O2" ] + common_optimize_on_cflags
   }
+  if (optimize_for_size) {
+    rustflags = [ "-Copt-level=s" ]
+  } else {
+    rustflags = [ "-Copt-level=3" ]
+  }
   ldflags = common_optimize_on_ldflags
 }
 
@@ -2155,6 +2203,7 @@ config("optimize_max") {
     } else {
       cflags = [ "-O2" ] + common_optimize_on_cflags
     }
+    rustflags = [ "-Copt-level=3" ]
   }
 }
 
@@ -2187,11 +2236,13 @@ config("optimize_speed") {
     } else {
       cflags = [ "-O3" ] + common_optimize_on_cflags
     }
+    rustflags = [ "-Copt-level=3" ]
   }
 }
 
 config("optimize_fuzzing") {
   cflags = [ "-O1" ] + common_optimize_on_cflags
+  rustflags = [ "-Copt-level=1" ]
   ldflags = common_optimize_on_ldflags
   visibility = [ ":default_optimization" ]
 }
@@ -2356,6 +2407,16 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
+      # gcc generates dwarf-aranges by default on -g1 and -g2. On clang it has
+      # to be manually enabled.
+      #
+      # It is skipped in tsan and asan because enabling it causes some
+      # formatting changes in the output which would require fixing bunches
+      # of expectation regexps.
+      cflags += [ "-gdwarf-aranges" ]
+    }
+
     if (is_apple) {
       swiftflags = [ "-g" ]
     }
@@ -2407,6 +2468,7 @@ config("symbols") {
       ]
     }
   }
+  rustflags = [ "-g" ]
 }
 
 # Minimal symbols.
@@ -2455,6 +2517,12 @@ config("minimal_symbols") {
     if (!is_nacl || is_clang) {
       cflags += [ "-g1" ]
     }
+
+    if (!is_nacl && is_clang && !is_tsan && !is_asan) {
+      # See comment for -gdwarf-aranges in config("symbols").
+      cflags += [ "-gdwarf-aranges" ]
+    }
+
     ldflags = []
     if (is_android && is_clang) {
       # Android defaults to symbol_level=1 builds in production builds
@@ -2472,6 +2540,7 @@ config("minimal_symbols") {
 
     asmflags = cflags
   }
+  rustflags = [ "-Cdebuginfo=1" ]
 }
 
 # This configuration contains function names only. That is, the compiler is

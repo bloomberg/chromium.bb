@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -20,6 +18,8 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 
 namespace web_app {
 
@@ -42,7 +42,7 @@ std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
 TestWebAppProvider* TestWebAppProvider::Get(Profile* profile) {
   CHECK(profile->AsTestingProfile());
   auto* test_provider =
-      static_cast<TestWebAppProvider*>(WebAppProvider::Get(profile));
+      static_cast<TestWebAppProvider*>(WebAppProvider::GetForTest(profile));
   CHECK(!test_provider->started_);
 
   // Disconnect so that clients are forced to call Start() before accessing any
@@ -68,10 +68,10 @@ void TestWebAppProvider::SetRegistrar(
   registrar_ = std::move(registrar);
 }
 
-void TestWebAppProvider::SetRegistryController(
-    std::unique_ptr<AppRegistryController> controller) {
+void TestWebAppProvider::SetSyncBridge(
+    std::unique_ptr<WebAppSyncBridge> sync_bridge) {
   CheckNotStarted();
-  registry_controller_ = std::move(controller);
+  sync_bridge_ = std::move(sync_bridge);
 }
 
 void TestWebAppProvider::SetInstallManager(

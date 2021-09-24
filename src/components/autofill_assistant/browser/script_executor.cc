@@ -315,6 +315,18 @@ std::string ScriptExecutor::GetBubbleMessage() const {
   return delegate_->GetBubbleMessage();
 }
 
+void ScriptExecutor::SetTtsMessage(const std::string& message) {
+  delegate_->SetTtsMessage(message);
+}
+
+TtsButtonState ScriptExecutor::GetTtsButtonState() const {
+  return delegate_->GetTtsButtonState();
+}
+
+void ScriptExecutor::MaybePlayTtsMessage() {
+  delegate_->MaybePlayTtsMessage();
+}
+
 void ScriptExecutor::FindElement(const Selector& selector,
                                  ElementFinder::Callback callback) const {
   VLOG(3) << __func__ << " " << selector;
@@ -692,6 +704,11 @@ void ScriptExecutor::WaitForWindowHeightChange(
 
 const ClientSettings& ScriptExecutor::GetSettings() const {
   return delegate_->GetSettings();
+}
+
+void ScriptExecutor::SetClientSettings(
+    const ClientSettingsProto& client_settings) {
+  return delegate_->SetClientSettings(client_settings);
 }
 
 bool ScriptExecutor::SetForm(

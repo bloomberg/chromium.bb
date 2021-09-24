@@ -489,7 +489,6 @@ void ToolbarView::ShowIntentPickerBubble(
       location_bar(), intent_picker_view, icon_type, GetWebContents(),
       std::move(app_info), show_stay_in_chrome, show_remember_selection,
       initiating_origin, std::move(callback));
-  // TODO(knollr): find a way that the icon updates implicitly.
   intent_picker_view->Update();
 }
 
@@ -512,7 +511,7 @@ void ToolbarView::ShowBookmarkBubble(
 }
 
 ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {
-  return extensions_container_->extensions_button();
+  return extensions_container_->GetExtensionsButton();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -804,7 +803,7 @@ gfx::Size ToolbarView::GetToolbarButtonSize() const {
 
 views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
   if (extensions_container_)
-    return extensions_container_->extensions_button();
+    return extensions_container_->GetExtensionsButton();
   return GetAppMenuButton();
 }
 
@@ -865,6 +864,10 @@ views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
 void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   location_bar_->page_action_icon_controller()->ZoomChangedForActiveTab(
       can_show_bubble);
+}
+
+ReadLaterToolbarButton* ToolbarView::GetSidePanelButton() {
+  return read_later_button_;
 }
 
 AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {

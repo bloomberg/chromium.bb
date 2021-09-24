@@ -262,6 +262,8 @@ class VkLayerTest : public VkRenderFramework {
     bool AddSwapchainDeviceExtension();
     VkCommandBufferObj *CommandBuffer();
     void OOBRayTracingShadersTestBody(bool gpu_assisted);
+    bool AddYCbCrDeviceExtensions();
+    bool AddImageDrmFormatModifierDeviceExtensions();
 
   protected:
     uint32_t m_instance_api_version = 0;
@@ -290,6 +292,7 @@ class VkPositiveLayerTest : public VkLayerTest {
 class VkBestPracticesLayerTest : public VkLayerTest {
   public:
     void InitBestPracticesFramework();
+    void InitBestPracticesFramework(const char* ValidationChecksToEnable);
 
   protected:
     VkValidationFeatureEnableEXT enables_[1] = {VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT};
@@ -299,6 +302,7 @@ class VkBestPracticesLayerTest : public VkLayerTest {
     VkValidationFeaturesEXT features_ = {VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT, nullptr, 1, enables_, 4, disables_};
 };
 
+class VkAmdBestPracticesLayerTest : public VkBestPracticesLayerTest {};
 class VkArmBestPracticesLayerTest : public VkBestPracticesLayerTest {
   public:
     std::unique_ptr<VkImageObj> CreateImage(VkFormat format, const uint32_t width, const uint32_t height,
@@ -420,7 +424,7 @@ struct OneOffDescriptorSet {
     void WriteDescriptorBufferInfo(int binding, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range,
                                    VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uint32_t arrayElement = 0,
                                    uint32_t count = 1);
-    void WriteDescriptorBufferView(int binding, VkBufferView &buffer_view,
+    void WriteDescriptorBufferView(int binding, VkBufferView buffer_view,
                                    VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
                                    uint32_t arrayElement = 0, uint32_t count = 1);
     void WriteDescriptorImageInfo(int binding, VkImageView image_view, VkSampler sampler,
@@ -506,7 +510,7 @@ struct CreatePipelineHelper {
         for (const auto &error : errors) test.Monitor().SetDesiredFailureMsg(flags, error);
         helper.CreateGraphicsPipeline();
 
-        if (positive_test) {
+        if (positive_test || (errors.size() == 0)) {
             test.Monitor().VerifyNotFound();
         } else {
             test.Monitor().VerifyFound();
@@ -531,6 +535,7 @@ struct CreateComputePipelineHelper {
     VkPipeline pipeline_ = VK_NULL_HANDLE;
     VkPipelineCache pipeline_cache_ = VK_NULL_HANDLE;
     std::unique_ptr<VkShaderObj> cs_;
+    bool override_skip_ = false;
     VkLayerTest &layer_test_;
     CreateComputePipelineHelper(VkLayerTest &test);
     ~CreateComputePipelineHelper();
@@ -557,6 +562,11 @@ struct CreateComputePipelineHelper {
         CreateComputePipelineHelper helper(test);
         helper.InitInfo();
         info_override(helper);
+        // Allow lambda to decide if to skip trying to compile pipeline to prevent crashing
+        if (helper.override_skip_) {
+            helper.override_skip_ = false;  // reset
+            return;
+        }
         helper.InitState();
 
         for (const auto &error : errors) test.Monitor().SetDesiredFailureMsg(flags, error);

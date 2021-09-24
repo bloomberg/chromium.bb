@@ -60,9 +60,9 @@ struct FrameStats {
   absl::optional<int> rendered_frame_height = absl::nullopt;
 
   // Can be not set if frame was dropped by encoder.
-  absl::optional<webrtc_pc_e2e::StreamCodecInfo> used_encoder = absl::nullopt;
+  absl::optional<StreamCodecInfo> used_encoder = absl::nullopt;
   // Can be not set if frame was dropped in the network.
-  absl::optional<webrtc_pc_e2e::StreamCodecInfo> used_decoder = absl::nullopt;
+  absl::optional<StreamCodecInfo> used_decoder = absl::nullopt;
 };
 
 // Describes why comparison was done in overloaded mode (without calculating
@@ -73,6 +73,18 @@ enum class OverloadReason {
   kCpu,
   // Not enough memory to store captured frames for all comparisons.
   kMemory
+};
+
+enum class FrameComparisonType {
+  // Comparison for captured and rendered frame.
+  kRegular,
+  // Comparison for captured frame that is known to be dropped somewhere in
+  // video pipeline.
+  kDroppedFrame,
+  // Comparison for captured frame that was still in the video pipeline when
+  // test was stopped. It's unknown is this frame dropped or would it be
+  // delivered if test continue.
+  kFrameInFlight
 };
 
 // Represents comparison between two VideoFrames. Contains video frames itself
@@ -87,7 +99,7 @@ struct FrameComparison {
   FrameComparison(InternalStatsKey stats_key,
                   absl::optional<VideoFrame> captured,
                   absl::optional<VideoFrame> rendered,
-                  bool dropped,
+                  FrameComparisonType type,
                   FrameStats frame_stats,
                   OverloadReason overload_reason);
 
@@ -96,10 +108,7 @@ struct FrameComparison {
   // queue.
   absl::optional<VideoFrame> captured;
   absl::optional<VideoFrame> rendered;
-  // If true frame was dropped somewhere from capturing to rendering and
-  // wasn't rendered on remote peer side. If `dropped` is true, `rendered`
-  // will be `absl::nullopt`.
-  bool dropped;
+  FrameComparisonType type;
   FrameStats frame_stats;
   OverloadReason overload_reason;
 };

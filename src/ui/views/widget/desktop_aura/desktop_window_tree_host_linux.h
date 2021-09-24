@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -120,6 +121,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event, bool transient) override;
 #endif
   bool IsOverrideRedirect() const override;
+  gfx::Rect GetGuessedFullScreenSizeInPx() const override;
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();

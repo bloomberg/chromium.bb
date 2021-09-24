@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocator/buildflags.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -84,6 +85,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -93,6 +95,11 @@
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#endif
 
 namespace content {
 
@@ -2549,7 +2556,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestClientHintsEnabled,
       "<html>");
   http_response.Done();
   const std::string mobile_id =
-      blink::kClientHintsHeaderMapping[static_cast<int>(
+      network::kClientHintsNameMapping[static_cast<int>(
           network::mojom::WebClientHintsType::kUAMobile)];
   ASSERT_TRUE(base::Contains(http_response.http_request()->headers, mobile_id));
   // "?!" corresponds to "mobile=true".
@@ -4930,5 +4937,54 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplAllowInsecureLocalhostBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), url));
   observer.Wait();
 }
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+
+namespace {
+
+class PCScanFeature {
+ public:
+  PCScanFeature() {
+    scoped_feature_list_.InitAndEnableFeature(
+        base::features::kPartitionAllocPCScanBrowserOnly);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Initialize PCScanFeature before WebContentsImplBrowserTest to make sure that
+// the feature is enabled within the entire lifetime of the test.
+class WebContentsImplStarScanBrowserTest : private PCScanFeature,
+                                           public WebContentsImplBrowserTest {};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanBrowserTest,
+                       StarScanDisabledWhileLoadInProgress) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL url = embedded_test_server()->GetURL("/title1.html");
+
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // Check that PCScan is initially enabled.
+  EXPECT_TRUE(base::internal::PCScan::IsEnabled());
+
+  // Start request and check that PCScan is still enabled.
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  EXPECT_TRUE(base::internal::PCScan::IsEnabled());
+
+  // Wait for navigation to finish and check that PCScan is disabled.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_FALSE(base::internal::PCScan::IsEnabled());
+
+  // Complete load and check that PCScan is enabled again.
+  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(base::internal::PCScan::IsEnabled());
+}
+
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
 
 }  // namespace content

@@ -74,8 +74,14 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
   with api.context(cwd=out, env=env):
     api.run(api.step, 'swiftshader cmake',
             cmd=['cmake'] + swiftshader_opts + [swiftshader_root, '-GNinja'])
+    # See https://swiftshader-review.googlesource.com/c/SwiftShader/+/56452 for when the
+    # deprecated targets were added. See skbug.com/12386 for longer-term plans.
     api.run(api.step, 'swiftshader ninja',
-            cmd=['ninja', '-C', out, 'libEGL.so', 'libGLESv2.so'])
+            cmd=['ninja', '-C', out, 'libEGL_deprecated.so', 'libGLESv2_deprecated.so'])
+    api.run(api.step, 'rename legacy libEGL binary',
+            cmd=['cp', 'libEGL_deprecated.so', 'libEGL.so'])
+    api.run(api.step, 'rename legacy libGLESv2 binary',
+            cmd=['cp', 'libGLESv2_deprecated.so', 'libGLESv2.so'])
 
 
 def compile_fn(api, checkout_root, out_dir):
@@ -275,6 +281,7 @@ def compile_fn(api, checkout_root, out_dir):
       'skia_use_expat':                'false',
       'skia_use_freetype':             'false',
       'skia_use_harfbuzz':             'false',
+      'skia_use_icu':                  'false',
       'skia_use_libjpeg_turbo_decode': 'false',
       'skia_use_libjpeg_turbo_encode': 'false',
       'skia_use_libpng_decode':        'false',

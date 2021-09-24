@@ -61,7 +61,7 @@ class CPDF_StreamContentParser {
   }
   CPDF_AllStates* GetCurStates() const { return m_pCurStates.get(); }
   bool IsColored() const { return m_bColored; }
-  const float* GetType3Data() const { return m_Type3Data; }
+  pdfium::span<const float> GetType3Data() const { return m_Type3Data; }
   RetainPtr<CPDF_Font> FindFont(const ByteString& name);
 
   static ByteStringView FindKeyAbbreviationForTesting(ByteStringView abbr);
@@ -230,7 +230,6 @@ class CPDF_StreamContentParser {
   std::unique_ptr<CPDF_AllStates> m_pCurStates;
   std::stack<std::unique_ptr<CPDF_ContentMarks>> m_ContentMarksStack;
   std::vector<std::unique_ptr<CPDF_TextObject>> m_ClipTextList;
-  UnownedPtr<const CPDF_TextObject> m_pLastTextObject;
   std::vector<CFX_Path::Point> m_PathPoints;
   CFX_PointF m_PathStart;
   CFX_PointF m_PathCurrent;

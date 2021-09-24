@@ -141,6 +141,11 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
 
   void Invalidate() override { container_->Invalidate(); }
 
+  void RequestTouchEventType(
+      blink::WebPluginContainer::TouchEventRequestType request_type) override {
+    container_->RequestTouchEventType(request_type);
+  }
+
   void ReportFindInPageMatchCount(int identifier,
                                   int total,
                                   bool final_update) override {
@@ -250,17 +255,20 @@ PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
 bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   DCHECK_EQ(container->Plugin(), this);
-  return InitializeCommon(std::make_unique<BlinkContainerWrapper>(container));
+  return InitializeCommon(std::make_unique<BlinkContainerWrapper>(container),
+                          nullptr);
 }
 
 bool PdfViewWebPlugin::InitializeForTesting(
-    std::unique_ptr<ContainerWrapper> container_wrapper) {
-  return InitializeCommon(std::move(container_wrapper));
+    std::unique_ptr<ContainerWrapper> container_wrapper,
+    std::unique_ptr<PDFiumEngine> engine) {
+  return InitializeCommon(std::move(container_wrapper), std::move(engine));
 }
 
 // Modeled on `OutOfProcessInstance::Init()`.
 bool PdfViewWebPlugin::InitializeCommon(
-    std::unique_ptr<ContainerWrapper> container_wrapper) {
+    std::unique_ptr<ContainerWrapper> container_wrapper,
+    std::unique_ptr<PDFiumEngine> engine) {
   container_wrapper_ = std::move(container_wrapper);
 
   // Check if the PDF is being loaded in the PDF chrome extension. We only allow
@@ -297,10 +305,15 @@ bool PdfViewWebPlugin::InitializeCommon(
 
   PerProcessInitializer::GetInstance().Acquire();
 
-  InitializeEngine(std::make_unique<PDFiumEngine>(this, params->script_option));
+  InitializeEngine(
+      engine ? std::move(engine)
+             : std::make_unique<PDFiumEngine>(this, params->script_option));
   LoadUrl(params->src_url, /*is_print_preview=*/false);
   set_url(params->original_url);
   post_message_sender_.set_container(Container());
+
+  container_wrapper_->RequestTouchEventType(
+      blink::WebPluginContainer::kTouchEventRequestTypeRaw);
   return true;
 }
 
@@ -424,11 +437,11 @@ blink::WebInputEventResult PdfViewWebPlugin::HandleInputEvent(
     const blink::WebCoalescedInputEvent& event,
     ui::Cursor* cursor) {
   // TODO(crbug.com/702993): The input events received by the Pepper plugin
-  // already have the device scale applied. The scaling done here should be
-  // moved into `PdfViewPluginBase::HandleInputEvent()` once the Pepper plugin
-  // is removed.
+  // already have the viewport-to-DIP scale applied. The scaling done here
+  // should be moved into `PdfViewPluginBase::HandleInputEvent()` once the
+  // Pepper plugin is removed.
   std::unique_ptr<blink::WebInputEvent> scaled_event =
-      ui::ScaleWebInputEvent(event.Event(), device_scale());
+      ui::ScaleWebInputEvent(event.Event(), viewport_to_dip_scale_);
 
   const blink::WebInputEvent& event_to_handle =
       scaled_event ? *scaled_event : event.Event();
@@ -556,20 +569,17 @@ bool PdfViewWebPlugin::StartFind(const blink::WebString& search_text,
                                  bool case_sensitive,
                                  int identifier) {
   find_identifier_ = identifier;
-  engine()->StartFind(search_text.Utf8(), case_sensitive);
-  return true;
+  return PdfViewPluginBase::StartFind(search_text.Utf8(), case_sensitive);
 }
 
 void PdfViewWebPlugin::SelectFindResult(bool forward, int identifier) {
   find_identifier_ = identifier;
-  engine()->SelectFindResult(forward);
+  PdfViewPluginBase::SelectFindResult(forward);
 }
 
 void PdfViewWebPlugin::StopFind() {
   find_identifier_ = -1;
-  engine()->StopFind();
-  // TODO(crbug.com/1199999): Clear tickmarks on scroller when find is
-  // dismissed.
+  PdfViewPluginBase::StopFind();
 }
 
 bool PdfViewWebPlugin::CanRotateView() {
@@ -595,22 +605,6 @@ blink::WebTextInputType PdfViewWebPlugin::GetPluginTextInputType() {
 
 void PdfViewWebPlugin::UpdateCursor(ui::mojom::CursorType new_cursor_type) {
   set_cursor_type(new_cursor_type);
-}
-
-void PdfViewWebPlugin::UpdateTickMarks(
-    const std::vector<gfx::Rect>& tickmarks) {}
-
-void PdfViewWebPlugin::NotifyNumberOfFindResultsChanged(int total,
-                                                        bool final_result) {
-  // After stopping search and setting `find_identifier_` to -1 there still may
-  // be a NotifyNumberOfFindResultsChanged notification pending from engine.
-  // Just ignore them.
-  if (find_identifier_ == -1 || !container_wrapper_)
-    return;
-
-  container_wrapper_->ReportFindInPageMatchCount(find_identifier_, total,
-                                                 final_result);
-  // TODO(crbug.com/1199999): Set tickmarks on scroller.
 }
 
 void PdfViewWebPlugin::NotifySelectedFindResultChanged(int current_find_index) {
@@ -730,6 +724,10 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
     InvalidatePluginContainer();
 }
 
+void PdfViewWebPlugin::EnableAccessibility() {
+  PdfViewPluginBase::EnableAccessibility();
+}
+
 void PdfViewWebPlugin::HandleAccessibilityAction(
     const AccessibilityActionData& action_data) {
   PdfViewPluginBase::HandleAccessibilityAction(action_data);
@@ -799,9 +797,29 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
 
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
     const AccessibilityViewportInfo& viewport_info) {
-  if (!pdf_accessibility_data_handler_)
+  // The accessibility tree cannot be updated within the scope of
+  // `UpdateGeometry`.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityViewportInfo,
+                     weak_factory_.GetWeakPtr(), viewport_info));
+}
+
+void PdfViewWebPlugin::NotifyFindResultsChanged(int total, bool final_result) {
+  // After stopping search and setting `find_identifier_` to -1 there still may
+  // be a NotifyNumberOfFindResultsChanged notification pending from engine.
+  // Just ignore them.
+  if (find_identifier_ == -1 || !container_wrapper_)
     return;
-  pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(viewport_info);
+
+  container_wrapper_->ReportFindInPageMatchCount(find_identifier_, total,
+                                                 final_result);
+}
+void PdfViewWebPlugin::NotifyFindTickmarks(
+    const std::vector<gfx::Rect>& tickmarks) {
+  // TODO(crbug.com/1199999): Notify the frame about the tickmarks for the
+  // find request.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void PdfViewWebPlugin::SetContentRestrictions(int content_restrictions) {
@@ -927,6 +945,13 @@ bool PdfViewWebPlugin::Redo() {
 
 void PdfViewWebPlugin::OnInvokePrintDialog(int32_t /*result*/) {
   client_->Print(Container()->GetElement());
+}
+
+void PdfViewWebPlugin::OnSetAccessibilityViewportInfo(
+    const AccessibilityViewportInfo& viewport_info) {
+  if (!pdf_accessibility_data_handler_)
+    return;
+  pdf_accessibility_data_handler_->SetAccessibilityViewportInfo(viewport_info);
 }
 
 pdf::mojom::PdfService* PdfViewWebPlugin::GetPdfService() {

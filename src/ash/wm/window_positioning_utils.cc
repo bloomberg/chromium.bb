@@ -109,18 +109,17 @@ void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
 gfx::Rect GetDefaultSnappedWindowBoundsInParent(aura::Window* window,
                                                 SnapViewType type) {
   return GetSnappedWindowBounds(
-      screen_util::GetDisplayWorkAreaBoundsInParent(window), window, type,
-      kDefaultSnapRatio);
+      screen_util::GetDisplayWorkAreaBoundsInParent(window),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window), window,
+      type, kDefaultSnapRatio);
 }
 
 gfx::Rect GetSnappedWindowBounds(const gfx::Rect& work_area,
+                                 const display::Display display,
                                  aura::Window* window,
                                  SnapViewType type,
                                  float snap_ratio) {
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  ash::OrientationLockType orientation = GetSnapDisplayOrientation(display);
-
+  OrientationLockType orientation = GetSnapDisplayOrientation(display);
   enum class SnapPosition { kLeft, kRight, kBottom, kTop, kInvalid };
   SnapPosition position = SnapPosition::kInvalid;
   const bool is_primary_snap = type == SnapViewType::kPrimary;
@@ -176,11 +175,11 @@ gfx::Rect GetSnappedWindowBounds(const gfx::Rect& work_area,
       snap_bounds.set_x(work_area.right() - axis_length);
       break;
     case SnapPosition::kTop:
-      DCHECK(features::IsVerticalSplitScreenEnabled());
+      DCHECK(features::IsVerticalSnapStateEnabled());
       snap_bounds.set_height(axis_length);
       break;
     case SnapPosition::kBottom:
-      DCHECK(features::IsVerticalSplitScreenEnabled());
+      DCHECK(features::IsVerticalSnapStateEnabled());
       snap_bounds.set_height(axis_length);
       // Snap to the bottom.
       snap_bounds.set_y(work_area.bottom() - axis_length);
@@ -194,7 +193,7 @@ gfx::Rect GetSnappedWindowBounds(const gfx::Rect& work_area,
 
 ash::OrientationLockType GetSnapDisplayOrientation(
     const display::Display& display) {
-  if (!features::IsVerticalSplitScreenEnabled())
+  if (!features::IsVerticalSnapStateEnabled())
     return ash::OrientationLockType::kLandscapePrimary;
 
   // This function is used by `GetSnappedWindowBounds()` for clamshell mode
@@ -209,7 +208,6 @@ ash::OrientationLockType GetSnapDisplayOrientation(
           ->GetDisplayInfo(display.id())
           .GetActiveRotation();
 
-  DCHECK(display.size().width() != display.size().height());
   return RotationToOrientation(GetDisplayNaturalOrientation(display), rotation);
 }
 

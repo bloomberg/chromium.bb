@@ -12,7 +12,7 @@
 #define MODULES_VIDEO_CODING_INCLUDE_VIDEO_CODING_H_
 
 #include "api/video/video_frame.h"
-#include "api/video_codecs/video_codec.h"
+#include "api/video_codecs/video_decoder.h"
 #include "modules/include/module.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 #include "modules/video_coding/include/video_coding_defines.h"
@@ -43,15 +43,10 @@ class VideoCodingModule : public Module {
   //
   // Input:
   //      - payload_type      : RTP payload type
-  //      - receiveCodec      : Settings for the codec to be registered.
-  //      - numberOfCores     : Number of CPU cores that the decoder is allowed
-  //      to use.
+  //      - settings          : Settings for the decoder to be registered.
   //
-  // Return value      : VCM_OK, on success.
-  //                     < 0,    on error.
-  virtual int32_t RegisterReceiveCodec(uint8_t payload_type,
-                                       const VideoCodec* receiveCodec,
-                                       int32_t numberOfCores) = 0;
+  virtual void RegisterReceiveCodec(uint8_t payload_type,
+                                    const VideoDecoder::Settings& settings) = 0;
 
   // Register an external decoder object.
   //

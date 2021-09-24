@@ -46,21 +46,20 @@ public class AutofillMessageConfirmFlowBridge
         if (mNativeSaveCardMessageConfirmDelegate == 0) {
             return;
         }
-        AutofillMessageConfirmFlowBridgeJni.get().promptDismissed(
-                mNativeSaveCardMessageConfirmDelegate, AutofillMessageConfirmFlowBridge.this);
+        AutofillMessageConfirmFlowBridgeJni.get().dialogDismissed(
+                mNativeSaveCardMessageConfirmDelegate);
     }
 
     @Override
     public void onUserAccept(String name) {
         AutofillMessageConfirmFlowBridgeJni.get().onNameConfirmed(
-                mNativeSaveCardMessageConfirmDelegate, AutofillMessageConfirmFlowBridge.this, name);
+                mNativeSaveCardMessageConfirmDelegate, name);
     }
 
     @Override
     public void onUserAccept(String month, String year) {
         AutofillMessageConfirmFlowBridgeJni.get().onDateConfirmed(
-                mNativeSaveCardMessageConfirmDelegate, AutofillMessageConfirmFlowBridge.this, month,
-                year);
+                mNativeSaveCardMessageConfirmDelegate, month, year);
     }
 
     // no-op
@@ -70,7 +69,7 @@ public class AutofillMessageConfirmFlowBridge
     @Override
     public void onLinkClicked(String url) {
         AutofillMessageConfirmFlowBridgeJni.get().onLegalMessageLinkClicked(
-                mNativeSaveCardMessageConfirmDelegate, AutofillMessageConfirmFlowBridge.this, url);
+                mNativeSaveCardMessageConfirmDelegate, url);
     }
 
     @CalledByNative
@@ -156,13 +155,9 @@ public class AutofillMessageConfirmFlowBridge
 
     @NativeMethods
     interface Natives {
-        void onDateConfirmed(long nativeSaveCardMessageConfirmDelegate,
-                AutofillMessageConfirmFlowBridge caller, String month, String year);
-        void promptDismissed(
-                long nativeSaveCardMessageConfirmDelegate, AutofillMessageConfirmFlowBridge caller);
-        void onNameConfirmed(long nativeSaveCardMessageConfirmDelegate,
-                AutofillMessageConfirmFlowBridge caller, String name);
-        void onLegalMessageLinkClicked(long nativeSaveCardMessageConfirmDelegate,
-                AutofillMessageConfirmFlowBridge caller, String url);
+        void onDateConfirmed(long nativeSaveCardMessageConfirmDelegate, String month, String year);
+        void dialogDismissed(long nativeSaveCardMessageConfirmDelegate);
+        void onNameConfirmed(long nativeSaveCardMessageConfirmDelegate, String name);
+        void onLegalMessageLinkClicked(long nativeSaveCardMessageConfirmDelegate, String url);
     }
 }

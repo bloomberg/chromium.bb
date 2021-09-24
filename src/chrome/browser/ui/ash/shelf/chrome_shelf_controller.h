@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/auto_reset.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -28,14 +29,17 @@
 class AppIconLoader;
 class AppServiceAppWindowShelfController;
 class AppWindowShelfController;
-class BrowserAppsTracker;
 class BrowserShortcutShelfItemController;
 class BrowserStatusMonitor;
 class ChromeShelfControllerUserSwitchObserver;
-class GURL;
+class ChromeShelfItemFactory;
 class Profile;
 class ShelfControllerHelper;
 class ShelfSpinnerController;
+
+namespace apps {
+class BrowserAppInstanceTracker;
+}
 
 namespace ash {
 class ShelfModel;
@@ -70,11 +74,16 @@ class ChromeShelfController
   // Returns the single ChromeShelfController instance.
   static ChromeShelfController* instance() { return instance_; }
 
-  ChromeShelfController(Profile* profile, ash::ShelfModel* model);
+  ChromeShelfController(Profile* profile,
+                        ash::ShelfModel* model,
+                        ChromeShelfItemFactory* shelf_item_factory);
   ~ChromeShelfController() override;
 
   Profile* profile() const { return profile_; }
   ash::ShelfModel* shelf_model() const { return model_; }
+  ChromeShelfItemFactory* shelf_item_factory() const {
+    return shelf_item_factory_;
+  }
 
   AppServiceAppWindowShelfController* app_service_app_window_controller() {
     return app_service_app_window_controller_;
@@ -102,14 +111,22 @@ class ChromeShelfController
   // Updates the shelf item title (displayed in the tooltip).
   void SetItemTitle(const ash::ShelfID& id, const std::u16string& title);
 
-  // Closes or unpins the shelf item.
-  void CloseItem(const ash::ShelfID& id);
+  // If the shelf-item is pinned, its state is set to CLOSED and its delegate is
+  // replaced with an AppShortcutShelfItemController.
+  // If the shelf-item is unpinned, then it's removed from the shelf.
+  void ReplaceWithAppShortcutOrRemove(const ash::ShelfID& id);
 
   // Returns true if the item identified by |id| is pinned.
   bool IsPinned(const ash::ShelfID& id);
 
+  // This method is only used by BrowserStatusMonitor and tests. This method
+  // relies on implicit assumptions and is likely unsuitable for other use
+  // cases.
+  //
   // Set the shelf item status for the application with the given |app_id|.
   // Adds or removes an item as needed to respect the running and pinned state.
+  // If a new item is added, the AppShortcutShelfItemController delegate is
+  // used.
   void SetAppStatus(const std::string& app_id, ash::ShelfItemStatus status);
 
   // Closes the specified item.
@@ -131,14 +148,6 @@ class ChromeShelfController
                  ash::ShelfLaunchSource source,
                  int event_flags,
                  int64_t display_id);
-
-  // If |app_id| is running, reactivates the app's most recently active window,
-  // otherwise launches and activates the app.
-  // Used by the app-list, and by pinned-app shelf items.
-  void ActivateApp(const std::string& app_id,
-                   ash::ShelfLaunchSource source,
-                   int event_flags,
-                   int64_t display_id);
 
   // Set the image for a specific shelf item (e.g. when set by the app).
   void SetItemImage(const ash::ShelfID& shelf_id, const gfx::ImageSkia& image);
@@ -163,9 +172,6 @@ class ChromeShelfController
   // Returns ShelfID for |app_id|. If |app_id| is empty, or the app is not
   // pinned, returns the id of browser shrotcut.
   ash::ShelfID GetShelfIDForAppId(const std::string& app_id);
-
-  // Limits application refocusing to urls that match |url| for |id|.
-  void SetRefocusURLPatternForTest(const ash::ShelfID& id, const GURL& url);
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
@@ -249,14 +255,21 @@ class ChromeShelfController
   // Helpers that call through to corresponding ShelfModel functions.
   bool AllowedToSetAppPinState(const std::string& app_id,
                                bool target_pin) const;
-  void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);
 
+  // This method is only used by ApkWebAppService and tests. This method
+  // relies on implicit assumptions and is likely unsuitable for other use
+  // cases.
+  //
   // Unpins app item with |old_app_id| and pins app |new_app_id| in its place.
   void ReplacePinnedItem(const std::string& old_app_id,
                          const std::string& new_app_id);
 
+  // This method is only used by ApkWebAppService and tests. This method
+  // relies on implicit assumptions and is likely unsuitable for other use
+  // cases.
+  //
   // Pins app with |app_id| at |target_index|.
   void PinAppAtIndex(const std::string& app_id, int target_index);
 
@@ -286,6 +299,16 @@ class ChromeShelfController
   void OnAppImageUpdated(const std::string& app_id,
                          const gfx::ImageSkia& image) override;
 
+  // Creates an app item to insert at |index|. Note that |index| may be
+  // adjusted by the model to meet ordering constraints.
+  // The |shelf_item_type| will be set into the ShelfModel.
+  ash::ShelfID InsertAppItem(
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
+      ash::ShelfItemStatus status,
+      int index,
+      ash::ShelfItemType shelf_item_type,
+      const std::u16string& title = std::u16string());
+
  private:
   friend class ChromeShelfControllerTest;
   friend class ShelfAppBrowserTest;
@@ -300,12 +323,6 @@ class ChromeShelfController
 
   // Updates images of shelf items representing the app.
   void UpdateAppImage(const std::string& app_id, const gfx::ImageSkia& image);
-
-  // Creates a new app shortcut item and controller on the shelf at |index|.
-  ash::ShelfID CreateAppShortcutItem(const ash::ShelfID& shelf_id, int index);
-  ash::ShelfID CreateAppShortcutItem(const ash::ShelfID& shelf_id,
-                                     int index,
-                                     const std::u16string& title);
 
   // Remembers / restores list of running applications.
   // Note that this order will neither be stored in the preference nor will it
@@ -339,16 +356,6 @@ class ChromeShelfController
   // Returns the shelf item status for the given |app_id|, which can be either
   // STATUS_RUNNING (if there is such an app) or STATUS_CLOSED.
   ash::ShelfItemStatus GetAppState(const std::string& app_id);
-
-  // Creates an app item to insert at |index|. Note that |index| may be
-  // adjusted by the model to meet ordering constraints.
-  // The |shelf_item_type| will be set into the ShelfModel.
-  ash::ShelfID InsertAppItem(
-      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
-      ash::ShelfItemStatus status,
-      int index,
-      ash::ShelfItemType shelf_item_type,
-      const std::u16string& title = std::u16string());
 
   // Create the Chrome browser shortcut ShelfItem.
   void CreateBrowserShortcutItem(bool pinned);
@@ -407,6 +414,10 @@ class ChromeShelfController
   // The ShelfModel instance owned by ash::Shell's ShelfController.
   ash::ShelfModel* model_;
 
+  // Guaranteed to outlive this class. The central authority for creating
+  // ShelfItems from app_ids.
+  ChromeShelfItemFactory* const shelf_item_factory_;
+
   // The AppService app window shelf controller.
   AppServiceAppWindowShelfController* app_service_app_window_controller_ =
       nullptr;
@@ -443,8 +454,8 @@ class ChromeShelfController
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
-  // The owned browser apps tracker.
-  std::unique_ptr<BrowserAppsTracker> browser_apps_tracker_;
+  // The browser app instance tracker for the current profile.
+  apps::BrowserAppInstanceTracker* browser_app_instance_tracker_{nullptr};
 
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeShelfControllerUserSwitchObserver>

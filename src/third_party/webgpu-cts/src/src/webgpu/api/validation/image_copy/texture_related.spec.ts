@@ -9,18 +9,21 @@ export const description = `
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { assert } from '../../../../common/util/util.js';
 import {
+  kColorTextureFormats,
   kSizedTextureFormats,
   kTextureFormatInfo,
   textureDimensionAndFormatCompatible,
 } from '../../../capability_info.js';
 import { GPUConst } from '../../../constants.js';
 import { align } from '../../../util/math.js';
+import { virtualMipSize } from '../../../util/texture/base.js';
 import { kImageCopyTypes } from '../../../util/texture/layout.js';
 
 import {
   ImageCopyTest,
   texelBlockAlignmentTestExpanderForValueToCoordinate,
   formatCopyableWithMethod,
+  getACopyableAspectWithMethod,
 } from './image_copy.js';
 
 export const g = makeTestGroup(ImageCopyTest);
@@ -96,8 +99,8 @@ g.test('usage')
       ] as const)
       .beginSubcases()
       .combine('usage', [
-        GPUConst.TextureUsage.COPY_SRC | GPUConst.TextureUsage.SAMPLED,
-        GPUConst.TextureUsage.COPY_DST | GPUConst.TextureUsage.SAMPLED,
+        GPUConst.TextureUsage.COPY_SRC | GPUConst.TextureUsage.TEXTURE_BINDING,
+        GPUConst.TextureUsage.COPY_DST | GPUConst.TextureUsage.TEXTURE_BINDING,
         GPUConst.TextureUsage.COPY_SRC | GPUConst.TextureUsage.COPY_DST,
       ])
   )
@@ -141,7 +144,7 @@ g.test('sample_count')
       size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       sampleCount,
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
     });
 
     const success = sampleCount === 1;
@@ -189,12 +192,93 @@ g.test('mip_level')
     );
   });
 
+g.test('format')
+  .desc(`Test that it must be a full copy if the texture's format is depth/stencil format`)
+  .params(u =>
+    u //
+      .combine('method', kImageCopyTypes)
+      .combineWithParams([
+        { depthOrArrayLayers: 1, dimension: '2d' },
+        { depthOrArrayLayers: 3, dimension: '2d' },
+        { depthOrArrayLayers: 32, dimension: '3d' },
+      ] as const)
+      .combine('format', kSizedTextureFormats)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
+      .filter(formatCopyableWithMethod)
+      .beginSubcases()
+      .combine('mipLevel', [0, 2])
+      .combine('copyWidthModifier', [0, -1])
+      .combine('copyHeightModifier', [0, -1])
+      // If the texture has multiple depth/array slices and it is not a 3D texture, which means it is an array texture,
+      // depthModifier is not needed upon the third dimension. Because different layers are different subresources in
+      // an array texture. Whether it is a full copy or non-full copy doesn't make sense across different subresources.
+      // However, different depth slices on the same mip level are within the same subresource for a 3d texture. So we
+      // need to examine depth dimension via copyDepthModifier to determine whether it is a full copy for a 3D texture.
+      .expand('copyDepthModifier', ({ dimension: d }) => (d === '3d' ? [0, -1] : [0]))
+  )
+  .fn(async t => {
+    const {
+      method,
+      depthOrArrayLayers,
+      dimension,
+      format,
+      mipLevel,
+      copyWidthModifier,
+      copyHeightModifier,
+      copyDepthModifier,
+    } = t.params;
+
+    const info = kTextureFormatInfo[format];
+    await t.selectDeviceOrSkipTestCase(info.feature);
+
+    const size = { width: 32, height: 32, depthOrArrayLayers };
+    const texture = t.device.createTexture({
+      size,
+      dimension,
+      format,
+      mipLevelCount: 5,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
+    });
+
+    let success = true;
+    if (
+      (info.depth || info.stencil) &&
+      (copyWidthModifier !== 0 || copyHeightModifier !== 0 || copyDepthModifier !== 0)
+    ) {
+      success = false;
+    }
+
+    const levelSize = virtualMipSize(
+      dimension,
+      [size.width, size.height, size.depthOrArrayLayers],
+      mipLevel
+    );
+    const copySize = [
+      levelSize[0] + copyWidthModifier * info.blockWidth,
+      levelSize[1] + copyHeightModifier * info.blockHeight,
+      // Note that compressed format is not supported for 3D textures yet, so there is no info.blockDepth.
+      levelSize[2] + copyDepthModifier,
+    ];
+
+    t.testRun(
+      { texture, mipLevel, aspect: getACopyableAspectWithMethod({ format, method }) },
+      { bytesPerRow: 512, rowsPerImage: 32 },
+      copySize,
+      {
+        dataSize: 512 * 32 * 32,
+        method,
+        success,
+      }
+    );
+  });
+
 g.test('origin_alignment')
   .desc(`Copy origin must be aligned to block size.`)
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
-      .combine('format', kSizedTextureFormats)
+      // No need to test depth/stencil formats because its copy origin must be [0, 0, 0], which is already aligned with block size.
+      .combine('format', kColorTextureFormats)
       .filter(formatCopyableWithMethod)
       .combineWithParams([
         { depthOrArrayLayers: 1, dimension: '2d' },
@@ -285,7 +369,8 @@ g.test('size_alignment')
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
-      .combine('format', kSizedTextureFormats)
+      // No need to test depth/stencil formats because its copy size must be subresource's size, which is already aligned with block size.
+      .combine('format', kColorTextureFormats)
       .filter(formatCopyableWithMethod)
       .combine('dimension', ['2d', '3d'] as const)
       .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))

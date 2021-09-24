@@ -30,6 +30,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
@@ -89,8 +90,12 @@ class SortButton : public views::ImageButton {
  public:
   METADATA_HEADER(SortButton);
 
-  explicit SortButton(bool is_alphabetical)
-      : is_alphabetical_(is_alphabetical) {
+  SortButton(bool is_alphabetical, AppListViewDelegate* delegate)
+      : views::ImageButton(
+            base::BindRepeating(&SortButton::LauncherSortTriggered,
+                                base::Unretained(this))),
+        is_alphabetical_(is_alphabetical),
+        delegate_(delegate) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
@@ -110,7 +115,7 @@ class SortButton : public views::ImageButton {
     views::View::OnThemeChanged();
     AshColorProvider::Get()->DecorateIconButton(
         /*button=*/this,
-        is_alphabetical_ ? kOverflowShelfRightIcon : kOverflowShelfLeftIcon,
+        is_alphabetical_ ? kOverflowShelfLeftIcon : kOverflowShelfRightIcon,
         /*toggled=*/false, GetPreferredSize().width());
 
     auto* inkdrop_host = views::InkDrop::Get(this);
@@ -125,10 +130,20 @@ class SortButton : public views::ImageButton {
                                                  /*highlight_on_focus=*/true);
   }
 
+  void LauncherSortTriggered() {
+    views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+        views::InkDropState::ACTION_TRIGGERED);
+    delegate_->SortAppList(is_alphabetical_
+                               ? AppListSortOrder::kNameAlphabetical
+                               : AppListSortOrder::kNameReverseAlphabetical);
+  }
+
  private:
   // If true, apps are sorted by the app name alphabetical order; otherwise,
   // apps are sorted by the app name reverse alphabetical order.
   const bool is_alphabetical_;
+
+  AppListViewDelegate* const delegate_;
 };
 
 BEGIN_METADATA(SortButton, views::View)
@@ -140,7 +155,7 @@ class SortButtonContainer : public views::View {
  public:
   METADATA_HEADER(SortButtonContainer);
 
-  SortButtonContainer() {
+  explicit SortButtonContainer(AppListViewDelegate* delegate) {
     // The layer is required in animation.
     SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
@@ -156,8 +171,10 @@ class SortButtonContainer : public views::View {
     SetLayoutManager(std::move(box_layout));
 
     // Add children.
-    AddChildView(std::make_unique<SortButton>(/*is_alphabetical_=*/false));
-    AddChildView(std::make_unique<SortButton>(/*is_alphabetical_=*/true));
+    AddChildView(
+        std::make_unique<SortButton>(/*is_alphabetical_=*/true, delegate));
+    AddChildView(
+        std::make_unique<SortButton>(/*is_alphabetical_=*/false, delegate));
 
     GetViewAccessibility().OverrideIsIgnored(true);
   }
@@ -187,7 +204,8 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
       contents_view->app_list_view()->a11y_announcer();
   apps_grid_view_ = AddChildView(
       std::make_unique<PagedAppsGridView>(contents_view, a11y_announcer,
-                                          /*folder_delegate=*/nullptr));
+                                          /*folder_delegate=*/nullptr,
+                                          /*folder_controller=*/this));
   apps_grid_view_->Init();
 
   // Page switcher should be initialized after AppsGridView.
@@ -197,7 +215,8 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
   page_switcher_ = AddChildView(std::move(page_switcher));
 
   auto app_list_folder_view = std::make_unique<AppListFolderView>(
-      this, model, contents_view_, a11y_announcer, view_delegate);
+      this, apps_grid_view_, model, contents_view_, a11y_announcer,
+      view_delegate);
   folder_background_view_ = AddChildView(
       std::make_unique<FolderBackgroundView>(app_list_folder_view.get()));
 
@@ -207,7 +226,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
 
   if (features::IsLauncherAppSortEnabled()) {
     sort_button_container_ =
-        AddChildView(std::make_unique<SortButtonContainer>());
+        AddChildView(std::make_unique<SortButtonContainer>(view_delegate));
   }
 
   apps_grid_view_->SetModel(model);
@@ -219,16 +238,27 @@ AppsContainerView::~AppsContainerView() {
   // Make sure |page_switcher_| is deleted before |apps_grid_view_| because
   // |page_switcher_| uses the PaginationModel owned by |apps_grid_view_|.
   delete page_switcher_;
+
+  // App list folder view, if shown, may reference/observe a root apps grid view
+  // item (associated with the item for which the folder is shown). Delete
+  // `app_list_folder_view_` explicitly to ensure it's deleted before
+  // `apps_grid_view_`.
+  delete app_list_folder_view_;
 }
 
-void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
+void AppsContainerView::ShowFolderForItemView(
+    AppListItemView* folder_item_view) {
   // Prevent new animations from starting if there are currently animations
   // pending. This fixes crbug.com/357099.
   if (app_list_folder_view_->IsAnimationRunning())
     return;
 
-  app_list_folder_view_->SetAppListFolderItem(folder_item);
+  DCHECK(folder_item_view->is_folder());
 
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListFolderOpened",
+                            kFullscreenAppListFolders, kMaxFolderOpened);
+
+  app_list_folder_view_->ConfigureForFolderItemView(folder_item_view);
   SetShowState(SHOW_ACTIVE_FOLDER, false);
 
   // If there is no selected view in the root grid when a folder is opened,
@@ -521,6 +551,7 @@ void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AppsContainerView::OnShown() {
+  DVLOG(1) << __FUNCTION__;
   // Explicitly hide the virtual keyboard before showing the apps container
   // view. This prevents the virtual keyboard's "transient blur" feature from
   // kicking in - if a text input loses focus, and a text input gains it within
@@ -533,6 +564,7 @@ void AppsContainerView::OnShown() {
 }
 
 void AppsContainerView::OnWillBeHidden() {
+  DVLOG(1) << __FUNCTION__;
   if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
     apps_grid_view_->EndDrag(true);
   else if (show_state_ == SHOW_ACTIVE_FOLDER)

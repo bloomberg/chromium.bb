@@ -51,6 +51,13 @@ TEST_F(ParserImplErrorTest, AndInvalidExpr) {
          "                    ^\n");
 }
 
+TEST_F(ParserImplErrorTest, AliasDeclInvalidDeco) {
+  EXPECT("[[block]]type e=u32;",
+         "test.wgsl:1:3 error: unexpected decorations\n"
+         "[[block]]type e=u32;\n"
+         "  ^^^^^\n");
+}
+
 TEST_F(ParserImplErrorTest, ArrayIndexExprInvalidExpr) {
   EXPECT("fn f() { x = y[^]; }",
          "test.wgsl:1:16 error: unable to parse expression inside []\n"
@@ -273,13 +280,6 @@ TEST_F(ParserImplErrorTest, ForLoopMissingRBrace) {
          "test.wgsl:1:47 error: expected '}' for for loop\n"
          "fn f() { for (var i : i32 = 0; i < 8; i=i+1) {\n"
          "                                              ^\n");
-}
-
-TEST_F(ParserImplErrorTest, FunctionDeclInvalid) {
-  EXPECT("[[stage(vertex)]] x;",
-         "test.wgsl:1:19 error: expected declaration after decorations\n"
-         "[[stage(vertex)]] x;\n"
-         "                  ^\n");
 }
 
 TEST_F(ParserImplErrorTest, FunctionDeclDecoMissingEnd) {
@@ -549,6 +549,13 @@ TEST_F(ParserImplErrorTest, GlobalDeclConstExprMissingRParen) {
          "test.wgsl:1:35 error: expected ')' for type constructor\n"
          "let i : vec2<i32> = vec2<i32>(1, 2;\n"
          "                                  ^\n");
+}
+
+TEST_F(ParserImplErrorTest, GlobalDeclInvalidDeco) {
+  EXPECT("[[stage(vertex)]] x;",
+         "test.wgsl:1:19 error: expected declaration after decorations\n"
+         "[[stage(vertex)]] x;\n"
+         "                  ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclSampledTextureMissingLessThan) {
@@ -855,19 +862,18 @@ TEST_F(ParserImplErrorTest, GlobalDeclVarArrayMissingType) {
          "              ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclVarArrayInvalidSize) {
-  EXPECT(
-      "var i : array<u32, x>;",
-      "test.wgsl:1:20 error: expected signed integer literal for array size\n"
-      "var i : array<u32, x>;\n"
-      "                   ^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclVarArrayMissingSize) {
+  EXPECT("var i : array<u32, >;",
+         "test.wgsl:1:20 error: expected array size expression\n"
+         "var i : array<u32, >;\n"
+         "                   ^\n");
 }
 
-TEST_F(ParserImplErrorTest, GlobalDeclVarArrayNegativeSize) {
-  EXPECT("var i : array<u32, -3>;",
-         "test.wgsl:1:20 error: array size must be greater than 0\n"
-         "var i : array<u32, -3>;\n"
-         "                   ^^\n");
+TEST_F(ParserImplErrorTest, GlobalDeclVarArrayInvalidSize) {
+  EXPECT("var i : array<u32, !>;",
+         "test.wgsl:1:20 error: expected array size expression\n"
+         "var i : array<u32, !>;\n"
+         "                   ^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclVarDecoListEmpty) {

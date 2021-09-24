@@ -64,6 +64,8 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnPersistentGenericUserInterfaceChanged,
                void(const GenericUserInterfaceProto* generic_ui));
   MOCK_METHOD1(OnShouldShowOverlayChanged, void(bool should_show));
+  MOCK_METHOD1(OnTtsButtonVisibilityChanged, void(bool visible));
+  MOCK_METHOD1(OnTtsButtonStateChanged, void(TtsButtonState state));
   MOCK_METHOD0(OnFeedbackFormRequested, void());
 };
 

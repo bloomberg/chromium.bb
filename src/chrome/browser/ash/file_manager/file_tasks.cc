@@ -36,14 +36,16 @@
 #include "chrome/browser/ash/file_manager/guest_os_file_tasks.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/open_with_browser.h"
+#include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -69,6 +71,8 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "url/gurl.h"
 
 using extensions::Extension;
 using extensions::api::file_manager_private::Verb;
@@ -157,8 +161,8 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   media_app_task->is_file_extension_match = true;
 
   // The logic in ChooseAndSetDefaultTask() also requires the following to hold.
-  // This should only fail if the media app is configured for "*" (e.g. like
-  // Zip Archiver). "image/*" does not count as "generic".
+  // This should only fail if the media app is configured for "*".
+  // "image/*" does not count as "generic".
   DCHECK(!media_app_task->is_generic_file_handler);
 
   // Otherwise, build a new list with Media App at the front.
@@ -239,9 +243,8 @@ void ExecuteByArcAfterMimeTypesCollected(
     FileTaskFinishedCallback done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
-  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing) &&
-      (task.action_id == kActionIdSend ||
-       task.action_id == kActionIdSendMultiple)) {
+  if (task.action_id == kActionIdSend ||
+      task.action_id == kActionIdSendMultiple) {
     ExecuteAppServiceTask(profile, task, file_urls, *mime_types,
                           std::move(done));
     return;
@@ -267,17 +270,18 @@ void PostProcessFoundTasks(
 
   // kFilesArchivemount is whether we allow "mount-archive" for every filename
   // extension listed in ui/file_manager/file_manager/manifest.json (when the
-  // feature flag is true) or only for ".rar" (when the feature flag is false).
-  // False corresponds to the status quo as of milestone M92. This feature flag
-  // will be introduced in M93 (https://crrev.com/c/3017636), false by default.
-  // "True by default" is scheduled for M94.
+  // feature flag is true) or only for ".rar" and ".zip" (when the feature flag
+  // is false). False corresponds to the status quo as of milestone M92. This
+  // feature flag will be introduced in M93 (https://crrev.com/c/3017636), false
+  // by default.
   //
   // TODO(nigeltao): some time after M94, remove the kFilesArchivemount feature
   // flag (scheduled to expire in M100) by hard-coding it to true, so that this
   // if-block is never taken and can be deleted.
   if (!base::FeatureList::IsEnabled(ash::features::kFilesArchivemount)) {
     for (const auto& entry : entries) {
-      if (!entry.path.MatchesExtension(".rar")) {
+      if (!entry.path.MatchesExtension(".rar") &&
+          !entry.path.MatchesExtension(".zip")) {
         disabled_actions.emplace("mount-archive");
         break;
       }
@@ -562,6 +566,35 @@ bool ExecuteFileTask(Profile* profile,
     return result;
   }
 
+  // When the FilesSWA is enabled: Open Files SWA if the task is for Files app.
+  if (ash::features::IsFileManagerSwaEnabled() &&
+      task.app_id == kFileManagerAppId) {
+    std::u16string title;
+    const GURL destination_entry =
+        file_urls.size() ? file_urls[0].ToGURL() : GURL();
+    GURL files_swa_url =
+        ::file_manager::util::GetFileManagerMainPageUrlWithParams(
+            ui::SelectFileDialog::SELECT_NONE, title,
+            /*current_directory_url=*/{},
+            /*selection_url=*/destination_entry,
+            /*target_name=*/{},
+            /*file_types=*/nullptr,
+            /*file_type_index=*/0,
+            /*search_query=*/{},
+            /*show_android_picker_apps=*/false);
+
+    web_app::SystemAppLaunchParams params;
+    params.url = files_swa_url;
+
+    web_app::LaunchSystemWebAppAsync(
+        profile, web_app::SystemAppType::FILE_MANAGER, params);
+    if (done) {
+      std::move(done).Run(
+          extensions::api::file_manager_private::TASK_RESULT_OPENED, "");
+    }
+    return true;
+  }
+
   // Get the extension.
   const Extension* extension = extensions::ExtensionRegistry::Get(
       profile)->enabled_extensions().GetByID(task.app_id);
@@ -800,24 +833,16 @@ void FindExtensionAndAppTasks(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   std::vector<FullTaskDescriptor>* result_list_ptr = result_list.get();
 
-  // 2. Find and append Web tasks.
-  FindWebTasks(profile, entries, result_list_ptr);
-
-  // 3. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
+  // 2. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
   FindFileHandlerTasks(profile, entries, result_list_ptr);
 
-  // 4. Find and append file browser handler tasks. We know there aren't
+  // 3. Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // TODO(crbug/1092784): Link app service task finder here to test the intent
-  // handling backend. This is not fully completed and only support sharing for
-  // now. When the unified sharesheet UI is completed, this might be called from
-  // a different place.
-  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing)) {
-    FindAppServiceTasks(profile, entries, file_urls, result_list_ptr);
-  }
+  // 4. Web tasks file_handlers (View/Open With).
+  FindAppServiceTasks(profile, entries, file_urls, result_list_ptr);
 
   // 5. Find and append Guest OS tasks.
   FindGuestOsTasks(profile, entries, file_urls, result_list_ptr,

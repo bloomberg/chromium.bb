@@ -17,7 +17,6 @@
 #include "core/fxge/cfx_textrenderoptions.h"
 #include "fxbarcode/BC_Library.h"
 #include "fxbarcode/BC_Writer.h"
-#include "fxbarcode/utils.h"
 
 class CFX_Font;
 class CFX_Matrix;
@@ -48,7 +47,7 @@ class CBC_OneDimWriter : public CBC_Writer {
   virtual void SetFontColor(FX_ARGB color);
 
   uint8_t* Encode(const ByteString& contents,
-                  BCFORMAT format,
+                  BC_TYPE format,
                   int32_t& outWidth,
                   int32_t& outHeight);
   bool RenderDeviceResult(CFX_RenderDevice* device,
@@ -58,7 +57,7 @@ class CBC_OneDimWriter : public CBC_Writer {
 
  protected:
   virtual uint8_t* EncodeWithHint(const ByteString& contents,
-                                  BCFORMAT format,
+                                  BC_TYPE format,
                                   int32_t& outWidth,
                                   int32_t& outHeight,
                                   int32_t hints);
@@ -100,7 +99,7 @@ class CBC_OneDimWriter : public CBC_Writer {
   float m_fFontSize = 10.0f;
   int32_t m_iFontStyle = 0;
   uint32_t m_fontColor = 0xff000000;
-  BC_TEXT_LOC m_locTextLoc = BC_TEXT_LOC_BELOWEMBED;
+  BC_TEXT_LOC m_locTextLoc = BC_TEXT_LOC::kBelowEmbed;
 
   int32_t m_iDataLenth = 0;
   size_t m_iContentLen = 0;

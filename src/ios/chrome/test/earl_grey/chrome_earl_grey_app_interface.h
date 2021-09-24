@@ -174,12 +174,6 @@
 // Returns the index of active tab in normal mode.
 + (NSUInteger)indexOfActiveNormalTab;
 
-// Resets Close All Tabs Confirmation feature to its default value.
-+ (void)resetCloseAllTabsConfirmation;
-
-// Disables Close All Tabs Confirmation feature.
-+ (void)disableCloseAllTabsConfirmation;
-
 #pragma mark - Window utilities (EG2)
 
 // Returns screen position of the given |windowNumber|
@@ -504,9 +498,6 @@
 // with custom WebKit frameworks.
 + (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
 
-// Returns YES if collections are presented in cards.
-+ (BOOL)isCollectionsCardPresentationStyleEnabled WARN_UNUSED_RESULT;
-
 // Returns whether the mobile version of the websites are requested by default.
 + (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
 
@@ -514,8 +505,8 @@
 // can, open multiple windows.
 + (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the Close All Tabs Confirmation feature is enabled.
-+ (BOOL)isCloseAllTabsConfirmationEnabled;
+// Returns whether the ContextMenuActionsRefresh feature is enabled.
++ (BOOL)isContextMenuActionsRefreshEnabled;
 
 #pragma mark - Popup Blocking
 
@@ -533,6 +524,11 @@
 // base::Value encoded as a JSON string. If the pref was not registered,
 // returns a Value of type NONE.
 + (NSString*)localStatePrefValue:(NSString*)prefName;
+
+// Sets the integer values for the local state pref with |prefName|. |value|
+// can be either a casted enum or any other numerical value. Local State
+// contains the preferences that are shared between all browser states.
++ (void)setIntegerValue:(int)value forLocalStatePref:(NSString*)prefName;
 
 // Gets the value of a user pref in the original browser state. Returns a
 // base::Value encoded as a JSON string. If the pref was not registered,

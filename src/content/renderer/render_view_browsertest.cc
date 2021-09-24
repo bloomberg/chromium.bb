@@ -480,17 +480,17 @@ class RenderViewImplTest : public RenderViewTest {
     // WM_KEYDOWN, WM_CHAR, and WM_KEYUP.
     // WM_KEYDOWN and WM_KEYUP sends virtual-key codes. On the other hand,
     // WM_CHAR sends a composed Unicode character.
-    MSG msg1 = {NULL, WM_KEYDOWN, static_cast<WPARAM>(key_code), 0};
+    CHROME_MSG msg1 = {NULL, WM_KEYDOWN, static_cast<WPARAM>(key_code), 0};
     ui::KeyEvent evt1(msg1);
     NativeWebKeyboardEvent keydown_event(evt1);
     SendNativeKeyEvent(keydown_event);
 
-    MSG msg2 = {NULL, WM_CHAR, (*output)[0], 0};
+    CHROME_MSG msg2 = {NULL, WM_CHAR, (*output)[0], 0};
     ui::KeyEvent evt2(msg2);
     NativeWebKeyboardEvent char_event(evt2);
     SendNativeKeyEvent(char_event);
 
-    MSG msg3 = {NULL, WM_KEYUP, static_cast<WPARAM>(key_code), 0};
+    CHROME_MSG msg3 = {NULL, WM_KEYUP, static_cast<WPARAM>(key_code), 0};
     ui::KeyEvent evt3(msg3);
     NativeWebKeyboardEvent keyup_event(evt3);
     SendNativeKeyEvent(keyup_event);
@@ -1401,8 +1401,8 @@ TEST_F(RenderViewImplTextInputStateChanged, OnImeTypeChanged) {
     input_mode = updated_states()[0]->mode;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
-    for (size_t i = 0; i < base::size(kInputModeTestCases); i++) {
-      const InputModeTestCase* test_case = &kInputModeTestCases[i];
+    for (size_t test = 0; test < base::size(kInputModeTestCases); test++) {
+      const InputModeTestCase* test_case = &kInputModeTestCases[test];
       std::u16string javascript = base::ASCIIToUTF16(base::StringPrintf(
           "document.getElementById('%s').focus();", test_case->input_id));
       // Move the input focus to the target <input> element, where we should
@@ -2973,7 +2973,7 @@ class AddMessageToConsoleMockLocalFrameHost : public LocalFrameHostInterceptor {
   void DidAddMessageToConsole(
       blink::mojom::ConsoleMessageLevel log_level,
       const std::u16string& msg,
-      int32_t line_number,
+      uint32_t line_number,
       const absl::optional<std::u16string>& source_id,
       const absl::optional<std::u16string>& untrusted_stack_trace) override {
     if (did_add_message_to_console_callback_) {

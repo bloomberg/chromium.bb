@@ -28,6 +28,11 @@ using Microsoft::WRL::ComPtr;
 namespace {
 
     class D3D12ResourceTestBase : public DawnTest {
+      protected:
+        std::vector<const char*> GetRequiredExtensions() override {
+            return {"dawn-internal-usages"};
+        }
+
       public:
         void SetUp() override {
             DawnTest::SetUp();
@@ -161,11 +166,28 @@ TEST_P(D3D12SharedHandleValidation, Success) {
     ASSERT_NE(texture.Get(), nullptr);
 }
 
-// Test an error occurs if the texture descriptor is invalid
+// Test a successful wrapping of an D3D12Resource with DawnTextureInternalUsageDescriptor
+TEST_P(D3D12SharedHandleValidation, SuccessWithInternalUsageDescriptor) {
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+
+    wgpu::DawnTextureInternalUsageDescriptor internalDesc = {};
+    baseDawnDescriptor.nextInChain = &internalDesc;
+    internalDesc.internalUsage = wgpu::TextureUsage::CopySrc;
+    internalDesc.sType = wgpu::SType::DawnTextureInternalUsageDescriptor;
+
+    wgpu::Texture texture;
+    ComPtr<ID3D11Texture2D> d3d11Texture;
+    WrapSharedHandle(&baseDawnDescriptor, &baseD3dDescriptor, &texture, &d3d11Texture);
+
+    ASSERT_NE(texture.Get(), nullptr);
+}
+
+// Test an error occurs if an invalid sType is the nextInChain
 TEST_P(D3D12SharedHandleValidation, InvalidTextureDescriptor) {
     DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     wgpu::ChainedStruct chainedDescriptor;
+    chainedDescriptor.sType = wgpu::SType::SurfaceDescriptorFromWindowsSwapChainPanel;
     baseDawnDescriptor.nextInChain = &chainedDescriptor;
 
     wgpu::Texture texture;
@@ -297,18 +319,21 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
     }
 
     // Clear a texture on a given device
-    void ClearImage(wgpu::Texture wrappedTexture, const wgpu::Color& clearColor) {
+    void ClearImage(wgpu::Texture wrappedTexture,
+                    const wgpu::Color& clearColor,
+                    wgpu::Device wgpuDevice) {
         wgpu::TextureView wrappedView = wrappedTexture.CreateView();
 
         // Submit a clear operation
         utils::ComboRenderPassDescriptor renderPassDescriptor({wrappedView}, {});
         renderPassDescriptor.cColorAttachments[0].clearColor = clearColor;
 
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = wgpuDevice.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
         pass.EndPass();
 
         wgpu::CommandBuffer commands = encoder.Finish();
+        wgpu::Queue queue = wgpuDevice.GetQueue();
         queue.Submit(1, &commands);
     }
 
@@ -495,7 +520,7 @@ TEST_P(D3D12SharedHandleUsageTests, ClearInD3D12ReadbackInD3D11) {
     ASSERT_NE(dawnTexture.Get(), nullptr);
 
     const wgpu::Color d3d12ClearColor{0.0f, 0.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor);
+    ClearImage(dawnTexture, d3d12ClearColor, device);
 
     dawnTexture.Destroy();
 
@@ -525,10 +550,10 @@ TEST_P(D3D12SharedHandleUsageTests, ClearTwiceInD3D12ReadbackInD3D11) {
     ASSERT_NE(dawnTexture.Get(), nullptr);
 
     const wgpu::Color d3d12ClearColor1{0.0f, 0.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor1);
+    ClearImage(dawnTexture, d3d12ClearColor1, device);
 
     const wgpu::Color d3d12ClearColor2{0.0f, 1.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor2);
+    ClearImage(dawnTexture, d3d12ClearColor2, device);
 
     dawnTexture.Destroy();
 
@@ -572,7 +597,7 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
     {
         const wgpu::Color solidRed{1.0f, 0.0f, 0.0f, 1.0f};
         ASSERT_NE(texture.Get(), nullptr);
-        ClearImage(texture.Get(), solidRed);
+        ClearImage(texture.Get(), solidRed, device);
 
         EXPECT_PIXEL_RGBA8_EQ(RGBA8(0xFF, 0, 0, 0xFF), texture.Get(), 0, 0);
     }
@@ -598,7 +623,7 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
     {
         const wgpu::Color solidBlue{0.0f, 0.0f, 1.0f, 1.0f};
         ASSERT_NE(texture.Get(), nullptr);
-        ClearImage(texture.Get(), solidBlue);
+        ClearImage(texture.Get(), solidBlue, device);
 
         EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0xFF, 0xFF), texture.Get(), 0, 0);
     }
@@ -629,6 +654,55 @@ TEST_P(D3D12SharedHandleUsageTests, ExternalImageUsage) {
     texture =
         wgpu::Texture::Acquire(externalImage->ProduceTexture(device.Get(), &externalAccessDesc));
     ASSERT_NE(texture.Get(), nullptr);
+}
+
+// Verify two Dawn devices can reuse the same external image.
+TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImageWithMultipleDevices) {
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+
+    wgpu::Texture texture;
+    ComPtr<ID3D11Texture2D> d3d11Texture;
+    std::unique_ptr<dawn_native::d3d12::ExternalImageDXGI> externalImage;
+
+    // Create the Dawn texture then clear it to red using the first (default) device.
+    WrapSharedHandle(&baseDawnDescriptor, &baseD3dDescriptor, &texture, &d3d11Texture,
+                     &externalImage);
+    const wgpu::Color solidRed{1.0f, 0.0f, 0.0f, 1.0f};
+    ASSERT_NE(texture.Get(), nullptr);
+    ClearImage(texture.Get(), solidRed, device);
+
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0xFF, 0, 0, 0xFF), texture.Get(), 0, 0);
+
+    // Release the texture so we can re-acquire another one from the same external image.
+    texture.Destroy();
+
+    // Create the Dawn texture then clear it to blue using the second device.
+    dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
+    externalAccessDesc.acquireMutexKey = 1;
+    externalAccessDesc.releaseMutexKey = 2;
+    externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(baseDawnDescriptor.usage);
+
+    wgpu::Device otherDevice = wgpu::Device::Acquire(GetAdapter().CreateDevice());
+
+    wgpu::Texture otherTexture = wgpu::Texture::Acquire(
+        externalImage->ProduceTexture(otherDevice.Get(), &externalAccessDesc));
+
+    ASSERT_NE(otherTexture.Get(), nullptr);
+    const wgpu::Color solidBlue{0.0f, 0.0f, 1.0f, 1.0f};
+    ClearImage(otherTexture.Get(), solidBlue, otherDevice);
+
+    otherTexture.Destroy();
+
+    // Re-create the Dawn texture using the first (default) device.
+    externalAccessDesc.acquireMutexKey = 2;
+    externalAccessDesc.isInitialized = true;
+    texture =
+        wgpu::Texture::Acquire(externalImage->ProduceTexture(device.Get(), &externalAccessDesc));
+    ASSERT_NE(texture.Get(), nullptr);
+
+    // Ensure the texture is still blue.
+
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0xFF, 0xFF), texture.Get(), 0, 0);
 }
 
 DAWN_INSTANTIATE_TEST(D3D12SharedHandleValidation, D3D12Backend());

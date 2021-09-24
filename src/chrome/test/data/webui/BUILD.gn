@@ -41,11 +41,12 @@ if (include_js_tests) {
     deps = [
       ":modulize",
       "//chrome/browser/ui",
+      "//ui/webui/resources/js:post_message_api_client.m",
+      "//ui/webui/resources/js:post_message_api_server.m",
     ]
     data = [
       "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
-      "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
     ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
@@ -60,15 +61,9 @@ if (include_js_tests) {
       "polymer_interactive_ui_test.js",
     ]
 
-    deps = [
-      ":modulize",
-      "//chrome/browser/ui",
-    ]
+    deps = [ "//chrome/browser/ui" ]
 
-    data = [
-      "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
-      "mojo_webui_test_support.js",
-    ]
+    data = [ "mojo_webui_test_support.js" ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
@@ -164,6 +159,7 @@ if (include_js_tests) {
         "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
         "chromeos/internet_detail_dialog_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
+        "post_message_api/post_message_api_browsertest.js",
         "set_time_dialog_browsertest.js",
         "settings/chromeos/a11y/v3_os_a11y_browsertest.js",
         "settings/chromeos/os_settings_v3_browsertest.js",
@@ -212,7 +208,7 @@ if (include_js_tests) {
       "$root_gen_dir/chrome/test/data/webui/settings/route_tests.js",
       "$root_gen_dir/chrome/test/data/webui/signin/profile_card_menu_test.js",
       "$root_gen_dir/chrome/test/data/webui/signin/profile_picker_app_test.js",
-      "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
+      "$root_gen_dir/chrome/test/data/webui/signin/test_manage_profiles_browser_proxy.js",
       "$root_gen_dir/ui/webui/resources/js/load_time_data.js",
     ]
 
@@ -290,7 +286,6 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_onboarding_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_page_template_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_visibility_page_test.m.js",
-        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/fake_bluetooth_config.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/add_users_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_photos_page_test.m.js",
@@ -310,7 +305,6 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/toggle_row_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/managed_apps_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_plugin_vm_browser_proxy.m.js",
-        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_util.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/uninstall_button_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/bluetooth_page_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/cellular_networks_list_test.m.js",
@@ -369,14 +363,19 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/network_summary_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_about_page_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_pairing_dialog_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_summary_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_device_battery_info_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_devices_subpage_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_device_detail_subpage_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_change_device_name_dialog_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_paired_bluetooth_list_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_paired_bluetooth_list_item_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_edit_dictionary_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_files_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_languages_page_v2_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/app_notifications_subpage_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/settings_scheduler_slider_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_settings_main_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_settings_ui_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_settings_ui_test_2.m.js",
@@ -488,12 +487,7 @@ if (include_js_tests) {
       "polymer_interactive_ui_test.js",
     ]
 
-    deps = [
-      ":modulize",
-      "//chrome/browser/ui",
-    ]
-
-    data = [ "$root_gen_dir/chrome/test/data/webui/test_util.m.js" ]
+    deps = [ "//chrome/browser/ui" ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
@@ -513,13 +507,11 @@ if (include_js_tests) {
 }
 
 group("modulize") {
-  deps = [
-    ":modulize_local",
-    "./cr_components/chromeos:modulize",
-  ]
+  deps = [ ":modulize_local" ]
 
   if (is_chromeos_ash) {
     deps += [
+      "./cr_components/chromeos:modulize",
       "./nearby_share/shared:modulize",
       "./settings/chromeos:modulize",
     ]
@@ -556,13 +548,11 @@ group("closure_compile") {
   if (is_chromeos_ash) {
     deps += [
       "chromeos:closure_compile",
+      "cr_components/chromeos:closure_compile",
       "nearby_share:closure_compile",
       "nearby_share/shared:closure_compile",
       "settings/chromeos:closure_compile",
     ]
-  }
-  if (!is_android) {
-    deps += [ "commander:closure_compile" ]
   }
   if (enable_print_preview) {
     deps += [ "print_preview:closure_compile" ]
@@ -581,7 +571,7 @@ js_type_check("closure_compile_local") {
     ":mock_timer.m",
     ":test_browser_proxy",
     ":test_plural_string_proxy",
-    ":test_util.m",
+    ":test_util",
   ]
 }
 
@@ -601,13 +591,11 @@ js_library("mock_timer.m") {
   extra_deps = [ ":modulize_local" ]
 }
 
-js_library("test_util.m") {
-  sources = [ "$root_gen_dir/chrome/test/data/webui/test_util.m.js" ]
+js_library("test_util") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js/cr:event_target.m",
   ]
-  extra_deps = [ ":modulize_local" ]
 }
 
 js_library("chai_assert") {

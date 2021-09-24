@@ -215,6 +215,10 @@ blink::WebString MockRenderThread::GetUserAgent() {
   return blink::WebString();
 }
 
+blink::WebString MockRenderThread::GetReducedUserAgent() {
+  return blink::WebString();
+}
+
 const blink::UserAgentMetadata& MockRenderThread::GetUserAgentMetadata() {
   return kUserAgentMetadata;
 }
@@ -236,6 +240,12 @@ void MockRenderThread::SetFieldTrialGroup(const std::string& trial_name,
 
 void MockRenderThread::SetUseZoomForDSFEnabled(bool zoom_for_dsf) {
   zoom_for_dsf_ = zoom_for_dsf;
+}
+
+void MockRenderThread::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto) {
+  // Unlike RenderThreadImpl, MockRenderThread is not aware of its render
+  // process ID.
 }
 
 int32_t MockRenderThread::GetNextRoutingID() {

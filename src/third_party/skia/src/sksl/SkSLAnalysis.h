@@ -26,6 +26,7 @@ struct Program;
 class ProgramElement;
 class ProgramUsage;
 class Statement;
+struct LoopUnrollInfo;
 class Variable;
 class VariableReference;
 enum class VariableRefKind : int8_t;
@@ -35,14 +36,14 @@ enum class VariableRefKind : int8_t;
  */
 struct Analysis {
     /**
-     * Determines how `program` samples `fp`. By default, assumes that the sample coords
-     * (SK_MAIN_COORDS_BUILTIN) might be modified, so `sample(fp, sampleCoords)` is treated as
+     * Determines how `program` samples `child`. By default, assumes that the sample coords
+     * (SK_MAIN_COORDS_BUILTIN) might be modified, so `child.eval(sampleCoords)` is treated as
      * Explicit. If writesToSampleCoords is false, treats that as PassThrough, instead.
      * If elidedSampleCoordCount is provided, the pointed to value will be incremented by the
      * number of sample calls where the above rewrite was performed.
      */
     static SampleUsage GetSampleUsage(const Program& program,
-                                      const Variable& fp,
+                                      const Variable& child,
                                       bool writesToSampleCoords = true,
                                       int* elidedSampleCoordCount = nullptr);
 
@@ -53,11 +54,20 @@ struct Analysis {
 
     static bool CallsSampleOutsideMain(const Program& program);
 
-    /*
-     * Does the function call graph of the program include any cycles? If so, emits an error.
+    /**
+     * Computes the size of the program in a completely flattened state--loops fully unrolled,
+     * function calls inlined--and rejects programs that exceed an arbitrary upper bound. This is
+     * intended to prevent absurdly large programs from overwhemling SkVM. Only strict-ES2 mode is
+     * supported; complex control flow is not SkVM-compatible (and this becomes the halting problem)
      */
-    static bool DetectStaticRecursion(SkSpan<std::unique_ptr<ProgramElement>> programElements,
-                                      ErrorReporter& errors);
+    static bool CheckProgramUnrolledSize(const Program& program);
+
+    /**
+     * Detect an orphaned variable declaration outside of a scope, e.g. if (true) int a;. Returns
+     * true if an error was reported.
+     */
+    static bool DetectVarDeclarationWithoutScope(const Statement& stmt,
+                                                 ErrorReporter* errors = nullptr);
 
     static int NodeCountUpToLimit(const FunctionDefinition& function, int limit);
 
@@ -91,13 +101,11 @@ struct Analysis {
     static bool IsAssignable(Expression& expr, AssignmentInfo* info = nullptr,
                              ErrorReporter* errors = nullptr);
 
-    // Updates the `refKind` field of exactly one VariableReference inside `expr`.
-    // `expr` must be `IsAssignable`; returns an error otherwise.
-    static bool MakeAssignmentExpr(Expression* expr, VariableRefKind kind, ErrorReporter* errors);
-
-    // Updates the `refKind` field of every VariableReference found within `expr`.
-    // `expr` is allowed to have zero, one, or multiple VariableReferences.
-    static void UpdateRefKind(Expression* expr, VariableRefKind refKind);
+    // Updates the `refKind` field of the VariableReference at the top level of `expr`.
+    // If `expr` can be assigned to (`IsAssignable`), true is returned and no errors are reported.
+    // If not, false is returned. and an error is reported if `errors` is non-null.
+    static bool UpdateVariableRefKind(Expression* expr, VariableRefKind kind,
+                                      ErrorReporter* errors = nullptr);
 
     // A "trivial" expression is one where we'd feel comfortable cloning it multiple times in
     // the code, without worrying about incurring a performance penalty. Examples:
@@ -134,30 +142,27 @@ struct Analysis {
     //   of the texture lookup functions
     static bool IsConstantExpression(const Expression& expr);
 
-    struct UnrollableLoopInfo {
-        const Variable* fIndex;
-        double fStart;
-        double fDelta;
-        int fCount;
-    };
-
     // Ensures that a for-loop meets the strict requirements of The OpenGL ES Shading Language 1.00,
     // Appendix A, Section 4.
-    // Information about the loop's structure are placed in outLoopInfo (if not nullptr).
-    // If the function returns false, specific reasons are reported via errors (if not nullptr).
-    static bool ForLoopIsValidForES2(int offset,
-                                     const Statement* loopInitializer,
-                                     const Expression* loopTest,
-                                     const Expression* loopNext,
-                                     const Statement* loopStatement,
-                                     UnrollableLoopInfo* outLoopInfo,
-                                     ErrorReporter* errors);
+    // If the requirements are met, information about the loop's structure is returned.
+    // If the requirements are not met, the problem is reported via `errors` (if not nullptr), and
+    // null is returned.
+    static std::unique_ptr<LoopUnrollInfo> GetLoopUnrollInfo(int offset,
+                                                             const Statement* loopInitializer,
+                                                             const Expression* loopTest,
+                                                             const Expression* loopNext,
+                                                             const Statement* loopStatement,
+                                                             ErrorReporter* errors);
 
     static void ValidateIndexingForES2(const ProgramElement& pe, ErrorReporter& errors);
 
     // Detects functions that fail to return a value on at least one path.
     static bool CanExitWithoutReturningValue(const FunctionDeclaration& funcDecl,
                                              const Statement& body);
+
+    // Searches for @if/@switch statements that didn't optimize away, or dangling
+    // FunctionReference or TypeReference expressions, and reports them as errors.
+    static void VerifyStaticTestsAndExpressions(const Program& program);
 };
 
 /**

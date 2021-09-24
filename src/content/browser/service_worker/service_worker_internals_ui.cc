@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -150,8 +151,10 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version, Value* info) {
     base::Value client(base::Value::Type::DICTIONARY);
     client.SetStringKey("client_id", it.first);
     if (it.second.type() == blink::mojom::ServiceWorkerClientType::kWindow) {
-      WebContents* web_contents =
-          WebContents::FromFrameTreeNodeId(it.second.GetFrameTreeNodeId());
+      // TODO(crbug.com/1239092): Replace WebContents::GetURL() with
+      // RenderFrameHost::GetLastCommittedURL().
+      WebContents* web_contents = WebContentsImpl::FromRenderFrameHostID(
+          it.second.GetRenderFrameHostId());
       if (web_contents)
         client.SetStringKey("url", web_contents->GetURL().spec());
     }
@@ -381,32 +384,32 @@ ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() = default;
 ServiceWorkerInternalsHandler::ServiceWorkerInternalsHandler() = default;
 
 void ServiceWorkerInternalsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "GetOptions",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleGetOptions,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SetOption",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleSetOption,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAllRegistrations",
       base::BindRepeating(
           &ServiceWorkerInternalsHandler::HandleGetAllRegistrations,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "stop",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleStopWorker,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "inspect",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleInspectWorker,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "unregister",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleUnregister,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "start",
       base::BindRepeating(&ServiceWorkerInternalsHandler::HandleStartWorker,
                           base::Unretained(this)));
@@ -492,14 +495,23 @@ void ServiceWorkerInternalsHandler::HandleGetOptions(const ListValue* args) {
 }
 
 void ServiceWorkerInternalsHandler::HandleSetOption(const ListValue* args) {
-  std::string option_name;
-  bool option_boolean;
-  if (!args->GetString(0, &option_name) || option_name != "debug_on_start" ||
-      !args->GetBoolean(1, &option_boolean)) {
+  auto args_list = args->GetList();
+  if (args_list.size() < 2) {
+    return;
+  }
+
+  if (!args_list[0].is_string()) {
+    return;
+  }
+  if (args_list[0].GetString() != "debug_on_start") {
+    return;
+  }
+
+  if (!args_list[1].is_bool()) {
     return;
   }
   ServiceWorkerDevToolsManager::GetInstance()
-      ->set_debug_service_worker_on_start(option_boolean);
+      ->set_debug_service_worker_on_start(args_list[1].GetBool());
 }
 
 void ServiceWorkerInternalsHandler::HandleGetAllRegistrations(

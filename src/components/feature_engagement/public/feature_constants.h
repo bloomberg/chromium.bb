@@ -24,10 +24,12 @@ extern const base::Feature kIPHDummyFeature;
 extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
 extern const base::Feature kIPHFocusModeFeature;
 extern const base::Feature kIPHGlobalMediaControlsFeature;
+extern const base::Feature kIPHGMCCastStartStopFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReadingListDiscoveryFeature;
 extern const base::Feature kIPHReadingListEntryPointFeature;
+extern const base::Feature kIPHReadingListInSidePanelFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHTabSearchFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
@@ -109,9 +111,11 @@ extern const base::Feature kIPHChromeReengagementNotification2Feature;
 extern const base::Feature kIPHChromeReengagementNotification3Feature;
 extern const base::Feature kIPHPwaInstallAvailableFeature;
 extern const base::Feature kIPHShareScreenshotFeature;
+extern const base::Feature kIPHSharingHubLinkToggleFeature;
 extern const base::Feature kIPHWebFeedFollowFeature;
 extern const base::Feature kIPHWebFeedPostFollowDialogFeature;
 extern const base::Feature kIPHSharedHighlightingBuilder;
+extern const base::Feature kIPHSharedHighlightingReceiverFeature;
 extern const base::Feature kIPHStartSurfaceTabSwitcherHomeButton;
 #endif  // defined(OS_ANDROID)
 

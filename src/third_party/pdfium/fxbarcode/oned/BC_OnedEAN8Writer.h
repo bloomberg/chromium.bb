@@ -23,7 +23,7 @@ class CBC_OnedEAN8Writer final : public CBC_OneDimEANWriter {
 
   // CBC_OneDimEANWriter:
   uint8_t* EncodeWithHint(const ByteString& contents,
-                          BCFORMAT format,
+                          BC_TYPE format,
                           int32_t& outWidth,
                           int32_t& outHeight,
                           int32_t hints) override;
@@ -31,7 +31,7 @@ class CBC_OnedEAN8Writer final : public CBC_OneDimEANWriter {
   bool CheckContentValidity(WideStringView contents) override;
   WideString FilterContents(WideStringView contents) override;
   void SetDataLength(int32_t length) override;
-  bool SetTextLocation(BC_TEXT_LOC location) override;
+  void SetTextLocation(BC_TEXT_LOC location) override;
   int32_t CalcChecksum(const ByteString& contents) override;
 
  private:

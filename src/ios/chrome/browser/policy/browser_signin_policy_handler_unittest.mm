@@ -6,13 +6,17 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/command_line.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -47,6 +51,8 @@ class BrowserSigninPolicyHandlerTest : public PlatformTest {
     [[NSUserDefaults standardUserDefaults]
         removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
   }
+
+  IOSChromeScopedTestingLocalState local_state_;
 };
 
 const char* BrowserSigninModeToString(BrowserSigninMode mode) {
@@ -65,15 +71,21 @@ const char* BrowserSigninModeToString(BrowserSigninMode mode) {
 // Check that calling `ApplyPolicySettings` set the preference
 // to the correct value when policies overrides "BrowserSignin".
 TEST_F(BrowserSigninPolicyHandlerTest, ApplyPolicySettings) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableForcedSignInPolicy);
+
   struct TestCase {
     BrowserSigninMode mode;
-    bool expected_pref_value;
+    int expected_pref_value;
   };
 
   const TestCase test_cases[] = {
-      {BrowserSigninMode::kDisabled, false},
-      {BrowserSigninMode::kEnabled, true},
-      {BrowserSigninMode::kForced, true},
+      {BrowserSigninMode::kDisabled,
+       static_cast<int>(BrowserSigninMode::kDisabled)},
+      {BrowserSigninMode::kEnabled,
+       static_cast<int>(BrowserSigninMode::kEnabled)},
+      {BrowserSigninMode::kForced,
+       static_cast<int>(BrowserSigninMode::kForced)},
   };
 
   std::string error;
@@ -89,10 +101,10 @@ TEST_F(BrowserSigninPolicyHandlerTest, ApplyPolicySettings) {
     entry.set_value(base::Value(static_cast<int>(test_case.mode)));
     policies.Set("BrowserSignin", std::move(entry));
 
-    bool value = false;
+    int value = -1;
     PrefValueMap prefs;
     handler.ApplyPolicySettings(policies, &prefs);
-    EXPECT_TRUE(prefs.GetBoolean(prefs::kSigninAllowedByPolicy, &value));
+    EXPECT_TRUE(prefs.GetInteger(prefs::kBrowserSigninPolicy, &value));
     EXPECT_EQ(test_case.expected_pref_value, value)
         << "For test case: mode = "
         << BrowserSigninModeToString(test_case.mode);
@@ -102,6 +114,9 @@ TEST_F(BrowserSigninPolicyHandlerTest, ApplyPolicySettings) {
 // Check that calling `ApplyPolicySettings` does not set the
 // preference when policies does not overrides "BrowserSignin".
 TEST_F(BrowserSigninPolicyHandlerTest, ApplyPolicySettings_NoOverride) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableForcedSignInPolicy);
+
   std::string error;
   Schema schema = Schema::Parse(kTestSchema, &error);
   ASSERT_EQ(error, "");
@@ -118,6 +133,9 @@ TEST_F(BrowserSigninPolicyHandlerTest, ApplyPolicySettings_NoOverride) {
 // Check that `CheckPolicySettings` does not report an error if
 // policies overrides "BrowserSignin" to support values.
 TEST_F(BrowserSigninPolicyHandlerTest, CheckPolicySettings) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableForcedSignInPolicy);
+
   std::string error;
   Schema schema = Schema::Parse(kTestSchema, &error);
   ASSERT_EQ(error, "");
@@ -127,6 +145,7 @@ TEST_F(BrowserSigninPolicyHandlerTest, CheckPolicySettings) {
   const BrowserSigninMode supported_modes[] = {
       BrowserSigninMode::kDisabled,
       BrowserSigninMode::kEnabled,
+      BrowserSigninMode::kForced,
   };
 
   for (BrowserSigninMode mode : supported_modes) {

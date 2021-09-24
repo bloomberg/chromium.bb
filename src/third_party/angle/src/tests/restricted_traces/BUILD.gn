@@ -9,6 +9,7 @@ import("../../../gni/angle.gni")
 angle_shared_library("angle_restricted_trace_loader") {
   sources = [
     "restricted_traces_autogen.h",
+    "restricted_traces_export.h",
     "trace_egl_loader_autogen.cpp",
     "trace_egl_loader_autogen.h",
     "trace_gles_loader_autogen.cpp",
@@ -20,7 +21,10 @@ angle_shared_library("angle_restricted_trace_loader") {
 
 angle_trace_fixture("angle_restricted_trace_fixture") {
   gl_header = "angle_trace_gl.h"
-  public_deps = [ ":angle_restricted_trace_loader" ]
+  public_deps = [
+    ":angle_restricted_trace_loader",
+    "$angle_root/util:angle_util",
+  ]
   public_configs = [ "$angle_root:no_gl_prototypes" ]
 }
 
@@ -38,7 +42,7 @@ foreach(_trace_data, angle_restricted_traces) {
     trace_dir = _trace
     trace_ctx = _trace_data[1]
     sources = _trace_data[2]
-    angledata = _trace_data[3]
+    data = _trace_data[3]
     fixture = ":angle_restricted_trace_fixture"
   }
 
@@ -52,7 +56,10 @@ angle_shared_library("angle_restricted_traces") {
   sources = [
     "restricted_traces_autogen.cpp",
     "restricted_traces_autogen.h",
+    "restricted_traces_export.h",
   ]
+
+  data = [ "restricted_traces.json" ]
 
   data_deps = _traces
   defines = [ "ANGLE_TRACE_IMPLEMENTATION" ]
@@ -90,7 +97,7 @@ group("angle_restricted_trace_gold_tests") {
   data = [
     "restricted_trace_gold_tests.py",
     "restricted_traces.json",
-    "skia_gold/",
+    "../skia_gold/",
     "//build/skia_gold_common/",
     "//testing/scripts/common.py",
     "//testing/xvfb.py",

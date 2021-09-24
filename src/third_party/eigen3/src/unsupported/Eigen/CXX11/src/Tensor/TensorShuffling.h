@@ -54,14 +54,15 @@ template<typename Shuffle, typename XprType>
 class TensorShufflingOp : public TensorBase<TensorShufflingOp<Shuffle, XprType> >
 {
   public:
-  typedef typename Eigen::internal::traits<TensorShufflingOp>::Scalar Scalar;
-  typedef typename Eigen::NumTraits<Scalar>::Real RealScalar;
-  typedef typename XprType::CoeffReturnType CoeffReturnType;
-  typedef typename Eigen::internal::nested<TensorShufflingOp>::type Nested;
-  typedef typename Eigen::internal::traits<TensorShufflingOp>::StorageKind StorageKind;
-  typedef typename Eigen::internal::traits<TensorShufflingOp>::Index Index;
+    typedef TensorBase<TensorShufflingOp<Shuffle, XprType> > Base;
+    typedef typename Eigen::internal::traits<TensorShufflingOp>::Scalar Scalar;
+    typedef typename Eigen::NumTraits<Scalar>::Real RealScalar;
+    typedef typename XprType::CoeffReturnType CoeffReturnType;
+    typedef typename Eigen::internal::nested<TensorShufflingOp>::type Nested;
+    typedef typename Eigen::internal::traits<TensorShufflingOp>::StorageKind StorageKind;
+    typedef typename Eigen::internal::traits<TensorShufflingOp>::Index Index;
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorShufflingOp(const XprType& expr, const Shuffle& shfl)
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorShufflingOp(const XprType& expr, const Shuffle& shfl)
       : m_xpr(expr), m_shuffle(shfl) {}
 
     EIGEN_DEVICE_FUNC
@@ -71,24 +72,8 @@ class TensorShufflingOp : public TensorBase<TensorShufflingOp<Shuffle, XprType> 
     const typename internal::remove_all<typename XprType::Nested>::type&
     expression() const { return m_xpr; }
 
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE TensorShufflingOp& operator = (const TensorShufflingOp& other)
-    {
-      typedef TensorAssignOp<TensorShufflingOp, const TensorShufflingOp> Assign;
-      Assign assign(*this, other);
-      internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
-      return *this;
-    }
+    EIGEN_TENSOR_INHERIT_ASSIGNMENT_OPERATORS(TensorShufflingOp)
 
-    template<typename OtherDerived>
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE TensorShufflingOp& operator = (const OtherDerived& other)
-    {
-      typedef TensorAssignOp<TensorShufflingOp, const OtherDerived> Assign;
-      Assign assign(*this, other);
-      internal::TensorExecutor<const Assign, DefaultDevice>::run(assign, DefaultDevice());
-      return *this;
-    }
 
   protected:
     typename XprType::Nested m_xpr;
@@ -133,8 +118,7 @@ struct TensorEvaluator<const TensorShufflingOp<Shuffle, ArgType>, Device>
       TensorBlock;
   //===--------------------------------------------------------------------===//
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op,
-                                                        const Device& device)
+  EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op, const Device& device)
       : m_device(device),
         m_impl(op.expression(), device)
   {
@@ -158,7 +142,8 @@ struct TensorEvaluator<const TensorShufflingOp<Shuffle, ArgType>, Device>
         m_unshuffledInputStrides[i] =
             m_unshuffledInputStrides[i - 1] * input_dims[i - 1];
         m_outputStrides[i] = m_outputStrides[i - 1] * m_dimensions[i - 1];
-        m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(m_outputStrides[i]);
+        m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(
+                  m_outputStrides[i] > 0 ? m_outputStrides[i] : Index(1));
       }
     } else {
       m_unshuffledInputStrides[NumDims - 1] = 1;
@@ -167,7 +152,8 @@ struct TensorEvaluator<const TensorShufflingOp<Shuffle, ArgType>, Device>
         m_unshuffledInputStrides[i] =
             m_unshuffledInputStrides[i + 1] * input_dims[i + 1];
         m_outputStrides[i] = m_outputStrides[i + 1] * m_dimensions[i + 1];
-        m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(m_outputStrides[i]);
+        m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(
+                  m_outputStrides[i] > 0 ? m_outputStrides[i] : Index(1));
       }
     }
 
@@ -178,20 +164,20 @@ struct TensorEvaluator<const TensorShufflingOp<Shuffle, ArgType>, Device>
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions& dimensions() const { return m_dimensions; }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType /*data*/) {
+  EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType /*data*/) {
     m_impl.evalSubExprsIfNeeded(NULL);
     return true;
   }
 
 #ifdef EIGEN_USE_THREADS
   template <typename EvalSubExprsCallback>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
+  EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
       EvaluatorPointerType, EvalSubExprsCallback done) {
     m_impl.evalSubExprsIfNeededAsync(nullptr, [done](bool) { done(true); });
   }
 #endif  // EIGEN_USE_THREADS
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup() {
+  EIGEN_STRONG_INLINE void cleanup() {
     m_impl.cleanup();
   }
 
@@ -399,7 +385,7 @@ struct TensorEvaluator<TensorShufflingOp<Shuffle, ArgType>, Device>
   typedef internal::TensorBlockDescriptor<NumDims, Index> TensorBlockDesc;
   //===--------------------------------------------------------------------===//
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op, const Device& device)
+  EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op, const Device& device)
       : Base(op, device)
   { }
 

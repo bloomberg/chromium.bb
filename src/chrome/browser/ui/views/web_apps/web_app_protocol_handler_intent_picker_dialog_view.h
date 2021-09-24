@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -60,7 +60,7 @@ class WebAppProtocolHandlerIntentPickerView : public views::DialogDelegateView {
   void Initialize();
 
   // Runs the close_callback_ provided during Show() if it exists.
-  void RunCloseCallback(bool accepted);
+  void RunCloseCallback(bool allowed, bool remember_user_choice);
 
   const GURL url_;
   Profile* const profile_;

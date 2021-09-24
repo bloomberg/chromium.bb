@@ -96,17 +96,6 @@ class MockWebMediaPlayerForImpl : public EmptyWebMediaPlayer {
   WebTimeRanges seekable_;
 };
 
-class MockLayoutObject : public LayoutObject {
- public:
-  MockLayoutObject(Node* node) : LayoutObject(node) {}
-
-  const char* GetName() const override { return "MockLayoutObject"; }
-  void UpdateLayout() override {}
-  FloatRect LocalBoundingBoxRectForAccessibility() const override {
-    return FloatRect();
-  }
-};
-
 class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
  public:
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
@@ -216,6 +205,13 @@ class MediaControlsImplTest : public PageTestBase,
   void SimulateMediaControlPlaying() {
     MediaControls().MediaElement().SetReadyState(
         HTMLMediaElement::kHaveEnoughData);
+    MediaControls().MediaElement().SetNetworkState(
+        WebMediaPlayer::NetworkState::kNetworkStateLoading);
+  }
+
+  void SimulateMediaControlPlayingForFutureData() {
+    MediaControls().MediaElement().SetReadyState(
+        HTMLMediaElement::kHaveFutureData);
     MediaControls().MediaElement().SetNetworkState(
         WebMediaPlayer::NetworkState::kNetworkStateLoading);
   }
@@ -1503,6 +1499,17 @@ TEST_F(MediaControlsImplTest, HideControlsDefersStyleCalculationOnWaiting) {
   UpdateAllLifecyclePhasesForTest();
   new_element_count = document.GetStyleEngine().StyleForElementCount();
   EXPECT_LT(old_element_count, new_element_count);
+}
+
+TEST_F(MediaControlsImplTest, CheckStateOnPlayingForFutureData) {
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  MediaControls().MediaElement().Play();
+  test::RunPendingTasks();
+  UpdateAllLifecyclePhasesForTest();
+
+  SimulateMediaControlPlayingForFutureData();
+  EXPECT_EQ(MediaControls().State(),
+            MediaControlsImpl::ControlsState::kPlaying);
 }
 
 }  // namespace blink

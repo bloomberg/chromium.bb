@@ -457,21 +457,19 @@ void DOMWindow::PostMessageForTesting(
 }
 
 void DOMWindow::InstallCoopAccessMonitor(
-    network::mojom::blink::CoopAccessReportType report_type,
     LocalFrame* accessing_frame,
-    mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
-        pending_reporter,
-    bool endpoint_defined,
-    const WTF::String& reported_window_url) {
+    network::mojom::blink::CrossOriginOpenerPolicyReporterParamsPtr
+        coop_reporter_params) {
   CoopAccessMonitor monitor;
 
   DCHECK(accessing_frame->IsMainFrame());
-  monitor.report_type = report_type;
+  monitor.report_type = coop_reporter_params->report_type;
   monitor.accessing_main_frame = accessing_frame->GetLocalFrameToken();
-  monitor.endpoint_defined = endpoint_defined;
-  monitor.reported_window_url = std::move(reported_window_url);
+  monitor.endpoint_defined = coop_reporter_params->endpoint_defined;
+  monitor.reported_window_url =
+      std::move(coop_reporter_params->reported_window_url);
 
-  monitor.reporter.Bind(std::move(pending_reporter));
+  monitor.reporter.Bind(std::move(coop_reporter_params->reporter));
   // CoopAccessMonitor are cleared when their reporter are gone. This avoids
   // accumulation. However it would have been interesting continuing reporting
   // accesses past this point, at least for the ReportingObserver and Devtool.
@@ -703,9 +701,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   // capabilities.  An explainer for the general delegation API is here:
   // https://github.com/mustaqahmed/capability-delegation
   bool delegate_payment_request = false;
-  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
-          GetExecutionContext()) &&
-      LocalFrame::HasTransientUserActivation(source_frame) &&
+  if (LocalFrame::HasTransientUserActivation(source_frame) &&
       options->hasDelegate()) {
     Vector<String> capability_list;
     options->delegate().Split(' ', capability_list);

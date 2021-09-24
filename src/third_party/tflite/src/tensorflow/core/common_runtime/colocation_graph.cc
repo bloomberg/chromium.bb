@@ -609,7 +609,6 @@ ColocationGraph::ColocationGraph(const Graph* graph, const FunctionStack& stack,
                                  bool log_device_placement)
     : graph_(*graph),
       stack_(stack),
-      flib_def_(*flib_def),
       inspecting_placer_(stack, flib_def, device_set, default_local_device,
                          allow_soft_placement, log_device_placement),
       inspection_required_checker_(graph, flib_def),
@@ -702,11 +701,11 @@ Status ColocationGraph::ColocateResourceOrRefEdge(const Node* src,
   Status status = ColocateNodes(*src, src_root_id, *dst, dst_root_id);
   if (!status.ok()) {
     return AttachDef(
-        errors::InvalidArgument("Nodes were connected by a "
-                                "reference connection (requiring them to "
-                                "be on the same device), but the two nodes "
-                                "were assigned two different devices: ",
-                                status.error_message()),
+        errors::InvalidArgument(
+            "Nodes were connected by a reference or resource connection "
+            "(requiring them to be on the same device), but the two nodes "
+            "were assigned two different devices: ",
+            status.error_message()),
         *dst);
   }
   return Status::OK();
@@ -805,7 +804,14 @@ Status ColocationGraph::AddHostOnlyDataTypesConstraints() {
     absl::optional<bool> is_host_data_type;
 
     auto edge_filter = [&](const Edge& edge) -> bool {
-      return !is_host_data_type.has_value();
+      // We already found the underlying data type.
+      if (is_host_data_type.has_value()) return false;
+
+      // Otherwise follow only DT_VARIANT data edges.
+      auto edge_dtype = [&]() -> DataType {
+        return edge.src()->output_type(edge.src_output());
+      };
+      return !edge.IsControlEdge() && edge_dtype() == DT_VARIANT;
     };
 
     auto enter = [&](Node* n) -> void {

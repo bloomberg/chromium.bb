@@ -19,8 +19,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kRadialPropertyData[] = {
-    {XFA_Element::Color, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Color, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 
 const CXFA_Node::AttributeData kRadialAttributeData[] = {
@@ -36,7 +36,7 @@ const CXFA_Node::AttributeData kRadialAttributeData[] = {
 CXFA_Radial::CXFA_Radial(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Radial,
                 kRadialPropertyData,

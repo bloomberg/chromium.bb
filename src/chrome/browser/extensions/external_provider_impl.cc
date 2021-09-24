@@ -35,7 +35,7 @@
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/preinstalled_app_install_features.h"
+#include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -320,7 +320,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),
                                   &browser_locales);
 
-      size_t num_locales = supported_locales->GetSize();
+      size_t num_locales = supported_locales->GetList().size();
       bool locale_supported = false;
       for (size_t j = 0; j < num_locales; j++) {
         std::string current_locale;

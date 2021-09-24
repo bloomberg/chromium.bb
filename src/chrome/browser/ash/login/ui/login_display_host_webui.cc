@@ -12,6 +12,7 @@
 #include "ash/components/audio/sounds.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/locale_update_controller.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/ash/login/ui/login_display_webui.h"
-#include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
@@ -89,12 +89,12 @@
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
+#include "components/metrics/structured/neutrino_logging.h"
+#include "components/metrics/structured/neutrino_logging_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
@@ -412,6 +412,13 @@ bool CanPlayStartupSound() {
          device.type != AudioDeviceType::kOther;
 }
 
+// Returns the preferences service.
+PrefService* GetLocalState() {
+  if (g_browser_process && g_browser_process->local_state())
+    return g_browser_process->local_state();
+  return nullptr;
+}
+
 }  // namespace
 
 // static
@@ -450,12 +457,9 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
 
-  // When we wait for WebUI to be initialized we wait for one of
-  // these notifications.
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                 content::NotificationService::AllSources());
+  // When we wait for WebUI to be initialized we wait for the error screen to be
+  // shown or the login or lock screen to be shown.
+  session_observation_.Observe(session_manager::SessionManager::Get());
 
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -463,10 +467,22 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 
   login_display_ = std::make_unique<LoginDisplayWebUI>();
+
+  metrics::structured::NeutrinoDevicesLogWithLocalState(
+      GetLocalState(),
+      metrics::structured::NeutrinoDevicesLocation::kLoginDisplayHostWebUI);
 }
 
 LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   VLOG(4) << "~LoginDisplayWebUI";
+
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
+  metrics::structured::NeutrinoDevicesLogEnrollmentWithLocalState(
+      GetLocalState(), connector->IsDeviceEnterpriseManaged(),
+      metrics::structured::NeutrinoDevicesLocation::
+          kLoginDisplayHostWebUIDestructor);
+
   if (GetOobeUI())
     GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
 
@@ -591,7 +607,8 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
   if (wizard_controller_) {
     wizard_controller_->AdvanceToScreen(first_screen);
   } else {
-    wizard_controller_ = std::make_unique<WizardController>();
+    wizard_controller_ = std::make_unique<WizardController>(wizard_context());
+    NotifyWizardCreated();
     wizard_controller_->Init(first_screen);
   }
 }
@@ -684,25 +701,6 @@ content::WebContents* LoginDisplayHostWebUI::GetOobeWebContents() const {
   if (!login_view_)
     return nullptr;
   return login_view_->GetWebContents();
-}
-////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostWebUI, content:NotificationObserver:
-
-void LoginDisplayHostWebUI::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  LoginDisplayHostCommon::Observe(type, source, details);
-
-  if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
-      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
-    VLOG(1) << "Login WebUI >> WEBUI_VISIBLE";
-    ShowWebUI();
-    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                      content::NotificationService::AllSources());
-    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                      content::NotificationService::AllSources());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1016,6 +1014,10 @@ void LoginDisplayHostWebUI::ShowGaiaDialog(const AccountId& prefilled_account) {
   ShowGaiaDialogCommon(prefilled_account);
 }
 
+void LoginDisplayHostWebUI::ShowOsInstallScreen() {
+  StartWizard(OsInstallScreenView::kScreenId);
+}
+
 void LoginDisplayHostWebUI::HideOobeDialog() {
   NOTREACHED();
 }
@@ -1074,6 +1076,34 @@ void LoginDisplayHostWebUI::AddObserver(LoginDisplayHost::Observer* observer) {
 void LoginDisplayHostWebUI::RemoveObserver(
     LoginDisplayHost::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void LoginDisplayHostWebUI::OnNetworkErrorScreenShown() {
+  VLOG(1) << "Login WebUI >> WEBUI_VISIBLE(ERROR_SCREEN)";
+  ShowWebUI();
+  session_observation_.Reset();
+}
+
+void LoginDisplayHostWebUI::OnLoginOrLockScreenVisible() {
+  VLOG(1) << "Login WebUI >> WEBUI_VISIBLE";
+  ShowWebUI();
+  session_observation_.Reset();
+}
+
+SigninUI* LoginDisplayHostWebUI::GetSigninUI() {
+  if (!GetWizardController())
+    return nullptr;
+  return this;
+}
+
+bool LoginDisplayHostWebUI::IsWizardControllerCreated() const {
+  return wizard_controller_.get();
+}
+
+bool LoginDisplayHostWebUI::GetKeyboardRemappedPrefValue(
+    const std::string& pref_name,
+    int* value) const {
+  return false;
 }
 
 void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
@@ -1248,27 +1278,28 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   TriggerShowLoginWizardFinish(locale, std::move(data));
 }
 
-class WebUIToViewsSwitchMetricsReporter : public content::NotificationObserver {
+class WebUIToViewsSwitchMetricsReporter
+    : public session_manager::SessionManagerObserver {
  public:
   WebUIToViewsSwitchMetricsReporter() {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                   content::NotificationService::AllSources());
+    session_observation_.Observe(session_manager::SessionManager::Get());
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(LoginDisplayHost::default_host()->GetOobeUI()->display_type(),
-              OobeUI::kGaiaSigninDisplay);
+  // session_manager::SessionManagerObserver:
+  void OnLoginOrLockScreenVisible() override {
+    if (LoginDisplayHost::default_host()->GetOobeUI()) {
+      DCHECK_EQ(OobeUI::kGaiaSigninDisplay,
+                LoginDisplayHost::default_host()->GetOobeUI()->display_type());
+    }
     base::UmaHistogramTimes("OOBE.WebUIToViewsSwitch.Duration",
                             timer_.Elapsed());
-    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                      content::NotificationService::AllSources());
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 
  private:
-  content::NotificationRegistrar registrar_;
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_observation_{this};
   base::ElapsedTimer timer_;
 };
 

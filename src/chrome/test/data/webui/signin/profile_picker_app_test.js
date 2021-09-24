@@ -12,7 +12,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertTrue} from '../chai_assert.js';
-import {flushTasks, waitBeforeNextRender, whenAttributeIs, whenCheck} from '../test_util.m.js';
+import {flushTasks, waitBeforeNextRender, whenAttributeIs, whenCheck} from '../test_util.js';
 
 import {TestManageProfilesBrowserProxy} from './test_manage_profiles_browser_proxy.js';
 
@@ -103,7 +103,7 @@ suite('ProfilePickerAppTest', function() {
   });
 
   // <if expr="lacros">
-  test('SignInPromoSignInLacros', async function() {
+  test('SignInPromoSignInWithUnassignedAccountLacros', async function() {
     loadTimeData.overrideValues({
       isMultiProfileAccountConsistentcyLacrosEnabled: true,
     });
@@ -112,8 +112,16 @@ suite('ProfilePickerAppTest', function() {
     const choice = /** @type {!ProfileTypeChoiceElement} */ (
         testElement.shadowRoot.querySelector('profile-type-choice'));
     assertTrue(!!choice);
-    choice.shadowRoot.querySelector('#signInButton').click();
+    // Add unassigned account to trigger the account selection screen.
+    const unassignedAccount = /** @type {!UnassignedAccount} */ {
+      gaiaId: 'unassigned-id',
+      name: 'Account Name',
+      email: 'email@gmail.com',
+    };
+    webUIListenerCallback('unassigned-accounts-changed', [unassignedAccount]);
+    flushTasks();
     assertFalse(!!choice.shadowRoot.querySelector('#notNowButton'));
+    choice.shadowRoot.querySelector('#signInButton').click();
     // Start Lacros signin flow.
     await waitBeforeNextRender(testElement);
     const accountSelectionLacros =
@@ -123,6 +131,23 @@ suite('ProfilePickerAppTest', function() {
     // Test the back button.
     accountSelectionLacros.shadowRoot.querySelector('#backButton').click();
     await whenCheck(choice, () => choice.classList.contains('active'));
+  });
+
+  test('SignInPromoSignInWithoutAccountLacros', async function() {
+    loadTimeData.overrideValues({
+      isMultiProfileAccountConsistentcyLacrosEnabled: true,
+    });
+    await resetTestElement(Routes.NEW_PROFILE);
+    await waitForProfileCreationLoad();
+    const choice = /** @type {!ProfileTypeChoiceElement} */ (
+        testElement.shadowRoot.querySelector('profile-type-choice'));
+    assertTrue(!!choice);
+    // No available account.
+    webUIListenerCallback('unassigned-accounts-changed', []);
+    flushTasks();
+    assertFalse(!!choice.shadowRoot.querySelector('#notNowButton'));
+    choice.shadowRoot.querySelector('#signInButton').click();
+    return browserProxy.whenCalled('loadSignInProfileCreationFlow');
   });
   // </if>
 

@@ -301,7 +301,7 @@ void FullRestoreService::OnAcceleratorControllerWillBeDestroyed(
   accelerator_controller_observer_.Reset();
 }
 
-void FullRestoreService::SetAppLaunchHanlderForTesting(
+void FullRestoreService::SetAppLaunchHandlerForTesting(
     std::unique_ptr<FullRestoreAppLaunchHandler> app_launch_handler) {
   app_launch_handler_ = std::move(app_launch_handler);
 }
@@ -316,8 +316,8 @@ bool FullRestoreService::CanBeInited() {
   DCHECK(user_manager->GetActiveUser());
 
   // For non-primary user, wait for `OnTransitionedToNewActiveUser`.
-  auto* user = ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (user != user_manager->GetPrimaryUser()) {
+  if (ProfileHelper::Get()->GetUserByProfile(profile_) !=
+      user_manager->GetPrimaryUser()) {
     VLOG(1) << "Can't init full restore service for non_primary user."
             << profile_->GetPath();
     return false;
@@ -340,7 +340,7 @@ bool FullRestoreService::CanBeInited() {
   const auto& last_session_active_account_id =
       user_manager->GetLastSessionActiveAccountId();
   if (last_session_active_account_id.is_valid() &&
-      AccountId::FromUserEmail(user->GetAccountId().GetUserEmail()) !=
+      AccountId::FromUserEmail(profile_->GetProfileUserName()) !=
           last_session_active_account_id) {
     VLOG(1) << "Can't init full restore service for non-active primary user."
             << profile_->GetPath();

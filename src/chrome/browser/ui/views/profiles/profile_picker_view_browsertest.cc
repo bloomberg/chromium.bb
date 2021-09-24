@@ -20,6 +20,8 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -51,12 +53,11 @@
 #include "components/feature_engagement/test/test_tracker.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/management/management_service.h"
-#include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -68,6 +69,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
@@ -249,12 +251,28 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
                                     base::Unretained(this)));
   }
 
+  void SetUpOnMainThread() override {
+    ProfilePickerTestBase::SetUpOnMainThread();
+
+    // Avoid showing the What's New page. These tests assume this isn't the
+    // first update and the NTP opens after sign in.
+    g_browser_process->local_state()->SetInteger(prefs::kLastWhatsNewVersion,
+                                                 CHROME_VERSION_MAJOR);
+  }
+
   virtual void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) {
     policy::UserPolicySigninServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&FakeUserPolicySigninService::Build));
     feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&CreateTestTracker));
+
+    // Clear the previous cookie responses (if any) before using it for a new
+    // profile (as test_url_loader_factory() is shared across profiles).
+    test_url_loader_factory()->ClearResponses();
+    ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
+        context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                     test_url_loader_factory()));
   }
 
   // Opens the Gaia signin page in the profile creation flow. Returns the new
@@ -268,8 +286,8 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     // Simulate a click on the signin button.
     base::MockCallback<base::OnceCallback<void(bool)>> switch_finished_callback;
     EXPECT_CALL(switch_finished_callback, Run(true));
-    ProfilePicker::SwitchToSignIn(kProfileColor,
-                                  switch_finished_callback.Get());
+    ProfilePicker::SwitchToDiceSignIn(kProfileColor,
+                                      switch_finished_callback.Get());
 
     // The DICE navigation happens in a new web contents (for the profile being
     // created), wait for it.
@@ -288,6 +306,8 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
         IdentityManagerFactory::GetForProfile(profile_being_created);
     CoreAccountInfo core_account_info =
         signin::MakeAccountAvailable(identity_manager, email);
+    signin::SetCookieAccounts(identity_manager, test_url_loader_factory(),
+                              {{email, core_account_info.gaia}});
     EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
         core_account_info.account_id));
 
@@ -365,25 +385,14 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
         ->GetProfilePickerHandlerForTesting();
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
   base::CallbackListSubscription create_services_subscription_;
   base::test::ScopedFeatureList feature_list_;
-
-  // The sync service and waits for policies to load before starting for
-  // enterprise users, managed devices and browsers. This means that services
-  // depending on it might have to wait too. By setting the management
-  // authorities to none by default, we assume that the default test is on an
-  // unmanaged device and browser thus we avoid unnecessarily waiting for
-  // policies to load. Tests expecting either an enterprise user, a managed
-  // device or browser should add the appropriate management authorities.
-  policy::ScopedManagementServiceOverrideForTesting browser_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::BROWSER,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
-  policy::ScopedManagementServiceOverrideForTesting platform_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::PLATFORM,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
 };
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, ShowPicker) {
@@ -505,8 +514,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   const SkColor kDifferentProfileColor = SK_ColorBLUE;
   base::MockCallback<base::OnceCallback<void(bool)>> switch_finished_callback;
   EXPECT_CALL(switch_finished_callback, Run(true));
-  ProfilePicker::SwitchToSignIn(kDifferentProfileColor,
-                                switch_finished_callback.Get());
+  ProfilePicker::SwitchToDiceSignIn(kDifferentProfileColor,
+                                    switch_finished_callback.Get());
 
   // Simulate a successful Gaia sign-in.
   SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
@@ -629,6 +638,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   // Add an account - simulate a successful Gaia sign-in.
   CoreAccountInfo core_account_info =
       signin::MakeAccountAvailable(identity_manager, "joe.consumer@gmail.com");
+  signin::SetCookieAccounts(
+      identity_manager, test_url_loader_factory(),
+      {{"joe.consumer@gmail.com", core_account_info.gaia}});
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(
       core_account_info.account_id));
 
@@ -928,6 +940,8 @@ class ProfilePickerEnterpriseCreationFlowBrowserTest
  public:
   void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) override {
+    ProfilePickerCreationFlowBrowserTest::OnWillCreateBrowserContextServices(
+        context);
     policy::UserPolicySigninServiceFactory::GetInstance()->SetTestingFactory(
         context,
         base::BindRepeating(&FakeUserPolicySigninService::BuildForEnterprise));
@@ -1153,6 +1167,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   // The profile switch screen should be displayed.
   WaitForLayoutWithoutToolbar();
+  WaitForLoadStop(web_contents(), GURL("chrome://sync-confirmation/loading"));
   WaitForLoadStop(web_contents(),
                   GURL("chrome://profile-picker/profile-switch"));
   EXPECT_EQ(ProfilePicker::GetSwitchProfilePath(), other_path);
@@ -1202,6 +1217,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   // The profile switch screen should be displayed.
   WaitForLayoutWithoutToolbar();
+  WaitForLoadStop(web_contents(), GURL("chrome://sync-confirmation/loading"));
   WaitForLoadStop(web_contents(),
                   GURL("chrome://profile-picker/profile-switch"));
   EXPECT_EQ(ProfilePicker::GetSwitchProfilePath(), other_path);

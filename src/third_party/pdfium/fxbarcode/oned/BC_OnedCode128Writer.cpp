@@ -86,7 +86,8 @@ bool IsInOnedCode128Alphabet(wchar_t ch) {
 
 CBC_OnedCode128Writer::CBC_OnedCode128Writer(BC_TYPE type)
     : m_codeFormat(type) {
-  DCHECK(m_codeFormat == BC_CODE128_B || m_codeFormat == BC_CODE128_C);
+  DCHECK(m_codeFormat == BC_TYPE::kCode128B ||
+         m_codeFormat == BC_TYPE::kCode128C);
 }
 
 CBC_OnedCode128Writer::~CBC_OnedCode128Writer() = default;
@@ -97,7 +98,7 @@ bool CBC_OnedCode128Writer::CheckContentValidity(WideStringView contents) {
 }
 
 WideString CBC_OnedCode128Writer::FilterContents(WideStringView contents) {
-  const wchar_t limit = m_codeFormat == BC_CODE128_B ? 126 : 106;
+  const wchar_t limit = m_codeFormat == BC_TYPE::kCode128B ? 126 : 106;
 
   WideString filtered;
   filtered.Reserve(contents.GetLength());
@@ -113,21 +114,18 @@ WideString CBC_OnedCode128Writer::FilterContents(WideStringView contents) {
   return filtered;
 }
 
-bool CBC_OnedCode128Writer::SetTextLocation(BC_TEXT_LOC location) {
-  if (location < BC_TEXT_LOC_NONE || location > BC_TEXT_LOC_BELOWEMBED) {
-    return false;
-  }
+void CBC_OnedCode128Writer::SetTextLocation(BC_TEXT_LOC location) {
   m_locTextLoc = location;
-  return true;
 }
 
 uint8_t* CBC_OnedCode128Writer::EncodeWithHint(const ByteString& contents,
-                                               BCFORMAT format,
+                                               BC_TYPE format,
                                                int32_t& outWidth,
                                                int32_t& outHeight,
                                                int32_t hints) {
-  if (format != BCFORMAT_CODE_128)
+  if (format != BC_TYPE::kCode128)
     return nullptr;
+
   return CBC_OneDimWriter::EncodeWithHint(contents, format, outWidth, outHeight,
                                           hints);
 }
@@ -139,7 +137,7 @@ uint8_t* CBC_OnedCode128Writer::EncodeImpl(const ByteString& contents,
 
   std::vector<int32_t> patterns;
   int32_t checkSum = 0;
-  if (m_codeFormat == BC_CODE128_B)
+  if (m_codeFormat == BC_TYPE::kCode128B)
     checkSum = Encode128B(contents, &patterns);
   else
     checkSum = Encode128C(contents, &patterns);

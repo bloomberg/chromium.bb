@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -81,7 +82,10 @@ void ImageElementTiming::NotifyBackgroundImageFinished(
 
 base::TimeTicks ImageElementTiming::GetBackgroundImageLoadTime(
     const StyleFetchedImage* style_image) {
-  return background_image_timestamps_.at(style_image);
+  const auto it = background_image_timestamps_.find(style_image);
+  if (it == background_image_timestamps_.end())
+    return base::TimeTicks();
+  return it->value;
 }
 
 void ImageElementTiming::NotifyImagePainted(
@@ -203,7 +207,13 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
     return;
 
   auto it = background_image_timestamps_.find(&background_image);
-  DCHECK(it != background_image_timestamps_.end());
+  if (it == background_image_timestamps_.end()) {
+    // TODO(npm): investigate how this could happen. For now, we set the load
+    // time as the current time.
+    background_image_timestamps_.insert(&background_image,
+                                        base::TimeTicks::Now());
+    it = background_image_timestamps_.find(&background_image);
+  }
 
   ImageInfo& info =
       images_notified_

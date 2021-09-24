@@ -32,6 +32,7 @@
 
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_update_scope.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -113,24 +114,40 @@ namespace blink {
 
 namespace {
 
-void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
+bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
+                         StyleResolverState& state) {
+  // Storing the old style is only relevant if we risk computing the style
+  // more than once for the same element. This is only possible if we are
+  // currently inside a container.
+  //
+  // If we are not inside a container, we can fall back to the default
+  // behavior (in CSSAnimations) of using the current style on Element
+  // as the old style.
+  return style_recalc_context.container && state.CanAffectAnimations();
+}
+
+void SetAnimationUpdateIfNeeded(const StyleRecalcContext& style_recalc_context,
+                                StyleResolverState& state,
+                                Element& element) {
+  if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
+    if (auto* data = CSSAnimationUpdateScope::CurrentData()) {
+      if (ShouldStoreOldStyle(style_recalc_context, state))
+        data->StoreOldStyleIfNeeded(element);
+    }
+  }
+
   // If any changes to CSS Animations were detected, stash the update away for
   // application after the layout object is updated if we're in the appropriate
   // scope.
   if (state.AnimationUpdate().IsEmpty())
     return;
 
-  auto& element_animations = element.EnsureElementAnimations();
-  auto& document_animations = state.GetDocument().GetDocumentAnimations();
-
-  element_animations.CssAnimations().SetPendingUpdate(state.AnimationUpdate());
-
-  if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
-    if (document_animations.AnimationUpdatesAllowed()) {
-      state.GetDocument()
-          .GetDocumentAnimations()
-          .AddElementWithPendingAnimationUpdate(element);
-    }
+  if (RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled()) {
+    if (auto* data = CSSAnimationUpdateScope::CurrentData())
+      data->SetPendingUpdate(element, state.AnimationUpdate());
+  } else {
+    element.EnsureElementAnimations().CssAnimations().SetPendingUpdate(
+        state.AnimationUpdate());
   }
 }
 
@@ -816,7 +833,7 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
   }
 
   if (Element* animating_element = state.GetAnimatingElement())
-    SetAnimationUpdateIfNeeded(state, *animating_element);
+    SetAnimationUpdateIfNeeded(style_recalc_context, state, *animating_element);
 
   if (state.Style()->HasViewportUnits())
     GetDocument().SetHasViewportUnits();
@@ -999,6 +1016,8 @@ void StyleResolver::ApplyBaseStyle(
 
     if (collector.MatchedResult().DependsOnContainerQueries())
       state.Style()->SetDependsOnContainerQueries(true);
+    if (collector.MatchedResult().ConditionallyAffectsAnimations())
+      state.SetCanAffectAnimations();
 
     ApplyCallbackSelectors(state);
 
@@ -1289,6 +1308,8 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
 
   CSSAnimations::SnapshotCompositorKeyframes(
       element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
+  CSSAnimations::UpdateAnimationFlags(
+      *animating_element, state.AnimationUpdate(), state.StyleRef());
 
   if (state.AnimationUpdate().IsEmpty())
     return false;

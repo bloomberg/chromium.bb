@@ -23,10 +23,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
+#include "device/fido/features.h"
 #include "device/fido/filter.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "url/origin.h"
 
 #if defined(OS_WIN)
@@ -97,7 +99,7 @@ CryptotokenPrivateCanOriginAssertAppIdFunction::
 ExtensionFunction::ResponseAction
 CryptotokenPrivateCanOriginAssertAppIdFunction::Run() {
   std::unique_ptr<cryptotoken_private::CanOriginAssertAppId::Params> params =
-      cryptotoken_private::CanOriginAssertAppId::Params::Create(*args_);
+      cryptotoken_private::CanOriginAssertAppId::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const GURL origin_url(params->security_origin);
@@ -155,7 +157,7 @@ CryptotokenPrivateIsAppIdHashInEnterpriseContextFunction::Run() {
   std::unique_ptr<cryptotoken_private::IsAppIdHashInEnterpriseContext::Params>
       params(
           cryptotoken_private::IsAppIdHashInEnterpriseContext::Params::Create(
-              *args_));
+              args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -174,7 +176,7 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::
 ExtensionFunction::ResponseAction
 CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   std::unique_ptr<cryptotoken_private::CanAppIdGetAttestation::Params> params =
-      cryptotoken_private::CanAppIdGetAttestation::Params::Create(*args_);
+      cryptotoken_private::CanAppIdGetAttestation::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const GURL origin_url(params->options.origin);
@@ -264,10 +266,63 @@ void CryptotokenPrivateCanAppIdGetAttestationFunction::Complete(bool result) {
   Respond(OneArgument(base::Value(result)));
 }
 
+CryptotokenPrivateCanMakeU2fApiRequestFunction::
+    CryptotokenPrivateCanMakeU2fApiRequestFunction() = default;
+
+ExtensionFunction::ResponseAction
+CryptotokenPrivateCanMakeU2fApiRequestFunction::Run() {
+  auto params =
+      cryptotoken_private::CanMakeU2fApiRequest::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  content::WebContents* web_contents = nullptr;
+  if (!ExtensionTabUtil::GetTabById(params->options.tab_id, browser_context(),
+                                    true /* include incognito windows */,
+                                    &web_contents)) {
+    return RespondNow(Error("cannot find specified tab"));
+  }
+
+  content::RenderFrameHost* frame = web_contents->GetMainFrame();
+  if (!frame) {
+    return RespondNow(Error("cannot find frame"));
+  }
+  frame->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kWarning,
+      R"(The U2F Security Key API is deprecated and will be removed soon. If you own this website, please migrate to the Web Authentication API. For more information see https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A/m/yg20tsVFBAAJ)");
+
+  if (!base::FeatureList::IsEnabled(device::kU2fPermissionPrompt)) {
+    return RespondNow(OneArgument(base::Value(true)));
+  }
+
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
+  if (!permission_request_manager) {
+    return RespondNow(Error("no PermissionRequestManager"));
+  }
+
+  const GURL origin_url(params->options.origin);
+  if (!origin_url.is_valid()) {
+    return RespondNow(Error(extensions::ErrorUtils::FormatErrorMessage(
+        "invalid origin", params->options.origin)));
+  }
+
+  permission_request_manager->AddRequest(
+      frame, NewU2fApiPermissionRequest(
+                 url::Origin::Create(origin_url),
+                 base::BindOnce(
+                     &CryptotokenPrivateCanMakeU2fApiRequestFunction::Complete,
+                     this)));
+  return RespondLater();
+}
+
+void CryptotokenPrivateCanMakeU2fApiRequestFunction::Complete(bool result) {
+  Respond(OneArgument(base::Value(result)));
+}
+
 ExtensionFunction::ResponseAction
 CryptotokenPrivateRecordRegisterRequestFunction::Run() {
   auto params =
-      cryptotoken_private::RecordRegisterRequest::Params::Create(*args_);
+      cryptotoken_private::RecordRegisterRequest::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::RenderFrameHost* frame = RenderFrameHostForTabAndFrameId(
@@ -283,7 +338,7 @@ CryptotokenPrivateRecordRegisterRequestFunction::Run() {
 
 ExtensionFunction::ResponseAction
 CryptotokenPrivateRecordSignRequestFunction::Run() {
-  auto params = cryptotoken_private::RecordSignRequest::Params::Create(*args_);
+  auto params = cryptotoken_private::RecordSignRequest::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::RenderFrameHost* frame = RenderFrameHostForTabAndFrameId(

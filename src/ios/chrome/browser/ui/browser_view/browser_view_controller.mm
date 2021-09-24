@@ -72,6 +72,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
+#import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
@@ -82,10 +83,13 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#include "ios/chrome/browser/ui/context_menu/context_menu_utils.h"
+#import "ios/chrome/browser/ui/context_menu/link_no_preview_view_controller.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
@@ -125,7 +129,6 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
-#import "ios/chrome/browser/ui/signin/signin_presenter.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
@@ -184,9 +187,8 @@
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
+#include "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 #import "ios/web/common/crw_input_view_provider.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/url_scheme_util.h"
@@ -385,7 +387,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   KeyCommandsProvider* _keyCommandsProvider;
 
   // Used to display the Voice Search UI.  Nil if not visible.
-  scoped_refptr<VoiceSearchController> _voiceSearchController;
+  id<VoiceSearchController> _voiceSearchController;
 
   // Adapter to let BVC be the delegate for WebState.
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
@@ -803,7 +805,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BOOL)isPlayingTTS {
-  return _voiceSearchController && _voiceSearchController->IsPlayingAudio();
+  return _voiceSearchController.audioPlaying;
 }
 
 - (ChromeBrowserState*)browserState {
@@ -1170,8 +1172,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self ensureVoiceSearchControllerCreated];
 
   // Present voice search.
-  _voiceSearchController->StartRecognition(self, self.currentWebState,
-                                           self.browser);
+  [_voiceSearchController
+      startRecognitionOnViewController:self
+                              webState:self.currentWebState];
   [self.omniboxHandler cancelOmniboxEdit];
 }
 
@@ -1237,8 +1240,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.omniboxHandler cancelOmniboxEdit];
   }
   [self.helpHandler hideAllHelpBubbles];
-  if (_voiceSearchController)
-    _voiceSearchController->DismissMicPermissionsHelp();
+  [_voiceSearchController dismissMicPermissionHelp];
 
   web::WebState* webState = self.currentWebState;
 
@@ -1373,10 +1375,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _sideSwipeController = nil;
   _webStateListObserver.reset();
   _allWebStateObservationForwarder = nullptr;
-  if (_voiceSearchController) {
-    _voiceSearchController->SetDispatcher(nil);
-    _voiceSearchController = nullptr;
-  }
+  [_voiceSearchController disconnect];
+  _voiceSearchController = nil;
   _fullscreenDisabler = nullptr;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
@@ -1434,7 +1434,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if ([self presentedViewController])
     return NO;
 
-  if (_voiceSearchController && _voiceSearchController->IsVisible())
+  if (_voiceSearchController.visible)
     return NO;
 
   if (self.bottomPosition)
@@ -1585,8 +1585,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (![self isViewLoaded]) {
     self.typingShield = nil;
-    if (_voiceSearchController)
-      _voiceSearchController->SetDispatcher(nil);
+    _voiceSearchController.dispatcher = nil;
     [self.primaryToolbarCoordinator stop];
     self.primaryToolbarCoordinator = nil;
     [self.secondaryToolbarContainerCoordinator stop];
@@ -2005,8 +2004,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [self updateBroadcastState];
   if (_voiceSearchController)
-    _voiceSearchController->SetDispatcher(
-        static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
+    _voiceSearchController.dispatcher =
+        HandlerForProtocol(self.commandDispatcher, LoadQueryCommands);
 
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     if (base::FeatureList::IsEnabled(kModernTabStrip)) {
@@ -2827,17 +2826,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - Private Methods: Voice Search
 
 - (void)ensureVoiceSearchControllerCreated {
-  if (!_voiceSearchController) {
-    VoiceSearchProvider* provider =
-        ios::GetChromeBrowserProvider().GetVoiceSearchProvider();
-    if (provider) {
-      _voiceSearchController =
-          provider->CreateVoiceSearchController(self.browser);
-      if (self.primaryToolbarCoordinator) {
-        _voiceSearchController->SetDispatcher(
-            static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
-      }
-    }
+  if (_voiceSearchController)
+    return;
+
+  _voiceSearchController =
+      ios::provider::CreateVoiceSearchController(self.browser);
+  if (self.primaryToolbarCoordinator) {
+    _voiceSearchController.dispatcher =
+        HandlerForProtocol(self.commandDispatcher, LoadQueryCommands);
   }
 }
 
@@ -3426,8 +3422,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Truncate context meny titles that originate from URLs, leaving text titles
   // untruncated.
-  NSString* menuTitle = params.menu_title;
-  if (params.menu_title_origin != web::ContextMenuTitleOrigin::kImageTitle &&
+  NSString* menuTitle = GetContextMenuTitle(params);
+  if (!IsImageTitle(params) &&
       menuTitle.length > kContextMenuMaxURLTitleLength + 1) {
     menuTitle = [[menuTitle substringToIndex:kContextMenuMaxURLTitleLength]
         stringByAppendingString:kContextMenuEllipsis];
@@ -3866,8 +3862,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
     if (search_engines::SupportsSearchByImage(service)) {
       const TemplateURL* defaultURL = service->GetDefaultSearchProvider();
-      NSString* title = l10n_util::GetNSStringF(
-          IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE, defaultURL->short_name());
+      NSString* title =
+          IsContextMenuActionsRefreshEnabled()
+              ? l10n_util::GetNSString(IDS_IOS_CONTEXT_MENU_SEARCHFORIMAGE)
+              : l10n_util::GetNSStringF(IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE,
+                                        defaultURL->short_name());
       UIAction* searchByImage = [actionFactory
           actionSearchImageWithTitle:title
                                Block:^{
@@ -3885,13 +3884,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
 
-  // Truncate context meny titles that originate from URLs, leaving text titles
-  // untruncated.
-  NSString* menuTitle = params.menu_title;
-  if (params.menu_title_origin != web::ContextMenuTitleOrigin::kImageTitle &&
-      menuTitle.length > kContextMenuMaxURLTitleLength + 1) {
-    menuTitle = [[menuTitle substringToIndex:kContextMenuMaxURLTitleLength]
-        stringByAppendingString:kContextMenuEllipsis];
+  NSString* menuTitle = nil;
+  if (!base::FeatureList::IsEnabled(
+          web::features::kWebViewNativeContextMenuPhase2)) {
+    menuTitle = GetContextMenuTitle(params);
+
+    // Truncate context meny titles that originate from URLs, leaving text
+    // titles untruncated.
+    if (!IsImageTitle(params) &&
+        menuTitle.length > kContextMenuMaxURLTitleLength + 1) {
+      menuTitle = [[menuTitle substringToIndex:kContextMenuMaxURLTitleLength]
+          stringByAppendingString:kContextMenuEllipsis];
+    }
   }
 
   UIContextMenuActionProvider actionProvider =
@@ -3900,9 +3904,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         return [UIMenu menuWithTitle:menuTitle children:menuElements];
       };
 
+  UIContextMenuContentPreviewProvider previewProvider = ^UIViewController* {
+    if (!base::FeatureList::IsEnabled(
+            web::features::kWebViewNativeContextMenuPhase2)) {
+      return nil;
+    }
+    if (isLink) {
+      NSString* title = GetContextMenuTitle(params);
+      NSString* subtitle = GetContextMenuSubtitle(params);
+      return [[LinkNoPreviewViewController alloc] initWithTitle:title
+                                                       subtitle:subtitle];
+    }
+    return nil;
+  };
   UIContextMenuConfiguration* configuration =
       [UIContextMenuConfiguration configurationWithIdentifier:nil
-                                              previewProvider:nil
+                                              previewProvider:previewProvider
                                                actionProvider:actionProvider];
   completionHandler(configuration);
 }
@@ -4555,7 +4572,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Preload VoiceSearchController and views and view controllers needed
   // for voice search.
   [self ensureVoiceSearchControllerCreated];
-  _voiceSearchController->PrepareToAppear();
+  [_voiceSearchController prepareToAppear];
 }
 
 #if !defined(NDEBUG)
@@ -5062,7 +5079,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if ([self.popupMenuCoordinator isShowingPopupMenu])
     return YES;
 
-  if (_voiceSearchController && _voiceSearchController->IsVisible())
+  if (_voiceSearchController.visible)
     return YES;
 
   if (!self.active)
@@ -5371,6 +5388,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         [self ntpCoordinatorForWebState:webState];
     DCHECK(newTabPageCoordinator);
     [newTabPageCoordinator stop];
+    [newTabPageCoordinator disconnect];
     _ntpCoordinatorsForWebStates.erase(webState);
   }
   if (self.active && self.currentWebState == webState) {

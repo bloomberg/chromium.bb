@@ -100,7 +100,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -197,10 +197,10 @@ LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
       GetExecutionContext()->CanExecuteScripts(kNotAboutToExecuteScript)) {
     // Allocation of a layout object indicates that the canvas doesn't
     // have display:none set, so is conceptually being displayed.
-    if (context_)
+    if (context_) {
       context_->SetIsBeingDisplayed(GetLayoutObject() && style_is_visible_);
-
-    return new LayoutHTMLCanvas(this);
+    }
+    return MakeGarbageCollected<LayoutHTMLCanvas>(this);
   }
   return HTMLElement::CreateLayoutObject(style, legacy);
 }
@@ -310,7 +310,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
   }
 
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(GetExecutionContext()))
     UseCounter::Count(doc, WebFeature::kNewCanvas2DAPI);
 
   if (ContentsCcLayer() != old_contents_cc_layer)
@@ -727,8 +727,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
   if (device_scale_factor >= 2) {
     DEFINE_STATIC_REF(blink::Image, broken_canvas_hi_res,
-                      (blink::Image::LoadPlatformResource(
-                          IDR_BROKENCANVAS, ui::SCALE_FACTOR_200P)));
+                      (blink::Image::LoadPlatformResource(IDR_BROKENCANVAS,
+                                                          ui::k200Percent)));
     return std::make_pair(broken_canvas_hi_res, 2);
   }
 
@@ -1067,15 +1067,13 @@ void HTMLCanvasElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kWidthAttr) {
-    if (FastHasAttribute(html_names::kHeightAttr)) {
-      const AtomicString& height = FastGetAttribute(html_names::kHeightAttr);
-      ApplyAspectRatioToStyle(value, height, style);
-    }
+    const AtomicString& height = FastGetAttribute(html_names::kHeightAttr);
+    if (!height.IsNull())
+      ApplyIntegerAspectRatioToStyle(value, height, style);
   } else if (name == html_names::kHeightAttr) {
-    if (FastHasAttribute(html_names::kWidthAttr)) {
-      const AtomicString& width = FastGetAttribute(html_names::kWidthAttr);
-      ApplyAspectRatioToStyle(width, value, style);
-    }
+    const AtomicString& width = FastGetAttribute(html_names::kWidthAttr);
+    if (!width.IsNull())
+      ApplyIntegerAspectRatioToStyle(width, value, style);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
@@ -1329,7 +1327,6 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     const FloatSize&,
     const AlphaDisposition alpha_disposition) {
-
   return GetSourceImageForCanvasInternal(status, alpha_disposition);
 }
 

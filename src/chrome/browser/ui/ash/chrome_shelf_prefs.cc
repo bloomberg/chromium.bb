@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/ash/default_pinned_apps.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -142,7 +142,7 @@ void MarkDefaultPinLayoutRolled(Profile* profile,
   DCHECK(!IsDefaultPinLayoutRolled(profile, default_pin_layout));
 
   ListPrefUpdate update(profile->GetPrefs(), GetShelfDefaultPinLayoutPref());
-  update->AppendString(default_pin_layout);
+  update->Append(default_pin_layout);
 }
 
 // Returns true in case default pin layout configuration could be applied
@@ -265,7 +265,7 @@ std::vector<std::string> GetAppsPinnedByPolicy(ShelfControllerHelper* helper) {
     const GURL web_app_url(*policy_entry);
     if (web_app_url.is_valid()) {
       absl::optional<web_app::AppId> web_app_id =
-          web_app::WebAppProvider::Get(helper->profile())
+          web_app::WebAppProvider::GetDeprecated(helper->profile())
               ->registrar()
               .LookupExternalAppId(web_app_url);
       if (web_app_id.has_value())
@@ -493,13 +493,8 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(ShelfControllerHelper* helper) {
       !IsDefaultPinLayoutRolled(helper->profile(), shelf_layout)) {
     VLOG(1) << "Roll default shelf pin layout " << shelf_layout;
     std::vector<std::string> default_app_ids;
-    if (chromeos::switches::IsTabletFormFactor()) {
-      for (const char* default_app_id : GetTabletFormFactorDefaultPinnedApps())
-        default_app_ids.push_back(default_app_id);
-    } else {
-      for (const char* default_app_id : GetDefaultPinnedApps())
-        default_app_ids.push_back(default_app_id);
-    }
+    for (const char* default_app_id : GetDefaultPinnedAppsForFormFactor())
+      default_app_ids.push_back(default_app_id);
     InsertPinsAfterChromeAndBeforeFirstPinnedApp(helper, syncable_service,
                                                  default_app_ids, &pin_infos);
     MarkDefaultPinLayoutRolled(helper->profile(), shelf_layout);

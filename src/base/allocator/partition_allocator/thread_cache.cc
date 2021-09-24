@@ -104,7 +104,7 @@ void ThreadCacheRegistry::DumpStats(bool my_thread_only,
     auto* tcache = ThreadCache::Get();
     if (!ThreadCache::IsValid(tcache))
       return;
-    tcache->AccumulateStats(stats);
+    tcache->AccumulateStats(stats, true);
   } else {
     ThreadCache* tcache = list_head_;
     while (tcache) {
@@ -112,7 +112,7 @@ void ThreadCacheRegistry::DumpStats(bool my_thread_only,
       // since we are only interested in statistics. However, this means that
       // count is not necessarily equal to hits + misses for the various types
       // of events.
-      tcache->AccumulateStats(stats);
+      tcache->AccumulateStats(stats, true);
       tcache = tcache->next_;
     }
   }
@@ -303,6 +303,34 @@ void ThreadCache::EnsureThreadSpecificDataInitialized() {
 }
 
 // static
+void ThreadCache::DeleteForTesting(ThreadCache* tcache) {
+  ThreadCache::Delete(tcache);
+}
+
+// static
+void ThreadCache::SwapForTesting(PartitionRoot<ThreadSafe>* root) {
+  auto* old_tcache = ThreadCache::Get();
+  g_thread_cache_root.store(nullptr, std::memory_order_relaxed);
+  if (old_tcache)
+    ThreadCache::DeleteForTesting(old_tcache);
+  if (root) {
+    Init(root);
+    Create(root);
+  } else {
+#if defined(OS_WIN)
+    // OnDllProcessDetach accesses g_thread_cache_root which is nullptr now.
+    PartitionTlsSetOnDllProcessDetach(nullptr);
+#endif
+  }
+}
+
+// static
+void ThreadCache::RemoveTombstoneForTesting() {
+  PA_CHECK(IsTombstone(Get()));
+  PartitionTlsSet(g_thread_cache_key, nullptr);
+}
+
+// static
 void ThreadCache::Init(PartitionRoot<ThreadSafe>* root) {
 #if defined(OS_NACL)
   IMMEDIATE_CRASH();
@@ -419,10 +447,9 @@ ThreadCache* ThreadCache::Create(PartitionRoot<internal::ThreadSafe>* root) {
 }
 
 ThreadCache::ThreadCache(PartitionRoot<ThreadSafe>* root)
-    : buckets_(),
-      should_purge_(false),
-      stats_(),
+    : should_purge_(false),
       root_(root),
+      thread_id_(PlatformThread::CurrentId()),
       next_(nullptr),
       prev_(nullptr) {
   ThreadCacheRegistry::Instance().RegisterThreadCache(this);
@@ -437,13 +464,11 @@ ThreadCache::ThreadCache(PartitionRoot<ThreadSafe>* root)
     tcache_bucket->limit.store(global_limits_[index],
                                std::memory_order_relaxed);
 
+    tcache_bucket->slot_size = root_bucket.slot_size;
     // Invalid bucket.
     if (!root_bucket.is_valid()) {
       // Explicitly set this, as size computations iterate over all buckets.
       tcache_bucket->limit.store(0, std::memory_order_relaxed);
-      tcache_bucket->slot_size = 0;
-    } else {
-      tcache_bucket->slot_size = root_bucket.slot_size;
     }
   }
 }
@@ -577,7 +602,7 @@ void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
   //    triggers a major page fault, and we are running on a low-priority
   //    thread, we don't want the thread to be blocked while holding the lock,
   //    causing a priority inversion.
-  bucket.freelist_head->CheckFreeList(bucket.slot_size);
+  bucket.freelist_head->CheckFreeListForThreadCache(bucket.slot_size);
 
   uint8_t count_before = bucket.count;
   if (limit == 0) {
@@ -589,10 +614,10 @@ void ThreadCache::ClearBucket(ThreadCache::Bucket& bucket, size_t limit) {
     auto* head = bucket.freelist_head;
     size_t items = 1;  // Cannot free the freelist head.
     while (items < limit) {
-      head = head->GetNext(bucket.slot_size);
+      head = head->GetNextForThreadCache(bucket.slot_size);
       items++;
     }
-    FreeAfter(head->GetNext(bucket.slot_size), bucket.slot_size);
+    FreeAfter(head->GetNextForThreadCache(bucket.slot_size), bucket.slot_size);
     head->SetNext(nullptr);
   }
   bucket.count = limit;
@@ -611,7 +636,7 @@ void ThreadCache::FreeAfter(PartitionFreelistEntry* head, size_t slot_size) {
   internal::ScopedGuard<internal::ThreadSafe> guard(root_->lock_);
   while (head) {
     void* ptr = head;
-    head = head->GetNext(slot_size);
+    head = head->GetNextForThreadCache(slot_size);
     root_->RawFreeLocked(ptr);
   }
 }
@@ -646,7 +671,8 @@ size_t ThreadCache::CachedMemory() const {
   return total;
 }
 
-void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
+void ThreadCache::AccumulateStats(ThreadCacheStats* stats,
+                                  bool with_alloc_stats) const {
   stats->alloc_count += stats_.alloc_count;
   stats->alloc_hits += stats_.alloc_hits;
   stats->alloc_misses += stats_.alloc_misses;
@@ -661,8 +687,10 @@ void ThreadCache::AccumulateStats(ThreadCacheStats* stats) const {
   stats->batch_fill_count += stats_.batch_fill_count;
 
 #if defined(PA_THREAD_CACHE_ALLOC_STATS)
-  for (size_t i = 0; i < kNumBuckets + 1; i++) {
-    stats->allocs_per_bucket_[i] += stats_.allocs_per_bucket_[i];
+  if (with_alloc_stats) {
+    for (size_t i = 0; i < kNumBuckets + 1; i++) {
+      stats->allocs_per_bucket_[i] += stats_.allocs_per_bucket_[i];
+    }
   }
 #endif  // defined(PA_THREAD_CACHE_ALLOC_STATS)
 

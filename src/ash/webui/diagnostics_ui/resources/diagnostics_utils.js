@@ -4,7 +4,7 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {NetworkState, NetworkType, RoutineType} from './diagnostics_types.js';
+import {LockType, NetworkState, NetworkType, RoutineType} from './diagnostics_types.js';
 
 /**
  * Converts a KiB storage value to GiB and returns a fixed-point string
@@ -15,25 +15,6 @@ import {NetworkState, NetworkType, RoutineType} from './diagnostics_types.js';
  */
 export function convertKibToGibDecimalString(value, numDecimalPlaces) {
   return (value / 2 ** 20).toFixed(numDecimalPlaces);
-}
-
-/**
- * Converts a MHz frequency into channel number. Should the frequency requested
- * not fall into the algorithm range null is returned.
- * @param {number} frequency Given in MHz.
- * @return {?number} channel
- */
-export function convertFrequencyToChannel(frequency) {
-  // Handle 2.4GHz channel calculation for channel 1-13.
-  if (frequency >= 2412 && frequency <= 2483) {
-    return Math.ceil(1 + ((frequency - 2412) / 5));
-  }
-  // Handle 2.4GHz channel 14 which is a special case for Japan.
-  if (frequency >= 2484 && frequency <= 2495) {
-    return 14;
-  }
-  // TODO(ashleydp): Add algorithm for 5GHz.
-  return null;
 }
 
 /**
@@ -53,6 +34,15 @@ export function convertKibToMib(value) {
  */
 export function getDiagnosticsIcon(id) {
   return `diagnostics:${id}`;
+}
+
+/**
+ * Returns an icon from the navigation icon set.
+ * @param {string} id
+ * @return {string}
+ */
+export function getNavigationIcon(id) {
+  return `navigation-selector:${id}`;
 }
 
 /**
@@ -78,7 +68,6 @@ export function getNetworkType(type) {
  * @return {string}
  */
 export function getNetworkState(state) {
-  // TODO(michaelcheco): Add localized strings.
   switch (state) {
     case NetworkState.kOnline:
       return loadTimeData.getString('networkStateOnlineText');
@@ -90,6 +79,25 @@ export function getNetworkState(state) {
       return loadTimeData.getString('networkStateConnectingText');
     case NetworkState.kNotConnected:
       return loadTimeData.getString('networkStateNotConnectedText');
+    case NetworkState.kDisabled:
+      return loadTimeData.getString('networkStateDisabledText');
+    default:
+      assertNotReached();
+      return '';
+  }
+}
+
+/**
+ * @param {!LockType} lockType
+ * @return {string}
+ */
+export function getLockType(lockType) {
+  switch (lockType) {
+    case LockType.kSimPuk:
+      return 'sim-puk';
+    case LockType.kSimPin:
+      return 'sim-pin';
+    case LockType.kNone:
     default:
       assertNotReached();
       return '';
@@ -113,6 +121,8 @@ export function getRoutinesByNetworkType(type) {
     RoutineType.kHttpsFirewall,
     RoutineType.kHttpsLatency,
     RoutineType.kLanConnectivity,
+    RoutineType.kArcHttp,
+    RoutineType.kArcPing
   ];
 
   // Add wifi-only routines to common networking routine array.

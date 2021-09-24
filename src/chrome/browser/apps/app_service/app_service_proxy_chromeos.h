@@ -27,7 +27,7 @@ class ImageSkia;
 }  // namespace gfx
 
 namespace web_app {
-class WebAppsChromeOs;
+class WebApps;
 }  // namespace web_app
 
 namespace apps {
@@ -35,6 +35,7 @@ namespace apps {
 class AppPlatformMetrics;
 class AppPlatformMetricsService;
 class BorealisApps;
+class BrowserAppInstanceTracker;
 class BuiltInChromeOsApps;
 class CrostiniApps;
 class ExtensionAppsChromeOs;
@@ -63,6 +64,8 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
 
   apps::InstanceRegistry& InstanceRegistry();
   apps::AppPlatformMetrics* AppPlatformMetrics();
+
+  apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
 
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
@@ -185,12 +188,15 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
   std::unique_ptr<ExtensionAppsChromeOs> extension_apps_;
   std::unique_ptr<PluginVmApps> plugin_vm_apps_;
   std::unique_ptr<StandaloneBrowserApps> standalone_browser_apps_;
-  std::unique_ptr<web_app::WebAppsChromeOs> web_apps_;
+  std::unique_ptr<web_app::WebApps> web_apps_;
   std::unique_ptr<BorealisApps> borealis_apps_;
 
   bool arc_is_registered_ = false;
 
   apps::InstanceRegistry instance_registry_;
+
+  std::unique_ptr<apps::BrowserAppInstanceTracker>
+      browser_app_instance_tracker_;
 
   // When PauseApps is called, the app is added to |pending_pause_requests|.
   // When the user clicks the OK from the pause app dialog, the pause status is

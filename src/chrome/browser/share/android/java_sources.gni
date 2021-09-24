@@ -6,8 +6,10 @@
 # dependencies are removed.
 share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/BitmapDownloadRequest.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/SaveBitmapDelegate.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextBridge.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextCoordinator.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextIPHController.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextMetricsHelper.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/LongScreenshotsAreaSelectionDialogProperties.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/LongScreenshotsAreaSelectionDialogViewBinder.java",
@@ -61,8 +63,6 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfAndroidBridge.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfCoordinator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfEntry.java",
-  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfInfoBar.java",
-  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfInfoBarController.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/SendTabToSelfModelObserverBridge.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/TargetDeviceInfo.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ChromeProvidedSharingOptionsProvider.java",
@@ -70,6 +70,7 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetCoordinator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetItemViewProperties.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetLinkToggleCoordinator.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetLinkToggleMetricsHelper.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetPropertyModelBuilder.java",
 ]
 

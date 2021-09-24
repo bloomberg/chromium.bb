@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_effectively_invisible.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_hint.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -447,11 +447,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     offset_from_root -= root->GetLayoutObject().FirstFragment().PaintOffset();
   offset_from_root += subpixel_accumulation;
 
-  IntRect visual_rect = FirstFragmentVisualRect(object);
   if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
     if (object.FirstFragment().NextFragment()) {
       result = kMayBeClippedByCullRect;
     } else {
+      IntRect visual_rect = FirstFragmentVisualRect(object);
       IntRect cull_rect = object.FirstFragment().GetCullRect().Rect();
       bool cull_rect_intersects_self = cull_rect.Intersects(visual_rect);
       if (!cull_rect.Contains(visual_rect))
@@ -494,6 +494,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
 
   PaintLayerFragments layer_fragments;
+  ClearCollectionScope<PaintLayerFragments> scope(&layer_fragments);
 
   if (should_paint_content || should_paint_self_outline ||
       is_painting_overlay_overflow_controls) {
@@ -560,12 +561,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       PaintedOutputInvisible(object.StyleRef()))
     effectively_invisible.emplace(context.GetPaintController());
 
-  absl::optional<ScopedPaintChunkHint> paint_chunk_hint;
+  absl::optional<ScopedPaintChunkProperties> layer_chunk_properties;
   if (should_paint_content) {
-    paint_chunk_hint.emplace(context.GetPaintController(),
-                             object.FirstFragment().LocalBorderBoxProperties(),
-                             paint_layer_, DisplayItem::kLayerChunk,
-                             visual_rect);
+    // If we will create a new paint chunk for this layer, this gives the chunk
+    // a stable id.
+    layer_chunk_properties.emplace(
+        context.GetPaintController(),
+        object.FirstFragment().LocalBorderBoxProperties(), paint_layer_,
+        DisplayItem::kLayerChunk);
   }
 
   if (should_paint_background) {
@@ -581,14 +584,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   }
 
   if (should_paint_own_contents) {
-    absl::optional<ScopedPaintChunkHint> paint_chunk_hint_foreground;
-    if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
-      // Hint a foreground chunk if we have created any chunks, to give the
-      // paint chunk after the previous forced paint chunks a stable id.
-      paint_chunk_hint_foreground.emplace(
-          context.GetPaintController(), paint_layer_,
-          DisplayItem::kLayerChunkForeground, visual_rect);
-    }
+    // If the negative-z-order children created paint chunks, this gives the
+    // foreground paint chunk a stable id.
+    ScopedPaintChunkProperties foreground_properties(
+        context.GetPaintController(),
+        object.FirstFragment().LocalBorderBoxProperties(), paint_layer_,
+        DisplayItem::kLayerChunkForeground);
+
     if (selection_drag_image_only) {
       PaintForegroundForFragmentsWithPhase(PaintPhase::kSelectionDragImage,
                                            layer_fragments, context,
@@ -700,7 +702,7 @@ PaintResult PaintLayerPainter::PaintChildren(
   if (paint_layer_.GetLayoutObject().ChildPaintBlockedByDisplayLock())
     return result;
 
-  PaintLayerPaintOrderIterator iterator(paint_layer_, children_to_visit);
+  PaintLayerPaintOrderIterator iterator(&paint_layer_, children_to_visit);
   while (PaintLayer* child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
@@ -718,7 +720,7 @@ PaintResult PaintLayerPainter::PaintChildren(
 
     if (const auto* layers_painting_overlay_overflow_controls_after =
             iterator.LayersPaintingOverlayOverflowControlsAfter(child)) {
-      for (auto* reparent_overflow_controls_layer :
+      for (auto& reparent_overflow_controls_layer :
            *layers_painting_overlay_overflow_controls_after) {
         DCHECK(reparent_overflow_controls_layer
                    ->NeedsReorderOverlayOverflowControls());

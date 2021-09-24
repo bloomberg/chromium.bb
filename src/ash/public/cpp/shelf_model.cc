@@ -55,27 +55,33 @@ ShelfModel::ShelfModel() = default;
 
 ShelfModel::~ShelfModel() = default;
 
-void ShelfModel::PinAppWithID(const std::string& app_id) {
-  const ShelfID shelf_id(app_id);
+void ShelfModel::AddAndPinAppWithFactoryConstructedDelegate(
+    const std::string& app_id) {
+  DCHECK_LT(ItemIndexByAppID(app_id), 0);
 
-  // If the app is already pinned, do nothing and return.
-  if (IsAppPinned(shelf_id.app_id))
+  ShelfItem item;
+  std::unique_ptr<ShelfItemDelegate> delegate;
+  bool result =
+      shelf_item_factory_->CreateShelfItemForAppId(app_id, &item, &delegate);
+  if (!result)
     return;
 
-  // Convert an existing item to be pinned, or create a new pinned item.
-  const int index = ItemIndexByID(shelf_id);
-  if (index >= 0) {
-    ShelfItem item = items_[index];
-    DCHECK_EQ(item.type, TYPE_APP);
-    DCHECK(!item.pinned_by_policy);
-    item.type = TYPE_PINNED_APP;
-    Set(index, item);
-  } else if (!shelf_id.IsNull()) {
-    ShelfItem item;
-    item.type = TYPE_PINNED_APP;
-    item.id = shelf_id;
-    Add(item);
-  }
+  item.type = TYPE_PINNED_APP;
+  Add(item, std::move(delegate));
+}
+
+void ShelfModel::PinExistingItemWithID(const std::string& app_id) {
+  const int index = ItemIndexByAppID(app_id);
+  DCHECK_GE(index, 0);
+
+  if (IsAppPinned(app_id))
+    return;
+
+  ShelfItem item = items_[index];
+  DCHECK_EQ(item.type, TYPE_APP);
+  DCHECK(!item.pinned_by_policy);
+  item.type = TYPE_PINNED_APP;
+  Set(index, item);
 }
 
 bool ShelfModel::IsAppPinned(const std::string& app_id) const {
@@ -131,16 +137,19 @@ void ShelfModel::DestroyItemDelegates() {
   id_to_item_delegate_map_.clear();
 }
 
-int ShelfModel::Add(const ShelfItem& item) {
-  return AddAt(items_.size(), item);
-}
-
 int ShelfModel::Add(const ShelfItem& item,
                     std::unique_ptr<ShelfItemDelegate> delegate) {
   return AddAt(items_.size(), item, std::move(delegate));
 }
 
-int ShelfModel::AddAt(int index, const ShelfItem& item) {
+int ShelfModel::AddAt(int index,
+                      const ShelfItem& item,
+                      std::unique_ptr<ShelfItemDelegate> delegate) {
+  // Update the delegate map immediately. We don't send a
+  // ShelfItemDelegateChanged() call when adding items to the model.
+  delegate->set_shelf_id(item.id);
+  id_to_item_delegate_map_[item.id] = std::move(delegate);
+
   // Items should have unique non-empty ids to avoid undefined model behavior.
   DCHECK(!item.id.IsNull()) << " The id is null.";
   DCHECK_EQ(ItemIndexByID(item.id), -1) << " The id is not unique: " << item.id;
@@ -148,18 +157,8 @@ int ShelfModel::AddAt(int index, const ShelfItem& item) {
   items_.insert(items_.begin() + index, item);
   for (auto& observer : observers_)
     observer.ShelfItemAdded(index);
-  return index;
-}
 
-int ShelfModel::AddAt(int index,
-                      const ShelfItem& item,
-                      std::unique_ptr<ShelfItemDelegate> delegate) {
-  // TODO(https://crbug.com/1238470): Update the delegate first to avoid
-  // constructing it in observer callbacks. This will be unnecessary once
-  // ChromeShelfController::ShelfItemAdded() no longer lazily sets delegates.
-  ReplaceShelfItemDelegate(item.id, std::move(delegate));
-  int result = AddAt(index, item);
-  return result;
+  return index;
 }
 
 void ShelfModel::RemoveItemAt(int index) {
@@ -331,11 +330,11 @@ int ShelfModel::FirstRunningAppIndex() const {
 void ShelfModel::ReplaceShelfItemDelegate(
     const ShelfID& shelf_id,
     std::unique_ptr<ShelfItemDelegate> item_delegate) {
+  DCHECK(item_delegate);
   // Create a copy of the id that can be safely accessed if |shelf_id| is backed
   // by a controller that will be deleted in the assignment below.
   const ShelfID safe_shelf_id = shelf_id;
-  if (item_delegate)
-    item_delegate->set_shelf_id(safe_shelf_id);
+  item_delegate->set_shelf_id(safe_shelf_id);
   // This assignment replaces any ShelfItemDelegate already registered for
   // |shelf_id|.
   std::unique_ptr<ShelfItemDelegate> old_item_delegate =
@@ -354,6 +353,10 @@ ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(
   if (it != id_to_item_delegate_map_.end())
     return it->second.get();
   return nullptr;
+}
+
+void ShelfModel::SetShelfItemFactory(ShelfModel::ShelfItemFactory* factory) {
+  shelf_item_factory_ = factory;
 }
 
 AppWindowShelfItemController* ShelfModel::GetAppWindowShelfItemController(

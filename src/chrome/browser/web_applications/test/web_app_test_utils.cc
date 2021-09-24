@@ -8,9 +8,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
@@ -68,6 +68,8 @@ apps::FileHandlers CreateRandomFileHandlers(uint32_t suffix) {
     file_handler.action = GURL("https://example.com/open-" + suffix_str);
     file_handler.accept.push_back(std::move(accept_entry1));
     file_handler.accept.push_back(std::move(accept_entry2));
+    file_handler.icons.emplace_back(GURL("https://example.com/image.png"), 16);
+    file_handler.icons.emplace_back(GURL("https://example.com/image2.png"), 48);
 
     file_handlers.push_back(std::move(file_handler));
   }
@@ -249,7 +251,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   auto app = std::make_unique<WebApp>(app_id);
 
   // Generate all possible permutations of field values in a random way:
-  if (random.next_bool())
+  if (AreSystemWebAppsSupported() && random.next_bool())
     app->AddSource(Source::kSystem);
   if (random.next_bool())
     app->AddSource(Source::kPolicy);
@@ -272,8 +274,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetBackgroundColor(background_color);
   app->SetIsLocallyInstalled(random.next_bool());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
-  app->SetUserDisplayMode(random.next_bool() ? DisplayMode::kBrowser
-                                             : DisplayMode::kStandalone);
+
+  const DisplayMode user_display_modes[3] = {
+      DisplayMode::kBrowser, DisplayMode::kStandalone, DisplayMode::kTabbed};
+  app->SetUserDisplayMode(user_display_modes[random.next_uint(3)]);
 
   const base::Time last_badging_time =
       base::Time::UnixEpoch() +
@@ -310,9 +314,9 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   const SquareSizePx size = 256;
   const int num_icons = random.next_uint(10);
-  std::vector<WebApplicationIconInfo> icon_infos(num_icons);
+  std::vector<apps::IconInfo> icon_infos(num_icons);
   for (int i = 0; i < num_icons; i++) {
-    WebApplicationIconInfo icon;
+    apps::IconInfo icon;
     icon.url =
         base_url.Resolve("/icon" + base::NumberToString(random.next_uint()));
     if (random.next_bool())
@@ -320,11 +324,11 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
     int purpose = random.next_uint(4);
     if (purpose == 0)
-      icon.purpose = blink::mojom::ManifestImageResource_Purpose::ANY;
+      icon.purpose = apps::IconInfo::Purpose::kAny;
     if (purpose == 1)
-      icon.purpose = blink::mojom::ManifestImageResource_Purpose::MASKABLE;
+      icon.purpose = apps::IconInfo::Purpose::kMaskable;
     if (purpose == 2)
-      icon.purpose = blink::mojom::ManifestImageResource_Purpose::MONOCHROME;
+      icon.purpose = apps::IconInfo::Purpose::kMonochrome;
     // if (purpose == 3), leave purpose unset. Should default to ANY.
 
     icon_infos[i] = icon;
@@ -392,6 +396,11 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
         random.next_enum<LaunchHandler::NavigateExistingClient>();
     app->SetLaunchHandler(launch_handler);
   }
+
+  const base::Time manifest_update_time =
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromMilliseconds(random.next_uint());
+  app->SetManifestUpdateTime(manifest_update_time);
 
   // `random` should not be used after the chromeos block if the result
   // is expected to be deterministic across cros and non-cros builds.

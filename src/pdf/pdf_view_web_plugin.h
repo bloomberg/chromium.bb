@@ -23,6 +23,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_plugin.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "v8/include/v8.h"
 
@@ -31,7 +32,6 @@ class WebAssociatedURLLoader;
 class WebElement;
 class WebLocalFrame;
 class WebLocalFrameClient;
-class WebPluginContainer;
 class WebURL;
 class WebURLRequest;
 struct WebAssociatedURLLoaderOptions;
@@ -47,6 +47,7 @@ class MetafileSkia;
 
 namespace chrome_pdf {
 
+class PDFiumEngine;
 class PdfAccessibilityDataHandler;
 
 // Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
@@ -64,6 +65,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // Invalidates the entire web plugin container and schedules a paint of the
     // page in it.
     virtual void Invalidate() = 0;
+
+    // Notifies the container about which touch events the plugin accepts.
+    virtual void RequestTouchEventType(
+        blink::WebPluginContainer::TouchEventRequestType request_type) = 0;
 
     // Notify the web plugin container about the total matches of a find
     // request.
@@ -197,8 +202,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // PdfViewPluginBase:
   void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
-  void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
-  void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
@@ -235,12 +238,14 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void UpdateSnapshot(sk_sp<SkImage> snapshot) override;
 
   // PdfAccessibilityActionHandler:
+  void EnableAccessibility() override;
   void HandleAccessibilityAction(
       const AccessibilityActionData& action_data) override;
 
-  // Initializes the plugin using the `container_wrapper` provided by tests.
-  bool InitializeForTesting(
-      std::unique_ptr<ContainerWrapper> container_wrapper);
+  // Initializes the plugin using the `container_wrapper` and `engine` provided
+  // by tests.
+  bool InitializeForTesting(std::unique_ptr<ContainerWrapper> container_wrapper,
+                            std::unique_ptr<PDFiumEngine> engine);
 
   const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
 
@@ -260,6 +265,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
       const AccessibilityViewportInfo& viewport_info) override;
+  void NotifyFindResultsChanged(int total, bool final_result) override;
+  void NotifyFindTickmarks(const std::vector<gfx::Rect>& tickmarks) override;
   void SetContentRestrictions(int content_restrictions) override;
   void SetPluginCanSave(bool can_save) override;
   void PluginDidStartLoading() override;
@@ -276,7 +283,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
-  bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper);
+  bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper,
+                        std::unique_ptr<PDFiumEngine> engine);
 
   void OnViewportChanged(const gfx::Rect& view_rect, float new_device_scale);
 
@@ -297,6 +305,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // TODO(crbug.com/1217012): Re-evaluate the need for a callback when parts of
   // the plugin are moved off the main thread.
   void OnInvokePrintDialog(int32_t /*result*/);
+
+  // Callback to set the viewport information in accessibility tree
+  // asynchronously.
+  void OnSetAccessibilityViewportInfo(
+      const AccessibilityViewportInfo& viewport_info);
 
   // May be null in unit tests.
   pdf::mojom::PdfService* GetPdfService();

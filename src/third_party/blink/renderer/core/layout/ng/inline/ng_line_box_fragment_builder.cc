@@ -25,14 +25,16 @@ void NGLineBoxFragmentBuilder::Reset() {
   oof_positioned_candidates_.Shrink(0);
   unpositioned_list_marker_ = NGUnpositionedListMarker();
 
+  annotation_overflow_ = LayoutUnit();
   bfc_block_offset_.reset();
   line_box_bfc_block_offset_.reset();
+  is_pushed_by_floats_ = false;
+  subtree_modified_margin_strut_ = false;
 
   size_.inline_size = LayoutUnit();
   metrics_ = FontHeight::Empty();
   line_box_type_ = NGPhysicalLineBoxFragment::kNormalLineBox;
 
-  break_appeal_ = kBreakAppealPerfect;
   has_floating_descendants_for_paint_ = false;
   has_descendant_that_depends_on_percentage_block_size_ = false;
   has_block_fragmentation_ = false;
@@ -66,7 +68,7 @@ void NGLineBoxFragmentBuilder::PropagateChildrenData(
     }
     if (child.out_of_flow_positioned_box) {
       AddOutOfFlowInlineChildCandidate(
-          NGBlockNode(To<LayoutBox>(child.out_of_flow_positioned_box)),
+          NGBlockNode(To<LayoutBox>(child.out_of_flow_positioned_box.Get())),
           child.Offset(), child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }

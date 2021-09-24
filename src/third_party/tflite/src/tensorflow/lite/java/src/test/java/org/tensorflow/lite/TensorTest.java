@@ -24,6 +24,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;
@@ -46,6 +47,9 @@ public final class TensorTest {
   private static final String LONG_MODEL_PATH =
       "tensorflow/lite/java/src/testdata/int64.bin";
 
+  private static final String STRING_MODEL_PATH =
+      "tensorflow/lite/java/src/testdata/string.bin";
+
   private static final String QUANTIZED_MODEL_PATH =
       "tensorflow/lite/java/src/testdata/quantized.bin";
 
@@ -54,6 +58,7 @@ public final class TensorTest {
 
   @Before
   public void setUp() {
+    TestInit.init();
     wrapper = new NativeInterpreterWrapper(MODEL_PATH);
     float[] oneD = {1.23f, 6.54f, 7.81f};
     float[][] twoD = {oneD, oneD, oneD, oneD, oneD, oneD, oneD, oneD};
@@ -83,6 +88,7 @@ public final class TensorTest {
     assertThat(tensor.numElements()).isEqualTo(2 * 8 * 8 * 3);
     assertThat(tensor.numDimensions()).isEqualTo(4);
     assertThat(tensor.name()).isEqualTo("output");
+    assertThat(tensor.asReadOnlyBuffer().capacity()).isEqualTo(tensor.numBytes());
   }
 
   @Test
@@ -100,6 +106,16 @@ public final class TensorTest {
       tensor.copyTo(null);
       fail();
     } catch (IllegalArgumentException e) {
+      // Success.
+    }
+  }
+
+  @Test
+  public void testModifyReadOnlyBuffer() {
+    try {
+      assertThat(tensor.asReadOnlyBuffer().putFloat(0.f));
+      fail();
+    } catch (ReadOnlyBufferException e) {
       // Success.
     }
   }
@@ -412,30 +428,30 @@ public final class TensorTest {
   @Test
   public void testDataTypeOf() {
     float[] testEmptyArray = {};
-    DataType dataType = Tensor.dataTypeOf(testEmptyArray);
+    DataType dataType = tensor.dataTypeOf(testEmptyArray);
     assertThat(dataType).isEqualTo(DataType.FLOAT32);
     float[] testFloatArray = {0.783f, 0.251f};
-    dataType = Tensor.dataTypeOf(testFloatArray);
+    dataType = tensor.dataTypeOf(testFloatArray);
     assertThat(dataType).isEqualTo(DataType.FLOAT32);
     float[][] testMultiDimArray = {testFloatArray, testFloatArray, testFloatArray};
-    dataType = Tensor.dataTypeOf(testMultiDimArray);
+    dataType = tensor.dataTypeOf(testMultiDimArray);
     assertThat(dataType).isEqualTo(DataType.FLOAT32);
     FloatBuffer testFloatBuffer = FloatBuffer.allocate(1);
-    dataType = Tensor.dataTypeOf(testFloatBuffer);
+    dataType = tensor.dataTypeOf(testFloatBuffer);
     assertThat(dataType).isEqualTo(DataType.FLOAT32);
     float testFloat = 1.0f;
-    dataType = Tensor.dataTypeOf(testFloat);
+    dataType = tensor.dataTypeOf(testFloat);
     assertThat(dataType).isEqualTo(DataType.FLOAT32);
     try {
       double[] testDoubleArray = {0.783, 0.251};
-      Tensor.dataTypeOf(testDoubleArray);
+      tensor.dataTypeOf(testDoubleArray);
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("cannot resolve DataType of");
     }
     try {
       Float[] testBoxedArray = {0.783f, 0.251f};
-      Tensor.dataTypeOf(testBoxedArray);
+      tensor.dataTypeOf(testBoxedArray);
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("cannot resolve DataType of [Ljava.lang.Float;");
@@ -527,5 +543,25 @@ public final class TensorTest {
 
     assertThat(scale).isWithin(1e-6f).of(0.25f);
     assertThat(zeroPoint).isEqualTo(127);
+  }
+
+  @Test
+  public void testByteArrayStringTensorInput() {
+    NativeInterpreterWrapper wrapper = new NativeInterpreterWrapper(STRING_MODEL_PATH);
+    // Test input of string[1]
+    wrapper.resizeInput(0, new int[] {1});
+    Tensor stringTensor = wrapper.getInputTensor(0);
+    byte[][] bytes1DStringData = new byte[][] {{0x00, 0x01, 0x02, 0x03}};
+    stringTensor.setTo(bytes1DStringData);
+
+    byte[][] byteArray = new byte[][] {new byte[1]};
+    assertThat(stringTensor.dataTypeOf(byteArray)).isEqualTo(DataType.STRING);
+    assertThat(stringTensor.shape()).isEqualTo(new int[] {1});
+
+    // Test input of scalar string
+    wrapper.resizeInput(0, new int[] {});
+    byte[] bytesStringData = new byte[] {0x00, 0x01, 0x02, 0x03};
+    stringTensor.setTo(bytesStringData);
+    assertThat(stringTensor.shape()).isEqualTo(new int[] {});
   }
 }

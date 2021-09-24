@@ -194,6 +194,8 @@ void GPUDevice::OnLogging(WGPULoggingType loggingType, const char* message) {
 }
 
 void GPUDevice::OnDeviceLostError(const char* message) {
+  if (!GetExecutionContext())
+    return;
   AddConsoleWarning(message);
 
   if (lost_property_->GetState() == LostProperty::kPending) {
@@ -336,12 +338,6 @@ GPURenderPipeline* GPUDevice::createRenderPipeline(
 GPUComputePipeline* GPUDevice::createComputePipeline(
     const GPUComputePipelineDescriptor* descriptor,
     ExceptionState& exception_state) {
-  // Check for required members. Can't do this in the IDL because then the
-  // deprecated members would be required.
-  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
-    exception_state.ThrowTypeError("required member compute is undefined.");
-    return nullptr;
-  }
   return GPUComputePipeline::Create(this, descriptor);
 }
 
@@ -379,15 +375,6 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
     const GPUComputePipelineDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-
-  // Check for required members. Can't do this in the IDL because then the
-  // deprecated members would be required.
-  if (!descriptor->hasCompute() && !descriptor->hasComputeStage()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError,
-        "required member compute is undefined."));
-    return promise;
-  }
 
   std::string label;
   OwnedProgrammableStageDescriptor computeStageDescriptor;

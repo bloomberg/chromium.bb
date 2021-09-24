@@ -6,7 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webgpu") {
   sources = [
-    "dawn_callback.h",
     "dawn_conversions.cc",
     "dawn_conversions.h",
     "dawn_enum_conversions.cc",
@@ -77,7 +76,6 @@ blink_modules_sources("webgpu") {
     "gpu_swap_chain.h",
     "gpu_texture.cc",
     "gpu_texture.h",
-    "gpu_texture_usage.cc",
     "gpu_texture_usage.h",
     "gpu_texture_view.cc",
     "gpu_texture_view.h",

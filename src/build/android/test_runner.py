@@ -353,10 +353,6 @@ def AddGTestOptions(parser):
       help='Host directory to which app data files will be'
            ' saved. Used with --app-data-file.')
   parser.add_argument(
-      '--delete-stale-data',
-      dest='delete_stale_data', action='store_true',
-      help='Delete stale test data on the device.')
-  parser.add_argument(
       '--enable-xml-result-parsing',
       action='store_true', help=argparse.SUPPRESS)
   parser.add_argument(
@@ -468,10 +464,6 @@ def AddInstrumentationTestOptions(parser):
       help='Directory in which to place all generated '
       'Jacoco coverage files.')
   parser.add_argument(
-      '--delete-stale-data',
-      action='store_true', dest='delete_stale_data',
-      help='Delete stale test data on the device.')
-  parser.add_argument(
       '--disable-dalvik-asserts',
       dest='set_asserts', action='store_false', default=True,
       help='Removes the dalvik.vm.enableassertions property')
@@ -484,6 +476,11 @@ def AddInstrumentationTestOptions(parser):
       dest='exclude_annotation_str',
       help='Comma-separated list of annotations. Exclude tests with these '
            'annotations.')
+  parser.add_argument(
+      '--enable-breakpad-dump',
+      action='store_true',
+      help='Stores any breakpad dumps till the end of the test.')
+
   def package_replacement(arg):
     split_arg = arg.split(',')
     if len(split_arg) != 2:

@@ -41,10 +41,10 @@ QuotaInternalsHandler::~QuotaInternalsHandler() {
 }
 
 void QuotaInternalsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestInfo", base::BindRepeating(&QuotaInternalsHandler::OnRequestInfo,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "triggerStoragePressure",
       base::BindRepeating(&QuotaInternalsHandler::OnTriggerStoragePressure,
                           base::Unretained(this)));
@@ -109,7 +109,7 @@ void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
 void QuotaInternalsHandler::OnTriggerStoragePressure(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   std::string origin_string;
   CHECK(args->GetString(0, &origin_string));
   GURL url(origin_string);

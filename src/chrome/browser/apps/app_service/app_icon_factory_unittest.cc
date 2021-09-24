@@ -19,14 +19,13 @@
 #include "cc/test/pixel_test_utils.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -506,21 +505,18 @@ class WebAppIconFactoryTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    web_app_provider_ = web_app::WebAppProvider::Get(profile());
+    web_app_provider_ = web_app::WebAppProvider::GetForTest(profile());
     ASSERT_TRUE(web_app_provider_);
 
     base::RunLoop run_loop;
-    web_app_provider_->registry_controller().AsWebAppSyncBridge()->Init(
-        run_loop.QuitClosure());
+    web_app_provider_->sync_bridge().Init(run_loop.QuitClosure());
     run_loop.Run();
 
     icon_manager_ = static_cast<web_app::WebAppIconManager*>(
         &(web_app_provider_->icon_manager()));
     ASSERT_TRUE(icon_manager_);
 
-    sync_bridge_ =
-        web_app_provider_->registry_controller().AsWebAppSyncBridge();
-    ASSERT_TRUE(sync_bridge_);
+    sync_bridge_ = &web_app_provider_->sync_bridge();
   }
 
   std::unique_ptr<web_app::WebApp> CreateWebApp() {

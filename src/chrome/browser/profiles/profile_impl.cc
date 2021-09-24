@@ -45,6 +45,7 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/background_sync/background_sync_controller_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -67,6 +68,8 @@
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#include "chrome/browser/notifications/platform_notification_service_factory.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -103,6 +106,8 @@
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
+#include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
+#include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_request_permission_context.h"
 #include "chrome/browser/webid/federated_identity_request_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
@@ -119,6 +124,9 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/background_sync/background_sync_controller_impl.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -153,6 +161,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/federated_identity_active_session_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_request_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/browser/permission_controller.h"
@@ -428,6 +437,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPdfAsImageAvailability, false);
 #endif
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+  registry->RegisterIntegerPref(prefs::kPrintPostScriptMode, 0);
   registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -840,6 +850,26 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   AnnouncementNotificationServiceFactory::GetForProfile(this)
       ->MaybeShowNotification();
+
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+    breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
+        .ObserveBreadcrumbManagerService(breadcrumb_service);
+
+    breadcrumbs::BreadcrumbPersistentStorageManager*
+        persistent_storage_manager =
+            g_browser_process->GetBreadcrumbPersistentStorageManager();
+    DCHECK(persistent_storage_manager);
+    breadcrumb_service->StartPersisting(persistent_storage_manager);
+
+    // Get stored persistent breadcrumbs from last run to set on crash reports.
+    persistent_storage_manager->GetStoredEvents(
+        base::BindOnce([](std::vector<std::string> events) {
+          breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
+              .SetPreviousSessionEvents(events);
+        }));
+  }
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -859,6 +889,14 @@ ProfileImpl::~ProfileImpl() {
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
 #endif
+
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+    breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+    breadcrumb_service->StopPersisting();
+    breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
+        .StopObservingBreadcrumbManagerService(breadcrumb_service);
+  }
 
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
@@ -1057,8 +1095,9 @@ ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy");
-    extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
-        CookieSettingsFactory::GetForProfile(this).get());
+    extension_special_storage_policy_ =
+        base::MakeRefCounted<ExtensionSpecialStoragePolicy>(
+            CookieSettingsFactory::GetForProfile(this).get());
   }
   return extension_special_storage_policy_.get();
 #else
@@ -1290,6 +1329,12 @@ storage::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
 #endif
 }
 
+content::PlatformNotificationService*
+ProfileImpl::GetPlatformNotificationService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return PlatformNotificationServiceFactory::GetForProfile(this);
+}
+
 content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
   return PushMessagingServiceFactory::GetForProfile(this);
 }
@@ -1334,6 +1379,12 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
 
 content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
   return ContentIndexProviderFactory::GetForProfile(this);
+}
+
+content::FederatedIdentityActiveSessionPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
+  return FederatedIdentityActiveSessionPermissionContextFactory::GetForProfile(
+      this);
 }
 
 content::FederatedIdentityRequestPermissionContextDelegate*

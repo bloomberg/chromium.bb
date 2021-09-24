@@ -17,19 +17,20 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/custom_handlers/protocol_handler.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 
 using content::BrowserThread;
+using content::ProtocolHandler;
 
 namespace {
 
@@ -208,7 +209,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   int InPrefHandlerCount() {
     const base::ListValue* in_pref_handlers =
         profile()->GetPrefs()->GetList(prefs::kRegisteredProtocolHandlers);
-    return static_cast<int>(in_pref_handlers->GetSize());
+    return static_cast<int>(in_pref_handlers->GetList().size());
   }
 
   int InMemoryHandlerCount() {
@@ -222,7 +223,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   int InPrefIgnoredHandlerCount() {
     const base::ListValue* in_pref_ignored_handlers =
         profile()->GetPrefs()->GetList(prefs::kIgnoredProtocolHandlers);
-    return static_cast<int>(in_pref_ignored_handlers->GetSize());
+    return static_cast<int>(in_pref_ignored_handlers->GetList().size());
   }
 
   int InMemoryIgnoredHandlerCount() {

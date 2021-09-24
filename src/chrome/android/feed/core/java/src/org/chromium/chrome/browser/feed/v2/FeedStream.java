@@ -413,6 +413,7 @@ public class FeedStream implements Stream {
     private FeedSurfaceMediator.ScrollState mScrollStateToRestore;
     private int mHeaderCount;
     private boolean mIsPlaceholderShown;
+    private long mLastFetchTimeMs;
 
     // Placeholder view that simply takes up space.
     private NtpListContentManager.NativeViewContent mSpacerViewContent;
@@ -499,6 +500,11 @@ public class FeedStream implements Stream {
     @SectionType
     public int getSectionType() {
         return mIsInterestFeed ? SectionType.FOR_YOU_FEED : SectionType.WEB_FEED;
+    }
+
+    @Override
+    public String getContentState() {
+        return String.valueOf(mLastFetchTimeMs);
     }
 
     @Override
@@ -747,7 +753,17 @@ public class FeedStream implements Stream {
             return false;
         }
 
+        // When swapping feeds, the totalItemCount and lastVisibleItemPosition can temporarily fall
+        // out of sync. Early exit on the pathological case where we think we're showing an item
+        // beyond the end of the feed. This can occur if maybeLoadMore() is called during a feed
+        // swap, after the feed items have been cleared, but before the view has finished updating
+        // (which happens asynchronously).
         int lastVisibleItem = layoutManager.findLastVisibleItemPosition();
+        if (totalItemCount < lastVisibleItem) {
+            return false;
+        }
+
+        // No need to load more if there are more scrollable items than the trigger amount.
         int numItemsRemaining = totalItemCount - lastVisibleItem;
         if (numItemsRemaining > lookaheadTrigger) {
             return false;
@@ -784,6 +800,16 @@ public class FeedStream implements Stream {
             Log.wtf(TAG, "Unable to parse StreamUpdate proto data", e);
             mReliabilityLoggingBridge.onStreamUpdateError();
             return;
+        }
+
+        mLastFetchTimeMs = streamUpdate.getFetchTimeMs();
+
+        // Invalidate the saved scroll state if the content in the feed has changed.
+        // Don't do anything if mLastFetchTimeMs is unset.
+        if (mScrollStateToRestore != null && mLastFetchTimeMs != 0) {
+            if (!mScrollStateToRestore.feedContentState.equals(getContentState())) {
+                mScrollStateToRestore = null;
+            }
         }
 
         // Update using shared states.
@@ -922,10 +948,13 @@ public class FeedStream implements Stream {
      */
     private boolean restoreScrollState(FeedSurfaceMediator.ScrollState state) {
         assert (mRecyclerView != null);
-        if (state == null) return true;
+        if (state == null || state.lastPosition < 0 || state.position < 0) return true;
 
         // If too few items exist, defer scrolling until later.
         if (mContentManager.getItemCount() <= state.lastPosition) return false;
+        // Don't try to resume scrolling to a native view. This avoids scroll resume to the refresh
+        // spinner.
+        if (mContentManager.getContent(state.lastPosition).isNativeView()) return false;
 
         LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         if (layoutManager != null) {

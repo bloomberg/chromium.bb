@@ -272,6 +272,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     }
 
     angle::Result ensureMutable(ContextVk *contextVk);
+    angle::Result ensureRenderable(ContextVk *contextVk);
 
     bool getAndResetImmutableSamplerDirtyState()
     {
@@ -415,11 +416,9 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                            SurfaceRotation srcFramebufferRotation);
 
     angle::Result initImage(ContextVk *contextVk,
-                            const vk::Format &format,
-                            const bool sized,
-                            const gl::Extents &firstLevelExtents,
-                            const uint32_t firstLevel,
-                            const uint32_t levelCount);
+                            angle::FormatID intendedImageFormatID,
+                            angle::FormatID actualImageFormatID,
+                            ImageMipLevels mipLevels);
     void releaseImage(ContextVk *contextVk);
     void releaseStagingBuffer(ContextVk *contextVk);
     uint32_t getMipLevelCount(ImageMipLevels mipLevels) const;
@@ -428,8 +427,11 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                         gl::LevelIndex previousFirstAllocateLevel,
                                         vk::ImageHelper *srcImage,
                                         vk::ImageHelper *dstImage);
+    angle::Result reinitImageAsRenderable(ContextVk *contextVk,
+                                          const vk::Format &format,
+                                          gl::TexLevelMask skipLevelsMask);
     angle::Result initImageViews(ContextVk *contextVk,
-                                 const vk::Format &format,
+                                 const angle::Format &format,
                                  const bool sized,
                                  uint32_t levelCount,
                                  uint32_t layerCount);
@@ -466,7 +468,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
 
     bool isFastUnpackPossible(const vk::Format &vkFormat, size_t offset) const;
 
-    bool shouldUpdateBeStaged(gl::LevelIndex textureLevelIndexGL) const;
+    bool shouldUpdateBeStaged(gl::LevelIndex textureLevelIndexGL,
+                              angle::FormatID dstFormatID) const;
 
     // We monitor the staging buffer and set dirty bits if the staging buffer changes. Note that we
     // support changes in the staging buffer even outside the TextureVk class.
@@ -479,12 +482,16 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
 
     angle::Result refreshImageViews(ContextVk *contextVk);
     bool shouldDecodeSRGB(ContextVk *contextVk, GLenum srgbDecode, bool texelFetchStaticUse) const;
-    void initImageUsageFlags(ContextVk *contextVk, const vk::Format &format);
+    void initImageUsageFlags(ContextVk *contextVk, angle::FormatID actualFormatID);
     void handleImmutableSamplerTransition(const vk::ImageHelper *previousImage,
                                           const vk::ImageHelper *nextImage);
 
+    vk::ImageAccess getRequiredImageAccess() const { return mRequiredImageAccess; }
+    bool imageHasActualImageFormat(angle::FormatID actualFormatID) const;
+
     bool mOwnsImage;
     bool mRequiresMutableStorage;
+    vk::ImageAccess mRequiredImageAccess;
     bool mImmutableSamplerDirty;
 
     gl::TextureType mImageNativeType;

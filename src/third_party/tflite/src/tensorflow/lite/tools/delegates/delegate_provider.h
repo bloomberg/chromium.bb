@@ -40,11 +40,20 @@ class DelegateProvider {
   // 'params' whose value will be set to the corresponding runtime flag value.
   virtual std::vector<Flag> CreateFlags(ToolParams* params) const = 0;
 
-  // Log tool params.
-  virtual void LogParams(const ToolParams& params) const = 0;
+  // Log tool params. If 'verbose' is set to false, the param is going to be
+  // only logged if its value has been set, say via being parsed from
+  // commandline flags.
+  virtual void LogParams(const ToolParams& params, bool verbose) const = 0;
 
   // Create a TfLiteDelegate based on tool params.
   virtual TfLiteDelegatePtr CreateTfLiteDelegate(
+      const ToolParams& params) const = 0;
+
+  // Similar to the above, create a TfLiteDelegate based on tool params. If the
+  // same set of tool params could lead to creating multiple TfLite delegates,
+  // also return a relative rank of the delegate that indicates the order of the
+  // returned delegate that should be applied to the TfLite runtime.
+  virtual std::pair<TfLiteDelegatePtr, int> CreateRankedTfLiteDelegate(
       const ToolParams& params) const = 0;
 
   virtual std::string GetName() const = 0;
@@ -56,7 +65,10 @@ class DelegateProvider {
   Flag CreateFlag(const char* name, ToolParams* params,
                   const std::string& usage) const {
     return Flag(
-        name, [params, name](const T& val) { params->Set<T>(name, val); },
+        name,
+        [params, name](const T& val, int argv_position) {
+          params->Set<T>(name, val, argv_position);
+        },
         default_params_.Get<T>(name), usage, Flag::kOptional);
   }
   ToolParams default_params_;
@@ -93,14 +105,64 @@ class DelegateProviderRegistrar {
 };
 
 #define REGISTER_DELEGATE_PROVIDER_VNAME(T) gDelegateProvider_##T##_
-#define REGISTER_DELEGATE_PROVIDER(T)           \
-  static DelegateProviderRegistrar::Register<T> \
+#define REGISTER_DELEGATE_PROVIDER(T)                          \
+  static tflite::tools::DelegateProviderRegistrar::Register<T> \
       REGISTER_DELEGATE_PROVIDER_VNAME(T);
 
 // A global helper function to get all registered delegate providers.
 inline const DelegateProviderList& GetRegisteredDelegateProviders() {
   return DelegateProviderRegistrar::GetProviders();
 }
+
+// A helper class to create a list of TfLite delegates based on the provided
+// ToolParams and the global DelegateProviderRegistrar.
+class ProvidedDelegateList {
+ public:
+  struct ProvidedDelegate {
+    ProvidedDelegate()
+        : provider(nullptr),
+          delegate(nullptr, [](TfLiteDelegate*) {}),
+          rank(0) {}
+    const DelegateProvider* provider;
+    TfLiteDelegatePtr delegate;
+    int rank;
+  };
+
+  ProvidedDelegateList() : ProvidedDelegateList(/*params*/ nullptr) {}
+
+  // 'params' is the ToolParams instance that this class will operate on,
+  // including adding all registered delegate parameters to it etc.
+  explicit ProvidedDelegateList(ToolParams* params)
+      : providers_(GetRegisteredDelegateProviders()), params_(params) {}
+
+  const DelegateProviderList& providers() const { return providers_; }
+
+  // Add all registered delegate params to the contained 'params_'.
+  void AddAllDelegateParams() const;
+
+  // Append command-line parsable flags to 'flags' of all registered delegate
+  // providers, and associate the flag values at runtime with the contained
+  // 'params_'.
+  void AppendCmdlineFlags(std::vector<Flag>* flags) const;
+
+  // Return a list of TfLite delegates based on the provided 'params', and the
+  // list has been already sorted in ascending order according to the rank of
+  // the particular parameter that enables the creation of the delegate.
+  std::vector<ProvidedDelegate> CreateAllRankedDelegates(
+      const ToolParams& params) const;
+
+  // Similar to the above, the list of TfLite delegates are created based on the
+  // contained 'params_'.
+  std::vector<ProvidedDelegate> CreateAllRankedDelegates() const {
+    return CreateAllRankedDelegates(*params_);
+  }
+
+ private:
+  const DelegateProviderList& providers_;
+
+  // Represent the set of "ToolParam"s that this helper class will operate on.
+  ToolParams* const params_;  // Not own the memory.
+};
 }  // namespace tools
 }  // namespace tflite
 

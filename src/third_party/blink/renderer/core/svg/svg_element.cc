@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_types_map.h"
-#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -364,8 +363,12 @@ void SVGElement::RemovedFrom(ContainerNode& root_parent) {
   Element::RemovedFrom(root_parent);
 
   if (was_in_document) {
-    if (HasSVGRareData() && SvgRareData()->CorrespondingElement())
-      SvgRareData()->CorrespondingElement()->RemoveInstanceMapping(this);
+    if (SVGElement* corresponding_element =
+            HasSVGRareData() ? SvgRareData()->CorrespondingElement()
+                             : nullptr) {
+      corresponding_element->RemoveInstance(this);
+      SvgRareData()->SetCorrespondingElement(nullptr);
+    }
     RebuildAllIncomingReferences();
     RemoveAllIncomingReferences();
   }
@@ -580,7 +583,7 @@ SVGElement* SVGElement::viewportElement() const {
   return nullptr;
 }
 
-void SVGElement::MapInstanceToElement(SVGElement* instance) {
+void SVGElement::AddInstance(SVGElement* instance) {
   DCHECK(instance);
   DCHECK(instance->InUseShadowTree());
 
@@ -591,7 +594,7 @@ void SVGElement::MapInstanceToElement(SVGElement* instance) {
   instances.insert(instance);
 }
 
-void SVGElement::RemoveInstanceMapping(SVGElement* instance) {
+void SVGElement::RemoveInstance(SVGElement* instance) {
   DCHECK(instance);
   // Called during instance->RemovedFrom() after removal from shadow tree
   DCHECK(!instance->isConnected());

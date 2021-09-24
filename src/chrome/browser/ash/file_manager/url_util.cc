@@ -9,9 +9,11 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "net/base/escape.h"
 
 namespace file_manager {
@@ -22,11 +24,6 @@ const char kAllowedPaths[] = "allowedPaths";
 const char kNativePath[] = "nativePath";
 const char kAnyPath[] = "anyPath";
 const char kAnyPathOrUrl[] = "anyPathOrUrl";
-
-// Returns a file manager URL for the given |path|.
-GURL GetFileManagerUrl(const char* path) {
-  return GURL(std::string("chrome-extension://") + kFileManagerAppId + path);
-}
 
 // Converts a numeric dialog type to a string.
 std::string GetDialogTypeAsString(
@@ -65,7 +62,8 @@ std::string GetDialogTypeAsString(
 }  // namespace
 
 GURL GetFileManagerMainPageUrl() {
-  return GetFileManagerUrl("/main.html");
+  return GetFileManagerURL().Resolve(
+      ash::features::IsFileManagerSwaEnabled() ? "" : "/main.html");
 }
 
 GURL GetFileManagerMainPageUrlWithParams(
@@ -92,7 +90,7 @@ GURL GetFileManagerMainPageUrlWithParams(
     for (size_t i = 0; i < file_types->extensions.size(); ++i) {
       auto extensions_list = std::make_unique<base::ListValue>();
       for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
-        extensions_list->AppendString(file_types->extensions[i][j]);
+        extensions_list->Append(file_types->extensions[i][j]);
       }
 
       auto dict = std::make_unique<base::DictionaryValue>();

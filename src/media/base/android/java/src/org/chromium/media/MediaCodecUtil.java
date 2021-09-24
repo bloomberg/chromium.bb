@@ -278,7 +278,7 @@ class MediaCodecUtil {
             if (videoCapabilities.getBitrateRange().contains(bitrate)) {
                 // Assume all platforms before N only support VP9 profile 0.
                 profileLevels.addCodecProfileLevel(
-                        VideoCodec.CODEC_VP9, VideoCodecProfile.VP9PROFILE_PROFILE0, level);
+                        VideoCodec.VP9, VideoCodecProfile.VP9PROFILE_PROFILE0, level);
             }
         }
     }
@@ -429,8 +429,8 @@ class MediaCodecUtil {
 
                 // The following chipsets have been confirmed by MediaTek to work on P+
                 return Build.HARDWARE.startsWith("mt5599") || Build.HARDWARE.startsWith("mt5895")
-                        || Build.HARDWARE.startsWith("m7332")
-                        || Build.HARDWARE.startsWith("mt8768");
+                        || Build.HARDWARE.startsWith("mt8768")
+                        || Build.HARDWARE.startsWith("mt5887");
             }
         } else if (mime.equals(MimeTypes.VIDEO_VP9)) {
             // Nexus Player VP9 decoder performs poorly at >= 1080p resolution.

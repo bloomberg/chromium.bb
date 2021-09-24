@@ -7,9 +7,13 @@
 
 #include "content/browser/accessibility/web_contents_accessibility.h"
 
+#include <unordered_map>
+
+#include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace ui {
 class MotionEventAndroid;
@@ -82,9 +86,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void SetIsRunningAsWebView(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
-                             jboolean is_webview);
+  void SetAllowImageDescriptions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean allow_image_descriptions);
 
   // Tree methods.
   jint GetRootId(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -314,6 +319,31 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Call the BrowserAccessibilityManager to trigger an kEndOfTest event.
   void SignalEndOfTestForTesting(JNIEnv* env);
 
+  // Helper methods to wrap strings with a JNI-friendly cache.
+  // Note: This cache is only meant for common strings that might be shared
+  //       across many nodes (e.g. role or role description), which have a
+  //       finite number of possibilities. Do not use it for page content.
+  base::android::ScopedJavaGlobalRef<jstring> GetCanonicalJNIString(
+      JNIEnv* env,
+      std::string str) {
+    return GetCanonicalJNIString(env, base::UTF8ToUTF16(str));
+  }
+
+  base::android::ScopedJavaGlobalRef<jstring> GetCanonicalJNIString(
+      JNIEnv* env,
+      std::u16string str) {
+    // Check if this string has already been added to the cache.
+    if (common_string_cache_.find(str) != common_string_cache_.end()) {
+      return common_string_cache_[str];
+    }
+
+    // Otherwise, convert the string and add it to the cache, then return.
+    common_string_cache_[str] =
+        base::android::ConvertUTF16ToJavaString(env, str);
+    DCHECK(common_string_cache_.size() < 500);
+    return common_string_cache_[str];
+  }
+
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -370,6 +400,14 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // A count of the number of TYPE_WINDOW_CONTENT_CHANGED events we've
   // fired during a single atomic update.
   int content_changed_events_ = 0;
+
+  // An unordered map of |jstring| objects for classname, role, role
+  // description, invalid error, and language strings that are a finite set of
+  // strings that need to regularly be converted to Java strings and passed
+  // over the JNI.
+  std::unordered_map<std::u16string,
+                     base::android::ScopedJavaGlobalRef<jstring>>
+      common_string_cache_;
 
   // Manages the connection between web contents and the RenderFrameHost that
   // receives accessibility events.

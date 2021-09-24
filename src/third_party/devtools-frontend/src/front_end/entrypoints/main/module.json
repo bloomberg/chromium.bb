@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "models/extensions",
-    "models/persistence"
+    "ui/legacy"
   ]
 }

@@ -10,8 +10,6 @@ import * as Host from '../../core/host/host.js';
 
 import {AffectedResourcesView, AffectedItem} from './AffectedResourcesView.js';
 
-import type {IssueView} from './IssueView.js';
-
 const UIStrings = {
   /**
   *@description Noun for singular or plural network requests. Label for the affected resources section in the issue view.
@@ -34,13 +32,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedBlockedByRespons
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export class AffectedBlockedByResponseView extends AffectedResourcesView {
-  private issue: IssuesManager.Issue.Issue;
-
-  constructor(parent: IssueView, issue: IssuesManager.Issue.Issue) {
-    super(parent);
-    this.issue = issue;
-  }
-
   private appendDetails(details: Iterable<Protocol.Audits.BlockedByResponseIssueDetails>): void {
     const header = document.createElement('tr');
     this.appendColumnTitle(header, i18nString(UIStrings.requestC));
@@ -74,14 +65,14 @@ export class AffectedBlockedByResponseView extends AffectedResourcesView {
     element.appendChild(requestCell);
 
     if (details.parentFrame) {
-      const frameUrl = this.createFrameCell(details.parentFrame.frameId, this.issue);
+      const frameUrl = this.createFrameCell(details.parentFrame.frameId, this.issue.getCategory());
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));
     }
 
     if (details.blockedFrame) {
-      const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this.issue);
+      const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this.issue.getCategory());
       element.appendChild(frameUrl);
     } else {
       element.appendChild(document.createElement('td'));

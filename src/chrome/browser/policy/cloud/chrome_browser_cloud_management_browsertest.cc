@@ -435,7 +435,6 @@ class MachineLevelUserCloudPolicyManagerTest : public PlatformBrowserTest {
     std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
         MachineLevelUserCloudPolicyStore::Create(
             browser_dm_token, client_id, base::FilePath(), user_data_dir,
-            /*cloud_policy_overrides=*/false,
             base::ThreadPool::CreateSequencedTaskRunner(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
     policy_store->AddObserver(&observer);
@@ -701,7 +700,13 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
   base::ScopedTempDir temp_dir_;
 };
 
+#if defined(OS_ANDROID)
+// Flaky on android-pie-x86-rel. https://crbug.com/1235367
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest,
+                       DISABLED_Test) {
+#else
 IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
+#endif  // defined(OS_ANDROID)
   MachineLevelUserCloudPolicyManager* manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();

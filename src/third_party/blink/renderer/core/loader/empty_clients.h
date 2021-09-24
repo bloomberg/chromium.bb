@@ -192,6 +192,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                                  const String&,
                                  TextDirection,
                                  const gfx::Rect&) override {}
+  void ClearKeyboardTriggeredTooltip(LocalFrame&) override {}
   void PrintDelegate(LocalFrame*) override {}
   ColorChooser* OpenColorChooser(LocalFrame*,
                                  ColorChooserClient*,
@@ -271,7 +272,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       override {}
   void DispatchDidFailLoad(const ResourceError&,
                            WebHistoryCommitType) override {}
-  void DispatchDidFinishDocumentLoad() override {}
+  void DispatchDidDispatchDOMContentLoadedEvent() override {}
   void DispatchDidFinishLoad() override {}
 
   void BeginNavigation(
@@ -312,6 +313,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override {}
 
   String UserAgent() override { return ""; }
+  String ReducedUserAgent() override { return ""; }
   absl::optional<blink::UserAgentMetadata> UserAgentMetadata() override {
     return blink::UserAgentMetadata();
   }
@@ -331,7 +333,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
 
-  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*) override;
+  RemoteFrame* CreateFencedFrame(
+      HTMLFencedFrameElement*,
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
+      override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,

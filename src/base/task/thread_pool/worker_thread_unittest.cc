@@ -63,7 +63,7 @@ class WorkerThreadDefaultDelegate : public WorkerThread::Delegate {
   WorkerThread::ThreadLabel GetThreadLabel() const override {
     return WorkerThread::ThreadLabel::DEDICATED;
   }
-  void OnMainEntry(const WorkerThread* worker) override {}
+  void OnMainEntry(WorkerThread* worker) override {}
   RegisteredTaskSource GetWork(WorkerThread* worker) override {
     return nullptr;
   }
@@ -151,7 +151,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     }
 
     // WorkerThread::Delegate:
-    void OnMainEntry(const WorkerThread* worker) override {
+    void OnMainEntry(WorkerThread* worker) override {
       outer_->worker_set_.Wait();
       EXPECT_EQ(outer_->worker_.get(), worker);
       EXPECT_FALSE(IsCallToDidProcessTaskExpected());
@@ -523,7 +523,7 @@ class MockedControllableCleanupDelegate : public ControllableCleanupDelegate {
   ~MockedControllableCleanupDelegate() override = default;
 
   // WorkerThread::Delegate:
-  MOCK_METHOD1(OnMainEntry, void(const WorkerThread* worker));
+  MOCK_METHOD1(OnMainEntry, void(WorkerThread* worker));
 };
 
 }  // namespace
@@ -729,9 +729,7 @@ class ExpectThreadPriorityDelegate : public WorkerThreadDefaultDelegate {
   }
 
   // WorkerThread::Delegate:
-  void OnMainEntry(const WorkerThread* worker) override {
-    VerifyThreadPriority();
-  }
+  void OnMainEntry(WorkerThread* worker) override { VerifyThreadPriority(); }
   RegisteredTaskSource GetWork(WorkerThread* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();
@@ -806,7 +804,7 @@ class VerifyCallsToObserverDelegate : public WorkerThreadDefaultDelegate {
       const VerifyCallsToObserverDelegate&) = delete;
 
   // WorkerThread::Delegate:
-  void OnMainEntry(const WorkerThread* worker) override {
+  void OnMainEntry(WorkerThread* worker) override {
     Mock::VerifyAndClear(observer_);
   }
 
@@ -837,11 +835,10 @@ TEST(ThreadPoolWorkerTest, WorkerThreadObserver) {
   Mock::VerifyAndClear(&observer);
 }
 
-// ThreadCache tests disabled  when ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL is
-// enabled, because the "original" PartitionRoot has ThreadCache disabled.
+// ThreadCache tests disabled when USE_BACKUP_REF_PTR is enabled, because the
+// "original" PartitionRoot has ThreadCache disabled.
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
-    defined(PA_THREAD_CACHE_SUPPORTED) &&       \
-    !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
+    defined(PA_THREAD_CACHE_SUPPORTED) && !BUILDFLAG(USE_BACKUP_REF_PTR)
 namespace {
 NOINLINE void FreeForTest(void* data) {
   free(data);
@@ -904,7 +901,7 @@ TEST(ThreadPoolWorkerThreadCachePurgeTest, Purge) {
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // defined(PA_THREAD_CACHE_SUPPORTED) &&
-        // !BUILDFLAG(ENABLE_RUNTIME_BACKUP_REF_PTR_CONTROL)
+        // !BUILDFLAG(USE_BACKUP_REF_PTR)
 
 }  // namespace internal
 }  // namespace base

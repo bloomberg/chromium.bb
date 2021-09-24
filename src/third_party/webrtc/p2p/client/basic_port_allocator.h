@@ -46,10 +46,7 @@ class RTC_EXPORT BasicPortAllocator : public PortAllocator {
 
   // Set to kDefaultNetworkIgnoreMask by default.
   void SetNetworkIgnoreMask(int network_ignore_mask) override;
-  int network_ignore_mask() const {
-    CheckRunOnValidThreadIfInitialized();
-    return network_ignore_mask_;
-  }
+  int GetNetworkIgnoreMask() const;
 
   rtc::NetworkManager* network_manager() const {
     CheckRunOnValidThreadIfInitialized();
@@ -76,6 +73,8 @@ class RTC_EXPORT BasicPortAllocator : public PortAllocator {
     CheckRunOnValidThreadIfInitialized();
     return relay_port_factory_;
   }
+
+  void SetVpnList(const std::vector<rtc::NetworkMask>& vpn_list) override;
 
  private:
   void OnIceRegathering(PortAllocatorSession* session,
@@ -227,9 +226,7 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession {
   void DisableEquivalentPhases(rtc::Network* network,
                                PortConfiguration* config,
                                uint32_t* flags);
-  void AddAllocatedPort(Port* port,
-                        AllocationSequence* seq,
-                        bool prepare_address);
+  void AddAllocatedPort(Port* port, AllocationSequence* seq);
   void OnCandidateReady(Port* port, const Candidate& c);
   void OnCandidateError(Port* port, const IceCandidateErrorEvent& event);
   void OnPortComplete(Port* port);

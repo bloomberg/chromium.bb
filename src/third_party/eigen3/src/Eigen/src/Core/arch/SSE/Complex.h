@@ -19,7 +19,7 @@ struct Packet2cf
 {
   EIGEN_STRONG_INLINE Packet2cf() {}
   EIGEN_STRONG_INLINE explicit Packet2cf(const __m128& a) : v(a) {}
-  __m128  v;
+  Packet4f v;
 };
 
 // Use the packet_traits defined in AVX/PacketMath.h instead if we're going
@@ -40,6 +40,7 @@ template<> struct packet_traits<std::complex<float> >  : default_packet_traits
     HasMul    = 1,
     HasDiv    = 1,
     HasNegate = 1,
+    HasSqrt   = 1,
     HasAbs    = 0,
     HasAbs2   = 0,
     HasMin    = 0,
@@ -50,10 +51,22 @@ template<> struct packet_traits<std::complex<float> >  : default_packet_traits
 };
 #endif
 
-template<> struct unpacket_traits<Packet2cf> { typedef std::complex<float> type; enum {size=2, alignment=Aligned16, vectorizable=true, masked_load_available=false, masked_store_available=false}; typedef Packet2cf half; };
+template<> struct unpacket_traits<Packet2cf> {
+  typedef std::complex<float> type;
+  typedef Packet2cf half;
+  typedef Packet4f as_real;
+  enum {
+    size=2,
+    alignment=Aligned16,
+    vectorizable=true,
+    masked_load_available=false,
+    masked_store_available=false
+  };
+};
 
 template<> EIGEN_STRONG_INLINE Packet2cf padd<Packet2cf>(const Packet2cf& a, const Packet2cf& b) { return Packet2cf(_mm_add_ps(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet2cf psub<Packet2cf>(const Packet2cf& a, const Packet2cf& b) { return Packet2cf(_mm_sub_ps(a.v,b.v)); }
+
 template<> EIGEN_STRONG_INLINE Packet2cf pnegate(const Packet2cf& a)
 {
   const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x80000000,0x80000000,0x80000000,0x80000000));
@@ -83,7 +96,6 @@ template<> EIGEN_STRONG_INLINE Packet2cf pmul<Packet2cf>(const Packet2cf& a, con
 }
 
 template<> EIGEN_STRONG_INLINE Packet2cf ptrue  <Packet2cf>(const Packet2cf& a) { return Packet2cf(ptrue(Packet4f(a.v))); }
-
 template<> EIGEN_STRONG_INLINE Packet2cf pand   <Packet2cf>(const Packet2cf& a, const Packet2cf& b) { return Packet2cf(_mm_and_ps(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet2cf por    <Packet2cf>(const Packet2cf& a, const Packet2cf& b) { return Packet2cf(_mm_or_ps(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet2cf pxor   <Packet2cf>(const Packet2cf& a, const Packet2cf& b) { return Packet2cf(_mm_xor_ps(a.v,b.v)); }
@@ -95,19 +107,13 @@ template<> EIGEN_STRONG_INLINE Packet2cf ploadu<Packet2cf>(const std::complex<fl
 template<> EIGEN_STRONG_INLINE Packet2cf pset1<Packet2cf>(const std::complex<float>&  from)
 {
   Packet2cf res;
-#if EIGEN_GNUC_AT_MOST(4,2)
-  // Workaround annoying "may be used uninitialized in this function" warning with gcc 4.2
-  res.v = _mm_loadl_pi(_mm_set1_ps(0.0f), reinterpret_cast<const __m64*>(&from));
-#elif EIGEN_GNUC_AT_LEAST(4,6)
-  // Suppress annoying "may be used uninitialized in this function" warning with gcc >= 4.6
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wuninitialized"
-  res.v = _mm_loadl_pi(res.v, (const __m64*)&from);
-  #pragma GCC diagnostic pop
+#ifdef EIGEN_VECTORIZE_SSE3
+  res.v = _mm_castpd_ps(_mm_loaddup_pd(reinterpret_cast<double const*>(&from)));
 #else
-  res.v = _mm_loadl_pi(res.v, (const __m64*)&from);
+  res.v = _mm_castpd_ps(_mm_load_sd(reinterpret_cast<double const*>(&from)));
+  res.v = _mm_movelh_ps(res.v, res.v);
 #endif
-  return Packet2cf(_mm_movelh_ps(res.v,res.v));
+  return res;
 }
 
 template<> EIGEN_STRONG_INLINE Packet2cf ploaddup<Packet2cf>(const std::complex<float>* from) { return pset1<Packet2cf>(*from); }
@@ -159,82 +165,24 @@ template<> EIGEN_STRONG_INLINE std::complex<float> predux_mul<Packet2cf>(const P
   return pfirst(pmul(a, Packet2cf(_mm_movehl_ps(a.v,a.v))));
 }
 
-template<> struct conj_helper<Packet2cf, Packet2cf, false,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return internal::pmul(a, pconj(b));
-    #else
-    const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
-    return Packet2cf(_mm_add_ps(_mm_xor_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v), mask),
-                                _mm_mul_ps(vec4f_swizzle1(a.v, 1, 1, 3, 3),
-                                           vec4f_swizzle1(b.v, 1, 0, 3, 2))));
-    #endif
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,false>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return internal::pmul(pconj(a), b);
-    #else
-    const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
-    return Packet2cf(_mm_add_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v),
-                                _mm_xor_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 1, 1, 3, 3),
-                                                      vec4f_swizzle1(b.v, 1, 0, 3, 2)), mask)));
-    #endif
-  }
-};
-
-template<> struct conj_helper<Packet2cf, Packet2cf, true,true>
-{
-  EIGEN_STRONG_INLINE Packet2cf pmadd(const Packet2cf& x, const Packet2cf& y, const Packet2cf& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet2cf pmul(const Packet2cf& a, const Packet2cf& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return pconj(internal::pmul(a, b));
-    #else
-    const __m128 mask = _mm_castsi128_ps(_mm_setr_epi32(0x00000000,0x80000000,0x00000000,0x80000000));
-    return Packet2cf(_mm_sub_ps(_mm_xor_ps(_mm_mul_ps(vec4f_swizzle1(a.v, 0, 0, 2, 2), b.v), mask),
-                                _mm_mul_ps(vec4f_swizzle1(a.v, 1, 1, 3, 3),
-                                           vec4f_swizzle1(b.v, 1, 0, 3, 2))));
-    #endif
-  }
-};
-
-EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
-
-template<> EIGEN_STRONG_INLINE Packet2cf pdiv<Packet2cf>(const Packet2cf& a, const Packet2cf& b)
-{
-  // TODO optimize it for SSE3 and 4
-  Packet2cf res = conj_helper<Packet2cf,Packet2cf,false,true>().pmul(a,b);
-  __m128 s = _mm_mul_ps(b.v,b.v);
-  return Packet2cf(_mm_div_ps(res.v,_mm_add_ps(s,_mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(s), 0xb1)))));
-}
-
 EIGEN_STRONG_INLINE Packet2cf pcplxflip/* <Packet2cf> */(const Packet2cf& x)
 {
   return Packet2cf(vec4f_swizzle1(x.v, 1, 0, 3, 2));
 }
 
+EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet2cf,Packet4f)
+
+template<> EIGEN_STRONG_INLINE Packet2cf pdiv<Packet2cf>(const Packet2cf& a, const Packet2cf& b)
+{
+  return pdiv_complex(a, b);
+}
 
 //---------- double ----------
 struct Packet1cd
 {
   EIGEN_STRONG_INLINE Packet1cd() {}
   EIGEN_STRONG_INLINE explicit Packet1cd(const __m128d& a) : v(a) {}
-  __m128d  v;
+  Packet2d v;
 };
 
 // Use the packet_traits defined in AVX/PacketMath.h instead if we're going
@@ -255,6 +203,7 @@ template<> struct packet_traits<std::complex<double> >  : default_packet_traits
     HasMul    = 1,
     HasDiv    = 1,
     HasNegate = 1,
+    HasSqrt   = 1,
     HasAbs    = 0,
     HasAbs2   = 0,
     HasMin    = 0,
@@ -264,7 +213,18 @@ template<> struct packet_traits<std::complex<double> >  : default_packet_traits
 };
 #endif
 
-template<> struct unpacket_traits<Packet1cd> { typedef std::complex<double> type; enum {size=1, alignment=Aligned16, vectorizable=true, masked_load_available=false, masked_store_available=false}; typedef Packet1cd half; };
+template<> struct unpacket_traits<Packet1cd> {
+  typedef std::complex<double> type;
+  typedef Packet1cd half;
+  typedef Packet2d as_real;
+  enum {
+    size=1,
+    alignment=Aligned16,
+    vectorizable=true,
+    masked_load_available=false,
+    masked_store_available=false
+  };
+};
 
 template<> EIGEN_STRONG_INLINE Packet1cd padd<Packet1cd>(const Packet1cd& a, const Packet1cd& b) { return Packet1cd(_mm_add_pd(a.v,b.v)); }
 template<> EIGEN_STRONG_INLINE Packet1cd psub<Packet1cd>(const Packet1cd& a, const Packet1cd& b) { return Packet1cd(_mm_sub_pd(a.v,b.v)); }
@@ -330,68 +290,11 @@ template<> EIGEN_STRONG_INLINE std::complex<double> predux_mul<Packet1cd>(const 
   return pfirst(a);
 }
 
-template<> struct conj_helper<Packet1cd, Packet1cd, false,true>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return internal::pmul(a, pconj(b));
-    #else
-    const __m128d mask = _mm_castsi128_pd(_mm_set_epi32(0x80000000,0x0,0x0,0x0));
-    return Packet1cd(_mm_add_pd(_mm_xor_pd(_mm_mul_pd(vec2d_swizzle1(a.v, 0, 0), b.v), mask),
-                                _mm_mul_pd(vec2d_swizzle1(a.v, 1, 1),
-                                           vec2d_swizzle1(b.v, 1, 0))));
-    #endif
-  }
-};
-
-template<> struct conj_helper<Packet1cd, Packet1cd, true,false>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return internal::pmul(pconj(a), b);
-    #else
-    const __m128d mask = _mm_castsi128_pd(_mm_set_epi32(0x80000000,0x0,0x0,0x0));
-    return Packet1cd(_mm_add_pd(_mm_mul_pd(vec2d_swizzle1(a.v, 0, 0), b.v),
-                                _mm_xor_pd(_mm_mul_pd(vec2d_swizzle1(a.v, 1, 1),
-                                                      vec2d_swizzle1(b.v, 1, 0)), mask)));
-    #endif
-  }
-};
-
-template<> struct conj_helper<Packet1cd, Packet1cd, true,true>
-{
-  EIGEN_STRONG_INLINE Packet1cd pmadd(const Packet1cd& x, const Packet1cd& y, const Packet1cd& c) const
-  { return padd(pmul(x,y),c); }
-
-  EIGEN_STRONG_INLINE Packet1cd pmul(const Packet1cd& a, const Packet1cd& b) const
-  {
-    #ifdef EIGEN_VECTORIZE_SSE3
-    return pconj(internal::pmul(a, b));
-    #else
-    const __m128d mask = _mm_castsi128_pd(_mm_set_epi32(0x80000000,0x0,0x0,0x0));
-    return Packet1cd(_mm_sub_pd(_mm_xor_pd(_mm_mul_pd(vec2d_swizzle1(a.v, 0, 0), b.v), mask),
-                                _mm_mul_pd(vec2d_swizzle1(a.v, 1, 1),
-                                           vec2d_swizzle1(b.v, 1, 0))));
-    #endif
-  }
-};
-
 EIGEN_MAKE_CONJ_HELPER_CPLX_REAL(Packet1cd,Packet2d)
 
 template<> EIGEN_STRONG_INLINE Packet1cd pdiv<Packet1cd>(const Packet1cd& a, const Packet1cd& b)
 {
-  // TODO optimize it for SSE3 and 4
-  Packet1cd res = conj_helper<Packet1cd,Packet1cd,false,true>().pmul(a,b);
-  __m128d s = _mm_mul_pd(b.v,b.v);
-  return Packet1cd(_mm_div_pd(res.v, _mm_add_pd(s,_mm_shuffle_pd(s, s, 0x1))));
+  return pdiv_complex(a, b);
 }
 
 EIGEN_STRONG_INLINE Packet1cd pcplxflip/* <Packet1cd> */(const Packet1cd& x)
@@ -426,8 +329,15 @@ template<>  EIGEN_STRONG_INLINE Packet2cf pblend(const Selector<2>& ifPacket, co
   return Packet2cf(_mm_castpd_ps(result));
 }
 
-} // end namespace internal
+template<> EIGEN_STRONG_INLINE Packet1cd psqrt<Packet1cd>(const Packet1cd& a) {
+  return psqrt_complex<Packet1cd>(a);
+}
 
+template<> EIGEN_STRONG_INLINE Packet2cf psqrt<Packet2cf>(const Packet2cf& a) {
+  return psqrt_complex<Packet2cf>(a);
+}
+
+} // end namespace internal
 } // end namespace Eigen
 
 #endif // EIGEN_COMPLEX_SSE_H

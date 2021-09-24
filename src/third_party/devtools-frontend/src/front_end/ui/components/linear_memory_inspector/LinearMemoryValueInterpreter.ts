@@ -16,6 +16,8 @@ import {Endianness} from './ValueInterpreterDisplayUtils.js';
 import type {TypeToggleEvent, ValueInterpreterSettingsData} from './ValueInterpreterSettings.js';
 
 import * as i18n from '../../../core/i18n/i18n.js';
+import inspectorCommonStyles from '../../legacy/inspectorCommon.css.js';
+
 const UIStrings = {
   /**
   *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear Memory Inspector. These settings
@@ -32,22 +34,23 @@ const str_ =
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const {render, html} = LitHtml;
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 export class EndiannessChangedEvent extends Event {
+  static readonly eventName = 'endiannesschanged';
   data: Endianness;
 
   constructor(endianness: Endianness) {
-    super('endiannesschanged');
+    super(EndiannessChangedEvent.eventName);
     this.data = endianness;
   }
 }
 
 export class ValueTypeToggledEvent extends Event {
+  static readonly eventName = 'valuetypetoggled';
   data: {type: ValueType, checked: boolean};
 
   constructor(type: ValueType, checked: boolean) {
-    super('valuetypetoggled');
+    super(ValueTypeToggledEvent.eventName);
     this.data = {type, checked};
   }
 }
@@ -74,7 +77,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/inspectorCommon.css'),
+      inspectorCommonStyles,
     ];
   }
 

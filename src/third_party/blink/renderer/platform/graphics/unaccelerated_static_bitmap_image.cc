@@ -79,17 +79,14 @@ bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
   return paint_image_.IsOpaque();
 }
 
-void UnacceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
-                                          const cc::PaintFlags& flags,
-                                          const FloatRect& dst_rect,
-                                          const FloatRect& src_rect,
-                                          const ImageDrawOptions& draw_options,
-                                          ImageClampingMode clamp_mode,
-                                          ImageDecodingMode) {
+void UnacceleratedStaticBitmapImage::Draw(
+    cc::PaintCanvas* canvas,
+    const cc::PaintFlags& flags,
+    const FloatRect& dst_rect,
+    const FloatRect& src_rect,
+    const ImageDrawOptions& draw_options) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect,
-                                draw_options.sampling_options, clamp_mode,
-                                draw_options.respect_image_orientation,
+  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, draw_options,
                                 PaintImageForCurrentFrame());
 }
 
@@ -150,6 +147,10 @@ bool UnacceleratedStaticBitmapImage::CopyToResourceProvider(
 
   return resource_provider->WritePixels(pixmap.info(), pixels, row_bytes,
                                         /*x=*/0, /*y=*/0);
+}
+
+SkColorType UnacceleratedStaticBitmapImage::GetSkColorType() const {
+  return paint_image_.GetSkImageInfo().colorType();
 }
 
 }  // namespace blink

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include "build/chromeos_buildflags.h"
+
 namespace autofill {
 namespace features {
 
@@ -28,6 +30,7 @@ const base::Feature kAutofillAddressEnhancementVotes{
 // storing any detected address profile.
 const base::Feature kAutofillAddressProfileSavePrompt{
     "AutofillAddressProfileSavePrompt", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This parameter controls if save profile prompts are automatically blocked for
 // a given domain after N (default is 3) subsequent declines.
 const base::FeatureParam<bool> kAutofillAutoBlockSaveAddressProfilePrompt{
@@ -90,13 +93,6 @@ const base::Feature kAutofillAllowDuplicateFormSubmissions{
 // embedded test server. Generally avoid using.
 const base::Feature kAutofillAllowNonHttpActivation{
     "AutofillAllowNonHttpActivation", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether some members of FormData are retrieved in the renderer
-// instead of being extracted in the browser.
-// TODO(crbug/1206049): Disable and remove once the extraction code has been
-// migrated to the browser.
-const base::Feature kAutofillAugmentFormsInRenderer{
-    "AutofillAugmentFormsInRenderer", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillCreateDataForTest{
     "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -408,6 +404,13 @@ const base::Feature kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval{
     "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, to get the unowned control elements we call
+// Document::UnassociatedListedElements(). This way we can reduce the number of
+// DOM traversals.
+// TODO(crbug/1201875): Remove once experiment is finished.
+const base::Feature kAutofillUseUnassociatedListedElements{
+    "AutofillUseUnassociatedListedElements", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls an ablation study in which autofill for addresses and payment data
 // can be suppressed.
 const base::Feature kAutofillEnableAblationStudy{
@@ -432,6 +435,12 @@ const base::Feature kAutofillManualFallbackAndroid{
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the touch to fill surface is shown for credit cards on
+// Android.
+const base::Feature kAutofillTouchToFillForCreditCardsAndroid{
+    "AutofillTouchToFillForCreditCardsAndroid",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // OS_ANDROID
 

@@ -77,7 +77,7 @@ const char* MessageCenterScrollBar::GetClassName() const {
 
 void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    if (!presentation_time_recorder_ && GetWidget()) {
+    if (!presentation_time_recorder_) {
       presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
           GetWidget()->GetCompositor(), kMessageCenterScrollHistogram,
           kMessageCenterScrollMaxLatencyHistogram);
@@ -89,8 +89,8 @@ void MessageCenterScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    if (presentation_time_recorder_)
-      presentation_time_recorder_->RequestNext();
+    DCHECK(presentation_time_recorder_);
+    presentation_time_recorder_->RequestNext();
   }
 
   if (event->type() == ui::ET_GESTURE_END)

@@ -153,7 +153,7 @@
       "is_cfm": true,
       "is_component_build": false,
       "is_debug": false,
-      "symbol_level": 1,
+      "symbol_level": 0,
       "target_os": "chromeos",
       "use_goma": true
     }
@@ -213,6 +213,7 @@
   },
   "linux-chromeos-rel": {
     "gn_args": {
+      "also_build_lacros_chrome": true,
       "blink_enable_generated_code_formatting": false,
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
       "dcheck_always_on": true,
@@ -227,6 +228,19 @@
     }
   },
   "linux-lacros-rel": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "blink_enable_generated_code_formatting": false,
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_os": "chromeos",
+      "use_goma": true
+    }
+  },
+  "linux-lacros-rel-rts": {
     "gn_args": {
       "also_build_ash_chrome": true,
       "blink_enable_generated_code_formatting": false,

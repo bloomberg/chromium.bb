@@ -1085,7 +1085,6 @@ bool NearbySharingServiceImpl::ShouldRestartNearbyProcess(
   switch (shutdown_reason) {
     case NearbyProcessShutdownReason::kNormal:
       return false;
-      break;
     case NearbyProcessShutdownReason::kCrash:
     case NearbyProcessShutdownReason::kConnectionsMojoPipeDisconnection:
     case NearbyProcessShutdownReason::kDecoderMojoPipeDisconnection:
@@ -1217,6 +1216,18 @@ void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
     process_reference_.reset();
   }
   InvalidateSurfaceState();
+}
+
+void NearbySharingServiceImpl::OnFastInitiationNotificationEnabledChanged(
+    bool enabled) {
+  if (!IsBackgroundScanningFeatureEnabled()) {
+    return;
+  }
+  // Runs through a series of checks to determine if background scanning should
+  // be started or stopped.
+  InvalidateReceiveSurfaceState();
+  NS_LOG(VERBOSE) << __func__ << ": Fast Initiation Notification "
+                  << (enabled ? "enabled" : "disabled");
 }
 
 void NearbySharingServiceImpl::OnDeviceNameChanged(
@@ -2100,6 +2111,14 @@ void NearbySharingServiceImpl::InvalidateFastInitiationScanning() {
   if (!profile_)
     return;
 
+  if (!settings_.GetFastInitiationNotificationEnabled()) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping background scanning fast initiation "
+                       "notification is disabled";
+    StopFastInitiationScanning();
+    return;
+  }
+
   if (power_client_->IsSuspended()) {
     NS_LOG(VERBOSE)
         << __func__
@@ -2157,6 +2176,15 @@ void NearbySharingServiceImpl::InvalidateFastInitiationScanning() {
     NS_LOG(VERBOSE) << __func__
                     << ": Stopping background scanning because we're already "
                        "in high visibility mode.";
+    StopFastInitiationScanning();
+    return;
+  }
+
+  if (!FastInitiationScanner::Factory::IsHardwareSupportAvailable(
+          bluetooth_adapter_.get())) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping background scanning because hardware "
+                       "support is not available or not ready.";
     StopFastInitiationScanning();
     return;
   }

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/bubble/bubble_border.h"
 
 // Describes the content and appearance of an in-product help bubble.
@@ -42,6 +43,9 @@ struct FeaturePromoBubbleParams {
 
   // String to be announced when bubble is shown. Optional.
   absl::optional<int> screenreader_string_specifier;
+
+  // The icon to display in the bubble next to the text.
+  const gfx::VectorIcon* body_icon = nullptr;
 
   // A keyboard accelerator to access the feature. If
   // |screenreader_string_specifier| is set and contains a placeholder,
@@ -77,6 +81,10 @@ struct FeaturePromoBubbleParams {
   // Determines if this IPH can be snoozed and reactivated later.
   // If true, |allow_focus| must be true for keyboard accessibility.
   bool allow_snooze = false;
+
+  // Determines if this IPH has a close button which can dismiss it. This is
+  // intended to be true for tutorial use cases.
+  bool show_close_button = false;
 
   // Changes the bubble timeout. Intended for tests, avoid use.
   absl::optional<base::TimeDelta> timeout_no_interaction;

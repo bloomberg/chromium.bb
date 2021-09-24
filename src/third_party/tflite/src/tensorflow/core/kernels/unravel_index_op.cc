@@ -53,12 +53,20 @@ class UnravelIndexOp : public OpKernel {
                                 dims_tensor.shape().DebugString(), "\""));
 
     auto dims = dims_tensor.vec<Tidx>();
+    // Make sure dims does not contain a zero
+    for (int i = 0; i < dims.size(); i++) {
+      OP_REQUIRES(
+          ctx, dims(i) != 0,
+          errors::InvalidArgument("Input dims cannot contain a dim of zero, "
+                                  "but dims contains zero at index ",
+                                  i));
+    }
 
     // Chek to make sure indices is not out of boundary
     Eigen::Tensor<Tidx, 0, Eigen::RowMajor> dims_prod_eigen = dims.prod();
     Tidx dims_prod = dims_prod_eigen();
     const Tidx* indices = indices_tensor.flat<Tidx>().data();
-    int64 size = indices_tensor.NumElements();
+    int64_t size = indices_tensor.NumElements();
     bool check = std::all_of(indices, indices + size,
                              [&](Tidx index) { return index < dims_prod; });
     OP_REQUIRES(ctx, check,
@@ -107,12 +115,14 @@ class UnravelIndexOp : public OpKernel {
 
       auto output = output_tensor->matrix<Tidx>();
 
-      Eigen::array<Eigen::Index, 2> reshape{{dims_tensor.NumElements(), 1}};
-      Eigen::array<Eigen::Index, 2> bcast({1, indices_tensor.NumElements()});
+      Eigen::array<Eigen::Index, 2> reshape{
+          {static_cast<Eigen::Index>(dims_tensor.NumElements()), 1}};
+      Eigen::array<Eigen::Index, 2> bcast(
+          {1, static_cast<Eigen::Index>(indices_tensor.NumElements())});
       Eigen::array<Eigen::Index, 2> indices_reshape{
-          {1, indices_tensor.NumElements()}};
+          {1, static_cast<Eigen::Index>(indices_tensor.NumElements())}};
       Eigen::array<Eigen::Index, 2> indices_bcast(
-          {dims_tensor.NumElements(), 1});
+          {static_cast<Eigen::Index>(dims_tensor.NumElements()), 1});
 
       output = indices_tensor.vec<Tidx>()
                    .reshape(indices_reshape)

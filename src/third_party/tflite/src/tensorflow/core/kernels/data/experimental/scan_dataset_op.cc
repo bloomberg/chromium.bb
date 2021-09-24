@@ -17,11 +17,11 @@ limitations under the License.
 
 #include "tensorflow/core/common_runtime/function.h"
 #include "tensorflow/core/common_runtime/input_colocation_exemption_registry.h"
+#include "tensorflow/core/data/captured_function.h"
+#include "tensorflow/core/data/dataset_utils.h"
 #include "tensorflow/core/framework/dataset.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/kernels/data/captured_function.h"
-#include "tensorflow/core/kernels/data/dataset_utils.h"
 #include "tensorflow/core/lib/random/random.h"
 
 namespace tensorflow {
@@ -106,12 +106,18 @@ class ScanDatasetOp : public UnaryDatasetOpKernel {
 
     string DebugString() const override { return "ScanDatasetOp::Dataset"; }
 
-    int64 Cardinality() const override {
+    int64_t Cardinality() const override {
       if (preserve_cardinality_) {
         return input_->Cardinality();
       } else {
         return kUnknownCardinality;
       }
+    }
+
+    Status InputDatasets(
+        std::vector<const DatasetBase*>* inputs) const override {
+      inputs->push_back(input_);
+      return Status::OK();
     }
 
     Status CheckExternalState() const override {
@@ -194,8 +200,8 @@ class ScanDatasetOp : public UnaryDatasetOpKernel {
         state_and_output.reserve(dataset()->state_types_.size() +
                                  output_dtypes().size());
 
-        Status s = instantiated_captured_func_->Run(ctx, std::move(args),
-                                                    &state_and_output);
+        Status s = instantiated_captured_func_->Run(
+            ctx, std::move(args), &state_and_output, model_node());
         DCHECK(state_and_output.size() <=
                dataset()->state_types_.size() + output_dtypes().size());
         if (s.ok()) {
@@ -276,13 +282,14 @@ class ScanDatasetOp : public UnaryDatasetOpKernel {
         mutex_lock l(mu_);
         TF_RETURN_IF_ERROR(RestoreInput(ctx, reader, input_impl_));
         if (reader->Contains(full_name("state_size"))) {
-          int64 size;
+          int64_t size;
           TF_RETURN_IF_ERROR(
               reader->ReadScalar(full_name("state_size"), &size));
           state_.resize(size);
           for (int idx = 0; idx < size; idx++) {
             TF_RETURN_IF_ERROR(reader->ReadTensor(
-                full_name(strings::StrCat("state[", idx, "]")), &state_[idx]));
+                ctx->flr(), full_name(strings::StrCat("state[", idx, "]")),
+                &state_[idx]));
           }
         }
         return Status::OK();

@@ -89,12 +89,18 @@ struct [[maybe_unused]] ReentrantScannerGuard final{};
 // Marking cards on step 1) ensures that the card table stays in the consistent
 // state while scanning. Unmarking on the step 3) ensures that unmarking
 // actually happens (and we don't hit too many false positives).
+//
+// The code here relies on the fact that |ptr| is in the non-BRP pool and that
+// the card table (this object) is allocated at the very beginning of that pool.
 class QuarantineCardTable final {
  public:
-  // Avoid the load of the base of the BRP pool.
+  // Avoid the load of the base of the non-BRP pool.
   ALWAYS_INLINE static QuarantineCardTable& GetFrom(uintptr_t ptr) {
-    constexpr uintptr_t kBRPPoolMask = PartitionAddressSpace::BRPPoolBaseMask();
-    return *reinterpret_cast<QuarantineCardTable*>(ptr & kBRPPoolMask);
+    PA_DCHECK(
+        IsManagedByPartitionAllocNonBRPPool(reinterpret_cast<void*>(ptr)));
+    constexpr uintptr_t kNonBRPPoolBaseMask =
+        PartitionAddressSpace::NonBRPPoolBaseMask();
+    return *reinterpret_cast<QuarantineCardTable*>(ptr & kNonBRPPoolBaseMask);
   }
 
   ALWAYS_INLINE void Quarantine(uintptr_t begin, size_t size) {
@@ -121,8 +127,9 @@ class QuarantineCardTable final {
   QuarantineCardTable() = default;
 
   ALWAYS_INLINE static constexpr size_t Byte(uintptr_t address) {
-    constexpr uintptr_t kBRPPoolMask = PartitionAddressSpace::BRPPoolBaseMask();
-    return (address & ~kBRPPoolMask) / kCardSize;
+    constexpr uintptr_t kNonBRPPoolBaseMask =
+        PartitionAddressSpace::NonBRPPoolBaseMask();
+    return (address & ~kNonBRPPoolBaseMask) / kCardSize;
   }
 
   ALWAYS_INLINE void SetImpl(uintptr_t begin, size_t size, bool value) {
@@ -130,7 +137,7 @@ class QuarantineCardTable final {
     const size_t need_bytes = (size + (kCardSize - 1)) / kCardSize;
     PA_DCHECK(bytes_.size() >= byte + need_bytes);
     PA_DCHECK(
-        PartitionAddressSpace::IsInBRPPool(reinterpret_cast<void*>(begin)));
+        IsManagedByPartitionAllocNonBRPPool(reinterpret_cast<void*>(begin)));
     for (size_t i = byte; i < byte + need_bytes; ++i)
       bytes_[i] = value;
   }
@@ -167,13 +174,10 @@ ALWAYS_INLINE uintptr_t GetObjectStartInSuperPage(uintptr_t maybe_ptr,
 }
 
 #if DCHECK_IS_ON()
-bool IsScannerQuarantineBitmapEmpty(uintptr_t super_page) {
-  const size_t epoch = PCScan::scheduler().epoch();
-  auto* bitmap =
-      QuarantineBitmapFromPointer(QuarantineBitmapType::kScanner, epoch,
-                                  reinterpret_cast<void*>(super_page));
+bool IsQuarantineEmptyOnSuperPage(uintptr_t super_page) {
+  auto* bitmap = SuperPageStateBitmap(reinterpret_cast<char*>(super_page));
   size_t visited = 0;
-  bitmap->Iterate([&visited](auto) { ++visited; });
+  bitmap->IterateQuarantined([&visited](auto) { ++visited; });
   return !visited;
 }
 #endif
@@ -194,7 +198,7 @@ SimdSupport DetectSimdSupport() {
 void CommitCardTable() {
 #if PA_STARSCAN_USE_CARD_TABLE
   RecommitSystemPages(
-      reinterpret_cast<void*>(PartitionAddressSpace::BRPPoolBase()),
+      reinterpret_cast<void*>(PartitionAddressSpace::NonBRPPoolBase()),
       sizeof(QuarantineCardTable), PageReadWrite, PageUpdatePermissions);
 #endif
 }
@@ -251,21 +255,16 @@ class SuperPageSnapshot final {
   // at least 16kiB.
   static constexpr size_t kMinPartitionPageSize =
       __builtin_constant_p(PartitionPageSize()) ? PartitionPageSize() : 1 << 14;
-  static constexpr size_t kQuarantineBitmapsReservedSize =
-      __builtin_constant_p(ReservedQuarantineBitmapsSize())
-          ? ReservedQuarantineBitmapsSize()
-          : base::bits::AlignUp(2 * sizeof(QuarantineBitmap),
+  static constexpr size_t kStateBitmapMinReservedSize =
+      __builtin_constant_p(ReservedStateBitmapSize())
+          ? ReservedStateBitmapSize()
+          : base::bits::AlignUp(sizeof(AllocationStateMap),
                                 kMinPartitionPageSize);
-  // For 64 bit, take into account guard partition page at the end of
-  // super-page.
-#if defined(PA_HAS_64_BITS_POINTERS)
+  // Take into account guard partition page at the end of super-page.
   static constexpr size_t kGuardPagesSize = 2 * kMinPartitionPageSize;
-#else
-  static constexpr size_t kGuardPagesSize = kMinPartitionPageSize;
-#endif
 
   static constexpr size_t kPayloadMaxSize =
-      kSuperPageSize - kQuarantineBitmapsReservedSize - kGuardPagesSize;
+      kSuperPageSize - kStateBitmapMinReservedSize - kGuardPagesSize;
   static_assert(kPayloadMaxSize % kMinPartitionPageSize == 0,
                 "kPayloadMaxSize must be multiple of kMinPartitionPageSize");
 
@@ -340,7 +339,7 @@ SuperPageSnapshot::SuperPageSnapshot(uintptr_t super_page) {
 #if DCHECK_IS_ON()
     // Check that quarantine bitmap is empty for super-pages that contain
     // only empty/decommitted slot-spans.
-    PA_CHECK(IsScannerQuarantineBitmapEmpty(super_page));
+    PA_CHECK(IsQuarantineEmptyOnSuperPage(super_page));
 #endif
     scan_areas_.set_size(0);
     return;
@@ -422,19 +421,24 @@ class PCScanTask final : public base::RefCountedThreadSafe<PCScanTask>,
   // TODO(bikineev): Move these checks to StarScanScanLoop.
   struct GigaCageLookupPolicy {
     ALWAYS_INLINE bool TestOnHeapPointer(uintptr_t maybe_ptr) const {
+      PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(
+          reinterpret_cast<void*>(maybe_ptr)));
 #if defined(PA_HAS_64_BITS_POINTERS)
 #if PA_STARSCAN_USE_CARD_TABLE
-      PA_DCHECK(
-          IsManagedByPartitionAllocBRPPool(reinterpret_cast<void*>(maybe_ptr)));
       return QuarantineCardTable::GetFrom(maybe_ptr).IsQuarantined(maybe_ptr);
 #else
       // Without the card table, use the reservation offset table. It's not as
       // precise (meaning that we may have hit the slow path more frequently),
-      // but reduces the memory overhead.
-      return IsManagedByNormalBuckets(reinterpret_cast<void*>(maybe_ptr));
+      // but reduces the memory overhead.  Since we are certain here, that
+      // |maybe_ptr| refers to the non-BRP pool, it's okay to use non-checking
+      // version of ReservationOffsetPointer().
+      const uintptr_t offset =
+          maybe_ptr & ~PartitionAddressSpace::NonBRPPoolBaseMask();
+      return *ReservationOffsetPointer(kNonBRPPoolHandle, offset) ==
+             kOffsetTagNormalBuckets;
 #endif
 #else   // defined(PA_HAS_64_BITS_POINTERS)
-      return IsManagedByPartitionAllocBRPPool(
+      return IsManagedByPartitionAllocNonBRPPool(
           reinterpret_cast<void*>(maybe_ptr));
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
     }
@@ -507,7 +511,7 @@ class PCScanTask final : public base::RefCountedThreadSafe<PCScanTask>,
   ~PCScanTask() = default;
 
   template <typename LookupPolicy>
-  ALWAYS_INLINE QuarantineBitmap* TryFindScannerBitmapForPointer(
+  ALWAYS_INLINE AllocationStateMap* TryFindScannerBitmapForPointer(
       uintptr_t maybe_ptr) const;
 
   // Lookup and marking functions. Return size of the object if marked or zero
@@ -561,7 +565,7 @@ class PCScanTask final : public base::RefCountedThreadSafe<PCScanTask>,
 };
 
 template <typename LookupPolicy>
-ALWAYS_INLINE QuarantineBitmap* PCScanTask::TryFindScannerBitmapForPointer(
+ALWAYS_INLINE AllocationStateMap* PCScanTask::TryFindScannerBitmapForPointer(
     uintptr_t maybe_ptr) const {
   // First, check if |maybe_ptr| points to a valid super page or a quarantined
   // card.
@@ -573,9 +577,7 @@ ALWAYS_INLINE QuarantineBitmap* PCScanTask::TryFindScannerBitmapForPointer(
                                 true /*with quarantine*/))
     return nullptr;
   // We are certain here that |maybe_ptr| points to the super page payload.
-  return QuarantineBitmapFromPointer(QuarantineBitmapType::kScanner,
-                                     pcscan_epoch_,
-                                     reinterpret_cast<char*>(maybe_ptr));
+  return StateBitmapFromPointer(reinterpret_cast<char*>(maybe_ptr));
 }
 
 // Looks up and marks a potential dangling pointer. Returns the size of the slot
@@ -591,11 +593,9 @@ ALWAYS_INLINE QuarantineBitmap* PCScanTask::TryFindScannerBitmapForPointer(
 template <typename LookupPolicy>
 ALWAYS_INLINE size_t
 PCScanTask::TryMarkObjectInNormalBuckets(uintptr_t maybe_ptr) const {
-  using AccessType = QuarantineBitmap::AccessType;
   // Check if |maybe_ptr| points somewhere to the heap.
-  auto* scanner_bitmap =
-      TryFindScannerBitmapForPointer<LookupPolicy>(maybe_ptr);
-  if (!scanner_bitmap)
+  auto* state_map = TryFindScannerBitmapForPointer<LookupPolicy>(maybe_ptr);
+  if (!state_map)
     return 0;
 
   // Beyond this point, we know that |maybe_ptr| is a pointer within a
@@ -615,7 +615,7 @@ PCScanTask::TryMarkObjectInNormalBuckets(uintptr_t maybe_ptr) const {
 
   // Check if pointer was in the quarantine bitmap.
   const uintptr_t base = GetObjectStartInSuperPage(maybe_ptr, *root);
-  if (!base || !scanner_bitmap->template CheckBit<AccessType::kAtomic>(base))
+  if (!base || !state_map->IsQuarantined(base))
     return 0;
 
   PA_DCHECK((maybe_ptr & kSuperPageBaseMask) == (base & kSuperPageBaseMask));
@@ -636,16 +636,11 @@ PCScanTask::TryMarkObjectInNormalBuckets(uintptr_t maybe_ptr) const {
   // the mutator bitmap and clear from the scanner bitmap. Note that since
   // PCScan has exclusive access to the scanner bitmap, we can avoid atomic rmw
   // operation for it.
-  scanner_bitmap->template ClearBit<AccessType::kAtomic>(base);
-  QuarantineBitmapFromPointer(QuarantineBitmapType::kMutator, pcscan_epoch_,
-                              reinterpret_cast<char*>(base))
-      ->template SetBit<AccessType::kAtomic>(base);
+  state_map->MarkQuarantinedAsReachable(base);
   return target_slot_span->bucket->slot_size;
 }
 
 void PCScanTask::ClearQuarantinedObjectsAndPrepareCardTable() {
-  using AccessType = QuarantineBitmap::AccessType;
-
   const PCScan::ClearType clear_type = pcscan_.clear_type_;
 
 #if !PA_STARSCAN_USE_CARD_TABLE
@@ -654,25 +649,23 @@ void PCScanTask::ClearQuarantinedObjectsAndPrepareCardTable() {
 #endif
 
   StarScanSnapshot::ClearingView view(*snapshot_);
-  view.VisitConcurrently([this, clear_type](uintptr_t super_page_base) {
-    auto* bitmap = QuarantineBitmapFromPointer(
-        QuarantineBitmapType::kScanner, pcscan_epoch_,
-        reinterpret_cast<char*>(super_page_base));
+  view.VisitConcurrently([clear_type](uintptr_t super_page_base) {
+    auto* bitmap =
+        StateBitmapFromPointer(reinterpret_cast<char*>(super_page_base));
     auto* root = Root::FromSuperPage(reinterpret_cast<char*>(super_page_base));
-    bitmap->template Iterate<AccessType::kNonAtomic>(
-        [root, clear_type](uintptr_t ptr) {
-          auto* object = reinterpret_cast<void*>(ptr);
-          auto* slot_span = SlotSpan::FromSlotInnerPtr(object);
-          // Use zero as a zapping value to speed up the fast bailout check in
-          // ScanPartitions.
-          const size_t size = slot_span->GetUsableSize(root);
-          if (clear_type == PCScan::ClearType::kLazy)
-            memset(object, 0, size);
+    bitmap->IterateQuarantined([root, clear_type](uintptr_t ptr) {
+      auto* object = reinterpret_cast<void*>(ptr);
+      auto* slot_span = SlotSpan::FromSlotInnerPtr(object);
+      // Use zero as a zapping value to speed up the fast bailout check in
+      // ScanPartitions.
+      const size_t size = slot_span->GetUsableSize(root);
+      if (clear_type == PCScan::ClearType::kLazy)
+        memset(object, 0, size);
 #if PA_STARSCAN_USE_CARD_TABLE
-          // Set card(s) for this quarantined object.
-          QuarantineCardTable::GetFrom(ptr).Quarantine(ptr, size);
+      // Set card(s) for this quarantined object.
+      QuarantineCardTable::GetFrom(ptr).Quarantine(ptr, size);
 #endif
-        });
+    });
   });
 }
 
@@ -704,7 +697,7 @@ class PCScanScanLoop final : public ScanLoop<PCScanScanLoop> {
   explicit PCScanScanLoop(const PCScanTask& task)
       : ScanLoop(PCScanInternal::Instance().simd_support()),
 #if defined(PA_HAS_64_BITS_POINTERS)
-        giga_cage_base_(PartitionAddressSpace::BRPPoolBase()),
+        giga_cage_base_(PartitionAddressSpace::NonBRPPoolBase()),
 #endif
         task_(task) {
   }
@@ -715,7 +708,7 @@ class PCScanScanLoop final : public ScanLoop<PCScanScanLoop> {
   ALWAYS_INLINE uintptr_t CageBase() const { return giga_cage_base_; }
   ALWAYS_INLINE static constexpr uintptr_t CageMask() {
 #if defined(PA_HAS_64_BITS_POINTERS)
-    return PartitionAddressSpace::BRPPoolBaseMask();
+    return PartitionAddressSpace::NonBRPPoolBaseMask();
 #else
     return 0;
 #endif
@@ -759,7 +752,7 @@ class PCScanTask::StackVisitor final : public internal::StackVisitor {
 };
 
 PCScanTask::PCScanTask(PCScan& pcscan, size_t quarantine_last_size)
-    : pcscan_epoch_(pcscan.epoch()),
+    : pcscan_epoch_(pcscan.epoch() - 1),
       snapshot_(StarScanSnapshot::Create(PCScanInternal::Instance())),
       stats_(PCScanInternal::Instance().process_name(), quarantine_last_size),
       immediatelly_free_objects_(
@@ -798,21 +791,20 @@ void PCScanTask::ScanLargeArea(PCScanInternal& pcscan,
                                uintptr_t* end,
                                size_t slot_size) {
   // For scanning large areas, it's worthwhile checking whether the range that
-  // is scanned contains quarantined objects.
+  // is scanned contains allocated objects. It also helps to skip discarded
+  // freed slots.
   // Protect slot span before scanning it.
   pcscan.ProtectPages(reinterpret_cast<uintptr_t>(begin),
                       (end - begin) * sizeof(uintptr_t));
-  // The bitmap is (a) always guaranteed to exist and (b) the same for all
-  // objects in a given slot span.
-  auto* bitmap =
-      QuarantineBitmapFromPointer(QuarantineBitmapType::kScanner, pcscan_epoch_,
-                                  reinterpret_cast<char*>(begin));
+
+  auto* bitmap = StateBitmapFromPointer(reinterpret_cast<void*>(begin));
   const size_t slot_size_in_words = slot_size / sizeof(uintptr_t);
+
   for (uintptr_t* current_slot = begin; current_slot < end;
        current_slot += slot_size_in_words) {
     // It is okay to skip objects as their payload has been zapped at this
     // point which means that the pointers no longer retain other objects.
-    if (bitmap->CheckBit(reinterpret_cast<uintptr_t>(current_slot))) {
+    if (!bitmap->IsAllocated(reinterpret_cast<uintptr_t>(current_slot))) {
       continue;
     }
     uintptr_t* current_slot_end = current_slot + slot_size_in_words;
@@ -823,9 +815,13 @@ void PCScanTask::ScanLargeArea(PCScanInternal& pcscan,
 
 void PCScanTask::ScanPartitions() {
   // Threshold for which bucket size it is worthwhile in checking whether the
-  // object is a quarantined object and can be skipped.
+  // object is allocated and needs to be scanned. PartitionPurgeSlotSpan()
+  // purges only slots >= page-size, this helps us to avoid faulting in
+  // discarded pages. We actually lower it further to 1024, to take advantage of
+  // skipping unallocated slots, but don't want to go any lower, as this comes
+  // at a cost of expensive bitmap checking.
   static constexpr size_t kLargeScanAreaThresholdInWords =
-      8192 / sizeof(uintptr_t);
+      1024 / sizeof(uintptr_t);
 
   PCScanScanLoop scan_loop(*this);
   auto& pcscan = PCScanInternal::Instance();
@@ -855,34 +851,30 @@ void PCScanTask::ScanPartitions() {
 }
 
 void PCScanTask::SweepQuarantine() {
-  using AccessType = QuarantineBitmap::AccessType;
-
   size_t swept_bytes = 0;
 
   StarScanSnapshot::SweepingView sweeping_view(*snapshot_);
-  sweeping_view.VisitNonConcurrently(
-      [this, &swept_bytes](uintptr_t super_page) {
-        auto* bitmap = QuarantineBitmapFromPointer(
-            QuarantineBitmapType::kScanner, pcscan_epoch_,
-            reinterpret_cast<char*>(super_page));
-        auto* root = Root::FromSuperPage(reinterpret_cast<char*>(super_page));
-        bitmap->template IterateAndClear<AccessType::kNonAtomic>(
-            [root, &swept_bytes](uintptr_t ptr) {
-              auto* object = reinterpret_cast<void*>(ptr);
-              auto* slot_span = SlotSpan::FromSlotInnerPtr(object);
-              swept_bytes += slot_span->bucket->slot_size;
-              root->FreeNoHooksImmediate(object, slot_span);
+  sweeping_view.VisitNonConcurrently([this,
+                                      &swept_bytes](uintptr_t super_page) {
+    auto* bitmap = StateBitmapFromPointer(reinterpret_cast<void*>(super_page));
+    auto* root = Root::FromSuperPage(reinterpret_cast<char*>(super_page));
+    bitmap->IterateUnmarkedQuarantined(
+        pcscan_epoch_, [root, &swept_bytes](uintptr_t ptr) {
+          auto* object = reinterpret_cast<void*>(ptr);
+          auto* slot_span = SlotSpan::FromSlotInnerPtr(object);
+          swept_bytes += slot_span->bucket->slot_size;
+          root->FreeNoHooksImmediate(object, slot_span);
 #if PA_STARSCAN_USE_CARD_TABLE
-              // Reset card(s) for this quarantined object. Please note that the
-              // cards may still contain quarantined objects (which were
-              // promoted in this scan cycle), but
-              // ClearQuarantinedObjectsAndFilterSuperPages() will set them
-              // again in the next PCScan cycle.
-              QuarantineCardTable::GetFrom(ptr).Unquarantine(
-                  ptr, slot_span->GetUsableSize(root));
+          // Reset card(s) for this quarantined object. Please note that the
+          // cards may still contain quarantined objects (which were
+          // promoted in this scan cycle), but
+          // ClearQuarantinedObjectsAndFilterSuperPages() will set them
+          // again in the next PCScan cycle.
+          QuarantineCardTable::GetFrom(ptr).Unquarantine(
+              ptr, slot_span->GetUsableSize(root));
 #endif
-            });
-      });
+        });
+  });
 
   stats_.IncreaseSweptSize(swept_bytes);
 
@@ -1191,18 +1183,17 @@ void PCScanInternal::ResetCurrentPCScanTask() {
 }
 
 namespace {
-PCScanInternal::SuperPages GetSuperPagesAndCommitQuarantineBitmaps(
+PCScanInternal::SuperPages GetSuperPagesAndCommitStateBitmaps(
     PCScan::Root& root) {
-  const size_t quarantine_bitmaps_size_to_commit =
-      CommittedQuarantineBitmapsSize();
+  const size_t state_bitmap_size_to_commit = CommittedStateBitmapSize();
   PCScanInternal::SuperPages super_pages;
   for (auto* super_page_extent = root.first_extent; super_page_extent;
        super_page_extent = super_page_extent->next) {
     for (char *super_page = SuperPagesBeginFromExtent(super_page_extent),
               *super_page_end = SuperPagesEndFromExtent(super_page_extent);
          super_page != super_page_end; super_page += kSuperPageSize) {
-      RecommitSystemPages(internal::SuperPageQuarantineBitmaps(super_page),
-                          quarantine_bitmaps_size_to_commit, PageReadWrite,
+      RecommitSystemPages(internal::SuperPageStateBitmap(super_page),
+                          state_bitmap_size_to_commit, PageReadWrite,
                           PageUpdatePermissions);
       super_pages.push_back(reinterpret_cast<uintptr_t>(super_page));
     }
@@ -1222,7 +1213,7 @@ void PCScanInternal::RegisterScannableRoot(Root* root) {
     if (root->IsScanEnabled())
       return;
     PA_CHECK(!root->IsQuarantineEnabled());
-    super_pages = GetSuperPagesAndCommitQuarantineBitmaps(*root);
+    super_pages = GetSuperPagesAndCommitStateBitmaps(*root);
     root->scan_mode = Root::ScanMode::kEnabled;
     root->quarantine_mode = Root::QuarantineMode::kEnabled;
   }
@@ -1244,7 +1235,7 @@ void PCScanInternal::RegisterNonScannableRoot(Root* root) {
     PA_CHECK(!root->IsScanEnabled());
     if (root->IsQuarantineEnabled())
       return;
-    super_pages = GetSuperPagesAndCommitQuarantineBitmaps(*root);
+    super_pages = GetSuperPagesAndCommitStateBitmaps(*root);
     root->quarantine_mode = Root::QuarantineMode::kEnabled;
   }
   std::lock_guard<std::mutex> lock(roots_mutex_);

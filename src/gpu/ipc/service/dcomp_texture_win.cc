@@ -72,8 +72,8 @@ DCOMPTexture::DCOMPTexture(
     int32_t route_id,
     mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver,
     scoped_refptr<SharedContextState> context_state)
-    // VideoFrameSubmitter requires frames to be non-zero size.
-    // See MediaFoundationRendererClient::OnDCOMPStreamTextureInitialized.
+    // Size of {1, 1} to signify the Media Foundation rendering pipeline is not
+    // ready to setup DCOMP video yet.
     : GLImageDCOMPSurface({1, 1}, INVALID_HANDLE_VALUE),
       channel_(channel),
       route_id_(route_id),
@@ -135,22 +135,21 @@ void DCOMPTexture::SetTextureSize(const gfx::Size& size) {
   }
 }
 
-void DCOMPTexture::SetSurfaceHandle(const base::UnguessableToken& token) {
+void DCOMPTexture::SetDCOMPSurfaceHandle(
+    const base::UnguessableToken& token,
+    SetDCOMPSurfaceHandleCallback callback) {
   DVLOG(1) << __func__;
-  bool succeeded = false;
+
   base::win::ScopedHandle surface_handle =
       gl::DCOMPSurfaceRegistry::GetInstance()->TakeDCOMPSurfaceHandle(token);
-  if (surface_handle.IsValid()) {
-    surface_handle_.Set(surface_handle.Take());
-    succeeded = true;
-  } else {
+  if (!surface_handle.IsValid()) {
     DLOG(ERROR) << __func__ << ": No surface registered for token " << token;
+    std::move(callback).Run(false);
+    return;
   }
 
-  if (client_)
-    client_->OnDCOMPSurfaceHandleBound(succeeded);
-  else
-    DLOG(ERROR) << "Unable to call client_->OnDCOMPSurfaceHandleBound";
+  surface_handle_.Set(surface_handle.Take());
+  std::move(callback).Run(true);
 }
 
 gpu::Mailbox DCOMPTexture::CreateSharedImage() {
@@ -232,7 +231,7 @@ void DCOMPTexture::SendOutputRect() {
   output_rect.set_x(window_relative_rect_.x() + parent_window_rect_.x());
   output_rect.set_y(window_relative_rect_.y() + parent_window_rect_.y());
   if (last_output_rect_ != output_rect) {
-    client_->OnCompositionParamsChanged(output_rect);
+    client_->OnOutputRectChange(output_rect);
     last_output_rect_ = output_rect;
   }
 }

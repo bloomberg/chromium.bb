@@ -118,8 +118,14 @@
     </style>
 
     <style name="TabThumbnailPlaceHolderStyle.Selected">
-        <item name="colorTileBase">?attr/colorPrimaryContainer</item>
+        <item name="colorTileBase">?attr/colorOnPrimary</item>
         <item name="elevationTileBase">@dimen/default_elevation_0</item>
+    </style>
+
+    <style name="SearchShortcutChip" parent="Chip">
+        <item name="cornerRadius">@dimen/chip_default_height</item>
+        <item name="primaryTextAppearance">@style/TextAppearance.TextMediumThick.Primary</item>
+        <item name="chipColor">@color/default_text_color_inverse</item>
     </style>
 
 </resources>

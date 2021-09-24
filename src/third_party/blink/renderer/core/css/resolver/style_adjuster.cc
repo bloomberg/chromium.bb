@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -248,7 +249,8 @@ void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyle& style) {
   const auto line_height = style.GetFontHeight().LineHeight();
   const auto size =
       LengthSize(Length::Fixed(line_height), Length::Fixed(one_em));
-  style.SetContainIntrinsicSize(size);
+  style.SetContainIntrinsicWidth(StyleIntrinsicLength(false, size.Width()));
+  style.SetContainIntrinsicHeight(StyleIntrinsicLength(false, size.Height()));
   style.SetHeight(size.Height());
   style.SetLineHeight(size.Height());
   style.SetMaxHeight(size.Height());
@@ -271,6 +273,7 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyle& style) {
   style.SetWritingMode(WritingMode::kHorizontalTb);
 
   style.ClearAppliedTextDecorations();
+  style.ResetTextIndent();
   style.UpdateFontOrientation();
 
   DCHECK_EQ(style.GetFont().GetFontDescription().Orientation(),
@@ -693,10 +696,20 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to
     // them.
-    if (IsInTopLayer(element, style) && !is_document_element &&
-        (style.GetPosition() == EPosition::kStatic ||
-         style.GetPosition() == EPosition::kRelative))
-      style.SetPosition(EPosition::kAbsolute);
+    if (IsInTopLayer(element, style) && !is_document_element) {
+      if (style.GetPosition() == EPosition::kStatic ||
+          style.GetPosition() == EPosition::kRelative) {
+        style.SetPosition(EPosition::kAbsolute);
+      }
+      if (style.Display() == EDisplay::kContents &&
+          (IsA<HTMLDialogElement>(element) ||
+           style.StyleType() == kPseudoIdBackdrop)) {
+        // See crbug.com/1240701 for more details.
+        // https://fullscreen.spec.whatwg.org/#new-stacking-layer
+        // If its specified display property is contents, it computes to block.
+        style.SetDisplay(EDisplay::kBlock);
+      }
+    }
 
     // Absolute/fixed positioned elements, floating elements and the document
     // element need block-like outside display.

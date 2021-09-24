@@ -112,25 +112,25 @@ ChangePictureHandler::~ChangePictureHandler() {
 }
 
 void ChangePictureHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "chooseFile", base::BindRepeating(&ChangePictureHandler::HandleChooseFile,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "photoTaken", base::BindRepeating(&ChangePictureHandler::HandlePhotoTaken,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "discardPhoto",
       base::BindRepeating(&ChangePictureHandler::HandleDiscardPhoto,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "onChangePicturePageInitialized",
       base::BindRepeating(&ChangePictureHandler::HandlePageInitialized,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "selectImage",
       base::BindRepeating(&ChangePictureHandler::HandleSelectImage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestSelectedImage",
       base::BindRepeating(&ChangePictureHandler::HandleRequestSelectedImage,
                           base::Unretained(this)));
@@ -195,7 +195,7 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
       Sound::kCameraSnap, PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
 
   std::string image_url;
-  if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
+  if (!args || args->GetList().size() != 1 || !args->GetString(0, &image_url))
     NOTREACHED();
   DCHECK(!image_url.empty());
 
@@ -315,7 +315,7 @@ void ChangePictureHandler::SendOldImageWithIndex(std::string&& image_url,
 void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   std::string image_url;
   std::string image_type;
-  if (!args || args->GetSize() != 2 || !args->GetString(0, &image_url) ||
+  if (!args || args->GetList().size() != 2 || !args->GetString(0, &image_url) ||
       !args->GetString(1, &image_type)) {
     NOTREACHED();
     return;

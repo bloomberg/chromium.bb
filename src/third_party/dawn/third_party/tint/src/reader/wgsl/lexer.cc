@@ -305,16 +305,27 @@ Token Lexer::try_hex_float() {
   }
 
   uint32_t mantissa = 0;
-  int32_t exponent = 0;
+  uint32_t exponent = 0;
+
+  // TODO(dneto): Values in the normal range for the format do not explicitly
+  // store the most significant bit.  The algorithm here works hard to eliminate
+  // that bit in the representation during parsing, and then it backtracks
+  // when it sees it may have to explicitly represent it, and backtracks again
+  // when it sees the number is sub-normal (i.e. the exponent underflows).
+  // I suspect the logic can be clarified by storing it during parsing, and
+  // then removing it later only when needed.
 
   // `set_next_mantissa_bit_to` sets next `mantissa` bit starting from msb to
-  // lsb to value 1 if `set` is true, 0 otherwise
+  // lsb to value 1 if `set` is true, 0 otherwise. Returns true on success, i.e.
+  // when the bit can be accommodated in the available space.
   uint32_t mantissa_next_bit = kTotalMsb;
   auto set_next_mantissa_bit_to = [&](bool set, bool integer_part) -> bool {
     // If adding bits for the integer part, we can overflow whether we set the
     // bit or not. For the fractional part, we can only overflow when setting
     // the bit.
     const bool check_overflow = integer_part || set;
+    // Note: mantissa_next_bit actually decrements, so comparing it as
+    // larger than a positive number relies on wraparound.
     if (check_overflow && (mantissa_next_bit > kTotalMsb)) {
       return false;  // Overflowed mantissa
     }
@@ -359,8 +370,10 @@ Token Lexer::try_hex_float() {
 
   // Parse integer part
   // [0-9a-fA-F]*
+
   bool has_zero_integer = true;
-  bool leading_bit_seen = false;
+  // The magnitude is zero if and only if seen_prior_one_bits is false.
+  bool seen_prior_one_bits = false;
   for (auto i = integer_range.first; i < integer_range.second; ++i) {
     const auto nibble = hex_value(content_->data[i]);
     if (nibble != 0) {
@@ -371,7 +384,7 @@ Token Lexer::try_hex_float() {
       auto v = 1 & (nibble >> bit);
 
       // Skip leading 0s and the first 1
-      if (leading_bit_seen) {
+      if (seen_prior_one_bits) {
         if (!set_next_mantissa_bit_to(v != 0, true)) {
           return {Token::Type::kError, source,
                   "mantissa is too large for hex float"};
@@ -379,7 +392,7 @@ Token Lexer::try_hex_float() {
         ++exponent;
       } else {
         if (v == 1) {
-          leading_bit_seen = true;
+          seen_prior_one_bits = true;
         }
       }
     }
@@ -387,20 +400,19 @@ Token Lexer::try_hex_float() {
 
   // Parse fractional part
   // [0-9a-fA-F]*
-  leading_bit_seen = false;
   for (auto i = fractional_range.first; i < fractional_range.second; ++i) {
     auto nibble = hex_value(content_->data[i]);
     for (int32_t bit = 3; bit >= 0; --bit) {
       auto v = 1 & (nibble >> bit);
 
       if (v == 1) {
-        leading_bit_seen = true;
+        seen_prior_one_bits = true;
       }
 
-      // If integer part is 0 (denorm), we only start writing bits to the
+      // If integer part is 0, we only start writing bits to the
       // mantissa once we have a non-zero fractional bit. While the fractional
       // values are 0, we adjust the exponent to avoid overflowing `mantissa`.
-      if (has_zero_integer && !leading_bit_seen) {
+      if (!seen_prior_one_bits) {
         --exponent;
       } else {
         if (!set_next_mantissa_bit_to(v != 0, false)) {
@@ -420,15 +432,25 @@ Token Lexer::try_hex_float() {
     end++;
   }
 
+  // Determine if the value is zero.
+  // Note: it's not enough to check mantissa == 0 as we drop the initial bit,
+  // whether it's in the integer part or the fractional part.
+  const bool is_zero = !seen_prior_one_bits;
+  TINT_ASSERT(Reader, !is_zero || mantissa == 0);
+
   // Parse exponent from input
   // [0-9]+
+  // Allow overflow (in uint32_t) when the floating point value magnitude is
+  // zero.
   bool has_exponent = false;
   uint32_t input_exponent = 0;
   while (end < len_ && isdigit(content_->data[end])) {
     has_exponent = true;
     auto prev_exponent = input_exponent;
     input_exponent = (input_exponent * 10) + dec_value(content_->data[end]);
-    if (prev_exponent > input_exponent) {
+    // Check if we've overflowed input_exponent. This only matters when
+    // the mantissa is non-zero.
+    if (!is_zero && (prev_exponent > input_exponent)) {
       return {Token::Type::kError, source,
               "exponent is too large for hex float"};
     }
@@ -443,29 +465,42 @@ Token Lexer::try_hex_float() {
   location_.column += (end - start);
   end_source(source);
 
-  // Compute exponent so far
-  exponent = exponent + (input_exponent * exponent_sign);
-
-  // Determine if value is zero
-  // Note: it's not enough to check mantissa == 0 as we drop initial bit from
-  // integer part.
-  bool is_zero = has_zero_integer && mantissa == 0;
-  TINT_ASSERT(Reader, !is_zero || mantissa == 0);
-
   if (is_zero) {
     // If value is zero, then ignore the exponent and produce a zero
     exponent = 0;
   } else {
+    // Ensure input exponent is not too large; i.e. that it won't overflow when
+    // adding the exponent bias.
+    const uint32_t kIntMax =
+        static_cast<uint32_t>(std::numeric_limits<int32_t>::max());
+    const uint32_t kMaxInputExponent = kIntMax - kExponentBias;
+    if (input_exponent > kMaxInputExponent) {
+      return {Token::Type::kError, source,
+              "exponent is too large for hex float"};
+    }
+
+    // Compute exponent so far
+    exponent += static_cast<uint32_t>(static_cast<int32_t>(input_exponent) *
+                                      exponent_sign);
+
     // Bias exponent if non-zero
     // After this, if exponent is <= 0, our value is a denormal
     exponent += kExponentBias;
 
-    // Denormal uses biased exponent of -126, not -127
+    // We know the number is not zero.  The MSB is 1 (by construction), and
+    // should be eliminated because it becomes the implicit 1 that isn't
+    // explicitly represented in the binary32 format.  We'll bring it back
+    // later if we find the exponent actually underflowed, i.e. the number
+    // is sub-normal.
     if (has_zero_integer) {
       mantissa <<= 1;
       --exponent;
     }
   }
+
+  // We can now safely work with exponent as a signed quantity, as there's no
+  // chance to overflow
+  int32_t signed_exponent = static_cast<int32_t>(exponent);
 
   // Shift mantissa to occupy the low 23 bits
   mantissa >>= kMantissaShiftRight;
@@ -474,27 +509,27 @@ Token Lexer::try_hex_float() {
   if (!is_zero) {
     // Denorm has exponent 0 and non-zero mantissa. We set the top bit here,
     // then shift the mantissa to make exponent zero.
-    if (exponent <= 0) {
+    if (signed_exponent <= 0) {
       mantissa >>= 1;
       mantissa |= (1 << kMantissaMsb);
     }
 
-    while (exponent < 0) {
+    while (signed_exponent < 0) {
       mantissa >>= 1;
-      ++exponent;
+      ++signed_exponent;
 
       // If underflow, clamp to zero
       if (mantissa == 0) {
-        exponent = 0;
+        signed_exponent = 0;
       }
     }
   }
 
-  if (exponent > kExponentMax) {
+  if (signed_exponent > kExponentMax) {
     // Overflow: set to infinity
-    exponent = kExponentMax;
+    signed_exponent = kExponentMax;
     mantissa = 0;
-  } else if (exponent == kExponentMax && mantissa != 0) {
+  } else if (signed_exponent == kExponentMax && mantissa != 0) {
     // NaN: set to infinity
     mantissa = 0;
   }
@@ -502,7 +537,8 @@ Token Lexer::try_hex_float() {
   // Combine sign, mantissa, and exponent
   uint32_t result_u32 = sign_bit << kSignBit;
   result_u32 |= mantissa;
-  result_u32 |= (exponent & kExponentMask) << kExponentLeftShift;
+  result_u32 |= (static_cast<uint32_t>(signed_exponent) & kExponentMask)
+                << kExponentLeftShift;
 
   // Reinterpret as float and return
   float result;
@@ -543,6 +579,7 @@ Token Lexer::build_token_from_int_if_possible(Source source,
 }
 
 Token Lexer::try_hex_integer() {
+  constexpr size_t kMaxDigits = 8;  // Valid for both 32-bit integer types
   auto start = pos_;
   auto end = pos_;
 
@@ -551,13 +588,23 @@ Token Lexer::try_hex_integer() {
   if (matches(end, "-")) {
     end++;
   }
+
   if (!matches(end, "0x")) {
-    return Token();
+    return {};
   }
   end += 2;
 
+  auto first = end;
   while (!is_eof() && is_hex(content_->data[end])) {
-    end += 1;
+    end++;
+
+    auto digits = end - first;
+    if (digits > kMaxDigits) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has too many digits"};
+    }
   }
 
   pos_ = end;
@@ -567,6 +614,7 @@ Token Lexer::try_hex_integer() {
 }
 
 Token Lexer::try_integer() {
+  constexpr size_t kMaxDigits = 10;  // Valid for both 32-bit integer types
   auto start = pos_;
   auto end = start;
 
@@ -575,19 +623,35 @@ Token Lexer::try_integer() {
   if (matches(end, "-")) {
     end++;
   }
+
   if (end >= len_ || !is_digit(content_->data[end])) {
     return {};
   }
 
   auto first = end;
-  while (end < len_ && is_digit(content_->data[end])) {
-    end++;
-  }
-
   // If the first digit is a zero this must only be zero as leading zeros
   // are not allowed.
-  if (content_->data[first] == '0' && (end - first != 1))
-    return {};
+  auto next = first + 1;
+  if (next < len_) {
+    if (content_->data[first] == '0' && is_digit(content_->data[next])) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has leading 0s"};
+    }
+  }
+
+  while (end < len_ && is_digit(content_->data[end])) {
+    auto digits = end - first;
+    if (digits > kMaxDigits) {
+      return {Token::Type::kError, source,
+              "integer literal (" +
+                  content_->data.substr(start, end - 1 - start) +
+                  "...) has too many digits"};
+    }
+
+    end++;
+  }
 
   pos_ = end;
   location_.column += (end - start);

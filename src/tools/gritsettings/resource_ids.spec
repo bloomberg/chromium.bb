@@ -133,12 +133,12 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1366],
   },
-  "chrome/browser/resources/chromeos/login/oobe_resources.grd": {
+  "chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
     "META": {"sizes": {"includes": [150], "structures": [300]}},
     "includes": [1367],
     "structures": [1368],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_modulized_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/login/oobe_unconditional_resources.grd": {
     "META": {"sizes": {"includes": [150]}},
     "includes": [1369],
   },
@@ -416,7 +416,7 @@
     "META": {"sizes": {"includes": [100]}},
     "includes": [2519],
   },
-  "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
+  "ash/webui/help_app_ui/resources/help_app_resources.grd": {
     "includes": [2520],
   },
   # Both help_app_kids_magazine_bundle_resources.grd and
@@ -424,11 +424,11 @@
   # because only one of them is built depending on if src_internal is available.
   # Lower bound for number of resource ids is the number of files, which is 3 in
   # in this case (HTML, JS and CSS file).
-  "chromeos/components/help_app_ui/resources/prod/help_app_kids_magazine_bundle_resources.grd": {
+  "ash/webui/help_app_ui/resources/prod/help_app_kids_magazine_bundle_resources.grd": {
     "META": {"sizes": {"includes": [5],}},
     "includes": [2530],
   },
-  "chromeos/components/help_app_ui/resources/mock/help_app_kids_magazine_bundle_mock_resources.grd": {
+  "ash/webui/help_app_ui/resources/mock/help_app_kids_magazine_bundle_mock_resources.grd": {
     "includes": [2530],
   },
   # Both help_app_bundle_resources.grd and help_app_bundle_mock_resources.grd
@@ -436,14 +436,14 @@
   # src_internal is available. Lower bound is that we bundle ~100 images for
   # offline articles with the app, as well as strings in every language (74),
   # and bundled content in the top 25 languages (25 x 2).
-  "chromeos/components/help_app_ui/resources/prod/help_app_bundle_resources.grd": {
+  "ash/webui/help_app_ui/resources/prod/help_app_bundle_resources.grd": {
     "META": {"sizes": {"includes": [300],}},  # Relies on src-internal.
     "includes": [2540],
   },
-  "chromeos/components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd": {
+  "ash/webui/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd": {
     "includes": [2540],
   },
-  "chromeos/components/media_app_ui/resources/media_app_resources.grd": {
+  "ash/webui/media_app_ui/resources/media_app_resources.grd": {
     "META": {"join": 2},
     "includes": [2560],
   },
@@ -451,14 +451,14 @@
   # start with the same id because only one of them is built depending on if
   # src_internal is available. Lower bound for number of resource ids is number
   # of languages (74).
-  "chromeos/components/media_app_ui/resources/prod/media_app_bundle_resources.grd": {
+  "ash/webui/media_app_ui/resources/prod/media_app_bundle_resources.grd": {
     "META": {"sizes": {"includes": [120],}},  # Relies on src-internal.
     "includes": [2580],
   },
-  "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
+  "ash/webui/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
     "includes": [2580],
   },
-  "chromeos/components/print_management/resources/print_management_resources.grd": {
+  "ash/webui/print_management/resources/print_management_resources.grd": {
     "META": {"join": 2},
     "includes": [2600],
     "structures": [2620],
@@ -475,7 +475,7 @@
     "includes": [2650],
     "structures": [2655],
   },
-  "chromeos/components/telemetry_extension_ui/resources/telemetry_extension_resources.grd": {
+  "ash/webui/telemetry_extension_ui/resources/telemetry_extension_resources.grd": {
     "includes": [2660],
   },
   "chromeos/resources/chromeos_resources.grd": {
@@ -489,18 +489,18 @@
   # start with the same id because only one of them is built depending on if
   # src_internal is available.
   "chromeos/components/eche_app_ui/resources/prod/eche_bundle_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [120],}},
     "includes": [2690],
   },
   "chromeos/components/eche_app_ui/resources/mock/eche_bundle_mock_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [120],}},
     "includes": [2690],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/personalization_app/resources/chromeos_personalization_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2695],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/demo_mode_app_ui/chromeos_demo_mode_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
    "includes": [2700],
   },
@@ -511,6 +511,17 @@
   "<(SHARED_INTERMEDIATE_DIR)/chromeos/components/projector_app/resources/chromeos_projector_app_trusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [2710],
+  },
+  # Both projector_app_bundle_resources.grd and projector_app_bundle_mock_resources.grd
+  # start with the same id because only one of them is built depending on if
+  # src_internal is available. Lower bound for number of resource ids is number
+  # of languages (74).
+  "chromeos/components/projector_app/resources/prod/projector_app_bundle_resources.grd": {
+    "META": {"sizes": {"includes": [120],}}, # Relies on src-internal.
+    "includes": [2715],
+  },
+  "chromeos/components/projector_app/resources/mock/projector_app_bundle_mock_resources.grd": {
+    "includes": [2715],
   },
   # END chromeos/ section.
 
@@ -700,8 +711,14 @@
   "base/tracing/protos/resources.grd": {
     "includes": [3150],
   },
+  "chromecast/app/resources/chromecast_settings.grd": {
+    "messages": [3160],
+  },
+  "chromecast/app/resources/shell_resources.grd": {
+    "includes": [3161],
+  },
   "chromecast/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [3160],
+    "includes": [3162],
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
@@ -820,7 +837,8 @@
   },
 
   # This file is generated during the build.
-  "<(SHARED_INTERMEDIATE_DIR)/third_party/devtools-frontend/src/front_end/devtools_resources.grd": {
+  # .grd extension is required because it's checked before var interpolation.
+  "<(DEVTOOLS_GRD_PATH).grd": {
     # In debug build, devtools frontend sources are not bundled and therefore
     # includes a lot of individual resources
     "META": {"sizes": {"includes": [2000],}},

@@ -973,7 +973,7 @@ def GetPylint(input_api,
     return []
   files.sort()
 
-  input_api.logging.info('Running pylint on %d files', len(files))
+  input_api.logging.info('Running pylint %s on %d files', version, len(files))
   input_api.logging.debug('Running pylint on: %s', files)
   env = input_api.environ.copy()
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(extra_paths_list)

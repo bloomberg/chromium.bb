@@ -24,6 +24,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1119348796022671382">O modo de cores temáticas utiliza cores extraídas da sua imagem de fundo para colorir levemente a interface.</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1148499908455722006">Abrir a caixa de diálogo de informações de <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Calendário</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1165712434476988950">É necessário reiniciar o dispositivo para aplicar a atualização.</translation>
 <translation id="1175572348579024023">Deslocar</translation>
@@ -92,6 +93,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1611993646327628135">Ativado</translation>
 <translation id="1615402009686901181">A política do administrador desativa a captura de ecrã quando existe conteúdo confidencial visível.</translation>
 <translation id="1632985212731562677">O acesso por comutador pode ser desativado em Definições &gt; Acessibilidade.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; prima Pesquisar e a tecla de espaço para ver o resultado no Assistente.</translation>
 <translation id="1667964833127753507">O modo de cores neutras não utiliza cores extraídas da imagem de fundo: substitui-as por um conjunto de tons claros ou escuros.</translation>
@@ -192,6 +194,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2427507373259914951">Clicar com o botão esquerdo do rato</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
+<translation id="24452542372838207">Expandir notificação</translation>
 <translation id="2450205753526923158">Modo de captura de ecrã</translation>
 <translation id="2473177541599297363">Confirme a resolução</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -320,6 +323,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3486220673238053218">definição</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3513798432020909783">Conta gerida por <ph name="MANAGER_EMAIL" />.</translation>
+<translation id="353086728817903341">Ligado a <ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="3552189655002856821">O Wi-Fi está desativado</translation>
 <translation id="3560866052109807830">Ferramentas de desenho de marcador</translation>
 <translation id="3563775809269155755">Ativar zona Wi-Fi</translation>
@@ -348,6 +352,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3702846122927433391">População da Nigéria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">A carregar...</translation>
+<translation id="3708186454126126312">Ligados anteriormente</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
 <translation id="3713734891607377840">Abrir ao concluir</translation>
 <translation id="3742055079367172538">Captura de ecrã efetuada</translation>
@@ -403,6 +408,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4157822100366708405">Definições do tema escuro</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
@@ -555,6 +561,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
+<translation id="5253783950165989294">Ligado a um dispositivo denominado <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="5260676007519551770">Secretária 4</translation>
 <translation id="5283198616748585639">Adicionar 1 min</translation>
 <translation id="528468243742722775">Sair</translation>
@@ -565,6 +572,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5308380583665731573">Ligar</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
 <translation id="5314219114274263156">Gravação de ecrã captada</translation>
+<translation id="5319712128756744240">Sincronizar novo dispositivo</translation>
 <translation id="5322611492012084517">Não é possível encontrar o telemóvel</translation>
 <translation id="5329548388331921293">A ligar…</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
@@ -767,6 +775,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os ficheiros e dados locais associados a este utilizador são permanentemente eliminados assim que este utilizador é removido.</translation>
 <translation id="7007983414944123363">Não foi possível validar o seu PIN ou palavra-passe. Tente novamente.</translation>
+<translation id="7014684956566476813">Ligado a um dispositivo denominado <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Volte à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Espaço de trabalho 6</translation>
 <translation id="7025533177575372252">Ligue o dispositivo <ph name="DEVICE_NAME" /> ao telemóvel.</translation>
@@ -1000,6 +1009,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8818320199597151042">A remover o perfil. Aguarde alguns minutos.</translation>
 <translation id="8825863694328519386">Deslize rapidamente a partir da esquerda para retroceder.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Atualmente ligados</translation>
 <translation id="8841375032071747811">Botão Anterior</translation>
 <translation id="8843682306134542540">Ativar/desativar bloqueio de rotação. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
@@ -1030,6 +1040,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="9024331582947483881">ecrã inteiro</translation>
 <translation id="9047624247355796468">Abrir as definições de <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">O dispositivo voltará à versão anterior</translation>
+<translation id="9059834730836941392">Reduzir notificação</translation>
 <translation id="9063800855227801443">Não é possível capturar conteúdo confidencial</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Definições do Assistente</translation>

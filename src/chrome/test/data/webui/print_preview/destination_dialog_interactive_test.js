@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceImpl, Destination, makeRecentDestination, NativeLayerImpl, PrintPreviewDestinationDialogElement, State} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceImpl, Destination, makeRecentDestination, NativeLayerImpl, PrintPreviewDestinationDialogElement, PrintPreviewSearchBoxElement, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {eventToPromise, fakeDataBind} from '../test_util.m.js';
+import {eventToPromise, fakeDataBind} from '../test_util.js';
 
 import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
@@ -73,7 +73,8 @@ suite(destination_dialog_interactive_test.suiteName, function() {
     return nativeLayer.whenCalled('getPrinterCapabilities').then(() => {
       // Retrieve a reference to dialog
       dialog = /** @type {!PrintPreviewDestinationDialogElement} */ (
-          destinationSettings.$$('#destinationDialog').get());
+          destinationSettings.shadowRoot.querySelector('#destinationDialog')
+              .get());
     });
   });
 

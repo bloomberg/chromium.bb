@@ -410,6 +410,10 @@ static_library("extensions") {
     "api/tabs/windows_util.h",
     "api/top_sites/top_sites_api.cc",
     "api/top_sites/top_sites_api.h",
+    "api/web_authentication_proxy/web_authentication_proxy_api.cc",
+    "api/web_authentication_proxy/web_authentication_proxy_api.h",
+    "api/web_authentication_proxy/web_authentication_proxy_service.cc",
+    "api/web_authentication_proxy/web_authentication_proxy_service.h",
     "api/web_navigation/frame_navigation_state.cc",
     "api/web_navigation/frame_navigation_state.h",
     "api/web_navigation/web_navigation_api.cc",
@@ -950,7 +954,7 @@ static_library("extensions") {
 
   if (is_chromeos_ash) {
     deps += [
-      "//chromeos/resources:media_app_bundle_resources_grit",
+      "//ash/webui/resources:media_app_bundle_resources_grit",
       "//ui/display/manager",
     ]
   }
@@ -1086,6 +1090,7 @@ static_library("extensions") {
     deps += [
       "//ash",
       "//ash/components/enhanced_network_tts/mojom",
+      "//ash/components/quick_answers/public/cpp:prefs",
       "//ash/constants",
       "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
@@ -1100,7 +1105,6 @@ static_library("extensions") {
       "//chromeos/components/camera_app_ui/resources:chrome_camera_app",
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/proximity_auth",
-      "//chromeos/components/quick_answers/public/cpp:prefs",
       "//chromeos/components/remote_apps/mojom",
       "//chromeos/cryptohome",
       "//chromeos/dbus",
@@ -1141,9 +1145,6 @@ static_library("extensions") {
       "//ui/ozone",
       "//ui/views",
     ]
-    if (enable_nacl) {
-      deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
-    }
     if (is_cfm) {
       deps += [
         "//chromeos/services/chromebox_for_meetings/public/cpp",
@@ -1268,8 +1269,6 @@ static_library("extensions") {
   }
 
   if (enable_basic_printing && (is_win || is_mac || is_linux || is_chromeos)) {
-    # Needed by files which include //chrome/browser/service_sandbox_type.h.
-    # Inclusion of print_backend_service_manager.h depends on this.
     # TODO(crbug.com/1213762)  Replace this with more accurate dependency
     # once //chrome/browser/printing build is able to be cleanly targeted.
     deps += [ "//chrome/services/printing/public/mojom" ]

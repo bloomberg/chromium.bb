@@ -74,12 +74,6 @@ ChromeIdentityService::~ChromeIdentityService() {
 
 void ChromeIdentityService::DismissDialogs() {}
 
-bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
-                                                     NSURL* url,
-                                                     NSDictionary* options) {
-  return false;
-}
-
 bool ChromeIdentityService::HandleSessionOpenURLContexts(UIScene* scene,
                                                          NSSet* URLContexts) {
   return false;
@@ -124,11 +118,13 @@ void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
                                            const std::set<std::string>& scopes,
                                            AccessTokenCallback callback) {}
 
-void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity,
-                                                 GetAvatarCallback callback) {}
+void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity) {
+  NOTREACHED();
+}
 
 UIImage* ChromeIdentityService::GetCachedAvatarForIdentity(
     ChromeIdentity* identity) {
+  NOTREACHED();
   return nil;
 }
 
@@ -173,6 +169,10 @@ void ChromeIdentityService::CanOfferExtendedSyncPromos(
         if (completion)
           completion(result.capability_value);
       });
+}
+
+bool ChromeIdentityService::IsServiceSupported() {
+  return false;
 }
 
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(

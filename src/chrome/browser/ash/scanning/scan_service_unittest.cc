@@ -204,8 +204,10 @@ class FakeScanJobObserver : public mojo_ipc::ScanJobObserver {
     progress_ = progress_percent;
   }
 
-  void OnPageComplete(const std::vector<uint8_t>& page_data) override {
+  void OnPageComplete(const std::vector<uint8_t>& page_data,
+                      const uint32_t new_page_index) override {
     page_complete_ = true;
+    new_page_index_ = new_page_index;
   }
 
   void OnScanComplete(
@@ -243,6 +245,8 @@ class FakeScanJobObserver : public mojo_ipc::ScanJobObserver {
   // Returns true if the cancel scan request completed successfully.
   bool cancel_scan_success() const { return cancel_scan_success_; }
 
+  uint32_t new_page_index() const { return new_page_index_; }
+
   // Returns the result of the scan job.
   mojo_ipc::ScanResult scan_result() const { return scan_result_; }
 
@@ -259,6 +263,7 @@ class FakeScanJobObserver : public mojo_ipc::ScanJobObserver {
  private:
   uint32_t progress_ = 0;
   bool page_complete_ = false;
+  uint32_t new_page_index_ = UINT32_MAX;
   mojo_ipc::ScanResult scan_result_ = mojo_ipc::ScanResult::kUnknownError;
   mojo_ipc::ScanResult multi_page_scan_result_ =
       mojo_ipc::ScanResult::kUnknownError;
@@ -347,6 +352,10 @@ class ScanServiceTest : public testing::Test {
     return true;
   }
 
+  void ResetMultiPageScanControllerRemote() {
+    multi_page_scan_controller_remote_.reset();
+  }
+
   bool ScanNextPage(const base::UnguessableToken& scanner_id,
                     mojo_ipc::ScanSettingsPtr settings) {
     bool success;
@@ -368,9 +377,20 @@ class ScanServiceTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void RemovePage(const int page_number) {
-    multi_page_scan_controller_remote_->RemovePage(page_number);
+  void RemovePage(const uint32_t page_index) {
+    multi_page_scan_controller_remote_->RemovePage(page_index);
     task_environment_.RunUntilIdle();
+  }
+
+  bool RescanPage(const base::UnguessableToken& scanner_id,
+                  mojo_ipc::ScanSettingsPtr settings,
+                  const uint32_t page_index) {
+    bool success;
+    mojo_ipc::MultiPageScanControllerAsyncWaiter(
+        multi_page_scan_controller_remote_.get())
+        .RescanPage(scanner_id, std::move(settings), page_index, &success);
+    task_environment_.RunUntilIdle();
+    return success;
   }
 
  protected:
@@ -542,6 +562,7 @@ TEST_F(ScanServiceTest, Scan) {
     EXPECT_TRUE(fake_scan_job_observer_.scan_success());
     EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
               fake_scan_job_observer_.scan_result());
+    EXPECT_EQ(scan_data.size() - 1, fake_scan_job_observer_.new_page_index());
     EXPECT_EQ(saved_scan_paths, fake_scan_job_observer_.scanned_file_paths());
 
     // Verify that the histograms have been updated correctly.
@@ -583,6 +604,7 @@ TEST_F(ScanServiceTest, RotateEpsonADF) {
   const std::vector<base::FilePath> scanned_file_paths =
       fake_scan_job_observer_.scanned_file_paths();
   EXPECT_EQ(1u, scanned_file_paths.size());
+  EXPECT_EQ(scan_data.size() - 1, fake_scan_job_observer_.new_page_index());
   EXPECT_EQ(saved_scan_path, scanned_file_paths.front());
 }
 
@@ -645,6 +667,7 @@ TEST_F(ScanServiceTest, ScanAfterFailedScan) {
   EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
             fake_scan_job_observer_.scan_result());
   EXPECT_EQ(saved_scan_paths, fake_scan_job_observer_.scanned_file_paths());
+  EXPECT_EQ(scan_data.size() - 1, fake_scan_job_observer_.new_page_index());
 }
 
 // Tests that a failed scan does not retain values from the previous successful
@@ -678,6 +701,7 @@ TEST_F(ScanServiceTest, FailedScanAfterSuccessfulScan) {
   EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
             fake_scan_job_observer_.scan_result());
   EXPECT_EQ(saved_scan_paths, fake_scan_job_observer_.scanned_file_paths());
+  EXPECT_EQ(scan_data.size() - 1, fake_scan_job_observer_.new_page_index());
 
   // Remove the scan data from FakeLorgnetteScannerManager so the scan will
   // fail.
@@ -804,6 +828,7 @@ TEST_F(ScanServiceTest, MultiPageScan) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
 
   // Scan the first page without completing the scan.
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
@@ -811,6 +836,7 @@ TEST_F(ScanServiceTest, MultiPageScan) {
     EXPECT_FALSE(base::PathExists(saved_scan_path));
   EXPECT_FALSE(fake_scan_job_observer_.scan_success());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   // Scan the second page without completing the scan.
   EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
@@ -818,6 +844,7 @@ TEST_F(ScanServiceTest, MultiPageScan) {
     EXPECT_FALSE(base::PathExists(saved_scan_path));
   EXPECT_FALSE(fake_scan_job_observer_.scan_success());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   // Complete the multi-page scan expecting 2 pages to be scanned and a single
   // PDF to be created.
@@ -850,6 +877,7 @@ TEST_F(ScanServiceTest, MultiPageScanFails) {
   EXPECT_EQ(mojo_ipc::ScanResult::kUnknownError,
             fake_scan_job_observer_.multi_page_scan_result());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
+  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
 
   // Set scan data to empty vector in FakeLorgnetteScannerManager so the next
   // scan will fail.
@@ -883,6 +911,7 @@ TEST_F(ScanServiceTest, StartingAnotherMultiPageScan) {
   EXPECT_EQ(mojo_ipc::ScanResult::kUnknownError,
             fake_scan_job_observer_.multi_page_scan_result());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
+  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
 
   // The second attempt should fail.
   EXPECT_FALSE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
@@ -902,16 +931,19 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithTwoPages) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(first_scan_data);
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   const std::string second_scanned_image = CreatePng(/*alpha=*/2);
   const std::vector<std::string> second_scan_data = {second_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(second_scan_data);
   EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   // Delete the first page.
   RemovePage(0);
@@ -941,21 +973,25 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(first_scan_data);
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   const std::string second_scanned_image = CreatePng(/*alpha=*/2);
   const std::vector<std::string> second_scan_data = {second_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(second_scan_data);
   EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   const std::string third_scanned_image = CreatePng(/*alpha=*/3);
   const std::vector<std::string> third_scan_data = {third_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(third_scan_data);
   EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
   // Delete the second page.
   RemovePage(1);
@@ -972,9 +1008,9 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
   histogram_tester.ExpectUniqueSample("Scanning.NumPagesScanned", 2, 1);
 }
 
-// Test that if there's only one page available, it can't be removed during a
-// multi-page scan session.
-TEST_F(ScanServiceTest, MultiPageScanCantRemoveOnePage) {
+// Test that if there's only one page available, the page is removed and the
+// multi-page scan session is reset and a new session can be started.
+TEST_F(ScanServiceTest, MultiPageScanRemoveLastPage) {
   base::HistogramTester histogram_tester;
   scoped_feature_list_.InitWithFeatures(
       {chromeos::features::kScanAppMultiPageScan}, {});
@@ -988,11 +1024,19 @@ TEST_F(ScanServiceTest, MultiPageScanCantRemoveOnePage) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
 
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
 
-  // The attempt to delete the only page should do nothing.
+  // Removing the page should reset the multi-page scan session.
   RemovePage(0);
+  --new_page_index;
+
+  // Start a new scan and complete it with 1 page.
+  ResetMultiPageScanControllerRemote();
+  EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
   CompleteMultiPageScan();
 
   const std::vector<std::string> scanned_images =
@@ -1002,6 +1046,102 @@ TEST_F(ScanServiceTest, MultiPageScanCantRemoveOnePage) {
   // Expect 1 record of the Scanning.NumPagesScanned metric in the 1 page
   // scanned bucket.
   histogram_tester.ExpectUniqueSample("Scanning.NumPagesScanned", 1, 1);
+}
+
+// Test that a page can be rescanned and replaced from a multi-page scan with
+// one scanned image.
+TEST_F(ScanServiceTest, MultiPageScanRescanWithOnePage) {
+  base::HistogramTester histogram_tester;
+  scoped_feature_list_.InitWithFeatures(
+      {chromeos::features::kScanAppMultiPageScan}, {});
+
+  fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
+      {kFirstTestScannerName});
+  auto scanners = GetScanners();
+  ASSERT_EQ(scanners.size(), 1u);
+
+  mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
+
+  const std::string first_scanned_image = CreatePng(/*alpha=*/1);
+  const std::vector<std::string> first_scan_data = {first_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(first_scan_data);
+  EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
+
+  // Rescan the page.
+  const std::string rescanned_scanned_image = CreatePng(/*alpha=*/2);
+  const std::vector<std::string> rescanned_scan_data = {
+      rescanned_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(rescanned_scan_data);
+  EXPECT_TRUE(RescanPage(scanners[0]->id, settings.Clone(), /*page_index=*/0));
+  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
+  CompleteMultiPageScan();
+
+  const std::vector<std::string> scanned_images =
+      scan_service_->GetScannedImagesForTesting();
+  EXPECT_EQ(1, scanned_images.size());
+  EXPECT_EQ(rescanned_scanned_image, scanned_images[0]);
+
+  // Expect 1 record of the Scanning.NumPagesScanned metric in the 1 pages
+  // scanned bucket.
+  histogram_tester.ExpectUniqueSample("Scanning.NumPagesScanned", 1, 1);
+}
+
+// Test that a page can be rescanned and replaced from a multi-page scan with
+// three scanned images.
+TEST_F(ScanServiceTest, MultiPageScanRescanWithThreePages) {
+  base::HistogramTester histogram_tester;
+  scoped_feature_list_.InitWithFeatures(
+      {chromeos::features::kScanAppMultiPageScan}, {});
+
+  fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
+      {kFirstTestScannerName});
+  auto scanners = GetScanners();
+  ASSERT_EQ(scanners.size(), 1u);
+
+  mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
+  int new_page_index = 0;
+
+  const std::string first_scanned_image = CreatePng(/*alpha=*/1);
+  const std::vector<std::string> first_scan_data = {first_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(first_scan_data);
+  EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
+
+  const std::string second_scanned_image = CreatePng(/*alpha=*/2);
+  const std::vector<std::string> second_scan_data = {second_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(second_scan_data);
+  EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
+
+  const std::string third_scanned_image = CreatePng(/*alpha=*/3);
+  const std::vector<std::string> third_scan_data = {third_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(third_scan_data);
+  EXPECT_TRUE(ScanNextPage(scanners[0]->id, settings.Clone()));
+  EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
+
+  // Rescan the second page.
+  const std::string rescanned_scanned_image = CreatePng(/*alpha=*/4);
+  const std::vector<std::string> rescanned_scan_data = {
+      rescanned_scanned_image};
+  fake_lorgnette_scanner_manager_.SetScanResponse(rescanned_scan_data);
+  EXPECT_TRUE(RescanPage(scanners[0]->id, settings.Clone(), /*page_index=*/1));
+  EXPECT_EQ(1, fake_scan_job_observer_.new_page_index());
+  CompleteMultiPageScan();
+
+  const std::vector<std::string> scanned_images =
+      scan_service_->GetScannedImagesForTesting();
+  EXPECT_EQ(3, scanned_images.size());
+  EXPECT_EQ(first_scanned_image, scanned_images[0]);
+  EXPECT_EQ(rescanned_scanned_image, scanned_images[1]);
+  EXPECT_EQ(third_scanned_image, scanned_images[2]);
+
+  // Expect 1 record of the Scanning.NumPagesScanned metric in the 3 pages
+  // scanned bucket.
+  histogram_tester.ExpectUniqueSample("Scanning.NumPagesScanned", 3, 1);
 }
 
 }  // namespace ash

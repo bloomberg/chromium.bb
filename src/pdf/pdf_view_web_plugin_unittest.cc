@@ -12,20 +12,29 @@
 #include "cc/test/pixel_test_utils.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/test/test_helpers.h"
+#include "pdf/test/test_pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/latency/latency_info.h"
 
 namespace chrome_pdf {
 
@@ -41,6 +50,9 @@ using ::testing::Return;
 // `kCanvasSize` needs to be big enough to hold plugin's snapshots during
 // testing.
 constexpr gfx::Size kCanvasSize(100, 100);
+
+// A common device scale for high DPI displays.
+constexpr float kDeviceScale = 2.0f;
 
 // Note: Make sure `kDefaultColor` is different from `kPaintColor` and the
 // plugin's background color. This will help identify bitmap changes after
@@ -85,7 +97,19 @@ SkBitmap GenerateExpectedBitmapForPaint(float device_scale,
   return expected_bitmap;
 }
 
-class FakeContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
+blink::WebMouseEvent CreateDefaultMouseDownEvent() {
+  blink::WebMouseEvent web_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      /*position=*/gfx::PointF(),
+      /*global_position=*/gfx::PointF(),
+      blink::WebPointerProperties::Button::kLeft,
+      /*click_count_param=*/1, blink::WebInputEvent::Modifiers::kLeftButtonDown,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  web_event.SetFrameScale(1);
+  return web_event;
+}
+
+class FakeContainerWrapper : public PdfViewWebPlugin::ContainerWrapper {
  public:
   explicit FakeContainerWrapper(PdfViewWebPlugin* web_plugin)
       : web_plugin_(web_plugin) {
@@ -102,6 +126,11 @@ class FakeContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
 
   // PdfViewWebPlugin::ContainerWrapper:
   void Invalidate() override {}
+
+  MOCK_METHOD(void,
+              RequestTouchEventType,
+              (blink::WebPluginContainer::TouchEventRequestType),
+              (override));
 
   MOCK_METHOD(void, ReportFindInPageMatchCount, (int, int, bool), (override));
 
@@ -182,18 +211,22 @@ class FakePdfViewWebPluginClient : public PdfViewWebPlugin::Client {
 
 }  // namespace
 
-class PdfViewWebPluginTest : public testing::Test {
+class PdfViewWebPluginWithoutInitializeTest : public testing::Test {
  public:
+  PdfViewWebPluginWithoutInitializeTest(
+      const PdfViewWebPluginWithoutInitializeTest&) = delete;
+  PdfViewWebPluginWithoutInitializeTest& operator=(
+      const PdfViewWebPluginWithoutInitializeTest&) = delete;
+
+ protected:
   // Custom deleter for `plugin_`. PdfViewWebPlugin must be destroyed by
   // PdfViewWebPlugin::Destroy() instead of its destructor.
   struct PluginDeleter {
     void operator()(PdfViewWebPlugin* ptr) { ptr->Destroy(); }
   };
 
-  PdfViewWebPluginTest() = default;
-  PdfViewWebPluginTest(const PdfViewWebPluginTest&) = delete;
-  PdfViewWebPluginTest& operator=(const PdfViewWebPluginTest&) = delete;
-  ~PdfViewWebPluginTest() override = default;
+  PdfViewWebPluginWithoutInitializeTest() = default;
+  ~PdfViewWebPluginWithoutInitializeTest() override = default;
 
   void SetUp() override {
     // Set a dummy URL for initializing the plugin.
@@ -208,15 +241,32 @@ class PdfViewWebPluginTest : public testing::Test {
     plugin_ =
         std::unique_ptr<PdfViewWebPlugin, PluginDeleter>(new PdfViewWebPlugin(
             std::move(client), std::move(unbound_remote), params));
+  }
 
-    auto wrapper = std::make_unique<FakeContainerWrapper>(plugin_.get());
+  void TearDown() override { plugin_.reset(); }
+
+  FakePdfViewWebPluginClient* client_ptr_;
+  std::unique_ptr<PdfViewWebPlugin, PluginDeleter> plugin_;
+};
+
+class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
+ protected:
+  void SetUp() override {
+    PdfViewWebPluginWithoutInitializeTest::SetUp();
+
+    auto wrapper =
+        std::make_unique<NiceMock<FakeContainerWrapper>>(plugin_.get());
     wrapper_ptr_ = wrapper.get();
-    plugin_->InitializeForTesting(std::move(wrapper));
+    auto engine = std::make_unique<TestPDFiumEngine>(plugin_.get());
+    engine_ptr_ = engine.get();
+    EXPECT_TRUE(
+        plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
   }
 
   void TearDown() override {
-    plugin_.reset();
     wrapper_ptr_ = nullptr;
+
+    PdfViewWebPluginWithoutInitializeTest::TearDown();
   }
 
   void UpdatePluginGeometry(float device_scale, const gfx::Rect& window_rect) {
@@ -291,13 +341,24 @@ class PdfViewWebPluginTest : public testing::Test {
         << window_rect.ToString();
   }
 
+  TestPDFiumEngine* engine_ptr_;
   FakeContainerWrapper* wrapper_ptr_;
-  FakePdfViewWebPluginClient* client_ptr_;
-  std::unique_ptr<PdfViewWebPlugin, PluginDeleter> plugin_;
 
   // Provides the cc::PaintCanvas for painting.
   gfx::Canvas canvas_{kCanvasSize, /*image_scale=*/1.0f, /*is_opaque=*/true};
 };
+
+TEST_F(PdfViewWebPluginWithoutInitializeTest, Initialize) {
+  auto wrapper =
+      std::make_unique<NiceMock<FakeContainerWrapper>>(plugin_.get());
+  auto engine = std::make_unique<TestPDFiumEngine>(plugin_.get());
+  EXPECT_CALL(*wrapper,
+              RequestTouchEventType(
+                  blink::WebPluginContainer::kTouchEventRequestTypeRaw));
+
+  EXPECT_TRUE(
+      plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
+}
 
 // TODO(crbug.com/1238395): Split this test into two: One with zoom-for-DSF
 // enabled, one with zoom-for-DSF disabled.
@@ -380,6 +441,42 @@ TEST_F(PdfViewWebPluginTest, PaintSnapshots) {
     TestPaintSnapshots(params.device_scale, /*use_zoom_for_dsf=*/false,
                        params.window_rect, params.paint_rect);
   }
+}
+
+TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFEnabled) {
+  // Test when using zoom for DSF is enabled.
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(true));
+  wrapper_ptr_->set_device_scale(kDeviceScale);
+  UpdatePluginGeometry(kDeviceScale, gfx::Rect(20, 20));
+
+  ui::Cursor dummy_cursor;
+  plugin_->HandleInputEvent(
+      blink::WebCoalescedInputEvent(CreateDefaultMouseDownEvent(),
+                                    ui::LatencyInfo()),
+      &dummy_cursor);
+
+  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
+  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f),
+            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
+}
+
+TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFDisabled) {
+  // Test when using zoom for DSF is disabled.
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(false));
+  wrapper_ptr_->set_device_scale(kDeviceScale);
+  UpdatePluginGeometry(kDeviceScale, gfx::Rect(20, 20));
+
+  ui::Cursor dummy_cursor;
+  plugin_->HandleInputEvent(
+      blink::WebCoalescedInputEvent(CreateDefaultMouseDownEvent(),
+                                    ui::LatencyInfo()),
+      &dummy_cursor);
+
+  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
+  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f),
+            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
 }
 
 TEST_F(PdfViewWebPluginTest, ChangeTextSelection) {

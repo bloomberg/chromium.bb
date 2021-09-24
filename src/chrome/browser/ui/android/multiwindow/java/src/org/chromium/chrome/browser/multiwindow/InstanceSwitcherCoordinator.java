@@ -160,7 +160,7 @@ public class InstanceSwitcherCoordinator {
                         break;
                     case ModalDialogProperties.ButtonType.NEGATIVE:
                         assert mIsShowingConfirmationMessage;
-                        dismissDialog(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                        hideConfirmationMessage();
                         break;
                     default:
                 }

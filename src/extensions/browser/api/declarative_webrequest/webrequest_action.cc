@@ -67,7 +67,7 @@ void ParseResponseCookieImpl(const base::DictionaryValue* dict,
                              helpers::ResponseCookie* cookie) {
   std::string string_tmp;
   int int_tmp = 0;
-  bool bool_tmp = false;
+  absl::optional<bool> bool_tmp;
   if (dict->GetString(keys::kNameKey, &string_tmp))
     cookie->name = string_tmp;
   if (dict->GetString(keys::kValueKey, &string_tmp))
@@ -80,10 +80,12 @@ void ParseResponseCookieImpl(const base::DictionaryValue* dict,
     cookie->domain = string_tmp;
   if (dict->GetString(keys::kPathKey, &string_tmp))
     cookie->path = string_tmp;
-  if (dict->GetBoolean(keys::kSecureKey, &bool_tmp))
-    cookie->secure = bool_tmp;
-  if (dict->GetBoolean(keys::kHttpOnlyKey, &bool_tmp))
-    cookie->http_only = bool_tmp;
+  bool_tmp = dict->FindBoolKey(keys::kSecureKey);
+  if (bool_tmp)
+    cookie->secure = *bool_tmp;
+  bool_tmp = dict->FindBoolKey(keys::kHttpOnlyKey);
+  if (bool_tmp)
+    cookie->http_only = *bool_tmp;
 }
 
 helpers::ResponseCookie ParseResponseCookie(const base::DictionaryValue* dict) {
@@ -98,13 +100,14 @@ helpers::FilterResponseCookie ParseFilterResponseCookie(
   ParseResponseCookieImpl(dict, &result);
 
   int int_tmp = 0;
-  bool bool_tmp = false;
+  absl::optional<bool> bool_tmp;
   if (dict->GetInteger(keys::kAgeUpperBoundKey, &int_tmp))
     result.age_upper_bound = int_tmp;
   if (dict->GetInteger(keys::kAgeLowerBoundKey, &int_tmp))
     result.age_lower_bound = int_tmp;
-  if (dict->GetBoolean(keys::kSessionCookieKey, &bool_tmp))
-    result.session_cookie = bool_tmp;
+  bool_tmp = dict->FindBoolKey(keys::kSessionCookieKey);
+  if (bool_tmp)
+    result.session_cookie = *bool_tmp;
   return result;
 }
 
@@ -304,13 +307,14 @@ scoped_refptr<const WebRequestAction> CreateRequestCookieAction(
 
   // Get new value.
   if (modification.type == helpers::ADD) {
-    const base::DictionaryValue* value = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
-    modification.modification = ParseRequestCookie(value);
+    const base::DictionaryValue* dict_value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &dict_value));
+    modification.modification = ParseRequestCookie(dict_value);
   } else if (modification.type == helpers::EDIT) {
-    const base::DictionaryValue* value = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
-    modification.modification = ParseRequestCookie(value);
+    const base::DictionaryValue* dict_value = NULL;
+    INPUT_FORMAT_VALIDATE(
+        dict->GetDictionary(keys::kModificationKey, &dict_value));
+    modification.modification = ParseRequestCookie(dict_value);
   }
 
   return base::MakeRefCounted<WebRequestRequestCookieAction>(
@@ -349,13 +353,14 @@ scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
 
   // Get new value.
   if (modification.type == helpers::ADD) {
-    const base::DictionaryValue* value = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
-    modification.modification = ParseResponseCookie(value);
+    const base::DictionaryValue* dict_value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &dict_value));
+    modification.modification = ParseResponseCookie(dict_value);
   } else if (modification.type == helpers::EDIT) {
-    const base::DictionaryValue* value = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
-    modification.modification = ParseResponseCookie(value);
+    const base::DictionaryValue* dict_value = NULL;
+    INPUT_FORMAT_VALIDATE(
+        dict->GetDictionary(keys::kModificationKey, &dict_value));
+    modification.modification = ParseResponseCookie(dict_value);
   }
 
   return base::MakeRefCounted<WebRequestResponseCookieAction>(

@@ -9,7 +9,7 @@ import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SettingsCookie
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {flushTasks, isChildVisible, isVisible} from '../test_util.m.js';
+import {flushTasks, isChildVisible, isVisible} from '../test_util.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -29,14 +29,13 @@ suite('CrSettingsCookiesPageTest', function() {
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
-      enableContentSettingsRedesign: false,
-      privacySandboxSettingsEnabled: false,
+      consolidatedSiteStorageControlsEnabled: false,
     });
   });
 
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     document.body.innerHTML = '';
@@ -58,11 +57,12 @@ suite('CrSettingsCookiesPageTest', function() {
 
   teardown(function() {
     page.remove();
+    Router.getInstance().resetRouteForTesting();
   });
 
   test('ElementVisibility', async function() {
     await flushTasks();
-    assertFalse(isChildVisible(page, '#exceptionHeader'));
+    assertTrue(isChildVisible(page, '#exceptionHeader'));
     assertTrue(isChildVisible(page, '#clearOnExit'));
     assertTrue(isChildVisible(page, '#doNotTrack'));
     assertTrue(isChildVisible(page, '#networkPrediction'));
@@ -74,12 +74,6 @@ suite('CrSettingsCookiesPageTest', function() {
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.NETWORK_PREDICTION, result);
-  });
-
-  test('CookiesSiteDataSubpageRoute', function() {
-    page.shadowRoot.querySelector('#site-data-trigger').click();
-    assertEquals(
-        Router.getInstance().getCurrentRoute(), routes.SITE_SETTINGS_SITE_DATA);
   });
 
   test('CookiesRadioClicksRecorded', async function() {
@@ -203,90 +197,6 @@ suite('CrSettingsCookiesPageTest', function() {
         chrome.settingsPrivate.ControlledBy.DEVICE_POLICY);
   });
 
-  test('NoPrivacySandboxToast', async function() {
-    // Check that the privacy sandbox toast is not shown while the feature is
-    // disabled.
-    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
-    page.shadowRoot.querySelector('#blockAll').click();
-
-    await flushTasks();
-    assertFalse(page.shadowRoot.querySelector('#toast').open);
-
-    // Reset the primary preference as the previous click will have changed it.
-    page.set('prefs.generated.cookie_primary_setting.value', 0);
-    page.shadowRoot.querySelector('#blockThirdParty').click();
-
-    await flushTasks();
-    assertFalse(page.shadowRoot.querySelector('#toast').open);
-  });
-});
-
-suite('ContentSettingsRedesign', function() {
-  /** @type {!SettingsCookiesPageElement} */
-  let page;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      enableContentSettingsRedesign: true,
-    });
-  });
-
-  setup(function() {
-    document.body.innerHTML = '';
-    page = /** @type {!SettingsCookiesPageElement} */ (
-        document.createElement('settings-cookies-page'));
-    page.prefs = {
-      generated: {
-        cookie_session_only: {value: false},
-        cookie_primary_setting:
-            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
-      },
-    };
-    document.body.appendChild(page);
-  });
-
-  test('HeaderVisibility', async function() {
-    assertTrue(isChildVisible(page, '#exceptionHeader'));
-  });
-});
-
-suite('PrivacySandboxEnabled', function() {
-  /** @type {!SettingsCookiesPageElement} */
-  let page;
-
-  /** @type {!TestMetricsBrowserProxy} */
-  let testMetricsBrowserProxy;
-
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySandboxSettingsEnabled: true,
-    });
-  });
-
-  setup(function() {
-    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
-    document.body.innerHTML = '';
-    page = /** @type {!SettingsCookiesPageElement} */ (
-        document.createElement('settings-cookies-page'));
-    page.prefs = {
-      generated: {
-        cookie_session_only: {value: false},
-        cookie_primary_setting:
-            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
-      },
-      privacy_sandbox: {
-        apis_enabled: {value: true},
-      }
-    };
-    document.body.appendChild(page);
-    return flushTasks();
-  });
-
-  teardown(function() {
-    Router.getInstance().resetRouteForTesting();
-  });
-
   test('privacySandboxToast', async function() {
     assertFalse(page.shadowRoot.querySelector('#toast').open);
 
@@ -344,5 +254,67 @@ suite('PrivacySandboxEnabled', function() {
     Router.getInstance().navigateTo(routes.COOKIES);
     await flushTasks();
     assertFalse(page.shadowRoot.querySelector('#toast').open);
+  });
+
+  test('AllSiteDataLink_consolidatedControlsDisabled', function() {
+    const siteDataLinkRow = page.shadowRoot.querySelector('#site-data-trigger');
+    assertEquals(siteDataLinkRow.label, page.i18n('siteSettingsCookieLink'));
+
+    siteDataLinkRow.click();
+    assertEquals(
+        Router.getInstance().getCurrentRoute(), routes.SITE_SETTINGS_SITE_DATA);
+  });
+});
+
+suite('CrSettingsCookiesPageTest_consolidatedControlsEnabled', function() {
+  /** @type {!TestSiteSettingsPrefsBrowserProxy} */
+  let siteSettingsBrowserProxy;
+
+  /** @type {!TestMetricsBrowserProxy} */
+  let testMetricsBrowserProxy;
+
+  /** @type {!SettingsCookiesPageElement} */
+  let page;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      consolidatedSiteStorageControlsEnabled: true,
+    });
+  });
+
+  setup(function() {
+    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
+    siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsCookiesPageElement} */ (
+        document.createElement('settings-cookies-page'));
+    page.prefs = {
+      generated: {
+        cookie_session_only: {value: false},
+        cookie_primary_setting:
+            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
+      },
+      privacy_sandbox: {
+        apis_enabled: {value: true},
+      }
+    };
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  test('AllSiteDataLink_consolidatedControlsEnabled', function() {
+    const siteDataLinkRow = page.shadowRoot.querySelector('#site-data-trigger');
+    assertEquals(siteDataLinkRow.label, page.i18n('cookiePageAllSitesLink'));
+
+    siteDataLinkRow.click();
+    assertEquals(
+        Router.getInstance().getCurrentRoute(), routes.SITE_SETTINGS_ALL);
   });
 });

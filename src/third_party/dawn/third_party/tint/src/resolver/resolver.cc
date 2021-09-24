@@ -1868,10 +1868,10 @@ bool Resolver::Function(ast::Function* func) {
       }
 
       constexpr const char* kErrBadType =
-          "workgroup_size parameter must be either literal or module-scope "
+          "workgroup_size argument must be either literal or module-scope "
           "constant of type i32 or u32";
       constexpr const char* kErrInconsistentType =
-          "workgroup_size parameters must be of the same type, either i32 "
+          "workgroup_size arguments must be of the same type, either i32 "
           "or u32";
 
       auto* ty = TypeOf(expr);
@@ -1910,6 +1910,12 @@ bool Resolver::Function(ast::Function* func) {
           info->workgroup_size[i].value = 0;
           continue;
         }
+      } else if (!expr->Is<ast::ScalarConstructorExpression>()) {
+        AddError(
+            "workgroup_size argument must be either a literal or a "
+            "module-scope constant",
+            values[i]->source());
+        return false;
       }
 
       auto val = ConstantValueOf(expr);
@@ -1920,7 +1926,7 @@ bool Resolver::Function(ast::Function* func) {
       }
       // Validate and set the default value for this dimension.
       if (is_i32 ? val.Elements()[0].i32 < 1 : val.Elements()[0].u32 < 1) {
-        AddError("workgroup_size parameter must be at least 1",
+        AddError("workgroup_size argument must be at least 1",
                  values[i]->source());
         return false;
       }
@@ -3435,8 +3441,11 @@ bool Resolver::VariableDeclStatement(const ast::VariableDeclStatement* stmt) {
   }
 
   for (auto* deco : var->decorations()) {
-    // TODO(bclayton): Validate decorations
     Mark(deco);
+    if (!deco->Is<ast::InternalDecoration>()) {
+      AddError("decorations are not valid on local variables", deco->source());
+      return false;
+    }
   }
 
   variable_stack_.set(var->symbol(), info);
@@ -3869,9 +3878,66 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
 
   uint64_t stride = explicit_stride ? explicit_stride : implicit_stride;
 
-  // WebGPU requires runtime arrays have at least one element, but the AST
-  // records an element count of 0 for it.
-  auto size = std::max<uint32_t>(arr->size(), 1) * stride;
+  // Evaluate the constant array size expression.
+  // sem::Array uses a size of 0 for a runtime-sized array.
+  uint32_t count = 0;
+  if (auto* count_expr = arr->Size()) {
+    Mark(count_expr);
+    if (!Expression(count_expr)) {
+      return nullptr;
+    }
+
+    auto size_source = count_expr->source();
+
+    auto* ty = TypeOf(count_expr)->UnwrapRef();
+    if (!ty->is_integer_scalar()) {
+      AddError("array size must be integer scalar", size_source);
+      return nullptr;
+    }
+
+    if (auto* ident = count_expr->As<ast::IdentifierExpression>()) {
+      // Make sure the identifier is a non-overridable module-scope constant.
+      VariableInfo* var = nullptr;
+      bool is_global = false;
+      if (!variable_stack_.get(ident->symbol(), &var, &is_global) ||
+          !is_global || !var->declaration->is_const()) {
+        AddError("array size identifier must be a module-scope constant",
+                 size_source);
+        return nullptr;
+      }
+      if (ast::HasDecoration<ast::OverrideDecoration>(
+              var->declaration->decorations())) {
+        AddError("array size expression must not be pipeline-overridable",
+                 size_source);
+        return nullptr;
+      }
+
+      count_expr = var->declaration->constructor();
+    } else if (!count_expr->Is<ast::ScalarConstructorExpression>()) {
+      AddError(
+          "array size expression must be either a literal or a module-scope "
+          "constant",
+          size_source);
+      return nullptr;
+    }
+
+    auto count_val = ConstantValueOf(count_expr);
+    if (!count_val) {
+      TINT_ICE(Resolver, diagnostics_)
+          << "could not resolve array size expression";
+      return nullptr;
+    }
+
+    if (ty->is_signed_integer_scalar() ? count_val.Elements()[0].i32 < 1
+                                       : count_val.Elements()[0].u32 < 1u) {
+      AddError("array size must be at least 1", size_source);
+      return nullptr;
+    }
+
+    count = count_val.Elements()[0].u32;
+  }
+
+  auto size = std::max<uint64_t>(count, 1) * stride;
   if (size > std::numeric_limits<uint32_t>::max()) {
     std::stringstream msg;
     msg << "array size in bytes must not exceed 0x" << std::hex
@@ -3887,7 +3953,7 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
     return nullptr;
   }
   auto* out = builder_->create<sem::Array>(
-      elem_type, arr->size(), el_align, static_cast<uint32_t>(size),
+      elem_type, count, el_align, static_cast<uint32_t>(size),
       static_cast<uint32_t>(stride), static_cast<uint32_t>(implicit_stride));
 
   if (!ValidateArray(out, source)) {

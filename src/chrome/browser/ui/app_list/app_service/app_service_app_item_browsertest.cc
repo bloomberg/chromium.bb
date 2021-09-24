@@ -17,10 +17,10 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -177,7 +177,7 @@ class AppServiceSystemWebAppItemBrowserTest
 IN_PROC_BROWSER_TEST_P(AppServiceSystemWebAppItemBrowserTest, Activate) {
   Profile* const profile = browser()->profile();
   auto& system_web_app_manager =
-      web_app::WebAppProvider::Get(profile)->system_web_app_manager();
+      web_app::WebAppProvider::GetForTest(profile)->system_web_app_manager();
   system_web_app_manager.InstallSystemAppsForTesting();
   const web_app::AppId app_id = web_app::kHelpAppId;
 

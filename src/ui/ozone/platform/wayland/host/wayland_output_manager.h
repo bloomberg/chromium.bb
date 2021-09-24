@@ -8,8 +8,8 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 #include <memory>
-#include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
@@ -34,6 +34,8 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   void AddWaylandOutput(const uint32_t output_id, wl_output* output);
   void RemoveWaylandOutput(const uint32_t output_id);
 
+  void InitializeAllXdgOutputs();
+
   // Creates a platform screen.
   std::unique_ptr<WaylandScreen> CreateWaylandScreen();
 
@@ -52,9 +54,7 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
                              int32_t scale_factor,
                              int32_t transform) override;
 
-  using OutputList = std::vector<std::unique_ptr<WaylandOutput>>;
-
-  OutputList::const_iterator GetOutputItById(uint32_t id) const;
+  using OutputList = base::flat_map<uint32_t, std::unique_ptr<WaylandOutput>>;
 
   OutputList output_list_;
 

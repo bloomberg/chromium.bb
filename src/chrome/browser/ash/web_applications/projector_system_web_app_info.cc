@@ -16,7 +16,7 @@ ProjectorSystemWebAppDelegate::ProjectorSystemWebAppDelegate(Profile* profile)
     : web_app::SystemWebAppDelegate(
           web_app::SystemAppType::PROJECTOR,
           "Projector",
-          GURL(chromeos::kChromeUITrustedProjectorPlayerUrl),
+          GURL(chromeos::kChromeUITrustedProjectorAppUrl),
           profile) {}
 
 ProjectorSystemWebAppDelegate::~ProjectorSystemWebAppDelegate() = default;
@@ -24,7 +24,7 @@ ProjectorSystemWebAppDelegate::~ProjectorSystemWebAppDelegate() = default;
 std::unique_ptr<WebApplicationInfo>
 ProjectorSystemWebAppDelegate::GetWebAppInfo() const {
   auto info = std::make_unique<WebApplicationInfo>();
-  info->start_url = GURL(chromeos::kChromeUITrustedProjectorPlayerUrl);
+  info->start_url = GURL(chromeos::kChromeUITrustedProjectorAppUrl);
   info->scope = GURL(chromeos::kChromeUITrustedProjectorAppUrl);
 
   info->title = l10n_util::GetStringUTF16(IDS_PROJECTOR_APP_NAME);
@@ -35,7 +35,7 @@ ProjectorSystemWebAppDelegate::GetWebAppInfo() const {
   // TODO(b/195127670): Figure out the theme color.
   info->theme_color = SK_ColorBLACK;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->open_as_window = true;
+  info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
 
   // TODO(b/195127670): Add info.url_handlers for https://projector.apps.chrome
   // domain. Requires web-app-origin-association file at the new domain to prove

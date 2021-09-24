@@ -754,8 +754,8 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 			log.Fatalf("Entry %q not found in OS mapping.", os)
 		}
 		if os == "Win10" && b.parts["model"] == "Golo" {
-			// ChOps-owned machines have Windows 10 21h1.
-			d["os"] = "Windows-10-19043"
+			// ChOps-owned machines have Windows 10 v1709.
+			d["os"] = "Windows-10-16299"
 		}
 		if os == "Mac10.14" && b.parts["model"] == "VMware7.1" {
 			// ChOps VMs are at a newer version of MacOS.
@@ -790,7 +790,6 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				"GalaxyS9":        {"starlte", "QP1A.190711.020"},     // This is Android10.
 				"GalaxyS20":       {"exynos990", "QP1A.190711.020"},
 				"Nexus5":          {"hammerhead", "M4B30Z_3437181"},
-				"Nexus5x":         {"bullhead", "OPR6.170623.023"},
 				"Nexus7":          {"grouper", "LMY47V_1836172"}, // 2012 Nexus 7
 				"P30":             {"HWELE", "HUAWEIELE-L29"},
 				"Pixel2XL":        {"taimen", "PPR1.180610.009"},
@@ -875,7 +874,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 					"IntelIris655":  "8086:3ea5-26.20.100.7463",
 					"RadeonHD7770":  "1002:683d-26.20.13031.18002",
 					"RadeonR9M470X": "1002:6646-26.20.13031.18002",
-					"QuadroP400":    "10de:1cb3-30.0.14.7168",
+					"QuadroP400":    "10de:1cb3-25.21.14.1678",
 				}[b.parts["cpu_or_gpu_value"]]
 				if !ok {
 					log.Fatalf("Entry %q not found in Win GPU mapping.", b.parts["cpu_or_gpu_value"])
@@ -1024,7 +1023,6 @@ func (b *jobBuilder) updateGoDeps() {
 			"--patch_issue", specs.PLACEHOLDER_ISSUE,
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
-			"--alsologtostderr",
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
@@ -1066,7 +1064,6 @@ func (b *jobBuilder) createDockerImage(wasm bool) string {
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
 			"--swarm_out_dir", specs.PLACEHOLDER_ISOLATED_OUTDIR,
-			"--alsologtostderr",
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		// TODO(borenet): Does this task need go/go/bin in PATH?
@@ -1099,7 +1096,6 @@ func (b *jobBuilder) createPushAppsFromSkiaDockerImage() {
 			"--patch_issue", specs.PLACEHOLDER_ISSUE,
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
-			"--alsologtostderr",
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.dep(b.createDockerImage(false))
@@ -1132,7 +1128,6 @@ func (b *jobBuilder) createPushAppsFromWASMDockerImage() {
 			"--patch_issue", specs.PLACEHOLDER_ISSUE,
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
-			"--alsologtostderr",
 		)
 		b.dep(b.buildTaskDrivers("linux", "amd64"))
 		b.dep(b.createDockerImage(true))
@@ -1284,7 +1279,6 @@ func (b *jobBuilder) recreateSKPs() {
 		"--patch_ref", specs.PLACEHOLDER_PATCH_REF,
 		"--git_cache", "cache/git",
 		"--checkout_root", "cache/work",
-		"--alsologtostderr",
 	}
 	if b.matchExtraConfig("DryRun") {
 		cmd = append(cmd, "--dry_run")
@@ -1334,7 +1328,7 @@ func (b *jobBuilder) checkGnToBp() {
 			"--project_id", "skia-swarming-bots",
 			"--task_id", specs.PLACEHOLDER_TASK_ID,
 			"--task_name", b.Name,
-			"--alsologtostderr")
+		)
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
 		b.usesPython()
 		b.serviceAccount(b.cfg.ServiceAccountHousekeeper)
@@ -1370,7 +1364,7 @@ func (b *jobBuilder) g3FrameworkCanary() {
 			"--patch_issue", specs.PLACEHOLDER_ISSUE,
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
-			"--alsologtostderr")
+		)
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
 		b.cipd(CIPD_PKG_LUCI_AUTH)
 		b.serviceAccount("skia-g3-framework-compile@skia-swarming-bots.iam.gserviceaccount.com")
@@ -1669,7 +1663,7 @@ func (b *jobBuilder) canary(rollerName string) {
 			"--patch_issue", specs.PLACEHOLDER_ISSUE,
 			"--patch_set", specs.PLACEHOLDER_PATCHSET,
 			"--patch_server", specs.PLACEHOLDER_CODEREVIEW_SERVER,
-			"--alsologtostderr")
+		)
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
 		b.cipd(CIPD_PKG_LUCI_AUTH)
 		b.serviceAccount(b.cfg.ServiceAccountCanary)
@@ -1714,7 +1708,6 @@ func (b *jobBuilder) puppeteer() {
 				"--cpu_or_gpu_trace", b.parts["cpu_or_gpu"],
 				"--cpu_or_gpu_value_trace", b.parts["cpu_or_gpu_value"],
 				"--webgl_version", webglversion, // ignore when running with cpu backend
-				"--alsologtostderr",
 			)
 			// This CIPD package was made by hand with the following invocation:
 			//   cipd create -name skia/internal/lotties_with_assets -in ./lotties/ -tag version:0
@@ -1744,7 +1737,6 @@ func (b *jobBuilder) puppeteer() {
 				"--cpu_or_gpu_trace", b.parts["cpu_or_gpu"],
 				"--cpu_or_gpu_value_trace", b.parts["cpu_or_gpu_value"],
 				"--webgl_version", webglversion,
-				"--alsologtostderr",
 			)
 			b.asset("skp")
 		} else if b.extraConfig("CanvasPerf") { // refers to the canvas_perf.js test suite
@@ -1763,7 +1755,6 @@ func (b *jobBuilder) puppeteer() {
 				"--cpu_or_gpu_trace", b.parts["cpu_or_gpu"],
 				"--cpu_or_gpu_value_trace", b.parts["cpu_or_gpu_value"],
 				"--webgl_version", webglversion,
-				"--alsologtostderr",
 			)
 			b.asset("skp")
 		}
@@ -1942,7 +1933,6 @@ func (b *jobBuilder) compileWasmGMTests(compileName string) {
 			"--out_path", "./wasm_out",
 			"--skia_path", "./skia",
 			"--work_path", "./cache/docker/wasm_gm",
-			"--alsologtostderr",
 		)
 	})
 }
@@ -1990,7 +1980,6 @@ func (b *jobBuilder) runWasmGMTests() {
 			"--gold_key", "cpu_or_gpu_value:QuadroP400",
 			"--gold_key", "model:Golo",
 			"--gold_key", "os:Ubuntu18",
-			"--alsologtostderr",
 		)
 	})
 }

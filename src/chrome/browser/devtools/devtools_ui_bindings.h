@@ -91,10 +91,14 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
       base::OnceCallback<void(base::Value)> completion_callback =
           base::OnceCallback<void(base::Value)>());
   void AttachTo(const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+  void AttachViaBrowserTarget(
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
 
  private:
+  using DevToolsUIBindingsList = std::vector<DevToolsUIBindings*>;
+
   void HandleMessageFromDevToolsFrontend(base::Value);
 
   // content::DevToolsAgentHostClient implementation.
@@ -231,6 +235,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   // Extensions support.
   void AddDevToolsExtensionsToClient();
 
+  static DevToolsUIBindingsList& GetDevToolsUIBindings();
+
   class FrontendWebContentsObserver;
   std::unique_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
@@ -263,6 +269,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   using ExtensionsAPIs = std::map<std::string, std::string>;
   ExtensionsAPIs extensions_api_;
+  std::string initial_target_id_;
 
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_{this};
 

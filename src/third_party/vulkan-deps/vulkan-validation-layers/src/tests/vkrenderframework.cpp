@@ -40,9 +40,12 @@ typename C::iterator RemoveIf(C &container, F &&fn) {
     return container.erase(std::remove_if(container.begin(), container.end(), std::forward<F>(fn)), container.end());
 }
 
-ErrorMonitor::ErrorMonitor() {
+ErrorMonitor::ErrorMonitor(Behavior behavior) : behavior_(behavior) {
     test_platform_thread_create_mutex(&mutex_);
     MonitorReset();
+    if (behavior_ == Behavior::DefaultSuccess) {
+        ExpectSuccess(kErrorBit);
+    }
 }
 
 ErrorMonitor::~ErrorMonitor() NOEXCEPT { test_platform_thread_delete_mutex(&mutex_); }
@@ -67,6 +70,10 @@ void ErrorMonitor::Reset() {
 void ErrorMonitor::SetDesiredFailureMsg(const VkFlags msgFlags, const string msg) { SetDesiredFailureMsg(msgFlags, msg.c_str()); }
 
 void ErrorMonitor::SetDesiredFailureMsg(const VkFlags msgFlags, const char *const msgString) {
+    if (NeedCheckSuccess()) {
+        VerifyNotFound();
+    }
+
     test_platform_thread_lock_mutex(&mutex_);
     desired_message_strings_.insert(msgString);
     message_flags_ |= msgFlags;
@@ -80,6 +87,9 @@ void ErrorMonitor::SetAllowedFailureMsg(const char *const msg) {
 }
 
 void ErrorMonitor::SetUnexpectedError(const char *const msg) {
+    if (NeedCheckSuccess()) {
+        VerifyNotFound();
+    }
     test_platform_thread_lock_mutex(&mutex_);
     ignore_message_strings_.emplace_back(msg);
     test_platform_thread_unlock_mutex(&mutex_);
@@ -197,6 +207,10 @@ void ErrorMonitor::VerifyFound() {
     }
     MonitorReset();
     test_platform_thread_unlock_mutex(&mutex_);
+
+    if (behavior_ == Behavior::DefaultSuccess) {
+        ExpectSuccess();
+    }
 }
 
 void ErrorMonitor::VerifyNotFound() {
@@ -1224,8 +1238,7 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, const VkFormat format) {
     rpci.pAttachments = &attach_desc;
     rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-    device = dev->device();
-    vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+    init(*dev, rpci);
 }
 
 VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthStencil) {
@@ -1253,12 +1266,9 @@ VkRenderpassObj::VkRenderpassObj(VkDeviceObj *dev, VkFormat format, bool depthSt
         rpci.pAttachments = &attach_desc;
         rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
-        device = dev->device();
-        vk::CreateRenderPass(device, &rpci, NULL, &m_renderpass);
+        init(*dev, rpci);
     }
 }
-
-VkRenderpassObj::~VkRenderpassObj() NOEXCEPT { vk::DestroyRenderPass(device, m_renderpass, NULL); }
 
 VkImageObj::VkImageObj(VkDeviceObj *dev) {
     m_device = dev;
@@ -1577,6 +1587,20 @@ void VkImageObj::init(const VkImageCreateInfo *create_info) {
     SetLayout(image_aspect, VK_IMAGE_LAYOUT_GENERAL);
 }
 
+bool VkImageObj::IsCompatibleCheck(const VkImageCreateInfo &create_info) {
+    VkFormatProperties image_fmt;
+    vk::GetPhysicalDeviceFormatProperties(m_device->phy().handle(), create_info.format, &image_fmt);
+
+    switch (create_info.tiling) {
+        case VK_IMAGE_TILING_OPTIMAL:
+            return IsCompatible(create_info.usage, image_fmt.optimalTilingFeatures);
+        case VK_IMAGE_TILING_LINEAR:
+            return IsCompatible(create_info.usage, image_fmt.linearTilingFeatures);
+        default:
+            return true;
+    }
+}
+
 VkResult VkImageObj::CopyImage(VkImageObj &src_image) {
     VkImageLayout src_image_layout, dest_image_layout;
 
@@ -1822,14 +1846,14 @@ VkShaderObj::VkShaderObj(VkDeviceObj &device, VkShaderStageFlagBits stage, char 
 }
 
 VkShaderObj::VkShaderObj(VkDeviceObj *device, const char *shader_code, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                         char const *name, bool debug, const VkSpecializationInfo *specInfo, uint32_t spirv_minor_version)
+                         char const *name, bool debug, const VkSpecializationInfo *specInfo, const spv_target_env env)
     : VkShaderObj(*device, stage, name, specInfo) {
-    InitFromGLSL(*framework, shader_code, debug, spirv_minor_version);
+    InitFromGLSL(*framework, shader_code, debug, env);
 }
 
-bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug, uint32_t spirv_minor_version) {
+bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
     std::vector<unsigned int> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, spirv_minor_version);
+    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1844,10 +1868,9 @@ bool VkShaderObj::InitFromGLSL(VkRenderFramework &framework, const char *shader_
 // Because shaders are currently validated at pipeline creation time, there are test cases that might fail shader module creation
 // due to supplying an invalid/unknown SPIR-V capability/operation. This is called after VkShaderObj creation when tests are found
 // to crash on a CI device
-VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug,
-                                      uint32_t spirv_minor_version) {
+VkResult VkShaderObj::InitFromGLSLTry(VkRenderFramework &framework, const char *shader_code, bool debug, const spv_target_env env) {
     std::vector<unsigned int> spv;
-    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, spirv_minor_version);
+    framework.GLSLtoSPV(&m_device.props.limits, m_stage_info.stage, shader_code, spv, debug, env);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1879,9 +1902,9 @@ bool VkShaderObj::InitFromASM(VkRenderFramework &framework, const std::string &s
     return VK_NULL_HANDLE != handle();
 }
 
-VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source) {
+VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::string &spv_source, const spv_target_env spv_env) {
     vector<unsigned int> spv;
-    framework.ASMtoSPV(SPV_ENV_VULKAN_1_0, 0, spv_source.data(), spv);
+    framework.ASMtoSPV(spv_env, 0, spv_source.data(), spv);
 
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1891,6 +1914,29 @@ VkResult VkShaderObj::InitFromASMTry(VkRenderFramework &framework, const std::st
     const auto result = init_try(m_device, moduleCreateInfo);
     m_stage_info.module = handle();
     return result;
+}
+
+// static
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromGLSL(VkDeviceObj &dev, VkRenderFramework &framework,
+                                                         VkShaderStageFlagBits stage, const std::string &code,
+                                                         const char *entry_point, const VkSpecializationInfo *spec_info,
+                                                         const spv_target_env spv_env, bool debug) {
+    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
+    if (VK_SUCCESS == shader->InitFromGLSLTry(framework, code.c_str(), debug, spv_env)) {
+        return shader;
+    }
+    return {};
+}
+
+// static
+std::unique_ptr<VkShaderObj> VkShaderObj::CreateFromASM(VkDeviceObj &dev, VkRenderFramework &framework, VkShaderStageFlagBits stage,
+                                                        const std::string &code, const char *entry_point,
+                                                        const VkSpecializationInfo *spec_info, const spv_target_env spv_env) {
+    auto shader = layer_data::make_unique<VkShaderObj>(dev, stage, entry_point, spec_info);
+    if (VK_SUCCESS == shader->InitFromASMTry(framework, code.c_str(), spv_env)) {
+        return shader;
+    }
+    return {};
 }
 
 VkPipelineLayoutObj::VkPipelineLayoutObj(VkDeviceObj *device, const vector<const VkDescriptorSetLayoutObj *> &descriptor_layouts,

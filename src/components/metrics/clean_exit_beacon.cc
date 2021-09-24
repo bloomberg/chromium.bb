@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -43,26 +44,6 @@ using ::variations::prefs::kVariationsCrashStreak;
 // Chrome is exiting cleanly and then CHECKing that is has shutdown cleanly.
 // This may be modified by SkipCleanShutdownStepsForTesting().
 bool g_skip_clean_shutdown_steps = false;
-
-// Writes |exited_cleanly| and the crash streak to the file located at
-// |beacon_file_path|.
-void WriteVariationsSafeModeFile(const base::FilePath& beacon_file_path,
-                                 bool exited_cleanly,
-                                 PrefService* local_state) {
-  DCHECK_EQ(base::FieldTrialList::FindFullName(kExtendedSafeModeTrial),
-            kSignalAndWriteViaFileUtilGroup);
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetBoolKey(prefs::kStabilityExitedCleanly, exited_cleanly);
-  dict.SetIntKey(kVariationsCrashStreak,
-                 local_state->GetInteger(kVariationsCrashStreak));
-  std::string json_string;
-  JSONStringValueSerializer serializer(&json_string);
-  bool success = serializer.Serialize(dict);
-  DCHECK(success);
-  int data_size = static_cast<int>(json_string.size());
-  DCHECK_NE(data_size, 0);
-  base::WriteFile(beacon_file_path, json_string.data(), data_size);
-}
 
 // Increments kVariationsCrashStreak if |did_previous_session_exit_cleanly| is
 // false. Also, emits the crash streak to a histogram.
@@ -133,6 +114,7 @@ bool DidPreviousSessionExitCleanly(base::Value* beacon_file_contents,
 // the file in the first session after updating. It is also possible for a user
 // to delete the file or to reset their variations state with
 // kResetVariationState.
+#if !defined(OS_ANDROID)
 std::unique_ptr<base::Value> MaybeGetFileContents(
     const base::FilePath& beacon_file_path) {
   JSONFileValueDeserializer deserializer(beacon_file_path);
@@ -153,6 +135,7 @@ std::unique_ptr<base::Value> MaybeGetFileContents(
     return beacon_file_contents;
   return nullptr;
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -169,8 +152,15 @@ CleanExitBeacon::CleanExitBeacon(const std::wstring& backup_registry_key,
   if (!user_data_dir.empty())
     beacon_file_path_ = user_data_dir.Append(variations::kVariationsFilename);
 
+#if defined(OS_ANDROID)
+  // TODO(crbug/1248239): Allow the file to be used once the Extended Variations
+  // Safe Mode experiment is enabled on Clank.
+  std::unique_ptr<base::Value> beacon_file_contents = nullptr;
+#else
   std::unique_ptr<base::Value> beacon_file_contents =
       MaybeGetFileContents(beacon_file_path_);
+#endif  // defined(OS_ANDROID)
+
   did_previous_session_exit_cleanly_ =
       DidPreviousSessionExitCleanly(beacon_file_contents.get(), local_state_);
 
@@ -280,8 +270,7 @@ void CleanExitBeacon::WriteBeaconValue(bool exited_cleanly,
     } else if (group_name == kSignalAndWriteViaFileUtilGroup) {
       SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
           "Variations.ExtendedSafeMode.WritePrefsTime");
-      WriteVariationsSafeModeFile(beacon_file_path_, exited_cleanly,
-                                  local_state_);
+      WriteVariationsSafeModeFile(exited_cleanly);
     }
   } else {
     local_state_->CommitPendingWrite();
@@ -289,8 +278,7 @@ void CleanExitBeacon::WriteBeaconValue(bool exited_cleanly,
       // Clients in this group also write to the Variations Safe Mode file. This
       // is because the file will be used in the next session, and thus, should
       // be updated whenever kStabilityExitedCleanly is.
-      WriteVariationsSafeModeFile(beacon_file_path_, exited_cleanly,
-                                  local_state_);
+      WriteVariationsSafeModeFile(exited_cleanly);
     }
   }
 
@@ -353,6 +341,25 @@ void CleanExitBeacon::ResetStabilityExitedCleanlyForTesting(
 // static
 void CleanExitBeacon::SkipCleanShutdownStepsForTesting() {
   g_skip_clean_shutdown_steps = true;
+}
+
+void CleanExitBeacon::WriteVariationsSafeModeFile(bool exited_cleanly) const {
+  DCHECK_EQ(base::FieldTrialList::FindFullName(kExtendedSafeModeTrial),
+            kSignalAndWriteViaFileUtilGroup);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey(prefs::kStabilityExitedCleanly, exited_cleanly);
+  dict.SetIntKey(kVariationsCrashStreak,
+                 local_state_->GetInteger(kVariationsCrashStreak));
+  std::string json_string;
+  JSONStringValueSerializer serializer(&json_string);
+  bool success = serializer.Serialize(dict);
+  DCHECK(success);
+  int data_size = static_cast<int>(json_string.size());
+  DCHECK_NE(data_size, 0);
+  {
+    base::ScopedAllowBlocking allow_io;
+    base::WriteFile(beacon_file_path_, json_string.data(), data_size);
+  }
 }
 
 }  // namespace metrics

@@ -56,15 +56,19 @@ class TestClusteringBackend : public ClusteringBackend {
 
   // Fetches a scored visit by an ID. `visit_id` must be valid. This is a
   // convenience method used for constructing the fake response.
-  history::ScoredAnnotatedVisit GetVisitById(int visit_id, float score = 0.5) {
+  history::ClusterVisit GetVisitById(int visit_id, float score = 0.5) {
     for (auto& visit : last_clustered_visits_) {
-      if (visit.visit_row.visit_id == visit_id)
-        return {visit, score};
+      if (visit.visit_row.visit_id == visit_id) {
+        history::ClusterVisit cluster_visit;
+        cluster_visit.annotated_visit = visit;
+        cluster_visit.score = score;
+        return cluster_visit;
+      }
     }
 
     NOTREACHED() << "TestClusteringBackend::GetVisitById "
                  << "could not find visit_id: " << visit_id;
-    return history::ScoredAnnotatedVisit();
+    return history::ClusterVisit();
   }
 
   // Should be invoked before `GetClusters()` is invoked.
@@ -227,13 +231,13 @@ TEST_F(HistoryClustersServiceTest, ClusterAndVisitSorting) {
             auto& clusters = result.clusters;
             ASSERT_EQ(clusters.size(), 2u);
 
-            auto& visits = clusters[0].scored_annotated_visits;
+            auto& visits = clusters[0].visits;
             ASSERT_EQ(visits.size(), 1u);
             EXPECT_EQ(visits[0].annotated_visit.url_row.url(),
                       "https://github.com/");
             EXPECT_FLOAT_EQ(visits[0].score, 0.1);
 
-            visits = clusters[1].scored_annotated_visits;
+            visits = clusters[1].visits;
             ASSERT_EQ(visits.size(), 2u);
             EXPECT_EQ(visits[0].annotated_visit.url_row.url(),
                       "https://google.com/");
@@ -360,7 +364,7 @@ TEST_F(HistoryClustersServiceTest, QueryClustersVariousQueries) {
 
           if (test_data[i].expect_first_cluster) {
             const auto& cluster = clusters[0];
-            const auto& visits = cluster.scored_annotated_visits;
+            const auto& visits = cluster.visits;
             ASSERT_EQ(visits.size(), 2u);
             EXPECT_EQ(visits[0].annotated_visit.url_row.url(),
                       "https://github.com/");
@@ -396,7 +400,7 @@ TEST_F(HistoryClustersServiceTest, QueryClustersVariousQueries) {
           if (test_data[i].expect_second_cluster) {
             const auto& cluster =
                 test_data[i].expect_first_cluster ? clusters[1] : clusters[0];
-            const auto& visits = cluster.scored_annotated_visits;
+            const auto& visits = cluster.visits;
             ASSERT_EQ(visits.size(), 1u);
             EXPECT_EQ(visits[0].annotated_visit.url_row.url(),
                       "https://github.com/");
@@ -524,10 +528,6 @@ TEST_F(HistoryClustersServiceTest, CompleteVisitContextAnnotationsIfReady) {
 
 TEST_F(HistoryClustersServiceTest,
        CompleteVisitContextAnnotationsIfReadyWhenFeatureDisabled) {
-  history_service_->AddPageWithDetails(GURL("https://fake.com"), u"Test 1", 1,
-                                       1, base::Time::Now(), false,
-                                       history::SOURCE_BROWSED);
-
   // When the feature is disabled, the `IncompleteVisitContextAnnotations`
   // should be removed but not added to visits.
   base::test::ScopedFeatureList feature_list;
@@ -536,6 +536,7 @@ TEST_F(HistoryClustersServiceTest,
           kMemories,
           kPersistContextAnnotationsInHistoryDb,
       });
+
   auto& incomplete_visit_context_annotations =
       history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
           0);
@@ -545,19 +546,12 @@ TEST_F(HistoryClustersServiceTest,
   history_clusters_service_->CompleteVisitContextAnnotationsIfReady(0);
   EXPECT_FALSE(
       history_clusters_service_->HasIncompleteVisitContextAnnotations(0));
-  EXPECT_TRUE(history_clusters_service_test_api_->GetVisits().empty());
 }
 
 TEST_F(HistoryClustersServiceTest,
        CompleteVisitContextAnnotationsIfReadyWhenFeatureEnabled) {
-  history_service_->AddPageWithDetails(GURL("https://fake.com"), u"Test 1", 1,
-                                       1, base::Time::Now(), false,
-                                       history::SOURCE_BROWSED);
-
   // When the feature is enabled, the `IncompleteVisitContextAnnotations`
   // should be removed and added to visits.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kMemories);
   auto& incomplete_visit_context_annotations =
       history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
           0);
@@ -567,7 +561,6 @@ TEST_F(HistoryClustersServiceTest,
   history_clusters_service_->CompleteVisitContextAnnotationsIfReady(0);
   EXPECT_FALSE(
       history_clusters_service_->HasIncompleteVisitContextAnnotations(0));
-  EXPECT_EQ(history_clusters_service_test_api_->GetVisits().size(), 1u);
 }
 
 TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
@@ -575,7 +568,7 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
 
   // Verify that initially, the test keyword doesn't match anything, but this
   // query should have kicked off a cache population request.
-  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("appl"));
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
 
   // Providing the response and running the task loop should populate the cache.
   AwaitAndVerifyTestClusteringBackendRequest();
@@ -587,18 +580,25 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
                            test_clustering_backend_->GetVisitById(1),
                            test_clustering_backend_->GetVisitById(2),
                        },
-                       {u"apples"}));
+                       {u"apples", u"oranges"}));
   test_clustering_backend_->FulfillCallback(clusters);
 
-  // Now the query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("appl"));
+  // Now the exact query should match the populated cache.
+  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
 
-  // Also verify that queries that are too short don't match clusters.
+  // Too-short queries rejected.
   EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("ap"));
 
-  // But verify that it's okay to accept a short second query word.
-  // We need this to prevent flicker as the user types in the omnibox.
-  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("appl ap"));
+  // Non-exact matches are rejected too.
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("appl"));
+
+  // Adding a second non-exact query word also should make it no longer match.
+  EXPECT_FALSE(
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples oran"));
+
+  // Multi-word queries with all exact matches should still work.
+  EXPECT_TRUE(
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples oranges"));
 
   history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
 }

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CONTENT_BROWSER_SAFE_BROWSING_METRICS_COLLECTOR_H_
 #define COMPONENTS_SAFE_BROWSING_CONTENT_BROWSER_SAFE_BROWSING_METRICS_COLLECTOR_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -69,13 +70,13 @@ class SafeBrowsingMetricsCollector : public KeyedService {
   // They are also used to construct suffixes of histograms. Please update the
   // MetricsCollectorUserState variants in the histograms.xml file if new values
   // are added.
-  enum UserState {
+  enum class UserState {
     // Standard protection is enabled.
-    STANDARD_PROTECTION = 0,
+    kStandardProtection = 0,
     // Enhanced protection is enabled.
-    ENHANCED_PROTECTION = 1,
+    kEnhancedProtection = 1,
     // Safe Browsing is managed.
-    MANAGED = 2
+    kManaged = 2
   };
 
   struct Event {

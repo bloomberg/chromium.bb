@@ -80,6 +80,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
@@ -91,6 +92,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/android/network_library.h"
+#include "net/cookies/site_for_cookies.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -405,7 +407,7 @@ gfx::ImageSkia AwContentBrowserClient::GetDefaultFavicon() {
 
 bool AwContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     content::BrowserContext* context) {
   // WebView doesn't have a per-site policy for locally stored data,
@@ -886,6 +888,21 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // require returning true below).  Adding OOPIF support for AW is tracked by
   // https://crbug.com/806404.
   return false;
+}
+
+size_t AwContentBrowserClient::GetMaxRendererProcessCountOverride() {
+  // TODO(crbug.com/806404): These options can currently can only be turned by
+  // by manually overriding command line switches because
+  // `ShouldDisableSiteIsolation` returns true. Should coordinate if/when
+  // enabling this in production.
+  if (content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
+      content::SiteIsolationPolicy::AreIsolatedOriginsEnabled() ||
+      content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled()) {
+    // Do not restrict the max renderer process count for these site isolation
+    // modes. This allows OOPIFs to happen on android webview.
+    return 0u;  // Use default.
+  }
+  return 1u;
 }
 
 bool AwContentBrowserClient::ShouldDisableSiteIsolation() {

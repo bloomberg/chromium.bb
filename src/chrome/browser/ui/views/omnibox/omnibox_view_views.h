@@ -259,7 +259,6 @@ class OmniboxViewViews : public OmniboxView,
   // views::Textfield:
   bool IsItemForCommandIdDynamic(int command_id) const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
@@ -293,7 +292,7 @@ class OmniboxViewViews : public OmniboxView,
       int* formats,
       std::set<ui::ClipboardFormatType>* format_types) override;
   ui::mojom::DragOperation OnDrop(const ui::DropTargetEvent& event) override;
-  views::View::DropCallback GetDropCallback(
+  views::View::DropCallback CreateDropCallback(
       const ui::DropTargetEvent& event) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 

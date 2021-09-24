@@ -120,16 +120,19 @@ class DwarfLineToModule: public LineInfoHandler {
   // end of the address space, we clip it. It's up to our client to
   // sort out which lines belong to which functions; we don't add them
   // to any particular function in MODULE ourselves.
-  DwarfLineToModule(Module *module, const string& compilation_dir,
-                    vector<Module::Line>* lines)
+  DwarfLineToModule(Module* module,
+                    const string& compilation_dir,
+                    vector<Module::Line>* lines,
+                    std::map<uint32_t, Module::File*>* files)
       : module_(module),
         compilation_dir_(compilation_dir),
         lines_(lines),
+        files_(files),
         highest_file_number_(-1),
         omitted_line_end_(0),
         warned_bad_file_number_(false),
         warned_bad_directory_number_(false) { }
-  
+
   ~DwarfLineToModule() { }
 
   void DefineDir(const string& name, uint32_t dir_num);
@@ -167,12 +170,12 @@ class DwarfLineToModule: public LineInfoHandler {
   DirectoryTable directories_;
 
   // A table mapping file numbers to Module::File pointers.
-  FileTable files_;
+  FileTable* files_;
 
   // The highest file number we've seen so far, or -1 if we've seen
   // none.  Used for dynamically defined file numbers.
   int32_t highest_file_number_;
-  
+
   // This is the ending address of the last line we omitted, or zero if we
   // didn't omit the previous line. It is zero before we have received any
   // AddLine calls.

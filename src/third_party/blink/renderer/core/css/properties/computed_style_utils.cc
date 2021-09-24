@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg_element_type_helpers.h"
@@ -752,34 +753,47 @@ CSSValue* ComputedStyleUtils::ComputedValueForLineHeight(
 }
 
 CSSValueID IdentifierForFamily(const AtomicString& family) {
-  if (family == font_family_names::kWebkitCursive)
+  if (family == font_family_names::kCursive)
     return CSSValueID::kCursive;
-  if (family == font_family_names::kWebkitFantasy)
+  if (family == font_family_names::kFantasy)
     return CSSValueID::kFantasy;
-  if (family == font_family_names::kWebkitMonospace)
+  if (family == font_family_names::kMonospace)
     return CSSValueID::kMonospace;
-  if (family == font_family_names::kWebkitSansSerif)
+  if (family == font_family_names::kSansSerif)
     return CSSValueID::kSansSerif;
-  if (family == font_family_names::kWebkitSerif)
+  if (family == font_family_names::kSerif)
     return CSSValueID::kSerif;
-  return CSSValueID::kInvalid;
+  if (family == font_family_names::kSystemUi)
+    return CSSValueID::kSystemUi;
+  if (RuntimeEnabledFeatures::CSSFontFamilyMathEnabled() &&
+      family == font_family_names::kMath)
+    return CSSValueID::kMath;
+  // If family does not correspond to any of the above, then it was actually
+  // converted from -webkit-body by FontBuilder, so put this value back.
+  // TODO(crbug.com/1065468): This trick does not work if
+  // FontBuilder::StandardFontFamilyName() actually returned one of the generic
+  // family above.
+  return CSSValueID::kWebkitBody;
 }
 
-CSSValue* ValueForFamily(const AtomicString& family) {
-  CSSValueID family_identifier = IdentifierForFamily(family);
-  if (IsValidCSSValueID(family_identifier))
-    return CSSIdentifierValue::Create(family_identifier);
-  return CSSFontFamilyValue::Create(family.GetString());
+CSSValue* ValueForFamily(const FontFamily& family) {
+  if (family.FamilyIsGeneric())
+    return CSSIdentifierValue::Create(IdentifierForFamily(family.FamilyName()));
+  return CSSFontFamilyValue::Create(family.FamilyName());
+}
+
+CSSValueList* ComputedStyleUtils::ValueForFontFamily(
+    const FontFamily& font_family) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FontFamily* family = &font_family; family; family = family->Next())
+    list->Append(*ValueForFamily(*family));
+  return list;
 }
 
 CSSValueList* ComputedStyleUtils::ValueForFontFamily(
     const ComputedStyle& style) {
-  const FontFamily& first_family = style.GetFontDescription().Family();
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FontFamily* family = &first_family; family;
-       family = family->Next())
-    list->Append(*ValueForFamily(family->Family()));
-  return list;
+  return ComputedStyleUtils::ValueForFontFamily(
+      style.GetFontDescription().Family());
 }
 
 CSSPrimitiveValue* ComputedStyleUtils::ValueForFontSize(
@@ -2782,6 +2796,29 @@ const CSSValue* ComputedStyleUtils::ValueForStyleAutoColor(
   }
   return ComputedStyleUtils::CurrentColorOrValidColor(
       style, color.ToStyleColor(), value_phase);
+}
+
+CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
+    const ComputedStyle& style,
+    const absl::optional<StyleIntrinsicLength>& intrinsic_length) {
+  CSSValue* length = nullptr;
+  if (intrinsic_length) {
+    length = ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        intrinsic_length->GetLength(), style);
+  }
+
+  if (RuntimeEnabledFeatures::ContainIntrinsicSizeAutoEnabled()) {
+    if (!intrinsic_length)
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    if (intrinsic_length->HasAuto())
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
+    list->Append(*length);
+    return list;
+  }
+  if (!intrinsic_length)
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  return length;
 }
 
 std::unique_ptr<CrossThreadStyleValue>

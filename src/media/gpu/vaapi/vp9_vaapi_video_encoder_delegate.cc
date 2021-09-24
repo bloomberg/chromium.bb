@@ -209,7 +209,8 @@ bool VP9VaapiVideoEncoderDelegate::Initialize(
     const VideoEncodeAccelerator::Config& config,
     const VaapiVideoEncoderDelegate::Config& ave_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP9) {
+  if (VideoCodecProfileToVideoCodec(config.output_profile) !=
+      VideoCodec::kVP9) {
     DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);
     return false;
   }
@@ -387,7 +388,7 @@ bool VP9VaapiVideoEncoderDelegate::ApplyPendingUpdateRates() {
   if (!pending_update_rates_)
     return true;
 
-  VLOGF(2) << "New bitrate: " << pending_update_rates_->first.GetSumBps()
+  VLOGF(2) << "New bitrate: " << pending_update_rates_->first.ToString()
            << ", New framerate: " << pending_update_rates_->second;
 
   current_params_.bitrate_allocation = pending_update_rates_->first;

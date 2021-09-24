@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">動画</translation>
 <translation id="3838931309141338733">バーコード スキャン</translation>
 <translation id="3892148308691398805">テキストをコピー</translation>
-<translation id="4000398125663085899">新しい画像と動画はファイルアプリのフォルダ（[マイファイル] &gt; [カメラ]）に保存されるようになりました</translation>
 <translation id="4118525110028899586">録画を一時停止</translation>
 <translation id="4121305183798804752">ドキュメントを検出しました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">ギャラリーに移動</translation>
 <translation id="520537883758714667">ドキュメント スキャンをご利用いただけるようになりました</translation>
 <translation id="5268823927180092501">すべてのカメラでドキュメント モードを有効にする</translation>
-<translation id="5422455049771430511">画像と動画の保存先が変わりました</translation>
 <translation id="5444515100983837161">ドキュメントのすべての端をフレーム内に収めてください。ドキュメントと背景を異なる色にすると、うまくスキャンできます。</translation>
 <translation id="5671277269877808209">スクエア</translation>
 <translation id="5746169159649715125">PDF に保存</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">エキスパート モード</translation>
 <translation id="5869546221129391014">グリッド</translation>
 <translation id="5975083100439434680">縮小する</translation>
-<translation id="6040143037577758943">閉じる</translation>
 <translation id="6073451960410192870">撮影を停止</translation>
 <translation id="6197807149213783179">メタデータを保存</translation>
 <translation id="6233780560267770709">3 かける 3</translation>
@@ -125,5 +122,6 @@
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="9045010116236796332">ドキュメントのすべての端をフレーム内に収めてください</translation>
 <translation id="9045155556724273246">10 秒</translation>
+<translation id="906331135292332864">画像を処理しています...</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 </translationbundle>

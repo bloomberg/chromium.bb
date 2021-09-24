@@ -98,7 +98,8 @@ bool VP8VaapiVideoEncoderDelegate::Initialize(
     const VaapiVideoEncoderDelegate::Config& ave_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP8) {
+  if (VideoCodecProfileToVideoCodec(config.output_profile) !=
+      VideoCodec::kVP8) {
     DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);
     return false;
   }
@@ -188,7 +189,7 @@ bool VP8VaapiVideoEncoderDelegate::UpdateRates(
       current_params_.framerate == framerate) {
     return true;
   }
-  VLOGF(2) << "New bitrate: " << bitrate_allocation.GetSumBps()
+  VLOGF(2) << "New bitrate: " << bitrate_allocation.ToString()
            << ", new framerate: " << framerate;
 
   current_params_.bitrate_allocation = bitrate_allocation;

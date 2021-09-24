@@ -35,6 +35,8 @@ enum class BiometricsAvailability {
 //
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.device_reauth
 enum class BiometricAuthRequester {
   // The filling surface shown on the first tap on the field after page load.
   // This surface has replaced autofilling on Android.
@@ -53,7 +55,11 @@ enum class BiometricAuthRequester {
   // The dialog displayed via the Credential Management API.
   kAccountChooserDialog = 4,
 
-  kMaxValue = kAccountChooserDialog,
+  // The list displaying all compromised passwords. Reauth is triggered before
+  // starting automated password change.
+  kPasswordCheckAutoPwdChange = 5,
+
+  kMaxValue = kPasswordCheckAutoPwdChange,
 };
 
 // The result of the biometric authentication.

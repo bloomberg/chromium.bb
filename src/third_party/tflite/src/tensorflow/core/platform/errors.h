@@ -17,11 +17,13 @@ limitations under the License.
 #define TENSORFLOW_CORE_PLATFORM_ERRORS_H_
 
 #include <sstream>
+#include <string>
+#include <utility>
 
 #include "absl/strings/str_join.h"
-#include "tensorflow/core/platform/status.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/macros.h"
+#include "tensorflow/core/platform/status.h"
 #include "tensorflow/core/platform/str_util.h"
 #include "tensorflow/core/platform/strcat.h"
 
@@ -44,7 +46,7 @@ namespace internal {
 // Eventually absl::strings will have native support for this and we will be
 // able to completely remove PrepareForStrCat().
 template <typename T>
-typename std::enable_if<!std::is_constructible<strings::AlphaNum, T>::value,
+typename std::enable_if<!std::is_convertible<T, strings::AlphaNum>::value,
                         std::string>::type
 PrepareForStrCat(const T& t) {
   std::stringstream ss;
@@ -62,9 +64,16 @@ inline const strings::AlphaNum& PrepareForStrCat(const strings::AlphaNum& a) {
 // to be several layers of additional context.
 template <typename... Args>
 void AppendToMessage(::tensorflow::Status* status, Args... args) {
+  std::vector<StackFrame> stack_trace = status->stack_trace();
+  const std::unordered_map<std::string, std::string> payloads =
+      status->GetAllPayloads();
   *status = ::tensorflow::Status(
       status->code(),
-      ::tensorflow::strings::StrCat(status->error_message(), "\n\t", args...));
+      ::tensorflow::strings::StrCat(status->error_message(), "\n\t", args...),
+      std::move(stack_trace));
+  for (const std::pair<const std::string, std::string>& element : payloads) {
+    status->SetPayload(element.first, element.second);
+  }
 }
 
 // For propagating errors when calling a function.
@@ -153,6 +162,33 @@ std::string FormatColocationNodeForError(const T& names) {
 
 inline std::string FormatFunctionForError(const std::string& name) {
   return strings::StrCat("{{function_node ", name, "}}");
+}
+
+inline Status ReplaceErrorFromNonCommunicationOps(const Status s,
+                                                  const std::string& op_name) {
+  assert(IsUnavailable(s));
+  return Status(
+      error::INTERNAL,
+      strings::StrCat(
+          s.error_message(), "\nExecuting non-communication op <", op_name,
+          "> originally returned UnavailableError, and was replaced by "
+          "InternalError to avoid invoking TF network error handling logic."));
+}
+
+template <typename T>
+std::string FormatOriginalNodeLocationForError(const T& node_names,
+                                               const T& func_names) {
+  std::vector<std::string> error_message;
+  for (int i = 0; i != node_names.size(); ++i) {
+    if (i != 0) {
+      error_message.push_back(", ");
+    }
+    if (i < func_names.size()) {
+      error_message.push_back(FormatFunctionForError(func_names[i]));
+    }
+    error_message.push_back(FormatNodeNameForError(node_names[i]));
+  }
+  return absl::StrJoin(error_message, "");
 }
 
 // The CanonicalCode() for non-errors.

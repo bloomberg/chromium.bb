@@ -46,13 +46,17 @@ constexpr char kTestSubframeReferrerUrl[] = "http://iframe.example.referrer/";
 class TestSafeBrowsingTokenFetcher : public SafeBrowsingTokenFetcher {
  public:
   TestSafeBrowsingTokenFetcher() = default;
-  ~TestSafeBrowsingTokenFetcher() override = default;
+  ~TestSafeBrowsingTokenFetcher() override {
+    // Like SafeBrowsingTokenFetchTracer, trigger the callback when destroyed.
+    RunAccessTokenCallback("");
+  }
 
   // SafeBrowsingTokenFetcher:
   void Start(Callback callback) override { callback_ = std::move(callback); }
 
   void RunAccessTokenCallback(std::string token) {
-    std::move(callback_).Run(token);
+    if (callback_)
+      std::move(callback_).Run(token);
   }
 
   MOCK_METHOD1(OnInvalidAccessToken, void(const std::string&));
@@ -601,7 +605,7 @@ TEST_F(RealTimeUrlLookupServiceTest, TestCanCheckUrl) {
       {"ftp://example.test/path", false}, {"http://localhost/path", false},
       {"http://127.0.0.1/path", false},   {"http://127.0.0.1:2222/path", false},
       {"http://192.168.1.1/path", false}, {"http://172.16.2.2/path", false},
-      {"http://10.1.1.9/path", false},    {"http://10.1.1.09/path", true},
+      {"http://10.1.1.9/path", false},    {"http://10.1.1.0xG/path", true},
       {"http://example.test/path", true}, {"http://nodothost/path", false},
       {"http://x.x/shorthost", false}};
   for (auto& can_check_url_case : can_check_url_cases) {
@@ -922,7 +926,8 @@ TEST_F(RealTimeUrlLookupServiceTest,
        TestReferrerChain_NotSanitizedIfSubresourceAllowed) {
   EnableRealTimeUrlLookup({kRealTimeUrlLookupReferrerChain}, {});
   // Subresource is allowed when enhanced protection is enabled.
-  SetSafeBrowsingState(&test_pref_service_, ENHANCED_PROTECTION);
+  SetSafeBrowsingState(&test_pref_service_,
+                       SafeBrowsingState::ENHANCED_PROTECTION);
   GURL url(kTestUrl);
   SetUpRTLookupResponse(RTLookupResponse::ThreatInfo::DANGEROUS,
                         RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING, 60,
@@ -1100,6 +1105,28 @@ TEST_F(RealTimeUrlLookupServiceTest, TestShutdown_CallbackNotPostedOnShutdown) {
                             base::SequencedTaskRunnerHandle::Get());
 
   EXPECT_CALL(request_callback, Run(_, _)).Times(1);
+  EXPECT_CALL(response_callback, Run(_, _, _)).Times(0);
+  rt_service()->Shutdown();
+
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(RealTimeUrlLookupServiceTest,
+       TestShutdown_SendRequestNotCalledOnShutdown) {
+  // Never send the request if shutdown is triggered before OnGetAccessToken().
+  EnableMbb();
+  EnableTokenFetchesInClient();
+  GURL url(kTestUrl);
+
+  testing::StrictMock<base::MockCallback<RTLookupRequestCallback>>
+      request_callback;
+  testing::StrictMock<base::MockCallback<RTLookupResponseCallback>>
+      response_callback;
+  rt_service()->StartLookup(url, request_callback.Get(),
+                            response_callback.Get(),
+                            base::SequencedTaskRunnerHandle::Get());
+
+  EXPECT_CALL(request_callback, Run(_, _)).Times(0);
   EXPECT_CALL(response_callback, Run(_, _, _)).Times(0);
   rt_service()->Shutdown();
 

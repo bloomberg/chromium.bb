@@ -91,6 +91,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -99,6 +100,7 @@
 #include "third_party/blink/public/common/context_menu_data/context_menu_params_builder.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
@@ -265,17 +267,9 @@
 
 namespace blink {
 
-static int g_frame_count = 0;
-
 namespace {
 
-HeapVector<ScriptSourceCode> CreateSourcesVector(
-    const WebScriptSource* sources_in,
-    unsigned num_sources) {
-  HeapVector<ScriptSourceCode> sources;
-  sources.Append(sources_in, num_sources);
-  return sources;
-}
+static int g_frame_count = 0;
 
 }  // namespace
 
@@ -535,13 +529,13 @@ class PaintPreviewContext : public PrintContext {
   ~PaintPreviewContext() override = default;
 
   bool Capture(cc::PaintCanvas* canvas,
-               FloatSize size,
+               const IntRect& bounds,
                bool include_linked_destinations) {
     // This code is based on ChromePrintContext::SpoolSinglePage()/SpoolPage().
     // It differs in that it:
     //   1. Uses a different set of flags for painting and the graphics context.
-    //   2. Paints a single page of |size| rather than a specific page in a
-    //      reformatted document.
+    //   2. Paints a single "page" of `bounds` size without applying print
+    //   modifications to the page.
     //   3. Does no scaling.
     if (!GetFrame()->GetDocument() ||
         !GetFrame()->GetDocument()->GetLayoutView())
@@ -550,7 +544,6 @@ class PaintPreviewContext : public PrintContext {
     if (!GetFrame()->GetDocument() ||
         !GetFrame()->GetDocument()->GetLayoutView())
       return false;
-    FloatRect bounds(0, 0, size.Width(), size.Height());
     PaintRecordBuilder builder;
     builder.Context().SetPaintPreviewTracker(canvas->GetPaintPreviewTracker());
 
@@ -566,8 +559,8 @@ class PaintPreviewContext : public PrintContext {
     if (include_linked_destinations)
       flags |= kGlobalPaintAddUrlMetadata;
 
-    frame_view->PaintContentsOutsideOfLifecycle(
-        builder.Context(), flags, CullRect(RoundedIntRect(bounds)));
+    frame_view->PaintContentsOutsideOfLifecycle(builder.Context(), flags,
+                                                CullRect(bounds));
     if (include_linked_destinations) {
       // Add anchors.
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
@@ -576,7 +569,7 @@ class PaintPreviewContext : public PrintContext {
       DrawingRecorder line_boundary_recorder(
           builder.Context(), builder,
           DisplayItem::kPrintedContentDestinationLocations);
-      OutputLinkedDestinations(builder.Context(), RoundedIntRect(bounds));
+      OutputLinkedDestinations(builder.Context(), bounds);
     }
     canvas->drawPicture(builder.EndRecording(property_tree_state.Unalias()));
     return true;
@@ -863,7 +856,7 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
 
   if (back_forward_cache_aware == BackForwardCacheAware::kPossiblyDisallow) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kIsolatedWorldScript,
+        SchedulingPolicy::Feature::kInjectedJavascript,
         {SchedulingPolicy::DisableBackForwardCache()});
   }
 
@@ -887,7 +880,7 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
 
   if (back_forward_cache_aware == BackForwardCacheAware::kPossiblyDisallow) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kIsolatedWorldScript,
+        SchedulingPolicy::Feature::kInjectedJavascript,
         {SchedulingPolicy::DisableBackForwardCache()});
   }
 
@@ -966,19 +959,6 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
       ->RunScriptAndReturnValue(GetFrame()->DomWindow());
 }
 
-void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
-    const WebScriptSource& source,
-    bool user_gesture,
-    WebScriptExecutionCallback* callback) {
-  DCHECK(GetFrame());
-
-  scoped_refptr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
-  auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
-      GetFrame()->DomWindow(), std::move(main_world),
-      CreateSourcesVector(&source, 1), user_gesture, callback);
-  executor->Run();
-}
-
 void WebLocalFrameImpl::RequestExecuteV8Function(
     v8::Local<v8::Context> context,
     v8::Local<v8::Function> function,
@@ -1004,18 +984,41 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
   CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
   CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
+  RequestExecuteScript(world_id, base::make_span(sources_in, num_sources),
+                       user_gesture, option, callback,
+                       back_forward_cache_aware);
+}
+
+void WebLocalFrameImpl::RequestExecuteScript(
+    int32_t world_id,
+    base::span<const WebScriptSource> sources,
+    bool user_gesture,
+    ScriptExecutionType execution_type,
+    WebScriptExecutionCallback* callback,
+    BackForwardCacheAware back_forward_cache_aware) {
+  DCHECK(GetFrame());
+
+  scoped_refptr<DOMWrapperWorld> world;
+  if (world_id == DOMWrapperWorld::kMainWorldId) {
+    world = &DOMWrapperWorld::MainWorld();
+  } else {
+    world =
+        DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
+  }
+
   if (back_forward_cache_aware == BackForwardCacheAware::kPossiblyDisallow) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kIsolatedWorldScript,
+        SchedulingPolicy::Feature::kInjectedJavascript,
         {SchedulingPolicy::DisableBackForwardCache()});
   }
 
-  scoped_refptr<DOMWrapperWorld> isolated_world =
-      DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
+  HeapVector<ScriptSourceCode> script_sources;
+  script_sources.Append(sources.data(),
+                        base::checked_cast<wtf_size_t>(sources.size()));
   auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
-      GetFrame()->DomWindow(), std::move(isolated_world),
-      CreateSourcesVector(sources_in, num_sources), user_gesture, callback);
-  switch (option) {
+      GetFrame()->DomWindow(), std::move(world), script_sources, user_gesture,
+      callback);
+  switch (execution_type) {
     case kAsynchronousBlockingOnload:
       executor->RunAsync(PausableScriptExecutor::kOnloadBlocking);
       break;
@@ -1762,7 +1765,6 @@ bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
                                             cc::PaintCanvas* canvas,
                                             bool include_linked_destinations,
                                             bool skip_accelerated_content) {
-  FloatSize float_bounds(bounds.width(), bounds.height());
   bool success = false;
   {
     Document::PaintPreviewScope paint_preview(
@@ -1773,7 +1775,7 @@ bool WebLocalFrameImpl::CapturePaintPreview(const gfx::Rect& bounds,
     GetFrame()->StartPaintPreview();
     PaintPreviewContext* paint_preview_context =
         MakeGarbageCollected<PaintPreviewContext>(GetFrame());
-    success = paint_preview_context->Capture(canvas, float_bounds,
+    success = paint_preview_context->Capture(canvas, IntRect(bounds),
                                              include_linked_destinations);
     GetFrame()->EndPaintPreview();
   }
@@ -1823,6 +1825,7 @@ void WebLocalFrameImpl::PrintPagesForTesting(
 }
 
 gfx::Rect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
+  DCHECK(GetFrame());  // Not valid after the Frame is detached.
   GetFrame()->View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kSelection);
   return HasSelection() ? PixelSnappedIntRect(
@@ -1831,6 +1834,7 @@ gfx::Rect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
 }
 
 gfx::Point WebLocalFrameImpl::GetPositionInViewportForTesting() const {
+  DCHECK(GetFrame());  // Not valid after the Frame is detached.
   LocalFrameView* view = GetFrameView();
   return view->ConvertToRootFrame(IntPoint());
 }
@@ -2140,8 +2144,11 @@ RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
 }
 
 RemoteFrame* WebLocalFrameImpl::CreateFencedFrame(
-    HTMLFencedFrameElement* fenced_frame) {
-  WebRemoteFrame* frame = client_->CreateFencedFrame(fenced_frame);
+    HTMLFencedFrameElement* fenced_frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
+        receiver) {
+  WebRemoteFrame* frame =
+      client_->CreateFencedFrame(fenced_frame, std::move(receiver));
   return To<WebRemoteFrameImpl>(frame)->GetFrame();
 }
 

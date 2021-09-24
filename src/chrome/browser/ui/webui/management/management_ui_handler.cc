@@ -382,38 +382,38 @@ void ManagementUIHandler::InitializeInternal(content::WebUI* web_ui,
 }
 
 void ManagementUIHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getContextualManagedData",
       base::BindRepeating(&ManagementUIHandler::HandleGetContextualManagedData,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getExtensions",
       base::BindRepeating(&ManagementUIHandler::HandleGetExtensions,
                           base::Unretained(this)));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getLocalTrustRootsInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetLocalTrustRootsInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDeviceReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetDeviceReportingInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getPluginVmDataCollectionStatus",
       base::BindRepeating(
           &ManagementUIHandler::HandleGetPluginVmDataCollectionStatus,
           base::Unretained(this)));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getThreatProtectionInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetThreatProtectionInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getManagedWebsites",
       base::BindRepeating(&ManagementUIHandler::HandleGetManagedWebsites,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initBrowserReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleInitBrowserReportingInfo,
                           base::Unretained(this)));
@@ -982,7 +982,7 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   base::Value trust_roots_configured(false);
   AllowJavascript();
 
@@ -1021,7 +1021,7 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
 
 void ManagementUIHandler::HandleGetPluginVmDataCollectionStatus(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   base::Value plugin_vm_data_collection_enabled(
       Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
           plugin_vm::prefs::kPluginVmDataCollectionAllowed));

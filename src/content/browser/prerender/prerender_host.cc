@@ -77,15 +77,12 @@ bool AreHttpRequestHeadersCompatible(
   potential_activation_headers.AddHeadersFromString(
       potential_activation_headers_str);
 
-  // `potential_activation_headers` are observed before the User-Agent override
-  // while `prerender_headers` are observed after. As a workaround, remove
-  // User-Agent matching from consideration so that activation works with
-  // DevTools mobile emulation.
-  // TODO(https://crbug.com/1238578): Adjust when the headers are observed so we
-  // don't need this workaround.
-  prerender_headers.RemoveHeader(net::HttpRequestHeaders::kUserAgent);
-  potential_activation_headers.RemoveHeader(
-      net::HttpRequestHeaders::kUserAgent);
+  // `prerender_headers` contains the "Purpose: prefetch" to notify servers of
+  // prerender requests, while `potential_activation_headers` doesn't contain
+  // it. Remove "Purpose" matching from consideration so that activation works
+  // with the header.
+  prerender_headers.RemoveHeader("Purpose");
+  potential_activation_headers.RemoveHeader("Purpose");
 
   return prerender_headers.ToString() ==
          potential_activation_headers.ToString();
@@ -375,11 +372,16 @@ bool PrerenderHost::StartPrerendering() {
     // PrerenderNavigationThrottle during `LoadURLWithParams` above.
     DCHECK_EQ(*initial_navigation_id_,
               created_navigation_handle->GetNavigationId());
+    DCHECK(begin_params_);
+    DCHECK(common_params_);
   } else {
     // In some exceptional code path, such as the navigation failed due to CSP
     // violations, PrerenderNavigationThrottle didn't run at this point. So,
     // set the ID here.
     initial_navigation_id_ = created_navigation_handle->GetNavigationId();
+    // |begin_params_| and |common_params_| is null here, but it doesn't matter
+    // as this branch is reached only when the initial navigation fails,
+    // so this PrerenderHost can't be activated.
   }
 
   NavigationRequest* navigation_request =
@@ -394,6 +396,10 @@ bool PrerenderHost::StartPrerendering() {
 
 void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   auto* navigation_request = NavigationRequest::From(navigation_handle);
+
+  if (navigation_request->IsSameDocument())
+    return;
+
   // Observe navigation only in the prerendering frame tree.
   if (navigation_request->frame_tree_node()->frame_tree() !=
       page_holder_->frame_tree()) {
@@ -427,7 +433,7 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // The prerendered contents are considered ready for activation when the
   // main frame navigation reaches DidFinishNavigation.
   if (is_prerender_main_frame) {
-    DCHECK(!is_ready_for_activation_ || navigation_request->IsSameDocument());
+    DCHECK(!is_ready_for_activation_);
     is_ready_for_activation_ = true;
   }
 }

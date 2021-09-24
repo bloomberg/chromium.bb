@@ -45,6 +45,11 @@ ScrollAnchor::ScrollAnchor(ScrollableArea* scroller) : ScrollAnchor() {
 
 ScrollAnchor::~ScrollAnchor() = default;
 
+void ScrollAnchor::Trace(Visitor* visitor) const {
+  visitor->Trace(scroller_);
+  visitor->Trace(anchor_object_);
+}
+
 void ScrollAnchor::SetScroller(ScrollableArea* scroller) {
   DCHECK_NE(scroller_, scroller);
   DCHECK(scroller);
@@ -429,7 +434,7 @@ bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {
   // Make a separate pass to catch positioned descendants with a static DOM
   // parent that we skipped over (crbug.com/692701).
   if (auto* layouy_block = DynamicTo<LayoutBlock>(candidate)) {
-    if (TrackedLayoutBoxListHashSet* positioned_descendants =
+    if (TrackedLayoutBoxLinkedHashSet* positioned_descendants =
             layouy_block->PositionedObjects()) {
       for (LayoutBox* descendant : *positioned_descendants) {
         if (descendant->Parent() != candidate) {

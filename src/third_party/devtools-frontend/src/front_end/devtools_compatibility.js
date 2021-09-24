@@ -27,6 +27,13 @@
        * @type {?function(!ExtensionDescriptor)}
        */
       this._addExtensionCallback = null;
+
+      /**
+       * @type {!Promise<string>}
+       */
+      this._initialTargetIdPromise = new Promise(resolve => {
+        this._setInitialTargetId = resolve;
+      });
     }
 
     /**
@@ -302,6 +309,13 @@
     }
 
     /**
+     * @param {string} targetId
+     */
+    setInitialTargetId(targetId) {
+      this._setInitialTargetId(targetId);
+    }
+
+    /**
      * @return {string|undefined}
      */
     getInspectedTabId() {
@@ -362,7 +376,6 @@
    */
   const EnumeratedHistogram = {
     ActionTaken: 'DevTools.ActionTaken',
-    ColorPickerFixedColor: 'DevTools.ColorPicker.FixedColor',
     PanelClosed: 'DevTools.PanelClosed',
     PanelShown: 'DevTools.PanelShown',
     SidebarPaneShown: 'DevTools.SidebarPaneShown',
@@ -381,6 +394,7 @@
     DeveloperResourceScheme: 'DevTools.DeveloperResourceScheme',
     LinearMemoryInspectorRevealedFrom: 'DevTools.LinearMemoryInspector.RevealedFrom',
     LinearMemoryInspectorTarget: 'DevTools.LinearMemoryInspector.Target',
+    Language: 'DevTools.Language',
   };
 
   /**
@@ -941,6 +955,13 @@
      */
     recordPanelShown(panelCode) {
       // Do not record actions, as that may crash the DevTools renderer.
+    }
+
+    /**
+     * @return {!Promise<string>}
+     */
+    initialTargetId() {
+      return DevToolsAPI._initialTargetIdPromise;
     }
   };
 

@@ -297,7 +297,7 @@ void BaseRenderingContext2D::UnwindStateStack() {
   }
 }
 
-void BaseRenderingContext2D::reset() {
+void BaseRenderingContext2D::ResetInternal() {
   if (identifiability_study_helper_.ShouldUpdateBuilder()) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kReset);
   }
@@ -325,6 +325,12 @@ void BaseRenderingContext2D::reset() {
   }
   ValidateStateStack();
   origin_tainted_by_content_ = false;
+}
+
+void BaseRenderingContext2D::reset() {
+  UseCounter::Count(GetCanvasRenderingContextHost()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DRoundRect);
+  ResetInternal();
 }
 
 static V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString*
@@ -397,7 +403,9 @@ void BaseRenderingContext2D::setStrokeStyle(
   switch (style->GetContentType()) {
     case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
         ContentType::kCSSColorValue:
-      if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+      if (GetCanvasRenderingContextHost() &&
+          !RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+              GetCanvasRenderingContextHost()->GetTopExecutionContext()))
         return;
       canvas_style = MakeGarbageCollected<CanvasStyle>(
           style->GetAsCSSColorValue()->ToColor().Rgb());
@@ -458,7 +466,9 @@ void BaseRenderingContext2D::setFillStyle(
   switch (style->GetContentType()) {
     case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
         ContentType::kCSSColorValue:
-      if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+      if (GetCanvasRenderingContextHost() &&
+          !RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+              GetCanvasRenderingContextHost()->GetTopExecutionContext()))
         return;
       canvas_style = MakeGarbageCollected<CanvasStyle>(
           style->GetAsCSSColorValue()->ToColor().Rgb());
@@ -715,7 +725,12 @@ void BaseRenderingContext2D::setFilter(
 
   switch (input->GetContentType()) {
     case V8UnionCanvasFilterOrString::ContentType::kCanvasFilter:
-      if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+      if (GetCanvasRenderingContextHost() &&
+          RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+              GetCanvasRenderingContextHost()->GetTopExecutionContext())) {
+        UseCounter::Count(
+            GetCanvasRenderingContextHost()->GetTopExecutionContext(),
+            WebFeature::kCanvasRenderingContext2DCanvasFilter);
         GetState().SetCanvasFilter(input->GetAsCanvasFilter());
         SnapshotStateForFilter();
         // TODO(crbug.com/1234113): Instrument new canvas APIs.
@@ -1171,7 +1186,9 @@ void BaseRenderingContext2D::setTransform(DOMMatrixInit* transform,
   // The new canvas 2d API supports 3d transforms.
   // https://github.com/fserb/canvas2D/blob/master/spec/perspective-transforms.md
   // If it is not enabled, throw 3d information away.
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+  if (GetCanvasRenderingContextHost() &&
+      RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+          GetCanvasRenderingContextHost()->GetTopExecutionContext())) {
     setTransform(m->m11(), m->m12(), m->m13(), m->m14(), m->m21(), m->m22(),
                  m->m23(), m->m24(), m->m31(), m->m32(), m->m33(), m->m34(),
                  m->m41(), m->m42(), m->m43(), m->m44());
@@ -1679,7 +1696,8 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
 
 void BaseRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
   if (GetCanvasRenderingContextHost() &&
-      RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+      RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+          GetCanvasRenderingContextHost()->GetTopExecutionContext())) {
     Event* event = Event::CreateCancelable(event_type_names::kContextlost);
     GetCanvasRenderingContextHost()->HostDispatchEvent(event);
 
@@ -1700,10 +1718,17 @@ void BaseRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
 }
 
 void BaseRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
-  DCHECK(context_lost_mode_ != CanvasRenderingContext::kNotLostContext);
-  reset();
+  // Since canvas may trigger contextlost event by multiple different ways (ex:
+  // gpu crashes and frame eviction), it's possible to triggeer this
+  // function while the context is already restored. In this case, we
+  // abort it here.
+  if (context_lost_mode_ == CanvasRenderingContext::kNotLostContext)
+    return;
+  ResetInternal();
   context_lost_mode_ = CanvasRenderingContext::kNotLostContext;
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+  if (GetCanvasRenderingContextHost() &&
+      RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+          GetCanvasRenderingContextHost()->GetTopExecutionContext())) {
     Event* event(Event::Create(event_type_names::kContextrestored));
     GetCanvasRenderingContextHost()->HostDispatchEvent(event);
     UseCounter::Count(
@@ -1771,9 +1796,9 @@ void BaseRenderingContext2D::DrawImageInternal(
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
     ImageDrawOptions draw_options;
     draw_options.sampling_options = sampling;
-    draw_options.respect_image_orientation = respect_orientation;
-    image->Draw(c, image_flags, dst_rect, corrected_src_rect, draw_options,
-                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+    draw_options.respect_orientation = respect_orientation;
+    draw_options.clamping_mode = Image::kDoNotClampImageToSourceRect;
+    image->Draw(c, image_flags, dst_rect, corrected_src_rect, draw_options);
   } else {
     c->save();
     c->clipRect(dst_rect);
@@ -1811,8 +1836,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   if (!GetOrCreatePaintCanvas())
     return;
-
-  base::TimeTicks start_time = base::TimeTicks::Now();
 
   scoped_refptr<Image> image;
   FloatSize default_object_size(Width(), Height());
@@ -1868,8 +1891,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   WillDrawImage(image_source);
 
-  ValidateStateStack();
-
   if (!origin_tainted_by_content_ && WouldTaintOrigin(image_source))
     SetOriginTaintedByContent();
 
@@ -1890,62 +1911,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
       image_source->IsOpaque() ? CanvasRenderingContext2DState::kOpaqueImage
                                : CanvasRenderingContext2DState::kNonOpaqueImage,
       CanvasPerformanceMonitor::DrawType::kImage);
-
-  ValidateStateStack();
-  bool source_is_canvas = false;
-  if (!IsPaint2D()) {
-    std::string image_source_name;
-    if (image_source->IsCanvasElement()) {
-      image_source_name = "Canvas";
-      source_is_canvas = true;
-    } else if (image_source->IsCSSImageValue()) {
-      image_source_name = "CssImage";
-    } else if (image_source->IsImageElement()) {
-      image_source_name = "ImageElement";
-    } else if (image_source->IsImageBitmap()) {
-      image_source_name = "ImageBitmap";
-    } else if (image_source->IsOffscreenCanvas()) {
-      image_source_name = "OffscreenCanvas";
-      source_is_canvas = true;
-    } else if (image_source->IsSVGSource()) {
-      image_source_name = "SVG";
-    } else if (image_source->IsVideoElement()) {
-      image_source_name = "Video";
-    } else if (image_source->IsVideoFrame()) {
-      image_source_name = "VideoFrame";
-    } else {  // Unknown source.
-      image_source_name = "Unknown";
-    }
-
-    std::string duration_histogram_name =
-        "Blink.Canvas.DrawImage.Duration2." + image_source_name;
-    std::string size_histogram_name =
-        "Blink.Canvas.DrawImage.SqrtNumberOfPixels." + image_source_name;
-
-    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
-      if (source_is_canvas)
-        size_histogram_name.append(".GPU");
-      duration_histogram_name.append(".GPU");
-    } else {
-      if (source_is_canvas)
-        size_histogram_name.append(".CPU");
-      duration_histogram_name.append(".CPU");
-    }
-
-    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-
-    base::UmaHistogramMicrosecondsTimes(duration_histogram_name, elapsed);
-
-    float sqrt_pixels_float =
-        std::sqrt(dst_rect.Width()) * std::sqrt(dst_rect.Height());
-    // If sqrt_pixels_float overflows as int CheckedNumeric will store it
-    // as invalid, then ValueOrDefault will return the maximum int.
-    base::CheckedNumeric<int> sqrt_pixels = sqrt_pixels_float;
-    base::UmaHistogramCustomCounts(
-        size_histogram_name,
-        sqrt_pixels.ValueOrDefault(std::numeric_limits<int>::max()), 1, 5000,
-        50);
-  }
 }
 
 void BaseRenderingContext2D::ClearCanvas() {
@@ -2026,6 +1991,8 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(
 CanvasGradient* BaseRenderingContext2D::createConicGradient(double startAngle,
                                                             double centerX,
                                                             double centerY) {
+  UseCounter::Count(GetCanvasRenderingContextHost()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DConicGradient);
   if (!std::isfinite(startAngle) || !std::isfinite(centerX) ||
       !std::isfinite(centerY))
     return nullptr;
@@ -2111,7 +2078,9 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
       NOTREACHED();
       return nullptr;
   }
-  DCHECK(image_for_rendering);
+
+  if (!image_for_rendering)
+    return nullptr;
 
   bool origin_clean = !WouldTaintOrigin(image_source);
 
@@ -2199,8 +2168,6 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
     return nullptr;
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   if (!OriginClean()) {
     exception_state.ThrowSecurityError(
         "The canvas has been tainted by cross-origin data.");
@@ -2258,7 +2225,9 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   // TODO(crbug.com/1090180): New Canvas2D API utilizes willReadFrequently
   // attribute that let the users indicate if a canvas will be read frequently
   // through getImageData, thus uses CPU rendering from the start in such cases.
-  if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+  if (GetCanvasRenderingContextHost() &&
+      !RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+          GetCanvasRenderingContextHost()->GetTopExecutionContext())) {
     // GetImagedata is faster in Unaccelerated canvases.
     // In Desynchronized canvas disabling the acceleration will break
     // putImageData: crbug.com/1112060.
@@ -2306,32 +2275,7 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
     }
   }
 
-  if (!IsPaint2D()) {
-    int scaled_time = getScaledElapsedTime(
-        image_data_rect.Width(), image_data_rect.Height(), start_time);
-    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
-      base::UmaHistogramCounts1000(
-          "Blink.Canvas.GetImageDataScaledDuration.GPU", scaled_time);
-    } else {
-      base::UmaHistogramCounts1000(
-          "Blink.Canvas.GetImageDataScaledDuration.CPU", scaled_time);
-    }
-  }
   return image_data;
-}
-
-int BaseRenderingContext2D::getScaledElapsedTime(float width,
-                                                 float height,
-                                                 base::TimeTicks start_time) {
-  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-  float sqrt_pixels = std::sqrt(width) * std::sqrt(height);
-  float scaled_time_float = elapsed_time.InMicrosecondsF() * 10.0f /
-                            (sqrt_pixels == 0 ? 1.0f : sqrt_pixels);
-
-  // If scaled_time_float overflows as integer, CheckedNumeric will store it
-  // as invalid, then ValueOrDefault will return the maximum int.
-  base::CheckedNumeric<int> checked_scaled_time = scaled_time_float;
-  return checked_scaled_time.ValueOrDefault(std::numeric_limits<int>::max());
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
@@ -2353,7 +2297,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   if (!base::CheckMul(dirty_width, dirty_height).IsValid<int>()) {
     return;
   }
-  base::TimeTicks start_time = base::TimeTicks::Now();
 
   if (data->IsBufferBaseDetached()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -2445,18 +2388,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     }
   } else {
     PutByteArray(data_pixmap, source_rect, IntPoint(dest_offset));
-  }
-
-  if (!IsPaint2D()) {
-    int scaled_time =
-        getScaledElapsedTime(dest_rect.Width(), dest_rect.Height(), start_time);
-    if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
-      base::UmaHistogramCounts1000(
-          "Blink.Canvas.PutImageDataScaledDuration.GPU", scaled_time);
-    } else {
-      base::UmaHistogramCounts1000(
-          "Blink.Canvas.PutImageDataScaledDuration.CPU", scaled_time);
-    }
   }
 
   GetPaintCanvasForDraw(dest_rect,

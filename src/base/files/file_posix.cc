@@ -41,7 +41,13 @@ bool IsOpenAppend(PlatformFile file) {
 }
 
 int CallFtruncate(PlatformFile file, int64_t length) {
+#if defined(OS_BSD) || defined(OS_APPLE) || defined(OS_FUCHSIA)
+  static_assert(sizeof(off_t) >= sizeof(int64_t),
+                "off_t is not a 64-bit integer");
   return HANDLE_EINTR(ftruncate(file, length));
+#else
+  return HANDLE_EINTR(ftruncate64(file, length));
+#endif
 }
 
 int CallFutimes(PlatformFile file, const struct timeval times[2]) {
@@ -517,9 +523,6 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
   if (flags & FLAG_OPEN_ALWAYS) {
     if (descriptor < 0) {
       open_flags |= O_CREAT;
-      if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
-        open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
-
       descriptor = HANDLE_EINTR(open(path.value().c_str(), open_flags, mode));
       if (descriptor >= 0)
         created_ = true;

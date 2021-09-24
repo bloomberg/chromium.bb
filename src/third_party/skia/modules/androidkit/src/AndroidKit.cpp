@@ -26,6 +26,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     REGISTER_NATIVES(Canvas)
     REGISTER_NATIVES(ColorFilter)
     REGISTER_NATIVES(ComposeColorFilter)
+    REGISTER_NATIVES(Font)
     REGISTER_NATIVES(HSLAMatrixColorFilter)
     REGISTER_NATIVES(Image)
     REGISTER_NATIVES(ImageFilter)
@@ -41,6 +42,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     REGISTER_NATIVES(SkottieAnimation)
     REGISTER_NATIVES(Surface)
     REGISTER_NATIVES(SweepGradient)
+    REGISTER_NATIVES(Text)
     REGISTER_NATIVES(TwoPointConicalGradient)
 
     return JNI_VERSION_1_6;

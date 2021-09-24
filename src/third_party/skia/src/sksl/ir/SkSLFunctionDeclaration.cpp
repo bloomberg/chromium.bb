@@ -13,12 +13,16 @@
 
 namespace SkSL {
 
-static IntrinsicKind identify_intrinsic(const String& functionName) {
+static IntrinsicKind identify_intrinsic(skstd::string_view functionName) {
     #define SKSL_INTRINSIC(name) {#name, k_##name##_IntrinsicKind},
-    static const auto* kAllIntrinsics = new std::unordered_map<String, IntrinsicKind>{
+    static const auto* kAllIntrinsics = new std::unordered_map<skstd::string_view, IntrinsicKind>{
         SKSL_INTRINSIC_LIST
     };
     #undef SKSL_INTRINSIC
+
+    if (functionName.starts_with('$')) {
+        functionName.remove_prefix(1);
+    }
 
     auto iter = kAllIntrinsics->find(functionName);
     if (iter != kAllIntrinsics->end()) {
@@ -28,16 +32,18 @@ static IntrinsicKind identify_intrinsic(const String& functionName) {
     return kNotIntrinsic;
 }
 
-static bool check_modifiers(const Context& context, int offset, const Modifiers& modifiers) {
-    IRGenerator::CheckModifiers(
-            context,
-            offset,
-            modifiers,
-            Modifiers::kHasSideEffects_Flag | Modifiers::kInline_Flag | Modifiers::kNoInline_Flag,
-            /*permittedLayoutFlags=*/0);
+static bool check_modifiers(const Context& context,
+                            int offset,
+                            const Modifiers& modifiers,
+                            bool isBuiltin) {
+    const int permitted = Modifiers::kHasSideEffects_Flag |
+                          Modifiers::kInline_Flag |
+                          Modifiers::kNoInline_Flag |
+                          (isBuiltin ? Modifiers::kES3_Flag : 0);
+    IRGenerator::CheckModifiers(context, offset, modifiers, permitted, /*permittedLayoutFlags=*/0);
     if ((modifiers.fFlags & Modifiers::kInline_Flag) &&
         (modifiers.fFlags & Modifiers::kNoInline_Flag)) {
-        context.errors().error(offset, "functions cannot be both 'inline' and 'noinline'");
+        context.fErrors->error(offset, "functions cannot be both 'inline' and 'noinline'");
         return false;
     }
     return true;
@@ -45,7 +51,7 @@ static bool check_modifiers(const Context& context, int offset, const Modifiers&
 
 static bool check_return_type(const Context& context, int offset, const Type& returnType,
                               bool isBuiltin) {
-    ErrorReporter& errors = context.errors();
+    ErrorReporter& errors = *context.fErrors;
     if (returnType.isArray()) {
         errors.error(offset, "functions may not return type '" + returnType.displayName() + "'");
         return false;
@@ -83,7 +89,7 @@ static bool check_parameters(const Context& context,
         // parameters. You can pass other opaque types to functions safely; this restriction is
         // specific to "child" objects.
         if (type.isEffectChild() && !isBuiltin) {
-            context.errors().error(param->fOffset, "parameters of type '" + type.displayName() +
+            context.fErrors->error(param->fOffset, "parameters of type '" + type.displayName() +
                                                    "' not allowed");
             return false;
         }
@@ -106,9 +112,9 @@ static bool check_parameters(const Context& context,
             } else if (context.fConfig->fKind == ProgramKind::kFragment) {
                 // For testing purposes, we have .sksl inputs that are treated as both runtime
                 // effects and fragment shaders. To make that work, fragment shaders are allowed to
-                // have a coords parameter. We turn it into sk_FragCoord.
+                // have a coords parameter.
                 if (type == *context.fTypes.fFloat2) {
-                    m.fLayout.fBuiltin = SK_FRAGCOORD_BUILTIN;
+                    m.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
                     param->setModifiers(context.fModifiersPool->add(m));
                 }
             }
@@ -120,7 +126,7 @@ static bool check_parameters(const Context& context,
 static bool check_main_signature(const Context& context, int offset, const Type& returnType,
                                  std::vector<std::unique_ptr<Variable>>& parameters,
                                  bool isBuiltin) {
-    ErrorReporter& errors = context.errors();
+    ErrorReporter& errors = *context.fErrors;
     ProgramKind kind = context.fConfig->fKind;
 
     auto typeIsValidForColor = [&](const Type& type) {
@@ -131,9 +137,7 @@ static bool check_main_signature(const Context& context, int offset, const Type&
         const Variable& p = *parameters[idx];
         return p.type() == *context.fTypes.fFloat2 &&
                p.modifiers().fFlags == 0 &&
-               p.modifiers().fLayout.fBuiltin == (kind == ProgramKind::kFragment
-                                                           ? SK_FRAGCOORD_BUILTIN
-                                                           : SK_MAIN_COORDS_BUILTIN);
+               p.modifiers().fLayout.fBuiltin == SK_MAIN_COORDS_BUILTIN;
     };
 
     auto paramIsBuiltinColor = [&](int idx, int builtinID) {
@@ -203,7 +207,6 @@ static bool check_main_signature(const Context& context, int offset, const Type&
             break;
         }
         case ProgramKind::kVertex:
-        case ProgramKind::kGeometry:
             if (parameters.size()) {
                 errors.error(offset, "shader 'main' must have zero parameters");
                 return false;
@@ -223,7 +226,7 @@ static bool find_existing_declaration(const Context& context, SymbolTable& symbo
                                       std::vector<std::unique_ptr<Variable>>& parameters,
                                       const Type* returnType, bool isBuiltin,
                                       const FunctionDeclaration** outExistingDecl) {
-    ErrorReporter& errors = context.errors();
+    ErrorReporter& errors = *context.fErrors;
     const Symbol* entry = symbols[name];
     *outExistingDecl = nullptr;
     if (entry) {
@@ -303,7 +306,7 @@ FunctionDeclaration::FunctionDeclaration(int offset,
         , fReturnType(returnType)
         , fBuiltin(builtin)
         , fIsMain(name == "main")
-        , fIntrinsicKind(builtin ? identify_intrinsic(String(name)) : kNotIntrinsic) {}
+        , fIntrinsicKind(builtin ? identify_intrinsic(name) : kNotIntrinsic) {}
 
 const FunctionDeclaration* FunctionDeclaration::Convert(const Context& context,
         SymbolTable& symbols, int offset, const Modifiers* modifiers,
@@ -312,7 +315,7 @@ const FunctionDeclaration* FunctionDeclaration::Convert(const Context& context,
     bool isMain = (name == "main");
 
     const FunctionDeclaration* decl = nullptr;
-    if (!check_modifiers(context, offset, *modifiers) ||
+    if (!check_modifiers(context, offset, *modifiers, isBuiltin) ||
         !check_return_type(context, offset, *returnType, isBuiltin) ||
         !check_parameters(context, parameters, isMain, isBuiltin) ||
         (isMain && !check_main_signature(context, offset, *returnType, parameters, isBuiltin)) ||

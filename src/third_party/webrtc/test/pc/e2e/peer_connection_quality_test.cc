@@ -27,8 +27,10 @@
 #include "pc/test/mock_peer_connection_observers.h"
 #include "rtc_base/gunit.h"
 #include "rtc_base/numerics/safe_conversions.h"
+#include "rtc_base/strings/string_builder.h"
 #include "system_wrappers/include/cpu_info.h"
 #include "system_wrappers/include/field_trial.h"
+#include "test/field_trial.h"
 #include "test/pc/e2e/analyzer/audio/default_audio_quality_analyzer.h"
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer.h"
 #include "test/pc/e2e/analyzer/video/video_quality_metrics_reporter.h"
@@ -63,6 +65,8 @@ constexpr TimeDelta kQuickTestModeRunDuration = TimeDelta::Millis(100);
 // Field trials to enable Flex FEC advertising and receiving.
 constexpr char kFlexFecEnabledFieldTrials[] =
     "WebRTC-FlexFEC-03-Advertised/Enabled/WebRTC-FlexFEC-03/Enabled/";
+constexpr char kUseStandardsBytesStats[] =
+    "WebRTC-UseStandardBytesStats/Enabled/";
 
 class FixturePeerConnectionObserver : public MockPeerConnectionObserver {
  public:
@@ -98,6 +102,21 @@ class FixturePeerConnectionObserver : public MockPeerConnectionObserver {
       on_track_callback_;
   std::function<void()> on_connected_callback_;
 };
+
+void ValidateP2PSimulcastParams(
+    const std::vector<std::unique_ptr<PeerConfigurerImpl>>& peers) {
+  for (size_t i = 0; i < peers.size(); ++i) {
+    Params* p = peers[i]->params();
+    for (const VideoConfig& video_config : p->video_configs) {
+      if (video_config.simulcast_config) {
+        // When we simulate SFU we support only one video codec.
+        RTC_CHECK_EQ(p->video_codecs.size(), 1)
+            << "Only 1 video codec is supported when simulcast is enabled in "
+            << "at least 1 video config";
+      }
+    }
+  }
+}
 
 }  // namespace
 
@@ -150,18 +169,21 @@ void PeerConnectionE2EQualityTest::AddQualityMetricsReporter(
   quality_metrics_reporters_.push_back(std::move(quality_metrics_reporter));
 }
 
-void PeerConnectionE2EQualityTest::AddPeer(
+PeerConnectionE2EQualityTest::PeerHandle* PeerConnectionE2EQualityTest::AddPeer(
     rtc::Thread* network_thread,
     rtc::NetworkManager* network_manager,
     rtc::FunctionView<void(PeerConfigurer*)> configurer) {
   peer_configurations_.push_back(
       std::make_unique<PeerConfigurerImpl>(network_thread, network_manager));
   configurer(peer_configurations_.back().get());
+  peer_handles_.push_back(PeerHandleImpl());
+  return &peer_handles_.back();
 }
 
 void PeerConnectionE2EQualityTest::Run(RunParams run_params) {
   SetDefaultValuesForMissingParams(&run_params, &peer_configurations_);
   ValidateParams(run_params, peer_configurations_);
+  ValidateP2PSimulcastParams(peer_configurations_);
   RTC_CHECK_EQ(peer_configurations_.size(), 2)
       << "Only peer to peer calls are allowed, please add 2 peers";
 
@@ -177,7 +199,7 @@ void PeerConnectionE2EQualityTest::Run(RunParams run_params) {
         << "Only simulcast stream from first peer is supported";
   }
 
-  SetupRequiredFieldTrials(run_params);
+  test::ScopedFieldTrials field_trials(GetFieldTrials(run_params));
 
   // Print test summary
   RTC_LOG(INFO) << "Media quality test: " << *alice_configurer->params()->name
@@ -384,16 +406,19 @@ void PeerConnectionE2EQualityTest::Run(RunParams run_params) {
   RTC_CHECK(bob_video_sources_.empty());
 }
 
-void PeerConnectionE2EQualityTest::SetupRequiredFieldTrials(
+std::string PeerConnectionE2EQualityTest::GetFieldTrials(
     const RunParams& run_params) {
-  std::string field_trials = "";
+  std::vector<absl::string_view> default_field_trials = {
+      kUseStandardsBytesStats};
   if (run_params.use_flex_fec) {
-    field_trials += kFlexFecEnabledFieldTrials;
+    default_field_trials.push_back(kFlexFecEnabledFieldTrials);
   }
-  if (!field_trials.empty()) {
-    override_field_trials_ = std::make_unique<test::ScopedFieldTrials>(
-        field_trial::GetFieldTrialString() + field_trials);
+  rtc::StringBuilder sb;
+  sb << field_trial::GetFieldTrialString();
+  for (const absl::string_view& field_trial : default_field_trials) {
+    sb << field_trial;
   }
+  return sb.Release();
 }
 
 void PeerConnectionE2EQualityTest::OnTrackCallback(

@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">Режим тематских боја користи боје изведене из позадине да би се благо обојио интефејс.</translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
 <translation id="1148499908455722006">Отвара дијалог са информацијама за корисника <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Упарени уређаји</translation>
 <translation id="1165712434476988950">Рестартујте уређај да бисте применили ажурирање.</translation>
 <translation id="1175572348579024023">Померај</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">Укључено</translation>
 <translation id="1615402009686901181">Смернице администратора онемогућавају снимање екрана када је видљив поверљив садржај</translation>
 <translation id="1632985212731562677">Приступ помоћу прекидача може да се онемогући у одељку Подешавања &gt; Приступачност.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> уређаја</translation>
 <translation id="1654477262762802994">Започните гласовну претрагу</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Притисните тастер за претрагу и размак да бисте видели резултат у Помоћнику.</translation>
 <translation id="1667964833127753507">Режим неутралних боја не користи боје из позадина и замењује их скупом неутралних светлих и тамних нијанси.</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">Леви клик</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
+<translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2450205753526923158">Режим снимка екрана</translation>
 <translation id="2473177541599297363">Потврдите резолуцију</translation>
 <translation id="2475982808118771221">Дошло је до грешке</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Повезани сте са <ph name="NUM_DEVICES" /> уређаја</translation>
 <translation id="3552189655002856821">WiFi је искључен</translation>
 <translation id="3560866052109807830">Алатке за цртање маркера</translation>
 <translation id="3563775809269155755">Омогући хотспот</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">Популација Нигерије</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Учитава се...</translation>
+<translation id="3708186454126126312">Претходно повезани</translation>
 <translation id="371370241367527062">Предњи микрофон</translation>
 <translation id="3713734891607377840">Отвори када буде завршено</translation>
 <translation id="3742055079367172538">Снимак екрана је направљен</translation>
@@ -403,6 +408,7 @@
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
 <translation id="4157822100366708405">Подешавања тамне теме</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4195877955194704651">Аутоматски кликови на дугмад</translation>
 <translation id="4197790712631116042">Искључено</translation>
@@ -555,6 +561,7 @@
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="5234764350956374838">Одбаци</translation>
 <translation id="523505283826916779">Подешавања приступачности</translation>
+<translation id="5253783950165989294">Повезани сте са уређајем под називом <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" />% батерије</translation>
 <translation id="5260676007519551770">Радна површина 4</translation>
 <translation id="5283198616748585639">Додај 1 мин</translation>
 <translation id="528468243742722775">Заврши</translation>
@@ -565,6 +572,7 @@
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="5313326810920013265">Подешавања Bluetooth-а</translation>
 <translation id="5314219114274263156">Екран је снимљен</translation>
+<translation id="5319712128756744240">Упарите нови уређај</translation>
 <translation id="5322611492012084517">Проналажење телефона није успело</translation>
 <translation id="5329548388331921293">Повезује се...</translation>
 <translation id="5331975486040154427">Уређај са USB прикључком типа C (леви задњи порт)</translation>
@@ -767,6 +775,7 @@
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7007983414944123363">Верификација PIN-а или лозинке није успела. Пробајте поново.</translation>
+<translation id="7014684956566476813">Повезани сте са уређајем под називом <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Вратите се у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Радна површина 6</translation>
 <translation id="7025533177575372252">Повежите <ph name="DEVICE_NAME" /> са телефоном</translation>
@@ -1000,6 +1009,7 @@
 <translation id="8818320199597151042">Профил се уклања. Сачекајте неколико минута.</translation>
 <translation id="8825863694328519386">Превуците са леве стране да бисте се вратили</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Тренутно повезани</translation>
 <translation id="8841375032071747811">Дугме Назад</translation>
 <translation id="8843682306134542540">Укључите/искључите закључавање ротације. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1030,6 +1040,7 @@
 <translation id="9024331582947483881">цео екран</translation>
 <translation id="9047624247355796468">Отворите подешавања за <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Уређај ће бити враћен на ранију верзију</translation>
+<translation id="9059834730836941392">Скупи обавештење</translation>
 <translation id="9063800855227801443">Снимање поверљивог садржаја није успело</translation>
 <translation id="9065203028668620118">Измени</translation>
 <translation id="9070640332319875144">Подешавања Помоћника</translation>

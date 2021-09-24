@@ -25,8 +25,7 @@ std::unique_ptr<WebContentsDisplayObserver> WebContentsDisplayObserver::Create(
 WebContentsDisplayObserverView::WebContentsDisplayObserverView(
     content::WebContents* web_contents,
     base::RepeatingClosure callback)
-    : WebContentsObserver(web_contents),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       widget_(views::Widget::GetWidgetForNativeWindow(
           web_contents->GetTopLevelNativeWindow())),
       callback_(std::move(callback)) {

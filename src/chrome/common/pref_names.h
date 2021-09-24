@@ -176,6 +176,8 @@ extern const char kSearchSuggestEnabled[];
 extern const char kContextualSearchEnabled[];
 extern const char kContextualSearchDisabledValue[];
 extern const char kContextualSearchEnabledValue[];
+extern const char kContextualSearchPromoCardShownCount[];
+extern const char kContextualSearchWasFullyPrivacyEnabled[];
 #endif  // defined(OS_ANDROID)
 extern const char kShowInternalAccessibilityTree[];
 extern const char kAccessibilityImageLabelsEnabled[];
@@ -211,7 +213,6 @@ extern const char kAttestationExtensionAllowlist[];
 extern const char kPrintingAPIExtensionsAllowlist[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-extern const char kAccountManagerNumTimesMigrationRanSuccessfully[];
 extern const char kAccountManagerNumTimesWelcomeScreenShown[];
 extern const char kTapToClickEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
@@ -451,6 +452,7 @@ extern const char kPrintRasterizePdfDpi[];
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+extern const char kPrintPostScriptMode[];
 extern const char kPrintRasterizationMode[];
 #endif
 
@@ -979,6 +981,10 @@ extern const char kClickedUpdateMenuItem[];
 extern const char kLatestVersionWhenClickedUpdateMenuItem[];
 #endif
 
+#if defined(OS_ANDROID)
+extern const char kCommerceMerchantViewerMessagesShownTime[];
+#endif
+
 extern const char kComponentUpdatesEnabled[];
 
 #if defined(OS_ANDROID)
@@ -1006,6 +1012,7 @@ extern const char kThirdPartyBlockingEnabled[];
 // Windows mitigation policies.
 #if defined(OS_WIN)
 extern const char kRendererCodeIntegrityEnabled[];
+extern const char kBlockBrowserLegacyExtensionPoints[];
 #endif  // defined(OS_WIN)
 
 extern const char kSettingsResetPromptPromptWave[];
@@ -1132,7 +1139,6 @@ extern const char kShowCaretBrowsingDialog[];
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-extern const char kLacrosAllowed[];
 extern const char kLacrosLaunchSwitch[];
 #endif
 

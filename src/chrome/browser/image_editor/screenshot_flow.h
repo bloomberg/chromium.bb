@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/events/event.h"
@@ -69,7 +70,16 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
   // copying to the clipboard or saving.
   void Start(ScreenshotCaptureCallback flow_callback);
 
+  // Runs the screen capture flow, capturing the entire viewport rather than
+  // a region selected by the user.
+  void StartFullscreenCapture(ScreenshotCaptureCallback flow_callback);
+
+  // Exits capture mode without running any callbacks.
+  void CancelCapture();
+
  private:
+  class UnderlyingWebContentsObserver;
+
   // ui:EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -90,12 +100,17 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
   // Removes the UI overlay and any listeners.
   void RemoveUIOverlay();
 
-  // Callback for initial internal screenshot capture;
-  void OnSnapshotComplete(gfx::Image snapshot);
+  // Captures a new screenshot for the chosen region, and runs the completion
+  // callback.
+  void CaptureAndRunScreenshotCompleteCallback(gfx::Rect region);
 
   // Completes the capture process for |region| and runs the callback provided
   // to Start().
   void CompleteCapture(const gfx::Rect& region);
+
+  // Completes the capture process and runs the |flow_callback| with provided
+  // |image| data sourced from |bounds|.
+  void RunScreenshotCompleteCallback(gfx::Rect bounds, gfx::Image image);
 
   // Paints the screenshot selection layer. The user's selection is left
   // unpainted to be hollowed out. |invalidation_region| specifies an optional
@@ -103,6 +118,9 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
   void PaintSelectionLayer(gfx::Canvas* canvas,
                            const gfx::Rect& selection,
                            const gfx::Rect& invalidation_region);
+
+  // Requests to set the cursor type.
+  void SetCursor(ui::mojom::CursorType cursor_type);
 
   base::WeakPtr<ScreenshotFlow> weak_this_;
 
@@ -112,6 +130,9 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
 
   // Web Contents that we are capturing.
   base::WeakPtr<content::WebContents> web_contents_;
+
+  // Observer for |web_contents_|.
+  std::unique_ptr<UnderlyingWebContentsObserver> web_contents_observer_;
 
   // Callback provided to Start().
   ScreenshotCaptureCallback flow_callback_;
@@ -126,13 +147,6 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
   // Our top-level layer that is superimposed over the browser window's root
   // layer while screen capture mode is active.
   std::unique_ptr<ui::Layer> screen_capture_layer_;
-
-  // Original window capture data providing the active capture area.
-  gfx::ImageSkia image_foreground_;
-
-  // Desaturated window capture data providing the background of region
-  // selection.
-  gfx::ImageSkia image_background_;
 
   base::WeakPtrFactory<ScreenshotFlow> weak_factory_{this};
 };

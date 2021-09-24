@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -27,8 +26,6 @@
 namespace {
 // Horizontal padding for label and buttons.
 constexpr CGFloat kHorizontalPadding = 40;
-// Image size for warm state.
-constexpr CGFloat kProfileImageFixedSize = 48;
 
 // UI Refresh Constants:
 // Vertical spacing between stackView and cell contentView.
@@ -87,7 +84,7 @@ constexpr CGFloat kImageViewWidthHeight = 32;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _textLabel.textColor = UIColor.cr_labelColor;
+    _textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
 
     // Create and setup primary button.
     UIEdgeInsets primaryButtonInsets;
@@ -241,7 +238,9 @@ constexpr CGFloat kImageViewWidthHeight = 32;
 
 - (void)setProfileImage:(UIImage*)image {
   DCHECK_NE(_mode, SigninPromoViewModeNoAccounts);
-  self.imageView.image = CircularImageFromImage(image, kProfileImageFixedSize);
+  DCHECK_EQ(kImageViewWidthHeight, image.size.width);
+  DCHECK_EQ(kImageViewWidthHeight, image.size.height);
+  self.imageView.image = CircularImageFromImage(image, kImageViewWidthHeight);
 }
 
 - (void)accessibilityPrimaryAction:(id)unused {

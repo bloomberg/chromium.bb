@@ -1,16 +1,14 @@
 # Tensorflow default + linux implementations of tensorflow/core/platform libraries.
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//tensorflow:tensorflow.bzl", "if_not_windows", "tf_copts")
-load(
-    "//tensorflow/core/platform:rules_cc.bzl",
-    "cc_library",
-)
+load("//tensorflow:tensorflow.bzl", "filegroup")
+load("//tensorflow:tensorflow.bzl", "if_not_windows", "tf_cc_test", "tf_copts")
+load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
 
 package(
     default_visibility = [
         "//tensorflow/core/platform:__pkg__",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 cc_library(
@@ -43,12 +41,14 @@ cc_library(
         "no_oss",
         "nobuilder",
     ],
+    deps = ["@com_google_absl//absl/strings:cord"],
 )
 
 cc_library(
     name = "cuda_libdevice_path",
     srcs = ["cuda_libdevice_path.cc"],
     hdrs = ["//tensorflow/core/platform:cuda_libdevice_path.h"],
+    compatible_with = [],
     tags = [
         "manual",
         "no_oss",
@@ -75,15 +75,14 @@ cc_library(
 cc_library(
     name = "env",
     srcs = [
-        "env.cc",
         "posix_file_system.cc",
-        "posix_file_system.h",
         "//tensorflow/core/platform:env.cc",
         "//tensorflow/core/platform:file_system.cc",
         "//tensorflow/core/platform:file_system_helper.cc",
         "//tensorflow/core/platform:threadpool.cc",
     ],
     hdrs = [
+        "posix_file_system.h",
         "//tensorflow/core/platform:env.h",
         "//tensorflow/core/platform:file_system.h",
         "//tensorflow/core/platform:file_system_helper.h",
@@ -115,6 +114,7 @@ cc_library(
         "//tensorflow/core/platform:platform_port",
         "//tensorflow/core/platform:protobuf",
         "//tensorflow/core/platform:regexp",
+        "//tensorflow/core/platform:scanner",
         "//tensorflow/core/platform:setround",
         "//tensorflow/core/platform:status",
         "//tensorflow/core/platform:str_util",
@@ -127,6 +127,26 @@ cc_library(
         "//third_party/eigen3",
         "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "env_impl",
+    srcs = [
+        "env.cc",
+    ],
+    tags = [
+        "manual",
+        "no_oss",
+        "nobuilder",
+    ],
+    deps = [
+        ":env",
+        "//tensorflow/core/platform:load_library",
+        "//tensorflow/core/platform:logging",
+        "//tensorflow/core/platform:mutex",
+        "//tensorflow/core/platform:strcat",
+        "//tensorflow/core/protobuf:error_codes_proto_impl_cc",
     ],
 )
 
@@ -188,6 +208,7 @@ cc_library(
         "//tensorflow/core/platform",
         "//tensorflow/core/platform:env_time",
         "//tensorflow/core/platform:macros",
+        "//tensorflow/core/platform:mutex",
         "//tensorflow/core/platform:types",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/strings",
@@ -269,6 +290,7 @@ cc_library(
         "//tensorflow/core/platform:mem.h",
         "//tensorflow/core/platform:numa.h",
         "//tensorflow/core/platform:snappy.h",
+        "//tensorflow/core/platform/profile_utils:cpu_utils.h",
     ],
     copts = tf_copts(),
     defines = ["TF_USE_SNAPPY"] + select({
@@ -276,6 +298,7 @@ cc_library(
         "//tensorflow:with_numa_support": ["TENSORFLOW_USE_NUMA"],
         "//conditions:default": [],
     }),
+    features = ["-layering_check"],
     tags = [
         "manual",
         "no_oss",
@@ -286,6 +309,8 @@ cc_library(
         "//tensorflow/core/platform:byte_order",
         "//tensorflow/core/platform:dynamic_annotations",
         "//tensorflow/core/platform:logging",
+        "//tensorflow/core/platform:macros",
+        "//tensorflow/core/platform:profile_utils_cpu_utils",
         "//tensorflow/core/platform:types",
         "//tensorflow/core/platform",
         "@snappy",
@@ -334,6 +359,7 @@ cc_library(
     name = "rocm_rocdl_path",
     srcs = ["rocm_rocdl_path.cc"],
     hdrs = ["//tensorflow/core/platform:rocm_rocdl_path.h"],
+    compatible_with = [],
     tags = [
         "manual",
         "no_oss",
@@ -369,17 +395,6 @@ cc_library(
 )
 
 cc_library(
-    name = "strong_hash",
-    tags = [
-        "manual",
-        "no_oss",
-        "nobuilder",
-    ],
-    textual_hdrs = ["strong_hash.h"],
-    deps = ["@highwayhash//:sip_hash"],
-)
-
-cc_library(
     name = "subprocess",
     srcs = ["subprocess.cc"],
     hdrs = ["//tensorflow/core/platform:subprocess.h"],
@@ -412,9 +427,25 @@ cc_library(
     deps = [
         "//tensorflow/core/platform",
         "//tensorflow/core/platform:env",
+        "//tensorflow/core/platform:logging",
         "//tensorflow/core/platform:macros",
+        "//tensorflow/core/platform:str_util",
         "//tensorflow/core/platform:types",
         "//tensorflow/core/util:reporter",
+    ],
+)
+
+tf_cc_test(
+    name = "test_benchmark_test",
+    srcs = ["test_benchmark_test.cc"],
+    tags = [
+        "nobuilder",
+        "notap",
+    ],
+    deps = [
+        ":test_benchmark",
+        "//tensorflow/core:lib",
+        "//tensorflow/core:test",
     ],
 )
 
@@ -490,7 +521,25 @@ cc_library(
         "//tensorflow/core/lib/core:notification",
         "//tensorflow/core/platform:env",
         "//tensorflow/core/platform:mutex",
+        "//tensorflow/core/platform:platform_port",
         "@com_google_absl//absl/memory",
+    ],
+)
+
+cc_library(
+    name = "crash_analysis",
+    srcs = [
+        "crash_analysis.cc",
+    ],
+    hdrs = ["crash_analysis.h"],
+    tags = [
+        "manual",
+        "no_oss",
+        "nobuilder",
+    ],
+    visibility = ["//tensorflow:__subpackages__"],
+    deps = [
+        "//tensorflow/core/platform:protobuf",
     ],
 )
 
@@ -521,6 +570,8 @@ filegroup(
         "resource.cc",
         "stacktrace.h",
         "tracing_impl.h",
+        "//tensorflow/core/platform/profile_utils:cpu_utils.h",
+        "//tensorflow/core/platform/profile_utils:i_cpu_utils_helper.h",
     ],
     visibility = ["//tensorflow/core/platform:__pkg__"],
 )
@@ -545,6 +596,8 @@ package_group(
     name = "core_and_platform_packages",
     packages = [
         "//tensorflow/core",
+        "//tensorflow/core/lib/gif",
+        "//tensorflow/core/lib/jpeg",
         "//tensorflow/core/platform",
     ],
 )

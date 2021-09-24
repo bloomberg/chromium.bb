@@ -437,14 +437,15 @@ void SkDraw::drawPoints(SkCanvas::PointMode mode, size_t count,
                 if (2 == count && paint.getPathEffect()) {
                     // most likely a dashed line - see if it is one of the ones
                     // we can accelerate
-                    SkStrokeRec rec(paint);
+                    SkStrokeRec stroke(paint);
                     SkPathEffectBase::PointData pointData;
 
                     SkPath path = SkPath::Line(pts[0], pts[1]);
 
                     SkRect cullRect = SkRect::Make(fRC->getBounds());
 
-                    if (as_PEB(paint.getPathEffect())->asPoints(&pointData, path, rec, ctm, &cullRect)) {
+                    if (as_PEB(paint.getPathEffect())->asPoints(&pointData, path, stroke, ctm,
+                                                                &cullRect)) {
                         // 'asPoints' managed to find some fast path
 
                         SkPaint newP(paint);
@@ -1057,7 +1058,7 @@ static bool clipped_out(const SkMatrix& matrix, const SkRasterClip& clip,
 }
 
 static bool clipHandlesSprite(const SkRasterClip& clip, int x, int y, const SkPixmap& pmap) {
-    return clip.isBW() || clip.quickContains(x, y, x + pmap.width(), y + pmap.height());
+    return clip.isBW() || clip.quickContains(SkIRect::MakeXYWH(x, y, pmap.width(), pmap.height()));
 }
 
 void SkDraw::drawBitmap(const SkBitmap& bitmap, const SkMatrix& prematrix,

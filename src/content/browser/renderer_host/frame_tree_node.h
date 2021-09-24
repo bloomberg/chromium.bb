@@ -122,8 +122,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   size_t child_count() const { return current_frame_host()->child_count(); }
 
-  unsigned int depth() const { return depth_; }
-
   RenderFrameHostImpl* parent() const { return parent_; }
 
   FrameTreeNode* opener() const { return opener_; }
@@ -481,6 +479,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Write a representation of this object into a trace.
   void WriteIntoTrace(perfetto::TracedValue context) const;
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::FrameTreeNodeInfo> proto);
 
   // Returns true the node is navigating, i.e. it has an associated
   // NavigationRequest.
@@ -493,7 +493,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // implementation this only returns true if |this| is the actual
   // root node of the inner FrameTree and not the proxy FrameTreeNode in the
   // outer FrameTree.
-  bool IsFencedFrame() const;
+  bool IsFencedFrameRoot() const;
 
   // Returns false if fenced frames are disabled. Returns true if the
   // feature is enabled and if |this| or any of its ancestor nodes is a
@@ -551,9 +551,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // The RenderFrameHost owning this FrameTreeNode, which cannot change for the
   // life of this FrameTreeNode. |nullptr| if this node is the root.
   RenderFrameHostImpl* const parent_;
-
-  // Number of edges from this node to the root. 0 if this is the root.
-  const unsigned int depth_;
 
   // The frame that opened this frame, if any.  Will be set to null if the
   // opener is closed, or if this frame disowns its opener by setting its

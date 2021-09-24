@@ -151,6 +151,18 @@ AudioData::AudioData(AudioDataInit* init, ExceptionState& exception_state)
     return;
   }
 
+  auto sample_rate = static_cast<int>(init->sampleRate());
+  if (sample_rate < media::limits::kMinSampleRate ||
+      sample_rate > media::limits::kMaxSampleRate) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        String::Format("sampleRate is outside of supported implementation "
+                       "limits: need between %u and %u, received %d.",
+                       media::limits::kMinSampleRate,
+                       media::limits::kMaxSampleRate, sample_rate));
+    return;
+  }
+
   std::vector<const uint8_t*> wrapped_data;
   if (media::IsInterleaved(media_format)) {
     // Interleaved data can directly added.
@@ -172,10 +184,16 @@ AudioData::AudioData(AudioDataInit* init, ExceptionState& exception_state)
 
   format_ = init->format();
 
+  auto channel_layout =
+      init->numberOfChannels() > 8
+          // GuesschannelLayout() doesn't know how to guess above 8 channels.
+          ? media::CHANNEL_LAYOUT_DISCRETE
+          : media::GuessChannelLayout(init->numberOfChannels());
+
   data_ = media::AudioBuffer::CopyFrom(
-      media_format, media::GuessChannelLayout(init->numberOfChannels()),
-      init->numberOfChannels(), init->sampleRate(), init->numberOfFrames(),
-      wrapped_data.data(), base::TimeDelta::FromMicroseconds(timestamp_));
+      media_format, channel_layout, init->numberOfChannels(), sample_rate,
+      init->numberOfFrames(), wrapped_data.data(),
+      base::TimeDelta::FromMicroseconds(timestamp_));
 }
 
 AudioData::AudioData(scoped_refptr<media::AudioBuffer> buffer)
@@ -190,6 +208,8 @@ AudioData::AudioData(scoped_refptr<media::AudioBuffer> buffer)
   if (!format_.has_value())
     close();
 }
+
+AudioData::~AudioData() = default;
 
 AudioData* AudioData::clone(ExceptionState& exception_state) {
   if (!data_) {

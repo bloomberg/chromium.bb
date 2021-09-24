@@ -31,8 +31,8 @@
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/pref_names.h"
@@ -64,7 +64,7 @@ NoteTakingHelper* g_helper = nullptr;
 
 // Allowed note-taking app IDs.
 const char* const kDefaultAllowedAppIds[] = {
-    web_app::kA4AppId,
+    web_app::kCursiveAppId,
     // TODO(jdufault): Remove dev version? See crbug.com/640828.
     NoteTakingHelper::kDevKeepExtensionId,
     NoteTakingHelper::kProdKeepExtensionId,
@@ -84,7 +84,7 @@ bool LooksLikeAndroidPackageName(const std::string& app_id) {
 // Returns a |WebApp| that matches |app_id| if one exists, otherwise nullptr.
 const web_app::WebApp* GetWebApp(const std::string& app_id, Profile* profile) {
   web_app::WebAppRegistrar& web_app_registrar =
-      web_app::WebAppProvider::Get(profile)->registrar();
+      web_app::WebAppProvider::GetDeprecated(profile)->registrar();
   return web_app_registrar.GetAppById(app_id);
 }
 
@@ -161,14 +161,14 @@ std::unique_ptr<std::set<std::string>> GetAllowedLockScreenApps(
   const base::Value* allowed_lock_screen_apps_value =
       allowed_lock_screen_apps_pref->GetValue();
 
-  const base::ListValue* allowed_apps_list = nullptr;
   if (!allowed_lock_screen_apps_value ||
-      !allowed_lock_screen_apps_value->GetAsList(&allowed_apps_list)) {
+      !allowed_lock_screen_apps_value->is_list()) {
     return nullptr;
   }
 
   auto allowed_apps = std::make_unique<std::set<std::string>>();
-  for (const base::Value& app_value : allowed_apps_list->GetList()) {
+  for (const base::Value& app_value :
+       allowed_lock_screen_apps_value->GetList()) {
     if (!app_value.is_string()) {
       LOG(ERROR) << "Invalid app ID value " << app_value;
       continue;
@@ -188,9 +188,10 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(
     return NoteTakingHelper::LaunchResult::WEB_APP_MISSING;
   }
 
-  web_app::DisplayMode display_mode = web_app::WebAppProvider::Get(profile)
-                                          ->registrar()
-                                          .GetAppEffectiveDisplayMode(app_id);
+  web_app::DisplayMode display_mode =
+      web_app::WebAppProvider::GetDeprecated(profile)
+          ->registrar()
+          .GetAppEffectiveDisplayMode(app_id);
 
   apps::AppLaunchParams launch_params(
       app_id, web_app::ConvertDisplayModeToAppLaunchContainer(display_mode),
@@ -200,7 +201,7 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(
   // is parsed from the manifest (|kWebAppNoteTaking| is always enabled).
   if (app_id == NoteTakingHelper::kNoteTakingWebAppIdTest ||
       app_id == NoteTakingHelper::kNoteTakingWebAppIdDev ||
-      app_id == web_app::kA4AppId) {
+      app_id == web_app::kCursiveAppId) {
     launch_params.override_url = web_app->start_url().Resolve("/new");
   }
   if (base::FeatureList::IsEnabled(blink::features::kWebAppNoteTaking) &&
@@ -570,7 +571,7 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
     }
   }
 
-  auto* web_app_provider = web_app::WebAppProvider::Get(profile);
+  auto* web_app_provider = web_app::WebAppProvider::GetDeprecated(profile);
   web_app::WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
   if (base::FeatureList::IsEnabled(blink::features::kWebAppNoteTaking)) {
     for (const web_app::WebApp& web_app : web_app_registrar.GetApps()) {

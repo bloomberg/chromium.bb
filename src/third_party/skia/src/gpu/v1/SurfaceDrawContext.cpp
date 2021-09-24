@@ -37,10 +37,10 @@
 #include "src/gpu/GrImageContextPriv.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrPathRenderer.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSemaphore.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrTracing.h"
@@ -53,23 +53,23 @@
 #include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
-#include "src/gpu/ops/GrClearOp.h"
-#include "src/gpu/ops/GrDrawAtlasOp.h"
+#include "src/gpu/ops/ClearOp.h"
+#include "src/gpu/ops/DrawAtlasOp.h"
+#include "src/gpu/ops/DrawVerticesOp.h"
+#include "src/gpu/ops/DrawableOp.h"
+#include "src/gpu/ops/FillRRectOp.h"
+#include "src/gpu/ops/FillRectOp.h"
 #include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/ops/GrDrawVerticesOp.h"
-#include "src/gpu/ops/GrDrawableOp.h"
-#include "src/gpu/ops/GrFillRRectOp.h"
-#include "src/gpu/ops/GrFillRectOp.h"
-#include "src/gpu/ops/GrLatticeOp.h"
 #include "src/gpu/ops/GrOp.h"
 #include "src/gpu/ops/GrOvalOpFactory.h"
-#include "src/gpu/ops/GrRegionOp.h"
-#include "src/gpu/ops/GrShadowRRectOp.h"
-#include "src/gpu/ops/GrStrokeRectOp.h"
-#include "src/gpu/ops/GrTextureOp.h"
-#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
+#include "src/gpu/ops/LatticeOp.h"
+#include "src/gpu/ops/RegionOp.h"
+#include "src/gpu/ops/ShadowRRectOp.h"
+#include "src/gpu/ops/StrokeRectOp.h"
+#include "src/gpu/ops/TextureOp.h"
 #include "src/gpu/text/GrSDFTControl.h"
 #include "src/gpu/text/GrTextBlobCache.h"
+#include "src/gpu/v1/PathRenderer.h"
 
 #define ASSERT_OWNED_RESOURCE(R) SkASSERT(!(R) || (R)->getContext() == this->drawingManager()->getContext())
 #define ASSERT_SINGLE_OWNER        GR_ASSERT_SINGLE_OWNER(this->singleOwner())
@@ -280,8 +280,8 @@ std::unique_ptr<SurfaceDrawContext> SurfaceDrawContext::MakeFromBackendTexture(
 }
 
 // In MDB mode the reffing of the 'getLastOpsTask' call's result allows in-progress
-// GrOpsTask to be picked up and added to by SurfaceDrawContexts lower in the call
-// stack. When this occurs with a closed GrOpsTask, a new one will be allocated
+// OpsTask to be picked up and added to by SurfaceDrawContexts lower in the call
+// stack. When this occurs with a closed OpsTask, a new one will be allocated
 // when the surfaceDrawContext attempts to use it (via getOpsTask).
 SurfaceDrawContext::SurfaceDrawContext(GrRecordingContext* rContext,
                                        GrSurfaceProxyView readView,
@@ -307,37 +307,20 @@ SurfaceDrawContext::~SurfaceDrawContext() {
     ASSERT_SINGLE_OWNER
 }
 
-void SurfaceDrawContext::willReplaceOpsTask(GrOpsTask* prevTask, GrOpsTask* nextTask) {
+void SurfaceDrawContext::willReplaceOpsTask(OpsTask* prevTask, OpsTask* nextTask) {
     if (prevTask && fNeedsStencil) {
         // Store the stencil values in memory upon completion of fOpsTask.
         prevTask->setMustPreserveStencil();
         // Reload the stencil buffer content at the beginning of newOpsTask.
         // FIXME: Could the topo sort insert a task between these two that modifies the stencil
         // values?
-        nextTask->setInitialStencilContent(GrOpsTask::StencilContent::kPreserved);
+        nextTask->setInitialStencilContent(OpsTask::StencilContent::kPreserved);
     }
 #if GR_GPU_STATS && GR_TEST_UTILS
     if (fCanUseDynamicMSAA) {
         fContext->priv().dmsaaStats().fNumRenderPasses++;
     }
 #endif
-}
-
-inline GrAAType SurfaceDrawContext::chooseAAType(GrAA aa) {
-    if (fCanUseDynamicMSAA) {
-        // Always trigger DMSAA when it's available. The coverage ops that know how to handle both
-        // single and multisample targets without popping will do so without calling chooseAAType.
-        return GrAAType::kMSAA;
-    }
-    if (GrAA::kNo == aa) {
-        // On some devices we cannot disable MSAA if it is enabled so we make the AA type reflect
-        // that.
-        if (this->numSamples() > 1 && !this->caps()->multisampleDisableSupport()) {
-            return GrAAType::kMSAA;
-        }
-        return GrAAType::kNone;
-    }
-    return (this->numSamples() > 1) ? GrAAType::kMSAA : GrAAType::kCoverage;
 }
 
 void SurfaceDrawContext::drawGlyphRunListNoCache(const GrClip* clip,
@@ -650,8 +633,8 @@ void SurfaceDrawContext::drawFilledQuad(const GrClip* clip,
         } else {
             aaType = this->chooseAAType(aa);
         }
-        this->addDrawOp(finalClip, GrFillRectOp::Make(fContext, std::move(paint), aaType,
-                                                      quad, ss));
+        this->addDrawOp(finalClip, FillRectOp::Make(fContext, std::move(paint), aaType,
+                                                    quad, ss));
     }
     // All other optimization levels were completely handled inside attempt(), so no extra op needed
 }
@@ -670,7 +653,7 @@ void SurfaceDrawContext::drawTexture(const GrClip* clip,
                                      SkCanvas::SrcRectConstraint constraint,
                                      const SkMatrix& viewMatrix,
                                      sk_sp<GrColorSpaceXform> colorSpaceXform) {
-    // If we are using dmsaa then go through GrFillRRectOp (via fillRectToRect).
+    // If we are using dmsaa then go through FillRRectOp (via fillRectToRect).
     if ((this->alwaysAntialias() || this->caps()->reducedShaderMode()) && aa == GrAA::kYes) {
         GrPaint paint;
         paint.setColor4f(color);
@@ -722,7 +705,7 @@ void SurfaceDrawContext::drawTexturedQuad(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     // Functionally this is very similar to drawFilledQuad except that there's no constColor to
-    // enable the kSubmitted optimizations, no stencil settings support, and its a GrTextureOp.
+    // enable the kSubmitted optimizations, no stencil settings support, and its a TextureOp.
     QuadOptimization opt = this->attemptQuadOptimization(clip, nullptr/*stencil*/, &aa, quad,
                                                          nullptr/*paint*/);
 
@@ -732,14 +715,14 @@ void SurfaceDrawContext::drawTexturedQuad(const GrClip* clip,
         const GrClip* finalClip = opt == QuadOptimization::kClipApplied ? nullptr : clip;
         GrAAType aaType = this->chooseAAType(aa);
         auto clampType = GrColorTypeClampType(this->colorInfo().colorType());
-        auto saturate = clampType == GrClampType::kManual ? GrTextureOp::Saturate::kYes
-                                                          : GrTextureOp::Saturate::kNo;
+        auto saturate = clampType == GrClampType::kManual ? TextureOp::Saturate::kYes
+                                                          : TextureOp::Saturate::kNo;
         // Use the provided subset, although hypothetically we could detect that the cropped local
         // quad is sufficiently inside the subset and the constraint could be dropped.
         this->addDrawOp(finalClip,
-                        GrTextureOp::Make(fContext, std::move(proxyView), srcAlphaType,
-                                          std::move(textureXform), filter, mm, color, saturate,
-                                          blendMode, aaType, quad, subset));
+                        TextureOp::Make(fContext, std::move(proxyView), srcAlphaType,
+                                        std::move(textureXform), filter, mm, color, saturate,
+                                        blendMode, aaType, quad, subset));
     }
 }
 
@@ -782,8 +765,8 @@ void SurfaceDrawContext::drawRect(const GrClip* clip,
                            stroke.getJoin() == SkPaint::kMiter_Join &&
                            stroke.getMiter() >= SK_ScalarSqrt2) ? GrAAType::kCoverage
                                                                 : this->chooseAAType(aa);
-        GrOp::Owner op = GrStrokeRectOp::Make(
-                fContext, std::move(paint), aaType, viewMatrix, rect, stroke);
+        GrOp::Owner op = StrokeRectOp::Make(fContext, std::move(paint), aaType, viewMatrix,
+                                            rect, stroke);
         // op may be null if the stroke is not supported or if using coverage aa and the view matrix
         // does not preserve rectangles.
         if (op) {
@@ -805,11 +788,11 @@ void SurfaceDrawContext::fillRectToRect(const GrClip* clip,
     DrawQuad quad{GrQuad::MakeFromRect(rectToDraw, viewMatrix), GrQuad(localRect),
                   aa == GrAA::kYes ? GrQuadAAFlags::kAll : GrQuadAAFlags::kNone};
 
-    // If we are using dmsaa then attempt to draw the rect with GrFillRRectOp.
+    // If we are using dmsaa then attempt to draw the rect with FillRRectOp.
     if ((fContext->priv().caps()->reducedShaderMode() || this->alwaysAntialias()) &&
         this->caps()->drawInstancedSupport()                                      &&
         aa == GrAA::kYes) {  // If aa is kNo when using dmsaa, the rect is axis aligned. Don't use
-                             // GrFillRRectOp because it might require dual source blending.
+                             // FillRRectOp because it might require dual source blending.
                              // http://skbug.com/11756
         QuadOptimization opt = this->attemptQuadOptimization(clip, nullptr/*stencil*/, &aa, &quad,
                                                              &paint);
@@ -834,15 +817,15 @@ void SurfaceDrawContext::fillRectToRect(const GrClip* clip,
                 optimizedClip = nullptr;
             }
         } else {
-            // Even if attemptQuadOptimization gave us an optimized quad, GrFillRRectOp needs a rect
+            // Even if attemptQuadOptimization gave us an optimized quad, FillRRectOp needs a rect
             // in pre-matrix space, so use the original rect. Also preserve the original clip.
             croppedRect = rectToDraw;
             croppedLocal = localRect;
         }
 
-        if (auto op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint),
-                                          viewMatrix, SkRRect::MakeRect(croppedRect), croppedLocal,
-                                          GrAA::kYes)) {
+        if (auto op = FillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint),
+                                        viewMatrix, SkRRect::MakeRect(croppedRect), croppedLocal,
+                                        GrAA::kYes)) {
             this->addDrawOp(optimizedClip, std::move(op));
             return;
         }
@@ -860,18 +843,18 @@ void SurfaceDrawContext::drawQuadSet(const GrClip* clip,
                                      int cnt) {
     GrAAType aaType = this->chooseAAType(aa);
 
-    GrFillRectOp::AddFillRectOps(this, clip, fContext, std::move(paint), aaType, viewMatrix,
-                                 quads, cnt);
+    FillRectOp::AddFillRectOps(this, clip, fContext, std::move(paint), aaType, viewMatrix,
+                               quads, cnt);
 }
 
 int SurfaceDrawContext::maxWindowRectangles() const {
     return this->asRenderTargetProxy()->maxWindowRectangles(*this->caps());
 }
 
-GrOpsTask::CanDiscardPreviousOps SurfaceDrawContext::canDiscardPreviousOpsOnFullClear() const {
+OpsTask::CanDiscardPreviousOps SurfaceDrawContext::canDiscardPreviousOpsOnFullClear() const {
 #if GR_TEST_UTILS
     if (fPreserveOpsOnFullClear_TestingOnly) {
-        return GrOpsTask::CanDiscardPreviousOps::kNo;
+        return OpsTask::CanDiscardPreviousOps::kNo;
     }
 #endif
     // Regardless of how the clear is implemented (native clear or a fullscreen quad), all prior ops
@@ -880,7 +863,7 @@ GrOpsTask::CanDiscardPreviousOps SurfaceDrawContext::canDiscardPreviousOpsOnFull
     // Although the clear will ignore the stencil buffer, following draw ops may not so we can't get
     // rid of all the preceding ops. Beware! If we ever add any ops that have a side effect beyond
     // modifying the stencil buffer we will need a more elaborate tracking system (skbug.com/7002).
-    return GrOpsTask::CanDiscardPreviousOps(!fNeedsStencil);
+    return OpsTask::CanDiscardPreviousOps(!fNeedsStencil);
 }
 
 void SurfaceDrawContext::setNeedsStencil() {
@@ -896,7 +879,7 @@ void SurfaceDrawContext::setNeedsStencil() {
             this->internalStencilClear(nullptr, /* inside mask */ false);
         } else {
             this->getOpsTask()->setInitialStencilContent(
-                    GrOpsTask::StencilContent::kUserBitsCleared);
+                    OpsTask::StencilContent::kUserBitsCleared);
         }
     }
 }
@@ -919,10 +902,10 @@ void SurfaceDrawContext::internalStencilClear(const SkIRect* scissor, bool insid
         GrPaint paint;
         paint.setXPFactory(GrDisableColorXPFactory::Get());
         this->addDrawOp(nullptr,
-                        GrFillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
-                                                    SkRect::Make(scissorState.rect()), ss));
+                        FillRectOp::MakeNonAARect(fContext, std::move(paint), SkMatrix::I(),
+                                                  SkRect::Make(scissorState.rect()), ss));
     } else {
-        this->addOp(GrClearOp::MakeStencilClip(fContext, scissorState, insideStencilMask));
+        this->addOp(ClearOp::MakeStencilClip(fContext, scissorState, insideStencilMask));
     }
 }
 
@@ -934,7 +917,7 @@ bool SurfaceDrawContext::stencilPath(const GrHardClip* clip,
                               : SkIRect::MakeSize(this->dimensions());
     GrStyledShape shape(path, GrStyledShape::DoSimplify::kNo);
 
-    GrPathRenderer::CanDrawPathArgs canDrawArgs;
+    PathRenderer::CanDrawPathArgs canDrawArgs;
     canDrawArgs.fCaps = fContext->priv().caps();
     canDrawArgs.fProxy = this->asRenderTargetProxy();
     canDrawArgs.fClipConservativeBounds = &clipBounds;
@@ -944,14 +927,15 @@ bool SurfaceDrawContext::stencilPath(const GrHardClip* clip,
     canDrawArgs.fSurfaceProps = &fSurfaceProps;
     canDrawArgs.fAAType = (doStencilMSAA == GrAA::kYes) ? GrAAType::kMSAA : GrAAType::kNone;
     canDrawArgs.fHasUserStencilSettings = false;
-    GrPathRenderer* pr = this->drawingManager()->getPathRenderer(
-            canDrawArgs, false, GrPathRendererChain::DrawType::kStencil);
+    auto pr = this->drawingManager()->getPathRenderer(canDrawArgs,
+                                                      false,
+                                                      PathRendererChain::DrawType::kStencil);
     if (!pr) {
         SkDebugf("WARNING: No path renderer to stencil path.\n");
         return false;
     }
 
-    GrPathRenderer::StencilPathArgs args;
+    PathRenderer::StencilPathArgs args;
     args.fContext = fContext;
     args.fSurfaceDrawContext = this;
     args.fClip = clip;
@@ -984,10 +968,10 @@ void SurfaceDrawContext::drawTextureSet(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
     GrAAType aaType = this->chooseAAType(aa);
     auto clampType = GrColorTypeClampType(this->colorInfo().colorType());
-    auto saturate = clampType == GrClampType::kManual ? GrTextureOp::Saturate::kYes
-                                                      : GrTextureOp::Saturate::kNo;
-    GrTextureOp::AddTextureSetOps(this, clip, fContext, set, cnt, proxyRunCnt, filter, mm, saturate,
-                                  mode, aaType, constraint, viewMatrix, std::move(texXform));
+    auto saturate = clampType == GrClampType::kManual ? TextureOp::Saturate::kYes
+                                                      : TextureOp::Saturate::kNo;
+    TextureOp::AddTextureSetOps(this, clip, fContext, set, cnt, proxyRunCnt, filter, mm, saturate,
+                                mode, aaType, constraint, viewMatrix, std::move(texXform));
 }
 
 void SurfaceDrawContext::drawVertices(const GrClip* clip,
@@ -1006,9 +990,9 @@ void SurfaceDrawContext::drawVertices(const GrClip* clip,
     SkASSERT(vertices);
     GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(GrAA::kNo);
     GrOp::Owner op =
-            GrDrawVerticesOp::Make(fContext, std::move(paint), std::move(vertices), matrixProvider,
-                                   aaType, this->colorInfo().refColorSpaceXformFromSRGB(),
-                                   overridePrimType, effect);
+            DrawVerticesOp::Make(fContext, std::move(paint), std::move(vertices), matrixProvider,
+                                 aaType, this->colorInfo().refColorSpaceXformFromSRGB(),
+                                 overridePrimType, effect);
     this->addDrawOp(clip, std::move(op));
 }
 
@@ -1029,8 +1013,8 @@ void SurfaceDrawContext::drawAtlas(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     GrAAType aaType = this->chooseAAType(GrAA::kNo);
-    GrOp::Owner op = GrDrawAtlasOp::Make(fContext, std::move(paint), viewMatrix,
-                                         aaType, spriteCount, xform, texRect, colors);
+    GrOp::Owner op = DrawAtlasOp::Make(fContext, std::move(paint), viewMatrix,
+                                       aaType, spriteCount, xform, texRect, colors);
     this->addDrawOp(clip, std::move(op));
 }
 
@@ -1111,8 +1095,8 @@ void SurfaceDrawContext::drawRRect(const GrClip* origClip,
     }
     if (!op && style.isSimpleFill()) {
         assert_alive(paint);
-        op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix, rrect,
-                                 rrect.rect(), GrAA(aaType != GrAAType::kNone));
+        op = FillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix, rrect,
+                               rrect.rect(), GrAA(aaType != GrAAType::kNone));
     }
     if (!op && (aaType == GrAAType::kCoverage || fCanUseDynamicMSAA)) {
         assert_alive(paint);
@@ -1216,12 +1200,12 @@ bool SurfaceDrawContext::drawFastShadow(const GrClip* clip,
             devSpaceInsetWidth = ambientRRect.width();
         }
 
-        GrOp::Owner op = GrShadowRRectOp::Make(fContext,
-                                               ambientColor,
-                                               viewMatrix,
-                                               ambientRRect,
-                                               devSpaceAmbientBlur,
-                                               devSpaceInsetWidth);
+        GrOp::Owner op = ShadowRRectOp::Make(fContext,
+                                             ambientColor,
+                                             viewMatrix,
+                                             ambientRRect,
+                                             devSpaceAmbientBlur,
+                                             devSpaceInsetWidth);
         if (op) {
             this->addDrawOp(clip, std::move(op));
         }
@@ -1321,12 +1305,12 @@ bool SurfaceDrawContext::drawFastShadow(const GrClip* clip,
 
         GrColor spotColor = SkColorToPremulGrColor(rec.fSpotColor);
 
-        GrOp::Owner op = GrShadowRRectOp::Make(fContext,
-                                               spotColor,
-                                               viewMatrix,
-                                               spotShadowRRect,
-                                               2.0f * devSpaceSpotBlur,
-                                               insetWidth);
+        GrOp::Owner op = ShadowRRectOp::Make(fContext,
+                                             spotColor,
+                                             viewMatrix,
+                                             spotShadowRRect,
+                                             2.0f * devSpaceSpotBlur,
+                                             insetWidth);
         if (op) {
             this->addDrawOp(clip, std::move(op));
         }
@@ -1367,11 +1351,8 @@ void SurfaceDrawContext::drawRegion(const GrClip* clip,
         return this->drawPath(clip, std::move(paint), aa, viewMatrix, path, style);
     }
 
-    GrAAType aaType = (this->numSamples() > 1 &&
-                       !this->caps()->multisampleDisableSupport())
-                    ? GrAAType::kMSAA
-                    : GrAAType::kNone;
-    GrOp::Owner op = GrRegionOp::Make(fContext, std::move(paint), viewMatrix, region, aaType, ss);
+    GrAAType aaType = (this->numSamples() > 1) ? GrAAType::kMSAA : GrAAType::kNone;
+    GrOp::Owner op = RegionOp::Make(fContext, std::move(paint), viewMatrix, region, aaType, ss);
     this->addDrawOp(clip, std::move(op));
 }
 
@@ -1414,14 +1395,14 @@ void SurfaceDrawContext::drawOval(const GrClip* clip,
                                            this->caps()->shaderCaps());
     }
     if (!op && style.isSimpleFill()) {
-        // GrFillRRectOp has special geometry and a fragment-shader branch to conditionally evaluate
+        // FillRRectOp has special geometry and a fragment-shader branch to conditionally evaluate
         // the arc equation. This same special geometry and fragment branch also turn out to be a
         // substantial optimization for drawing ovals (namely, by not evaluating the arc equation
         // inside the oval's inner diamond). Given these optimizations, it's a clear win to draw
         // ovals the exact same way we do round rects.
         assert_alive(paint);
-        op = GrFillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix,
-                                 SkRRect::MakeOval(oval), oval, GrAA(aaType != GrAAType::kNone));
+        op = FillRRectOp::Make(fContext, this->arenaAlloc(), std::move(paint), viewMatrix,
+                               SkRRect::MakeOval(oval), oval, GrAA(aaType != GrAAType::kNone));
     }
     if (!op && (aaType == GrAAType::kCoverage || fCanUseDynamicMSAA)) {
         assert_alive(paint);
@@ -1495,14 +1476,14 @@ void SurfaceDrawContext::drawImageLattice(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     GrOp::Owner op =
-            GrLatticeOp::MakeNonAA(fContext, std::move(paint), viewMatrix, std::move(view),
+              LatticeOp::MakeNonAA(fContext, std::move(paint), viewMatrix, std::move(view),
                                    alphaType, std::move(csxf), filter, std::move(iter), dst);
     this->addDrawOp(clip, std::move(op));
 }
 
 void SurfaceDrawContext::drawDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler> drawable,
                                       const SkRect& bounds) {
-    GrOp::Owner op(GrDrawableOp::Make(fContext, std::move(drawable), bounds));
+    GrOp::Owner op(DrawableOp::Make(fContext, std::move(drawable), bounds));
     SkASSERT(op);
     this->addOp(std::move(op));
 }
@@ -1510,7 +1491,7 @@ void SurfaceDrawContext::drawDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler
 void SurfaceDrawContext::setLastClip(uint32_t clipStackGenID,
                                      const SkIRect& devClipBounds,
                                      int numClipAnalyticElements) {
-    GrOpsTask* opsTask = this->getOpsTask();
+    auto opsTask = this->getOpsTask();
     opsTask->fLastClipStackGenID = clipStackGenID;
     opsTask->fLastDevClipBounds = devClipBounds;
     opsTask->fLastClipNumAnalyticElements = numClipAnalyticElements;
@@ -1519,7 +1500,7 @@ void SurfaceDrawContext::setLastClip(uint32_t clipStackGenID,
 bool SurfaceDrawContext::mustRenderClip(uint32_t clipStackGenID,
                                         const SkIRect& devClipBounds,
                                         int numClipAnalyticElements) {
-    GrOpsTask* opsTask = this->getOpsTask();
+    auto opsTask = this->getOpsTask();
     return opsTask->fLastClipStackGenID != clipStackGenID ||
            !opsTask->fLastDevClipBounds.contains(devClipBounds) ||
            opsTask->fLastClipNumAnalyticElements != numClipAnalyticElements;
@@ -1639,7 +1620,7 @@ bool SurfaceDrawContext::drawAndStencilPath(const GrHardClip* clip,
     paint.setCoverageSetOpXPFactory(op, invert);
 
     GrStyledShape shape(path, GrStyle::SimpleFill());
-    GrPathRenderer::CanDrawPathArgs canDrawArgs;
+    PathRenderer::CanDrawPathArgs canDrawArgs;
     canDrawArgs.fCaps = this->caps();
     canDrawArgs.fProxy = this->asRenderTargetProxy();
     canDrawArgs.fViewMatrix = &viewMatrix;
@@ -1650,23 +1631,26 @@ bool SurfaceDrawContext::drawAndStencilPath(const GrHardClip* clip,
     canDrawArgs.fAAType = aaType;
     canDrawArgs.fHasUserStencilSettings = hasUserStencilSettings;
 
+    using DrawType = PathRendererChain::DrawType;
+
     // Don't allow the SW renderer
-    GrPathRenderer* pr = this->drawingManager()->getPathRenderer(
-            canDrawArgs, false, GrPathRendererChain::DrawType::kStencilAndColor);
+    auto pr = this->drawingManager()->getPathRenderer(canDrawArgs,
+                                                      false,
+                                                      DrawType::kStencilAndColor);
     if (!pr) {
         return false;
     }
 
-    GrPathRenderer::DrawPathArgs args{this->drawingManager()->getContext(),
-                                      std::move(paint),
-                                      ss,
-                                      this,
-                                      clip,
-                                      &clipConservativeBounds,
-                                      &viewMatrix,
-                                      &shape,
-                                      aaType,
-                                      this->colorInfo().isLinearlyBlended()};
+    PathRenderer::DrawPathArgs args{this->drawingManager()->getContext(),
+                                    std::move(paint),
+                                    ss,
+                                    this,
+                                    clip,
+                                    &clipConservativeBounds,
+                                    &viewMatrix,
+                                    &shape,
+                                    aaType,
+                                    this->colorInfo().isLinearlyBlended()};
     pr->drawPath(args);
     return true;
 }
@@ -1779,8 +1763,8 @@ bool SurfaceDrawContext::drawSimpleShape(const GrClip* clip,
             SkRect rects[2];
             if (shape.asNestedRects(rects)) {
                 // Concave AA paths are expensive - try to avoid them for special cases
-                GrOp::Owner op = GrStrokeRectOp::MakeNested(
-                                fContext, std::move(*paint), viewMatrix, rects);
+                GrOp::Owner op = StrokeRectOp::MakeNested(fContext, std::move(*paint),
+                                                          viewMatrix, rects);
                 if (op) {
                     this->addDrawOp(clip, std::move(op));
                     return true;
@@ -1812,7 +1796,7 @@ void SurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
     // Always allow paths to trigger DMSAA.
     GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(aa);
 
-    GrPathRenderer::CanDrawPathArgs canDrawArgs;
+    PathRenderer::CanDrawPathArgs canDrawArgs;
     canDrawArgs.fCaps = this->caps();
     canDrawArgs.fProxy = this->asRenderTargetProxy();
     canDrawArgs.fViewMatrix = &viewMatrix;
@@ -1825,14 +1809,14 @@ void SurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
 
     constexpr static bool kDisallowSWPathRenderer = false;
     constexpr static bool kAllowSWPathRenderer = true;
-    using DrawType = GrPathRendererChain::DrawType;
+    using DrawType = PathRendererChain::DrawType;
 
-    GrPathRenderer* pr = nullptr;
+    PathRenderer* pr = nullptr;
 
     if (!shape.style().strokeRec().isFillStyle() && !shape.isEmpty()) {
         // Give the tessellation path renderer a chance to claim this stroke before we simplify it.
-        GrPathRenderer* tess = this->drawingManager()->getTessellationPathRenderer();
-        if (tess && tess->canDrawPath(canDrawArgs) == GrPathRenderer::CanDrawPath::kYes) {
+        PathRenderer* tess = this->drawingManager()->getTessellationPathRenderer();
+        if (tess && tess->canDrawPath(canDrawArgs) == PathRenderer::CanDrawPath::kYes) {
             pr = tess;
         }
     }
@@ -1897,16 +1881,16 @@ void SurfaceDrawContext::drawShapeUsingPathRenderer(const GrClip* clip,
         return;
     }
 
-    GrPathRenderer::DrawPathArgs args{this->drawingManager()->getContext(),
-                                      std::move(paint),
-                                      &GrUserStencilSettings::kUnused,
-                                      this,
-                                      clip,
-                                      &clipConservativeBounds,
-                                      &viewMatrix,
-                                      canDrawArgs.fShape,
-                                      aaType,
-                                      this->colorInfo().isLinearlyBlended()};
+    PathRenderer::DrawPathArgs args{this->drawingManager()->getContext(),
+                                    std::move(paint),
+                                    &GrUserStencilSettings::kUnused,
+                                    this,
+                                    clip,
+                                    &clipConservativeBounds,
+                                    &viewMatrix,
+                                    canDrawArgs.fShape,
+                                    aaType,
+                                    this->colorInfo().isLinearlyBlended()};
     pr->drawPath(args);
 }
 
@@ -2039,12 +2023,12 @@ bool SurfaceDrawContext::setupDstProxyView(const SkRect& opBounds,
         return false;
     }
 
-    // First get the dstSampleFlags as if we will put the draw into the current GrOpsTask
+    // First get the dstSampleFlags as if we will put the draw into the current OpsTask
     auto dstSampleFlags = this->caps()->getDstSampleFlagsForProxy(
             this->asRenderTargetProxy(), this->getOpsTask()->usesMSAASurface() || opRequiresMSAA);
 
-    // If we don't have barriers for this draw then we will definitely be breaking up the GrOpsTask.
-    // However, if using dynamic MSAA, the new GrOpsTask will not have MSAA already enabled on it
+    // If we don't have barriers for this draw then we will definitely be breaking up the OpsTask.
+    // However, if using dynamic MSAA, the new OpsTask will not have MSAA already enabled on it
     // and that may allow us to use texture barriers. So we check if we can use barriers on the new
     // ops task and then break it up if so.
     if (!(dstSampleFlags & GrDstSampleFlags::kRequiresTextureBarrier) &&
@@ -2064,7 +2048,7 @@ bool SurfaceDrawContext::setupDstProxyView(const SkRect& opBounds,
     if (dstSampleFlags & GrDstSampleFlags::kRequiresTextureBarrier) {
         // If we require a barrier to sample the dst it means we are sampling the RT itself
         // either as a texture or input attachment. In this case we don't need to break up the
-        // GrOpsTask.
+        // OpsTask.
         dstProxyView->setProxyView(this->readSurfaceView());
         dstProxyView->setOffset(0, 0);
         dstProxyView->setDstSampleFlags(dstSampleFlags);
@@ -2080,7 +2064,8 @@ bool SurfaceDrawContext::setupDstProxyView(const SkRect& opBounds,
     // barrier between draws to flush the render target before being used as a texture in the next
     // draw. So in that case we just fall through to doing a copy.
     if (fCanUseDynamicMSAA && opRequiresMSAA && this->asTextureProxy() &&
-        !this->caps()->msaaResolvesAutomatically()) {
+        !this->caps()->msaaResolvesAutomatically() &&
+        this->caps()->dmsaaResolveCanBeUsedAsTextureInSameRenderPass()) {
         this->replaceOpsTaskIfModifiesColor()->setCannotMergeBackward();
         dstProxyView->setProxyView(this->readSurfaceView());
         dstProxyView->setOffset(0, 0);
@@ -2131,7 +2116,7 @@ bool SurfaceDrawContext::setupDstProxyView(const SkRect& opBounds,
     return true;
 }
 
-GrOpsTask* SurfaceDrawContext::replaceOpsTaskIfModifiesColor() {
+OpsTask* SurfaceDrawContext::replaceOpsTaskIfModifiesColor() {
     if (!this->getOpsTask()->isColorNoOp()) {
         this->replaceOpsTask();
     }

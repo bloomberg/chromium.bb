@@ -107,13 +107,10 @@ WideString CBC_OnedCode39Writer::RenderTextContents(WideStringView contents) {
   return renderContents;
 }
 
-bool CBC_OnedCode39Writer::SetTextLocation(BC_TEXT_LOC location) {
-  if (location < BC_TEXT_LOC_NONE || location > BC_TEXT_LOC_BELOWEMBED) {
-    return false;
-  }
+void CBC_OnedCode39Writer::SetTextLocation(BC_TEXT_LOC location) {
   m_locTextLoc = location;
-  return true;
 }
+
 bool CBC_OnedCode39Writer::SetWideNarrowRatio(int8_t ratio) {
   if (ratio < 2 || ratio > 3)
     return false;
@@ -123,12 +120,13 @@ bool CBC_OnedCode39Writer::SetWideNarrowRatio(int8_t ratio) {
 }
 
 uint8_t* CBC_OnedCode39Writer::EncodeWithHint(const ByteString& contents,
-                                              BCFORMAT format,
+                                              BC_TYPE format,
                                               int32_t& outWidth,
                                               int32_t& outHeight,
                                               int32_t hints) {
-  if (format != BCFORMAT_CODE_39)
+  if (format != BC_TYPE::kCode39)
     return nullptr;
+
   return CBC_OneDimWriter::EncodeWithHint(contents, format, outWidth, outHeight,
                                           hints);
 }

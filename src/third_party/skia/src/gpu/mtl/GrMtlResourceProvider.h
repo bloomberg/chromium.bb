@@ -15,6 +15,7 @@
 #include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrThreadSafePipelineBuilder.h"
 #include "src/gpu/mtl/GrMtlDepthStencil.h"
+#include "src/gpu/mtl/GrMtlPipeline.h"
 #include "src/gpu/mtl/GrMtlPipelineStateBuilder.h"
 #include "src/gpu/mtl/GrMtlSampler.h"
 
@@ -38,6 +39,10 @@ public:
 
     // Finds or creates a compatible MTLSamplerState based on the GrSamplerState.
     GrMtlSampler* findOrCreateCompatibleSampler(GrSamplerState);
+
+    const GrMtlRenderPipeline* findOrCreateMSAALoadPipeline(MTLPixelFormat colorFormat,
+                                                            int sampleCount,
+                                                            MTLPixelFormat stencilFormat);
 
     // Destroy any cached resources. To be called before releasing the MtlDevice.
     void destroyResources();
@@ -85,6 +90,15 @@ private:
 
     SkTDynamicHash<GrMtlSampler, GrMtlSampler::Key> fSamplers;
     SkTDynamicHash<GrMtlDepthStencil, GrMtlDepthStencil::Key> fDepthStencilStates;
+
+    struct MSAALoadPipelineEntry {
+        sk_sp<const GrMtlRenderPipeline> fPipeline;
+        MTLPixelFormat fColorFormat;
+        int fSampleCount;
+        MTLPixelFormat fStencilFormat;
+    };
+    id<MTLLibrary> fMSAALoadLibrary;
+    SkTArray<MSAALoadPipelineEntry> fMSAALoadPipelines;
 };
 
 #endif

@@ -153,7 +153,12 @@
     {
       name: "ClientHintUAReduced",
       permissions_policy_name: "ch-ua-reduced",
-      depends_on: ["FeaturePolicyForClientHints"],
+      depends_on: ["FeaturePolicyForClientHints", "UserAgentReduction"],
+    },
+    {
+      name: "ClientHintViewportHeight",
+      permissions_policy_name: "ch-viewport-height",
+      depends_on: ["ViewportHeightClientHintHeader"],
     },
     {
       name: "ClientHintViewportWidth",

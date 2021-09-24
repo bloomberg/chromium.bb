@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_FEED_CORE_V2_PUBLIC_WEB_FEED_SUBSCRIPTIONS_H_
 #define COMPONENTS_FEED_CORE_V2_PUBLIC_WEB_FEED_SUBSCRIPTIONS_H_
 
+#include <ostream>
 #include <string>
+
 #include "base/callback.h"
 #include "components/feed/core/v2/public/types.h"
 
@@ -76,6 +78,9 @@ class WebFeedSubscriptions {
   virtual void RefreshSubscriptions(
       base::OnceCallback<void(RefreshResult)> callback) = 0;
 
+  // Force a refresh of the server-recommended web feeds.
+  virtual void RefreshRecommendedFeeds() = 0;
+
   // Whether the user has subscribed to at least one web feed. May require
   // fetching data from the server if cached data is not fresh. If fetching
   // fails, returns the last-known state.
@@ -86,6 +91,9 @@ class WebFeedSubscriptions {
   // fails, returns the last-known state.
   virtual void SubscribedWebFeedCount(
       base::OnceCallback<void(int)> callback) = 0;
+
+  // Output debugging information for snippets-internals.
+  virtual void DumpStateForDebugging(std::ostream& ss) {}
 };
 
 }  // namespace feed

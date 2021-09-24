@@ -30,6 +30,7 @@
 
 #include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
@@ -74,6 +75,7 @@ namespace blink {
 class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
+class DarkModeFilter;
 class DocumentLifecycle;
 class FloatSize;
 class FragmentAnchor;
@@ -305,11 +307,11 @@ class CORE_EXPORT LocalFrameView final
   // or sticky so that we can support HasStickyViewportConstrainedObject().
   enum ViewportConstrainedType { kFixed = 0, kSticky = 1 };
   // Fixed-position and viewport-constrained sticky-position objects.
-  typedef HashSet<LayoutObject*> ObjectSet;
+  typedef HeapHashSet<Member<LayoutObject>> ObjectSet;
   void AddViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
   void RemoveViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
   const ObjectSet* ViewportConstrainedObjects() const {
-    return viewport_constrained_objects_.get();
+    return viewport_constrained_objects_;
   }
   bool HasViewportConstrainedObjects() const {
     return viewport_constrained_objects_ &&
@@ -347,7 +349,7 @@ class CORE_EXPORT LocalFrameView final
 
   void AddPartToUpdate(LayoutEmbeddedObject&);
 
-  Color DocumentBackgroundColor() const;
+  Color DocumentBackgroundColor();
 
   // Called when this view is going to be removed from its owning
   // LocalFrame.
@@ -594,9 +596,12 @@ class CORE_EXPORT LocalFrameView final
 
   int ViewportWidth() const;
 
+  int ViewportHeight() const;
+
   LayoutAnalyzer* GetLayoutAnalyzer() { return analyzer_.get(); }
 
   bool LocalFrameTreeAllowsThrottling() const;
+  bool LocalFrameTreeForcesThrottling() const;
 
   // Returns true if this frame should not render or schedule visual updates.
   bool ShouldThrottleRendering() const;
@@ -744,6 +749,11 @@ class CORE_EXPORT LocalFrameView final
     return EnsurePaintController();
   }
 
+  bool PaintDebugInfoEnabled() const {
+    return layer_debug_info_enabled_ ||
+           RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled();
+  }
+
  protected:
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;
@@ -805,8 +815,26 @@ class CORE_EXPORT LocalFrameView final
     base::AutoReset<bool> value_;
   };
 
+  // The logic to determine whether a view can be render throttled is delicate,
+  // but in some cases we want to unconditionally force all views in a local
+  // frame tree to be throttled. Having ForceThrottlingScope on the stack will
+  // do that; it supercedes any DisallowThrottlingScope on the stack.
+  class ForceThrottlingScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ForceThrottlingScope(const LocalFrameView& frame_view);
+    ForceThrottlingScope(const ForceThrottlingScope&) = delete;
+    ForceThrottlingScope& operator=(const ForceThrottlingScope&) = delete;
+    ~ForceThrottlingScope() = default;
+
+   private:
+    AllowThrottlingScope allow_scope_;
+    base::AutoReset<bool> value_;
+  };
   friend class AllowThrottlingScope;
   friend class DisallowThrottlingScope;
+  friend class ForceThrottlingScope;
 
   PaintController& EnsurePaintController();
 
@@ -957,7 +985,8 @@ class CORE_EXPORT LocalFrameView final
   // was prevented (e.g. by ancestor display-lock) or not needed.
   bool LayoutFromRootObject(LayoutObject& root);
 
-  void UpdateLayerDebugInfoEnabled();
+  // Returns true if the value of layer_debug_info_enabled_ changed.
+  bool UpdateLayerDebugInfoEnabled();
 
   // Return the interstitial-ad detector for this frame, creating it if
   // necessary.
@@ -980,9 +1009,11 @@ class CORE_EXPORT LocalFrameView final
 
   bool AnyFrameIsPrintingOrPaintingPreview();
 
+  DarkModeFilter& EnsureDarkModeFilter();
+
   LayoutSize size_;
 
-  typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
+  typedef HeapHashSet<Member<LayoutEmbeddedObject>> EmbeddedObjectSet;
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
@@ -1021,7 +1052,7 @@ class CORE_EXPORT LocalFrameView final
 
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
-  std::unique_ptr<ObjectSet> viewport_constrained_objects_;
+  Member<ObjectSet> viewport_constrained_objects_;
   // Number of entries in viewport_constrained_objects_ that are sticky.
   unsigned sticky_position_object_count_;
   ObjectSet background_attachment_fixed_objects_;
@@ -1062,6 +1093,8 @@ class CORE_EXPORT LocalFrameView final
 
   // Used by AllowThrottlingScope and DisallowThrottlingScope
   bool allow_throttling_ = false;
+  // Used by ForceThrottlingScope
+  bool force_throttling_ = false;
 
   // This is set on the local root frame view only.
   DocumentLifecycle::LifecycleState target_state_;
@@ -1138,6 +1171,9 @@ class CORE_EXPORT LocalFrameView final
 
   // These tasks will be run at the beginning of the next lifecycle.
   WTF::Vector<base::OnceClosure> start_of_lifecycle_tasks_;
+
+  // Filter used for inverting the document background for forced darkening.
+  std::unique_ptr<DarkModeFilter> dark_mode_filter_;
 
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;

@@ -20,6 +20,10 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/render/cpdf_type3cache.h"
 
+#if defined(OS_WIN)
+#include "core/fxge/win32/cfx_psfonttracker.h"
+#endif
+
 namespace {
 
 const int kMaxOutputs = 16;
@@ -60,6 +64,14 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::GetTransferFunc(
   m_TransferFuncMap[pObj].Reset(pFunc.Get());
   return pFunc;
 }
+
+#if defined(OS_WIN)
+CFX_PSFontTracker* CPDF_DocRenderData::GetPSFontTracker() {
+  if (!m_PSFontTracker)
+    m_PSFontTracker = std::make_unique<CFX_PSFontTracker>();
+  return m_PSFontTracker.get();
+}
+#endif
 
 RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
     const CPDF_Object* pObj) const {
@@ -117,7 +129,7 @@ RetainPtr<CPDF_TransferFunc> CPDF_DocRenderData::CreateTransferFunc(
       channel[v] = o;
   }
 
-  return pdfium::MakeRetain<CPDF_TransferFunc>(
-      GetDocument(), bIdentity, std::move(samples_r), std::move(samples_g),
-      std::move(samples_b));
+  return pdfium::MakeRetain<CPDF_TransferFunc>(bIdentity, std::move(samples_r),
+                                               std::move(samples_g),
+                                               std::move(samples_b));
 }

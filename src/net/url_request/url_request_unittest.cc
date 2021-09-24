@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -19,12 +22,6 @@
 #include <windows.h>
 #include <wrl/client.h>
 #endif
-
-#include <stdint.h>
-
-#include <algorithm>
-#include <limits>
-#include <memory>
 
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -105,6 +102,8 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_source.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -149,12 +148,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_util.h"
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT) && !defined(OS_ANDROID)
-#include "net/ftp/ftp_auth_cache.h"
-#include "net/ftp/ftp_network_layer.h"
-#include "net/url_request/ftp_protocol_handler.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #endif
@@ -196,12 +189,6 @@ const std::u16string kUser(u"user");
 
 const base::FilePath::CharType kTestFilePath[] =
     FILE_PATH_LITERAL("net/data/url_request_unittest");
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT) && !defined(OS_ANDROID) && \
-    !defined(OS_FUCHSIA)
-// Test file used in most FTP tests.
-const char kFtpTestFile[] = "BullRunSpeech.txt";
-#endif
 
 // Tests load timing information in the case a fresh connection was used, with
 // no proxy.
@@ -303,29 +290,6 @@ void TestLoadTimingCacheHitNoNetwork(const LoadTimingInfo& load_timing_info) {
   EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
 }
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT) && !defined(OS_ANDROID) && \
-    !defined(OS_FUCHSIA)
-// Tests load timing in the case that there is no HTTP response.  This can be
-// used to test in the case of errors or non-HTTP requests.
-void TestLoadTimingNoHttpResponse(const LoadTimingInfo& load_timing_info) {
-  EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_EQ(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
-
-  // Only the request times should be non-null.
-  EXPECT_FALSE(load_timing_info.request_start_time.is_null());
-  EXPECT_FALSE(load_timing_info.request_start.is_null());
-
-  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
-
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_start.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
-}
-#endif
 
 // Job that allows monitoring of its priority.
 class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
@@ -783,6 +747,46 @@ TEST_F(URLRequestTest, InvalidUrlTest) {
     d.RunUntilComplete();
     EXPECT_TRUE(d.request_failed());
   }
+}
+
+// Test that URLRequest rejects WS URLs by default.
+TEST_F(URLRequestTest, WsUrlTest) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("http://foo.test/"));
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> r(
+      default_context().CreateRequest(GURL("ws://foo.test/"), DEFAULT_PRIORITY,
+                                      &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  // This is not strictly necessary for this test, but used to trigger a DCHECK.
+  // See https://crbug.com/1245115.
+  r->set_isolation_info(
+      IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                            kOrigin, SiteForCookies::FromOrigin(kOrigin)));
+
+  r->Start();
+  d.RunUntilComplete();
+  EXPECT_TRUE(d.request_failed());
+  EXPECT_THAT(d.request_status(), IsError(ERR_UNKNOWN_URL_SCHEME));
+}
+
+// Test that URLRequest rejects WSS URLs by default.
+TEST_F(URLRequestTest, WssUrlTest) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> r(
+      default_context().CreateRequest(GURL("wss://foo.test/"), DEFAULT_PRIORITY,
+                                      &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  // This is not strictly necessary for this test, but used to trigger a DCHECK.
+  // See https://crbug.com/1245115.
+  r->set_isolation_info(
+      IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                            kOrigin, SiteForCookies::FromOrigin(kOrigin)));
+
+  r->Start();
+  d.RunUntilComplete();
+  EXPECT_TRUE(d.request_failed());
+  EXPECT_THAT(d.request_status(), IsError(ERR_UNKNOWN_URL_SCHEME));
 }
 
 TEST_F(URLRequestTest, InvalidReferrerTest) {
@@ -3545,7 +3549,7 @@ class URLRequestTestHTTP : public URLRequestTest {
 
   // URLRequestTest interface:
   void SetUpFactory() override {
-    // Add FTP support to the default URLRequestContext.
+    // Add support for an unsafe scheme to the default URLRequestContext.
     job_factory_->SetProtocolHandler(
         "unsafe", std::make_unique<UnsafeRedirectProtocolHandler>());
   }
@@ -11671,404 +11675,6 @@ TEST_F(HTTPSLocalCRLSetTest, InterceptionBlockedAllowOverrideOnHSTS) {
   }
 }
 #endif  // !defined(OS_IOS)
-
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT) && !defined(OS_ANDROID) && \
-    !defined(OS_FUCHSIA)
-// FTP uses a second TCP connection with the port number allocated dynamically
-// on the server side, so it would be hard to make RemoteTestServer proxy FTP
-// connections reliably. FTP tests are disabled on platforms that use
-// RemoteTestServer. See http://crbug.com/495220
-class URLRequestTestFTP : public URLRequestTest {
- public:
-  URLRequestTestFTP()
-      : ftp_test_server_(SpawnedTestServer::TYPE_FTP,
-                         base::FilePath(kTestFilePath)) {
-    // Can't use |default_context_|'s HostResolver to set up the
-    // FTPTransactionFactory because it hasn't been created yet.
-    default_context().set_host_resolver(&host_resolver_);
-  }
-
-  // URLRequestTest interface:
-  void SetUpFactory() override {
-    // Add FTP support to the default URLRequestContext.
-    job_factory_->SetProtocolHandler(
-        "ftp", FtpProtocolHandler::Create(&host_resolver_, &ftp_auth_cache_));
-  }
-
-  std::string GetTestFileContents() {
-    base::FilePath path;
-    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
-    path = path.Append(kTestFilePath);
-    path = path.AppendASCII(kFtpTestFile);
-    std::string contents;
-    EXPECT_TRUE(base::ReadFileToString(path, &contents));
-    return contents;
-  }
-
- protected:
-  MockHostResolver host_resolver_;
-  FtpAuthCache ftp_auth_cache_;
-
-  SpawnedTestServer ftp_test_server_;
-};
-
-// Make sure an FTP request using an unsafe ports fails.
-TEST_F(URLRequestTestFTP, UnsafePort) {
-  GURL url("ftp://127.0.0.1:7");
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(ERR_UNSAFE_PORT, d.request_status());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPDirectoryListing) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURL("/"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_LT(0, d.bytes_received());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetResponseRemoteEndpoint().port());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPGetTestAnonymous) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURL(kFtpTestFile), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d.data_received());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetResponseRemoteEndpoint().port());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPMimeType) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  struct {
-    const char* path;
-    const char* mime;
-  } test_cases[] = {
-      {"/", "text/vnd.chromium.ftp-dir"},
-      {kFtpTestFile, "application/octet-stream"},
-  };
-
-  for (const auto test : test_cases) {
-    TestDelegate d;
-
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURL(test.path), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    std::string mime;
-    r->GetMimeType(&mime);
-    EXPECT_EQ(test.mime, mime);
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPGetTest) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "chrome",
-                                                   "chrome"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d.data_received());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().host(),
-              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
-    EXPECT_EQ(ftp_test_server_.host_port_pair().port(),
-              r->GetResponseRemoteEndpoint().port());
-
-    LoadTimingInfo load_timing_info;
-    r->GetLoadTimingInfo(&load_timing_info);
-    TestLoadTimingNoHttpResponse(load_timing_info);
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCheckWrongPassword) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "chrome",
-                                                   "wrong_password"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(d.bytes_received(), 0);
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCheckWrongPasswordRestart) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  // Set correct login credentials. The delegate will be asked for them when
-  // the initial login with wrong credentials will fail.
-  d.set_credentials(AuthCredentials(kChrome, kChrome));
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "chrome",
-                                                   "wrong_password"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d.data_received());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCheckWrongUser) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "wrong_user",
-                                                   "chrome"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(0, d.bytes_received());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCheckWrongUserRestart) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  // Set correct login credentials. The delegate will be asked for them when
-  // the initial login with wrong credentials will fail.
-  d.set_credentials(AuthCredentials(kChrome, kChrome));
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "wrong_user",
-                                                   "chrome"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d.data_received());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCacheURLCredentials) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  std::unique_ptr<TestDelegate> d(new TestDelegate);
-  {
-    // Pass correct login identity in the URL.
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "chrome",
-                                                   "chrome"),
-        DEFAULT_PRIORITY, d.get(), TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d->RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d->response_started_count());
-    EXPECT_FALSE(d->received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d->data_received());
-  }
-
-  d = std::make_unique<TestDelegate>();
-  {
-    // This request should use cached identity from previous request.
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURL(kFtpTestFile), DEFAULT_PRIORITY, d.get(),
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d->RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d->response_started_count());
-    EXPECT_FALSE(d->received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d->data_received());
-  }
-}
-
-TEST_F(URLRequestTestFTP, FTPCacheLoginBoxCredentials) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  std::unique_ptr<TestDelegate> d(new TestDelegate);
-  // Set correct login credentials. The delegate will be asked for them when
-  // the initial login with wrong credentials will fail.
-  d->set_credentials(AuthCredentials(kChrome, kChrome));
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURLWithUserAndPassword(kFtpTestFile, "chrome",
-                                                   "wrong_password"),
-        DEFAULT_PRIORITY, d.get(), TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d->RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d->response_started_count());
-    EXPECT_FALSE(d->received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d->data_received());
-  }
-
-  // Use a new delegate without explicit credentials. The cached ones should be
-  // used.
-  d = std::make_unique<TestDelegate>();
-  {
-    // Don't pass wrong credentials in the URL, they would override valid cached
-    // ones.
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        ftp_test_server_.GetURL(kFtpTestFile), DEFAULT_PRIORITY, d.get(),
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d->RunUntilComplete();
-
-    EXPECT_FALSE(r->is_pending());
-    EXPECT_EQ(1, d->response_started_count());
-    EXPECT_FALSE(d->received_data_before_response());
-    EXPECT_EQ(GetTestFileContents(), d->data_received());
-  }
-}
-
-TEST_F(URLRequestTestFTP, RawBodyBytes) {
-  ASSERT_TRUE(ftp_test_server_.Start());
-
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      ftp_test_server_.GetURL("simple.html"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->Start();
-  d.RunUntilComplete();
-
-  EXPECT_EQ(6, req->GetRawBodyBytes());
-}
-
-TEST_F(URLRequestTestFTP, FtpAuthCancellation) {
-  ftp_test_server_.set_no_anonymous_ftp_user(true);
-  ASSERT_TRUE(ftp_test_server_.Start());
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-      ftp_test_server_.GetURL("simple.html"), DEFAULT_PRIORITY, &d,
-      TRAFFIC_ANNOTATION_FOR_TESTS));
-  req->Start();
-  d.RunUntilComplete();
-
-  ASSERT_TRUE(d.auth_required_called());
-  EXPECT_EQ(OK, d.request_status());
-  EXPECT_TRUE(req->auth_challenge_info());
-  std::string mime_type;
-  req->GetMimeType(&mime_type);
-  EXPECT_EQ("text/plain", mime_type);
-  EXPECT_EQ("", d.data_received());
-  EXPECT_EQ(-1, req->GetExpectedContentSize());
-}
-
-class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
- public:
-  // Test interface:
-  void SetUp() override {
-    proxy_resolution_service_ = ConfiguredProxyResolutionService::CreateFixed(
-        "localhost", TRAFFIC_ANNOTATION_FOR_TESTS);
-    default_context_->set_proxy_resolution_service(
-        proxy_resolution_service_.get());
-    URLRequestTestFTP::SetUp();
-  }
-
- private:
-  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-};
-
-// Check that FTP is not supported over an HTTP proxy.
-TEST_F(URLRequestTestFTPOverHttpProxy, Fails) {
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(
-      default_context_->CreateRequest(GURL("ftp://foo.test/"), DEFAULT_PRIORITY,
-                                      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  delegate.RunUntilComplete();
-
-  EXPECT_THAT(delegate.request_status(), IsError(ERR_NO_SUPPORTED_PROXIES));
-}
-
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 TEST_F(URLRequestTest, NetworkAccessedSetOnHostResolutionFailure) {
   MockHostResolver host_resolver;

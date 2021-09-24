@@ -15,6 +15,8 @@ limitations under the License.
 
 #include "tensorflow/core/grappler/optimizers/data/graph_utils.h"
 
+#include <cstddef>
+
 #include "tensorflow/core/framework/device_base.h"
 #include "tensorflow/core/framework/op_def.pb.h"
 #include "tensorflow/core/lib/core/errors.h"
@@ -27,6 +29,11 @@ namespace graph_utils {
 namespace {
 
 constexpr char kConstOpName[] = "Const";
+constexpr char kRetValOp[] = "_Retval";
+
+constexpr char kOutputShapes[] = "output_shapes";
+constexpr char kOutputTypes[] = "output_types";
+constexpr char kToutputTypes[] = "Toutput_types";
 
 template <typename Predicate, typename Collection>
 std::vector<int> GetElementIndicesWithPredicate(const Predicate& predicate,
@@ -145,7 +152,7 @@ NodeDef* AddScalarConstNode(int v, MutableGraphView* graph) {
 }
 
 template <>
-NodeDef* AddScalarConstNode(int64 v, MutableGraphView* graph) {
+NodeDef* AddScalarConstNode(int64_t v, MutableGraphView* graph) {
   return AddScalarConstNodeHelper(
       DT_INT64, [v](TensorProto* proto) { proto->add_int64_val(v); }, graph);
 }
@@ -185,7 +192,7 @@ Status GetScalarConstNodeValueHelper(
 }
 
 template <>
-Status GetScalarConstNodeValue(const NodeDef& node, int64* value) {
+Status GetScalarConstNodeValue(const NodeDef& node, int64_t* value) {
   return GetScalarConstNodeValueHelper(
       node, DT_INT64,
       [value](const Tensor& tensor) { *value = tensor.scalar<int64>()(); });
@@ -274,7 +281,7 @@ NodeDef* GetInputNode(const NodeDef& node, const MutableGraphView& graph) {
 }
 
 NodeDef* GetInputNode(const NodeDef& node, const MutableGraphView& graph,
-                      int64 i) {
+                      int64_t i) {
   if (node.input_size() <= i) return nullptr;
   MutableGraphView::InputPort input_port = graph.GetInputPort(node.name(), i);
   return graph.GetRegularFanin(input_port).node;
@@ -365,6 +372,32 @@ Status GetFetchNode(const MutableGraphView& graph, const GrapplerItem& item,
   *fetch_node = graph.GetNode(item.fetch.at(0));
 
   return Status::OK();
+}
+
+bool IsItemDerivedFromFunctionDef(const GrapplerItem& item,
+                                  const MutableGraphView& graph_view) {
+  for (const auto& fetch_name : item.fetch) {
+    auto fetch = graph_view.GetNode(fetch_name);
+    if (fetch != nullptr && fetch->op() != kRetValOp) {
+      // We found a fetch node which is not a `Retval` op.
+      return false;
+    }
+  }
+  // All fetch nodes are `Retval` ops (or we don't have any fetch nodes).
+  return true;
+}
+
+bool CopyShapesAndTypesAttrs(const NodeDef& from, NodeDef* to_node) {
+  auto* attr = gtl::FindOrNull(from.attr(), kOutputTypes);
+  attr = (attr == nullptr ? gtl::FindOrNull(from.attr(), kToutputTypes) : attr);
+
+  if (attr == nullptr) return false;
+  (*to_node->mutable_attr())[kOutputTypes] = *attr;
+
+  attr = gtl::FindOrNull(from.attr(), kOutputShapes);
+  if (attr == nullptr) return false;
+  (*to_node->mutable_attr())[kOutputShapes] = *attr;
+  return true;
 }
 
 }  // namespace graph_utils

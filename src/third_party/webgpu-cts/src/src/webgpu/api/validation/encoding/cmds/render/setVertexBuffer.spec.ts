@@ -4,7 +4,8 @@ Validation tests for setVertexBuffer on render pass and render bundle.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUConst, DefaultLimits } from '../../../../../constants.js';
-import { kResourceStates, ValidationTest } from '../../../validation_test.js';
+import { kResourceStates } from '../../../../../gpu_test.js';
+import { ValidationTest } from '../../../validation_test.js';
 
 import { kRenderEncodeTypeParams, buildBufferOffsetAndSizeOOBTestParams } from './render.js';
 

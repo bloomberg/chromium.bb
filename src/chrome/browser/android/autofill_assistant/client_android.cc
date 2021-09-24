@@ -27,7 +27,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/display_strings_util.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
@@ -39,8 +41,8 @@
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -378,8 +380,19 @@ void ClientAndroid::ShowFatalError(
   }
   controller_->RequireUI();
   controller_->OnFatalError(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+      GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                           controller_->GetSettings()),
       /*show_feedback_chip = */ false, Metrics::DropOutReason::NO_SCRIPTS);
+}
+
+void ClientAndroid::OnSpokenFeedbackAccessibilityServiceChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean enabled) {
+  if (!controller_) {
+    return;
+  }
+  controller_->OnSpokenFeedbackAccessibilityServiceChanged(enabled);
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
@@ -520,6 +533,11 @@ bool ClientAndroid::IsAccessibilityEnabled() const {
       AttachCurrentThread(), java_object_);
 }
 
+bool ClientAndroid::IsSpokenFeedbackAccessibilityServiceEnabled() const {
+  return Java_AutofillAssistantClient_isSpokenFeedbackAccessibilityServiceEnabled(
+      AttachCurrentThread(), java_object_);
+}
+
 content::WebContents* ClientAndroid::GetWebContents() const {
   return web_contents_;
 }
@@ -601,7 +619,9 @@ void ClientAndroid::CreateController(
   controller_ = std::make_unique<Controller>(
       web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
       RuntimeManagerImpl::GetForWebContents(web_contents_)->GetWeakPtr(),
-      std::move(service));
+      std::move(service),
+      std::make_unique<AutofillAssistantTtsController>(
+          content::TtsController::GetInstance()));
   controller_->SetStatusMessage(status_message);
   if (progress_bar_config) {
     controller_->SetStepProgressBarConfiguration(*progress_bar_config);

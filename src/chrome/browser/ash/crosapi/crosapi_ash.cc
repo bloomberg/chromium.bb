@@ -19,7 +19,9 @@
 #include "chrome/browser/ash/crosapi/automation_ash.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
+#include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
 #include "chrome/browser/ash/crosapi/cert_database_ash.h"
+#include "chrome/browser/ash/crosapi/chrome_app_window_tracker_ash.h"
 #include "chrome/browser/ash/crosapi/clipboard_ash.h"
 #include "chrome/browser/ash/crosapi/clipboard_history_ash.h"
 #include "chrome/browser/ash/crosapi/content_protection_ash.h"
@@ -27,7 +29,9 @@
 #include "chrome/browser/ash/crosapi/download_controller_ash.h"
 #include "chrome/browser/ash/crosapi/drive_integration_service_ash.h"
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
+#include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
+#include "chrome/browser/ash/crosapi/geolocation_service_ash.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/image_writer_ash.h"
 #include "chrome/browser/ash/crosapi/keystore_service_ash.h"
@@ -56,6 +60,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
@@ -100,7 +105,11 @@ Profile* GetAshProfile() {
 CrosapiAsh::CrosapiAsh()
     : automation_ash_(std::make_unique<AutomationAsh>()),
       browser_service_host_ash_(std::make_unique<BrowserServiceHostAsh>()),
+      browser_version_service_ash_(std::make_unique<BrowserVersionServiceAsh>(
+          g_browser_process->component_updater())),
       cert_database_ash_(std::make_unique<CertDatabaseAsh>()),
+      chrome_app_window_tracker_ash_(
+          std::make_unique<ChromeAppWindowTrackerAsh>()),
       clipboard_ash_(std::make_unique<ClipboardAsh>()),
       clipboard_history_ash_(std::make_unique<ClipboardHistoryAsh>()),
       content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
@@ -109,7 +118,9 @@ CrosapiAsh::CrosapiAsh()
       drive_integration_service_ash_(
           std::make_unique<DriveIntegrationServiceAsh>()),
       feedback_ash_(std::make_unique<FeedbackAsh>()),
+      field_trial_service_ash_(std::make_unique<FieldTrialServiceAsh>()),
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
+      geolocation_service_ash_(std::make_unique<GeolocationServiceAsh>()),
       idle_service_ash_(std::make_unique<IdleServiceAsh>()),
       image_writer_ash_(std::make_unique<ImageWriterAsh>()),
       keystore_service_ash_(std::make_unique<KeystoreServiceAsh>()),
@@ -192,6 +203,16 @@ void CrosapiAsh::BindBrowserServiceHost(
                                           std::move(receiver));
 }
 
+void CrosapiAsh::BindBrowserCdmFactory(mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<chromeos::cdm::mojom::BrowserCdmFactory>())
+    chromeos::CdmFactoryDaemonProxyAsh::Create(std::move(r));
+}
+
+void CrosapiAsh::BindBrowserVersionService(
+    mojo::PendingReceiver<crosapi::mojom::BrowserVersionService> receiver) {
+  browser_version_service_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindChromeAppPublisher(
     mojo::PendingReceiver<mojom::AppPublisher> receiver) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
@@ -200,9 +221,24 @@ void CrosapiAsh::BindChromeAppPublisher(
   chrome_apps->RegisterChromeAppsCrosapiHost(std::move(receiver));
 }
 
+void CrosapiAsh::BindChromeAppWindowTracker(
+    mojo::PendingReceiver<mojom::AppWindowTracker> receiver) {
+  chrome_app_window_tracker_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindFieldTrialService(
+    mojo::PendingReceiver<crosapi::mojom::FieldTrialService> receiver) {
+  field_trial_service_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindFileManager(
     mojo::PendingReceiver<crosapi::mojom::FileManager> receiver) {
   file_manager_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindGeolocationService(
+    mojo::PendingReceiver<crosapi::mojom::GeolocationService> receiver) {
+  geolocation_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindHoldingSpaceService(

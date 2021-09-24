@@ -70,8 +70,6 @@ GOT_REVISION_MAPPINGS = {
     CHROMIUM_SRC_URL: {
         'got_revision': 'src/',
         'got_nacl_revision': 'src/native_client/',
-        'got_swarm_client_revision': 'src/tools/swarm_client/',
-        'got_swarming_client_revision': 'src/tools/swarming_client/',
         'got_v8_revision': 'src/v8/',
         'got_webkit_revision': 'src/third_party/WebKit/',
         'got_webrtc_revision': 'src/third_party/webrtc/',

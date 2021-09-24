@@ -17,12 +17,13 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
@@ -116,7 +117,7 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
   }
 
   WebAppProvider& provider() {
-    auto* provider = WebAppProvider::Get(profile());
+    auto* provider = WebAppProvider::GetForTest(profile());
     DCHECK(provider);
     return *provider;
   }
@@ -202,8 +203,8 @@ class WebAppTabStripLinkCapturingBrowserTest
   void InstallTestApp() {
     WebAppLinkCapturingBrowserTest::InstallTestApp("/web_apps/basic.html",
                                                    /*await_metric=*/false);
-    provider().registry_controller().SetExperimentalTabbedWindowMode(
-        app_id_, true, /*is_user_action=*/false);
+    provider().sync_bridge().SetAppUserDisplayMode(
+        app_id_, DisplayMode::kTabbed, /*is_user_action=*/false);
   }
 
  private:
@@ -558,7 +559,7 @@ constexpr char kOriginTrialToken[] =
 
 IN_PROC_BROWSER_TEST_F(WebAppDeclarativeLinkCapturingOriginTrialBrowserTest,
                        OriginTrial) {
-  WebAppProvider& provider = *WebAppProvider::Get(browser()->profile());
+  WebAppProvider& provider = *WebAppProvider::GetForTest(browser()->profile());
 
   bool serve_token = true;
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
@@ -599,21 +600,8 @@ IN_PROC_BROWSER_TEST_F(WebAppDeclarativeLinkCapturingOriginTrialBrowserTest,
 
   // Open the page again with the token missing.
   {
-    class UpdateAwaiter : public AppRegistrarObserver {
-     public:
-      UpdateAwaiter() = default;
-      void AwaitUpdate() { run_loop_.Run(); }
-      void OnWebAppManifestUpdated(const AppId& app_id,
-                                   base::StringPiece old_name) override {
-        run_loop_.Quit();
-      }
-
-     private:
-      base::RunLoop run_loop_;
-    } update_awaiter;
-    base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
-        observer_scope(&update_awaiter);
-    observer_scope.Observe(&provider.registrar());
+    WebAppTestManifestUpdatedObserver update_awaiter(&provider.registrar());
+    update_awaiter.BeginListening();
 
     serve_token = false;
     NavigateToURLAndWait(browser(), GURL(kTestWebAppUrl));
@@ -621,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(WebAppDeclarativeLinkCapturingOriginTrialBrowserTest,
     // Close the app window to unblock updating.
     app_web_contents->Close();
 
-    update_awaiter.AwaitUpdate();
+    update_awaiter.Wait();
   }
 
   // The app should update to no longer have capture_links defined without the

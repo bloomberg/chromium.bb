@@ -555,7 +555,13 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  dawn_native::DeviceDescriptor device_descriptor;
+  // We need to request internal usage to be able to do operations with
+  // internal methods that would need specific usages.
+  device_descriptor.requiredExtensions.push_back("dawn-internal-usages");
+
+  wgpu::Device device =
+      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
   DawnProcTable procs = dawn_native::GetProcs();
   dawnProcSetProcs(&procs);
 
@@ -591,8 +597,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
 
     wgpu::Texture texture(scoped_access->texture());
 
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateView();
+    wgpu::RenderPassColorAttachment color_desc;
+    color_desc.view = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Store;
@@ -692,7 +698,13 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  dawn_native::DeviceDescriptor device_descriptor;
+  // We need to request internal usage to be able to do operations with
+  // internal methods that would need specific usages.
+  device_descriptor.requiredExtensions.push_back("dawn-internal-usages");
+
+  wgpu::Device device =
+      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
   DawnProcTable procs = dawn_native::GetProcs();
   dawnProcSetProcs(&procs);
   {
@@ -707,8 +719,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
     ASSERT_TRUE(dawn_scoped_access);
 
     wgpu::Texture texture(dawn_scoped_access->texture());
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateView();
+    wgpu::RenderPassColorAttachment color_desc;
+    color_desc.view = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Load;
     color_desc.storeOp = wgpu::StoreOp::Store;
@@ -776,7 +788,13 @@ TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  dawn_native::DeviceDescriptor device_descriptor;
+  // We need to request internal usage to be able to do operations with
+  // internal methods that would need specific usages.
+  device_descriptor.requiredExtensions.push_back("dawn-internal-usages");
+
+  wgpu::Device device =
+      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
   DawnProcTable procs = dawn_native::GetProcs();
   dawnProcSetProcs(&procs);
   {
@@ -791,8 +809,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
     ASSERT_TRUE(dawn_scoped_access);
 
     wgpu::Texture texture(dawn_scoped_access->texture());
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateView();
+    wgpu::RenderPassColorAttachment color_desc;
+    color_desc.view = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Clear;
@@ -980,7 +998,13 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  dawn_native::DeviceDescriptor device_descriptor;
+  // We need to request internal usage to be able to do operations with
+  // internal methods that would need specific usages.
+  device_descriptor.requiredExtensions.push_back("dawn-internal-usages");
+
+  wgpu::Device device =
+      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
   DawnProcTable procs = dawn_native::GetProcs();
   dawnProcSetProcs(&procs);
 
@@ -999,8 +1023,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
 
     wgpu::Texture texture(scoped_access->texture());
 
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateView();
+    wgpu::RenderPassColorAttachment color_desc;
+    color_desc.view = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Store;
@@ -1038,8 +1062,8 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_ReuseExternalImage) {
 
     wgpu::Texture texture(scoped_access->texture());
 
-    wgpu::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateView();
+    wgpu::RenderPassColorAttachment color_desc;
+    color_desc.view = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = wgpu::LoadOp::Clear;
     color_desc.storeOp = wgpu::StoreOp::Store;
@@ -1102,7 +1126,13 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_HasLastRef) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  dawn_native::DeviceDescriptor device_descriptor;
+  // We need to request internal usage to be able to do operations with
+  // internal methods that would need specific usages.
+  device_descriptor.requiredExtensions.push_back("dawn-internal-usages");
+
+  wgpu::Device device =
+      wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
   DawnProcTable procs = dawn_native::GetProcs();
   dawnProcSetProcs(&procs);
 

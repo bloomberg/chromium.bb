@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/memory/ref_counted.h"
@@ -43,18 +44,14 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
  public:
   PagedAppsGridView(ContentsView* contents_view,
                     AppListA11yAnnouncer* a11y_announcer,
-                    AppsGridViewFolderDelegate* folder_delegate);
+                    AppsGridViewFolderDelegate* folder_delegate,
+                    AppListFolderController* folder_controller);
   PagedAppsGridView(const PagedAppsGridView&) = delete;
   PagedAppsGridView& operator=(const PagedAppsGridView&) = delete;
   ~PagedAppsGridView() override;
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
-
-  // Passes scroll information from AppListView to the PaginationController,
-  // which may switch pages.
-  void HandleScrollFromAppListView(const gfx::Vector2d& offset,
-                                   ui::EventType type);
 
   // Updates the opacity of all the items in the grid when the grid itself is
   // being dragged. The app icons fade out as the launcher slides off the bottom
@@ -79,6 +76,8 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   gfx::Insets GetTilePadding() const override;
   gfx::Size GetTileGridSize() const override;
   int GetPaddingBetweenPages() const override;
+  int GetTotalPages() const override;
+  int GetSelectedPage() const override;
   bool IsScrollAxisVertical() const override;
   void UpdateBorder() override;
   void MaybeStartCardifiedView() override;
@@ -87,12 +86,16 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void MaybeStopPageFlip() override;
   bool MaybeAutoScroll() override;
   void StopAutoScroll() override {}
+  void HandleScrollFromAppListView(const gfx::Vector2d& offset,
+                                   ui::EventType type) override;
   void SetFocusAfterEndDrag() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
-
-  // AppListItemView::GridDelegate:
-  void OnAppListItemViewActivated(AppListItemView* pressed_item_view,
-                                  const ui::Event& event) override;
+  int TilesPerPage(int page) const override;
+  void UpdatePaging() override;
+  void RecordPageMetrics() override;
+  const gfx::Vector2d CalculateTransitionOffset(
+      int page_of_view) const override;
+  void EnsureViewVisible(const GridIndex& index) override;
 
   // PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
@@ -116,6 +119,9 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void set_page_flip_delay_for_testing(base::TimeDelta page_flip_delay) {
     page_flip_delay_ = page_flip_delay;
   }
+
+  // Gets the PaginationModel used for the grid view.
+  PaginationModel* pagination_model() { return &pagination_model_; }
 
  private:
   friend class test::AppsGridViewTest;
@@ -230,6 +236,11 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Layer array for apps grid background cards. Used to display the background
   // card during cardified state.
   std::vector<std::unique_ptr<ui::Layer>> background_cards_;
+
+  // Whether the AppListBubble is enabled.
+  const bool is_app_list_bubble_enabled_;
+
+  PaginationModel pagination_model_{this};
 
   base::WeakPtrFactory<PagedAppsGridView> weak_ptr_factory_{this};
 };

@@ -534,7 +534,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       // This runs separately to allow other consumers of `loaded` to queue
       // up after this task.
       this.loaded.then(() => {
-        this.currentController = this.pluginController_;
         this.inkController_.unload();
       });
       // TODO(dstockwell): handle save failure
@@ -543,9 +542,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       // Data always exists when save is called with requestType = ANNOTATION.
       const result = /** @type {!RequiredSaveResult} */ (saveResult);
       await this.restoreSidenav_();
+      this.currentController = this.pluginController_;
       await this.pluginController_.load(result.fileName, result.dataToSave);
-      // Ensure the plugin gets the initial viewport.
-      this.pluginController_.afterZoom();
     }
   }
 
@@ -688,15 +686,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onErrorDialog_() {
-    // The error screen can only reload from a normal tab.
-    if (!chrome.tabs || this.browserApi.getStreamInfo().tabId === -1) {
-      return;
-    }
-
     const errorDialog = /** @type {!ViewerErrorDialogElement} */ (
         this.shadowRoot.querySelector('#error-dialog'));
     errorDialog.reloadFn = () => {
-      chrome.tabs.reload(this.browserApi.getStreamInfo().tabId);
+      location.reload();
     };
   }
 

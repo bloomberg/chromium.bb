@@ -7,14 +7,17 @@
 #include <cmath>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/guid.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/cellular_esim_profile_handler.h"
 #include "chromeos/network/cellular_utils.h"
@@ -57,6 +60,9 @@ const char kErrorAccessToSharedConfig[] = "Error.CannotChangeSharedConfig";
 const char kErrorInvalidONCConfiguration[] = "Error.InvalidONCConfiguration";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
 const char kErrorNotReady[] = "Error.NotReady";
+
+// WireGuard string from Shill SupportedVPNType property.
+const char kWireGuardVPNType[] = "wireguard";
 
 std::string ShillToOnc(const std::string& shill_string,
                        const onc::StringTranslationEntry table[]) {
@@ -479,6 +485,8 @@ mojom::InhibitReason GetInhibitReason(
       return mojom::InhibitReason::kConnectingToProfile;
     case CellularInhibitor::InhibitReason::kRefreshingProfileList:
       return mojom::InhibitReason::kRefreshingProfileList;
+    case CellularInhibitor::InhibitReason::kResettingEuiccMemory:
+      return mojom::InhibitReason::kResettingEuiccMemory;
   }
 }
 
@@ -1368,6 +1376,76 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
   return openvpn;
 }
 
+mojom::WireGuardPeerPropertiesPtr GetWireGuardPeerProperties(
+    const base::Value* dict) {
+  auto peer = mojom::WireGuardPeerProperties::New();
+  peer->public_key = GetRequiredString(dict, ::onc::wireguard::kPublicKey);
+  peer->preshared_key = GetString(dict, ::onc::wireguard::kPresharedKey);
+  absl::optional<std::string> allowed_ips =
+      GetString(dict, ::onc::wireguard::kAllowedIPs);
+  if (allowed_ips) {
+    peer->allowed_ips = base::SplitString(
+        *allowed_ips, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
+  peer->endpoint = GetString(dict, ::onc::wireguard::kEndpoint);
+  peer->persistent_keepalive_interval =
+      GetInt32(dict, ::onc::wireguard::kPersistentKeepalive);
+  return peer;
+}
+
+mojom::ManagedWireGuardPeerListPtr GetManagedWireGuardPeerList(
+    const base::Value* dict,
+    const char* key) {
+  auto result = mojom::ManagedWireGuardPeerList::New();
+  const base::Value* value = dict->FindKey(key);
+  if (!value)
+    return result;
+  if (value->is_list()) {
+    std::vector<mojom::WireGuardPeerPropertiesPtr> active;
+    for (const base::Value& value : value->GetList())
+      active.push_back(GetWireGuardPeerProperties(&value));
+    result->active_value = std::move(active);
+    return result;
+  }
+  if (value->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(value);
+    if (!managed_dict.active_value.is_list()) {
+      NET_LOG(ERROR) << "No active or effective value for WireGuardPeerList";
+      return result;
+    }
+    for (const base::Value& e : managed_dict.active_value.GetList())
+      result->active_value.push_back(GetWireGuardPeerProperties(&e));
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none()) {
+      result->policy_value = std::vector<mojom::WireGuardPeerPropertiesPtr>();
+      for (const base::Value& e : managed_dict.policy_value.GetList())
+        result->policy_value->push_back(GetWireGuardPeerProperties(&e));
+    }
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected list or dictionary, found: " << *value;
+  return result;
+}
+
+mojom::ManagedWireGuardPropertiesPtr GetManagedWireGuardProperties(
+    const base::Value* dict,
+    const char* key) {
+  auto wg = mojom::ManagedWireGuardProperties::New();
+  const base::Value* wg_dict = dict->FindKey(key);
+  if (!wg_dict) {
+    NET_LOG(ERROR) << "Missing WireGuard properties element";
+    return wg;
+  }
+  if (!wg_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *wg_dict;
+    return wg;
+  }
+  wg->private_key = GetManagedString(wg_dict, ::onc::wireguard::kPrivateKey);
+  wg->public_key = GetManagedString(wg_dict, ::onc::wireguard::kPublicKey);
+  wg->peers = GetManagedWireGuardPeerList(wg_dict, ::onc::wireguard::kPeers);
+  return wg;
+}
+
 mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
     NetworkStateHandler* network_state_handler,
     CellularESimProfileHandler* cellular_esim_profile_handler,
@@ -1594,7 +1672,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
               GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
           break;
         case mojom::VpnType::kWireGuard:
-          // TODO: Detail Managed ONC implemention in following patches
+          vpn->wireguard =
+              GetManagedWireGuardProperties(vpn_dict, ::onc::vpn::kWireGuard);
           break;
         case mojom::VpnType::kExtension:
         case mojom::VpnType::kArc:
@@ -2889,6 +2968,10 @@ void CrosNetworkConfig::GetAlwaysOnVpn(GetAlwaysOnVpnCallback callback) {
       network_profile_handler_->GetDefaultUserProfile();
   if (!profile) {
     NET_LOG(ERROR) << "GetAlwaysOnVpn: no user profile found";
+    // No profile available, ensure the callback gets fired with always-on VPN
+    // disabled.
+    OnGetAlwaysOnVpn(std::move(callback), shill::kAlwaysOnVpnModeOff,
+                     std::string());
     return;
   }
 
@@ -2963,6 +3046,33 @@ void CrosNetworkConfig::SetAlwaysOnVpn(
   network_profile_handler_->SetAlwaysOnVpnService(profile->path, service_path);
 }
 
+void CrosNetworkConfig::GetSupportedVpnTypes(
+    GetSupportedVpnTypesCallback callback) {
+  ShillManagerClient::Get()->GetProperties(
+      base::BindOnce(&CrosNetworkConfig::OnGetSupportedVpnTypes,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrosNetworkConfig::OnGetSupportedVpnTypes(
+    GetSupportedVpnTypesCallback callback,
+    absl::optional<base::Value> properties) {
+  std::vector<std::string> result;
+  const base::Value* value =
+      properties->FindKey(shill::kSupportedVPNTypesProperty);
+  if (value) {
+    result =
+        base::SplitString(*value->GetIfString(), ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+  }
+  if (!base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
+    auto iter = std::find(result.begin(), result.end(), kWireGuardVPNType);
+    if (iter != result.end()) {
+      result.erase(iter);
+    }
+  }
+  std::move(callback).Run(result);
+}
+
 void CrosNetworkConfig::RequestTrafficCounters(
     const std::string& guid,
     RequestTrafficCountersCallback callback) {
@@ -2979,21 +3089,16 @@ void CrosNetworkConfig::RequestTrafficCounters(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-// static
-mojom::TrafficCounterSource CrosNetworkConfig::GetTrafficCounterEnumForTesting(
-    const std::string& source) {
-  return ConvertToTrafficCounterSourceEnum(source);
-}
-
 void CrosNetworkConfig::PopulateTrafficCounters(
     RequestTrafficCountersCallback callback,
-    const base::ListValue& traffic_counters) {
-  if (!traffic_counters.GetList().size()) {
+    absl::optional<base::Value> traffic_counters) {
+  if (!traffic_counters || !traffic_counters->is_list() ||
+      !traffic_counters->GetList().size()) {
     std::move(callback).Run({});
     return;
   }
   std::vector<mojom::TrafficCounterPtr> counters;
-  for (const base::Value& tc : traffic_counters.GetList()) {
+  for (const base::Value& tc : traffic_counters->GetList()) {
     DCHECK(tc.is_dict());
     const base::Value* source =
         tc.FindKeyOfType("source", base::Value::Type::STRING);
@@ -3043,6 +3148,12 @@ void CrosNetworkConfig::ResetTrafficCounters(const std::string& guid) {
     return;
   }
   network_state_handler_->ResetTrafficCounters(service_path);
+}
+
+// static
+mojom::TrafficCounterSource CrosNetworkConfig::GetTrafficCounterEnumForTesting(
+    const std::string& source) {
+  return ConvertToTrafficCounterSourceEnum(source);
 }
 
 // NetworkStateHandlerObserver

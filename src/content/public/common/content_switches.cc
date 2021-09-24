@@ -615,9 +615,6 @@ const char kNoUnsandboxedZygote[] = "no-unsandboxed-zygote";
 // zygote to work.
 const char kNoZygote[] = "no-zygote";
 
-// Disables V8 mitigations for executing untrusted code.
-const char kNoV8UntrustedCodeMitigations[] = "no-v8-untrusted-code-mitigations";
-
 // Number of worker threads used to rasterize content.
 const char kNumRasterThreads[]              = "num-raster-threads";
 
@@ -1042,6 +1039,9 @@ const char kEnableWin7WebRtcHWH264Decoding[] =
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows us to pass the shared memory handle to the renderer.
 const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
+
+// Renderer process that runs the non-PPAPI PDF plugin.
+const char kPdfRenderer[] = "pdf-renderer";
 
 // The boolean value (0/1) of FontRenderParams::antialiasing to be passed to
 // Ppapi processes.

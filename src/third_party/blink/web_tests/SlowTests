@@ -73,7 +73,6 @@ webkit.org/b/90488 [ Debug ] inspector-protocol/* [ Slow ]
 # DevTools tests cause flakes on slow hardware in Release as well.
 crbug.com/1063051 [ Release ] http/tests/devtools/* [ Slow ]
 crbug.com/420008 virtual/threaded/http/tests/devtools/tracing/* [ Slow ]
-crbug.com/902685 virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/* [ Slow ]
 crbug.com/902685 virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/* [ Slow ]
 crbug.com/902685 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Slow ]
 crbug.com/902685 virtual/split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/* [ Slow ]
@@ -160,20 +159,14 @@ crbug.com/866165 webexposed/global-interface-listing.html [ Slow ]
 crbug.com/1074122 http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ Slow ]
 
 # SwiftShader slow tests
-crbug.com/726075 [ Win ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow.html [ Slow ]
 crbug.com/726075 [ Win ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
 crbug.com/726075 [ Linux ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
 crbug.com/726075 [ Mac ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Slow ]
-crbug.com/726075 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Slow ]
-crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Slow ]
 
 # Slow oopr canvas tests
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-alpha.html [ Slow ]
-crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow.html [ Slow ]
-crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video.html [ Slow ]
@@ -506,7 +499,6 @@ crbug.com/983642 [ Win ] virtual/gpu/fast/canvas/color-space/canvas-createImageB
 
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
-crbug.com/626703 virtual/plz-service-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
 crbug.com/626703 virtual/coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
 
 # Slow when using Vulkan.

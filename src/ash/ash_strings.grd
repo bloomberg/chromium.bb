@@ -474,13 +474,22 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_TOOLTIP" desc="The tooltip text to notify that bluetooth is disabled.">
         Bluetooth is off
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP" desc="The tooltip text to notify that multiple bluetooth devices are connected. [ICU Syntax]">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP_LEGACY" desc="The tooltip text to notify that multiple bluetooth devices are connected. [ICU Syntax]">
         {NUM_DEVICES, plural,
          =1 {Connected to a device}
          other {Connected to # devices}}
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_TOOLTIP" desc="The tooltip text to notify that one bluetooth device is connected.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP" desc="The tooltip text to notify that multiple bluetooth devices are connected.">
+        Connected to <ph name="NUM_DEVICES">$1<ex>3</ex></ph> devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_TOOLTIP_LEGACY" desc="The legacy tooltip text to notify that one bluetooth device is connected.">
         Connected to <ph name="DEVICE_NAME">$1<ex>wireless mouse</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_TOOLTIP" desc="The tooltip text to notify that one bluetooth device is connected.">
+        Connected to a device named <ph name="DEVICE_NAME">$1<ex>wireless mouse</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_TOOLTIP" desc="The tooltip text to notify that one bluetooth device is connected.">
+        Connected to a device named <ph name="DEVICE_NAME">$1<ex>wireless mouse</ex></ph>, <ph name="BATTERY_PERCENTAGE">$2<ex>100</ex></ph>% battery
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED" desc="The label used in the tray popup to notify that bluetooth is enabled.">
         Bluetooth enabled
@@ -515,8 +524,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_LABEL" desc="The label used to show the battery percentage when a bluetooth device is connected.">
         <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL" desc="The header label to notify that multiple bluetooth devices are connected. [CHAR_LIMIT=14]">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL_LEGACY" desc="The header label to notify that multiple bluetooth devices are connected. [CHAR_LIMIT=14]">
         Devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL" desc="The header label to notify that multiple bluetooth devices are connected. [CHAR_LIMIT=14]">
+        <ph name="NUM_DEVICES">$1<ex>3</ex></ph> devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE" desc="The sub-header label for the button to pair a new device.">
+        Pair new device
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CURRENTLY_CONNECTED_DEVICES" desc="The sub-header label for currently connected devices in Bluetooth device list.">
+        Currently connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PREVIOUSLY_CONNECTED_DEVICES" desc="The sub-header label for previously connected devices in Bluetooth device list.">
+        Previously connected
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -1378,6 +1399,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
         search
       </message>
+  <message name="IDS_ASH_SEARCH_RESULT_HYPHEN" desc="Concatenation of title and details text for ash search result view.">
+    <ph name="TITLE">$1<ex>Screen Saver</ex></ph> - <ph name="DETAILS">$2<ex>Personalization</ex></ph>
+  </message>
       <message name="IDS_ASH_ALTGR_KEY" desc="Name of [AltGr] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         altgr
       </message>
@@ -2884,6 +2908,14 @@ This file contains the strings for ash.
         </message>
       </if>
 
+      <!-- Notification -->
+      <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification">
+        Expand notification
+      </message>
+      <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification">
+        Collapse notification
+      </message>
+
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
         Don't show again
       </message>
@@ -2911,6 +2943,10 @@ This file contains the strings for ash.
 
       <!-- Calendar  -->
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_TITLE" desc="The label used as the title of the unified system tray calendar view.">
+        Calendar
       </message>
 
       <!-- Power off menu  -->

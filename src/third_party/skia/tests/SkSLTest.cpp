@@ -123,11 +123,7 @@ static void test_gpu(skiatest::Reporter* r, GrDirectContext* ctx, const char* te
 }
 
 static void test_es3(skiatest::Reporter* r, GrDirectContext* ctx, const char* testFile) {
-    // We don't have an ES2 caps bit, so we check the caps bits for features that ES2 explicitly
-    // doesn't support. Our ES2 bots should return false for these.
-    if (!ctx->priv().caps()->shaderCaps()->shaderDerivativeSupport() ||
-        !ctx->priv().caps()->shaderCaps()->integerSupport() ||
-        !ctx->priv().caps()->shaderCaps()->nonsquareMatrixSupport()) {
+    if (!ctx->priv().caps()->shaderCaps()->supportsSkSLES3()) {
         return;
     }
     // ES3-only tests never run on the CPU, because SkVM lacks support for many non-ES2 features.
@@ -212,20 +208,37 @@ SKSL_TEST_CPU(SkSLInlinerHonorsGLSLOutParamSemantics,
 
 SKSL_TEST(SkSLIntrinsicAbsFloat,               "intrinsics/AbsFloat.sksl")
 SKSL_TEST(SkSLIntrinsicCeil,                   "intrinsics/Ceil.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicDeterminant,        "intrinsics/Determinant.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicDFdx,               "intrinsics/DFdx.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicDFdy,               "intrinsics/DFdy.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicFloatBitsToInt,     "intrinsics/FloatBitsToInt.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicFloatBitsToUint,    "intrinsics/FloatBitsToUint.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicIntBitsToFloat,     "intrinsics/IntBitsToFloat.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicIsInf,              "intrinsics/IsInf.sksl")
 // TODO(johnstiles): test broken on Adreno 6xx + Vulkan
 //SKSL_TEST(SkSLIntrinsicClampFloat,             "intrinsics/ClampFloat.sksl")
 SKSL_TEST(SkSLIntrinsicMaxFloat,               "intrinsics/MaxFloat.sksl")
 SKSL_TEST(SkSLIntrinsicMinFloat,               "intrinsics/MinFloat.sksl")
 // skbug.com/11919: Fails on Adreno + Vulkan
 SKSL_TEST_CPU(SkSLIntrinsicMixFloat,           "intrinsics/MixFloat.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicModf,               "intrinsics/Modf.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicPackUnorm2x16,      "intrinsics/PackUnorm2x16.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicRound,              "intrinsics/Round.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicRoundEven,          "intrinsics/RoundEven.sksl")
 SKSL_TEST(SkSLIntrinsicSignFloat,              "intrinsics/SignFloat.sksl")
 SKSL_TEST(SkSLIntrinsicStep,                   "intrinsics/Step.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicTrunc,              "intrinsics/Trunc.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicTranspose,          "intrinsics/Transpose.sksl")
+SKSL_TEST_ES3(SkSLIntrinsicUintBitsToFloat,    "intrinsics/UintBitsToFloat.sksl")
 
 SKSL_TEST_ES3(SkSLArrayNarrowingConversions,   "runtime/ArrayNarrowingConversions.rts")
+SKSL_TEST_ES3(SkSLLoopFloat,                   "runtime/LoopFloat.rts")
+SKSL_TEST_ES3(SkSLLoopInt,                     "runtime/LoopInt.rts")
 
 SKSL_TEST_ES3(SkSLArrayComparison,             "shared/ArrayComparison.sksl")
 SKSL_TEST_ES3(SkSLArrayConstructors,           "shared/ArrayConstructors.sksl")
 SKSL_TEST_ES3(SkSLArrayCast,                   "shared/ArrayCast.sksl")
+SKSL_TEST_ES3(SkSLArrayFollowedByScalar,       "shared/ArrayFollowedByScalar.sksl")
 SKSL_TEST(SkSLArrayTypes,                      "shared/ArrayTypes.sksl")
 SKSL_TEST(SkSLAssignment,                      "shared/Assignment.sksl")
 SKSL_TEST(SkSLCastsRoundTowardZero,            "shared/CastsRoundTowardZero.sksl")
@@ -258,7 +271,7 @@ SKSL_TEST(SkSLMatrixEquality,                  "shared/MatrixEquality.sksl")
 SKSL_TEST(SkSLMatrixScalarSplat,               "shared/MatrixScalarSplat.sksl")
 SKSL_TEST(SkSLMatrixToVectorCast,              "shared/MatrixToVectorCast.sksl")
 SKSL_TEST(SkSLMultipleAssignments,             "shared/MultipleAssignments.sksl")
-SKSL_TEST(SkSLNegatedVectorLiteral,            "shared/NegatedVectorLiteral.sksl")
+SKSL_TEST(SkSLNegation,                        "shared/Negation.sksl")
 SKSL_TEST(SkSLNumberCasts,                     "shared/NumberCasts.sksl")
 SKSL_TEST(SkSLOperatorsES2,                    "shared/OperatorsES2.sksl")
 SKSL_TEST_ES3(SkSLOperatorsES3,                "shared/OperatorsES3.sksl")
@@ -276,6 +289,7 @@ SKSL_TEST_ES3(SkSLScalarConversionConstructorsES3, "shared/ScalarConversionConst
 SKSL_TEST(SkSLStackingVectorCasts,             "shared/StackingVectorCasts.sksl")
 SKSL_TEST(SkSLStaticIf,                        "shared/StaticIf.sksl")
 SKSL_TEST_ES3(SkSLStaticSwitch,                "shared/StaticSwitch.sksl")
+SKSL_TEST(SkSLStructArrayFollowedByScalar,     "shared/StructArrayFollowedByScalar.sksl")
 SKSL_TEST(SkSLStructsInFunctions,              "shared/StructsInFunctions.sksl")
 SKSL_TEST(SkSLSwizzleBoolConstants,            "shared/SwizzleBoolConstants.sksl")
 SKSL_TEST(SkSLSwizzleByConstantIndex,          "shared/SwizzleByConstantIndex.sksl")

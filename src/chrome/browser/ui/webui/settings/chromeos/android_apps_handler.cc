@@ -30,11 +30,11 @@ AndroidAppsHandler::~AndroidAppsHandler() {}
 
 void AndroidAppsHandler::RegisterMessages() {
   // Note: requestAndroidAppsInfo must be called before observers will be added.
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestAndroidAppsInfo",
       base::BindRepeating(&AndroidAppsHandler::HandleRequestAndroidAppsInfo,
                           weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showAndroidAppsSettings",
       base::BindRepeating(&AndroidAppsHandler::ShowAndroidAppsSettings,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -106,7 +106,7 @@ void AndroidAppsHandler::SendAndroidAppsInfo() {
 }
 
 void AndroidAppsHandler::ShowAndroidAppsSettings(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   bool activated_from_keyboard = false;
   args->GetBoolean(0, &activated_from_keyboard);
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;

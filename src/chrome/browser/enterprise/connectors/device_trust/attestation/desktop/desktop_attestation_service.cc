@@ -4,20 +4,41 @@
 
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/desktop_attestation_service.h"
 
+#include <utility>
+
+#include "base/base64.h"
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
+#include "build/os_buildflags.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
+#include "chrome/browser/enterprise/connectors/device_trust/attestation/common/proto/device_trust_attestation_ca.pb.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/crypto_utility.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h"
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
-#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
-#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
+#include "components/enterprise/common/proto/device_trust_report_event.pb.h"
 #include "crypto/random.h"
+#include "crypto/unexportable_key.h"
+
+#if BUILDFLAG(IS_WIN)
+
+#include <comutil.h>
+#include <objbase.h>
+#include <oleauto.h>
+#include <unknwn.h>
+#include <windows.h>
+#include <winerror.h>
+#include <wrl/client.h>
+
+#include "base/win/scoped_bstr.h"
+#include "chrome/install_static/install_util.h"
+#include "chrome/installer/util/util_constants.h"
+#include "google_update/google_update_idl.h"
+
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace enterprise_connectors {
 
@@ -26,39 +47,31 @@ namespace {
 // Size of nonce for challenge response.
 const size_t kChallengResponseNonceBytesSize = 32;
 
+#if BUILDFLAG(IS_WIN)
+
+// Explicitly allow impersonating the client since some COM code
+// elsewhere in the browser process may have previously used
+// CoInitializeSecurity to set the impersonation level to something other than
+// the default. Ignore errors since an attempt to use Google Update may succeed
+// regardless.
+void ConfigureProxyBlanket(IUnknown* interface_pointer) {
+  ::CoSetProxyBlanket(
+      interface_pointer, RPC_C_AUTHN_DEFAULT, RPC_C_AUTHZ_DEFAULT,
+      COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_DYNAMIC_CLOAKING);
+}
+
+#endif
+
 }  // namespace
 
-DesktopAttestationService::DesktopAttestationService()
-    : key_pair_(std::make_unique<SigningKeyPair>()) {}
+DesktopAttestationService::DesktopAttestationService(
+    std::unique_ptr<SigningKeyPair> key_pair)
+    : key_pair_(std::move(key_pair)) {
+  DCHECK(key_pair_);
+}
 
 DesktopAttestationService::~DesktopAttestationService() = default;
-
-void DesktopAttestationService::FillValuesForCBCM() {
-  if (public_key_.empty())
-    public_key_ = ExportPublicKey();
-  if (device_id_.empty())
-    device_id_ = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
-  if (customer_id_.empty())
-    MayGetCustomerId();
-}
-
-void DesktopAttestationService::MayGetCustomerId() {
-  policy::ChromeBrowserPolicyConnector* browser_policy_connector =
-      g_browser_process->browser_policy_connector();
-  if (!browser_policy_connector)
-    return;
-  policy::MachineLevelUserCloudPolicyManager*
-      machine_level_user_cloud_policy_manager =
-          browser_policy_connector->machine_level_user_cloud_policy_manager();
-  // Check that we can retrieve the customer id.
-  if (!machine_level_user_cloud_policy_manager ||
-      !machine_level_user_cloud_policy_manager->store() ||
-      !machine_level_user_cloud_policy_manager->store()->has_policy())
-    return;
-  customer_id_ = machine_level_user_cloud_policy_manager->store()
-                     ->policy()
-                     ->obfuscated_customer_id();
-}
 
 bool DesktopAttestationService::ChallengeComesFromVerifiedAccess(
     const std::string& serialized_signed_data,
@@ -80,13 +93,13 @@ std::string DesktopAttestationService::ExportPublicKey() {
 
 void DesktopAttestationService::BuildChallengeResponseForVAChallenge(
     const std::string& challenge,
+    std::unique_ptr<DeviceTrustSignals> signals,
     AttestationCallback callback) {
-  std::string serialized_signed_data =
-      JsonChallengeToProtobufChallenge(challenge);
-  // If one of this values is missing then attestation flow won't succeed.
-  FillValuesForCBCM();
-  if (device_id_.empty() || public_key_.empty() || customer_id_.empty())
-    LOG(ERROR) << "There are missing values for the attestation flow.";
+  DCHECK(!ExportPublicKey().empty());
+  DCHECK(signals);
+  DCHECK(signals->has_device_id() && !signals->device_id().empty());
+  DCHECK(signals->has_obfuscated_customer_id() &&
+         !signals->obfuscated_customer_id().empty());
 
   AttestationCallback reply = base::BindOnce(
       &DesktopAttestationService::ParseChallengeResponseAndRunCallback,
@@ -97,13 +110,85 @@ void DesktopAttestationService::BuildChallengeResponseForVAChallenge(
           &DesktopAttestationService::
               VerifyChallengeAndMaybeCreateChallengeResponse,
           base::Unretained(this), JsonChallengeToProtobufChallenge(challenge),
-          google_keys_.va_signing_key(VAType::DEFAULT_VA).modulus_in_hex()),
+          google_keys_.va_signing_key(VAType::DEFAULT_VA).modulus_in_hex(),
+          std::move(signals)),
       std::move(reply));
 }
 
-void DesktopAttestationService::SetKeyPairForTesting(
-    std::unique_ptr<crypto::UnexportableSigningKey> key_pair) {
-  key_pair_->SetKeyPairForTesting(std::move(key_pair));  // IN-TEST
+bool DesktopAttestationService::RotateSigningKey() {
+#if BUILDFLAG(IS_WIN)
+  // Get the CBCM DM token.  This will be needed later to send the new key's
+  // public part to the server.
+  auto dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  if (!dm_token.is_valid())
+    return false;
+
+  Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
+  HRESULT hr = ::CoCreateInstance(CLSID_GoogleUpdate3WebServiceClass, nullptr,
+                                  CLSCTX_ALL, IID_PPV_ARGS(&google_update));
+  if (FAILED(hr))
+    return false;
+
+  ConfigureProxyBlanket(google_update.Get());
+  Microsoft::WRL::ComPtr<IDispatch> dispatch;
+  hr = google_update->createAppBundleWeb(&dispatch);
+  if (FAILED(hr))
+    return false;
+
+  Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
+  hr = dispatch.As(&app_bundle);
+  if (FAILED(hr))
+    return false;
+
+  dispatch.Reset();
+  ConfigureProxyBlanket(app_bundle.Get());
+  app_bundle->initialize();
+  const wchar_t* app_guid = install_static::GetAppGuid();
+  hr = app_bundle->createInstalledApp(base::win::ScopedBstr(app_guid).Get());
+  if (FAILED(hr))
+    return false;
+
+  hr = app_bundle->get_appWeb(0, &dispatch);
+  if (FAILED(hr))
+    return false;
+
+  Microsoft::WRL::ComPtr<IAppWeb> app;
+  hr = dispatch.As(&app);
+  if (FAILED(hr))
+    return false;
+
+  dispatch.Reset();
+  ConfigureProxyBlanket(app.Get());
+  hr = app->get_command(
+      base::win::ScopedBstr(installer::kCmdRotateDeviceTrustKey).Get(),
+      &dispatch);
+  if (FAILED(hr) || !dispatch)
+    return false;
+
+  Microsoft::WRL::ComPtr<IAppCommandWeb> app_command;
+  hr = dispatch.As(&app_command);
+  if (FAILED(hr))
+    return false;
+
+  ConfigureProxyBlanket(app_command.Get());
+  std::string token_base64;
+  base::Base64Encode(dm_token.value(), &token_base64);
+  VARIANT var;
+  VariantInit(&var);
+  _variant_t token_var = token_base64.c_str();
+  hr = app_command->execute(token_var, var, var, var, var, var, var, var, var);
+  if (FAILED(hr))
+    return false;
+
+  // TODO(crbug.com/823515): Get the status of the app command execution and
+  // return a corresponding value for |success|. For now, assume that the call
+  // to setup.exe succeeds.
+  return true;
+#else   // BUILDFLAG(IS_WIN)
+  // TODO(b/194385359): Implement for mac.
+  // TODO(b/194385515): Implement for linux.
+  return false;
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void DesktopAttestationService::StampReport(DeviceTrustReportEvent& report) {
@@ -116,7 +201,8 @@ void DesktopAttestationService::StampReport(DeviceTrustReportEvent& report) {
 std::string
 DesktopAttestationService::VerifyChallengeAndMaybeCreateChallengeResponse(
     const std::string& serialized_signed_data,
-    const std::string& public_key_modulus_hex) {
+    const std::string& public_key_modulus_hex,
+    std::unique_ptr<DeviceTrustSignals> signals) {
   if (!ChallengeComesFromVerifiedAccess(serialized_signed_data,
                                         public_key_modulus_hex)) {
     LOG(ERROR) << "Challenge signature verification did not succeed.";
@@ -128,7 +214,7 @@ DesktopAttestationService::VerifyChallengeAndMaybeCreateChallengeResponse(
   SignEnterpriseChallengeReply result;
   request.set_challenge(serialized_signed_data);
   request.set_va_type(VAType::DEFAULT_VA);
-  SignEnterpriseChallenge(request, &result);
+  SignEnterpriseChallenge(request, std::move(signals), &result);
   return result.challenge_response();
 }
 
@@ -149,12 +235,7 @@ void DesktopAttestationService::ParseChallengeResponseAndRunCallback(
 
 void DesktopAttestationService::SignEnterpriseChallenge(
     const SignEnterpriseChallengeRequest& request,
-    SignEnterpriseChallengeReply* result) {
-  SignEnterpriseChallengeTask(request, result);
-}
-
-void DesktopAttestationService::SignEnterpriseChallengeTask(
-    const SignEnterpriseChallengeRequest& request,
+    std::unique_ptr<DeviceTrustSignals> signals,
     SignEnterpriseChallengeReply* result) {
   // Validate that the challenge is coming from the expected source.
   SignedData signed_challenge;
@@ -165,10 +246,13 @@ void DesktopAttestationService::SignEnterpriseChallengeTask(
   }
   KeyInfo key_info;
   // Fill `key_info` out for Chrome Browser.
+  // TODO(crbug.com/1241870): Remove public key from signals.
   key_info.set_key_type(CBCM);
-  key_info.set_browser_instance_public_key(public_key_);
-  key_info.set_device_id(device_id_);
-  key_info.set_customer_id(customer_id_);
+  key_info.set_browser_instance_public_key(ExportPublicKey());
+  key_info.set_device_id(signals->device_id());
+  key_info.set_customer_id(signals->obfuscated_customer_id());
+
+  key_info.set_allocated_device_trust_signals(signals.release());
 
   ChallengeResponse response_pb;
   *response_pb.mutable_challenge() = signed_challenge;

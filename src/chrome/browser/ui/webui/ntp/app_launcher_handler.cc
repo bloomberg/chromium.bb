@@ -50,16 +50,17 @@
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -311,6 +312,13 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
       "kioskMode",
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode));
 
+  bool is_deprecated_app = false;
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  is_deprecated_app = extensions::IsExtensionUnsupportedDeprecatedApp(
+      extension_service_->GetBrowserContext(), extension->id());
+#endif
+  value->SetBoolean("is_deprecated_app", is_deprecated_app);
+
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.
   std::u16string short_name = base::UTF8ToUTF16(extension->short_name());
@@ -322,6 +330,8 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
 
   std::u16string name = base::UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
+  if (is_deprecated_app)
+    name = l10n_util::GetStringFUTF16(IDS_APPS_PAGE_DEPRECATED_APP_TITLE, name);
   NewTabUI::SetFullNameAndDirection(name, value);
 
   bool enabled = extension_service_->IsExtensionEnabled(extension->id()) &&
@@ -426,51 +436,51 @@ void AppLauncherHandler::RegisterProfilePrefs(
 }
 
 void AppLauncherHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getApps", base::BindRepeating(&AppLauncherHandler::HandleGetApps,
                                      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchApp", base::BindRepeating(&AppLauncherHandler::HandleLaunchApp,
                                        base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setLaunchType",
       base::BindRepeating(&AppLauncherHandler::HandleSetLaunchType,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "uninstallApp",
       base::BindRepeating(&AppLauncherHandler::HandleUninstallApp,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "createAppShortcut",
       base::BindRepeating(&AppLauncherHandler::HandleCreateAppShortcut,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "installAppLocally",
       base::BindRepeating(&AppLauncherHandler::HandleInstallAppLocally,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "showAppInfo", base::BindRepeating(&AppLauncherHandler::HandleShowAppInfo,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "reorderApps", base::BindRepeating(&AppLauncherHandler::HandleReorderApps,
                                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setPageIndex",
       base::BindRepeating(&AppLauncherHandler::HandleSetPageIndex,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "saveAppPageName",
       base::BindRepeating(&AppLauncherHandler::HandleSaveAppPageName,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "generateAppForLink",
       base::BindRepeating(&AppLauncherHandler::HandleGenerateAppForLink,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "pageSelected",
       base::BindRepeating(&AppLauncherHandler::HandlePageSelected,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "runOnOsLogin",
       base::BindRepeating(&AppLauncherHandler::HandleRunOnOsLogin,
                           base::Unretained(this)));
@@ -631,7 +641,7 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
 
   const base::ListValue* app_page_names =
       prefs->GetList(prefs::kNtpAppPageNames);
-  if (!app_page_names || !app_page_names->GetSize()) {
+  if (!app_page_names || !app_page_names->GetList().size()) {
     ListPrefUpdate update(prefs, prefs::kNtpAppPageNames);
     base::ListValue* list = update.Get();
     list->Set(0, std::make_unique<base::Value>(
@@ -743,6 +753,13 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
 
   Profile* profile = extension_service_->profile();
 
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  if (extensions::IsExtensionUnsupportedDeprecatedApp(profile, extension_id)) {
+    // TODO(crbug.com/1225779): Show the deprecated apps dialog.
+    return;
+  }
+#endif
+
   extensions::Manifest::Type type;
   GURL full_launch_url;
   apps::mojom::LaunchContainer launch_container;
@@ -772,15 +789,15 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
   }
 
   WindowOpenDisposition disposition =
-      args->GetSize() > 3 ? webui::GetDispositionFromClick(args, 3)
-                          : WindowOpenDisposition::CURRENT_TAB;
+      args->GetList().size() > 3 ? webui::GetDispositionFromClick(args, 3)
+                                 : WindowOpenDisposition::CURRENT_TAB;
   if (extension_id != extensions::kWebStoreAppId) {
     CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
     extensions::RecordAppLaunchType(launch_bucket, type);
   } else {
     extensions::RecordWebStoreLaunch();
 
-    if (args->GetSize() > 2) {
+    if (args->GetList().size() > 2) {
       std::string source_value;
       CHECK(args->GetString(2, &source_value));
       if (!source_value.empty()) {
@@ -860,7 +877,7 @@ void AppLauncherHandler::HandleSetLaunchType(const base::ListValue* args) {
         break;
     }
 
-    web_app_provider_->registry_controller().SetAppUserDisplayMode(
+    web_app_provider_->sync_bridge().SetAppUserDisplayMode(
         app_id, display_mode, /*is_user_action=*/true);
     return;
   }
@@ -1002,10 +1019,8 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
 
   InstallOsHooks(app_id);
 
-  web_app_provider_->registry_controller().SetAppIsLocallyInstalled(app_id,
-                                                                    true);
-  web_app_provider_->registry_controller().SetAppInstallTime(app_id,
-                                                             base::Time::Now());
+  web_app_provider_->sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+  web_app_provider_->sync_bridge().SetAppInstallTime(app_id, base::Time::Now());
 
   // Use the appAdded to update the app icon's color to no longer be
   // greyscale.
@@ -1165,10 +1180,10 @@ void AppLauncherHandler::HandleRunOnOsLogin(const base::ListValue* args) {
   if (!web_app_provider_->registrar().IsInstalled(app_id))
     return;
 
-  web_app_provider_->registry_controller().SetAppRunOnOsLoginMode(app_id, mode);
+  web_app_provider_->sync_bridge().SetAppRunOnOsLoginMode(app_id, mode);
 
   if (mode == web_app::RunOnOsLoginMode::kNotRun) {
-    web_app::OsHooksResults os_hooks;
+    web_app::OsHooksOptions os_hooks;
     os_hooks[web_app::OsHookType::kRunOnOsLogin] = true;
     web_app_provider_->os_integration_manager().UninstallOsHooks(
         app_id, os_hooks, base::DoNothing());
@@ -1219,8 +1234,9 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
           weak_ptr_factory_.GetWeakPtr());
 
   web_app_provider_->install_manager().InstallWebAppFromInfo(
-      std::move(web_app), web_app::ForInstallableSite::kUnknown,
-      webapps::WebappInstallSource::SYNC, std::move(install_complete_callback));
+      std::move(web_app), /*overwrite_existing_manifest_fields=*/false,
+      web_app::ForInstallableSite::kUnknown, webapps::WebappInstallSource::SYNC,
+      std::move(install_complete_callback));
 }
 
 void AppLauncherHandler::OnExtensionPreferenceChanged() {
@@ -1251,12 +1267,13 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
 
 void AppLauncherHandler::OnOsHooksInstalled(
     const web_app::AppId& app_id,
-    const web_app::OsHooksResults os_hooks_results) {
-  // TODO(dmurph): Once installation takes the OSHookResults bitfield, then
+    const web_app::OsHooksErrors os_hooks_errors) {
+  // TODO(dmurph): Once installation takes the OsHooksErrors bitfield, then
   // use that to compare with the results, and record if they all were
   // successful, instead of just shortcuts.
+  bool error = os_hooks_errors[web_app::OsHookType::kShortcuts];
   base::UmaHistogramBoolean("Apps.Launcher.InstallLocallyShortcutsCreated",
-                            os_hooks_results[web_app::OsHookType::kShortcuts]);
+                            !error);
 
   web_app_provider_->registrar().NotifyWebAppInstalledWithOsHooks(app_id);
 }

@@ -46,6 +46,9 @@ class NavigationObserver : public content::WebContentsObserver {
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->IsInPrimaryMainFrame()) {
+      return;
+    }
     navigation_result_ =
         navigation_handle->IsErrorPage() ? ERROR_PAGE : SUCCESS;
     net_error_ = navigation_handle->GetNetErrorCode();
@@ -93,7 +96,8 @@ class ChromeURLDataManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, 200) {
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUINewTabURL)));
   EXPECT_TRUE(observer.got_navigation());
   EXPECT_EQ(200, observer.http_status_code());
 }
@@ -103,15 +107,15 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, UnknownResource) {
   // Known resource
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON")));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
   EXPECT_EQ(net::OK, observer.net_error());
 
   // Unknown resource
   observer.Reset();
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_ASDFGHJKL"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_ASDFGHJKL")));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
   // The presence of net error means that navigation did not commit to the
   // original url.
@@ -123,15 +127,15 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   // Valid scale
   NavigationObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x")));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
   EXPECT_EQ(net::OK, observer.net_error());
 
   // Unreasonably large scale
   observer.Reset();
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x")));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
   // The presence of net error means that navigation did not commit to the
   // original url.
@@ -162,7 +166,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     console_observer.SetPattern(message_filter2);
 
     ASSERT_TRUE(embedded_test_server()->Start());
-    ui_test_utils::NavigateToURL(browser(), GURL(url));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(url)));
 
     if (url == "chrome://network-error" || url == "chrome://dino") {
       // We don't ASSERT_TRUE here because some WebUI pages are
@@ -326,9 +330,11 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://sys-internals",
     "chrome-untrusted://terminal",
 #endif
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
     "chrome://apps",
     "chrome://browser-switch",
+#endif
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     "chrome://signin-email-confirmation",
     "chrome://welcome",
 #endif

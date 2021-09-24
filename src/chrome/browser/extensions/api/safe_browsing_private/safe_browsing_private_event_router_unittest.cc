@@ -207,6 +207,22 @@ class SafeBrowsingPrivateEventRouterTestBase : public testing::Test {
             "filePasswordProtected", 12345, result);
   }
 
+  void TriggerOnLoginEvent(
+      const GURL& url,
+      absl::optional<url::Origin> federated_origin = absl::nullopt) {
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnLoginEvent(url, federated_origin.has_value(),
+                       federated_origin.has_value() ? federated_origin.value()
+                                                    : url::Origin());
+  }
+
+  void TriggerOnPasswordBreachEvent(
+      const std::string& trigger,
+      const std::vector<std::pair<GURL, std::string>>& identities) {
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+        ->OnPasswordBreach(trigger, identities);
+  }
+
   void SetReportingPolicy(bool enabled,
                           bool authorized = true,
                           const std::set<std::string>& enabled_event_names =
@@ -718,6 +734,69 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
 
   Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEvent) {
+  SetUpRouters();
+
+  signin::IdentityTestEnvironment identity_test_environment;
+  SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+      ->SetIdentityManagerForTesting(
+          identity_test_environment.identity_manager());
+  identity_test_environment.MakePrimaryAccountAvailable(
+      profile_->GetProfileUserName(), signin::ConsentLevel::kSignin);
+
+  safe_browsing::EventReportValidator validator(client_.get());
+  validator.ExpectLoginEvent("https://www.example.com/", false, "",
+                             profile_->GetProfileUserName());
+
+  TriggerOnLoginEvent(GURL("https://www.example.com/"));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEventFederated) {
+  SetUpRouters();
+
+  signin::IdentityTestEnvironment identity_test_environment;
+  SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+      ->SetIdentityManagerForTesting(
+          identity_test_environment.identity_manager());
+  identity_test_environment.MakePrimaryAccountAvailable(
+      profile_->GetProfileUserName(), signin::ConsentLevel::kSignin);
+
+  safe_browsing::EventReportValidator validator(client_.get());
+  validator.ExpectLoginEvent("https://www.example.com/", true,
+                             "https://www.google.com",
+                             profile_->GetProfileUserName());
+
+  TriggerOnLoginEvent(GURL("https://www.example.com/"),
+                      url::Origin::Create(GURL("https://www.google.com")));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordBreach) {
+  SetUpRouters();
+
+  signin::IdentityTestEnvironment identity_test_environment;
+  SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+      ->SetIdentityManagerForTesting(
+          identity_test_environment.identity_manager());
+  identity_test_environment.MakePrimaryAccountAvailable(
+      profile_->GetProfileUserName(), signin::ConsentLevel::kSignin);
+
+  safe_browsing::EventReportValidator validator(client_.get());
+  validator.ExpectPasswordBreachEvent(
+      "SAFETY_CHECK",
+      {
+          {"https://first.example.com/", "first_user_name"},
+          {"https://second.example.com/", "second_user_name"},
+      },
+      profile_->GetProfileUserName());
+
+  TriggerOnPasswordBreachEvent(
+      "SAFETY_CHECK",
+      {
+          {GURL("https://first.example.com"), "first_user_name"},
+          {GURL("https://second.example.com"), "second_user_name"},
+      });
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent_Allowed) {

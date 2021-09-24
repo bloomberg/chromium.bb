@@ -14,10 +14,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -40,7 +40,7 @@ WebAppControllerBrowserTest::WebAppControllerBrowserTest()
 WebAppControllerBrowserTest::~WebAppControllerBrowserTest() = default;
 
 WebAppProvider& WebAppControllerBrowserTest::provider() {
-  auto* provider = WebAppProvider::Get(profile());
+  auto* provider = WebAppProvider::GetForTest(profile());
   DCHECK(provider);
   return *provider;
 }
@@ -53,7 +53,7 @@ AppId WebAppControllerBrowserTest::InstallPWA(const GURL& start_url) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
-  web_app_info->open_as_window = true;
+  web_app_info->user_display_mode = DisplayMode::kStandalone;
   web_app_info->title = u"A Web App";
   return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 }

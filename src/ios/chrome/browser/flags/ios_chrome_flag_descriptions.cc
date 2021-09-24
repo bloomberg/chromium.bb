@@ -11,6 +11,10 @@
 
 namespace flag_descriptions {
 
+const char kAddPasswordsInSettingsName[] = "Add passwords in settings";
+const char kAddPasswordsInSettingsDescription[] =
+    "Enables manually creating password credentials from the settings";
+
 const char kAutofillCreditCardUploadName[] =
     "Offers uploading Autofilled credit cards";
 const char kAutofillCreditCardUploadDescription[] =
@@ -79,11 +83,9 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kCollectionsCardPresentationStyleName[] =
-    "Card style presentation for Collections.";
-const char kCollectionsCardPresentationStyleDescription[] =
-    "When enabled collections are presented using the new iOS13 card "
-    "style.";
+const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
+const char kContextMenuActionsRefreshDescription[] =
+    "When enabled, context menu actions are updated";
 
 const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
@@ -180,21 +182,9 @@ const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
     "When enabled, UI indicating user's e-mail address will appear at the"
     "bottom of save card infobar.";
 
-const char kEnableCloseAllTabsConfirmationName[] =
-    "Enable Close All Tabs confirmation";
-const char kEnableCloseAllTabsConfirmationDescription[] =
-    "Enable showing an action sheet that asks for confirmation when 'Close "
-    "All' button is tapped on the tab grid to avoid unwanted clearing.";
-
 const char kEnableDiscoverFeedPreviewName[] = "Enable discover feed preview";
 const char kEnableDiscoverFeedPreviewDescription[] =
     "Enable showing a live preview for discover feed long-press menu.";
-
-const char kEnableExtendedSyncPromosCapabilityName[] =
-    "Enables reading the extended sync promo account capability";
-const char kEnableExtendedSyncPromosCapabilityDescription[] =
-    "When enabled, starts reading the account capability to decide whether "
-    "or not Chrome should display an extended sync promo";
 
 const char kEnableFREDefaultBrowserScreenName[] =
     "Enable FRE default browser screen";
@@ -222,6 +212,10 @@ const char kEnableNTPMemoryEnhancementName[] = "Enable NTP Memory Enhancement";
 const char kEnableNTPMemoryEnhancementDescription[] =
     "NTP will consume less memory.";
 
+const char kEnableOptimizationGuideName[] = "Enable optimization guide";
+const char kEnableOptimizationGuideDescription[] =
+    "Enables the optimization guide to provide intelligence for page loads.";
+
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
@@ -243,10 +237,6 @@ const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
 
-const char kForceUnstackedTabstripName[] = "Force unstacked tabstrip.";
-const char kForceUnstackedTabstripDescription[] =
-    "When enabled, the tabstrip will draw unstacked, without tab collapsing.";
-
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
@@ -263,6 +253,10 @@ const char kIncognitoBrandConsistencyForIOSName[] =
 const char kIncognitoBrandConsistencyForIOSDescription[] =
     "When enabled, keeps Incognito UI consistent regardless of any selected "
     "theme.";
+
+const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
+const char kIncognitoNtpRevampDescription[] =
+    "When enabled, Incognito new tab page will have an updated UI.";
 
 const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
 const char kInfobarOverlayUIDescription[] =
@@ -335,17 +329,12 @@ const char kMetrickitCrashReportDescription[] =
     "Enables sending Metrickit crash reports";
 
 const char kMICEWebSignInName[] = "MICE Web Sign-in";
-const char kMICEWebSignInDescription[] =
-    "Enables MICE web sign-in. Requires #mobile-identity-consistency.";
+const char kMICEWebSignInDescription[] = "Enables MICE web sign-in.";
 
 const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
-
-const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
-const char kMobileIdentityConsistencyDescription[] =
-    "Enables identity consistency on mobile by decoupling sync and sign-in.";
 
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
@@ -427,10 +416,16 @@ const char kSearchHistoryLinkIOSDescription[] =
     "Changes the Clear Browsing Data "
     "UI to display a link to clear search history on My Google Activity.";
 
-const char kSendTabToSelfName[] = "Send tab to self";
-const char kSendTabToSelfDescription[] =
-    "Allows users to receive tabs that were pushed from another of their "
-    "synced devices, in order to easily transition tabs between devices.";
+const char kSendTabToSelfWhenSignedInName[] = "Send-tab-to-self when signed in";
+const char kSendTabToSelfWhenSignedInDescription[] =
+    "Makes the tab sharing feature also available for users who have \"only\" "
+    "signed-in to their Google Account (as opposed to having enabled Sync).";
+
+const char kSendTabToSelfManageDevicesLinkName[] =
+    "Send-tab-to-self manage devices link";
+const char kSendTabToSelfManageDevicesLinkDescription[] =
+    "Shows a link to manage the user's devices below the device list when "
+    "sharing";
 
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";
@@ -451,10 +446,6 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
-
-const char kSimplifySignOutIOSName[] = "Simplify sign-out";
-const char kSimplifySignOutIOSDescription[] =
-    "When enabled, sign-out UI in the account table view is simplified.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
@@ -483,10 +474,6 @@ const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
     "icon or the app switcher.";
-
-const char kTabGridContextMenuName[] = "Enable Tab Grid context menu";
-const char kTabGridContextMenuDescription[] =
-    "Enables the context menu for long press on tabs on the tab grid.";
 
 const char kTabsBulkActionsName[] = "Enable Tab Grid Bulk Actions";
 const char kTabsBulkActionsDescription[] =

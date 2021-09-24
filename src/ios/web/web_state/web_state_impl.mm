@@ -16,7 +16,6 @@
 #import "ios/web/common/crw_content_view.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/url_util.h"
-#import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -85,7 +84,6 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_loading_(false),
       is_being_destroyed_(false),
       web_controller_(nil),
-      web_frames_manager_(*this),
       created_with_opener_(params.created_with_opener),
       user_agent_type_(features::UseWebClientDefaultUserAgent()
                            ? UserAgentType::AUTOMATIC
@@ -524,23 +522,6 @@ void WebStateImpl::ShouldAllowResponse(
       num_decisions_requested);
 }
 
-bool WebStateImpl::ShouldPreviewLink(const GURL& link_url) {
-  return delegate_ && delegate_->ShouldPreviewLink(this, link_url);
-}
-
-UIViewController* WebStateImpl::GetPreviewingViewController(
-    const GURL& link_url) {
-  return delegate_ ? delegate_->GetPreviewingViewController(this, link_url)
-                   : nil;
-}
-
-void WebStateImpl::CommitPreviewingViewController(
-    UIViewController* previewing_view_controller) {
-  if (delegate_) {
-    delegate_->CommitPreviewingViewController(this, previewing_view_controller);
-  }
-}
-
 UIView* WebStateImpl::GetWebViewContainer() {
   if (delegate_) {
     return delegate_->GetWebViewContainer(this);
@@ -561,14 +542,34 @@ WebState::InterfaceBinder* WebStateImpl::GetInterfaceBinderForMainFrame() {
 
 #pragma mark - WebFrame management
 
-void WebStateImpl::OnWebFrameAvailable(web::WebFrame* frame) {
-  for (auto& observer : observers_)
-    observer.WebFrameDidBecomeAvailable(this, frame);
+void WebStateImpl::RemoveAllWebFrames() {
+  for (WebFrame* frame : GetWebFramesManager()->GetAllWebFrames()) {
+    NotifyObserversAndRemoveWebFrame(frame);
+  }
 }
 
-void WebStateImpl::OnWebFrameUnavailable(web::WebFrame* frame) {
+void WebStateImpl::WebFrameBecameAvailable(std::unique_ptr<WebFrame> frame) {
+  WebFrame* frame_ptr = frame.get();
+  GetWebFramesManagerImpl().AddFrame(std::move(frame));
+
+  for (auto& observer : observers_)
+    observer.WebFrameDidBecomeAvailable(this, frame_ptr);
+}
+
+void WebStateImpl::WebFrameBecameUnavailable(const std::string& frame_id) {
+  WebFrame* frame = GetWebFramesManager()->GetFrameWithId(frame_id);
+  if (!frame) {
+    return;
+  }
+
+  NotifyObserversAndRemoveWebFrame(frame);
+}
+
+void WebStateImpl::NotifyObserversAndRemoveWebFrame(WebFrame* frame) {
   for (auto& observer : observers_)
     observer.WebFrameWillBecomeUnavailable(this, frame);
+
+  GetWebFramesManagerImpl().RemoveFrameWithId(frame->GetFrameId());
 }
 
 #pragma mark - WebState implementation
@@ -685,33 +686,26 @@ void WebStateImpl::LoadData(NSData* data,
 }
 
 CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
-  return [web_controller_.jsInjector JSInjectionReceiver];
+  return [web_controller_ jsInjectionReceiver];
 }
 
 void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript) {
-  [web_controller_.jsInjector
-      executeJavaScript:base::SysUTF16ToNSString(javascript)
-      completionHandler:nil];
+  [web_controller_ executeJavaScript:base::SysUTF16ToNSString(javascript)
+                   completionHandler:nil];
 }
 
 void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript,
                                      JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback stack_callback = std::move(callback);
-  [web_controller_.jsInjector
+  [web_controller_
       executeJavaScript:base::SysUTF16ToNSString(javascript)
       completionHandler:^(id value, NSError* error) {
-        if (error) {
-          DLOG(WARNING) << "Script execution failed with error: "
-                        << base::SysNSStringToUTF16(
-                               error.userInfo[NSLocalizedDescriptionKey]);
-        }
         std::move(stack_callback).Run(ValueResultFromWKResult(value).get());
       }];
 }
 
 void WebStateImpl::ExecuteUserJavaScript(NSString* javaScript) {
-  [web_controller_.jsInjector executeUserJavaScript:javaScript
-                                  completionHandler:nil];
+  [web_controller_ executeUserJavaScript:javaScript completionHandler:nil];
 }
 
 const std::string& WebStateImpl::GetContentsMimeType() const {

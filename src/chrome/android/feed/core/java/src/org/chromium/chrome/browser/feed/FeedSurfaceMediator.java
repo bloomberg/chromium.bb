@@ -105,11 +105,15 @@ public class FeedSurfaceMediator
         private static final String SCROLL_LAST_POSITION = "lpos";
         private static final String SCROLL_OFFSET = "off";
         private static final String TAB_ID = "tabId";
+        private static final String FEED_CONTENT_STATE = "contentState";
 
         public int position;
         public int lastPosition;
         public int offset;
         public int tabId;
+        // Represents the state of Feed content. If it changes,
+        // the scroll state should not be retained.
+        public String feedContentState = "";
 
         /** Turns the fields into json. */
         public String toJson() {
@@ -119,6 +123,7 @@ public class FeedSurfaceMediator
                 jsonSavedState.put(SCROLL_LAST_POSITION, lastPosition);
                 jsonSavedState.put(SCROLL_OFFSET, offset);
                 jsonSavedState.put(TAB_ID, tabId);
+                jsonSavedState.put(FEED_CONTENT_STATE, feedContentState);
                 return jsonSavedState.toString();
             } catch (JSONException e) {
                 Log.d(TAG, "Unable to write to a JSONObject.");
@@ -137,6 +142,7 @@ public class FeedSurfaceMediator
                 result.lastPosition = jsonSavedState.getInt(SCROLL_LAST_POSITION);
                 result.offset = jsonSavedState.getInt(SCROLL_OFFSET);
                 result.tabId = jsonSavedState.getInt(TAB_ID);
+                result.feedContentState = jsonSavedState.getString(FEED_CONTENT_STATE);
             } catch (JSONException e) {
                 Log.d(TAG, "Unable to parse a JSONObject from a string.");
                 return null;
@@ -380,6 +386,9 @@ public class FeedSurfaceMediator
                     state.offset = firstVisibleView.getTop();
                 }
             }
+            if (mCurrentStream != null) {
+                state.feedContentState = mCurrentStream.getContentState();
+            }
         }
         return state.toJson();
     }
@@ -434,7 +443,7 @@ public class FeedSurfaceMediator
             // Build menu after section enabled key is set.
             mFeedMenuModel = buildMenuItems();
 
-            mCoordinator.initializeIph();
+            mCoordinator.initializeBubbleTriggering();
             mSigninManager.getIdentityManager().addObserver(this);
 
             mSectionHeaderModel.set(
@@ -746,7 +755,18 @@ public class FeedSurfaceMediator
 
     private void setHeaderIndicatorState(boolean suggestionsVisible) {
         boolean isSignedIn = isSignedIn();
-        mSectionHeaderModel.set(SectionHeaderListProperties.IS_TAB_MODE_KEY, isSignedIn);
+        boolean isTabMode = isSignedIn && FeedFeatures.isWebFeedUIEnabled();
+        // If we're in tab mode now, make sure webfeed tab is set up.
+        if (isTabMode) {
+            setUpWebFeedTab();
+        }
+        mSectionHeaderModel.set(SectionHeaderListProperties.IS_TAB_MODE_KEY, isTabMode);
+
+        // If not in tab mode, make sure we are on the for-you feed.
+        if (!isTabMode) {
+            mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY,
+                    getTabIdForSection(SectionType.FOR_YOU_FEED));
+        }
 
         boolean isGoogleSearchEngine =
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
@@ -857,7 +877,7 @@ public class FeedSurfaceMediator
         ModelList itemList = new ModelList();
         int iconId = 0;
         if (isSignedIn()) {
-            if (FeedFeatures.isWebFeedUIEnabled()) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
                 itemList.add(buildMenuListItem(
                         R.string.ntp_manage_feed, R.id.ntp_feed_header_menu_item_manage, iconId));
             } else {

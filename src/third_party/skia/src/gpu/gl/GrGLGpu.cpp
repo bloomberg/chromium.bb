@@ -545,9 +545,7 @@ void GrGLGpu::onResetContext(uint32_t resetBits) {
     }
 
     if (resetBits & kMSAAEnable_GrGLBackendState) {
-        if (this->caps()->multisampleDisableSupport()) {
-            fMSAAEnabled = kUnknown_TriState;
-        } else if (this->glCaps().clientCanDisableMultisample()) {
+        if (this->glCaps().clientCanDisableMultisample()) {
             // Restore GL_MULTISAMPLE to its initial state. It being enabled has no effect on draws
             // to non-MSAA targets.
             GL_CALL(Enable(GR_GL_MULTISAMPLE));
@@ -1843,7 +1841,6 @@ bool GrGLGpu::flushGLState(GrRenderTarget* renderTarget, bool useMultisampleFBO,
     this->flushScissorTest(GrScissorTest(programInfo.pipeline().isScissorTestEnabled()));
     this->flushWindowRectangles(programInfo.pipeline().getWindowRectsState(),
                                 glRT, programInfo.origin());
-    this->flushHWAAState(glRT, programInfo.pipeline().isHWAntialiasState());
     this->flushConservativeRasterState(programInfo.pipeline().usesConservativeRaster());
     this->flushWireframeState(programInfo.pipeline().isWireframe());
 
@@ -2055,7 +2052,7 @@ void GrGLGpu::clearStencilClip(const GrScissorState& scissor, bool insideStencil
 #else
     // we could just clear the clip bit but when we go through
     // ANGLE a partial stencil mask will cause clears to be
-    // turned into draws. Our contract on GrOpsTask says that
+    // turned into draws. Our contract on OpsTask says that
     // changing the clip between stencil passes may or may not
     // zero the client's clip bits. So we just clear the whole thing.
     static const GrGLint clipStencilMask  = ~0;
@@ -2462,27 +2459,6 @@ void GrGLGpu::disableStencil() {
     }
 }
 
-void GrGLGpu::flushHWAAState(GrRenderTarget* rt, bool useHWAA) {
-    // rt is only optional if useHWAA is false.
-    SkASSERT(rt || !useHWAA);
-    SkASSERT(!useHWAA || rt->numSamples() > 1 ||
-             static_cast<GrGLRenderTarget*>(rt)->multisampleFBOID());
-
-    if (this->caps()->multisampleDisableSupport()) {
-        if (useHWAA) {
-            if (kYes_TriState != fMSAAEnabled) {
-                GL_CALL(Enable(GR_GL_MULTISAMPLE));
-                fMSAAEnabled = kYes_TriState;
-            }
-        } else {
-            if (kNo_TriState != fMSAAEnabled) {
-                GL_CALL(Disable(GR_GL_MULTISAMPLE));
-                fMSAAEnabled = kNo_TriState;
-            }
-        }
-    }
-}
-
 void GrGLGpu::flushConservativeRasterState(bool enabled) {
     if (this->caps()->conservativeRasterSupport()) {
         if (enabled) {
@@ -2551,6 +2527,21 @@ void GrGLGpu::flushBlendAndColorWrite(
                 fHWBlendState.fEquation = blend_equation;
             }
 
+            // Workaround for Adreno 5xx BlendFunc bug. See crbug.com/1241134.
+            // We must also check to see if the blend coeffs are invalid because the client may have
+            // reset our gl state and thus we will have forgotten if the previous use was a coeff
+            // that referenced src2.
+            if (this->glCaps().mustResetBlendFuncBetweenDualSourceAndDisable() &&
+                (GrBlendCoeffRefsSrc2(fHWBlendState.fSrcCoeff) ||
+                 GrBlendCoeffRefsSrc2(fHWBlendState.fDstCoeff) ||
+                 fHWBlendState.fSrcCoeff == kIllegal_GrBlendCoeff ||
+                 fHWBlendState.fDstCoeff == kIllegal_GrBlendCoeff)) {
+                // We just reset the blend func to anything that doesn't reference src2
+                GL_CALL(BlendFunc(GR_GL_ONE, GR_GL_ZERO));
+                fHWBlendState.fSrcCoeff = kOne_GrBlendCoeff;
+                fHWBlendState.fDstCoeff = kZero_GrBlendCoeff;
+            }
+
             fHWBlendState.fEnabled = kNo_TriState;
         }
     } else {
@@ -2578,7 +2569,7 @@ void GrGLGpu::flushBlendAndColorWrite(
             fHWBlendState.fDstCoeff = dstCoeff;
         }
 
-        if ((GrBlendCoeffRefsConstant(srcCoeff) || GrBlendCoeffRefsConstant(dstCoeff))) {
+        if (GrBlendCoeffRefsConstant(srcCoeff) || GrBlendCoeffRefsConstant(dstCoeff)) {
             SkPMColor4f blendConst = swizzle.applyTo(blendInfo.fBlendConstant);
             if (!fHWBlendState.fConstColorValid || fHWBlendState.fConstColor != blendConst) {
                 GL_CALL(BlendColor(blendConst.fR, blendConst.fG, blendConst.fB, blendConst.fA));
@@ -3354,7 +3345,6 @@ bool GrGLGpu::copySurfaceAsDraw(GrSurface* dst, bool drawToMultisampleFBO, GrSur
                       sx1 - sx0, sy1 - sy0, sx0, sy0));
     GL_CALL(Uniform1i(fCopyPrograms[progIdx].fTextureUniform, 0));
     this->flushBlendAndColorWrite(GrXferProcessor::BlendInfo(), GrSwizzle::RGBA());
-    this->flushHWAAState(nullptr, false);
     this->flushConservativeRasterState(false);
     this->flushWireframeState(false);
     this->flushScissorTest(GrScissorTest::kDisabled);
@@ -3489,7 +3479,6 @@ bool GrGLGpu::onRegenerateMipMapLevels(GrTexture* texture) {
 
     // Set "simple" state once:
     this->flushBlendAndColorWrite(GrXferProcessor::BlendInfo(), GrSwizzle::RGBA());
-    this->flushHWAAState(nullptr, false);
     this->flushScissorTest(GrScissorTest::kDisabled);
     this->disableWindowRectangles();
     this->disableStencil();

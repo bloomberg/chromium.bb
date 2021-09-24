@@ -95,7 +95,6 @@
 <translation id="1810764548349082891">ការមើលជាមុនមិនអាចប្រើបានទេ</translation>
 <translation id="1812302367230252929">ការសរសេរ​តាមសូរសព្ទ​ជាភាសា​អំហារិក</translation>
 <translation id="1813278315230285598">សេវាកម្ម</translation>
-<translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ប្រុងប្រយ័ត្ន៖<ph name="END_BOLD" />  ឯកសារនេះគឺបណ្តោះអាសន្ន ហើយអាចត្រូវបានលុបដោយស្វ័យប្រវត្តិដើម្បីទុកចន្លោះផ្ទុកទិន្នន័យ។  <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="1829129547161959350">ភីនខ្វីន</translation>
 <translation id="183183971458492120">កំពុង​ផ្ទុក​ព័ត៌មាន...</translation>
 <translation id="1834290891154666894">ការបញ្ចូល​ភាពត្រូវគ្នា​នៃឈ្មោះជំនួស​នៃប្រធានបទ​មិនត្រឹមត្រូវ</translation>
@@ -225,6 +224,7 @@
 <translation id="299638574917407533">ភាសា​បារាំង (កាណាដា)</translation>
 <translation id="3003189754374775221">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ភ្ជាប់</translation>
 <translation id="3003633581067744647">ប្តូរទៅ​ទិដ្ឋភាព​ជា​រូបភាពតូចៗ</translation>
+<translation id="3016566519832145558">ប្រុងប្រយ័ត្ន៖ ឯកសារទាំងនេះ​គឺជាឯកសារ​បណ្ដោះអាសន្ន និងអាចត្រូវបានលុប​ដោយស្វ័យប្រវត្តិ ដើម្បីបង្កើន​ទំហំផ្ទុកថាស។</translation>
 <translation id="3029114385395636667">បើក Google ឯកសារ​គ្មានអ៊ីនធឺណិត ដើម្បីអាចប្រើ​ឯកសារ បញ្ជី និង​បទបង្ហាញ​បានពេលគ្មានអ៊ីនធឺណិត។</translation>
 <translation id="303198083543495566">ភូមិសាស្ដ្រ</translation>
 <translation id="3047197340186497470">ភាសាចិនដាយី</translation>
@@ -287,6 +287,7 @@
 <translation id="3549797760399244642">ទៅកាន់ drive.google.com...</translation>
 <translation id="3553048479571901246">ដើម្បីបើកឯកសារដោយប្រើ <ph name="APP_NAME" /> សូមចម្លងឯកសារទាំងនោះទៅក្នុងថតឯកសារ Windows ជាមុនសិន។</translation>
 <translation id="3556731189587832921">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើក្ដារចុច​កុំព្យូទ័រ​អន្តរជាតិ</translation>
+<translation id="3567221313191587603">ជ្រើសរើស​ឯកសារ រួចបើក <ph name="OFFLINE_CHECKBOX_NAME" /> ដើម្បីឱ្យអាច​ចូលប្រើ​ឯកសារ​របស់អ្នកបាន​ពេលគ្មានអ៊ីនធឺណិត។</translation>
 <translation id="357479282490346887">ភាសាលីទុយអានី</translation>
 <translation id="3592251141500063301">មិនអាចទាញយក <ph name="FILE_NAME" /> មកប្រើពេលគ្មានអ៊ីនធឺណិតបានទេ</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
@@ -397,6 +398,7 @@
 <translation id="4642769377300286600">កំពុងដំឡើង​កម្រងព័ត៌មាន​ឧបករណ៍ចល័ត បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="4646813851450205600">ភាសាឆែក​ដែលប្រើ​ក្ដារចុច Qwerty</translation>
 <translation id="4656293982926141856">កុំព្យូទ័រនេះ</translation>
+<translation id="4656777537938206294">កំណត់ឱ្យ​អាចប្រើ​ឯកសារបាន​ពេលគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="4669606053856530811">សមាជិករបស់ '<ph name="SOURCE_NAME" />' នឹងបាត់បង់សិទ្ធិ​ចូលប្រើ ប្រសិនបើធាតុទាំងនេះ​មិនត្រូវបានចែករំលែកដល់ពួកគេទេ។</translation>
 <translation id="4690246192099372265">ភាសាស៊ុយអែដ</translation>
 <translation id="4693155481716051732">ស៊ូស៊ី</translation>
@@ -579,6 +581,7 @@
 <translation id="6146563240635539929">វីដេអូ</translation>
 <translation id="6150853954427645995">ដើម្បីរក្សាទុកឯកសារទាំងនេះសម្រាប់ការប្រើនៅក្រៅបណ្តាញ ភ្ជាប់ទៅអ៊ីនធឺណិត ហើយចុចកណ្តុរខាងស្តាំលើឯកសារ ហើយជ្រើសរើសជម្រើស <ph name="OFFLINE_CHECKBOX_NAME" />។</translation>
 <translation id="6164412158936057769">មេអំបៅ</translation>
+<translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6170470584681422115">សាំងវិច</translation>
 <translation id="6187719147498869044">ភាសា​ហុងគ្រី</translation>
 <translation id="6189412234224385711">បើកជាមួយ <ph name="EXTENSION_NAME" /></translation>
@@ -929,6 +932,7 @@
 <translation id="943972244133411984">កែសម្រួល​ដោយ</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 <translation id="947144732524271678">បានជ្រើសរើសធាតុ <ph name="ENTRY_COUNT" /> ជួរចាប់ពី <ph name="FROM_ENTRY_NAME" /> ដល់ <ph name="TO_ENTRY_NAME" /> ។</translation>
+<translation id="965477715979482472">អង់គ្លេស (អាហ្វ្រិក​ខាងត្បូង)</translation>
 <translation id="981121421437150478">ក្រៅបណ្តាញ</translation>
 <translation id="988685240266037636">ឯកសារដែលដាក់​ឈ្មោះ "<ph name="FILE_NAME" />" មានរួចហើយ។ តើអ្នកចង់​ជំនួសវា​ដែរទេ?</translation>
 <translation id="992401651319295351">អ្នកអាចព្យាយាមបាន <ph name="RETRIES" /> ដងទៀត។ អ្នកនឹងមិនអាចប្រើបណ្ដាញនេះបានទេ រហូតទាល់តែអ្នករៀបចំកូដ PIN ថ្មី។</translation>

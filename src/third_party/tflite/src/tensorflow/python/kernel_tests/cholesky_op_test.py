@@ -106,7 +106,7 @@ class CholeskyOpTest(test.TestCase):
   def _verifyCholesky(self, x):
     # Verify that LL^T == x.
     chol = linalg_ops.cholesky(x)
-    verification = math_ops.matmul(chol, chol, adjoint_b=True)
+    verification = test_util.matmul_without_tf32(chol, chol, adjoint_b=True)
     self._verifyCholeskyBase(x, chol, verification)
 
   @test_util.run_in_graph_and_eager_modes(use_gpu=True)
@@ -161,19 +161,19 @@ class CholeskyOpTest(test.TestCase):
     with self.assertRaises((ValueError, errors_impl.InvalidArgumentError)):
       linalg_ops.cholesky(tensor3)
 
-  # The below invalid Cholesky call returns an error with TF Classic and just
-  # returns NaNs with XLA.
-  @test_util.disable_xla("b/123337890")
-  def testNotInvertibleCPU(self):
-    # The input should be invertible.
-    with self.session(use_gpu=True):
-      with self.assertRaisesRegexp(
-          errors_impl.InvalidArgumentError,
-          "Cholesky decomposition was not successful. The"
-          " input might not be valid."):
-        # All rows of the matrix below add to zero
-        self._verifyCholesky(
-            np.array([[1., -1., 0.], [-1., 1., -1.], [0., -1., 1.]]))
+  @test_util.run_in_graph_and_eager_modes(use_gpu=True)
+  def testNotInvertibleCpu(self):
+    # Non-invertible inputs result in lower-triangular NaNs.
+    x = constant_op.constant([[1., -1., 0.], [-1., 1., -1.], [0., -1., 1.]])
+    chol = linalg_ops.cholesky(x)
+    # Extract the lower-triangular elements.
+    lower_mask = array_ops.matrix_band_part(
+        constant_op.constant(True, shape=x.shape), -1, 0)
+    chol_lower = array_ops.boolean_mask(chol, lower_mask)
+    # Assert all NaN.
+    all_nan = self.evaluate(
+        math_ops.reduce_all(math_ops.reduce_all(math_ops.is_nan(chol_lower))))
+    self.assertTrue(all_nan)
 
   @test_util.run_in_graph_and_eager_modes(use_gpu=True)
   def testEmpty(self):
@@ -271,8 +271,8 @@ class CholeskyGradTest(test.TestCase):
     def Compute(x):
       # Turn the random matrix x into a Hermitian matrix by
       # computing the quadratic form x * x^H.
-      a = math_ops.matmul(x, math_ops.conj(
-          array_ops.matrix_transpose(x))) / shape[0]
+      a = test_util.matmul_without_tf32(
+          x, math_ops.conj(array_ops.matrix_transpose(x))) / shape[0]
       if batch:
         a = array_ops.tile(array_ops.expand_dims(a, 0), [2, 1, 1])
       # Finally take the cholesky decomposition of the Hermitian matrix.
@@ -330,7 +330,7 @@ class CholeskyBenchmark(test.Benchmark):
           ops.device("/cpu:0"):
         matrix = variables.Variable(self._GenerateMatrix(shape))
         l = linalg_ops.cholesky(matrix)
-        variables.global_variables_initializer().run()
+        self.evaluate(variables.global_variables_initializer())
         self.run_op_benchmark(
             sess,
             control_flow_ops.group(
@@ -344,7 +344,7 @@ class CholeskyBenchmark(test.Benchmark):
             ops.device("/device:GPU:0"):
           matrix = variables.Variable(self._GenerateMatrix(shape))
           l = linalg_ops.cholesky(matrix)
-          variables.global_variables_initializer().run()
+          self.evaluate(variables.global_variables_initializer())
           self.run_op_benchmark(
               sess,
               control_flow_ops.group(
@@ -364,7 +364,7 @@ class CholeskyBenchmark(test.Benchmark):
           grad_matrix = variables.Variable(
               np.random.randn(*matrix.shape).astype(np.float32))
           grad = grad_fn(l, grad_matrix)
-          variables.global_variables_initializer().run()
+          self.evaluate(variables.global_variables_initializer())
           self.run_op_benchmark(
               sess,
               control_flow_ops.group(

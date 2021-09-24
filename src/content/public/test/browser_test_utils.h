@@ -81,6 +81,7 @@ using test_server::EmbeddedTestServer;
 
 namespace ui {
 class AXPlatformNodeDelegate;
+class AXTreeID;
 }
 
 #if defined(OS_WIN)
@@ -108,6 +109,7 @@ struct FrameVisualProperties;
 namespace content {
 
 class BrowserContext;
+class FileSystemAccessPermissionContext;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
@@ -920,8 +922,16 @@ bool SetCookie(BrowserContext* browser_context,
 uint32_t DeleteCookies(BrowserContext* browser_context,
                        network::mojom::CookieDeletionFilter filter);
 
-// Fetch the histograms data from other processes. This should be called after
-// the test code has been executed but before performing assertions.
+// Fetches the histograms data from other processes.
+//
+// This function should be called after a child process has logged the
+// histogram/metric being tested, to ensure that base::HistogramTester sees all
+// the data from the child process.
+//
+// The caller should ensure that there is no race between 1) the call to
+// FetchHistogramsFromChildProcesses() and 2) the child process shutting down.
+// See also https://crbug.com/1246137 which describes how this is a test-only
+// problem.
 void FetchHistogramsFromChildProcesses();
 
 // Registers a request handler which redirects to a different host, based
@@ -939,6 +949,11 @@ void FetchHistogramsFromChildProcesses();
 // |embedded_test_server| should not be running when passing it to this function
 // because adding the request handler won't be thread safe.
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
+
+// Sets the access permission context in FileSystemAccessManagerImpl.
+void SetFileSystemAccessPermissionContext(
+    BrowserContext* browser_context,
+    FileSystemAccessPermissionContext* permission_context);
 
 // Waits until all resources have loaded in the given RenderFrameHost.
 // When the load completes, this function sends a "pageLoadComplete" message
@@ -970,6 +985,10 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 
 // Get a snapshot of a web page's accessibility tree.
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
+
+// Get a snapshot of an accessibility tree given a `tree_id`.
+ui::AXTreeUpdate GetAccessibilityTreeSnapshotFromId(
+    const ui::AXTreeID& tree_id);
 
 // Returns the root accessibility node for the given WebContents.
 ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(WebContents* web_contents);

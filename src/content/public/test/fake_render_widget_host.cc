@@ -57,6 +57,8 @@ void FakeRenderWidgetHost::UpdateTooltipFromKeyboard(
     base::i18n::TextDirection text_direction_hint,
     const gfx::Rect& bounds) {}
 
+void FakeRenderWidgetHost::ClearKeyboardTriggeredTooltip() {}
+
 void FakeRenderWidgetHost::TextInputStateChanged(
     ui::mojom::TextInputStatePtr state) {}
 
@@ -86,6 +88,7 @@ void FakeRenderWidgetHost::SetPopupBounds(const gfx::Rect& bounds,
                                           SetPopupBoundsCallback callback) {}
 
 void FakeRenderWidgetHost::ShowPopup(const gfx::Rect& initial_rect,
+                                     const gfx::Rect& initial_anchor_rect,
                                      ShowPopupCallback callback) {}
 
 void FakeRenderWidgetHost::SetTouchActionFromMain(

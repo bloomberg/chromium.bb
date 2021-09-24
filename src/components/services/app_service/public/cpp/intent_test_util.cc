@@ -83,4 +83,45 @@ apps::mojom::IntentFilterPtr CreateIntentFilterForSendMultiple(
   return CreateIntentFilterForShare(kIntentActionSendMultiple, mime_type,
                                     activity_label);
 }
+
+apps::mojom::IntentFilterPtr CreateMimeTypeIntentFilterForView(
+    const std::string& mime_type,
+    const std::string& activity_label) {
+  return CreateIntentFilterForShare(kIntentActionView, mime_type,
+                                    activity_label);
+}
+
+apps::mojom::IntentFilterPtr CreateFileExtensionIntentFilterForView(
+    const std::string& file_extension,
+    const std::string& activity_label) {
+  auto intent_filter = apps::mojom::IntentFilter::New();
+
+  apps_util::AddSingleValueCondition(
+      apps::mojom::ConditionType::kAction, kIntentActionView,
+      apps::mojom::PatternMatchType::kNone, intent_filter);
+
+  apps_util::AddSingleValueCondition(
+      apps::mojom::ConditionType::kFileExtension, file_extension,
+      apps::mojom::PatternMatchType::kFileExtension, intent_filter);
+
+  intent_filter->activity_label = activity_label;
+
+  return intent_filter;
+}
+
+void AddConditionValue(apps::mojom::ConditionType condition_type,
+                       const std::string& value,
+                       apps::mojom::PatternMatchType pattern_match_type,
+                       apps::mojom::IntentFilterPtr& intent_filter) {
+  for (auto& condition : intent_filter->conditions) {
+    if (condition->condition_type == condition_type) {
+      condition->condition_values.push_back(
+          MakeConditionValue(value, pattern_match_type));
+      return;
+    }
+  }
+  AddSingleValueCondition(condition_type, value, pattern_match_type,
+                          intent_filter);
+}
+
 }  // namespace apps_util

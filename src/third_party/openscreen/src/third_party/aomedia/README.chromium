@@ -1,9 +1,0 @@
-Name: AOM
-URL: https://aomedia.googlesource.com/aom
-Version: git
-License: BSD
-License File: src/LICENSE
-Security Critical: no
-
-Description:
-AOM is an AV1 codec library for encoding and decoding.

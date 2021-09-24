@@ -4,7 +4,6 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -190,8 +189,7 @@ class ModelInfo {
     ];
   }
 
-  private async styleSheetChanged(
-      event: Common.EventTarget.EventTargetEvent<{styleSheetId: Protocol.CSS.StyleSheetId, edit?: SDK.CSSModel.Edit}>):
+  private async styleSheetChanged(event: Common.EventTarget.EventTargetEvent<SDK.CSSModel.StyleSheetChangedEvent>):
       Promise<void> {
     const header = this.cssModel.styleSheetHeaderForId(event.data.styleSheetId);
     if (!header || !header.isInline || (header.isInline && header.isMutable)) {
@@ -308,7 +306,9 @@ class Binding implements TextUtils.ContentProvider.ContentProvider {
     this.project = project;
     this.uiSourceCode = this.project.createUISourceCode(resource.url, resource.contentType());
     boundUISourceCodes.add(this.uiSourceCode);
-    NetworkProject.setInitialFrameAttribution(this.uiSourceCode, resource.frameId);
+    if (resource.frameId) {
+      NetworkProject.setInitialFrameAttribution(this.uiSourceCode, resource.frameId);
+    }
     this.project.addUISourceCodeWithProvider(this.uiSourceCode, this, resourceMetadata(resource), resource.mimeType);
     this.edits = [];
   }
@@ -399,12 +399,16 @@ class Binding implements TextUtils.ContentProvider.ContentProvider {
 
   addResource(resource: SDK.Resource.Resource): void {
     this.resources.add(resource);
-    NetworkProject.addFrameAttribution(this.uiSourceCode, resource.frameId);
+    if (resource.frameId) {
+      NetworkProject.addFrameAttribution(this.uiSourceCode, resource.frameId);
+    }
   }
 
   removeResource(resource: SDK.Resource.Resource): void {
     this.resources.delete(resource);
-    NetworkProject.removeFrameAttribution(this.uiSourceCode, resource.frameId);
+    if (resource.frameId) {
+      NetworkProject.removeFrameAttribution(this.uiSourceCode, resource.frameId);
+    }
   }
 
   dispose(): void {

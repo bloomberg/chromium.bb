@@ -10,12 +10,6 @@ const base::Feature kExpandedTabStrip{"ExpandedTabStrip",
 const base::Feature kSettingsRefresh{"SettingsRefresh",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kVoiceOverUnstackedTabstrip{
-    "VoiceOverUnstackedTabstrip", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -28,8 +22,8 @@ const base::Feature kEnableFREDefaultBrowserScreen{
 const base::Feature kEnableFREUIModuleIOS{"EnableFREUIModuleIOS",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableFullPageScreenshot{
-    "EnableFullPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableFullPageScreenshot{"EnableFullPageScreenshot",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
@@ -41,6 +35,9 @@ const base::Feature kIncognitoAuthentication{
 
 const base::Feature kIncognitoBrandConsistencyForIOS{
     "IncognitoBrandConsistencyForIOS", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLocationPermissionsPrompt{
     "LocationPermissionsPrompt", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -66,3 +63,10 @@ const base::Feature kSearchHistoryLinkIOS{"SearchHistoryLinkIOS",
 
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContextMenuActionsRefresh{
+    "ContextMenuActionsRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsContextMenuActionsRefreshEnabled() {
+  return base::FeatureList::IsEnabled(kContextMenuActionsRefresh);
+}

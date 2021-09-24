@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/magnifier/magnifier_utils.h"
@@ -21,14 +20,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/cxx17_backports.h"
-#include "base/synchronization/waitable_event.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -41,7 +36,6 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -63,10 +57,6 @@ constexpr int kDefaultAnimationDurationInMs = 100;
 // to center the focus when user types in a text input field.
 constexpr gfx::Tween::Type kCenterCaretAnimationTweenType = gfx::Tween::LINEAR;
 
-// The delay of the timer for moving magnifier window for centering the text
-// input focus. Keep under one frame length (~16ms at 60hz).
-constexpr int kMoveMagnifierDelayInMs = 15;
-
 // Threshold of panning. If the cursor moves to within pixels (in DIP) of
 // |kCursorPanningMargin| from the edge, the view-port moves.
 constexpr int kCursorPanningMargin = 100;
@@ -76,10 +66,6 @@ constexpr int kCursorPanningMargin = 100;
 // the bottom edge, the view-port moves. This is only used by
 // MoveMagnifierWindowFollowPoint() when |reduce_bottom_margin| is true.
 constexpr int kKeyboardBottomPanningMargin = 10;
-
-// Threadshold of panning. If the caret moves to within pixels (in DIP) of
-// |kCaretPanningMargin| from the edge, the view-port moves.
-constexpr int kCaretPanningMargin = 50;
 
 void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   auto host_location_3f = gfx::Point3F(gfx::PointF(root_location));
@@ -121,8 +107,6 @@ FullscreenMagnifierController::FullscreenMagnifierController()
                                     ui::EventTarget::Priority::kAccessibility);
   root_window_->AddObserver(this);
   root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
-  if (ui::IMEBridge::Get())
-    ui::IMEBridge::Get()->AddObserver(this);
 
   point_of_interest_in_root_ = root_window_->bounds().CenterPoint();
 
@@ -134,12 +118,6 @@ FullscreenMagnifierController::FullscreenMagnifierController()
 }
 
 FullscreenMagnifierController::~FullscreenMagnifierController() {
-  if (input_method_)
-    input_method_->RemoveObserver(this);
-  input_method_ = nullptr;
-  if (ui::IMEBridge::Get())
-    ui::IMEBridge::Get()->RemoveObserver(this);
-
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
   root_window_->RemoveObserver(this);
 
@@ -148,11 +126,6 @@ FullscreenMagnifierController::~FullscreenMagnifierController() {
 
 void FullscreenMagnifierController::SetEnabled(bool enabled) {
   if (enabled) {
-    if (!is_enabled_) {
-      input_method_ = magnifier_utils::GetInputMethod(root_window_);
-      if (input_method_)
-        input_method_->AddObserver(this);
-    }
     Shell* shell = Shell::Get();
     float scale =
         shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
@@ -171,10 +144,6 @@ void FullscreenMagnifierController::SetEnabled(bool enabled) {
     // Do nothing, if already disabled.
     if (!is_enabled_)
       return;
-
-    if (input_method_)
-      input_method_->RemoveObserver(this);
-    input_method_ = nullptr;
 
     RedrawKeepingMousePosition(kNonMagnifiedScale, true, false);
     is_enabled_ = enabled;
@@ -255,25 +224,6 @@ void FullscreenMagnifierController::CenterOnPoint(
   MoveMagnifierWindowCenterPoint(point_in_root);
 }
 
-void FullscreenMagnifierController::HandleFocusedNodeChanged(
-    bool is_editable_node,
-    const gfx::Rect& node_bounds_in_screen) {
-  // The editable node is handled by OnCaretBoundsChanged.
-  if (is_editable_node)
-    return;
-
-  // Nothing to recenter on.
-  if (node_bounds_in_screen.IsEmpty())
-    return;
-
-  gfx::Rect node_bounds_in_root = node_bounds_in_screen;
-  ::wm::ConvertRectFromScreen(root_window_, &node_bounds_in_root);
-  if (GetViewportRect().Contains(node_bounds_in_root))
-    return;
-
-  MoveMagnifierWindowFollowRect(node_bounds_in_root);
-}
-
 void FullscreenMagnifierController::HandleMoveMagnifierToRect(
     const gfx::Rect& rect_in_screen) {
   gfx::Rect node_bounds_in_root = rect_in_screen;
@@ -320,83 +270,6 @@ gfx::Transform FullscreenMagnifierController::GetMagnifierTransform() const {
   }
 
   return transform;
-}
-
-void FullscreenMagnifierController::OnInputContextHandlerChanged() {
-  if (!is_enabled_)
-    return;
-
-  auto* new_input_method = magnifier_utils::GetInputMethod(root_window_);
-  if (new_input_method == input_method_)
-    return;
-
-  if (input_method_)
-    input_method_->RemoveObserver(this);
-  input_method_ = new_input_method;
-  if (input_method_)
-    input_method_->AddObserver(this);
-}
-
-void FullscreenMagnifierController::OnCaretBoundsChanged(
-    const ui::TextInputClient* client) {
-  // caret bounds in screen coordinates.
-  const gfx::Rect caret_bounds = client->GetCaretBounds();
-  // Note: OnCaretBoundsChanged could be fired OnTextInputTypeChanged during
-  // which the caret position is not set a meaning position, and we do not
-  // need to adjust the viewport position based on the bogus caret position.
-  // This is only a transition period, the caret position will be fixed upon
-  // focusing right after.
-  if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
-    return;
-
-  gfx::Point new_caret_point = caret_bounds.CenterPoint();
-  // |caret_point_| in |root_window_| coordinates.
-  ::wm::ConvertPointFromScreen(root_window_, &new_caret_point);
-
-  // When the caret point was not actually changed, nothing should happen.
-  // OnCaretBoundsChanged could be fired on every event that may change the
-  // caret bounds, in particular a window creation/movement, that may not result
-  // in an actual movement.
-  if (new_caret_point == caret_point_)
-    return;
-  caret_point_ = new_caret_point;
-
-  // If the feature for centering the text input focus is disabled, the
-  // magnifier window will be moved to follow the focus with a panning margin.
-  if (!KeepFocusCentered()) {
-    // Visible window_rect in |root_window_| coordinates.
-    const gfx::Rect visible_window_rect = GetViewportRect();
-    const int panning_margin = kCaretPanningMargin / scale_;
-    MoveMagnifierWindowFollowPoint(caret_point_, panning_margin, panning_margin,
-                                   visible_window_rect.width() / 2,
-                                   visible_window_rect.height() / 2,
-                                   false /* reduce_bottom_margin */);
-    return;
-  }
-
-  // Move the magnifier window to center the focus with a little delay.
-  // In Gmail compose window, when user types a blank space, it will insert
-  // a non-breaking space(NBSP). NBSP will be replaced with a blank space
-  // character when user types a non-blank space character later, which causes
-  // OnCaretBoundsChanged be called twice. The first call moves the caret back
-  // to the character position just before NBSP, replaces the NBSP with blank
-  // space plus the new character, then the second call will move caret to the
-  // position after the new character. In order to avoid the magnifier window
-  // being moved back and forth with these two OnCaretBoundsChanged events, we
-  // defer moving magnifier window until the |move_magnifier_timer_| fires,
-  // when the caret settles eventually.
-  move_magnifier_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(
-          disable_move_magnifier_delay_ ? 0 : kMoveMagnifierDelayInMs),
-      this, &FullscreenMagnifierController::OnMoveMagnifierTimer);
-}
-
-void FullscreenMagnifierController::OnInputMethodDestroyed(
-    const ui::InputMethod* input_method) {
-  DCHECK_EQ(input_method, input_method_);
-  input_method_->RemoveObserver(this);
-  input_method_ = nullptr;
 }
 
 void FullscreenMagnifierController::OnImplicitAnimationsCompleted() {
@@ -1000,7 +873,6 @@ void FullscreenMagnifierController::MoveMagnifierWindowCenterPoint(
 void FullscreenMagnifierController::MoveMagnifierWindowFollowRect(
     const gfx::Rect& rect) {
   DCHECK(root_window_);
-  last_move_magnifier_to_rect_ = base::TimeTicks::Now();
   bool should_pan = false;
 
   const gfx::Rect viewport_rect = GetViewportRect();
@@ -1039,16 +911,6 @@ void FullscreenMagnifierController::MoveMagnifierWindowFollowRect(
               0,  // No animation on panning.
               kDefaultAnimationTweenType);
   }
-}
-
-void FullscreenMagnifierController::OnMoveMagnifierTimer() {
-  // Ignore caret changes while move magnifier to rect activity is occurring.
-  if (base::TimeTicks::Now() - last_move_magnifier_to_rect_ <
-      magnifier_utils::kPauseCaretUpdateDuration) {
-    return;
-  }
-
-  MoveMagnifierWindowCenterPoint(caret_point_);
 }
 
 }  // namespace ash

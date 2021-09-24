@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -57,15 +58,6 @@ bool ShouldEnableHeavyFormDataScraping(const version_info::Channel channel) {
   }
   NOTREACHED();
   return false;
-}
-
-GURL StripAuthAndParams(const GURL& gurl) {
-  GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return gurl.ReplaceComponents(rep);
 }
 
 }  // namespace
@@ -163,7 +155,7 @@ bool ContentAutofillDriver::RendererIsAvailable() {
   return render_frame_host_->GetRenderViewHost() != nullptr;
 }
 
-InternalAuthenticator*
+webauthn::InternalAuthenticator*
 ContentAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
   if (!authenticator_impl_ && browser_autofill_manager_ &&
       browser_autofill_manager_->client()) {
@@ -631,7 +623,11 @@ void ContentAutofillDriver::DidNavigateFrame(
     return;
   }
 
+  // The driver's RenderFrameHost may be used for the page we're navigating to.
+  // Therefore, we need to forget all forms of the page we're navigating from.
   submitted_forms_.clear();
+  if (autofill_router_)  // Can be nullptr only in tests.
+    autofill_router_->UnregisterDriver(this);
   autofill_manager_->Reset();
 }
 

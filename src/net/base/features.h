@@ -128,17 +128,21 @@ NET_EXPORT extern const base::FeatureParam<bool>
 // (instead of just via Secure DNS).
 NET_EXPORT extern const base::FeatureParam<bool> kUseDnsHttpsSvcbEnableInsecure;
 
-// If we are still waiting for an HTTPS query after all the
-// other queries in a DnsTask have completed, we will compute a timeout for the
-// remaining query. The timeout will be the min of:
+// If we are still waiting for an HTTPS transaction after all the
+// other transactions in a DnsTask have completed, we will compute a timeout for
+// the remaining transaction. The timeout will be the min of:
 //   (a) `kUseDnsHttpsSvcbExtraTimeAbsolute.Get()`
 //   (b) `kUseDnsHttpsSvcbExtraTimePercent.Get() / 100 * t`, where `t` is
 //   the
 //       time delta since the first query began.
 //
 // Either param is ignored if zero. If both are zero, there is no timeout
-// specific to HTTPS queries, only the regular DNS query timeout and server
+// specific to HTTPS transactions, only the regular DNS query timeout and server
 // fallback.
+//
+// If `kUseDnsHttpsSvcbEnforceSecureResponse` is enabled, the timeouts will not
+// be used for secure requests because there is no sense killing a transaction
+// early if that will just kill the entire request.
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kUseDnsHttpsSvcbExtraTimeAbsolute;
 NET_EXPORT extern const base::FeatureParam<int>
@@ -147,6 +151,9 @@ NET_EXPORT extern const base::FeatureParam<int>
 // Enables optimizing the network quality estimation algorithms in network
 // quality estimator (NQE).
 NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
+
+// Splits cache entries by the request's includeCredentials.
+NET_EXPORT extern const base::Feature kSplitCacheByIncludeCredentials;
 
 // Splits cache entries by the request's NetworkIsolationKey if one is
 // available.
@@ -386,6 +393,12 @@ NET_EXPORT extern const base::Feature kSamePartyCookiesConsideredFirstParty;
 // be sent when the browser is on the same top-level site that it was on when
 // the cookie was set.
 NET_EXPORT extern const base::Feature kPartitionedCookies;
+
+// When enabled, additional cookie-related APIs will perform cookie field size
+// and character set validation to enforce stricter conformance with RFC6265bis.
+// TODO(crbug.com/1243852) Eventually enable this permanently and remove the
+// feature flag, assuming no breakage occurs with it enabled.
+NET_EXPORT extern const base::Feature kExtraCookieValidityChecks;
 
 }  // namespace features
 }  // namespace net

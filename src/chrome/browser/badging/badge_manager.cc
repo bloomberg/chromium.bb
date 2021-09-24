@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/ukm/app_source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,23 +44,11 @@ bool IsLastBadgingTimeWithin(base::TimeDelta time_frame,
                              const web_app::AppId& app_id,
                              const base::Clock* clock,
                              Profile* profile) {
-  const base::Time last_badging_time = WebAppProvider::GetForLocalApps(profile)
-                                           ->registrar()
-                                           .GetAppLastBadgingTime(app_id);
+  const base::Time last_badging_time =
+      WebAppProvider::GetForLocalAppsUnchecked(profile)
+          ->registrar()
+          .GetAppLastBadgingTime(app_id);
   return clock->Now() < last_badging_time + time_frame;
-}
-
-void UpdateBadgingTime(const base::Clock* clock,
-                       Profile* profile,
-                       const web_app::AppId& app_id) {
-  if (IsLastBadgingTimeWithin(badging::kBadgingMinimumUpdateInterval, app_id,
-                              clock, profile)) {
-    return;
-  }
-
-  WebAppProvider::GetForLocalApps(profile)
-      ->registry_controller()
-      .SetAppLastBadgingTime(app_id, clock->Now());
 }
 
 }  // namespace
@@ -68,7 +56,15 @@ void UpdateBadgingTime(const base::Clock* clock,
 namespace badging {
 
 BadgeManager::BadgeManager(Profile* profile)
-    : profile_(profile), clock_(base::DefaultClock::GetInstance()) {
+    : BadgeManager(
+          profile,
+          &WebAppProvider::GetForLocalAppsUnchecked(profile)->sync_bridge()) {}
+
+BadgeManager::BadgeManager(Profile* profile,
+                           web_app::WebAppSyncBridge* sync_bridge)
+    : profile_(profile),
+      clock_(base::DefaultClock::GetInstance()),
+      sync_bridge_(sync_bridge) {
   // The delegate is also set for Chrome OS but is set from the constructor of
   // web_apps_chromeos.cc.
 #if defined(OS_MAC)
@@ -171,7 +167,10 @@ const base::Clock* BadgeManager::SetClockForTesting(const base::Clock* clock) {
 
 void BadgeManager::UpdateBadge(const web_app::AppId& app_id,
                                absl::optional<BadgeValue> value) {
-  UpdateBadgingTime(clock_, profile_, app_id);
+  if (!IsLastBadgingTimeWithin(badging::kBadgingMinimumUpdateInterval, app_id,
+                               clock_, profile_)) {
+    sync_bridge_->SetAppLastBadgingTime(app_id, clock_->Now());
+  }
 
   if (!value)
     badged_apps_.erase(app_id);
@@ -253,7 +252,7 @@ BadgeManager::FrameBindingContext::GetAppIdsAndUrlsForBadging() const {
   if (!contents)
     return std::vector<std::tuple<web_app::AppId, GURL>>{};
 
-  auto* provider = WebAppProvider::GetForLocalApps(
+  auto* provider = WebAppProvider::GetForLocalAppsUnchecked(
       Profile::FromBrowserContext(contents->GetBrowserContext()));
   if (!provider)
     return std::vector<std::tuple<web_app::AppId, GURL>>{};
@@ -276,7 +275,7 @@ BadgeManager::ServiceWorkerBindingContext::GetAppIdsAndUrlsForBadging() const {
   if (!render_process_host)
     return std::vector<std::tuple<web_app::AppId, GURL>>{};
 
-  auto* provider = WebAppProvider::GetForLocalApps(
+  auto* provider = WebAppProvider::GetForLocalAppsUnchecked(
       Profile::FromBrowserContext(render_process_host->GetBrowserContext()));
   if (!provider)
     return std::vector<std::tuple<web_app::AppId, GURL>>{};

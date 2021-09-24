@@ -66,7 +66,7 @@ export function run() {
     {
       const back_buffer_width = cvs_larger_than_back_buffer.width / 2;
       const back_buffer_height = cvs_larger_than_back_buffer.height / 2;
-      const ctx = cvs_larger_than_back_buffer.getContext('gpupresent');
+      const ctx = cvs_larger_than_back_buffer.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(
@@ -84,7 +84,7 @@ export function run() {
 
     // Test back buffer is same as canvas size
     {
-      const ctx = cvs_same_as_back_buffer.getContext('gpupresent');
+      const ctx = cvs_same_as_back_buffer.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(cvs_same_as_back_buffer, ctx, undefined, [
@@ -99,7 +99,7 @@ export function run() {
     {
       const back_buffer_width = cvs_smaller_than_back_buffer.width * 2;
       const back_buffer_height = cvs_smaller_than_back_buffer.height * 2;
-      const ctx = cvs_smaller_than_back_buffer.getContext('gpupresent');
+      const ctx = cvs_smaller_than_back_buffer.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(
@@ -123,7 +123,7 @@ export function run() {
     {
       const back_buffer_width = cvs_change_size_after_configure.width;
       const back_buffer_height = cvs_change_size_after_configure.height;
-      const ctx = cvs_change_size_after_configure.getContext('gpupresent');
+      const ctx = cvs_change_size_after_configure.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(
@@ -145,7 +145,7 @@ export function run() {
     // Test js change canvas size after back buffer has been configured
     // and back buffer configure again.
     {
-      const ctx = cvs_change_size_and_reconfigure.getContext('gpupresent');
+      const ctx = cvs_change_size_and_reconfigure.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(cvs_change_size_and_reconfigure, ctx, undefined, [
@@ -174,7 +174,7 @@ export function run() {
     {
       const back_buffer_width = back_buffer_smaller_than_cvs_and_css.width / 2;
       const back_buffer_height = back_buffer_smaller_than_cvs_and_css.height / 2;
-      const ctx = back_buffer_smaller_than_cvs_and_css.getContext('gpupresent');
+      const ctx = back_buffer_smaller_than_cvs_and_css.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(
@@ -194,7 +194,7 @@ export function run() {
     {
       const back_buffer_width = cvs_smaller_than_back_buffer_and_css.width * 2;
       const back_buffer_height = cvs_smaller_than_back_buffer_and_css.height * 2;
-      const ctx = cvs_smaller_than_back_buffer_and_css.getContext('gpupresent');
+      const ctx = cvs_smaller_than_back_buffer_and_css.getContext('webgpu');
       assert(ctx !== null);
 
       updateWebGPUBackBuffer(

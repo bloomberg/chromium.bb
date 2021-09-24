@@ -7,16 +7,24 @@
 
 #import <UIKit/UIKit.h>
 
-// ViewController for the feed preview. It displays a loaded webState UIView.
-@interface DiscoverFeedPreviewViewController : UIViewController
+#import "ios/chrome/browser/ui/ntp/discover_feed_preview/discover_feed_preview_consumer.h"
 
-// Inits the view controller with |webStateView|.
-- (instancetype)initWithView:(UIView*)webStateView NS_DESIGNATED_INITIALIZER;
+// ViewController for the feed preview. It displays a loaded webState UIView.
+@interface DiscoverFeedPreviewViewController
+    : UIViewController <DiscoverFeedPreviewConsumer>
+
+// Inits the view controller with the |webStateView| and the |origin| of the
+// preview.
+- (instancetype)initWithView:(UIView*)webStateView
+                      origin:(NSString*)origin NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 - (instancetype)initWithNibName:(NSString*)nibNAme
                          bundle:(NSBundle*)nibBundle NS_UNAVAILABLE;
+
+// Resets the auto layout for preview.
+- (void)resetAutoLayoutForPreview;
 
 @end
 

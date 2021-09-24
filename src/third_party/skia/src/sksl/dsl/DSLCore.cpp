@@ -51,12 +51,13 @@ void End() {
     DSLWriter::SetInstance(nullptr);
 }
 
-ErrorHandler* GetErrorHandler() {
-    return DSLWriter::GetErrorHandler();
+ErrorReporter& GetErrorReporter() {
+    return DSLWriter::GetErrorReporter();
 }
 
-void SetErrorHandler(ErrorHandler* errorHandler) {
-    DSLWriter::SetErrorHandler(errorHandler);
+void SetErrorReporter(ErrorReporter* errorReporter) {
+    SkASSERT(errorReporter);
+    DSLWriter::SetErrorReporter(errorReporter);
 }
 
 class DSLCore {
@@ -76,21 +77,17 @@ public:
                                                       std::move(instance.fPool),
                                                       bundle.fInputs);
         bool success = false;
-        if (DSLWriter::Compiler().errorCount() || DSLWriter::Instance().fEncounteredErrors) {
-            DSLWriter::ReportErrors();
+        if (!DSLWriter::Compiler().finalize(*result)) {
             // Do not return programs that failed to compile.
         } else if (!DSLWriter::Compiler().optimize(*result)) {
-            DSLWriter::ReportErrors();
             // Do not return programs that failed to optimize.
         } else {
             // We have a successful program!
             success = true;
         }
-        // Make sure that if we encountered any compiler errors, we reported them through the
-        // DSL error handling side of things. (The converse is not a problem - it is ok to detect
-        // errors in the DSL layer, and thus have fEncounteredErrors be true, while not having the
-        // compiler see any errors because we caught them before they got there.)
-        SkASSERT(!DSLWriter::Compiler().errorCount() || DSLWriter::Instance().fEncounteredErrors);
+        if (!success) {
+            DSLWriter::ReportErrors(PositionInfo());
+        }
         if (pool) {
             pool->detachFromThread();
         }
@@ -125,17 +122,22 @@ public:
         return ir.call(/*offset=*/-1, ir.convertIdentifier(-1, name), std::move(argArray));
     }
 
-    static DSLStatement Break() {
-        return SkSL::BreakStatement::Make(/*offset=*/-1);
+    static DSLStatement Break(PositionInfo pos) {
+        return SkSL::BreakStatement::Make(pos.offset());
     }
 
-    static DSLStatement Continue() {
-        return SkSL::ContinueStatement::Make(/*offset=*/-1);
+    static DSLStatement Continue(PositionInfo pos) {
+        return SkSL::ContinueStatement::Make(pos.offset());
+    }
+
+    static void Declare(const DSLModifiers& modifiers) {
+        DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::ModifiersDeclaration>(
+                DSLWriter::Modifiers(modifiers.fModifiers)));
     }
 
     static DSLStatement Declare(DSLVar& var, PositionInfo pos) {
         if (var.fDeclared) {
-            DSLWriter::ReportError("error: variable has already been declared\n", pos);
+            DSLWriter::ReportError("variable has already been declared", pos);
         }
         var.fDeclared = true;
         return DSLWriter::Declaration(var);
@@ -151,7 +153,7 @@ public:
 
     static void Declare(DSLGlobalVar& var, PositionInfo pos) {
         if (var.fDeclared) {
-            DSLWriter::ReportError("error: variable has already been declared\n", pos);
+            DSLWriter::ReportError("variable has already been declared", pos);
         }
         var.fDeclared = true;
         std::unique_ptr<SkSL::Statement> stmt = DSLWriter::Declaration(var);
@@ -167,6 +169,7 @@ public:
             const SkSL::Symbol* alreadyDeclared = (*DSLWriter::SymbolTable())[var.fName];
             if (alreadyDeclared && alreadyDeclared->is<Variable>()) {
                 var.fVar = &alreadyDeclared->as<Variable>();
+                var.fInitialized = true;
             }
         }
     }
@@ -177,8 +180,8 @@ public:
         }
     }
 
-    static DSLStatement Discard() {
-        return SkSL::DiscardStatement::Make(/*offset=*/-1);
+    static DSLStatement Discard(PositionInfo pos) {
+        return SkSL::DiscardStatement::Make(pos.offset());
     }
 
     static DSLPossibleStatement Do(DSLStatement stmt, DSLExpression test) {
@@ -188,15 +191,15 @@ public:
     static DSLPossibleStatement For(DSLStatement initializer, DSLExpression test,
                                     DSLExpression next, DSLStatement stmt, PositionInfo pos) {
         return ForStatement::Convert(DSLWriter::Context(), /*offset=*/-1,
-                                     initializer.releaseIfValid(), test.releaseIfValid(),
-                                     next.releaseIfValid(), stmt.release(),
+                                     initializer.releaseIfPossible(), test.releaseIfPossible(),
+                                     next.releaseIfPossible(), stmt.release(),
                                      DSLWriter::SymbolTable());
     }
 
     static DSLPossibleStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse,
                                    bool isStatic) {
         return IfStatement::Convert(DSLWriter::Context(), /*offset=*/-1, isStatic, test.release(),
-                                    ifTrue.release(), ifFalse.releaseIfValid());
+                                    ifTrue.release(), ifFalse.releaseIfPossible());
     }
 
     static DSLGlobalVar InterfaceBlock(const DSLModifiers& modifiers, skstd::string_view typeName,
@@ -208,6 +211,13 @@ public:
         std::vector<SkSL::Type::Field> skslFields;
         skslFields.reserve(fields.count());
         for (const DSLField& field : fields) {
+            const SkSL::Type* baseType = &field.fType.skslType();
+            if (baseType->isArray()) {
+                baseType = &baseType->componentType();
+            }
+            DSLWriter::IRGenerator().checkVarDeclaration(/*offset=*/-1, field.fModifiers.fModifiers,
+                    baseType, Variable::Storage::kInterfaceBlock);
+            GetErrorReporter().reportPendingErrors(field.fPosition);
             skslFields.push_back(SkSL::Type::Field(field.fModifiers.fModifiers, field.fName,
                                                    &field.fType.skslType()));
         }
@@ -220,8 +230,10 @@ public:
         if (!DSLWriter::Settings().fDSLMarkVarsDeclared) {
             DSLWriter::MarkDeclared(var);
         }
-        DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::InterfaceBlock>(/*offset=*/-1,
-                DSLWriter::Var(var), typeName, varName, arraySize, DSLWriter::SymbolTable()));
+        auto intf = std::make_unique<SkSL::InterfaceBlock>(/*offset=*/-1,
+                DSLWriter::Var(var), typeName, varName, arraySize, DSLWriter::SymbolTable());
+        DSLWriter::IRGenerator().scanInterfaceBlock(*intf);
+        DSLWriter::ProgramElements().push_back(std::move(intf));
         if (varName.empty()) {
             const std::vector<SkSL::Type::Field>& structFields = structType->fields();
             const SkSL::Variable* skslVar = DSLWriter::Var(var);
@@ -233,6 +245,7 @@ public:
         } else {
             AddToSymbolTable(var);
         }
+        GetErrorReporter().reportPendingErrors(pos);
         return var;
     }
 
@@ -240,8 +253,8 @@ public:
         // Note that because Return is called before the function in which it resides exists, at
         // this point we do not know the function's return type. We therefore do not check for
         // errors, or coerce the value to the correct type, until the return statement is actually
-        // added to a function. (This is done in IRGenerator::finalizeFunction.)
-        return SkSL::ReturnStatement::Make(/*offset=*/-1, value.releaseIfValid());
+        // added to a function. (This is done in FunctionDefinition::Convert.)
+        return SkSL::ReturnStatement::Make(/*offset=*/-1, value.releaseIfPossible());
     }
 
     static DSLExpression Swizzle(DSLExpression base, SkSL::SwizzleComponent::Type a,
@@ -288,17 +301,17 @@ public:
     }
 
     static DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases,
-                                       bool isStatic) {
+                                       bool isStatic, PositionInfo pos) {
         ExpressionArray values;
         values.reserve_back(cases.count());
         SkTArray<StatementArray> statements;
         statements.reserve_back(cases.count());
         for (DSLCase& c : cases) {
-            values.push_back(c.fValue.releaseIfValid());
+            values.push_back(c.fValue.releaseIfPossible());
             statements.push_back(std::move(c.fStatements));
         }
         return DSLWriter::ConvertSwitch(value.release(), std::move(values), std::move(statements),
-                                        isStatic);
+                                        isStatic, pos);
     }
 
     static DSLPossibleStatement While(DSLExpression test, DSLStatement stmt) {
@@ -323,12 +336,27 @@ DSLExpression sk_Position() {
     return DSLCore::sk_Position();
 }
 
-DSLStatement Break() {
-    return DSLCore::Break();
+void AddExtension(skstd::string_view name, PositionInfo pos) {
+    DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::Extension>(pos.offset(), name));
+    DSLWriter::ReportErrors(pos);
 }
 
-DSLStatement Continue() {
-    return DSLCore::Continue();
+DSLStatement Break(PositionInfo pos) {
+    return DSLCore::Break(pos);
+}
+
+DSLStatement Continue(PositionInfo pos) {
+    return DSLCore::Continue(pos);
+}
+
+void Declare(const DSLModifiers& modifiers, PositionInfo pos) {
+    SkSL::ProgramKind kind = DSLWriter::GetProgramConfig()->fKind;
+    if (kind != ProgramKind::kFragment &&
+        kind != ProgramKind::kVertex) {
+        DSLWriter::ReportError("layout qualifiers are not allowed in this kind of program", pos);
+        return;
+    }
+    DSLCore::Declare(modifiers);
 }
 
 // Logically, we'd want the variable's initial value to appear on here in Declare, since that
@@ -359,8 +387,8 @@ void Declare(SkTArray<DSLGlobalVar>& vars, PositionInfo pos) {
     DSLCore::Declare(vars, pos);
 }
 
-DSLStatement Discard() {
-    return DSLCore::Discard();
+DSLStatement Discard(PositionInfo pos) {
+    return DSLCore::Discard(pos);
 }
 
 DSLStatement Do(DSLStatement stmt, DSLExpression test, PositionInfo pos) {
@@ -382,6 +410,12 @@ DSLStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse, P
 DSLGlobalVar InterfaceBlock(const DSLModifiers& modifiers,  skstd::string_view typeName,
                             SkTArray<DSLField> fields, skstd::string_view varName, int arraySize,
                             PositionInfo pos) {
+    SkSL::ProgramKind kind = DSLWriter::GetProgramConfig()->fKind;
+    if (kind != ProgramKind::kFragment &&
+        kind != ProgramKind::kVertex) {
+        DSLWriter::ReportError("interface blocks are not allowed in this kind of program", pos);
+        return DSLGlobalVar();
+    }
     return DSLCore::InterfaceBlock(modifiers, typeName, std::move(fields), varName, arraySize, pos);
 }
 
@@ -402,12 +436,12 @@ DSLStatement StaticIf(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFa
                          pos);
 }
 
-DSLPossibleStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases) {
-    return DSLCore::Switch(std::move(value), std::move(cases), /*isStatic=*/true);
+DSLPossibleStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases, PositionInfo pos) {
+    return DSLCore::Switch(std::move(value), std::move(cases), /*isStatic=*/true, pos);
 }
 
-DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases) {
-    return DSLCore::Switch(std::move(value), std::move(cases), /*isStatic=*/false);
+DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases, PositionInfo pos) {
+    return DSLCore::Switch(std::move(value), std::move(cases), /*isStatic=*/false, pos);
 }
 
 DSLStatement While(DSLExpression test, DSLStatement stmt, PositionInfo pos) {

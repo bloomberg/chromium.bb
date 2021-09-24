@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/containers/small_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
@@ -42,6 +43,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             const gfx::Rect& damage_rect,
+                            float opacity,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   bool IsOffscreen() override;
   bool SupportsAsyncSwap() override;
@@ -65,6 +67,10 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   bool SupportsOverridePlatformSize() const override;
   bool SupportsViewporter() const override;
   gfx::SurfaceOrigin GetOrigin() const override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              const gfx::ColorSpace& color_space,
+              bool has_alpha) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
@@ -94,9 +100,10 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     bool ready = false;
 
     // A region of the updated content in a corresponding frame. It's used to
-    // advice Wayland which part of a buffer is going to be updated. Passing {0,
-    // 0, 0, 0} results in a whole buffer update on the Wayland compositor side.
-    gfx::Rect damage_region_ = gfx::Rect();
+    // advise Wayland which part of a buffer is going to be updated. The absence
+    // of a value results in a whole buffer update on the Wayland compositor
+    // side.
+    absl::optional<gfx::Rect> damage_region_;
     // TODO(fangzhoug): This should be changed to support Vulkan.
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
@@ -140,6 +147,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   bool use_egl_fence_sync_ = true;
 
   bool no_gl_flush_for_tests_ = false;
+
+  // Scale factor of the current surface.
+  float surface_scale_factor_ = 1.f;
 
   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
 

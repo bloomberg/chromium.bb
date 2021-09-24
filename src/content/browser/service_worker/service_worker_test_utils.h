@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
@@ -128,7 +129,7 @@ struct ServiceWorkerContainerHostAndInfo {
 // use this function, but if more control is required
 // CreateContainerHostAndInfoForWindow() can be used instead.
 base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
-    int process_id,
+    const GlobalRenderFrameHostId& render_frame_host_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteContainerEndpoint* output_endpoint);

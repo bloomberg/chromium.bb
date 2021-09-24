@@ -335,6 +335,11 @@
   'chromium-webrtc-rel-win8': {
     'perf_builder_name_alias': 'chromium-webrtc-rel-win8',
   },
+  # Used for invert CQ tests selection. Adding ci_only: False to
+  # test_suite_exceptions.pyl to select tests that are allowed on CQ builders.
+  'ci_only': {
+    'ci_only': True,
+  },
   'dawn_end2end_gpu_test': {
     '$mixin_append': {
       'args': [
@@ -460,13 +465,6 @@
       # TODO(crbug.com/1163797): Remove the 'enable' field in favor of
       # 'has_native_resultdb_integration'.
       'has_native_resultdb_integration': True,
-    },
-  },
-  'intel_iris_5100': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '8086:0a2e',
-      },
     },
   },
   'ios_custom_webkit': {
@@ -711,7 +709,7 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
-        'os': 'Mac-11.3',
+        'os': 'Mac-11.5',
       },
     },
   },
@@ -720,6 +718,14 @@
       'dimensions': {
         'cpu': 'x86-64',
         'os': 'Mac-11|Mac-10.16',
+      },
+    },
+  },
+  'mac_12_beta_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-12',
       },
     },
   },
@@ -791,7 +797,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-10.15.7',
+        'os': 'Mac-11.5.2',
         'display_attached': '1',
       },
     },
@@ -1106,6 +1112,13 @@
       },
     },
   },
+  'win10-1703' : {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-10-15063',
+      },
+    },
+  },
   'win10-20h2': {
     'swarming': {
       'dimensions': {
@@ -1302,18 +1315,18 @@
       ],
     },
   },
-  # Default Xcode 13 on main (Xcode 13.0 beta 4).
+  # Default Xcode 13 on main (Xcode 13.0 beta 5).
   'xcode_13_main': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '13a5201ixc'
+        '13a5212g'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13a5201ixc',
+          'name': 'xcode_ios_13a5212g',
           'path': 'Xcode.app',
         },
       ],

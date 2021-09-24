@@ -28,6 +28,7 @@
 
 #include "cast_utils.h"
 #include "layer_validation_tests.h"
+#include "core_validation_error_enums.h"
 
 TEST_F(VkLayerTest, PSOPolygonModeInvalid) {
     TEST_DESCRIPTION("Attempt to use invalid polygon fill modes.");
@@ -346,35 +347,8 @@ TEST_F(VkLayerTest, BlendingOnFormatWithoutBlendingSupport) {
     pipeline.AddColorAttachment(0, att_state);
     pipeline.CreateVKPipeline(descriptorSet.GetPipelineLayout(), rp);
 
-    VkImageObj image(m_device);
-    image.Init(32, 32, 1, non_blending_format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    VkImageView imageView = image.targetView(non_blending_format);
-
-    VkFramebufferCreateInfo fbci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp, 1, &imageView, 32, 32, 1};
-    VkFramebuffer fb;
-    vk::CreateFramebuffer(m_device->device(), &fbci, nullptr, &fb);
-
-    VkRenderPassBeginInfo rpbi = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                                  nullptr,
-                                  rp,
-                                  fb,
-                                  {{
-                                       0,
-                                       0,
-                                   },
-                                   {32, 32}},
-                                  0,
-                                  nullptr};
-
-    m_commandBuffer->begin();
-    m_commandBuffer->BeginRenderPass(rpbi);
-    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle());
-    m_commandBuffer->EndRenderPass();
-    m_commandBuffer->end();
-
     m_errorMonitor->VerifyFound();
     vk::DestroyRenderPass(m_device->device(), rp, NULL);
-    vk::DestroyFramebuffer(m_device->device(), fb, NULL);
 }
 
 // Is the Pipeline compatible with the expectations of the Renderpass/subpasses?
@@ -481,6 +455,50 @@ TEST_F(VkLayerTest, InvalidTopology) {
 
     topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
     CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkPipelineInputAssemblyStateCreateInfo-topology-00429");
+}
+
+TEST_F(VkLayerTest, PrimitiveTopologyListRestart) {
+    TEST_DESCRIPTION("Test VK_EXT_primitive_topology_list_restart");
+    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (version < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    auto ptl_restart_features = LvlInitStruct<VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&ptl_restart_features);
+    m_device_extension_names.push_back(VK_EXT_PRIMITIVE_TOPOLOGY_LIST_RESTART_EXTENSION_NAME);
+    bool retval = InitFrameworkAndRetrieveFeatures(features2);
+    if (!retval) {
+        printf("%s Error initializing extensions or retrieving features, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!ptl_restart_features.primitiveTopologyListRestart) {
+        printf("%s primitive topology list restart feature is not available, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ptl_restart_features.primitiveTopologyListRestart = false;
+    ptl_restart_features.primitiveTopologyPatchListRestart = false;
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitViewport());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkShaderObj vs(m_device, bindStateVertPointSizeShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+
+    VkPrimitiveTopology topology;
+
+    auto set_info = [&](CreatePipelineHelper &helper) {
+        helper.ia_ci_.topology = topology;
+        helper.ia_ci_.primitiveRestartEnable = VK_TRUE;
+        helper.shader_stages_ = { vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo() };
+    };
+
+    topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkPipelineInputAssemblyStateCreateInfo-topology-06252");
+    topology = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
+                                      std::vector<string>{"VUID-VkPipelineInputAssemblyStateCreateInfo-topology-06253",
+                                                          "VUID-VkGraphicsPipelineCreateInfo-topology-00737"});
 }
 
 TEST_F(VkLayerTest, PointSizeGeomShaderFailure) {
@@ -4658,8 +4676,8 @@ TEST_F(VkLayerTest, CreatePipelineAttribLocationMismatch) {
         helper.vi_ci_.pVertexAttributeDescriptions = &input_attrib;
         helper.vi_ci_.vertexAttributeDescriptionCount = 1;
     };
-    m_errorMonitor->SetUnexpectedError("Vertex shader consumes input at location 1 but not provided");
 
+    m_errorMonitor->SetUnexpectedError("Vertex shader consumes input at location 1 but not provided");
     CreatePipelineHelper::OneshotTest(*this, set_info, kPerformanceWarningBit, "location 0 not consumed by vertex shader");
 }
 
@@ -4971,7 +4989,6 @@ TEST_F(VkLayerTest, CreatePipelineAttribBindingConflict) {
 
     VkShaderObj vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
 
-    m_errorMonitor->VerifyFound();
     const auto set_info = [&](CreatePipelineHelper &helper) {
         helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
         helper.vi_ci_.pVertexBindingDescriptions = input_bindings;
@@ -4979,8 +4996,8 @@ TEST_F(VkLayerTest, CreatePipelineAttribBindingConflict) {
         helper.vi_ci_.pVertexAttributeDescriptions = &input_attrib;
         helper.vi_ci_.vertexAttributeDescriptionCount = 1;
     };
-    m_errorMonitor->SetUnexpectedError("VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-00616");
-    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "Duplicate vertex input binding descriptions for binding 0");
+    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
+                                      "VUID-VkPipelineVertexInputStateCreateInfo-pVertexBindingDescriptions-00616");
 }
 
 TEST_F(VkLayerTest, CreatePipelineFragmentOutputNotWritten) {
@@ -6871,7 +6888,7 @@ TEST_F(VkLayerTest, SubgroupSupportedProperties) {
     // Same pipeline creation for each subgroup test
     auto info_override = [&](CreatePipelineHelper &info) {
         info.vs_.reset(new VkShaderObj(m_device, vsSource.c_str(), VK_SHADER_STAGE_VERTEX_BIT, this, "main", false, nullptr,
-                                       /*SPIR-V 1.3*/ 3));
+                                       SPV_ENV_VULKAN_1_1));
         info.shader_stages_ = {info.vs_->GetStageCreateInfo(), info.fs_->GetStageCreateInfo()};
         info.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
     };
@@ -7178,7 +7195,7 @@ TEST_F(VkLayerTest, SubgroupExtendedTypesEnabled) {
     CreateComputePipelineHelper pipe(*this);
     pipe.InitInfo();
     pipe.cs_.reset(
-        new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, SPV_ENV_VULKAN_1_1));
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
     pipe.CreateComputePipeline();
@@ -7247,7 +7264,7 @@ TEST_F(VkLayerTest, SubgroupExtendedTypesDisabled) {
     CreateComputePipelineHelper pipe(*this);
     pipe.InitInfo();
     pipe.cs_.reset(
-        new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, SPV_ENV_VULKAN_1_1));
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
@@ -7555,7 +7572,7 @@ TEST_F(VkLayerTest, CreatePipelineCheckComputeShaderDerivativesEnabled) {
     vk::CreateComputePipelines(test_device.device(), VK_NULL_HANDLE, 1, &cpci, nullptr, &pipe);
     m_errorMonitor->VerifyFound();
     vk::DestroyPipeline(test_device.device(), pipe, nullptr);
-    m_errorMonitor->VerifyFound();
+    m_errorMonitor->VerifyNotFound();
 }
 
 TEST_F(VkLayerTest, CreatePipelineCheckFragmentShaderInterlockEnabled) {
@@ -7761,7 +7778,7 @@ TEST_F(VkLayerTest, CreatePipelineCheckLineRasterization) {
     vkCmdSetLineStippleEXT(m_commandBuffer->handle(), 0, 0);
     m_errorMonitor->VerifyFound();
     vkCmdSetLineStippleEXT(m_commandBuffer->handle(), 1, 1);
-    m_errorMonitor->VerifyFound();
+    m_errorMonitor->VerifyNotFound();
 }
 
 TEST_F(VkLayerTest, FillRectangleNV) {
@@ -8819,12 +8836,18 @@ TEST_F(VkLayerTest, RayTracingPipelineShaderGroupsKHR) {
         void main() {}
     )glsl";
 
-    VkShaderObj rgen_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, this, "main", false, nullptr, 4);
-    VkShaderObj ahit_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_ANY_HIT_BIT_KHR, this, "main", false, nullptr, 4);
-    VkShaderObj chit_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, this, "main", false, nullptr, 4);
-    VkShaderObj miss_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_MISS_BIT_KHR, this, "main", false, nullptr, 4);
-    VkShaderObj intr_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_INTERSECTION_BIT_KHR, this, "main", false, nullptr, 4);
-    VkShaderObj call_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_CALLABLE_BIT_KHR, this, "main", false, nullptr, 4);
+    VkShaderObj rgen_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_RAYGEN_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
+    VkShaderObj ahit_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_ANY_HIT_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
+    VkShaderObj chit_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
+    VkShaderObj miss_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_MISS_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
+    VkShaderObj intr_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_INTERSECTION_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
+    VkShaderObj call_shader(m_device, empty_shader.c_str(), VK_SHADER_STAGE_CALLABLE_BIT_KHR, this, "main", false, nullptr,
+                            SPV_ENV_VULKAN_1_2);
 
     m_errorMonitor->VerifyNotFound();
 
@@ -9452,7 +9475,7 @@ TEST_F(VkLayerTest, CreatePipelineDynamicUniformIndex) {
     }
 }
 
-TEST_F(VkLayerTest, vertexStoresAndAtomicsFeatureDisable) {
+TEST_F(VkLayerTest, VertexStoresAndAtomicsFeatureDisable) {
     TEST_DESCRIPTION("Run shader with StoreOp or AtomicOp to verify if vertexPipelineStoresAndAtomics disable.");
 
     VkPhysicalDeviceFeatures features{};
@@ -9491,19 +9514,23 @@ TEST_F(VkLayerTest, vertexStoresAndAtomicsFeatureDisable) {
             }
         )glsl";
 
-        VkShaderObj vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
+        VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
+        if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
+            auto info_override = [&](CreatePipelineHelper &info) {
+                info.shader_stages_ = {vs.GetStageCreateInfo(), info.fs_->GetStageCreateInfo()};
+                info.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}};
+            };
 
-        auto info_override = [&](CreatePipelineHelper &info) {
-            info.shader_stages_ = {vs.GetStageCreateInfo(), info.fs_->GetStageCreateInfo()};
-            info.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}};
-        };
-
-        CreatePipelineHelper::OneshotTest(*this, info_override, VK_DEBUG_REPORT_ERROR_BIT_EXT,
-                                          "Shader requires vertexPipelineStoresAndAtomics but is not enabled on the device");
+            // extra VU for not enabling atomic float support
+            CreatePipelineHelper::OneshotTest(
+                *this, info_override, VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                std::vector<string>{"UNASSIGNED-CoreValidation-Shader-AtomicFeature",
+                                    "Shader requires vertexPipelineStoresAndAtomics but is not enabled on the device"});
+        }
     }
 }
 
-TEST_F(VkLayerTest, fragmentStoresAndAtomicsFeatureDisable) {
+TEST_F(VkLayerTest, FragmentStoresAndAtomicsFeatureDisable) {
     TEST_DESCRIPTION("Run shader with StoreOp or AtomicOp to verify if fragmentStoresAndAtomics disable.");
 
     VkPhysicalDeviceFeatures features{};
@@ -9542,15 +9569,19 @@ TEST_F(VkLayerTest, fragmentStoresAndAtomicsFeatureDisable) {
             }
         )glsl";
 
-        VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+        VkShaderObj fs(*m_device, VK_SHADER_STAGE_FRAGMENT_BIT);
+        if (VK_SUCCESS == fs.InitFromGLSLTry(*this, fsSource)) {
+            auto info_override = [&](CreatePipelineHelper &info) {
+                info.shader_stages_ = {info.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
+                info.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
+            };
 
-        auto info_override = [&](CreatePipelineHelper &info) {
-            info.shader_stages_ = {info.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
-            info.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
-        };
-
-        CreatePipelineHelper::OneshotTest(*this, info_override, VK_DEBUG_REPORT_ERROR_BIT_EXT,
-                                          "Shader requires fragmentStoresAndAtomics but is not enabled on the device");
+            // extra VU for not enabling atomic float support
+            CreatePipelineHelper::OneshotTest(
+                *this, info_override, VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                std::vector<string>{"UNASSIGNED-CoreValidation-Shader-AtomicFeature",
+                                    "Shader requires fragmentStoresAndAtomics but is not enabled on the device"});
+        }
     }
 }
 
@@ -10551,7 +10582,6 @@ TEST_F(VkLayerTest, SampledInvalidImageViews) {
     m_errorMonitor->VerifyFound();
 
     // cleanup
-    m_commandBuffer->end();
     vk::DestroySampler(device(), sampler, nullptr);
 }
 
@@ -10604,7 +10634,7 @@ TEST_F(VkLayerTest, ShaderDrawParametersNotEnabled11) {
     VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
     // make sure using SPIR-V 1.3 as extension is core and not needed in Vulkan then
-    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, 3)) {
+    if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource, false, SPV_ENV_VULKAN_1_1)) {
         const auto set_info = [&](CreatePipelineHelper &helper) {
             helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
         };
@@ -10825,6 +10855,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -10851,6 +10882,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -10877,6 +10909,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             VkPushConstantRange push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, 4};
             VkPipelineLayoutCreateInfo pipeline_layout_info{
@@ -10905,6 +10938,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -10931,6 +10965,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -10957,6 +10992,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             VkPushConstantRange push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, 4};
             VkPipelineLayoutCreateInfo pipeline_layout_info{
@@ -10999,6 +11035,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj fs(*m_device, VK_SHADER_STAGE_FRAGMENT_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if ((VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) && (VK_SUCCESS == fs.InitFromGLSLTry(*this, fsSource))) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
@@ -11024,6 +11061,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -11050,6 +11088,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
@@ -11076,6 +11115,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj vs(*m_device, VK_SHADER_STAGE_VERTEX_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if (VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) {
             VkPushConstantRange push_constant_range = {VK_SHADER_STAGE_VERTEX_BIT, 0, 4};
             VkPipelineLayoutCreateInfo pipeline_layout_info{
@@ -11118,6 +11158,7 @@ TEST_F(VkLayerTest, Storage8and16bit) {
         )glsl";
         VkShaderObj fs(*m_device, VK_SHADER_STAGE_FRAGMENT_BIT);
 
+        m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
         if ((VK_SUCCESS == vs.InitFromGLSLTry(*this, vsSource)) && (VK_SUCCESS == fs.InitFromGLSLTry(*this, fsSource))) {
             const auto set_info = [&](CreatePipelineHelper &helper) {
                 helper.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
@@ -11483,6 +11524,52 @@ TEST_F(VkLayerTest, ValidateTessellationShaderEnabled) {
                             "VUID-VkPipelineInputAssemblyStateCreateInfo-topology-00430"});
 }
 
+TEST_F(VkLayerTest, CreateComputesPipelineWithBadBasePointer) {
+    TEST_DESCRIPTION("Create Compute Pipeline with bad base pointer");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    char const *csSource = R"glsl(
+        #version 450
+        layout(local_size_x=2, local_size_y=4) in;
+        void main(){
+        }
+    )glsl";
+
+    VkShaderObj cs(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this);
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings(0);
+    const VkDescriptorSetLayoutObj pipeline_dsl(m_device, bindings);
+    const VkPipelineLayoutObj pipeline_layout(m_device, {&pipeline_dsl});
+
+    VkComputePipelineCreateInfo compute_create_info = LvlInitStruct<VkComputePipelineCreateInfo>();
+    compute_create_info.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+    compute_create_info.stage = cs.GetStageCreateInfo();
+    compute_create_info.layout = pipeline_layout.handle();
+
+    VkPipeline test_pipeline;
+    vk::CreateComputePipelines(device(), VK_NULL_HANDLE, 1, &compute_create_info, nullptr, &test_pipeline);
+
+    {
+        compute_create_info.basePipelineHandle = VK_NULL_HANDLE;
+        compute_create_info.basePipelineIndex = 1;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-00698");
+        VkPipeline pipeline;
+        vk::CreateComputePipelines(device(), VK_NULL_HANDLE, 1, &compute_create_info, nullptr, &pipeline);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (test_pipeline != VK_NULL_HANDLE) {
+        compute_create_info.basePipelineHandle = test_pipeline;
+        compute_create_info.basePipelineIndex = 1;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-00699");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkComputePipelineCreateInfo-flags-00700");
+        VkPipeline pipeline;
+        vk::CreateComputePipelines(device(), VK_NULL_HANDLE, 1, &compute_create_info, nullptr, &pipeline);
+        m_errorMonitor->VerifyFound();
+    }
+}
+
 TEST_F(VkLayerTest, CreatePipelineWithDuplicatedSpecializationConstantID) {
     TEST_DESCRIPTION("Create a pipeline with non unique constantID in specialization pMapEntries.");
     ASSERT_NO_FATAL_FAILURE(Init());
@@ -11523,7 +11610,12 @@ TEST_F(VkLayerTest, CreatePipelineWithDuplicatedSpecializationConstantID) {
 TEST_F(VkLayerTest, PipelineSubgroupSizeControl) {
     TEST_DESCRIPTION("Test Subgroub Size Control");
 
+    SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test requires Vulkan >= 1.1\n", kSkipPrefix);
+        return;
+    }
     if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME)) {
         printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
         return;
@@ -11531,7 +11623,11 @@ TEST_F(VkLayerTest, PipelineSubgroupSizeControl) {
     m_device_extension_names.push_back(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitState());
 
+    auto subgroup_properties = LvlInitStruct<VkPhysicalDeviceSubgroupSizeControlPropertiesEXT>();
+    auto props = LvlInitStruct<VkPhysicalDeviceProperties2>(&subgroup_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &props);
     auto subgroup_size_control = LvlInitStruct<VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>();
+    subgroup_size_control.requiredSubgroupSize = subgroup_properties.minSubgroupSize;
 
     CreateComputePipelineHelper cs_pipeline(*this);
     cs_pipeline.InitInfo();
@@ -11556,6 +11652,7 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
         return;
     }
 
+
     // Create device without VK_KHR_shader_atomic_int64 extension or features enabled
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
@@ -11579,9 +11676,8 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
         #extension GL_KHR_memory_scope_semantics : enable
         shared uint64_t x;
         layout(set = 0, binding = 0) buffer ssbo { uint64_t y; };
-        layout(set = 0, binding = 1) uniform ubo { uint64_t z; };
         void main() {
-           y = z + 1;
+           y = x + 1;
         }
     )glsl";
 
@@ -11592,7 +11688,6 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
         #extension GL_KHR_memory_scope_semantics : enable
         shared uint64_t x;
         layout(set = 0, binding = 0) buffer ssbo { uint64_t y; };
-        layout(set = 0, binding = 1) uniform ubo { uint64_t z; };
         void main() {
     )glsl";
 
@@ -11606,15 +11701,7 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
     // StorageBuffer storage class using AtomicStore
     // atomicStore is slightly different than other atomics, so good edge case
     std::string cs_store = cs_base + R"glsl(
-           atomicStore(y, z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
-        }
-    )glsl";
-
-    // Uniform storage class
-    std::string cs_uniform = cs_base + R"glsl(
-           uint64_t a = atomicLoad(z, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
-           barrier();
-           y = a + 1;
+           atomicStore(y, 1ul, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
         }
     )glsl";
 
@@ -11630,10 +11717,9 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
     const char *current_shader = nullptr;
     const auto set_info = [&](CreateComputePipelineHelper &helper) {
         // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
-        helper.cs_.reset(
-            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
-        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
-                                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+        helper.cs_.reset(new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr,
+                                         SPV_ENV_VULKAN_1_1));
+        helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
     };
 
     current_shader = cs_positive.c_str();
@@ -11645,10 +11731,6 @@ TEST_F(VkLayerTest, ShaderAtomicInt64) {
         *this, set_info, kErrorBit,
         std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
     current_shader = cs_store.c_str();
-    CreateComputePipelineHelper::OneshotTest(
-        *this, set_info, kErrorBit,
-        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
-    current_shader = cs_uniform.c_str();
     CreateComputePipelineHelper::OneshotTest(
         *this, set_info, kErrorBit,
         std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
@@ -11803,11 +11885,10 @@ TEST_F(VkLayerTest, ShaderImageAtomicInt64) {
     )glsl";
     // clang-format on
 
-    const char *current_shader = nullptr;
-    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+    std::unique_ptr<VkShaderObj> current_shader;
+    const auto set_info = [&current_shader](CreateComputePipelineHelper &helper) {
         // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
-        helper.cs_.reset(
-            new VkShaderObj(m_device, current_shader, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, nullptr, /*SPIR-V 1.3*/ 3));
+        helper.cs_ = std::move(current_shader);
         helper.dsl_bindings_ = {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
                                 {1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr}};
     };
@@ -11815,30 +11896,621 @@ TEST_F(VkLayerTest, ShaderImageAtomicInt64) {
     // shaderImageInt64Atomics
     // Need 01091 VUID check for both Int64ImageEXT and Int64Atomics.. test could be rewritten to be more complex in order to set
     // capability requirements with other features, but this is simpler
-    current_shader = cs_image_load.c_str();
-    CreateComputePipelineHelper::OneshotTest(
-        *this, set_info, kErrorBit,
-        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
-                            "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    current_shader = layer_data::make_unique<VkShaderObj>(*m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+    m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
+    if (VK_SUCCESS == current_shader->InitFromGLSLTry(*this, cs_image_load.c_str(), false, SPV_ENV_VULKAN_1_1)) {
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
+                                "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    }
 
     // glslang doesn't omit Int64Atomics for store currently
-    current_shader = cs_image_store.c_str();
+    current_shader = layer_data::make_unique<VkShaderObj>(*m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+    m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
+    if (VK_SUCCESS == current_shader->InitFromGLSLTry(*this, cs_image_store.c_str(), false, SPV_ENV_VULKAN_1_1)) {
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                                "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    }
+
+    current_shader = layer_data::make_unique<VkShaderObj>(*m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+    m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
+    if (VK_SUCCESS == current_shader->InitFromGLSLTry(*this, cs_image_exchange.c_str(), false, SPV_ENV_VULKAN_1_1)) {
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
+                                "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    }
+
+    current_shader = layer_data::make_unique<VkShaderObj>(*m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+    m_errorMonitor->SetUnexpectedError(kVUID_Core_Shader_InconsistentSpirv);
+    if (VK_SUCCESS == current_shader->InitFromGLSLTry(*this, cs_image_add.c_str(), false, SPV_ENV_VULKAN_1_1)) {
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
+                                "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    }
+}
+
+TEST_F(VkLayerTest, ShaderAtomicFloat) {
+    TEST_DESCRIPTION("Test VK_EXT_shader_atomic_float.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    // Create device without VK_EXT_shader_atomic_float extension or features enabled
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    VkPhysicalDeviceFeatures available_features = {};
+    ASSERT_NO_FATAL_FAILURE(GetPhysicalDeviceFeatures(&available_features));
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    if (m_device->props.apiVersion < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required for SPIR-V 1.3, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    // clang-format off
+    std::string cs_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float32 : enable
+        shared float32_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float32_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_32_add = cs_32_base + R"glsl(
+           atomicAdd(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_load = cs_32_base + R"glsl(
+           y = 1 + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_store = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_exchange = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_add = cs_32_base + R"glsl(
+           y = atomicAdd(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_load = cs_32_base + R"glsl(
+           y = 1 + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_store = cs_32_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_exchange = cs_32_base + R"glsl(
+           float32_t a = 1;
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_64_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float64 : enable
+        shared float64_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float64_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_64_add = cs_64_base + R"glsl(
+           atomicAdd(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_load = cs_64_base + R"glsl(
+           y = 1 + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_store = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_exchange = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_add = cs_64_base + R"glsl(
+           y = atomicAdd(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_load = cs_64_base + R"glsl(
+           y = 1 + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_store = cs_64_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_exchange = cs_64_base + R"glsl(
+           float64_t a = 1;
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_image_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float : enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        layout(set = 0, binding = 0) buffer ssbo { float y; };
+        layout(set = 0, binding = 1, r32f) uniform image2D z;
+        void main() {
+    )glsl";
+
+    std::string cs_image_load = cs_image_base + R"glsl(
+           y = imageAtomicLoad(z, ivec2(1, 1), gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_store = cs_image_base + R"glsl(
+           imageAtomicStore(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_exchange = cs_image_base + R"glsl(
+           imageAtomicExchange(z, ivec2(1, 1), y, gl_ScopeDevice, gl_StorageSemanticsImage, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_image_add = cs_image_base + R"glsl(
+           y = imageAtomicAdd(z, ivec2(1, 1), y);
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    // set binding for buffer tests
+    std::vector<VkDescriptorSetLayoutBinding> current_bindings = {
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+
+    VkRenderFramework &framework = *this;
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_ = layer_data::make_unique<VkShaderObj>(*m_device, VK_SHADER_STAGE_COMPUTE_BIT);
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        if (VK_SUCCESS != helper.cs_.get()->InitFromGLSLTry(framework, current_shader, false, SPV_ENV_VULKAN_1_1)) {
+            helper.override_skip_ = true;
+        }
+        helper.dsl_bindings_ = current_bindings;
+    };
+
+    // shaderBufferFloat32Atomics
+    current_shader = cs_buffer_float_32_load.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_buffer_float_32_store.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_buffer_float_32_exchange.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    // shaderBufferFloat32AtomicAdd
+    current_shader = cs_buffer_float_32_add.c_str();
     CreateComputePipelineHelper::OneshotTest(
         *this, set_info, kErrorBit,
         std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
                             "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
 
-    current_shader = cs_image_exchange.c_str();
+    // shaderSharedFloat32Atomics
+    current_shader = cs_shared_float_32_load.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_shared_float_32_store.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_shared_float_32_exchange.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    // shaderSharedFloat32AtomicAdd
+    current_shader = cs_shared_float_32_add.c_str();
     CreateComputePipelineHelper::OneshotTest(
         *this, set_info, kErrorBit,
-        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
-                            "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                            "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
 
+    // shaderBufferFloat64Atomics
+    if (available_features.shaderFloat64) {
+        current_shader = cs_buffer_float_64_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_buffer_float_64_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_buffer_float_64_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        // shaderBufferFloat64AtomicAdd
+        current_shader = cs_buffer_float_64_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                                "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        // shaderSharedFloat64Atomics
+        current_shader = cs_shared_float_64_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_shared_float_64_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_shared_float_64_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        // shaderSharedFloat64AtomicAdd
+        current_shader = cs_shared_float_64_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                                "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    } else {
+        printf("Skipping 64-bit float tests\n");
+    }
+
+    // Add binding for images
+    current_bindings.push_back({1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr});
+
+    // shaderImageFloat32Atomics
+    current_shader = cs_image_load.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_image_store.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    current_shader = cs_image_exchange.c_str();
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+    // shaderImageFloat32AtomicAdd
     current_shader = cs_image_add.c_str();
     CreateComputePipelineHelper::OneshotTest(
         *this, set_info, kErrorBit,
-        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-01091",
-                            "VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                            "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+}
+
+TEST_F(VkLayerTest, ShaderAtomicFloat2) {
+    TEST_DESCRIPTION("Test VK_EXT_shader_atomic_float2.");
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+
+    // Create device without VK_EXT_shader_atomic_float2 extension or features enabled
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Test requires Vulkan >= 1.2.\n", kSkipPrefix);
+        return;
+    }
+
+    // Still check for proper 16-bit storage/float support for most tests
+    auto float16int8_features = LvlInitStruct<VkPhysicalDeviceShaderFloat16Int8Features>();
+    auto storage_16_bit_features = LvlInitStruct<VkPhysicalDevice16BitStorageFeatures>(&float16int8_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&storage_16_bit_features);
+
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    const bool support_16_bit =
+        (float16int8_features.shaderFloat16 == VK_TRUE) && (storage_16_bit_features.storageBuffer16BitAccess == VK_TRUE);
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    // clang-format off
+    std::string cs_16_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+        #extension GL_EXT_shader_16bit_storage: enable
+        #extension GL_KHR_memory_scope_semantics : enable
+        shared float16_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float16_t y; };
+        void main() {
+    )glsl";
+
+     std::string cs_buffer_float_16_add = cs_16_base + R"glsl(
+           atomicAdd(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_load = cs_16_base + R"glsl(
+           y = float16_t(1.0) + atomicLoad(y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_store = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicStore(y, a, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_exchange = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicExchange(y, a);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_min = cs_16_base + R"glsl(
+           atomicMin(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_buffer_float_16_max = cs_16_base + R"glsl(
+           atomicMax(y, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_add = cs_16_base + R"glsl(
+           y = atomicAdd(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_load = cs_16_base + R"glsl(
+           y = float16_t(1.0) + atomicLoad(x, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_store = cs_16_base + R"glsl(
+           atomicStore(x, y, gl_ScopeDevice, gl_StorageSemanticsBuffer, gl_SemanticsRelaxed);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_exchange = cs_16_base + R"glsl(
+           float16_t a = float16_t(1.0);
+           atomicExchange(x, y);
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_min = cs_16_base + R"glsl(
+           y = atomicMin(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_shared_float_16_max = cs_16_base + R"glsl(
+           y = atomicMax(x, float16_t(1.0));
+        }
+    )glsl";
+
+    std::string cs_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float32 : enable
+        shared float32_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float32_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_32_min = cs_32_base + R"glsl(
+           atomicMin(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_32_max = cs_32_base + R"glsl(
+           atomicMax(y, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_min = cs_32_base + R"glsl(
+           y = atomicMin(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_32_max = cs_32_base + R"glsl(
+           y = atomicMax(x, 1);
+        }
+    )glsl";
+
+    std::string cs_64_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        #extension GL_EXT_shader_explicit_arithmetic_types_float64 : enable
+        shared float64_t x;
+        layout(set = 0, binding = 0) buffer ssbo { float64_t y; };
+        void main() {
+    )glsl";
+
+    std::string cs_buffer_float_64_min = cs_64_base + R"glsl(
+           atomicMin(y, 1);
+        }
+    )glsl";
+
+    std::string cs_buffer_float_64_max = cs_64_base + R"glsl(
+           atomicMax(y, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_min = cs_64_base + R"glsl(
+           y = atomicMin(x, 1);
+        }
+    )glsl";
+
+    std::string cs_shared_float_64_max = cs_64_base + R"glsl(
+           y = atomicMax(x, 1);
+        }
+    )glsl";
+
+    std::string cs_image_32_base = R"glsl(
+        #version 450
+        #extension GL_EXT_shader_atomic_float2 : enable
+        layout(set = 0, binding = 0) buffer ssbo { float y; };
+        layout(set = 0, binding = 1, r32f) uniform image2D z;
+        void main() {
+    )glsl";
+
+    std::string cs_image_32_min = cs_image_32_base + R"glsl(
+           y = imageAtomicMin(z, ivec2(1, 1), y);
+        }
+    )glsl";
+
+    std::string cs_image_32_max = cs_image_32_base + R"glsl(
+           y = imageAtomicMax(z, ivec2(1, 1), y);
+        }
+    )glsl";
+    // clang-format on
+
+    const char *current_shader = nullptr;
+    // set binding for buffer tests
+    std::vector<VkDescriptorSetLayoutBinding> current_bindings = {
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr}};
+
+    const auto set_info = [this, &current_shader, &current_bindings](CreateComputePipelineHelper &helper) {
+        // Requires SPIR-V 1.3 for SPV_KHR_storage_buffer_storage_class
+        m_errorMonitor->SetUnexpectedError("VUID-VkShaderModuleCreateInfo-pCode-01091");
+        helper.cs_ = VkShaderObj::CreateFromGLSL(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, current_shader, "main", nullptr, SPV_ENV_VULKAN_1_1);
+        // Skip the test if shader failed to compile
+        helper.override_skip_ = !static_cast<bool>(helper.cs_);
+        helper.dsl_bindings_ = current_bindings;
+    };
+
+    if (support_16_bit) {
+        // shaderBufferFloat16Atomics
+        current_shader = cs_buffer_float_16_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_buffer_float_16_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_buffer_float_16_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        // shaderBufferFloat16AtomicAdd
+        current_shader = cs_buffer_float_16_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                                "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        // shaderBufferFloat16AtomicMinMax
+        current_shader = cs_buffer_float_16_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        current_shader = cs_buffer_float_16_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        // shaderSharedFloat16Atomics
+        current_shader = cs_shared_float_16_load.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_shared_float_16_store.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        current_shader = cs_shared_float_16_exchange.c_str();
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "UNASSIGNED-CoreValidation-Shader-AtomicFeature");
+
+        // shaderSharedFloat16AtomicAdd
+        current_shader = cs_shared_float_16_add.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "VUID-VkShaderModuleCreateInfo-pCode-04147",
+                                "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        // shaderSharedFloat16AtomicMinMax
+        current_shader = cs_shared_float_16_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        current_shader = cs_shared_float_16_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    } else {
+        printf("Skipping 16-bit tests\n");
+    }
+
+    // shaderBufferFloat32AtomicMinMax
+    current_shader = cs_buffer_float_32_min.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+    current_shader = cs_buffer_float_32_max.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+    // shaderSharedFloat32AtomicMinMax
+    current_shader = cs_shared_float_32_min.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+    current_shader = cs_shared_float_32_max.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+    if (features2.features.shaderFloat64 == VK_TRUE) {
+        // shaderBufferFloat64AtomicMinMax
+        current_shader = cs_buffer_float_64_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        current_shader = cs_buffer_float_64_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        // shaderSharedFloat64AtomicMinMax
+        current_shader = cs_shared_float_64_min.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+        current_shader = cs_shared_float_64_max.c_str();
+        CreateComputePipelineHelper::OneshotTest(
+            *this, set_info, kErrorBit,
+            std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+    } else {
+        printf("Skipping 64-bit float tests\n");
+    }
+
+    // Add binding for images
+    current_bindings.push_back({1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_ALL, nullptr});
+
+    // shaderSharedFloat32AtomicMinMax
+    current_shader = cs_image_32_min.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
+
+    current_shader = cs_image_32_min.c_str();
+    CreateComputePipelineHelper::OneshotTest(
+        *this, set_info, kErrorBit,
+        std::vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-04147", "UNASSIGNED-CoreValidation-Shader-AtomicFeature"});
 }
 
 TEST_F(VkLayerTest, BindLibraryPipeline) {
@@ -11867,6 +12539,13 @@ TEST_F(VkLayerTest, BindLibraryPipeline) {
 
 TEST_F(VkLayerTest, TestPipelineColorWriteCreateInfoEXT) {
     TEST_DESCRIPTION("Test VkPipelineColorWriteCreateInfoEXT in color blend state pNext");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s test requires %s extension. Skipping.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_COLOR_WRITE_ENABLE_EXTENSION_NAME)) {
@@ -11944,6 +12623,162 @@ TEST_F(VkLayerTest, ColorBlendAdvanced) {
     m_errorMonitor->VerifyFound();
 }
 
+TEST_F(VkLayerTest, ValidateVariableSampleLocations) {
+    TEST_DESCRIPTION("Validate using VkPhysicalDeviceSampleLocationsPropertiesEXT");
+
+    if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME)) {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkPhysicalDeviceSampleLocationsPropertiesEXT sample_locations = LvlInitStruct<VkPhysicalDeviceSampleLocationsPropertiesEXT>();
+    VkPhysicalDeviceProperties2 phys_props = LvlInitStruct<VkPhysicalDeviceProperties2>(&sample_locations);
+    vk::GetPhysicalDeviceProperties2(gpu(), &phys_props);
+
+    if (sample_locations.variableSampleLocations) {
+        printf("%s VkPhysicalDeviceSampleLocationsPropertiesEXT::variableSampleLocations is supported, skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT vkGetPhysicalDeviceMultisamplePropertiesEXT =
+        (PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT)vk::GetInstanceProcAddr(instance(),
+                                                                                 "vkGetPhysicalDeviceMultisamplePropertiesEXT");
+    assert(vkGetPhysicalDeviceMultisamplePropertiesEXT != nullptr);
+
+    VkAttachmentReference attach = {};
+    attach.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDescription subpass = {};
+    subpass.pColorAttachments = &attach;
+    subpass.colorAttachmentCount = 1;
+
+    VkAttachmentDescription attach_desc = {};
+    attach_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
+    attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDescription subpasses[2] = {subpass, subpass};
+
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rpci.subpassCount = 2;
+    rpci.pSubpasses = subpasses;
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = &attach_desc;
+
+    VkRenderPass render_pass;
+    vk::CreateRenderPass(device(), &rpci, NULL, &render_pass);
+
+    VkImageObj image(m_device);
+    image.Init(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView image_view = image.targetView(VK_FORMAT_B8G8R8A8_UNORM);
+
+    VkFramebufferCreateInfo framebuffer_info = LvlInitStruct<VkFramebufferCreateInfo>();
+    framebuffer_info.renderPass = render_pass;
+    framebuffer_info.attachmentCount = 1;
+    framebuffer_info.pAttachments = &image_view;
+    framebuffer_info.width = 32;
+    framebuffer_info.height = 32;
+    framebuffer_info.layers = 1;
+
+    VkFramebuffer framebuffer;
+    vk::CreateFramebuffer(m_device->handle(), &framebuffer_info, nullptr, &framebuffer);
+
+    VkMultisamplePropertiesEXT multisample_prop = {};
+    vkGetPhysicalDeviceMultisamplePropertiesEXT(gpu(), VK_SAMPLE_COUNT_1_BIT, &multisample_prop);
+    const uint32_t valid_count =
+        multisample_prop.maxSampleLocationGridSize.width * multisample_prop.maxSampleLocationGridSize.height;
+
+    if (valid_count == 0) {
+        printf("%s multisample properties are not supported, skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    std::vector<VkSampleLocationEXT> sample_location(valid_count, {0.5, 0.5});
+    VkSampleLocationsInfoEXT sample_locations_info = LvlInitStruct<VkSampleLocationsInfoEXT>();
+    sample_locations_info.sampleLocationsPerPixel = VK_SAMPLE_COUNT_1_BIT;
+    sample_locations_info.sampleLocationGridSize = multisample_prop.maxSampleLocationGridSize;
+    sample_locations_info.sampleLocationsCount = valid_count;
+    sample_locations_info.pSampleLocations = sample_location.data();
+
+    VkPipelineSampleLocationsStateCreateInfoEXT sample_locations_state =
+        LvlInitStruct<VkPipelineSampleLocationsStateCreateInfoEXT>();
+    sample_locations_state.sampleLocationsEnable = VK_TRUE;
+    sample_locations_state.sampleLocationsInfo = sample_locations_info;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+    pipe.gp_ci_.pNext = &sample_locations_state;
+    pipe.gp_ci_.renderPass = render_pass;
+    pipe.CreateGraphicsPipeline();
+
+    VkClearValue clear_value;
+    clear_value.color.float32[0] = 0.25f;
+    clear_value.color.float32[1] = 0.25f;
+    clear_value.color.float32[2] = 0.25f;
+    clear_value.color.float32[3] = 0.0f;
+
+    VkAttachmentSampleLocationsEXT attachment_sample_locations;
+    attachment_sample_locations.attachmentIndex = 0;
+    attachment_sample_locations.sampleLocationsInfo = sample_locations_info;
+    VkSubpassSampleLocationsEXT subpass_sample_locations;
+    subpass_sample_locations.subpassIndex = 0;
+    subpass_sample_locations.sampleLocationsInfo = sample_locations_info;
+
+    VkRenderPassSampleLocationsBeginInfoEXT render_pass_sample_locations = LvlInitStruct<VkRenderPassSampleLocationsBeginInfoEXT>();
+    render_pass_sample_locations.attachmentInitialSampleLocationsCount = 1;
+    render_pass_sample_locations.pAttachmentInitialSampleLocations = &attachment_sample_locations;
+    render_pass_sample_locations.postSubpassSampleLocationsCount = 1;
+    render_pass_sample_locations.pPostSubpassSampleLocations = &subpass_sample_locations;
+
+    sample_location[0].x =
+        0.0f;  // Invalid, VkRenderPassSampleLocationsBeginInfoEXT wont match VkPipelineSampleLocationsStateCreateInfoEXT
+
+    VkRenderPassBeginInfo begin_info = LvlInitStruct<VkRenderPassBeginInfo>(&render_pass_sample_locations);
+    begin_info.renderPass = render_pass;
+    begin_info.framebuffer = framebuffer;
+    begin_info.renderArea.extent.width = 32;
+    begin_info.renderArea.extent.height = 32;
+    begin_info.renderArea.offset.x = 0;
+    begin_info.renderArea.offset.y = 0;
+    begin_info.clearValueCount = 1;
+    begin_info.pClearValues = &clear_value;
+
+    m_commandBuffer->begin();
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindPipeline-variableSampleLocations-01525");
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    m_errorMonitor->VerifyFound();
+
+    vk::CmdNextSubpass(m_commandBuffer->handle(), VK_SUBPASS_CONTENTS_INLINE);
+    sample_location[0].x = 0.5f;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindPipeline-variableSampleLocations-01525");
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    m_errorMonitor->VerifyFound();
+
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+
+    begin_info.pNext = nullptr;  // Invalid, missing VkRenderPassSampleLocationsBeginInfoEXT
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBindPipeline-variableSampleLocations-01525");
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    m_errorMonitor->VerifyFound();
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+
+    m_commandBuffer->end();
+}
+
 TEST_F(VkLayerTest, ValidateComputeShaderSharedMemoryOverLimits) {
     TEST_DESCRIPTION("Validate compute shader shared memory does not exceed maxComputeSharedMemorySize");
 
@@ -11970,5 +12805,392 @@ TEST_F(VkLayerTest, ValidateComputeShaderSharedMemoryOverLimits) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
                                          "UNASSIGNED-CoreValidation-Shader-MaxComputeSharedMemorySize");
     pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, SpecializationInvalidSizeMismatch) {
+    TEST_DESCRIPTION("Make sure an error is logged when a specialization map entry's size is not correct with type");
+
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+
+    bool int8_support = false;
+    bool float64_support = false;
+
+    // require to make enable logic simpler
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s test requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&features12);
+    auto float16int8_shader_features = LvlInitStruct<VkPhysicalDeviceShaderFloat16Int8Features>();
+    auto float16int8_features = LvlInitStruct<VkPhysicalDeviceFloat16Int8FeaturesKHR>(&float16int8_shader_features);
+    features12.pNext = &float16int8_features;
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if ((features12.shaderInt8 == VK_TRUE) && (float16int8_features.shaderInt8 == VK_TRUE) &&
+        (float16int8_shader_features.shaderInt8 == VK_TRUE)) {
+        int8_support = true;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    if (m_device->phy().features().shaderFloat64) {
+        float64_support = true;
+    }
+
+    // layout (constant_id = 0) const int a = 3;
+    // layout (constant_id = 1) const uint b = 3;
+    // layout (constant_id = 2) const float c = 3.0f;
+    // layout (constant_id = 3) const bool d = true;
+    // layout (constant_id = 4) const bool f = false;
+    std::string cs_src = R"(
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpDecorate %a SpecId 0
+               OpDecorate %b SpecId 1
+               OpDecorate %c SpecId 2
+               OpDecorate %d SpecId 3
+               OpDecorate %f SpecId 4
+       %void = OpTypeVoid
+       %func = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+       %uint = OpTypeInt 32 0
+      %float = OpTypeFloat 32
+       %bool = OpTypeBool
+          %a = OpSpecConstant %int 3
+          %b = OpSpecConstant %uint 3
+          %c = OpSpecConstant %float 3
+          %d = OpSpecConstantTrue %bool
+          %f = OpSpecConstantFalse %bool
+       %main = OpFunction %void None %func
+      %label = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    // use same offset to keep simple since unused data being read
+    VkSpecializationMapEntry entries[5] = {
+        {0, 0, 4},                 // OpTypeInt 32
+        {1, 0, 4},                 // OpTypeInt 32
+        {2, 0, 4},                 // OpTypeFloat 32
+        {3, 0, sizeof(VkBool32)},  // OpTypeBool
+        {4, 0, sizeof(VkBool32)}   // OpTypeBool
+    };
+
+    std::array<int32_t, 4> data;  // enough garbage data to grab from
+    VkSpecializationInfo specialization_info = {
+        5,
+        entries,
+        data.size() * sizeof(decltype(data)::value_type),
+        data.data(),
+    };
+
+    std::unique_ptr<VkShaderObj> cs;
+    const auto set_info = [&cs](CreateComputePipelineHelper &helper) { helper.cs_ = std::move(cs); };
+
+    // Sanity check
+    cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+    if (cs) {
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit | kWarningBit, "", true);
+
+        // signed int mismatch
+        entries[0].size = 0;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[0].size = 2;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[0].size = 8;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[0].size = 4;  // reset
+
+        // unsigned int mismatch
+        entries[1].size = 1;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[1].size = 8;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[1].size = 3;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[1].size = 4;  // reset
+
+        // float mismatch
+        entries[2].size = 0;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[2].size = 8;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[2].size = 7;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[2].size = 4;  // reset
+
+        // bool mismatch
+        entries[3].size = sizeof(VkBool32) / 2;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        entries[3].size = sizeof(VkBool32) + 1;
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+    }
+
+    if (int8_support == true) {
+        // #extension GL_EXT_shader_explicit_arithmetic_types_int8 : enable
+        // layout (constant_id = 0) const int8_t a = int8_t(3);
+        // layout (constant_id = 1) const uint8_t b = uint8_t(3);
+        cs_src = R"(
+               OpCapability Shader
+               OpCapability Int8
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpSourceExtension "GL_EXT_shader_explicit_arithmetic_types_int8"
+               OpDecorate %a SpecId 0
+               OpDecorate %b SpecId 1
+       %void = OpTypeVoid
+       %func = OpTypeFunction %void
+       %char = OpTypeInt 8 1
+      %uchar = OpTypeInt 8 0
+          %a = OpSpecConstant %char 3
+          %b = OpSpecConstant %uchar 3
+       %main = OpFunction %void None %func
+      %label = OpLabel
+               OpReturn
+               OpFunctionEnd
+            )";
+
+        specialization_info.mapEntryCount = 2;
+        entries[0] = {0, 0, 1};  // OpTypeInt 8
+        entries[1] = {1, 0, 1};  // OpTypeInt 8
+
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        if (cs) {
+            // Sanity check
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit | kWarningBit, "", true);
+
+            // signed int 8 mismatch
+            entries[0].size = 0;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 2;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 4;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 1;  // reset
+
+            // unsigned int 8 mismatch
+            entries[1].size = 0;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[1].size = 2;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[1].size = 4;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        }
+    }
+
+    if (float64_support == true) {
+        // #extension GL_EXT_shader_explicit_arithmetic_types_float64 : enable
+        // layout (constant_id = 0) const float64_t a = 3.0f;
+        cs_src = R"(
+               OpCapability Shader
+               OpCapability Float64
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpSourceExtension "GL_EXT_shader_explicit_arithmetic_types_float64"
+               OpDecorate %a SpecId 0
+       %void = OpTypeVoid
+       %func = OpTypeFunction %void
+     %double = OpTypeFloat 64
+          %a = OpSpecConstant %double 3
+       %main = OpFunction %void None %func
+      %label = OpLabel
+               OpReturn
+               OpFunctionEnd
+            )";
+
+        specialization_info.mapEntryCount = 1;
+        entries[0] = {0, 0, 8};  // OpTypeFloat 64
+
+        cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+        if (cs) {
+            // Sanity check
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit | kWarningBit, "", true);
+
+            // float 64 mismatch
+            entries[0].size = 1;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 2;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 4;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+            entries[0].size = 16;
+            cs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_COMPUTE_BIT, cs_src, "main", &specialization_info);
+            CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkSpecializationMapEntry-constantID-00776");
+        }
+    }
+}
+
+TEST_F(VkLayerTest, ValidateComputeShaderLocalSize) {
+    TEST_DESCRIPTION("Validate compute shader shared memory does not exceed maxComputeSharedMemorySize");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    // Make sure compute pipeline has a compute shader stage set
+    char const *csSource = R"glsl(
+        #version 450
+
+        layout(local_size_x_id = 3, local_size_y_id = 4) in;
+
+        void main(){
+        }
+    )glsl";
+
+    VkSpecializationMapEntry entries[2];
+    entries[0].constantID = 3;
+    entries[0].offset = 0;
+    entries[0].size = sizeof(uint32_t);
+    entries[1].constantID = 4;
+    entries[1].offset = sizeof(uint32_t);
+    entries[1].size = sizeof(uint32_t);
+
+    uint32_t data[2] = {
+        m_device->phy().properties().limits.maxComputeWorkGroupSize[0],
+        m_device->phy().properties().limits.maxComputeWorkGroupSize[1] + 1,  // Invalid
+    };
+
+    VkSpecializationInfo specialization_info = {};
+    specialization_info.mapEntryCount = 2;
+    specialization_info.pMapEntries = entries;
+    specialization_info.dataSize = sizeof(uint32_t) * 2;
+    specialization_info.pData = data;
+
+    CreateComputePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.cs_.reset(new VkShaderObj(m_device, csSource, VK_SHADER_STAGE_COMPUTE_BIT, this, "main", false, &specialization_info));
+    pipe.InitState();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-MaxComputeWorkGroupSize");
+    pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, UsingRasterizationStateStreamExtWithoutEnabled) {
+    TEST_DESCRIPTION("Test using TestRasterizationStateStreamCreateInfoEXT but it doesn't enable geometryStreams.");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME)) {
+        printf("%s test requires %s extension. Skipping.\n", kSkipPrefix, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+
+    VkPhysicalDeviceTransformFeedbackFeaturesEXT transform_feedback_features =
+        LvlInitStruct<VkPhysicalDeviceTransformFeedbackFeaturesEXT>();
+    transform_feedback_features.geometryStreams = VK_FALSE; // Invalid
+
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>(&transform_feedback_features);
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features12));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    auto rasterization_state_stream_ci = LvlInitStruct<VkPipelineRasterizationStateStreamCreateInfoEXT>();
+    pipe.rs_state_ci_.pNext = &rasterization_state_stream_ci;
+    pipe.InitState();
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                                         "VUID-VkPipelineRasterizationStateStreamCreateInfoEXT-geometryStreams-02324");
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestPipelineRasterizationStateStreamCreateInfoEXT) {
+    TEST_DESCRIPTION("Test using TestRasterizationStateStreamCreateInfoEXT with invalid rasterizationStream.");
+
+    if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    } else {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME)) {
+        printf("%s test requires %s extension. Skipping.\n", kSkipPrefix, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+
+    VkPhysicalDeviceTransformFeedbackFeaturesEXT transform_feedback_features =
+        LvlInitStruct<VkPhysicalDeviceTransformFeedbackFeaturesEXT>();
+    transform_feedback_features.geometryStreams = VK_TRUE;
+
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>(&transform_feedback_features);
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features12));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkPhysicalDeviceTransformFeedbackPropertiesEXT transfer_feedback_props =
+        LvlInitStruct<VkPhysicalDeviceTransformFeedbackPropertiesEXT>();
+
+    VkPhysicalDeviceProperties2 pd_props2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&transfer_feedback_props);
+    vk::GetPhysicalDeviceProperties2(gpu(), &pd_props2);
+
+    if (!transfer_feedback_props.transformFeedbackRasterizationStreamSelect &&
+        transfer_feedback_props.maxTransformFeedbackStreams == 0) {
+        printf("%s VkPhysicalDeviceTransformFeedbackPropertiesEXT::transformFeedbackRasterizationStreamSelect is 0; skipped.\n",
+               kSkipPrefix);
+        return;
+    }
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    auto rasterization_state_stream_ci = LvlInitStruct<VkPipelineRasterizationStateStreamCreateInfoEXT>();
+    rasterization_state_stream_ci.rasterizationStream = transfer_feedback_props.maxTransformFeedbackStreams;
+    pipe.rs_state_ci_.pNext = &rasterization_state_stream_ci;
+    pipe.InitState();
+
+    if (transfer_feedback_props.transformFeedbackRasterizationStreamSelect) {
+        m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                                             "VUID-VkPipelineRasterizationStateStreamCreateInfoEXT-rasterizationStream-02325");
+    } else {
+        m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT,
+                                             "VUID-VkPipelineRasterizationStateStreamCreateInfoEXT-rasterizationStream-02326");
+    }
+    pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 }

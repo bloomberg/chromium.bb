@@ -696,6 +696,11 @@ def _CollectReferencedKinds(module, all_defined_kinds):
         for referenced_kind in extract_referenced_user_kinds(param.kind):
           sanitized_kind = sanitize_kind(referenced_kind)
           referenced_user_kinds[sanitized_kind.spec] = sanitized_kind
+  # Consts can reference imported enums.
+  for const in module.constants:
+    if not const.kind in mojom.PRIMITIVES:
+      sanitized_kind = sanitize_kind(const.kind)
+      referenced_user_kinds[sanitized_kind.spec] = sanitized_kind
 
   return referenced_user_kinds
 
@@ -739,6 +744,16 @@ def _AssertTypeIsStable(kind):
       if method.response_param_struct:
         for response_param in method.response_param_struct.fields:
           assertDependencyIsStable(response_param.kind)
+
+
+def _AssertStructIsValid(kind):
+  expected_ordinals = set(range(0, len(kind.fields)))
+  ordinals = set(map(lambda field: field.ordinal, kind.fields))
+  if ordinals != expected_ordinals:
+    raise Exception(
+        'Structs must use contiguous ordinals starting from 0. ' +
+        '{} is missing the following ordinals: {}.'.format(
+            kind.mojom_name, ', '.join(map(str, expected_ordinals - ordinals))))
 
 
 def _Module(tree, path, imports):
@@ -846,6 +861,9 @@ def _Module(tree, path, imports):
     for kind in kinds:
       if kind.stable:
         _AssertTypeIsStable(kind)
+
+  for kind in module.structs:
+    _AssertStructIsValid(kind)
 
   return module
 

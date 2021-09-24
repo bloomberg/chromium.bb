@@ -164,8 +164,8 @@ def DieWithError(message, change_desc=None):
 def SaveDescriptionBackup(change_desc):
   backup_path = os.path.join(DEPOT_TOOLS, DESCRIPTION_BACKUP_FILE)
   print('\nsaving CL description to %s\n' % backup_path)
-  with open(backup_path, 'w') as backup_file:
-    backup_file.write(change_desc.description)
+  with open(backup_path, 'wb') as backup_file:
+    backup_file.write(change_desc.description.encode('utf-8'))
 
 
 def GetNoGitPagerEnv():
@@ -4139,16 +4139,6 @@ def GetTargetRef(remote, remote_branch, target_branch):
     # Handle the refs that need to land in different refs.
     remote_branch = REFS_THAT_ALIAS_TO_OTHER_REFS[remote_branch]
 
-  # Migration to new default branch, only if available on remote.
-  allow_push_on_master = bool(os.environ.get("ALLOW_PUSH_TO_MASTER", None))
-  if remote_branch == DEFAULT_OLD_BRANCH and not allow_push_on_master:
-    if RunGit(['show-branch', DEFAULT_NEW_BRANCH], error_ok=True,
-              stderr=subprocess2.PIPE):
-      # TODO(crbug.com/ID): Print location to local git migration script.
-      print("WARNING: Using new branch name %s instead of %s" % (
-          DEFAULT_NEW_BRANCH, DEFAULT_OLD_BRANCH))
-      remote_branch = DEFAULT_NEW_BRANCH
-
   # Create the true path to the remote branch.
   # Does the following translation:
   # * refs/remotes/origin/refs/diff/test -> refs/diff/test
@@ -5088,6 +5078,7 @@ def CMDformat(parser, args):
   GN_EXTS = ['.gn', '.gni', '.typemap']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
+  parser.add_option('--upstream', help='Branch to check against')
   parser.add_option('--dry-run', action='store_true',
                     help='Don\'t modify any file on disk.')
   parser.add_option(
@@ -5140,8 +5131,10 @@ def CMDformat(parser, args):
   # to cover the case where the user may have called "git fetch origin",
   # moving the origin branch to a newer commit, but hasn't rebased yet.
   upstream_commit = None
-  cl = Changelist()
-  upstream_branch = cl.GetUpstreamBranch()
+  upstream_branch = opts.upstream
+  if not upstream_branch:
+    cl = Changelist()
+    upstream_branch = cl.GetUpstreamBranch()
   if upstream_branch:
     upstream_commit = RunGit(['merge-base', 'HEAD', upstream_branch])
     upstream_commit = upstream_commit.strip()

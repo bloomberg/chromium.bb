@@ -24,6 +24,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1119348796022671382">Mode warna tema menggunakan warna yang diekstrak dari wallpaper untuk sedikit mewarnai antarmuka.</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1148499908455722006">Buka dialog info untuk <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
 <translation id="1165712434476988950">Perlu memulai ulang perangkat untuk menerapkan update.</translation>
 <translation id="1175572348579024023">Scroll</translation>
@@ -92,6 +93,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1611993646327628135">Aktif</translation>
 <translation id="1615402009686901181">Kebijakan administrator akan menonaktifkan tangkapan layar saat konten rahasia terlihat</translation>
 <translation id="1632985212731562677">Tombol Akses dapat dinonaktifkan di Setelan &gt; Aksesibilitas.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> perangkat</translation>
 <translation id="1654477262762802994">Mulai kueri suara</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tekan tombol Penelusuran dan Spasi untuk melihat hasil di Asisten.</translation>
 <translation id="1667964833127753507">Mode warna netral tidak menggunakan warna yang diekstrak dari wallpaper, tetapi menggantinya dengan satu set warna terang atau gelap bernuansa netral.</translation>
@@ -192,6 +194,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Tampilkan sandi</translation>
+<translation id="24452542372838207">Luaskan notifikasi</translation>
 <translation id="2450205753526923158">Mode screenshot</translation>
 <translation id="2473177541599297363">Konfirmasi Resolusi</translation>
 <translation id="2475982808118771221">Terjadi kesalahan</translation>
@@ -320,6 +323,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3486220673238053218">definisi</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3513798432020909783">Akun dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Terhubung ke <ph name="NUM_DEVICES" /> perangkat</translation>
 <translation id="3552189655002856821">Wi-Fi dinonaktifkan</translation>
 <translation id="3560866052109807830">Alat gambar penanda</translation>
 <translation id="3563775809269155755">Aktifkan hotspot</translation>
@@ -348,6 +352,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3702846122927433391">Populasi di Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Memuat...</translation>
+<translation id="3708186454126126312">Terhubung sebelumnya</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
 <translation id="3713734891607377840">Buka saat selesai</translation>
 <translation id="3742055079367172538">Screenshot telah diambil</translation>
@@ -403,6 +408,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="4129129681837227511">Untuk melihat notifikasi di layar kunci, buka kunci untuk mengubah setelan</translation>
 <translation id="4146833061457621061">Putar musik</translation>
 <translation id="4157822100366708405">Setelan Tema Gelap</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Tombol klik otomatis</translation>
 <translation id="4197790712631116042">Nonaktif</translation>
@@ -555,6 +561,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="5222676887888702881">Logout</translation>
 <translation id="5234764350956374838">Tutup</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
+<translation id="5253783950165989294">Terhubung ke perangkat bernama <ph name="DEVICE_NAME" />, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5260676007519551770">Halaman kerja 4</translation>
 <translation id="5283198616748585639">Tambahkan 1 mnt</translation>
 <translation id="528468243742722775">Berakhir</translation>
@@ -565,6 +572,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5313326810920013265">Setelan bluetooth</translation>
 <translation id="5314219114274263156">Perekaman layar diambil</translation>
+<translation id="5319712128756744240">Sambungkan perangkat baru</translation>
 <translation id="5322611492012084517">Tidak dapat menemukan ponsel Anda</translation>
 <translation id="5329548388331921293">Menghubungkan ...</translation>
 <translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
@@ -767,6 +775,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="698231206551913481">Semua file dan data lokal yang dikaitkan ke pengguna ini akan dihapus secara permanen setelah pengguna ini dihapus.</translation>
 <translation id="7007983414944123363">PIN atau sandi Anda tidak dapat diverifikasi. Coba lagi.</translation>
+<translation id="7014684956566476813">Terhubung ke perangkat bernama <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Coba lagi pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Desktop 6</translation>
 <translation id="7025533177575372252">Hubungkan <ph name="DEVICE_NAME" /> dengan ponsel Anda</translation>
@@ -1000,6 +1009,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="8818320199597151042">Menghapus profil. Tunggu beberapa menit.</translation>
 <translation id="8825863694328519386">Geser dari kiri untuk kembali</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Saat ini terhubung</translation>
 <translation id="8841375032071747811">Tombol kembali</translation>
 <translation id="8843682306134542540">Alihkan kunci rotasi. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1030,6 +1040,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="9024331582947483881">layar penuh</translation>
 <translation id="9047624247355796468">Buka setelan untuk <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Perangkat akan dipulihkan</translation>
+<translation id="9059834730836941392">Ciutkan notifikasi</translation>
 <translation id="9063800855227801443">Tidak dapat menangkap konten rahasia</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9070640332319875144">Setelan Asisten</translation>

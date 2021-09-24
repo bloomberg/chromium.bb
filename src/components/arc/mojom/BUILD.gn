@@ -85,6 +85,7 @@ if (is_chromeos_ash) {
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//mojo/public/mojom/base",
       "//printing/mojom",
+      "//sandbox/policy/mojom",
       "//services/device/public/mojom:usb",
       "//services/media_session/public/mojom",
       "//services/resource_coordinator/public/mojom",
@@ -249,6 +250,7 @@ if (is_chromeos_ash) {
 
   mojom("camera_intent") {
     sources = [ "camera_intent.mojom" ]
+    webui_module_path = "/components/arc/mojom"
   }
 
   mojom("notifications") {
@@ -289,6 +291,7 @@ if (is_chromeos_ash) {
 
     public_deps = [
       ":protected_buffer_manager",
+      "//sandbox/policy/mojom",
       "//ui/gfx/geometry/mojom",
     ]
 
@@ -368,6 +371,10 @@ if (is_chromeos_ash) {
             mojom = "arc.mojom.VideoEncodeAcceleratorConfig"
             cpp = "::media::VideoEncodeAccelerator::Config"
           },
+          {
+            mojom = "arc.mojom.Bitrate"
+            cpp = "::media::Bitrate"
+          },
         ]
         traits_headers = [ "video_encode_accelerator_mojom_traits.h" ]
         traits_sources = [ "video_encode_accelerator_mojom_traits.cc" ]
@@ -385,6 +392,7 @@ if (is_chromeos_ash) {
 
   mojom("protected_buffer_manager") {
     sources = [ "protected_buffer_manager.mojom" ]
+    public_deps = [ "//sandbox/policy/mojom" ]
   }
 
   source_set("mojom_traits") {

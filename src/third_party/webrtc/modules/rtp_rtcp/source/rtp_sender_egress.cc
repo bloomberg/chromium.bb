@@ -41,13 +41,9 @@ bool IsTrialSetTo(const WebRtcKeyValueConfig* field_trials,
 
 RtpSenderEgress::NonPacedPacketSender::NonPacedPacketSender(
     RtpSenderEgress* sender,
-    SequenceNumberAssigner* sequence_number_assigner,
-    bool deferred_sequencing)
-    : deferred_sequencing_(deferred_sequencing),
-      transport_sequence_number_(0),
-      sender_(sender),
-      sequence_number_assigner_(sequence_number_assigner) {
-  RTC_DCHECK(sequence_number_assigner_);
+    PacketSequencer* sequencer)
+    : transport_sequence_number_(0), sender_(sender), sequencer_(sequencer) {
+  RTC_DCHECK(sequencer);
 }
 RtpSenderEgress::NonPacedPacketSender::~NonPacedPacketSender() = default;
 
@@ -65,14 +61,10 @@ void RtpSenderEgress::NonPacedPacketSender::EnqueuePackets(
 
 void RtpSenderEgress::NonPacedPacketSender::PrepareForSend(
     RtpPacketToSend* packet) {
-  // Assign sequence numbers if deferred sequencing is used, but don't generate
-  // sequence numbers for flexfec, which is already running on an internally
-  // maintained sequence number series.
-  const bool is_flexfec = packet->Ssrc() == sender_->FlexFecSsrc();
-  if ((deferred_sequencing_ ||
-       packet->packet_type() == RtpPacketMediaType::kForwardErrorCorrection) &&
-      !is_flexfec) {
-    sequence_number_assigner_->AssignSequenceNumber(packet);
+  // Assign sequence numbers, but not for flexfec which is already running on
+  // an internally maintained sequence number series.
+  if (packet->Ssrc() != sender_->FlexFecSsrc()) {
+    sequencer_->Sequence(*packet);
   }
   if (!packet->SetExtension<TransportSequenceNumber>(
           ++transport_sequence_number_)) {
@@ -94,7 +86,6 @@ RtpSenderEgress::RtpSenderEgress(const RtpRtcpInterface::Configuration& config,
           !IsTrialSetTo(config.field_trials,
                         "WebRTC-SendSideBwe-WithOverhead",
                         "Disabled")),
-      deferred_sequencing_(config.use_deferred_sequencing),
       clock_(config.clock),
       packet_history_(packet_history),
       transport_(config.outgoing_transport),
@@ -142,23 +133,19 @@ void RtpSenderEgress::SendPacket(RtpPacketToSend* packet,
   RTC_DCHECK_RUN_ON(&pacer_checker_);
   RTC_DCHECK(packet);
 
-  if (deferred_sequencing_) {
-    // Strict increasing of sequence numbers can only be guaranteed with
-    // deferred sequencing due to raciness with the pacer.
-    if (packet->Ssrc() == ssrc_ &&
-        packet->packet_type() != RtpPacketMediaType::kRetransmission) {
-      if (last_sent_seq_.has_value()) {
-        RTC_DCHECK_EQ(static_cast<uint16_t>(*last_sent_seq_ + 1),
-                      packet->SequenceNumber());
-      }
-      last_sent_seq_ = packet->SequenceNumber();
-    } else if (packet->Ssrc() == rtx_ssrc_) {
-      if (last_sent_rtx_seq_.has_value()) {
-        RTC_DCHECK_EQ(static_cast<uint16_t>(*last_sent_rtx_seq_ + 1),
-                      packet->SequenceNumber());
-      }
-      last_sent_rtx_seq_ = packet->SequenceNumber();
+  if (packet->Ssrc() == ssrc_ &&
+      packet->packet_type() != RtpPacketMediaType::kRetransmission) {
+    if (last_sent_seq_.has_value()) {
+      RTC_DCHECK_EQ(static_cast<uint16_t>(*last_sent_seq_ + 1),
+                    packet->SequenceNumber());
     }
+    last_sent_seq_ = packet->SequenceNumber();
+  } else if (packet->Ssrc() == rtx_ssrc_) {
+    if (last_sent_rtx_seq_.has_value()) {
+      RTC_DCHECK_EQ(static_cast<uint16_t>(*last_sent_rtx_seq_ + 1),
+                    packet->SequenceNumber());
+    }
+    last_sent_rtx_seq_ = packet->SequenceNumber();
   }
 
   RTC_DCHECK(packet->packet_type().has_value());
@@ -447,7 +434,7 @@ void RtpSenderEgress::AddPacketToTransportFeedback(
         break;
       case RtpPacketMediaType::kRetransmission:
         // For retransmissions, we're want to remove the original media packet
-        // if the rentrasmit arrives - so populate that in the packet info.
+        // if the retransmit arrives - so populate that in the packet info.
         packet_info.media_ssrc = ssrc_;
         packet_info.rtp_sequence_number =
             *packet.retransmitted_sequence_number();

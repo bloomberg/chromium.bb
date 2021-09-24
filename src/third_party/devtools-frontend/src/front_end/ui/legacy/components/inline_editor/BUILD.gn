@@ -10,9 +10,11 @@ import("../../visibility.gni")
 
 generate_css("css_files") {
   sources = [
+    "colorSwatch.css",
     "cssAngle.css",
     "cssAngleEditor.css",
     "cssAngleSwatch.css",
+    "cssLength.css",
     "cssVarSwatch.css",
   ]
 }
@@ -25,6 +27,8 @@ devtools_module("inline_editor") {
     "CSSAngleEditor.ts",
     "CSSAngleSwatch.ts",
     "CSSAngleUtils.ts",
+    "CSSLength.ts",
+    "CSSLengthUtils.ts",
     "CSSShadowEditor.ts",
     "CSSShadowModel.ts",
     "CSSVarSwatch.ts",
@@ -32,6 +36,7 @@ devtools_module("inline_editor") {
     "FontEditor.ts",
     "FontEditorUnitConverter.ts",
     "FontEditorUtils.ts",
+    "InlineEditorUtils.ts",
     "SwatchPopoverHelper.ts",
     "Swatches.ts",
   ]

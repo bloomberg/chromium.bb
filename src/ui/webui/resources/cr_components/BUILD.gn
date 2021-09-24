@@ -26,8 +26,6 @@ generate_grd("build_grdp") {
     input_files = [
       "chromeos/multidevice_setup/all_set_1x.svg",
       "chromeos/multidevice_setup/all_set_2x.svg",
-      "chromeos/multidevice_setup/start_setup_icon_1x.png",
-      "chromeos/multidevice_setup/start_setup_icon_2x.png",
       "chromeos/cellular_setup/sim_detect_error.svg",
       "chromeos/cellular_setup/error_1x.png",
       "chromeos/cellular_setup/error_2x.png",
@@ -122,7 +120,13 @@ preprocess_if_expr("preprocess_generated") {
 
   if (is_chromeos_ash) {
     in_files += [
+      "chromeos/bluetooth/bluetooth_base_page.js",
       "chromeos/bluetooth/bluetooth_dialog.js",
+      "chromeos/bluetooth/bluetooth_icon.js",
+      "chromeos/bluetooth/bluetooth_icons.js",
+      "chromeos/bluetooth/bluetooth_pairing_device_selection_page.js",
+      "chromeos/bluetooth/bluetooth_pairing_device_item.js",
+      "chromeos/bluetooth/bluetooth_pairing_ui.js",
       "chromeos/cellular_setup/activation_code_page.m.js",
       "chromeos/cellular_setup/activation_verification_page.m.js",
       "chromeos/cellular_setup/base_page.m.js",
@@ -145,6 +149,7 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/cellular_setup/setup_loading_page.m.js",
       "chromeos/cellular_setup/subflow_behavior.m.js",
       "chromeos/cellular_setup/webview_post_util.m.js",
+      "chromeos/localized_link/localized_link.js",
       "chromeos/multidevice_setup/mojo_api.m.js",
       "chromeos/multidevice_setup/fake_mojo_service.m.js",
       "chromeos/multidevice_setup/button_bar.m.js",

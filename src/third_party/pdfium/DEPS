@@ -37,7 +37,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '10f6e4b89b5ea65a4034f675a9db5bfb50686eaf',
+  'catapult_revision': 'ebf22ea4f9a658d2127a6118dbfca9e1f780cab4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
@@ -53,7 +53,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': '69c691b70f542e679bf51182e75d5dedfc59187b',
+  'code_coverage_revision': 'f59405f5a7efae448431893e2476050515dd87e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
@@ -61,7 +61,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '86b9c9347f99174f4fea3e9deca5800e57a987f2',
+  'freetype_revision': 'efa1a35907ec678186e0828a78e6d1ee96896404',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
@@ -77,11 +77,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
-  'instrumented_lib_revision': '9a8087bbbf43a355950fc1667575d1a753f8aaa4',
+  'instrumented_lib_revision': '47226fa33ef5c9b48668c74128f25ef82f10e7af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jinja2
   # and whatever else without interference from each other.
-  'jinja2_revision': '7c54c1f227727e0c4c1d3dc19dd71cd601a2db95',
+  'jinja2_revision': '6ac5f7effd3235be7e6ee34a981214c3f3d95c2c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jpeg_turbo
   # and whatever else without interference from each other.
@@ -111,7 +111,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
-  'pdfium_tests_revision': 'b67d79fef155c0c44be240a4fde07f15adac5a4f',
+  'pdfium_tests_revision': '165422e0e969be8f2ccb11ff5a0934e4af664ef3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
@@ -127,7 +127,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': '52ce5a351cf8d8919e728248dbf739e9cbec05ff',
+  'v8_revision': '3c1f55043890add0408b404d822ea4e30f71b869',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.

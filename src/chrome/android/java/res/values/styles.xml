@@ -8,7 +8,7 @@
     <!-- Application themes -->
     <style name="LauncherTheme" parent="@android:style/Theme.NoDisplay" />
 
-    <style name="Base.V17.Theme.Chromium" parent="Theme.BrowserUI" />
+    <style name="Base.V17.Theme.Chromium" parent="Theme.BrowserUI.DayNight" />
     <style name="Base.Theme.Chromium" parent="Base.V17.Theme.Chromium" />
 
     <style name="Base.Theme.Chromium.WithWindowAnimation">
@@ -154,7 +154,7 @@
 
     <!-- Manage Space Activity styles -->
     <style name="ManageSpaceActionBarModern" parent="Widget.MaterialComponents.ActionBar.Primary">
-        <item name="titleTextStyle">@style/TextAppearance.Headline.Primary.Light</item>
+        <item name="titleTextStyle">@style/TextAppearance.Headline.Primary.Baseline.Light</item>
         <!-- Action bar color. This is intentionally a dark color. See crbug.com/871193. -->
         <item name="background">@color/dark_action_bar_color</item>
     </style>
@@ -309,7 +309,7 @@
     </style>
 
     <style name="NtpHeaderTabLayoutStyle" parent="TabLayoutStyle">
-        <item name="tabIndicatorColor">@color/default_icon_color_blue</item>
+        <item name="tabIndicatorColor">?attr/default_icon_color_blue</item>
         <item name="tabTextAppearance">@style/TextAppearance.TextAccentMediumThick</item>
         <item name="tabGravity">center</item>
         <item name="android:background">@android:color/transparent</item>

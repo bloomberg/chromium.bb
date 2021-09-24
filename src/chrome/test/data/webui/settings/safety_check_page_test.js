@@ -6,7 +6,7 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckExtensionsStatus, SafetyCheckIconStatus, SafetyCheckInteractions, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus, SettingsSafetyCheckChildElement, SettingsSafetyCheckExtensionsChildElement, SettingsSafetyCheckPageElement, SettingsSafetyCheckPasswordsChildElement, SettingsSafetyCheckSafeBrowsingChildElement, SettingsSafetyCheckUpdatesChildElement, TrustSafetyInteraction} from 'chrome://settings/settings.js';
+import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordCheckReferrer, PasswordManagerImpl, Router, routes, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckExtensionsStatus, SafetyCheckIconStatus, SafetyCheckInteractions, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus, SettingsSafetyCheckChildElement, SettingsSafetyCheckExtensionsChildElement, SettingsSafetyCheckPageElement, SettingsSafetyCheckPasswordsChildElement, SettingsSafetyCheckSafeBrowsingChildElement, SettingsSafetyCheckUpdatesChildElement, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {TestBrowserProxy} from '../test_browser_proxy.js';
@@ -173,11 +173,11 @@ suite('SafetyCheckPageUiTests', function() {
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     safetyCheckBrowserProxy = new TestSafetyCheckBrowserProxy();
     safetyCheckBrowserProxy.setParentRanDisplayString('Dummy string');
-    SafetyCheckBrowserProxyImpl.instance_ = safetyCheckBrowserProxy;
+    SafetyCheckBrowserProxyImpl.setInstance(safetyCheckBrowserProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckPageElement} */ (
@@ -194,8 +194,7 @@ suite('SafetyCheckPageUiTests', function() {
   test('testParentAndCollapse', async function() {
     // Before the check, only the text button is present.
     assertTrue(!!page.shadowRoot.querySelector('#safetyCheckParentButton'));
-    assertFalse(
-        !!page.shadowRoot.querySelector('#safetyCheckParentIconButton'));
+    assertFalse(!!page.shadowRoot.querySelector('cr-icon-button'));
     // Collapse is not opened.
     const collapse =
         /** @type {!IronCollapseElement} */ (
@@ -226,7 +225,7 @@ suite('SafetyCheckPageUiTests', function() {
     flush();
     // Only the icon button is present.
     assertFalse(!!page.shadowRoot.querySelector('#safetyCheckParentButton'));
-    assertTrue(!!page.shadowRoot.querySelector('#safetyCheckParentIconButton'));
+    assertTrue(!!page.shadowRoot.querySelector('cr-icon-button'));
     // Collapse is opened.
     assertTrue(collapse.opened);
 
@@ -243,7 +242,7 @@ suite('SafetyCheckPageUiTests', function() {
     flush();
     // Only the icon button is present.
     assertFalse(!!page.shadowRoot.querySelector('#safetyCheckParentButton'));
-    assertTrue(!!page.shadowRoot.querySelector('#safetyCheckParentIconButton'));
+    assertTrue(!!page.shadowRoot.querySelector('cr-icon-button'));
     // Collapse is opened.
     assertTrue(page.shadowRoot.querySelector('#safetyCheckCollapse').opened);
 
@@ -253,7 +252,7 @@ suite('SafetyCheckPageUiTests', function() {
 
   test('HappinessTrackingSurveysTest', async function() {
     const testHatsBrowserProxy = new TestHatsBrowserProxy();
-    HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
+    HatsBrowserProxyImpl.setInstance(testHatsBrowserProxy);
     page.shadowRoot.querySelector('#safetyCheckParentButton').click();
     const interaction =
         await testHatsBrowserProxy.whenCalled('trustSafetyInteractionOccurred');
@@ -419,7 +418,7 @@ suite('SafetyCheckUpdatesChildUiTests', function() {
     lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
     LifetimeBrowserProxyImpl.setInstance(lifetimeBrowserProxy);
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckUpdatesChildElement} */ (
@@ -541,7 +540,7 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckPasswordsChildElement} */ (
@@ -603,7 +602,7 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
     });
 
     const passwordManager = new TestPasswordManagerProxy();
-    PasswordManagerImpl.instance_ = passwordManager;
+    PasswordManagerImpl.setInstance(passwordManager);
 
     // User clicks the manage passwords button.
     page.shadowRoot.querySelector('#safetyCheckChild')
@@ -624,8 +623,7 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
     // Ensure correct referrer sent to password check.
     const referrer =
         await passwordManager.whenCalled('recordPasswordCheckReferrer');
-    assertEquals(
-        PasswordManagerProxy.PasswordCheckReferrer.SAFETY_CHECK, referrer);
+    assertEquals(PasswordCheckReferrer.SAFETY_CHECK, referrer);
   });
 
   test('passwordWeakUiTest', async function() {
@@ -656,7 +654,8 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
 
   test('passwordInfoStatesUiTest', function() {
     // Iterate over all states
-    for (const state of Object.values(SafetyCheckPasswordsStatus)) {
+    for (const state of Object.values(SafetyCheckPasswordsStatus)
+             .filter(v => Number.isInteger(v))) {
       fireSafetyCheckPasswordsEvent(state);
       flush();
 
@@ -698,7 +697,7 @@ suite('SafetyCheckSafeBrowsingChildUiTests', function() {
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckSafeBrowsingChildElement} */ (
@@ -838,9 +837,9 @@ suite('SafetyCheckExtensionsChildUiTests', function() {
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
-    MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
     openWindowProxy = new TestOpenWindowProxy();
-    OpenWindowProxyImpl.instance_ = openWindowProxy;
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!SettingsSafetyCheckExtensionsChildElement} */ (

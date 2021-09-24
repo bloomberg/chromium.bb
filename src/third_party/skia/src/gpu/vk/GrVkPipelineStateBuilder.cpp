@@ -130,15 +130,6 @@ int GrVkPipelineStateBuilder::loadShadersFromCache(SkReadBuffer* cached,
                                                      shaders[kFragment_GrShaderType],
                                                      inputs[kFragment_GrShaderType]);
 
-    if (!shaders[kGeometry_GrShaderType].empty()) {
-        success = success && this->installVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
-                                                         fGS,
-                                                         &outShaderModules[kGeometry_GrShaderType],
-                                                         &outStageInfo[2],
-                                                         shaders[kGeometry_GrShaderType],
-                                                         inputs[kGeometry_GrShaderType]);
-    }
-
     if (!success) {
         for (int i = 0; i < kGrShaderTypeCount; ++i) {
             if (outShaderModules[i]) {
@@ -148,7 +139,7 @@ int GrVkPipelineStateBuilder::loadShadersFromCache(SkReadBuffer* cached,
         }
         return 0;
     }
-    return shaders[kGeometry_GrShaderType].empty() ? 2 : 3;
+    return 2;
 }
 
 void GrVkPipelineStateBuilder::storeShadersInCache(const SkSL::String shaders[],
@@ -177,7 +168,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
 
     VkDescriptorSetLayout dsLayout[GrVkUniformHandler::kDescSetCount];
     VkShaderModule shaderModules[kGrShaderTypeCount] = { VK_NULL_HANDLE,
-                                                         VK_NULL_HANDLE,
                                                          VK_NULL_HANDLE };
 
     GrVkResourceProvider& resourceProvider = fGpu->resourceProvider();
@@ -191,13 +181,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
             resourceProvider.getSamplerDSLayout(samplerDSHandle);
 
     dsLayout[GrVkUniformHandler::kInputDescSet] = resourceProvider.getInputDSLayout();
-
-    // We need to enable the following extensions so that the compiler can correctly make spir-v
-    // from our glsl shaders.
-    fVS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
-    fFS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
-    fVS.extensions().appendf("#extension GL_ARB_shading_language_420pack : enable\n");
-    fFS.extensions().appendf("#extension GL_ARB_shading_language_420pack : enable\n");
 
     this->finalizeShaders();
 
@@ -246,7 +229,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
 
         SkSL::String* sksl[kGrShaderTypeCount] = {
             &fVS.fCompilerString,
-            &fGS.fCompilerString,
             &fFS.fCompilerString,
         };
         SkSL::String cached_sksl[kGrShaderTypeCount];
@@ -274,17 +256,6 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
                                                         settings,
                                                         &shaders[kFragment_GrShaderType],
                                                         &inputs[kFragment_GrShaderType]);
-
-        if (this->geometryProcessor().willUseGeoShader()) {
-            success = success && this->createVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
-                                                            *sksl[kGeometry_GrShaderType],
-                                                            &shaderModules[kGeometry_GrShaderType],
-                                                            &shaderStageInfo[2],
-                                                            settings,
-                                                            &shaders[kGeometry_GrShaderType],
-                                                            &inputs[kGeometry_GrShaderType]);
-            ++numShaderStages;
-        }
 
         if (!success) {
             for (int i = 0; i < kGrShaderTypeCount; ++i) {
@@ -348,8 +319,7 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrProgramDesc& desc,
     uint32_t subpass = 0;
     if (overrideSubpassForResolveLoad ||
         (fProgramInfo.colorLoadOp() == GrLoadOp::kLoad &&
-         fProgramInfo.targetSupportsVkResolveLoad() &&
-         fGpu->vkCaps().preferDiscardableMSAAAttachment())) {
+         fGpu->vkCaps().programInfoWillUseDiscardableMSAA(fProgramInfo))) {
         subpass = 1;
     }
     sk_sp<const GrVkPipeline> pipeline = resourceProvider.makePipeline(

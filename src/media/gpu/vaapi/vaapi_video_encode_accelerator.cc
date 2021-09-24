@@ -156,6 +156,14 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
   DCHECK_EQ(state_, kUninitialized);
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
 
+  if (AttemptedInitialization()) {
+    VLOGF(1) << "Initialize() cannot be called more than once.";
+    return false;
+  }
+
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
+  client_ = client_ptr_factory_->GetWeakPtr();
+
   if (config.HasSpatialLayer()) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (!base::FeatureList::IsEnabled(kVaapiVp9kSVCHWEncoding) &&
@@ -200,11 +208,9 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     }
   }
 
-  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
-  client_ = client_ptr_factory_->GetWeakPtr();
-
   const VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
-  if (codec != kCodecH264 && codec != kCodecVP8 && codec != kCodecVP9) {
+  if (codec != VideoCodec::kH264 && codec != VideoCodec::kVP8 &&
+      codec != VideoCodec::kVP9) {
     VLOGF(1) << "Unsupported profile: "
              << GetProfileName(config.output_profile);
     return false;
@@ -259,26 +265,6 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  DCHECK_EQ(IsConfiguredForTesting(), !!vaapi_wrapper_);
-  if (!IsConfiguredForTesting()) {
-    if (vaapi_wrapper_) {
-      VLOGF(1) << "Initialize() is called twice";
-      return false;
-    }
-    VaapiWrapper::CodecMode mode =
-        codec == kCodecVP9 ? VaapiWrapper::kEncodeConstantQuantizationParameter
-                           : VaapiWrapper::kEncodeConstantBitrate;
-    vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-        mode, config.output_profile, EncryptionScheme::kUnencrypted,
-        base::BindRepeating(&ReportVaapiErrorToUMA,
-                            "Media.VaapiVideoEncodeAccelerator.VAAPIError"));
-    if (!vaapi_wrapper_) {
-      VLOGF(1) << "Failed initializing VAAPI for profile "
-               << GetProfileName(config.output_profile);
-      return false;
-    }
-  }
-
   // Finish remaining initialization on the encoder thread.
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::InitializeTask,
@@ -292,7 +278,24 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   VLOGF(2);
 
   output_codec_ = VideoCodecProfileToVideoCodec(config.output_profile);
-  VaapiVideoEncoderDelegate::Config ave_config{};
+  DCHECK_EQ(IsConfiguredForTesting(), !!vaapi_wrapper_);
+  if (!IsConfiguredForTesting()) {
+    const auto mode = output_codec_ == VideoCodec::kVP9
+                          ? VaapiWrapper::kEncodeConstantQuantizationParameter
+                          : VaapiWrapper::kEncodeConstantBitrate;
+    vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
+        mode, config.output_profile, EncryptionScheme::kUnencrypted,
+        base::BindRepeating(&ReportVaapiErrorToUMA,
+                            "Media.VaapiVideoEncodeAccelerator.VAAPIError"));
+
+    if (!vaapi_wrapper_) {
+      NOTIFY_ERROR(kPlatformFailureError,
+                   "Failed initializing VAAPI for profile " +
+                       GetProfileName(config.output_profile));
+      return;
+    }
+  }
+
   DCHECK_EQ(IsConfiguredForTesting(), !!encoder_);
   // Base::Unretained(this) is safe because |error_cb| is called by
   // |encoder_| and |this| outlives |encoder_|.
@@ -302,8 +305,10 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
         vea->NotifyError(kPlatformFailureError);
       },
       base::Unretained(this));
+
+  VaapiVideoEncoderDelegate::Config ave_config{};
   switch (output_codec_) {
-    case kCodecH264:
+    case VideoCodec::kH264:
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<H264VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
@@ -312,7 +317,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       DCHECK_EQ(ave_config.bitrate_control,
                 VaapiVideoEncoderDelegate::BitrateControl::kConstantBitrate);
       break;
-    case kCodecVP8:
+    case VideoCodec::kVP8:
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<VP8VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
@@ -321,7 +326,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       DCHECK_EQ(ave_config.bitrate_control,
                 VaapiVideoEncoderDelegate::BitrateControl::kConstantBitrate);
       break;
-    case kCodecVP9:
+    case VideoCodec::kVP9:
       if (!IsConfiguredForTesting()) {
         encoder_ = std::make_unique<VP9VaapiVideoEncoderDelegate>(
             vaapi_wrapper_, error_cb);
@@ -357,31 +362,14 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       expected_input_coded_size_.width() <= encoder_->GetCodedSize().width() &&
       expected_input_coded_size_.height() <= encoder_->GetCodedSize().height());
 
-  va_surfaces_per_video_frame_ =
-      native_input_mode_
-          ?
-          // In native input mode, we do not need surfaces for input frames.
-          kNumSurfacesForOutputPicture
-          :
-          // In non-native mode, we need to create additional surfaces for input
-          // frames.
-          kNumSurfacesForOutputPicture + kNumSurfacesPerInputVideoFrame;
-
   // The number of required buffers is the number of required reference frames
   // + 1 for the current frame to be encoded.
   const size_t max_ref_frames = encoder_->GetMaxNumOfRefFrames();
   num_frames_in_flight_ = std::max(kMinNumFramesInFlight, max_ref_frames);
   DVLOGF(1) << "Frames in flight: " << num_frames_in_flight_;
 
-  // The surface size for the reconstructed surface (and input surface in non
-  // native input mode) is the coded size.
-  available_va_surfaces_ = vaapi_wrapper_->CreateContextAndScopedVASurfaces(
-      kVaSurfaceFormat, encoder_->GetCodedSize(),
-      {VaapiWrapper::SurfaceUsageHint::kVideoEncoder},
-      (num_frames_in_flight_ + 1) * va_surfaces_per_video_frame_,
-      /*visible_size=*/absl::nullopt);
-  if (available_va_surfaces_.empty()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
+  if (!vaapi_wrapper_->CreateContext(encoder_->GetCodedSize())) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed creating VAContext");
     return;
   }
 
@@ -419,6 +407,19 @@ void VaapiVideoEncodeAccelerator::RecycleVASurface(
   DVLOGF(4) << "va_surface_id: " << va_surface_id;
 
   va_surfaces->push_back(std::move(va_surface));
+
+  // At least one surface must available in each |available_encode_surfaces_|
+  // and |available_vpp_dest_surfaces_| to succeed in EncodePendingInputs().
+  // Checks here to avoid redundant EncodePendingInputs() call.
+  for (const auto& surfaces : available_encode_surfaces_) {
+    if (surfaces.second.empty())
+      return;
+  }
+  for (const auto& surfaces : available_vpp_dest_surfaces_) {
+    if (surfaces.second.empty())
+      return;
+  }
+
   EncodePendingInputs();
 }
 
@@ -535,100 +536,24 @@ VaapiVideoEncodeAccelerator::GetAvailableVASurfaceAsRefCounted(
                                          std::move(release_cb));
 }
 
-scoped_refptr<VASurface>
-VaapiVideoEncodeAccelerator::BlitSurfaceWithCreateVppIfNeeded(
-    const VASurface& input_surface,
-    const gfx::Rect& input_visible_rect,
-    const gfx::Size& encode_size,
-    size_t num_va_surfaces) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-
-  if (!vpp_vaapi_wrapper_) {
-    vpp_vaapi_wrapper_ = VaapiWrapper::Create(
-        VaapiWrapper::kVideoProcess, VAProfileNone,
-        EncryptionScheme::kUnencrypted,
-        base::BindRepeating(
-            &ReportVaapiErrorToUMA,
-            "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"));
-    if (!vpp_vaapi_wrapper_) {
-      NOTIFY_ERROR(kPlatformFailureError,
-                   "Failed to initialize VppVaapiWrapper");
-      return nullptr;
-    }
-
-    // VA context for VPP is not associated with a specific resolution.
-    if (!vpp_vaapi_wrapper_->CreateContext(gfx::Size())) {
-      NOTIFY_ERROR(kPlatformFailureError, "Failed creating Context for VPP");
-      return nullptr;
-    }
-  }
-
-  if (!base::Contains(available_vpp_va_surfaces_, encode_size)) {
-    auto scoped_va_surfaces = vpp_vaapi_wrapper_->CreateScopedVASurfaces(
-        kVaSurfaceFormat, encode_size,
-        {VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
-         VaapiWrapper::SurfaceUsageHint::kVideoEncoder},
-        num_va_surfaces, /*visible_size=*/absl::nullopt,
-        /*va_fourcc=*/absl::nullopt);
-    if (scoped_va_surfaces.empty()) {
-      NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
-      return nullptr;
-    }
-
-    available_vpp_va_surfaces_[encode_size] = std::move(scoped_va_surfaces);
-  }
-
-  auto blit_surface = GetAvailableVASurfaceAsRefCounted(
-      &available_vpp_va_surfaces_[encode_size]);
-  if (!vpp_vaapi_wrapper_->BlitSurface(input_surface, *blit_surface,
-                                       input_visible_rect,
-                                       gfx::Rect(encode_size))) {
-    NOTIFY_ERROR(kPlatformFailureError,
-                 "Failed BlitSurface on frame size: "
-                     << input_surface.size().ToString()
-                     << " (visible rect: " << input_visible_rect.ToString()
-                     << ") -> encode size: " << encode_size.ToString());
-    return nullptr;
-  }
-
-  return blit_surface;
-}
-
 bool VaapiVideoEncodeAccelerator::CreateSurfacesForGpuMemoryBufferEncoding(
     const VideoFrame& frame,
-    const gfx::Size& encode_size,
-    scoped_refptr<VASurface>* input_surface,
-    scoped_refptr<VASurface>* reconstructed_surface) {
+    const std::vector<gfx::Size>& spatial_layer_resolutions,
+    std::vector<scoped_refptr<VASurface>>* input_surfaces,
+    std::vector<scoped_refptr<VASurface>>* reconstructed_surfaces) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(native_input_mode_);
-
   if (frame.storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     NOTIFY_ERROR(kPlatformFailureError,
                  "Unexpected storage: "
                      << VideoFrame::StorageTypeToString(frame.storage_type()));
     return false;
   }
-
   if (frame.format() != PIXEL_FORMAT_NV12) {
     NOTIFY_ERROR(
         kPlatformFailureError,
         "Expected NV12, got: " << VideoPixelFormatToString(frame.format()));
     return false;
-  }
-
-  const bool do_vpp = frame.visible_rect() != gfx::Rect(encode_size);
-  if (do_vpp) {
-    constexpr size_t kNumSurfaces = 2;  // For input and reconstructed surface.
-    if (base::Contains(available_vpp_va_surfaces_, encode_size) &&
-        available_vpp_va_surfaces_[encode_size].size() < kNumSurfaces) {
-      DVLOGF(4) << "Not enough surfaces available";
-      return false;
-    }
-  } else {
-    if (available_va_surfaces_.empty()) {  // For the reconstructed surface.
-      DVLOGF(4) << "Not surface available";
-      return false;
-    }
   }
 
   // Create VASurface from GpuMemory-based VideoFrame.
@@ -639,35 +564,49 @@ bool VaapiVideoEncodeAccelerator::CreateSurfacesForGpuMemoryBufferEncoding(
     return false;
   }
 
-  *input_surface = vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
-  if (!(*input_surface)) {
+  scoped_refptr<VASurface> source_surface =
+      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+  if (!source_surface) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed to create VASurface");
     return false;
   }
 
-  // Crop and Scale input surface to a surface whose size is |encode_size|.
-  // The size of a reconstructed surface is also |encode_size|.
-  if (do_vpp) {
-    // Create blit destination and reconstructed surfaces.
-    *input_surface = BlitSurfaceWithCreateVppIfNeeded(
-        *input_surface->get(), frame.visible_rect(), encode_size,
-        (num_frames_in_flight_ + 1) * 2);
-    if (!(*input_surface))
+  // Create input and reconstructed surfaces.
+  input_surfaces->reserve(spatial_layer_resolutions.size());
+  reconstructed_surfaces->reserve(spatial_layer_resolutions.size());
+  for (const gfx::Size& encode_size : spatial_layer_resolutions) {
+    const bool engage_vpp = frame.visible_rect() != gfx::Rect(encode_size);
+    // Crop and Scale input surface to a surface whose size is |encode_size|.
+    // The size of a reconstructed surface is also |encode_size|.
+    if (engage_vpp) {
+      auto blit_surface = ExecuteBlitSurface(*source_surface,
+                                             frame.visible_rect(), encode_size);
+      if (!blit_surface)
+        return false;
+
+      input_surfaces->push_back(std::move(blit_surface));
+    } else {
+      input_surfaces->emplace_back(source_surface);
+    }
+
+    if (!CreateSurfacesIfNeeded(*vaapi_wrapper_, available_encode_surfaces_,
+                                encode_size,
+                                {VaapiWrapper::SurfaceUsageHint::kVideoEncoder},
+                                num_frames_in_flight_ + 1)) {
       return false;
-    // A reconstructed surface is fine to be created by VPP VaapiWrapper and
-    // encoder VaapiWrapper. Use one created by VPP VaapiWrapper when VPP is
-    // executed.
-    *reconstructed_surface = GetAvailableVASurfaceAsRefCounted(
-        &available_vpp_va_surfaces_[encode_size]);
-  } else {
-    // TODO(crbug.com/1186051): Create VA Surface here for the first time, not
-    // in Initialize()
-    *reconstructed_surface =
-        GetAvailableVASurfaceAsRefCounted(&available_va_surfaces_);
+    }
+    if (available_encode_surfaces_[encode_size].empty()) {
+      DVLOGF(4) << "Not enough reconstructed surface available";
+      return false;
+    }
+    reconstructed_surfaces->emplace_back(GetAvailableVASurfaceAsRefCounted(
+        &available_encode_surfaces_[encode_size]));
+    DCHECK(!!reconstructed_surfaces->back());
   }
 
-  DCHECK(*input_surface);
-  return !!(*reconstructed_surface);
+  DCHECK(!base::Contains(*input_surfaces, nullptr));
+  DCHECK(!base::Contains(*reconstructed_surfaces, nullptr));
+  return true;
 }
 
 bool VaapiVideoEncodeAccelerator::CreateSurfacesForShmemEncoding(
@@ -689,7 +628,7 @@ bool VaapiVideoEncodeAccelerator::CreateSurfacesForShmemEncoding(
     return false;
   }
 
-  DCHECK_EQ(visible_rect_.origin(), gfx::Point(0, 0));
+  DCHECK(visible_rect_.origin().IsOrigin());
   if (visible_rect_ != frame.visible_rect()) {
     // In non-zero copy mode, the client is responsible for scaling and
     // cropping.
@@ -700,38 +639,135 @@ bool VaapiVideoEncodeAccelerator::CreateSurfacesForShmemEncoding(
     return false;
   }
 
-  constexpr size_t kNumSurfaces = 2;  // input and reconstructed surface.
-  if (available_va_surfaces_.size() < kNumSurfaces) {
+  const gfx::Size& encode_size = encoder_->GetCodedSize();
+  constexpr size_t kNumSurfaces = 2;  // For input and reconstructed surface.
+  if (!CreateSurfacesIfNeeded(*vaapi_wrapper_, available_encode_surfaces_,
+                              encode_size,
+                              {VaapiWrapper::SurfaceUsageHint::kVideoEncoder},
+                              (num_frames_in_flight_ + 1) * kNumSurfaces)) {
+    return false;
+  }
+
+  auto& surfaces = available_encode_surfaces_[encode_size];
+  if (surfaces.size() < kNumSurfaces) {
     DVLOGF(4) << "Not enough surfaces available";
     return false;
   }
 
-  *input_surface = GetAvailableVASurfaceAsRefCounted(&available_va_surfaces_);
-  *reconstructed_surface =
-      GetAvailableVASurfaceAsRefCounted(&available_va_surfaces_);
+  *input_surface = GetAvailableVASurfaceAsRefCounted(&surfaces);
+  *reconstructed_surface = GetAvailableVASurfaceAsRefCounted(&surfaces);
   return true;
 }
 
-std::unique_ptr<VaapiVideoEncoderDelegate::EncodeJob>
-VaapiVideoEncodeAccelerator::CreateEncodeJob(scoped_refptr<VideoFrame> frame,
-                                             bool force_keyframe,
-                                             const gfx::Size& encode_size) {
+bool VaapiVideoEncodeAccelerator::CreateSurfacesIfNeeded(
+    VaapiWrapper& vaapi_wrapper,
+    ScopedVASurfacesMap& scoped_surfaces_map,
+    const gfx::Size& encode_size,
+    const std::vector<VaapiWrapper::SurfaceUsageHint>& surface_usage_hints,
+    size_t num_surfaces) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK(frame);
+  if (base::Contains(scoped_surfaces_map, encode_size))
+    return true;
 
-  scoped_refptr<VASurface> input_surface;
-  scoped_refptr<VASurface> reconstructed_surface;
-  if (native_input_mode_) {
-    if (!CreateSurfacesForGpuMemoryBufferEncoding(
-            *frame, encode_size, &input_surface, &reconstructed_surface)) {
-      return nullptr;
-    }
-  } else {
-    if (!CreateSurfacesForShmemEncoding(*frame, &input_surface,
-                                        &reconstructed_surface)) {
+  // iHD driver doesn't align a resolution for encoding properly. Align it only
+  // with encoder driver.
+  // TODO(https://github.com/intel/media-driver/issues/1232): Remove this
+  // workaround of aligning |encode_size|.
+  gfx::Size surface_size = encode_size;
+  if (!base::Contains(surface_usage_hints,
+                      VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite)) {
+    surface_size = gfx::Size(base::bits::AlignUp(encode_size.width(), 16u),
+                             base::bits::AlignUp(encode_size.height(), 16u));
+  }
+
+  auto scoped_va_surfaces = vaapi_wrapper.CreateScopedVASurfaces(
+      kVaSurfaceFormat, surface_size, surface_usage_hints, num_surfaces,
+      /*visible_size=*/absl::nullopt,
+      /*va_fourcc=*/absl::nullopt);
+  if (scoped_va_surfaces.empty()) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed creating surfaces");
+    return false;
+  }
+
+  scoped_surfaces_map[encode_size] = std::move(scoped_va_surfaces);
+  return true;
+}
+
+scoped_refptr<VaapiWrapper>
+VaapiVideoEncodeAccelerator::CreateVppVaapiWrapper() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  DCHECK(!vpp_vaapi_wrapper_);
+  auto vpp_vaapi_wrapper = VaapiWrapper::Create(
+      VaapiWrapper::kVideoProcess, VAProfileNone,
+      EncryptionScheme::kUnencrypted,
+      base::BindRepeating(&ReportVaapiErrorToUMA,
+                          "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"));
+  if (!vpp_vaapi_wrapper) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed to initialize VppVaapiWrapper");
+    return nullptr;
+  }
+  // VA context for VPP is not associated with a specific resolution.
+  if (!vpp_vaapi_wrapper->CreateContext(gfx::Size())) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed creating Context for VPP");
+    return nullptr;
+  }
+
+  return vpp_vaapi_wrapper;
+}
+
+scoped_refptr<VASurface> VaapiVideoEncodeAccelerator::ExecuteBlitSurface(
+    const VASurface& source_surface,
+    const gfx::Rect source_visible_rect,
+    const gfx::Size& encode_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  if (!vpp_vaapi_wrapper_) {
+    vpp_vaapi_wrapper_ = CreateVppVaapiWrapper();
+    if (!vpp_vaapi_wrapper_) {
+      NOTIFY_ERROR(kPlatformFailureError, "Failed to create Vpp");
       return nullptr;
     }
   }
+
+  if (!CreateSurfacesIfNeeded(
+          *vpp_vaapi_wrapper_, available_vpp_dest_surfaces_, encode_size,
+          {VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
+           VaapiWrapper::SurfaceUsageHint::kVideoEncoder},
+          num_frames_in_flight_ + 1)) {
+    VLOGF(1) << "Failed to create or reuse " << (num_frames_in_flight_ + 1)
+             << " VASurfaces of size " << encode_size.ToString();
+    return nullptr;
+  }
+  if (available_vpp_dest_surfaces_[encode_size].empty()) {
+    DVLOGF(4) << "Not enough vpp destination surface available";
+    return nullptr;
+  }
+
+  auto blit_surface = GetAvailableVASurfaceAsRefCounted(
+      &available_vpp_dest_surfaces_[encode_size]);
+  DCHECK(blit_surface);
+  DCHECK(vpp_vaapi_wrapper_);
+  if (!vpp_vaapi_wrapper_->BlitSurface(source_surface, *blit_surface,
+                                       source_visible_rect,
+                                       gfx::Rect(encode_size))) {
+    NOTIFY_ERROR(kPlatformFailureError,
+                 "Failed BlitSurface on frame size: "
+                     << source_surface.size().ToString()
+                     << " (visible rect: " << source_visible_rect.ToString()
+                     << ") -> encode size: " << encode_size.ToString());
+    return nullptr;
+  }
+
+  return blit_surface;
+}
+
+std::unique_ptr<VaapiVideoEncoderDelegate::EncodeJob>
+VaapiVideoEncodeAccelerator::CreateEncodeJob(
+    scoped_refptr<VideoFrame> frame,
+    bool force_keyframe,
+    scoped_refptr<VASurface> input_surface,
+    scoped_refptr<VASurface> reconstructed_surface) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  DCHECK(frame);
   DCHECK(input_surface && reconstructed_surface);
 
   auto coded_buffer = vaapi_wrapper_->CreateVABuffer(VAEncCodedBufferType,
@@ -742,13 +778,13 @@ VaapiVideoEncodeAccelerator::CreateEncodeJob(scoped_refptr<VideoFrame> frame,
   }
   scoped_refptr<CodecPicture> picture;
   switch (output_codec_) {
-    case kCodecH264:
+    case VideoCodec::kH264:
       picture = new VaapiH264Picture(std::move(reconstructed_surface));
       break;
-    case kCodecVP8:
+    case VideoCodec::kVP8:
       picture = new VaapiVP8Picture(std::move(reconstructed_surface));
       break;
-    case kCodecVP9:
+    case VideoCodec::kVP9:
       picture = new VaapiVP9Picture(std::move(reconstructed_surface));
       break;
     default:
@@ -792,16 +828,37 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
       continue;
     }
 
+    const size_t num_spatial_layers = spatial_layer_resolutions.size();
+    std::vector<scoped_refptr<VASurface>> input_surfaces;
+    std::vector<scoped_refptr<VASurface>> reconstructed_surfaces;
+    if (native_input_mode_) {
+      if (!CreateSurfacesForGpuMemoryBufferEncoding(
+              *input_frame->frame, spatial_layer_resolutions, &input_surfaces,
+              &reconstructed_surfaces)) {
+        return;
+      }
+    } else {
+      DCHECK_EQ(num_spatial_layers, 1u);
+      input_surfaces.resize(1u);
+      reconstructed_surfaces.resize(1u);
+      if (!CreateSurfacesForShmemEncoding(*input_frame->frame,
+                                          &input_surfaces[0],
+                                          &reconstructed_surfaces[0])) {
+        return;
+      }
+    }
+
     // Encoding different spatial layers for |input_frame|.
     std::vector<std::unique_ptr<EncodeJob>> jobs;
-    for (size_t spatial_idx = 0; spatial_idx < spatial_layer_resolutions.size();
+    for (size_t spatial_idx = 0; spatial_idx < num_spatial_layers;
          ++spatial_idx) {
       std::unique_ptr<EncodeJob> job;
       TRACE_EVENT0("media,gpu", "VAVEA::FromCreateEncodeJobToReturn");
       const bool force_key =
           (spatial_idx == 0 ? input_frame->force_keyframe : false);
       job = CreateEncodeJob(input_frame->frame, force_key,
-                            spatial_layer_resolutions[spatial_idx]);
+                            std::move(input_surfaces[spatial_idx]),
+                            std::move(reconstructed_surfaces[spatial_idx]));
       if (!job)
         return;
 
@@ -940,7 +997,8 @@ void VaapiVideoEncodeAccelerator::Destroy() {
   child_weak_this_factory_.InvalidateWeakPtrs();
 
   // We're destroying; cancel all callbacks.
-  client_ptr_factory_.reset();
+  if (client_ptr_factory_)
+    client_ptr_factory_->InvalidateWeakPtrs();
 
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::DestroyTask,
@@ -964,13 +1022,13 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   if (vaapi_wrapper_)
     vaapi_wrapper_->DestroyContext();
 
-  available_va_surfaces_.clear();
+  available_encode_surfaces_.clear();
   available_va_buffer_ids_.clear();
 
   if (vpp_vaapi_wrapper_)
     vpp_vaapi_wrapper_->DestroyContext();
 
-  available_vpp_va_surfaces_.clear();
+  available_vpp_dest_surfaces_.clear();
 
   while (!available_bitstream_buffers_.empty())
     available_bitstream_buffers_.pop();
@@ -1013,7 +1071,7 @@ void VaapiVideoEncodeAccelerator::NotifyError(Error error) {
 
   if (client_) {
     client_->NotifyError(error);
-    client_ptr_factory_.reset();
+    client_ptr_factory_->InvalidateWeakPtrs();
   }
 }
 

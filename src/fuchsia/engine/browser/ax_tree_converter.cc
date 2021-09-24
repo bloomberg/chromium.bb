@@ -80,11 +80,13 @@ fuchsia::accessibility::semantics::Role AxRoleToFuchsiaSemanticRole(
       return fuchsia::accessibility::semantics::Role::TEXT_FIELD;
     case ax::mojom::Role::kStaticText:
       return fuchsia::accessibility::semantics::Role::STATIC_TEXT;
+    case ax::mojom::Role::kSearchBox:
+      return fuchsia::accessibility::semantics::Role::SEARCH_BOX;
+    case ax::mojom::Role::kTextFieldWithComboBox:
+      return fuchsia::accessibility::semantics::Role::TEXT_FIELD;
     default:
       return fuchsia::accessibility::semantics::Role::UNKNOWN;
   }
-
-  return fuchsia::accessibility::semantics::Role::UNKNOWN;
 }
 
 // This function handles conversions for all data that is part of a Semantic
@@ -241,9 +243,8 @@ fuchsia::accessibility::semantics::Node AXNodeDataToSemanticNode(
   if (device_scale_factor > 0) {
     transform.PostScale(1 / device_scale_factor, 1 / device_scale_factor);
   }
-  if (!transform.IsIdentity()) {
-    fuchsia_node.set_transform(ConvertTransform(&transform));
-  }
+
+  fuchsia_node.set_transform(ConvertTransform(&transform));
 
   return fuchsia_node;
 }

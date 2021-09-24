@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/script_type_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -128,11 +129,13 @@ bool MediaAttributeMatches(const MediaValuesCached& media_values,
 }
 
 void ParseWebBundleUrlsAndFillHash(const AtomicString& value,
-                                   HashSet<KURL>& url_hash) {
+                                   HashSet<KURL>& url_hash,
+                                   const KURL& base_url) {
   // Parse the attribute value as a space-separated list of urls
   SpaceSplitString urls(value);
   for (wtf_size_t i = 0; i < urls.size(); ++i) {
-    KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+    KURL url = LinkWebBundle::ParseResourceUrl(
+        urls[i], base::BindRepeating(&LinkWebBundle::CompleteURL, base_url));
     if (url.IsValid()) {
       url_hash.insert(std::move(url));
     }
@@ -246,6 +249,7 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   bool MaybeUpdateExclusionInfo(
+      const KURL& predicted_base_url,
       const KURL& document_url,
       scoped_refptr<const PreloadRequest::ExclusionInfo>& exclusion_info) {
     if (!IsLinkRelWebBundle())
@@ -256,8 +260,16 @@ class TokenPreloadScanner::StartTagScanner {
       scopes = exclusion_info->scopes();
       resources = exclusion_info->resources();
     }
-    ParseWebBundleUrlsAndFillHash(scopes_attribute_value_, scopes);
-    ParseWebBundleUrlsAndFillHash(resources_attribute_value_, resources);
+    KURL base_url;
+    if (!predicted_base_url.IsEmpty()) {
+      base_url = predicted_base_url;
+    } else {
+      base_url = document_url;
+    }
+    ParseWebBundleUrlsAndFillHash(scopes_attribute_value_, scopes, base_url);
+    ParseWebBundleUrlsAndFillHash(resources_attribute_value_, resources,
+                                  base_url);
+
     exclusion_info = base::MakeRefCounted<PreloadRequest::ExclusionInfo>(
         document_url, std::move(scopes), std::move(resources));
     return true;
@@ -327,7 +339,7 @@ class TokenPreloadScanner::StartTagScanner {
     if (!request)
       return nullptr;
 
-    bool is_module = (type_attribute_value_ == "module");
+    bool is_module = (type_attribute_value_ == script_type_names::kModule);
     bool is_script = Match(tag_impl_, html_names::kScriptTag);
     if ((is_script && is_module) || IsLinkRelModulePreload()) {
       is_module = true;
@@ -1085,7 +1097,8 @@ void TokenPreloadScanner::ScanCommon(
           &document_parameters_->disabled_image_types);
       scanner.ProcessAttributes(token.Attributes());
 
-      if (scanner.MaybeUpdateExclusionInfo(document_url_, exclusion_info_)) {
+      if (scanner.MaybeUpdateExclusionInfo(predicted_base_element_url_,
+                                           document_url_, exclusion_info_)) {
         // This means the tag is <link rel=webbundle>. We don't preload the
         // web bundle request.
         return;

@@ -42,9 +42,6 @@ class CORE_EXPORT StyleRecalcChange {
   enum Propagate {
     // No need to update style of any children.
     kNo,
-    // Need to traverse children in display:none or non-slotted/distributed
-    // children of shadow hosts to clear ensured computed styles.
-    kClearEnsured,
     // Need to update existence and style for pseudo elements.
     kUpdatePseudoElements,
     // Need to recalculate style for children for inheritance. All changed
@@ -61,6 +58,8 @@ class CORE_EXPORT StyleRecalcChange {
   StyleRecalcChange(const StyleRecalcChange&) = default;
   StyleRecalcChange& operator=(const StyleRecalcChange&) = default;
   explicit StyleRecalcChange(Propagate propagate) : propagate_(propagate) {}
+
+  bool IsEmpty() const { return !propagate_ && !flags_; }
 
   StyleRecalcChange ForChildren(const Element& element) const {
     return {RecalcDescendants() ? kRecalcDescendants : kNo,
@@ -92,6 +91,10 @@ class CORE_EXPORT StyleRecalcChange {
   StyleRecalcChange SuppressRecalc() const {
     return {propagate_, static_cast<Flags>(flags_ | kSuppressRecalc)};
   }
+  StyleRecalcChange WithRecalcContainerFlags(StyleRecalcChange& from) {
+    return {propagate_,
+            static_cast<Flags>(flags_ | (from.flags_ & kRecalcContainerFlags))};
+  }
 
   bool ReattachLayoutTree() const { return flags_ & kReattach; }
   bool RecalcChildren() const { return propagate_ > kUpdatePseudoElements; }
@@ -103,6 +106,7 @@ class CORE_EXPORT StyleRecalcChange {
   bool TraversePseudoElements(const Element&) const;
   bool ShouldRecalcStyleFor(const Node&) const;
   bool ShouldUpdatePseudoElement(const PseudoElement&) const;
+  bool IsSuppressed() const { return flags_ & kSuppressRecalc; }
 
  private:
   StyleRecalcChange(Propagate propagate, Flags flags)

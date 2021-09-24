@@ -18,6 +18,9 @@ std::ostream& operator<<(std::ostream& stream, PairFailure failure) {
     case PairFailure::kGattServiceDiscoveryTimeout:
       stream << "[Timed out while starting discovery of GATT service]";
       break;
+    case PairFailure::kDataEncryptorRetrieval:
+      stream << "[Failed to retrieve the data encryptor]";
+      break;
     case PairFailure::kKeyBasedPairingCharacteristicDiscovery:
       stream << "[Failed to find the Key-based pairing GATT characteristic]";
       break;
@@ -56,14 +59,23 @@ std::ostream& operator<<(std::ostream& stream, PairFailure failure) {
     case PairFailure::kPasskeyResponseTimeout:
       stream << "[Timed out while waiting for the Passkey response]";
       break;
+    case PairFailure::kKeybasedPairingResponseDecryptFailure:
+      stream << "[Failed to decrypt Key-based Pairing response]";
+      break;
     case PairFailure::kIncorrectKeyBasedPairingResponseType:
       stream << "[Incorrect Key-based response message type]";
+      break;
+    case PairFailure::kPasskeyDecryptFailure:
+      stream << "[Failed to decrypt Passkey response]";
       break;
     case PairFailure::kIncorrectPasskeyResponseType:
       stream << "[Incorrect Passkey response message type]";
       break;
     case PairFailure::kPasskeyMismatch:
       stream << "[Passkeys did not match]";
+      break;
+    case PairFailure::kPairingDeviceLost:
+      stream << "[Potential pairing device lost during Passkey exchange]";
       break;
     case PairFailure::kPairingConnect:
       stream << "[Failed to bond to discovered device]";

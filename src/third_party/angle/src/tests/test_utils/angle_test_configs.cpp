@@ -49,6 +49,16 @@ bool PlatformParameters::isSwiftshader() const
     return eglParameters.deviceType == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
 }
 
+bool PlatformParameters::isVulkan() const
+{
+    return eglParameters.renderer == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE;
+}
+
+bool PlatformParameters::isANGLE() const
+{
+    return driver == GLESDriverType::AngleEGL;
+}
+
 EGLint PlatformParameters::getAllocateNonZeroMemoryFeature() const
 {
     return eglParameters.allocateNonZeroMemoryFeature;
@@ -281,6 +291,11 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
     if (pp.eglParameters.directMetalGeneration == EGL_TRUE)
     {
         stream << "_DirectMetalGen";
+    }
+
+    if (pp.eglParameters.forceInitShaderVariables == EGL_TRUE)
+    {
+        stream << "_InitShaderVars";
     }
 
     return stream;

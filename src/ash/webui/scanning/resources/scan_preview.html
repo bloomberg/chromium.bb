@@ -137,7 +137,7 @@
     </action-toolbar>
     <template is="dom-repeat" items="[[objectUrls]]" as="url">
       <img class="preview-item scanned-image" src="[[url]]"
-          on-load="onScannedImagesLoaded_">
+          on-load="onScannedImageLoaded_">
     </template>
   </div>
 </div>
@@ -149,7 +149,7 @@
     [[dialogConfirmationText_]]
   </div>
   <div slot="button-container">
-    <cr-button class="cancel-button">
+    <cr-button id="cancelButton" class="cancel-button" on-click="closeDialog_">
       [[i18n('cancelButtonText')]]
     </cr-button>
     <cr-button id="actionButton" class="action-button">

@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/device_form_factor.h"
@@ -78,7 +77,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
                                      animated:YES];
 
   // Update edit button.
-  if (self.tableView.editing) {
+  if ([self shouldShowEditDoneButton] && self.tableView.editing) {
     self.navigationItem.rightBarButtonItem = [self createEditModeDoneButton];
   } else if (self.shouldShowEditButton) {
     self.navigationItem.rightBarButtonItem = [self createEditButton];
@@ -131,7 +130,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   [super viewDidLoad];
   self.styler.cellBackgroundColor =
       [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
-  self.styler.cellTitleColor = UIColor.cr_labelColor;
+  self.styler.cellTitleColor = [UIColor colorNamed:kTextPrimaryColor];
   self.tableView.estimatedSectionHeaderHeight = kEstimatedHeaderFooterHeight;
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
   self.tableView.estimatedSectionFooterHeight = kEstimatedHeaderFooterHeight;
@@ -231,7 +230,11 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   SettingsNavigationController* navigationController =
       base::mac::ObjCCast<SettingsNavigationController>(
           self.navigationController);
-  return [navigationController doneButton];
+  UIBarButtonItem* doneButton = [navigationController doneButton];
+  if (_shouldDisableDoneButtonOnEdit) {
+    doneButton.enabled = !self.tableView.editing;
+  }
+  return doneButton;
 }
 
 - (UIBarButtonItem*)createEditButton {
@@ -287,6 +290,10 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 
 - (BOOL)showCancelDuringEditing {
   return NO;
+}
+
+- (BOOL)shouldShowEditDoneButton {
+  return YES;
 }
 
 - (void)editButtonPressed {

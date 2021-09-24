@@ -16,6 +16,7 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
@@ -80,8 +81,11 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
       SharedAppListConfig::instance().max_assistant_search_result_list_items();
 
   for (size_t i = 0; i < result_count; ++i) {
-    search_result_views_.emplace_back(
-        new SearchResultView(this, view_delegate_));
+    search_result_views_.emplace_back(new SearchResultView(
+        this, view_delegate_,
+        features::IsAppListBubbleEnabled()
+            ? SearchResultView::SearchResultViewType::kDefault
+            : SearchResultView::SearchResultViewType::kClassic));
     search_result_views_.back()->set_index_in_container(i);
     results_container_->AddChildView(search_result_views_.back());
     AddObservedResultView(search_result_views_.back());
@@ -119,6 +123,7 @@ int SearchResultListView::DoUpdate() {
     SearchResultView* result_view = GetResultViewAt(i);
     if (i < display_results.size()) {
       result_view->SetResult(display_results[i]);
+      result_view->SizeToPreferredSize();
       result_view->SetVisible(true);
     } else {
       result_view->SetResult(nullptr);

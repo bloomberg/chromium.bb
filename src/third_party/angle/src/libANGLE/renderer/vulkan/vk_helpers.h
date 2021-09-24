@@ -12,6 +12,7 @@
 #include "common/MemoryBuffer.h"
 #include "libANGLE/renderer/vulkan/ResourceVk.h"
 #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
+#include "libANGLE/renderer/vulkan/vk_format_utils.h"
 
 namespace gl
 {
@@ -1410,9 +1411,9 @@ bool FormatHasNecessaryFeature(RendererVk *renderer,
                                VkFormatFeatureFlags featureBits);
 
 bool CanCopyWithTransfer(RendererVk *renderer,
-                         const Format &srcFormat,
+                         angle::FormatID srcFormatID,
                          VkImageTiling srcTilingMode,
-                         const Format &destFormat,
+                         angle::FormatID destFormatID,
                          VkImageTiling destTilingMode);
 
 class ImageHelper final : public Resource, public angle::Subject
@@ -1453,7 +1454,8 @@ class ImageHelper final : public Resource, public angle::Subject
     angle::Result initExternal(Context *context,
                                gl::TextureType textureType,
                                const VkExtent3D &extents,
-                               const Format &format,
+                               angle::FormatID intendedFormatID,
+                               angle::FormatID actualFormatID,
                                GLint samples,
                                VkImageUsageFlags usage,
                                VkImageCreateFlags additionalCreateFlags,
@@ -1489,7 +1491,7 @@ class ImageHelper final : public Resource, public angle::Subject
                                      gl::SrgbWriteControlMode mode) const;
     angle::Result initLayerImageViewWithFormat(Context *context,
                                                gl::TextureType textureType,
-                                               const Format &format,
+                                               VkFormat imageFormat,
                                                VkImageAspectFlags aspectMask,
                                                const gl::SwizzleState &swizzleMap,
                                                ImageView *imageViewOut,
@@ -1524,7 +1526,8 @@ class ImageHelper final : public Resource, public angle::Subject
                                 bool hasProtectedContent,
                                 const MemoryProperties &memoryProperties,
                                 const gl::Extents &glExtents,
-                                const Format &format,
+                                angle::FormatID intendedFormatID,
+                                angle::FormatID actualFormatID,
                                 VkImageUsageFlags usage,
                                 uint32_t layerCount);
     // Create an image for staging purposes.  Used by:
@@ -1536,7 +1539,8 @@ class ImageHelper final : public Resource, public angle::Subject
                               const MemoryProperties &memoryProperties,
                               VkImageType imageType,
                               const VkExtent3D &extents,
-                              const Format &format,
+                              angle::FormatID intendedFormatID,
+                              angle::FormatID actualFormatID,
                               GLint samples,
                               VkImageUsageFlags usage,
                               uint32_t mipLevels,
@@ -1586,7 +1590,13 @@ class ImageHelper final : public Resource, public angle::Subject
     const VkExtent3D getRotatedExtents() const;
     uint32_t getLayerCount() const { return mLayerCount; }
     uint32_t getLevelCount() const { return mLevelCount; }
-    const Format &getFormat() const { return *mFormat; }
+    angle::FormatID getIntendedFormatID() const { return mIntendedFormatID; }
+    const angle::Format &getIntendedFormat() const { return angle::Format::Get(mIntendedFormatID); }
+    angle::FormatID getActualFormatID() const { return mActualFormatID; }
+    VkFormat getActualVkFormat() const { return GetVkFormatFromFormatID(mActualFormatID); }
+    const angle::Format &getActualFormat() const { return angle::Format::Get(mActualFormatID); }
+    bool hasEmulatedImageChannels() const;
+    bool hasEmulatedImageFormat() const { return mActualFormatID != mIntendedFormatID; }
     GLint getSamples() const { return mSamples; }
 
     ImageSerial getImageSerial() const
@@ -1673,6 +1683,7 @@ class ImageHelper final : public Resource, public angle::Subject
                                              GLenum type,
                                              const uint8_t *pixels,
                                              const Format &vkFormat,
+                                             ImageAccess access,
                                              const GLuint inputRowPitch,
                                              const GLuint inputDepthPitch,
                                              const GLuint inputSkipBytes);
@@ -1686,7 +1697,8 @@ class ImageHelper final : public Resource, public angle::Subject
                                          DynamicBuffer *stagingBufferOverride,
                                          GLenum type,
                                          const uint8_t *pixels,
-                                         const Format &vkFormat);
+                                         const Format &vkFormat,
+                                         ImageAccess access);
 
     angle::Result stageSubresourceUpdateAndGetData(ContextVk *contextVk,
                                                    size_t allocationSize,
@@ -1694,7 +1706,8 @@ class ImageHelper final : public Resource, public angle::Subject
                                                    const gl::Extents &glExtents,
                                                    const gl::Offset &offset,
                                                    uint8_t **destData,
-                                                   DynamicBuffer *stagingBufferOverride);
+                                                   DynamicBuffer *stagingBufferOverride,
+                                                   angle::FormatID formatID);
 
     angle::Result stageSubresourceUpdateFromFramebuffer(const gl::Context *context,
                                                         const gl::ImageIndex &index,
@@ -1702,6 +1715,7 @@ class ImageHelper final : public Resource, public angle::Subject
                                                         const gl::Offset &dstOffset,
                                                         const gl::Extents &dstExtent,
                                                         const gl::InternalFormat &formatInfo,
+                                                        ImageAccess access,
                                                         FramebufferVk *framebufferVk,
                                                         DynamicBuffer *stagingBufferOverride);
 
@@ -1726,7 +1740,8 @@ class ImageHelper final : public Resource, public angle::Subject
     angle::Result stageRobustResourceClearWithFormat(ContextVk *contextVk,
                                                      const gl::ImageIndex &index,
                                                      const gl::Extents &glExtents,
-                                                     const Format &format);
+                                                     const angle::Format &intendedFormat,
+                                                     const angle::Format &actualFormat);
     void stageRobustResourceClear(const gl::ImageIndex &index);
 
     // Stage the currently allocated image as updates to base level and on, making this !valid().
@@ -1856,6 +1871,7 @@ class ImageHelper final : public Resource, public angle::Subject
                                         gl::Buffer *packBuffer,
                                         gl::LevelIndex levelGL,
                                         uint32_t layer,
+                                        uint32_t layerCount,
                                         GLenum format,
                                         GLenum type,
                                         void *pixels);
@@ -1909,6 +1925,9 @@ class ImageHelper final : public Resource, public angle::Subject
     void restoreSubresourceStencilContent(gl::LevelIndex level,
                                           uint32_t layerIndex,
                                           uint32_t layerCount);
+    bool hasStagedUpdatesWithMismatchedFormat(gl::LevelIndex levelStart,
+                                              gl::LevelIndex levelEnd,
+                                              angle::FormatID formatID) const;
 
   private:
     enum class UpdateSource
@@ -1935,18 +1954,24 @@ class ImageHelper final : public Resource, public angle::Subject
     {
         BufferHelper *bufferHelper;
         VkBufferImageCopy copyRegion;
+        angle::FormatID formatID;
     };
     struct ImageUpdate
     {
         VkImageCopy copyRegion;
+        angle::FormatID formatID;
     };
 
     struct SubresourceUpdate : angle::NonCopyable
     {
         SubresourceUpdate();
         ~SubresourceUpdate();
-        SubresourceUpdate(BufferHelper *bufferHelperIn, const VkBufferImageCopy &copyRegion);
-        SubresourceUpdate(RefCounted<ImageHelper> *imageIn, const VkImageCopy &copyRegion);
+        SubresourceUpdate(BufferHelper *bufferHelperIn,
+                          const VkBufferImageCopy &copyRegion,
+                          angle::FormatID formatID);
+        SubresourceUpdate(RefCounted<ImageHelper> *imageIn,
+                          const VkImageCopy &copyRegion,
+                          angle::FormatID formatID);
         SubresourceUpdate(VkImageAspectFlags aspectFlags,
                           const VkClearValue &clearValue,
                           const gl::ImageIndex &imageIndex);
@@ -2067,6 +2092,8 @@ class ImageHelper final : public Resource, public angle::Subject
         VkFormat imageFormat,
         const VkImageViewUsageCreateInfo *imageViewUsageCreateInfo) const;
 
+    bool canCopyWithTransformForReadPixels(const PackPixelsParams &packPixelsParams,
+                                           const angle::Format *readFormat);
     // Vulkan objects.
     Image mImage;
     DeviceMemory mDeviceMemory;
@@ -2083,7 +2110,8 @@ class ImageHelper final : public Resource, public angle::Subject
     // different between the rotated and non-rotated extents.
     VkExtent3D mExtents;
     bool mRotatedAspectRatio;
-    const Format *mFormat;
+    angle::FormatID mIntendedFormatID;
+    angle::FormatID mActualFormatID;
     GLint mSamples;
     ImageSerial mImageSerial;
 
@@ -2250,7 +2278,7 @@ class ImageViewHelper final : public Resource
     angle::Result initReadViews(ContextVk *contextVk,
                                 gl::TextureType viewType,
                                 const ImageHelper &image,
-                                const Format &format,
+                                const angle::Format &format,
                                 const gl::SwizzleState &formatSwizzle,
                                 const gl::SwizzleState &readSwizzle,
                                 LevelIndex baseLevel,
@@ -2348,7 +2376,7 @@ class ImageViewHelper final : public Resource
     angle::Result initReadViewsImpl(ContextVk *contextVk,
                                     gl::TextureType viewType,
                                     const ImageHelper &image,
-                                    const Format &format,
+                                    const angle::Format &format,
                                     const gl::SwizzleState &formatSwizzle,
                                     const gl::SwizzleState &readSwizzle,
                                     LevelIndex baseLevel,
@@ -2360,7 +2388,7 @@ class ImageViewHelper final : public Resource
     angle::Result initSRGBReadViewsImpl(ContextVk *contextVk,
                                         gl::TextureType viewType,
                                         const ImageHelper &image,
-                                        const Format &format,
+                                        const angle::Format &format,
                                         const gl::SwizzleState &formatSwizzle,
                                         const gl::SwizzleState &readSwizzle,
                                         LevelIndex baseLevel,

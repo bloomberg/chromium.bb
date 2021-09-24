@@ -442,7 +442,17 @@ static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
       allowed_rules == CSSParserImpl::kNoRules)
     return allowed_rules;
   DCHECK_LE(allowed_rules, CSSParserImpl::kRegularRules);
-  if (rule->IsCharsetRule() || rule->IsImportRule())
+  if (rule->IsCharsetRule()) {
+    if (RuntimeEnabledFeatures::CSSCascadeLayersEnabled())
+      return CSSParserImpl::kAllowLayerStatementRules;
+    return CSSParserImpl::kAllowImportRules;
+  }
+  if (rule->IsLayerStatementRule()) {
+    if (allowed_rules <= CSSParserImpl::kAllowLayerStatementRules)
+      return CSSParserImpl::kAllowLayerStatementRules;
+    return CSSParserImpl::kRegularRules;
+  }
+  if (rule->IsImportRule())
     return CSSParserImpl::kAllowImportRules;
   if (rule->IsNamespaceRule())
     return CSSParserImpl::kAllowNamespaceRules;
@@ -704,12 +714,12 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
   if (uri.IsNull())
     return nullptr;  // Parse error, expected string or URI
 
-  absl::optional<StyleRuleBase::LayerName> layer;
+  StyleRuleBase::LayerName layer;
   if (RuntimeEnabledFeatures::CSSCascadeLayersEnabled()) {
     if (prelude.Peek().GetType() == kIdentToken &&
         prelude.Peek().Id() == CSSValueID::kLayer) {
       prelude.ConsumeIncludingWhitespace();
-      layer = StyleRuleBase::LayerName();
+      layer = StyleRuleBase::LayerName({g_empty_atom});
     } else if (prelude.Peek().GetType() == kFunctionToken &&
                prelude.Peek().FunctionId() == CSSValueID::kLayer) {
       CSSParserTokenRange original_prelude = prelude;
@@ -723,6 +733,9 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
         layer = std::move(name);
       }
     }
+
+    if (layer.size())
+      context_->Count(WebFeature::kCSSCascadeLayers);
   }
 
   if (observer_) {
@@ -1119,7 +1132,9 @@ StyleRuleBase* CSSParserImpl::ConsumeLayerRule(CSSParserTokenStream& stream) {
 
   StyleRuleBase::LayerName name;
   prelude.ConsumeWhitespace();
-  if (!prelude.AtEnd()) {
+  if (prelude.AtEnd()) {
+    name.push_back(g_empty_atom);
+  } else {
     name = ConsumeCascadeLayerName(prelude);
     if (!name.size() || !prelude.AtEnd())
       return nullptr;

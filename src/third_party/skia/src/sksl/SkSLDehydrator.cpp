@@ -97,9 +97,6 @@ void Dehydrator::write(Layout l) {
         this->writeS8(l.fSet);
         this->writeS16(l.fBuiltin);
         this->writeS8(l.fInputAttachmentIndex);
-        this->writeS8(l.fPrimitive);
-        this->writeS8(l.fMaxVertices);
-        this->writeS8(l.fInvocations);
     }
 }
 
@@ -277,6 +274,11 @@ void Dehydrator::write(const Expression* e) {
                 this->writeU8(b.value());
                 break;
             }
+
+            case Expression::Kind::kChildCall:
+                SkDEBUGFAIL("unimplemented--not expected to be used from within an include file");
+                break;
+
             case Expression::Kind::kCodeString:
                 SkDEBUGFAIL("shouldn't be able to receive kCodeString here");
                 break;
@@ -428,6 +430,7 @@ void Dehydrator::write(const Expression* e) {
                 break;
             }
             case Expression::Kind::kFunctionReference:
+            case Expression::Kind::kMethodReference:
             case Expression::Kind::kPoison:
             case Expression::Kind::kTypeReference:
                 SkDEBUGFAIL("this expression shouldn't appear in finished code");
@@ -550,14 +553,6 @@ void Dehydrator::write(const ProgramElement& e) {
             this->writeCommand(Rehydrator::kFunctionDefinition_Command);
             this->writeU16(this->symbolId(&f.declaration()));
             this->write(f.body().get());
-            this->writeU8(f.referencedIntrinsics().size());
-            std::set<uint16_t> ordered;
-            for (const FunctionDeclaration* ref : f.referencedIntrinsics()) {
-                ordered.insert(this->symbolId(ref));
-            }
-            for (uint16_t ref : ordered) {
-                this->writeU16(ref);
-            }
             break;
         }
         case ProgramElement::Kind::kFunctionPrototype: {

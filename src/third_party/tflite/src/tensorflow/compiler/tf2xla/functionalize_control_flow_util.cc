@@ -30,7 +30,7 @@ bool NodeCmpByNameResourcesLast::operator()(const Node* lhs,
          std::tie(rhs_is_resource, rhs->name());
 }
 
-xla::StatusOr<Node*> AddNodeDefToGraph(const NodeDef& node_def, Graph* graph) {
+StatusOr<Node*> AddNodeDefToGraph(const NodeDef& node_def, Graph* graph) {
   Status status;
   Node* inserted_node = graph->AddNode(node_def, &status);
   if (!status.ok()) {
@@ -39,7 +39,7 @@ xla::StatusOr<Node*> AddNodeDefToGraph(const NodeDef& node_def, Graph* graph) {
   return inserted_node;
 }
 
-xla::StatusOr<Node*> BuildRetvalNode(Graph* graph, DataType type, int index) {
+StatusOr<Node*> BuildRetvalNode(Graph* graph, DataType type, int index) {
   const char* const kRetValOp = "_Retval";
   NodeDef ret_def;
   ret_def.set_op(kRetValOp);
@@ -51,7 +51,8 @@ xla::StatusOr<Node*> BuildRetvalNode(Graph* graph, DataType type, int index) {
 
 Status ExtractWhileLoopFrames(
     const std::vector<ControlFlowInfo>& cf_info, const Graph* graph,
-    std::unordered_map<string, WhileLoopFrame>* frames) {
+    std::unordered_map<string, WhileLoopFrame>* frames,
+    const NodeFilter& node_filter) {
   for (Node* node : graph->op_nodes()) {
     const ControlFlowInfo& cf = cf_info[node->id()];
 
@@ -81,6 +82,9 @@ Status ExtractWhileLoopFrames(
       frame.loop_cond = node;
     }
     frame.nodes.insert(node);
+    if (node->IsControlFlow() && node_filter && !node_filter(node)) {
+      frame.should_be_functionalized = false;
+    }
   }
 
   return Status::OK();

@@ -627,10 +627,14 @@ unsigned MultiColumnFragmentainerGroup::UnclampedActualColumnCount() const {
   return count;
 }
 
+void MultiColumnFragmentainerGroup::Trace(Visitor* visitor) const {
+  visitor->Trace(column_set_);
+}
+
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(
     LayoutMultiColumnSet& column_set)
-    : column_set_(column_set) {
-  Append(MultiColumnFragmentainerGroup(column_set_));
+    : column_set_(&column_set) {
+  Append(MultiColumnFragmentainerGroup(*column_set_));
 }
 
 // An explicit empty destructor of MultiColumnFragmentainerGroupList should be
@@ -645,12 +649,17 @@ MultiColumnFragmentainerGroupList::~MultiColumnFragmentainerGroupList() =
 
 MultiColumnFragmentainerGroup&
 MultiColumnFragmentainerGroupList::AddExtraGroup() {
-  Append(MultiColumnFragmentainerGroup(column_set_));
+  Append(MultiColumnFragmentainerGroup(*column_set_));
   return Last();
 }
 
 void MultiColumnFragmentainerGroupList::DeleteExtraGroups() {
   Shrink(1);
+}
+
+void MultiColumnFragmentainerGroupList::Trace(Visitor* visitor) const {
+  visitor->Trace(column_set_);
+  visitor->Trace(groups_);
 }
 
 }  // namespace blink

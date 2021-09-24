@@ -13,6 +13,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/buckets/constants.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
 #include "content/browser/native_io/native_io_manager.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -21,6 +24,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/quota_manager_proxy_sync.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/native_io/native_io.mojom.h"
@@ -346,6 +350,33 @@ class NativeIOManagerTest : public testing::TestWithParam<bool> {
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 };
 
+TEST_P(NativeIOManagerTest, DefaultBucketCreatedOnBindReceiver) {
+  EXPECT_THAT(google_host_->GetAllFileNames(), testing::SizeIs(0));
+  storage::QuotaManagerProxySync quota_manager_proxy_sync(
+      quota_manager_proxy());
+
+  // Check default bucket exists for https://example.com.
+  storage::QuotaErrorOr<storage::BucketInfo> result =
+      quota_manager_proxy_sync.GetBucket(
+          StorageKey::CreateFromStringForTesting(kExampleStorageKey),
+          storage::kDefaultBucketName, blink::mojom::StorageType::kTemporary);
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(result->name, storage::kDefaultBucketName);
+  EXPECT_EQ(result->storage_key,
+            StorageKey::CreateFromStringForTesting(kExampleStorageKey));
+  EXPECT_GT(result->id.value(), 0);
+
+  // Check default bucket exists for https://google.com.
+  result = quota_manager_proxy_sync.GetBucket(
+      StorageKey::CreateFromStringForTesting(kGoogleStorageKey),
+      storage::kDefaultBucketName, blink::mojom::StorageType::kTemporary);
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(result->name, storage::kDefaultBucketName);
+  EXPECT_EQ(result->storage_key,
+            StorageKey::CreateFromStringForTesting(kGoogleStorageKey));
+  EXPECT_GT(result->id.value(), 0);
+}
+
 TEST_P(NativeIOManagerTest, OpenFile_Names) {
   for (const Filename& filename : filenames_) {
     mojo::test::BadMessageObserver bad_message_observer;
@@ -526,7 +557,14 @@ TEST_P(NativeIOManagerTest, DeleteFile_ReportsLengths) {
   EXPECT_EQ(delete_result.second, static_cast<uint64_t>(kTestData.size()));
 }
 
-TEST_P(NativeIOManagerTest, GetAllFiles_Empty) {
+#if defined(ADDRESS_SANITIZER)
+// Test is flaky under ASAN: https://crbug.com/1243689
+#define MAYBE_GetAllFiles_Empty DISABLED_GetAllFiles_Empty
+#else
+#define MAYBE_GetAllFiles_Empty GetAllFiles_Empty
+#endif
+
+TEST_P(NativeIOManagerTest, MAYBE_GetAllFiles_Empty) {
   std::vector<std::string> file_names = example_host_->GetAllFileNames();
   EXPECT_EQ(0u, file_names.size());
 }

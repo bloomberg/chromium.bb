@@ -424,13 +424,24 @@ class ParseExampleTest(test.TestCase):
         }))
     ]
 
-    expected_outputs = [{
-        aname: np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
-        bname: np.array(["b0_str"], dtype=bytes).reshape(1, 1, 1, 1)
-    }, {
-        aname: np.array([-1, -1], dtype=np.float32).reshape(1, 2, 1),
-        bname: np.array([""], dtype=bytes).reshape(1, 1, 1, 1)
-    }]
+    # pylint: disable=too-many-function-args
+    expected_outputs = [
+        {
+            aname:
+                np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
+            bname:
+                np.array(["b0_str"], dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        },
+        {
+            aname:
+                np.array([-1, -1], dtype=np.float32).reshape(1, 2, 1),
+            bname:
+                np.array([""], dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        }
+    ]
+    # pylint: enable=too-many-function-args
 
     for proto, expected_output in zip(original, expected_outputs):
       # No defaults, values required
@@ -468,13 +479,24 @@ class ParseExampleTest(test.TestCase):
             })),),
     ]
 
-    expected_outputs = [{
-        aname: np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
-        bname: np.array(["b0_str"], dtype=bytes).reshape(1, 1, 1, 1)
-    }, {
-        aname: np.array([-1, -1], dtype=np.float32).reshape(1, 2, 1),
-        bname: np.array(["b1"], dtype=bytes).reshape(1, 1, 1, 1)
-    }]
+    # pylint: disable=too-many-function-args
+    expected_outputs = [
+        {
+            aname:
+                np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
+            bname:
+                np.array(["b0_str"], dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        },
+        {
+            aname:
+                np.array([-1, -1], dtype=np.float32).reshape(1, 2, 1),
+            bname:
+                np.array(["b1"], dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        }
+    ]
+    # pylint: enable=too-many-function-args
 
     for (m, n), expected_output in zip(original, expected_outputs):
       # No defaults, values required
@@ -527,16 +549,31 @@ class ParseExampleTest(test.TestCase):
         })),
     ]
 
-    expected_outputs = [{
-        "a": np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
-        "b": np.array("tmp_str", dtype=bytes).reshape(1, 1, 1, 1)
-    }, {
-        "a": np.array([3, -3], dtype=np.float32).reshape(1, 2, 1),
-        "b": np.array("b1", dtype=bytes).reshape(1, 1, 1, 1)
-    }, {
-        "a": np.array([3, -3], dtype=np.float32).reshape(1, 2, 1),
-        "b": np.array("tmp_str", dtype=bytes).reshape(1, 1, 1, 1)
-    }]
+    # pylint: disable=too-many-function-args
+    expected_outputs = [
+        {
+            "a":
+                np.array([1, 1], dtype=np.float32).reshape(1, 2, 1),
+            "b":
+                np.array("tmp_str", dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        },
+        {
+            "a":
+                np.array([3, -3], dtype=np.float32).reshape(1, 2, 1),
+            "b":
+                np.array("b1", dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        },
+        {
+            "a":
+                np.array([3, -3], dtype=np.float32).reshape(1, 2, 1),
+            "b":
+                np.array("tmp_str", dtype=bytes).reshape(
+                    1, 1, 1, 1)
+        }
+    ]
+    # pylint: enable=too-many-function-args
 
     for proto, expected_output in zip(original, expected_outputs):
       self._test({
@@ -687,6 +724,7 @@ class ParseExampleTest(test.TestCase):
         })),
     ]
 
+    # pylint: disable=too-many-function-args
     expected_outputs = [
         {
             aname: np.empty(shape=(0, 2, 1), dtype=np.int64),
@@ -717,6 +755,7 @@ class ParseExampleTest(test.TestCase):
             dname: np.empty(shape=(0,), dtype=bytes)
         },
     ]
+    # pylint: enable=too-many-function-args
 
     for proto, expected_output in zip(original, expected_outputs):
       self._test({
@@ -856,6 +895,7 @@ class ParseSingleExampleTest(test.TestCase):
                                                  expected_err[1]):
           out = parsing_ops.parse_single_example(**kwargs)
           sess.run(flatten_values_tensors_or_sparse(out.values()))
+        return
       else:
         # Returns dict w/ Tensors and SparseTensors.
         out = parsing_ops.parse_single_example(**kwargs)
@@ -938,6 +978,20 @@ class ParseSingleExampleTest(test.TestCase):
             }
         },
         expected_output)
+
+  def testExampleLongerThanSpec(self):
+    serialized = example(
+        features=features({
+            "a": bytes_feature([b"a", b"b"]),
+        })).SerializeToString()
+    self._test(
+        {
+            "serialized": ops.convert_to_tensor(serialized),
+            "features": {
+                "a": parsing_ops.FixedLenFeature(1, dtypes.string)
+            }
+        },
+        expected_err=(errors_impl.OpError, "Can't parse serialized Example"))
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -15,11 +16,13 @@
 #include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -58,7 +61,7 @@ std::string GetPolicyValueFromAppId(const std::string& app_id,
   // Handle Web App ids
   //
   // WebAppProvider is absent in some cases e.g. Arc++ Kiosk Mode.
-  if (auto* provider = web_app::WebAppProvider::Get(profile)) {
+  if (auto* provider = web_app::WebAppProvider::GetDeprecated(profile)) {
     std::map<web_app::AppId, GURL> installed_apps =
         provider->registrar().GetExternallyInstalledApps(
             web_app::ExternalInstallSource::kExternalPolicy);
@@ -145,4 +148,27 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser,
   }
 
   return true;
+}
+
+void PinAppWithIDToShelf(const std::string& app_id) {
+  auto* shelf_controller = ChromeShelfController::instance();
+  auto* shelf_model = shelf_controller->shelf_model();
+  if (shelf_model->ItemIndexByAppID(app_id) >= 0) {
+    shelf_model->PinExistingItemWithID(app_id);
+    return;
+  }
+
+  ash::ShelfItem item;
+  std::unique_ptr<ash::ShelfItemDelegate> delegate;
+  bool result = shelf_controller->shelf_item_factory()->CreateShelfItemForAppId(
+      app_id, &item, &delegate);
+  if (result) {
+    item.type = ash::TYPE_PINNED_APP;
+    shelf_model->Add(item, std::move(delegate));
+  }
+}
+
+void UnpinAppWithIDFromShelf(const std::string& app_id) {
+  auto* shelf_controller = ChromeShelfController::instance();
+  shelf_controller->shelf_model()->UnpinAppWithID(app_id);
 }

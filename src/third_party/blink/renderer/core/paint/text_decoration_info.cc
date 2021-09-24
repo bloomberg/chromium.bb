@@ -21,34 +21,24 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   // scripts where it would not be appropriate (e.g., ideographs.)
   // However, this has performance implications. For now, we only work with
   // vertical text.
-  switch (baseline_type) {
-    case kAlphabeticBaseline:
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
-        return ResolvedUnderlinePosition::kUnder;
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
-        return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
-      return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
-    case kCentralBaseline: {
-      // Compute language-appropriate default underline position.
-      // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
-      UScriptCode script = style.GetFontDescription().GetScript();
-      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL) {
-        if (style.TextUnderlinePosition() & kTextUnderlinePositionLeft) {
-          return ResolvedUnderlinePosition::kUnder;
-        }
-        return ResolvedUnderlinePosition::kOver;
-      }
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionRight) {
-        return ResolvedUnderlinePosition::kOver;
-      }
+  if (baseline_type != kCentralBaseline) {
+    if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
       return ResolvedUnderlinePosition::kUnder;
-    }
-    default:
-      NOTREACHED();
-      break;
+    if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
+      return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
+    return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
   }
-  NOTREACHED();
-  return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
+  // Compute language-appropriate default underline position.
+  // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
+  UScriptCode script = style.GetFontDescription().GetScript();
+  if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL) {
+    if (style.TextUnderlinePosition() & kTextUnderlinePositionLeft)
+      return ResolvedUnderlinePosition::kUnder;
+    return ResolvedUnderlinePosition::kOver;
+  }
+  if (style.TextUnderlinePosition() & kTextUnderlinePositionRight)
+    return ResolvedUnderlinePosition::kOver;
+  return ResolvedUnderlinePosition::kUnder;
 }
 
 static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
@@ -63,10 +53,9 @@ static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
 
 static float ComputeDecorationThickness(
     const TextDecorationThickness text_decoration_thickness,
-    const ComputedStyle& style,
+    float computed_font_size,
     const SimpleFontData* font_data) {
-  float auto_underline_thickness =
-      std::max(1.f, style.ComputedFontSize() / 10.f);
+  float auto_underline_thickness = std::max(1.f, computed_font_size / 10.f);
 
   if (text_decoration_thickness.IsAuto())
     return auto_underline_thickness;
@@ -79,13 +68,13 @@ static float ComputeDecorationThickness(
     return auto_underline_thickness;
 
   if (text_decoration_thickness.IsFromFont()) {
-    absl::optional<float> underline_thickness_font_metric =
-        font_data->GetFontMetrics().UnderlineThickness().value();
+    absl::optional<float> font_underline_thickness =
+        font_data->GetFontMetrics().UnderlineThickness();
 
-    if (!underline_thickness_font_metric)
+    if (!font_underline_thickness)
       return auto_underline_thickness;
 
-    return std::max(1.f, underline_thickness_font_metric.value());
+    return std::max(1.f, font_underline_thickness.value());
   }
 
   DCHECK(!text_decoration_thickness.IsFromFont());
@@ -162,14 +151,16 @@ TextDecorationInfo::TextDecorationInfo(
     LayoutUnit width,
     FontBaseline baseline_type,
     const ComputedStyle& style,
+    const Font& scaled_font,
     const absl::optional<AppliedTextDecoration> selection_text_decoration,
     const ComputedStyle* decorating_box_style)
     : style_(style),
       selection_text_decoration_(selection_text_decoration),
       baseline_type_(baseline_type),
       width_(width),
-      font_data_(style_.GetFont().PrimaryFont()),
+      font_data_(scaled_font.PrimaryFont()),
       baseline_(font_data_ ? font_data_->GetFontMetrics().FloatAscent() : 0),
+      computed_font_size_(scaled_font.GetFontDescription().ComputedSize()),
       underline_position_(ResolveUnderlinePosition(style_, baseline_type_)),
       local_origin_(FloatPoint(local_origin)),
       antialias_(ShouldSetDecorationAntialias(style)),
@@ -239,8 +230,8 @@ float TextDecorationInfo::ComputeUnderlineThickness(
        ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto) ||
       underline_position_ ==
           ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont) {
-    thickness = ComputeDecorationThickness(applied_decoration_thickness, style_,
-                                           style_.GetFont().PrimaryFont());
+    thickness = ComputeDecorationThickness(applied_decoration_thickness,
+                                           computed_font_size_, font_data_);
   } else {
     // Compute decorating box. Position and thickness are computed from the
     // decorating box.
@@ -248,11 +239,12 @@ float TextDecorationInfo::ComputeUnderlineThickness(
     // https:// drafts.csswg.org/css-text-decor-3/#decorating-box
     if (decorating_box_style) {
       thickness = ComputeDecorationThickness(
-          applied_decoration_thickness, *decorating_box_style,
+          applied_decoration_thickness,
+          decorating_box_style->ComputedFontSize(),
           decorating_box_style->GetFont().PrimaryFont());
     } else {
-      thickness = ComputeDecorationThickness(
-          applied_decoration_thickness, style_, style_.GetFont().PrimaryFont());
+      thickness = ComputeDecorationThickness(applied_decoration_thickness,
+                                             computed_font_size_, font_data_);
     }
   }
   return thickness;

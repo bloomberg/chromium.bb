@@ -90,7 +90,7 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
 
 bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
     const GURL& url,
-    const GURL& site_for_cookies) const {
+    const net::SiteForCookies& site_for_cookies) const {
   return base::Contains(secure_origin_cookies_allowed_schemes_,
                         site_for_cookies.scheme()) &&
          url.SchemeIsCryptographic();
@@ -99,7 +99,7 @@ bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
 bool CookieSettings::IsCookieAccessible(
     const net::CanonicalCookie& cookie,
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin) const {
   return IsHypotheticalCookieAllowed(
       GetCookieSettingWithMetadata(
@@ -123,7 +123,7 @@ bool CookieSettings::ShouldAlwaysAllowCookies(
 
 bool CookieSettings::IsPrivacyModeEnabled(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     SamePartyCookieContextType same_party_cookie_context_type) const {
   // Privacy mode should be enabled iff no cookies should ever be sent on this
@@ -162,23 +162,25 @@ CookieSettings::GetCookieSettingWithMetadata(
       block_third_party_cookies_ && is_third_party_request &&
       !base::Contains(third_party_cookies_allowed_schemes_,
                       first_party_url.scheme());
-  // `content_settings_` is sorted in order of precedence, so we use the first
-  // matching rule we find.
-  const auto& entry = base::ranges::find_if(
-      content_settings_, [&](const ContentSettingPatternSource& entry) {
-        // The primary pattern is for the request URL; the secondary pattern is
-        // for the first-party URL (which is the top-frame origin [if available]
-        // or the site-for-cookies).
-        return entry.primary_pattern.Matches(url) &&
-               entry.secondary_pattern.Matches(first_party_url);
-      });
-  if (entry != content_settings_.end()) {
-    cookie_setting = entry->GetContentSetting();
-    // Site-specific settings override the global "block third-party cookies"
-    // setting.
-    // Note: global settings are implemented as a catch-all (*, *) pattern.
-    if (IsExplicitSetting(*entry))
-      blocked_by_third_party_setting = false;
+  {
+    // `content_settings_` is sorted in order of precedence, so we use the first
+    // matching rule we find.
+    const auto& entry = base::ranges::find_if(
+        content_settings_, [&](const ContentSettingPatternSource& entry) {
+          // The primary pattern is for the request URL; the secondary pattern
+          // is for the first-party URL (which is the top-frame origin [if
+          // available] or the site-for-cookies).
+          return entry.primary_pattern.Matches(url) &&
+                 entry.secondary_pattern.Matches(first_party_url);
+        });
+    if (entry != content_settings_.end()) {
+      cookie_setting = entry->GetContentSetting();
+      // Site-specific settings override the global "block third-party cookies"
+      // setting.
+      // Note: global settings are implemented as a catch-all (*, *) pattern.
+      if (IsExplicitSetting(*entry))
+        blocked_by_third_party_setting = false;
+    }
   }
 
   if (blocked_by_third_party_setting) {
@@ -223,7 +225,7 @@ CookieSettings::GetCookieSettingWithMetadata(
 CookieSettings::CookieSettingWithMetadata
 CookieSettings::GetCookieSettingWithMetadata(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin* top_frame_origin) const {
   return GetCookieSettingWithMetadata(
       url, GetFirstPartyURL(site_for_cookies, top_frame_origin),
@@ -242,7 +244,7 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
 
 bool CookieSettings::AnnotateAndMoveUserBlockedCookies(
     const GURL& url,
-    const GURL& site_for_cookies,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin* top_frame_origin,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) const {

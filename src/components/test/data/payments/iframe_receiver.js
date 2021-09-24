@@ -28,13 +28,13 @@ async function requestPayment(credentialId) {
             action: 'authenticate',
             credentialIds: [Uint8Array.from(atob(credentialId),
                                             (b) => b.charCodeAt(0))],
-            networkData: new TextEncoder().encode('hello world'),
             challenge: new TextEncoder().encode('hello world'),
             instrument: {
               displayName: 'Hello World',
               icon: window.location.origin + '/icon.png',
             },
             timeout: 6000,
+            payeeOrigin: 'https://example-payee-origin.test',
           }}],
         {total: {label: 'TEST', amount: {currency: 'USD', value: '0.01'}}});
     const response = await request.show();

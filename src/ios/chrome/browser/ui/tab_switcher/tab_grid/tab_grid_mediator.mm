@@ -408,8 +408,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
 }
 
-// TODO(crbug.com/1123536): Merges this method with |closeAllItems| once
-// EnableCloseAllTabsConfirmation is landed.
 - (void)saveAndCloseAllItems {
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
@@ -445,19 +443,12 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
 }
 
-- (void)showCloseAllConfirmationActionSheetWithAnchor:
-    (UIBarButtonItem*)buttonAnchor {
-  [self.delegate
-      showCloseAllConfirmationActionSheetWitTabGridMediator:self
-                                               numberOfTabs:self.webStateList
-                                                                ->count()
-                                                     anchor:buttonAnchor];
-}
-
 - (void)
     showCloseItemsConfirmationActionSheetWithItems:(NSArray<NSString*>*)items
                                             anchor:
                                                 (UIBarButtonItem*)buttonAnchor {
+  [self.delegate dismissPopovers];
+
   [self.delegate
       showCloseItemsConfirmationActionSheetWithTabGridMediator:self
                                                          items:items
@@ -466,6 +457,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)shareItems:(NSArray<NSString*>*)items
             anchor:(UIBarButtonItem*)buttonAnchor {
+  [self.delegate dismissPopovers];
+
   NSMutableArray<URLWithTitle*>* URLs = [[NSMutableArray alloc] init];
   for (NSString* itemIdentifier in items) {
     GridItem* item = [self gridItemForCellIdentifier:itemIdentifier];
@@ -747,6 +740,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (!_readingListHandler) {
     return;
   }
+  [self.delegate dismissPopovers];
+
   base::UmaHistogramCounts100("IOS.TabGrid.Selection.AddToReadingList",
                               items.count);
 
@@ -764,6 +759,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (!bookmarkHandler) {
     return;
   }
+  [self.delegate dismissPopovers];
+
   base::UmaHistogramCounts100("IOS.TabGrid.Selection.AddToBookmarks",
                               items.count);
 

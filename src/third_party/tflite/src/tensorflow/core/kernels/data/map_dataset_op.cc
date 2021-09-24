@@ -16,10 +16,10 @@ limitations under the License.
 
 #include "tensorflow/core/common_runtime/function.h"
 #include "tensorflow/core/common_runtime/input_colocation_exemption_registry.h"
+#include "tensorflow/core/data/dataset_utils.h"
+#include "tensorflow/core/data/name_utils.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/kernels/data/dataset_utils.h"
-#include "tensorflow/core/kernels/data/name_utils.h"
 #include "tensorflow/core/lib/random/random.h"
 
 namespace tensorflow {
@@ -72,12 +72,17 @@ class MapDatasetOp::Dataset : public DatasetBase {
     return name_utils::DatasetDebugString(kDatasetType);
   }
 
-  int64 Cardinality() const override {
+  int64_t Cardinality() const override {
     if (preserve_cardinality_) {
       return input_->Cardinality();
     } else {
       return kUnknownCardinality;
     }
+  }
+
+  Status InputDatasets(std::vector<const DatasetBase*>* inputs) const override {
+    inputs->push_back(input_);
+    return Status::OK();
   }
 
   Status CheckExternalState() const override {
@@ -153,8 +158,8 @@ class MapDatasetOp::Dataset : public DatasetBase {
         return Status::OK();
       }
 
-      Status s =
-          instantiated_captured_func_->Run(ctx, std::move(args), out_tensors);
+      Status s = instantiated_captured_func_->Run(ctx, std::move(args),
+                                                  out_tensors, model_node());
       if (errors::IsOutOfRange(s)) {
         if (dataset()->preserve_cardinality_) {
           // To guarantee that the transformation preserves the cardinality of

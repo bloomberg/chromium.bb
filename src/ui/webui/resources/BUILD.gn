@@ -49,6 +49,7 @@ generate_grd("build_grd") {
       "cr_components:build_grdp",
       "cr_components/customize_themes:build_grdp",
       "cr_elements:build_grdp",
+      "js/browser_command:build_grdp",
       "//third_party/polymer/v3_0:build_grdp",
     ]
     grdp_files += [
@@ -56,6 +57,7 @@ generate_grd("build_grd") {
       "$root_gen_dir/ui/webui/resources/cr_components/cr_components_resources.grdp",
       "$root_gen_dir/ui/webui/resources/cr_components/customize_themes/resources.grdp",
       "$root_gen_dir/ui/webui/resources/cr_elements/cr_elements_resources.grdp",
+      "$root_gen_dir/ui/webui/resources/js/browser_command/resources.grdp",
     ]
 
     if (use_nss_certs) {
@@ -148,6 +150,7 @@ checked_in_dts_files = [
   "cr_elements/cr_radio_group/cr_radio_group.m.d.ts",
   "cr_elements/cr_scrollable_behavior.m.d.ts",
   "cr_elements/cr_search_field/cr_search_field_behavior.d.ts",
+  "cr_elements/cr_search_field/cr_search_field.d.ts",
   "cr_elements/cr_toast/cr_toast_manager.d.ts",
   "cr_elements/cr_toast/cr_toast.d.ts",
   "cr_elements/cr_toggle/cr_toggle.m.d.ts",
@@ -164,6 +167,11 @@ checked_in_dts_files = [
   "js/promise_resolver.m.d.ts",
   "js/web_ui_listener_behavior.m.d.ts",
 ]
+
+if (is_chromeos) {
+  checked_in_dts_files +=
+      [ "cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.d.ts" ]
+}
 
 # Copies checked-in .d.ts files to the preprocess folder so that they are
 # discovered by TSC the same way generated .d.ts files are.
@@ -278,7 +286,6 @@ ts_definitions("generate_definitions") {
     "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js",
     "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.js",
     "cr_elements/cr_radio_button/cr_radio_button_style_css.m.js",
-    "cr_elements/cr_search_field/cr_search_field.js",
     "cr_elements/cr_slider/cr_slider.js",
     "cr_elements/cr_splitter/cr_splitter.js",
     "cr_elements/cr_tabs/cr_tabs.js",

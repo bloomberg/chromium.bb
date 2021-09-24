@@ -42,7 +42,7 @@ class SoftsignTest(test.TestCase):
     self.assertShapeEqual(np_softsign, softsign)
 
   def testNumbers(self):
-    for t in [np.float, np.double]:
+    for t in [np.float64, np.double]:
       self._testSoftsign(
           np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t),
           use_gpu=False)
@@ -70,7 +70,7 @@ class SoftsignTest(test.TestCase):
   @test_util.run_deprecated_v1
   def testNoInts(self):
     with self.cached_session():
-      with self.assertRaisesRegexp(
+      with self.assertRaisesRegex(
           TypeError,
           "'features' has DataType int32 not in list of allowed values"):
         nn_ops.softsign(constant_op.constant(7)).eval()

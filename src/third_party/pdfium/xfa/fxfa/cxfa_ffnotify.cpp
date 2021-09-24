@@ -281,11 +281,8 @@ void CXFA_FFNotify::OpenDropDownList(CXFA_Node* pNode) {
   if (!pComboBox)
     return;
 
-  CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
-  pDocView->LockUpdate();
+  CXFA_FFDocView::UpdateScope scope(m_pDoc->GetDocView());
   pComboBox->OpenDropDownList();
-  pDocView->UnlockUpdate();
-  pDocView->UpdateDocView();
 }
 
 void CXFA_FFNotify::ResetData(CXFA_Node* pNode) {
@@ -296,9 +293,10 @@ void CXFA_FFNotify::ResetData(CXFA_Node* pNode) {
   pDocView->ResetNode(pNode);
 }
 
-int32_t CXFA_FFNotify::GetLayoutStatus() {
+CXFA_FFDocView::LayoutStatus CXFA_FFNotify::GetLayoutStatus() {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
-  return pDocView ? pDocView->GetLayoutStatus() : 0;
+  return pDocView ? pDocView->GetLayoutStatus()
+                  : CXFA_FFDocView::LayoutStatus::kNone;
 }
 
 void CXFA_FFNotify::RunNodeInitialize(CXFA_Node* pNode) {
@@ -362,7 +360,7 @@ void CXFA_FFNotify::OnValueChanging(CXFA_Node* pSender, XFA_Attribute eAttr) {
   CXFA_FFDocView* pDocView = m_pDoc->GetDocView();
   if (!pDocView)
     return;
-  if (pDocView->GetLayoutStatus() < XFA_DOCVIEW_LAYOUTSTATUS_End)
+  if (pDocView->GetLayoutStatus() != CXFA_FFDocView::LayoutStatus::kEnd)
     return;
 
   CXFA_FFWidget* pWidget = m_pDoc->GetDocView()->GetWidgetForNode(pSender);
@@ -448,9 +446,9 @@ void CXFA_FFNotify::OnChildAdded(CXFA_Node* pSender) {
   if (!pDocView)
     return;
 
-  bool bLayoutReady =
-      !(pDocView->m_bInLayoutStatus) &&
-      (pDocView->GetLayoutStatus() == XFA_DOCVIEW_LAYOUTSTATUS_End);
+  const bool bLayoutReady =
+      !pDocView->InLayoutStatus() &&
+      pDocView->GetLayoutStatus() == CXFA_FFDocView::LayoutStatus::kEnd;
   if (bLayoutReady)
     m_pDoc->SetChangeMark();
 }
@@ -460,9 +458,9 @@ void CXFA_FFNotify::OnChildRemoved() {
   if (!pDocView)
     return;
 
-  bool bLayoutReady =
-      !(pDocView->m_bInLayoutStatus) &&
-      (pDocView->GetLayoutStatus() == XFA_DOCVIEW_LAYOUTSTATUS_End);
+  const bool bLayoutReady =
+      !pDocView->InLayoutStatus() &&
+      pDocView->GetLayoutStatus() == CXFA_FFDocView::LayoutStatus::kEnd;
   if (bLayoutReady)
     m_pDoc->SetChangeMark();
 }
@@ -491,7 +489,7 @@ void CXFA_FFNotify::OnLayoutItemAdded(CXFA_LayoutProcessor* pLayout,
     pWidget->SetPageView(pNewPageView);
     m_pDoc->WidgetPostAdd(pWidget);
   }
-  if (pDocView->GetLayoutStatus() != XFA_DOCVIEW_LAYOUTSTATUS_End ||
+  if (pDocView->GetLayoutStatus() != CXFA_FFDocView::LayoutStatus::kEnd ||
       !(dwStatus & XFA_WidgetStatus::kVisible)) {
     return;
   }

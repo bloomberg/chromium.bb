@@ -124,3 +124,13 @@ class BroadcastMessageQueue {
     });
   }
 }
+
+// Returns <iframe> element upon load.
+function createFrame(url) {
+  return new Promise(resolve => {
+      const frame = document.createElement('iframe');
+      frame.src = url;
+      frame.onload = () => resolve(frame);
+      document.body.appendChild(frame);
+    });
+}

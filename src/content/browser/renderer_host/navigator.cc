@@ -122,6 +122,12 @@ void RecordWebPlatformSecurityMetrics(RenderFrameHostImpl* rfh,
     client->LogWebFeatureForCurrentPage(
         rfh,
         blink::mojom::WebFeature::kCrossOriginSubframeWithoutEmbeddingControl);
+    RenderFrameHostImpl* main_frame =
+        rfh->frame_tree_node()->frame_tree()->GetMainFrame();
+    ukm::builders::CrossOriginSubframeWithoutEmbeddingControl(
+        main_frame->GetPageUkmSourceId())
+        .SetSubframeEmbedded(1)
+        .Record(ukm::UkmRecorder::Get());
   }
 
   // Check if the navigation resulted in having same-origin documents in pages
@@ -379,8 +385,8 @@ void Navigator::DidNavigate(
     was_within_same_document = false;
   }
   // At this point we have already chosen a SiteInstance for this navigation, so
-  // set |origin_isolation_request| to kNone in the conversion to UrlInfo
-  // below.
+  // set OriginIsolationRequest to kNone in the conversion to UrlInfo below:
+  // this is done implicitly in the UrlInfoInit constructor.
   const UrlInfo url_info(UrlInfoInit(params.url));
 
   if (auto& old_page_info = navigation_request->commit_params().old_page_info) {

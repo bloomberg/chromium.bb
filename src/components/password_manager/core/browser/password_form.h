@@ -343,6 +343,10 @@ struct PasswordForm {
   // password generation eligibility.
   bool is_new_password_reliable = false;
 
+  // True iff the form may be filled with webauthn credentials from an active
+  // webauthn request.
+  bool accepts_webauthn_credentials = false;
+
   // Serialized to prefs, so don't change numeric values!
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -402,7 +406,7 @@ struct PasswordForm {
 
   // Utility method to check whether the form represents an insecure credential
   // of insecure type `type`.
-  bool IsInsecureCredential(InsecureType type) const;
+  bool IsInsecureCredential(InsecureType insecure_type) const;
 
   PasswordForm();
   PasswordForm(const PasswordForm& other);

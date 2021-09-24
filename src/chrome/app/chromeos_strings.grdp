@@ -110,53 +110,6 @@
     Default wallpaper
   </message>
 
-  <!-- Zip Archiver -->
-  <message desc="The product name for Zip Archiver." name="IDS_ZIP_ARCHIVER_NAME">
-    Zip Archiver
-  </message>
-  <message desc="The product description, displayed in the Chrome Extensions page." name="IDS_ZIP_ARCHIVER_DESCRIPTION">
-    Zip Archiver - Open and pack ZIP files in Files app.
-  </message>
-  <message desc="Title of the password input dialog." name="IDS_ZIP_ARCHIVER_PASSPHRASE_TITLE">
-    Enter your password
-  </message>
-  <message desc="Label of the password input field." name="IDS_ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
-    Password
-  </message>
-  <message desc="Short name of the password accept button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
-    Unlock
-  </message>
-  <message desc="Short name of the password cancel button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_CANCEL">
-    Cancel
-  </message>
-  <message desc="Title for of a checkbox whether the password should be remembered. Please keep it as short." name="IDS_ZIP_ARCHIVER_PASSPHRASE_REMEMBER">
-    Remember
-  </message>
-  <message desc="Error message when opening an archive fails because of an unknown reason." name="IDS_ZIP_ARCHIVER_OTHER_ERROR_MESSAGE">
-    The archive format is not supported, or the file is broken.
-  </message>
-  <message desc="Error message when the Zip Archiver has crashed." name="IDS_ZIP_ARCHIVER_CRASH_ERROR_MESSAGE">
-    Aw, Snap! The Zip Archiver encountered an error.
-  </message>
-  <message desc="Message shown when opening an archive takes long time." name="IDS_ZIP_ARCHIVER_MOUNTING_MESSAGE">
-    Please wait, the archive is being scanned...
-  </message>
-  <message desc="Message shown when packing an archive takes long time." name="IDS_ZIP_ARCHIVER_PACKING_DEFERRED_MESSAGE">
-    Please wait...
-  </message>
-  <message desc="Message shown when packing fails." name="IDS_ZIP_ARCHIVER_PACKING_ERROR_MESSAGE">
-    Packing failed.
-  </message>
-  <message desc="Message shown when packing is in progress." name="IDS_ZIP_ARCHIVER_PACKING_PROGRESS_MESSAGE">
-    Please wait, packing...
-  </message>
-  <message desc="Label text used to cancel zip operation in progress." name="IDS_ZIP_ARCHIVER_PACKING_CANCEL_BUTTON_LABEL">
-    Cancel
-  </message>
-  <message desc="Message shown when limit of open FSPs reached." name="IDS_ZIP_ARCHIVER_TOO_MANY_OPENED">
-    Too many file systems opened.
-  </message>
-
   <!-- MultiDevice setup dialog. -->
   <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow.">
     Accept &amp; continue
@@ -557,11 +510,8 @@
   <message name="IDS_OOBE_GENERIC_FATAL_ERROR_TITLE" desc="A generic title to be shown during OOBE to be used in error screens.">
     Something went wrong
   </message>
-  <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
-    Welcome!
-  </message>
   <message name="IDS_NEW_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
-    Welcome to <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    Welcome to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_WELCOME_SCREEN_GREETING_SUBTITLE" desc="Greeting message on the OOBE welcome screen">
     Fast. Secure. Effortless.
@@ -814,6 +764,14 @@
   </message>
   <message name="IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the Title of Terms of Service OOBE screen to accept EULA and continue.">
     Accept and continue
+  </message>
+
+   <!-- Strings for the Bluetooth pairing dialog -->
+  <message name="IDS_SETTINGS_BLUETOOTH_PAIRING_AVAILABLE_DEVICES" desc="Bluetooth pairing dialog: Title for the list of Bluetooth devices that are available for pairing.">
+    Available devices
+  </message>
+  <message name="IDS_SETTINGS_BLUETOOTH_PAIRING_NO_AVAILABLE_DEVICES" desc="Bluetooth pairing dialog: Title for the list of Bluetooth devices when no devices are available for pairing.">
+    No devices found
   </message>
 
   <!-- Strings for the OOBE packaged license screen -->
@@ -3668,12 +3626,6 @@
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC_CHILD" desc="Description for assistant screen context optin, when a child account is in use.">
     To get tailored responses when <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> asks questions, let Assistant access a screenshot of what’s on <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s screen. This may also include info about songs or videos that are playing.
   </message>
-  <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
-    Your Assistant is ready
-  </message>
-  <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
-    When your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
-  </message>
   <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_TITLE" desc="Title for assistant related info screen.">
     Allow your Assistant to use info on your screen to help
   </message>
@@ -4634,6 +4586,26 @@
   </message>
   <message name="IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL" desc="Label for the Smart Lock icon used for accessibility purposes. Describes when a phone eligible to unlock the Chromebook is detected and authenticated.">
     Your device can be unlocked with Smart Lock. Press Enter to unlock.
+  </message>
+
+  <!-- Strings for EcheApp -->
+  <message name="IDS_ECHE_APP_SCREEN_LOCK_SETTINGS_BUTTON" desc="Label for the button in the screen lock notification of EcheApp to open the settings app.">
+    Open Settings
+  </message>
+  <message name="IDS_ECHE_APP_SCREEN_LOCK_LEARN_MORE" desc="Learn more link text in screen lock notification of EcheApp.">
+    Learn more
+  </message>
+  <message name="IDS_ECHE_APP_NOTIFICATION_TRY_AGAIN_BUTTON" desc="Label for the connection lost button of EcheApp to try again.">
+    Try again
+  </message>
+  <message name="IDS_ECHE_APP_NOTIFICATION_HELP_BUTTON" desc="Help link text in connection lost notification of EcheApp.">
+    Help
+  </message>
+  <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_TITLE" desc="Title for notification shown when screen lock is not enabled while using app stream of EcheApp.">
+    Couldn’t open the App
+  </message>
+  <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE" desc="Message for the notification shown when screen lock is not enabled while using app stream of EcheApp.">
+    Set a pin or password on this Chromebook to protect access to your phone’s apps.
   </message>
 
   <!-- User Image Selection Dialog -->

@@ -139,19 +139,6 @@ const char kAutoLaunchNotificationId[] =
 
 const char kAutoLaunchNotifierId[] = "ash.managed_guest_session-auto_launch";
 
-// Enum types for Login.PasswordChangeFlow.
-// Don't change the existing values and update LoginPasswordChangeFlow in
-// histogram.xml when making changes here.
-enum LoginPasswordChangeFlow {
-  // User is sent to the password changed flow. This is the normal case.
-  LOGIN_PASSWORD_CHANGE_FLOW_PASSWORD_CHANGED = 0,
-  // User is sent to the unrecoverable cryptohome failure flow. This is the
-  // case when http://crbug.com/547857 happens.
-  LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE = 1,
-
-  LOGIN_PASSWORD_CHANGE_FLOW_COUNT,  // Must be the last entry.
-};
-
 // Delay for transferring the auth cache to the system profile.
 const long int kAuthCacheTransferDelayMs = 2000;
 
@@ -230,11 +217,6 @@ bool IsUpdateRequiredDeadlineReached() {
   return policy_handler && policy_handler->DeadlineReached();
 }
 
-void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
-  base::UmaHistogramEnumeration("Login.PasswordChangeFlow", flow,
-                                LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
-}
-
 bool IsTestingMigrationUI() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kTestEncryptionMigrationUI);
@@ -273,13 +255,6 @@ LoginDisplay* GetLoginDisplay() {
   return GetLoginDisplayHost()->GetLoginDisplay();
 }
 
-void AllowOfflineLoginOnErrorScreen(bool allowed) {
-  if (!GetLoginDisplayHost()->GetOobeUI())
-    return;
-  GetLoginDisplayHost()->GetOobeUI()->GetErrorScreen()->AllowOfflineLogin(
-      allowed);
-}
-
 void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
                                                const std::string extension_id) {
   const user_manager::User* user =
@@ -301,9 +276,8 @@ absl::optional<EncryptionMigrationMode> GetEncryptionMigrationMode(
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_CHILD) {
-    // TODO(https://crbug.com/1147009): Remove child user special case or
-    // implement finch experiment for child user migration mode.
-    return absl::nullopt;
+    // Force-migrate child users.
+    return EncryptionMigrationMode::START_MIGRATION;
   }
 
   const bool profile_has_policy =
@@ -470,7 +444,7 @@ void ExistingUserController::UpdateLoginDisplay(
   user_manager::UserManager* const user_manager =
       user_manager::UserManager::Get();
   // By default disable offline login from the error screen.
-  AllowOfflineLoginOnErrorScreen(false /* allowed */);
+  ErrorScreen::AllowOfflineLogin(false /* allowed */);
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
@@ -482,7 +456,7 @@ void ExistingUserController::UpdateLoginDisplay(
     if (user->GetType() == user_manager::USER_TYPE_REGULAR ||
         user->GetType() == user_manager::USER_TYPE_CHILD ||
         user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
-      AllowOfflineLoginOnErrorScreen(true /* allowed */);
+      ErrorScreen::AllowOfflineLogin(true /* allowed */);
     }
     const bool meets_allowlist_requirements =
         !user->HasGaiaAccount() ||
@@ -819,8 +793,6 @@ void ExistingUserController::ShowTPMError() {
 
 void ExistingUserController::ShowPasswordChangedDialog(
     const UserContext& user_context) {
-  RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_PASSWORD_CHANGED);
-
   VLOG(1) << "Show password changed dialog"
           << ", count=" << login_performer_->password_changed_callback_count();
 
@@ -1312,11 +1284,13 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
             ->store()
             ->policy_map()
             .Get(policy::key::kSessionLocales);
-    base::ListValue const* list = nullptr;
     if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-        entry->value() && entry->value()->GetAsList(&list)) {
-      if (list->GetString(0, &locale))
+        entry->value() && entry->value()->is_list()) {
+      base::Value::ConstListView list = entry->value()->GetList();
+      if (!list.empty() && list[0].is_string()) {
+        locale = list[0].GetString();
         new_user_context.SetPublicSessionLocale(locale);
+      }
     }
   }
 
@@ -1515,7 +1489,7 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
     std::unique_ptr<base::ListValue> keyboard_layouts) {
   UserContext new_user_context = user_context;
   std::string keyboard_layout;
-  for (size_t i = 0; i < keyboard_layouts->GetSize(); ++i) {
+  for (size_t i = 0; i < keyboard_layouts->GetList().size(); ++i) {
     base::DictionaryValue* entry = nullptr;
     keyboard_layouts->GetDictionary(i, &entry);
     bool selected = false;
@@ -1709,6 +1683,8 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   if (!user_context.HasCredentials()) {
     // If credentials are missing, refuse to log in.
 
+    // Ensure WebUI is loaded to allow security token dialog to pop up.
+    GetLoginDisplayHost()->GetWizardController();
     // Reenable clicking on other windows and status area.
     GetLoginDisplay()->SetUIEnabled(true);
     // Restart the auto-login timer.

@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list_color_provider_impl.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_colors.h"
@@ -130,10 +131,10 @@ SkColor AppListColorProviderImpl::GetFolderBubbleColor() const {
       SkColorSetA(gfx::kGoogleGrey100, 0x7A));
 }
 
-SkColor AppListColorProviderImpl::GetFolderTitleTextColor(
-    SkColor default_color) const {
+SkColor AppListColorProviderImpl::GetFolderTitleTextColor() const {
   return DeprecatedGetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorPrimary, default_color);
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
+      gfx::kGoogleGrey700);
 }
 
 SkColor AppListColorProviderImpl::GetFolderHintTextColor() const {
@@ -187,7 +188,7 @@ SkColor AppListColorProviderImpl::GetFocusRingColor() const {
 }
 
 float AppListColorProviderImpl::GetFolderBackgrounBlurSigma() const {
-  return static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault);
+  return ColorProvider::kBackgroundBlurSigma;
 }
 
 SkColor AppListColorProviderImpl::GetRippleAttributesBaseColor(
@@ -203,6 +204,18 @@ float AppListColorProviderImpl::GetRippleAttributesInkDropOpacity(
 float AppListColorProviderImpl::GetRippleAttributesHighlightOpacity(
     SkColor bg_color) const {
   return ash_color_provider_->GetRippleAttributes(bg_color).highlight_opacity;
+}
+
+SkColor AppListColorProviderImpl::GetSearchResultViewHighlightColor() const {
+  // Use highlight colors when Dark Light mode is enabled.
+  if (features::IsDarkLightModeEnabled()) {
+    return ash_color_provider_->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kHighlightColorHover);
+  }
+  // Use inkdrop colors by default.
+  return SkColorSetA(
+      GetRippleAttributesBaseColor(GetSearchBoxBackgroundColor()),
+      GetRippleAttributesHighlightOpacity(GetSearchBoxBackgroundColor()) * 255);
 }
 
 }  // namespace ash

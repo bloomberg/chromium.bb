@@ -167,6 +167,7 @@ public class SearchActivity extends AsyncInitializationActivity
     protected void triggerLayoutInflation() {
         mSnackbarManager = new SnackbarManager(this, findViewById(android.R.id.content), null);
         mSearchBoxDataProvider = new SearchBoxDataProvider(this);
+        mSearchBoxDataProvider.setIsFromQuickActionSearchWidget(isFromQuickActionSearchWidget());
 
         mContentView = createContentView();
         setContentView(mContentView);
@@ -319,7 +320,12 @@ public class SearchActivity extends AsyncInitializationActivity
         CustomTabsConnection.getInstance().warmup(0);
         VoiceRecognitionHandler voiceRecognitionHandler =
                 mLocationBarCoordinator.getVoiceRecognitionHandler();
-        mSearchBox.onDeferredStartup(isVoiceSearchIntent(), voiceRecognitionHandler);
+        @SearchType
+        int searchType = getSearchType(getIntent().getAction());
+        if (isFromQuickActionSearchWidget()) {
+            recordQuickActionSearchType(searchType);
+        }
+        mSearchBox.onDeferredStartup(searchType, voiceRecognitionHandler, getWindowAndroid());
         RecordUserAction.record("SearchWidget.WidgetSelected");
 
         getActivityDelegate().onFinishDeferredInitialization();
@@ -334,7 +340,16 @@ public class SearchActivity extends AsyncInitializationActivity
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        mSearchBoxDataProvider.setIsFromQuickActionSearchWidget(isFromQuickActionSearchWidget());
         beginQuery();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Make sure that re-entering the SearchActivity from different widgets shows appropriate
+        // suggestion types.
+        mLocationBarCoordinator.clearOmniboxFocus();
     }
 
     @Override
@@ -342,9 +357,17 @@ public class SearchActivity extends AsyncInitializationActivity
         return mSnackbarManager;
     }
 
-    private boolean isVoiceSearchIntent() {
-        return IntentUtils.safeGetBooleanExtra(
-                getIntent(), SearchActivityConstants.EXTRA_SHOULD_START_VOICE_SEARCH, false);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static @SearchType int getSearchType(String action) {
+        if (TextUtils.equals(action, SearchActivityConstants.ACTION_START_VOICE_SEARCH)
+                || TextUtils.equals(
+                        action, SearchActivityConstants.ACTION_START_EXTENDED_VOICE_SEARCH)) {
+            return SearchType.VOICE;
+        } else if (TextUtils.equals(action, SearchActivityConstants.ACTION_START_LENS_SEARCH)) {
+            return SearchType.LENS;
+        } else {
+            return SearchType.TEXT;
+        }
     }
 
     private boolean isFromSearchWidget() {
@@ -352,13 +375,23 @@ public class SearchActivity extends AsyncInitializationActivity
                 getIntent(), SearchWidgetProvider.EXTRA_FROM_SEARCH_WIDGET, false);
     }
 
+    private boolean isFromQuickActionSearchWidget() {
+        return IntentUtils.safeGetBooleanExtra(getIntent(),
+                SearchActivityConstants.EXTRA_BOOLEAN_FROM_QUICK_ACTION_SEARCH_WIDGET, false);
+    }
+
     private String getOptionalIntentQuery() {
         return IntentUtils.safeGetStringExtra(getIntent(), SearchManager.QUERY);
     }
 
     private void beginQuery() {
-        mSearchBox.beginQuery(isVoiceSearchIntent(), getOptionalIntentQuery(),
-                mLocationBarCoordinator.getVoiceRecognitionHandler());
+        @SearchType
+        int searchType = getSearchType(getIntent().getAction());
+        if (isFromQuickActionSearchWidget()) {
+            recordQuickActionSearchType(searchType);
+        }
+        mSearchBox.beginQuery(searchType, getOptionalIntentQuery(),
+                mLocationBarCoordinator.getVoiceRecognitionHandler(), getWindowAndroid());
     }
 
     @Override
@@ -458,6 +491,16 @@ public class SearchActivity extends AsyncInitializationActivity
     private void cancelSearch() {
         finish();
         overridePendingTransition(0, R.anim.activity_close_exit);
+    }
+
+    private static void recordQuickActionSearchType(@SearchType int searchType) {
+        if (searchType == SearchType.VOICE) {
+            RecordUserAction.record("QuickActionSearchWidget.VoiceQuery");
+        } else if (searchType == SearchType.LENS) {
+            RecordUserAction.record("QuickActionSearchWidget.LensQuery");
+        } else if (searchType == SearchType.TEXT) {
+            RecordUserAction.record("QuickActionSearchWidget.TextQuery");
+        }
     }
 
     @Override

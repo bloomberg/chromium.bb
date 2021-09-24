@@ -77,7 +77,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Login.FailureReason" enum="LoginFailureReason"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>achuith@chromium.org</owner>
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
@@ -168,6 +168,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Login.PasswordChangeFlow" enum="LoginPasswordChangeFlow"
     expires_after="2021-10-10">
+  <obsolete>
+    Removed in M96.
+  </obsolete>
   <owner>xiyuan@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -226,7 +229,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Login.SessionExitType" enum="LoginSessionExitType"
-    expires_after="2021-12-26">
+    expires_after="2022-02-27">
   <owner>iby@chromium.org</owner>
   <summary>
     Tracks whether a ChromeOS user was logged out because Chrome repeatedly

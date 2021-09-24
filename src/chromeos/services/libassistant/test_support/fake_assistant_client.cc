@@ -17,6 +17,11 @@ FakeAssistantClient::FakeAssistantClient(
 
 FakeAssistantClient::~FakeAssistantClient() = default;
 
+void FakeAssistantClient::StartServices() {}
+
+void FakeAssistantClient::SetChromeOSApiDelegate(
+    assistant_client::ChromeOSApiDelegate* delegate) {}
+
 bool FakeAssistantClient::StartGrpcServices() {
   return true;
 }
@@ -30,9 +35,14 @@ void FakeAssistantClient::SendVoicelessInteraction(
     const ::assistant::api::VoicelessOptions& options,
     base::OnceCallback<void(bool)> on_done) {}
 
+void FakeAssistantClient::AddSpeakerIdEnrollmentEventObserver(
+    GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer) {}
+
+void FakeAssistantClient::RemoveSpeakerIdEnrollmentEventObserver(
+    GrpcServicesObserver<OnSpeakerIdEnrollmentEventRequest>* observer) {}
+
 void FakeAssistantClient::StartSpeakerIdEnrollment(
-    const StartSpeakerIdEnrollmentRequest& request,
-    base::RepeatingCallback<void(const SpeakerIdEnrollmentEvent&)> on_done) {}
+    const StartSpeakerIdEnrollmentRequest& request) {}
 
 void FakeAssistantClient::CancelSpeakerIdEnrollment(
     const CancelSpeakerIdEnrollmentRequest& request) {}
@@ -40,6 +50,24 @@ void FakeAssistantClient::CancelSpeakerIdEnrollment(
 void FakeAssistantClient::GetSpeakerIdEnrollmentInfo(
     const ::assistant::api::GetSpeakerIdEnrollmentInfoRequest& request,
     base::OnceCallback<void(bool user_model_exists)> on_done) {}
+
+void FakeAssistantClient::ResetAllDataAndShutdown() {}
+
+void FakeAssistantClient::OnDisplayRequest(
+    const OnDisplayRequestRequest& request) {}
+
+void FakeAssistantClient::AddDisplayEventObserver(
+    GrpcServicesObserver<OnAssistantDisplayEventRequest>* observer) {}
+
+void FakeAssistantClient::ResumeCurrentStream() {}
+
+void FakeAssistantClient::PauseCurrentStream() {}
+
+void FakeAssistantClient::SetExternalPlaybackState(
+    const MediaStatus& status_proto) {}
+
+void FakeAssistantClient::AddDeviceStateEventObserver(
+    GrpcServicesObserver<OnDeviceStateEventRequest>* observer) {}
 
 }  // namespace libassistant
 }  // namespace chromeos

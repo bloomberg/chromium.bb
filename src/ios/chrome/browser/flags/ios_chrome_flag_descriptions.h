@@ -11,6 +11,11 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to enable
+// kSupportForAddPasswordsInSettings flag on iOS.
+extern const char kAddPasswordsInSettingsName[];
+extern const char kAddPasswordsInSettingsDescription[];
+
 // Title and description for the flag to control upstreaming credit cards.
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
@@ -77,10 +82,9 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kCrashpadIOSName[];
 extern const char kCrashpadIOSDescription[];
 
-// Title and description for the flag that controls whether Collections are
-// presented using the new iOS13 Card style or the custom legacy one.
-extern const char kCollectionsCardPresentationStyleName[];
-extern const char kCollectionsCardPresentationStyleDescription[];
+// Title and description for the flag to enable context menu actions refresh.
+extern const char kContextMenuActionsRefreshName[];
+extern const char kContextMenuActionsRefreshDescription[];
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 // Title and description for the flag to enable configurable DCHECKs.
@@ -159,20 +163,10 @@ extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
 extern const char
     kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
 
-// Title and description for the flag to enable the confirmational action sheet
-// for the tab grid "Close All" action.
-extern const char kEnableCloseAllTabsConfirmationName[];
-extern const char kEnableCloseAllTabsConfirmationDescription[];
-
 // Title and description for the flag to enable the discover feed live preview
 // in long-press feed context menu.
 extern const char kEnableDiscoverFeedPreviewName[];
 extern const char kEnableDiscoverFeedPreviewDescription[];
-
-// Title and description for the flag to enable reading the extended sync promo
-// account capability from IdentityKit libraries.
-extern const char kEnableExtendedSyncPromosCapabilityName[];
-extern const char kEnableExtendedSyncPromosCapabilityDescription[];
 
 // Title and description for the flag to enable FRE default browser screen.
 extern const char kEnableFREDefaultBrowserScreenName[];
@@ -196,6 +190,10 @@ extern const char kEnableManualPasswordGenerationDescription[];
 extern const char kEnableNTPMemoryEnhancementName[];
 extern const char kEnableNTPMemoryEnhancementDescription[];
 
+// Title and description for the flag to enable optimization guide.
+extern const char kEnableOptimizationGuideName[];
+extern const char kEnableOptimizationGuideDescription[];
+
 // Title and description for the flag to enable an expanded tab strip.
 extern const char kExpandedTabStripName[];
 extern const char kExpandedTabStripDescription[];
@@ -213,10 +211,6 @@ extern const char kForceDisableExtendedSyncPromosDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
-// Title and description for the flag to force an unstacked tabstrip.
-extern const char kForceUnstackedTabstripName[];
-extern const char kForceUnstackedTabstripDescription[];
-
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenSmoothScrollingName[];
@@ -231,6 +225,10 @@ extern const char kIncognitoAuthenticationDescription[];
 // Incognito mode.
 extern const char kIncognitoBrandConsistencyForIOSName[];
 extern const char kIncognitoBrandConsistencyForIOSDescription[];
+
+// Title and description for the flag to enable revamped Incognito NTP page.
+extern const char kIncognitoNtpRevampName[];
+extern const char kIncognitoNtpRevampDescription[];
 
 // Title and description for the flag to present the new UI Reboot on Infobars
 // using OverlayPresenter.
@@ -289,10 +287,6 @@ extern const char kMICEWebSignInDescription[];
 // mobile mode by default.
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
-
-// Title and description for the flag to enable mobile identity consistency.
-extern const char kMobileIdentityConsistencyName[];
-extern const char kMobileIdentityConsistencyDescription[];
 
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished.
@@ -360,10 +354,15 @@ extern const char kScreenTimeIntegrationDescription[];
 extern const char kSearchHistoryLinkIOSName[];
 extern const char kSearchHistoryLinkIOSDescription[];
 
-// Title and description for the flag to enable the send tab to self receiving
-// feature.
-extern const char kSendTabToSelfName[];
-extern const char kSendTabToSelfDescription[];
+// Title and description for the flag to enable the send-tab-to-self for a
+// signed-in user (non-syncing).
+extern const char kSendTabToSelfWhenSignedInName[];
+extern const char kSendTabToSelfWhenSignedInDescription[];
+
+// Title and description for the flag to enable the "Manage devices" link in
+// the send-tab-to-self feature UI.
+extern const char kSendTabToSelfManageDevicesLinkName[];
+extern const char kSendTabToSelfManageDevicesLinkDescription[];
 
 // Title and description for the flag to send UMA data over any network.
 extern const char kSendUmaOverAnyNetwork[];
@@ -389,10 +388,6 @@ extern const char kSharedHighlightingUseBlocklistIOSDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
-// Title and description for the flag to enable simplify sign-out on iOS.
-extern const char kSimplifySignOutIOSName[];
-extern const char kSimplifySignOutIOSDescription[];
-
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];
 extern const char kStartSurfaceDescription[];
@@ -416,10 +411,6 @@ extern const char kSyncTrustedVaultPassphrasePromoDescription[];
 // trusted vault passphrase type with improved recovery.
 extern const char kSyncTrustedVaultPassphraseRecoveryName[];
 extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
-
-// Title and description for the flag to enable context menu in the Tab grid.
-extern const char kTabGridContextMenuName[];
-extern const char kTabGridContextMenuDescription[];
 
 // Title and description for the flag to enable tabs bulk actions feature.
 extern const char kTabsBulkActionsName[];

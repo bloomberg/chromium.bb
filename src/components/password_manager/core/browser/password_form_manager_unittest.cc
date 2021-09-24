@@ -30,7 +30,6 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
-#include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -290,7 +289,8 @@ class MockFormSaver : public StubFormSaver {
 
   // Convenience downcasting method.
   static MockFormSaver& Get(PasswordFormManager* form_manager) {
-    return *static_cast<MockFormSaver*>(form_manager->form_saver());
+    return *static_cast<MockFormSaver*>(
+        form_manager->profile_store_form_saver());
   }
 };
 
@@ -467,14 +467,11 @@ class PasswordFormManagerTest : public testing::Test,
   // Creates PasswordFormManager and sets it to |form_manager_|. Along the
   // way a new |fetcher_| is created.
   virtual void CreateFormManager(const FormData& observed_form) {
-    auto password_save_manager =
-        GetParam() ? std::make_unique<MultiStorePasswordSaveManager>(
-                         /*account_form_saver=*/std::make_unique<
-                             NiceMock<MockFormSaver>>(),
-                         /*account_form_saver=*/std::make_unique<
-                             NiceMock<MockFormSaver>>())
-                   : std::make_unique<PasswordSaveManagerImpl>(
-                         std::make_unique<NiceMock<MockFormSaver>>());
+    auto password_save_manager = std::make_unique<PasswordSaveManagerImpl>(
+        /*profile_form_saver=*/std::make_unique<NiceMock<MockFormSaver>>(),
+        /*account_form_saver=*/GetParam()
+            ? std::make_unique<NiceMock<MockFormSaver>>()
+            : nullptr);
 
     form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
@@ -485,14 +482,11 @@ class PasswordFormManagerTest : public testing::Test,
   // |base_auth_observed_form|. Along the way a new |fetcher_| is created.
   virtual void CreateFormManagerForNonWebForm(
       const PasswordForm& base_auth_observed_form) {
-    auto password_save_manager =
-        GetParam() ? std::make_unique<MultiStorePasswordSaveManager>(
-                         /*account_form_saver=*/std::make_unique<
-                             NiceMock<MockFormSaver>>(),
-                         /*account_form_saver=*/std::make_unique<
-                             NiceMock<MockFormSaver>>())
-                   : std::make_unique<PasswordSaveManagerImpl>(
-                         std::make_unique<NiceMock<MockFormSaver>>());
+    auto password_save_manager = std::make_unique<PasswordSaveManagerImpl>(
+        /*profile_form_saver=*/std::make_unique<NiceMock<MockFormSaver>>(),
+        /*account_form_saver=*/GetParam()
+            ? std::make_unique<NiceMock<MockFormSaver>>()
+            : nullptr);
     fetcher_->set_scheme(PasswordFormDigest(base_auth_observed_form).scheme);
     form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, PasswordFormDigest(base_auth_observed_form), fetcher_.get(),
@@ -2630,7 +2624,7 @@ class MockPasswordSaveManager : public PasswordSaveManager {
                     VotesUploader*));
   MOCK_CONST_METHOD0(GetPendingCredentials, const PasswordForm&());
   MOCK_CONST_METHOD0(GetGeneratedPassword, const std::u16string&());
-  MOCK_CONST_METHOD0(GetFormSaver, FormSaver*());
+  MOCK_CONST_METHOD0(GetProfileStoreFormSaverForTesting, FormSaver*());
   MOCK_METHOD5(CreatePendingCredentials,
                void(const PasswordForm&,
                     const autofill::FormData*,

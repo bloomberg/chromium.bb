@@ -247,7 +247,7 @@ Tests that we can import an HTMLVideoElement into a GPUExternalTexture and use i
       const outputTexture = t.device.createTexture({
         format: 'rgba8unorm',
         size: [2, 1, 1],
-        usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.STORAGE,
+        usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.STORAGE_BINDING,
       });
 
       const pipeline = t.device.createComputePipeline({

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_HATS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_HATS_HANDLER_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace settings {
@@ -30,6 +31,9 @@ class HatsHandler : public SettingsPageUIHandler {
   FRIEND_TEST_ALL_PREFIXES(HatsHandlerTest, PrivacySettingsHats);
   FRIEND_TEST_ALL_PREFIXES(HatsHandlerTest, PrivacySandboxHats);
   FRIEND_TEST_ALL_PREFIXES(HatsHandlerTest, TrustSafetySentimentInteractions);
+  FRIEND_TEST_ALL_PREFIXES(HatsHandlerNoSandboxTest, PrivacySettings);
+  FRIEND_TEST_ALL_PREFIXES(HatsHandlerNoSandboxTest,
+                           TrustSafetySentimentInteractions);
 
   // All Trust & Safety based interactions which may result in a HaTS survey.
   // Must be kept in sync with the enum of the same name in

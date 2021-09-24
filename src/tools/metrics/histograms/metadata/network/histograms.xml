@@ -792,7 +792,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Radio.PossibleWakeupTrigger.ResolveHostPurpose"
-    units="ResolveHostPurpose" expires_after="2022-02-01">
+    enum="ResolveHostPurpose" expires_after="2022-02-01">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -803,7 +803,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Network.Radio.PossibleWakeupTrigger.URLLoaderAnnotationId"
-    units="TrafficAnnotationUniqueIdHash" expires_after="2022-02-01">
+    enum="TrafficAnnotationUniqueIdHash" expires_after="2022-02-01">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -1662,7 +1662,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Vpn.TimeOnline" units="ms"
+<histogram name="Network.Shill.Vpn.TimeOnline" units="seconds"
     expires_after="2022-01-30">
   <owner>akhouderchah@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -1703,6 +1703,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
     that tracks the user authentication method.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.WireGuardAllowedIPsType"
+    enum="VPNWireGuardAllowedIPsType" expires_after="2022-01-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful WireGuard VPN
+    connection that tracks the type of the allowed IPs set in this connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.WireGuardKeyPairSource"
+    enum="VPNWireGuardKeyPairSource" expires_after="2022-01-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful WireGuard VPN
+    connection that tracks the source of the key pair used in this connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.WireGuardPeersNum" units="WireGuard peers"
+    expires_after="2022-01-30">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network usage metric emitted on each successful WireGuard VPN
+    connection that tracks the number of peers used in in this connection.
   </summary>
 </histogram>
 
@@ -2932,6 +2962,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NetworkService.GrantSandboxResult"
+    enum="NetworkServiceSandboxGrantResult" expires_after="M97">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The result of the attempt to grant the sandbox access to a network context
+    data and cache files. This is reported each time a network context instance
+    is created on the network service, even when the sandbox is not enabled.
+  </summary>
+</histogram>
+
 <histogram name="NetworkService.MdnsResponder.ServiceError"
     enum="MdnsResponderServiceError" expires_after="M81">
   <owner>qingsi@chromium.org</owner>
@@ -2992,6 +3033,54 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     How long it takes the network service to respond to the first mojo call on
     startup. This will be used to debug http://crbug.com/934317.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
+    expires_after="M97">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The time taken to permit the sandbox access to the cache directory during
+    network context initialization. This is recorded each time a network context
+    is created with a valid disk cache specified. This histogram is platform
+    dependent so values from different platforms cannot be directly compared. On
+    Windows, this records the amount of time taken to set the filesystem ACLs to
+    allow the sandbox access to the cache directory.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.TimeToGrantDataAccess" units="ms"
+    expires_after="M97">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The time taken to permit the sandbox access to the data directory during
+    network context initialization. This is recorded each time a network context
+    is created with a valid set of NetworkContextFilePaths with
+    unsandboxed_data_path specified indicating it could be sandboxed. This
+    histogram is platform dependent so values from different platforms cannot be
+    directly compared. On Windows, this records the amount of time taken to set
+    the filesystem ACLs to allow the sandbox access to the data directory.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.TimeToMigrateData" units="ms"
+    expires_after="M97">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The time taken to move the network context data files from the the
+    unsandboxed data path to the new sandbox data path. This is recorded the
+    each time a network context is created with a valid set of data file paths
+    and an unsandboxed_data_path specified indicating it should be migrated,
+    except for the case of a completely fresh data path where no migration
+    occurs. Note that this histogram is reported every time the network context
+    is created even if it has already been migrated, so while initial times
+    reported from a client for a particular network context might include the
+    time to move the files, subsequent logs from the same client for the same
+    network context will report the time to merely check that the files have
+    already been successfully moved.
   </summary>
 </histogram>
 

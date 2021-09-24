@@ -11,10 +11,11 @@ namespace quic {
 
 namespace {
 
-class AlarmDelegate : public QuicAlarm::Delegate {
+class AlarmDelegate : public QuicAlarm::DelegateWithContext {
  public:
-  explicit AlarmDelegate(QuicIdleNetworkDetector* detector)
-      : detector_(detector) {}
+  explicit AlarmDelegate(QuicIdleNetworkDetector* detector,
+                         QuicConnectionContext* context)
+      : QuicAlarm::DelegateWithContext(context), detector_(detector) {}
   AlarmDelegate(const AlarmDelegate&) = delete;
   AlarmDelegate& operator=(const AlarmDelegate&) = delete;
 
@@ -28,20 +29,15 @@ class AlarmDelegate : public QuicAlarm::Delegate {
 
 QuicIdleNetworkDetector::QuicIdleNetworkDetector(
     Delegate* delegate, QuicTime now, QuicConnectionArena* arena,
-    QuicAlarmFactory* alarm_factory)
+    QuicAlarmFactory* alarm_factory, QuicConnectionContext* context)
     : delegate_(delegate),
       start_time_(now),
       handshake_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(now),
       time_of_first_packet_sent_after_receiving_(QuicTime::Zero()),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
-      alarm_(
-          alarm_factory->CreateAlarm(arena->New<AlarmDelegate>(this), arena)) {
-  if (no_alarm_after_stopped_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_idle_network_detector_no_alarm_after_stopped, 1, 2);
-  }
-}
+      alarm_(alarm_factory->CreateAlarm(
+          arena->New<AlarmDelegate>(this, context), arena)) {}
 
 void QuicIdleNetworkDetector::OnAlarm() {
   if (handshake_timeout_.IsInfinite()) {
@@ -99,10 +95,7 @@ void QuicIdleNetworkDetector::OnPacketReceived(QuicTime now) {
 }
 
 void QuicIdleNetworkDetector::SetAlarm() {
-  if (no_alarm_after_stopped_ && stopped_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_idle_network_detector_no_alarm_after_stopped, 2, 2);
-
+  if (stopped_) {
     // TODO(wub): If this QUIC_BUG fires, it indicates a problem in the
     // QuicConnection, which somehow called this function while disconnected.
     // That problem needs to be fixed.

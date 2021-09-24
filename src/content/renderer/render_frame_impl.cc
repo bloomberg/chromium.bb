@@ -564,8 +564,7 @@ blink::mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
   download_policy.ApplyDownloadFramePolicy(
       info->is_opener_navigation, info->url_request.HasUserGesture(),
       info->url_request.RequestorOrigin().CanAccess(current_origin),
-      has_download_sandbox_flag, info->blocking_downloads_in_sandbox_enabled,
-      from_ad);
+      has_download_sandbox_flag, from_ad);
 
   return blink::mojom::CommonNavigationParams::New(
       info->url_request.Url(), info->url_request.RequestorOrigin(),
@@ -2437,10 +2436,6 @@ void RenderFrameImpl::PluginDidStopLoading() {
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-bool RenderFrameImpl::IsFTPDirectoryListing() {
-  return frame_->GetDocumentLoader()->IsListingFtpDirectory();
-}
-
 void RenderFrameImpl::SetSelectedText(const std::u16string& selection_text,
                                       size_t offset,
                                       const gfx::Range& range) {
@@ -2551,6 +2546,11 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 
 void RenderFrameImpl::EnableMojoJsBindings() {
   enable_mojo_js_bindings_ = true;
+}
+
+void RenderFrameImpl::EnableMojoJsBindingsWithBroker(
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker) {
+  mojo_js_interface_broker_ = std::move(broker);
 }
 
 void RenderFrameImpl::BindWebUI(
@@ -3627,15 +3627,18 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
 }
 
 blink::WebRemoteFrame* RenderFrameImpl::CreateFencedFrame(
-    const blink::WebElement& fenced_frame) {
+    const blink::WebElement& fenced_frame,
+    blink::CrossVariantMojoAssociatedReceiver<
+        blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   blink::mojom::FrameReplicationStatePtr initial_replicated_state =
       blink::mojom::FrameReplicationState::New();
   blink::RemoteFrameToken frame_token;
   base::UnguessableToken devtools_frame_token;
 
-  // TODO(crbug.com/1123606): Call mojom::FrameHost::CreateFencedFrame() once we
-  // introduce it in a subsequent CL.
+  GetFrameHost()->CreateFencedFrame(std::move(receiver), &proxy_routing_id,
+                                    &initial_replicated_state, &frame_token,
+                                    &devtools_frame_token);
 
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortalOrFencedFrame(
       agent_scheduling_group_, this, proxy_routing_id, frame_token,
@@ -3999,11 +4002,12 @@ void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title) {
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 }
 
-void RenderFrameImpl::DidFinishDocumentLoad() {
+void RenderFrameImpl::DidDispatchDOMContentLoadedEvent() {
   TRACE_EVENT1("navigation,benchmark,rail",
-               "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
+               "RenderFrameImpl::DidDispatchDOMContentLoadedEvent", "id",
+               routing_id_);
   for (auto& observer : observers_)
-    observer.DidFinishDocumentLoad();
+    observer.DidDispatchDOMContentLoadedEvent();
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
@@ -4443,6 +4447,14 @@ void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebV8Features::EnableMojoJS(context, true);
+  }
+
+  if (world_id == ISOLATED_WORLD_ID_GLOBAL &&
+      mojo_js_interface_broker_.is_valid()) {
+    // MojoJS interface broker can be enabled on subframes, and will limit the
+    // interfaces JavaScript can request to those provided in the broker.
+    blink::WebV8Features::EnableMojoJSAndUseBroker(
+        context, std::move(mojo_js_interface_broker_));
   }
 
   for (auto& observer : observers_)
@@ -5508,8 +5520,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
       info->is_opener_navigation, info->url_request.HasUserGesture(),
       info->url_request.RequestorOrigin().CanAccess(
           frame_->GetSecurityOrigin()),
-      has_download_sandbox_flag, info->blocking_downloads_in_sandbox_enabled,
-      from_ad);
+      has_download_sandbox_flag, from_ad);
   GetFrameHost()->OpenURL(std::move(params));
 }
 

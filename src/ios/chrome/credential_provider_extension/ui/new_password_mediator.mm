@@ -6,6 +6,9 @@
 
 #import <AuthenticationServices/AuthenticationServices.h>
 
+#include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/proto/password_requirements.pb.h"
+#include "components/password_manager/core/browser/generation/password_generator.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
@@ -14,12 +17,18 @@
 #import "ios/chrome/common/credential_provider/credential_store.h"
 #import "ios/chrome/common/credential_provider/user_defaults_credential_store.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
+#import "ios/chrome/credential_provider_extension/password_spec_fetcher.h"
 #import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/ui/new_password_ui_handler.h"
+#import "ios/chrome/credential_provider_extension/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using autofill::GeneratePassword;
+using autofill::PasswordRequirementsSpec;
+using base::SysUTF16ToNSString;
 
 @interface NewPasswordMediator ()
 
@@ -28,6 +37,9 @@
 
 // The NSUserDefaults new credentials should be stored to.
 @property(nonatomic, strong) NSUserDefaults* userDefaults;
+
+// Fetcher for password specs.
+@property(nonatomic, strong) PasswordSpecFetcher* fetcher;
 
 @end
 
@@ -40,11 +52,26 @@
   if (self) {
     _userDefaults = userDefaults;
     _serviceIdentifier = serviceIdentifier;
+    NSString* host = HostForServiceIdentifier(serviceIdentifier);
+    _fetcher = [[PasswordSpecFetcher alloc] initWithHost:host];
+    [_fetcher fetchSpecWithCompletion:nil];
   }
   return self;
 }
 
 #pragma mark - NewCredentialHandler
+
+- (void)userDidRequestGeneratedPassword {
+  if (self.fetcher.didFetchSpec) {
+    PasswordRequirementsSpec spec = self.fetcher.spec;
+    [self.uiHandler setPassword:SysUTF16ToNSString(GeneratePassword(spec))];
+    return;
+  }
+  __weak __typeof__(self) weakSelf = self;
+  [self.fetcher fetchSpecWithCompletion:^(PasswordRequirementsSpec spec) {
+    [weakSelf.uiHandler setPassword:SysUTF16ToNSString(GeneratePassword(spec))];
+  }];
+}
 
 - (void)saveCredentialWithUsername:(NSString*)username
                           password:(NSString*)password
@@ -71,6 +98,7 @@
                  [self.uiHandler alertSavePasswordFailed];
                  return;
                }
+               [self.uiHandler credentialSaved:credential];
                [self userSelectedCredential:credential];
              }];
 }
@@ -89,25 +117,39 @@
 // Creates a new credential but doesn't add it to any stores.
 - (ArchivableCredential*)createNewCredentialWithUsername:(NSString*)username
                                                 password:(NSString*)password {
-  NSURL* url = [NSURL URLWithString:self.serviceIdentifier.identifier];
+  NSString* identifier = self.serviceIdentifier.identifier;
+
+  // According to Apple
+  // (https://developer.apple.com/documentation/xcode/supporting-associated-domains).
+  // associated domains must have an https:// scheme, and to autofill passwords
+  // an associated domain is needed
+  // (https://developer.apple.com/documentation/security/password_autofill/).
+  // Also iOS strips https:// from passed identifier, Chrome restores it here to
+  // save a valid URL.
+  if (self.serviceIdentifier.type == ASCredentialServiceIdentifierTypeDomain &&
+      ![identifier hasPrefix:@"https://"]) {
+    identifier = [@"https://" stringByAppendingString:identifier];
+  }
+  NSURL* url = [NSURL URLWithString:identifier];
   NSString* recordIdentifier = RecordIdentifierForData(url, username);
 
   NSString* uuid = [[NSUUID UUID] UUIDString];
   if (!StorePasswordInKeychain(password, uuid)) {
     return nil;
   }
-  NSString* validationIdentifier =
+  NSString* validationIdentifierKey =
       AppGroupUserDefaultsCredentialProviderUserID();
+  NSString* validationIdentifier =
+      [app_group::GetGroupUserDefaults() stringForKey:validationIdentifierKey];
 
-  return [[ArchivableCredential alloc]
-           initWithFavicon:nil
-        keychainIdentifier:uuid
-                      rank:1
-          recordIdentifier:recordIdentifier
-         serviceIdentifier:self.serviceIdentifier.identifier
-               serviceName:url.host
-                      user:username
-      validationIdentifier:validationIdentifier];
+  return [[ArchivableCredential alloc] initWithFavicon:nil
+                                    keychainIdentifier:uuid
+                                                  rank:1
+                                      recordIdentifier:recordIdentifier
+                                     serviceIdentifier:identifier
+                                           serviceName:url.host ?: identifier
+                                                  user:username
+                                  validationIdentifier:validationIdentifier];
 }
 
 // Saves the given credential to disk and calls |completion| once the operation

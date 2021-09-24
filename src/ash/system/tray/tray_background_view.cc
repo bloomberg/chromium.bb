@@ -48,6 +48,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -520,16 +521,27 @@ void TrayBackgroundView::UpdateBackground() {
   layer()->SetClipRect(GetBackgroundBounds());
 }
 
+// TODO(crbug.com/1236069): Remove the need to subclass LayerAnimationObserver
+// after converting animations to use builder.
 void TrayBackgroundView::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
-  OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
-                                /*aborted=*/false);
+  OnAnimationEnded();
 }
 
+// TODO(crbug.com/1236069): Remove the need to subclass LayerAnimationObserver
+// after converting animations to use builder.
 void TrayBackgroundView::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
+  OnAnimationAborted();
+}
+
+void TrayBackgroundView::OnAnimationAborted() {
   OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
                                 /*aborted=*/true);
+}
+void TrayBackgroundView::OnAnimationEnded() {
+  OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
+                                /*aborted=*/false);
 }
 
 void TrayBackgroundView::FadeInAnimation() {
@@ -569,71 +581,60 @@ void TrayBackgroundView::FadeInAnimation() {
 }
 
 void TrayBackgroundView::BounceInAnimation() {
-  std::unique_ptr<ui::InterpolatedTransform> scale =
-      std::make_unique<ui::InterpolatedScale>(
-          gfx::Point3F(kAnimationBounceScaleFactor, kAnimationBounceScaleFactor,
-                       1),
-          gfx::Point3F(1, 1, 1));
-
-  gfx::PointF start_point = gfx::PointF(0, 0);
-  gfx::PointF bounce_up_point;
-  gfx::PointF bounce_down_point;
+  gfx::Vector2dF bounce_up_location;
+  gfx::Vector2dF bounce_down_location;
 
   switch (shelf_->alignment()) {
     case ShelfAlignment::kLeft:
-      bounce_up_point = gfx::PointF(kAnimationBounceUpDistance, 0);
-      bounce_down_point = gfx::PointF(-kAnimationBounceDownDistance, 0);
+      bounce_up_location = gfx::Vector2dF(kAnimationBounceUpDistance, 0);
+      bounce_down_location = gfx::Vector2dF(-kAnimationBounceDownDistance, 0);
       break;
     case ShelfAlignment::kRight:
-      bounce_up_point = gfx::PointF(-kAnimationBounceUpDistance, 0);
-      bounce_down_point = gfx::PointF(kAnimationBounceDownDistance, 0);
+      bounce_up_location = gfx::Vector2dF(-kAnimationBounceUpDistance, 0);
+      bounce_down_location = gfx::Vector2dF(kAnimationBounceDownDistance, 0);
       break;
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
     default:
-      bounce_up_point = gfx::PointF(0, -kAnimationBounceUpDistance);
-      bounce_down_point = gfx::PointF(0, kAnimationBounceDownDistance);
+      bounce_up_location = gfx::Vector2dF(0, -kAnimationBounceUpDistance);
+      bounce_down_location = gfx::Vector2dF(0, kAnimationBounceDownDistance);
   }
 
-  std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
-      std::make_unique<ui::InterpolatedTransformAboutPivot>(
-          GetLocalBounds().CenterPoint(), std::move(scale));
+  gfx::Transform initial_scale;
+  initial_scale.Scale3d(kAnimationBounceScaleFactor,
+                        kAnimationBounceScaleFactor, 1);
 
-  scale_about_pivot->SetChild(std::make_unique<ui::InterpolatedTranslation>(
-      start_point, bounce_up_point));
+  gfx::Transform initial_state =
+      gfx::TransformAboutPivot(GetLocalBounds().CenterPoint(), initial_scale);
 
-  std::unique_ptr<ui::LayerAnimationElement> scale_and_move_up =
-      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::move(scale_about_pivot), kAnimationDurationForBounceElement);
-  scale_and_move_up->set_tween_type(gfx::Tween::FAST_OUT_SLOW_IN_3);
+  gfx::Transform scale_about_pivot = gfx::TransformAboutPivot(
+      GetLocalBounds().CenterPoint(), gfx::Transform());
+  scale_about_pivot.Translate(bounce_up_location);
 
-  std::unique_ptr<ui::LayerAnimationElement> move_down =
-      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::make_unique<ui::InterpolatedTranslation>(bounce_up_point,
-                                                        bounce_down_point),
-          kAnimationDurationForBounceElement);
-  move_down->set_tween_type(gfx::Tween::EASE_OUT_4);
+  gfx::Transform move_down;
+  move_down.Translate(bounce_down_location);
 
-  std::unique_ptr<ui::LayerAnimationElement> move_up =
-      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::make_unique<ui::InterpolatedTranslation>(bounce_down_point,
-                                                        start_point),
-          kAnimationDurationForBounceElement);
-  move_up->set_tween_type(gfx::Tween::FAST_OUT_SLOW_IN_3);
-
-  std::unique_ptr<ui::LayerAnimationSequence> sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-
-  sequence->AddElement(
-      ui::LayerAnimationElement::CreateOpacityElement(1.0, base::TimeDelta()));
-  sequence->AddElement(std::move(scale_and_move_up));
-  sequence->AddElement(std::move(move_down));
-  sequence->AddElement(std::move(move_up));
-  sequence->AddObserver(this);
-
-  layer()->GetAnimator()->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  layer()->GetAnimator()->StartAnimation(sequence.release());
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetOpacity(this, 1.0)
+      .SetTransform(this, std::move(initial_state))
+      .Then()
+      .SetDuration(kAnimationDurationForBounceElement)
+      .SetTransform(this, std::move(scale_about_pivot),
+                    gfx::Tween::FAST_OUT_SLOW_IN_3)
+      .Then()
+      .SetDuration(kAnimationDurationForBounceElement)
+      .SetTransform(this, std::move(move_down), gfx::Tween::EASE_OUT_4)
+      .Then()
+      .SetDuration(kAnimationDurationForBounceElement)
+      .SetTransform(this, gfx::Transform(), gfx::Tween::FAST_OUT_SLOW_IN_3)
+      .OnAborted(base::BindOnce(&TrayBackgroundView::OnAnimationAborted,
+                                base::Unretained(this)))
+      .OnEnded(base::BindOnce(&TrayBackgroundView::OnAnimationEnded,
+                              base::Unretained(this)));
 }
 
 // Any visibility updates should be called after the hide animation is

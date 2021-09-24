@@ -18,7 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/multidevice_setup_resources.h"
 #include "chrome/grit/multidevice_setup_resources_map.h"
-#include "chrome/grit/oobe_resources.h"
+#include "chrome/grit/oobe_conditional_resources.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "components/login/localized_values_builder.h"
@@ -137,9 +137,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "wifiSyncEnabled",
       base::FeatureList::IsEnabled(chromeos::features::kWifiSyncAndroid));
-
-  // TODO(crbug.com/1202135): Remove along with JS part.
-  html_source->AddBoolean("newLayoutEnabled", true);
 
   for (const auto& entry : GetLocalizedStringsWithPlaceholders())
     html_source->AddString(entry.name, entry.localized_string);

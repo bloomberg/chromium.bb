@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/svc_scalability_mode.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
@@ -128,10 +129,11 @@ Status SetUpVpxConfig(const VideoEncoder::Options& opts,
   config->g_w = opts.frame_size.width();
   config->g_h = opts.frame_size.height();
 
-  switch (opts.temporal_layers) {
-    case 1:
-      break;
-    case 2:
+  if (!opts.scalability_mode)
+    return Status();
+
+  switch (opts.scalability_mode.value()) {
+    case SVCScalabilityMode::kL1T2:
       // Frame Pattern:
       // Layer Index 0: |0| |2| |4| |6| |8|
       // Layer Index 1: | |1| |3| |5| |7| |
@@ -150,7 +152,7 @@ Status SetUpVpxConfig(const VideoEncoder::Options& opts,
       config->temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_0101;
       config->g_error_resilient = VPX_ERROR_RESILIENT_DEFAULT;
       break;
-    case 3:
+    case SVCScalabilityMode::kL1T3:
       // Frame Pattern:
       // Layer Index 0: |0| | | |4| | | |8| |  |  |12|
       // Layer Index 1: | | |2| | | |6| | | |10|  |  |
@@ -348,7 +350,6 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
 void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                              bool key_frame,
                              StatusCB done_cb) {
-  Status status;
   done_cb = BindToCurrentLoop(std::move(done_cb));
   if (!codec_) {
     std::move(done_cb).Run(StatusCode::kEncoderInitializeNeverCompleted);
@@ -368,7 +369,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                           frame->format() == PIXEL_FORMAT_ARGB;
   if ((!frame->IsMappable() && !frame->HasGpuMemoryBuffer()) ||
       !supported_format) {
-    status =
+    Status status =
         Status(StatusCode::kEncoderFailedEncode, "Unexpected frame format.")
             .WithData("IsMappable", frame->IsMappable())
             .WithData("format", frame->format());
@@ -392,6 +393,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
         is_yuv ? frame->format() : PIXEL_FORMAT_I420, options_.frame_size,
         gfx::Rect(options_.frame_size), options_.frame_size,
         frame->timestamp());
+    Status status;
     if (resized_frame) {
       status = ConvertAndScaleFrame(*frame, *resized_frame, resize_buf_);
     } else {
@@ -498,8 +500,8 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                                          vpx_codec_err_to_string(vpx_error),
                                          vpx_codec_error_detail(codec_.get()));
     DLOG(ERROR) << msg;
-    status = Status(StatusCode::kEncoderFailedEncode, msg)
-                 .WithData("vpx_error", vpx_error);
+    Status status = Status(StatusCode::kEncoderFailedEncode, msg)
+                        .WithData("vpx_error", vpx_error);
     std::move(done_cb).Run(std::move(status));
     return;
   }

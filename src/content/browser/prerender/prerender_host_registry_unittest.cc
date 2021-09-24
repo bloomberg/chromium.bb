@@ -711,18 +711,15 @@ TEST_F(PrerenderHostRegistryTest,
        CompareInitialAndActivationBeginParams_Headers) {
   EXPECT_FALSE(CheckIsActivatedForParams(
       base::BindLambdaForTesting([](NavigationSimulatorImpl* navigation) {
-        navigation->set_request_headers("X-Foo: Test");
+        navigation->set_request_headers("User-Agent: Test");
       })));
 }
 
-// Tests that the User-Agent header is ignored when comparing request headers.
-//
-// TODO(https://crbug.com/1213299): Check the User-Agent header in a way that
-// works with the DevTools override.
-TEST_F(PrerenderHostRegistryTest, UserAgentIsIgnoredForParamMatching) {
+// Tests that the Purpose header is ignored when comparing request headers.
+TEST_F(PrerenderHostRegistryTest, PurposeHeaderIsIgnoredForParamMatching) {
   EXPECT_TRUE(CheckIsActivatedForParams(
       base::BindLambdaForTesting([](NavigationSimulatorImpl* navigation) {
-        navigation->set_request_headers("User-Agent: MyBrowser");
+        navigation->set_request_headers("Purpose: Test");
       })));
 }
 

@@ -13,18 +13,15 @@
 #include <memory>
 #include <string>
 
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
+#include "base/thread_annotations.h"
 #include "base/types/pass_key.h"
 #include "content/browser/font_access/font_enumeration_cache.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/font_access/font_enumeration_table.pb.h"
-
-namespace base {
-class ElapsedTimer;
-}
 
 namespace content {
 
@@ -47,7 +44,6 @@ class CONTENT_EXPORT FontEnumerationCacheWin : public FontEnumerationCache {
   // A data structure to hold font family results from DirectWrite.
   struct FamilyDataResult {
     std::vector<blink::FontEnumerationTable_FontMetadata> fonts;
-    HRESULT exit_hresult{S_OK};
     FamilyDataResult();
     FamilyDataResult(const FamilyDataResult&) = delete;
     FamilyDataResult& operator=(const FamilyDataResult&) = delete;
@@ -56,24 +52,13 @@ class CONTENT_EXPORT FontEnumerationCacheWin : public FontEnumerationCache {
 
  protected:
   // FontEnumerationCache:
-  void SchedulePrepareFontEnumerationCache() override;
+  blink::FontEnumerationTable ComputeFontEnumerationData(
+      const std::string& locale) override;
 
  private:
-  void InitializeDirectWrite();
   void PrepareFontEnumerationCache();
-  void AppendFontDataAndFinalizeIfNeeded(
-      std::unique_ptr<FamilyDataResult> family_data_result);
-  void FinalizeEnumerationCache();
 
-  bool direct_write_initialized_ = false;
-  Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
-  uint32_t outstanding_family_results_ = 0;
-
-  // Protobuf structure temporarily used during cache construction and shared.
-  std::unique_ptr<blink::FontEnumerationTable> font_enumeration_table_;
-
-  std::map<HRESULT, unsigned> enumeration_errors_;
-  std::unique_ptr<base::ElapsedTimer> enumeration_timer_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace content

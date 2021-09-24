@@ -6,8 +6,9 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/signin/public/base/account_consistency_method.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/pref_names.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
@@ -41,6 +42,17 @@ enum InfobarSyncError {
   kMaxValue = SYNC_TRUSTED_VAULT_RECOVERABILITY_DEGRADED,
 };
 
+// Map of all synceable types to the corresponding pref name.
+const std::map<SyncSetupService::SyncableDatatype, const char*>
+    kSyncableItemTypes = {
+        {SyncSetupService::kSyncAutofill, syncer::prefs::kSyncAutofill},
+        {SyncSetupService::kSyncBookmarks, syncer::prefs::kSyncBookmarks},
+        {SyncSetupService::kSyncOmniboxHistory, syncer::prefs::kSyncTypedUrls},
+        {SyncSetupService::kSyncOpenTabs, syncer::prefs::kSyncTabs},
+        {SyncSetupService::kSyncPasswords, syncer::prefs::kSyncPasswords},
+        {SyncSetupService::kSyncReadingList, syncer::prefs::kSyncReadingList},
+        {SyncSetupService::kSyncPreferences, syncer::prefs::kSyncPreferences},
+};
 }  // namespace
 
 NSString* GetSyncErrorDescriptionForSyncSetupService(
@@ -70,9 +82,6 @@ NSString* GetSyncErrorDescriptionForSyncSetupService(
       // syncer::AlwaysEncryptedUserTypes().
       return l10n_util::GetNSString(
           IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_PASSWORDS);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(
-          IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION);
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceUnrecoverableError:
@@ -102,8 +111,6 @@ NSString* GetSyncErrorMessageForBrowserState(ChromeBrowserState* browserState) {
       return l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_COULD_NOT_CONNECT);
     case SyncSetupService::kSyncServiceUnrecoverableError:
       return l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_UNRECOVERABLE);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED);
   }
 }
 
@@ -124,8 +131,6 @@ NSString* GetSyncErrorButtonTitleForBrowserState(
       return l10n_util::GetNSString(IDS_IOS_SYNC_VERIFY_ITS_YOU_BUTTON);
     case SyncSetupService::kSyncServiceUnrecoverableError:
       return l10n_util::GetNSString(IDS_IOS_SYNC_SIGN_IN_AGAIN_BUTTON);
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_BUTTON);
     case SyncSetupService::kNoSyncServiceError:
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceCouldNotConnect:
@@ -147,7 +152,6 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kNoSyncServiceError:
-    case SyncSetupService::kSyncSettingsNotConfirmed:
       return true;
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
@@ -205,17 +209,6 @@ bool DisplaySyncErrors(ChromeBrowserState* browser_state,
     case SyncSetupService::kSyncServiceUnrecoverableError:
       loggedErrorState = SYNC_UNRECOVERABLE_ERROR;
       break;
-    case SyncSetupService::kSyncSettingsNotConfirmed:
-      // Do not display sync not confirmed infobar if the user is in the MICE
-      // sign-in flow, since disabling Sync during sign-in is considered a
-      // valid end state.
-      // TODO(crbug.com/1084941): the kSyncSettingsNotConfirmed case should be
-      // removed following the launch of MICE.
-      if (signin::IsMobileIdentityConsistencyEnabled()) {
-        return false;
-      }
-      loggedErrorState = SYNC_SYNC_SETTINGS_NOT_CONFIRMED;
-      break;
   }
   UMA_HISTOGRAM_ENUMERATION("Sync.SyncErrorInfobarDisplayed", loggedErrorState);
 
@@ -238,7 +231,24 @@ bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {
     case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
     case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
     case SyncSetupService::kSyncServiceUnrecoverableError:
-    case SyncSetupService::kSyncSettingsNotConfirmed:
       return false;
   }
+}
+
+bool IsManagedSyncDataType(ChromeBrowserState* browserState,
+                           SyncSetupService::SyncableDatatype dataType) {
+  return browserState->GetPrefs()
+      ->FindPreference(kSyncableItemTypes.at(dataType))
+      ->IsManaged();
+}
+
+bool HasManagedSyncDataType(ChromeBrowserState* browserState) {
+  for (int type = 0; type != SyncSetupService::kNumberOfSyncableDatatypes;
+       type++) {
+    SyncSetupService::SyncableDatatype dataType =
+        static_cast<SyncSetupService::SyncableDatatype>(type);
+    if (IsManagedSyncDataType(browserState, dataType))
+      return true;
+  }
+  return false;
 }

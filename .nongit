@@ -1,5 +1,5 @@
 {
-  "branch": "94.0.4606.x/nongit",
+  "branch": "95.0.4638.x/nongit",
   "files": {
     "src": {
       ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "86e75e1d49a30d2e93584758c97f655efb9d58c5",
-      "LASTCHANGE.committime": "f261e5479ece5aa0f053718e97be987793c9ca49"
+      "LASTCHANGE": "f12502f211e08ea3e25d69814fb978aebfbac58c",
+      "LASTCHANGE.committime": "618bb5ecfa346a8c438c1542b6ac73fbc0d58277"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -36,13 +36,13 @@
       }
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "ff51ae95f9c6ddf6918bb42383860c97dcbfa9ff"
+      "gpu_lists_version.h": "b3f2416478fc090f308e366bde46c6e704358604"
     },
     "src/skia/ext": {
-      "skia_commit_hash.h": "658601af49962348f1761ed7465debc675591474"
+      "skia_commit_hash.h": "a0ca79682e84a232d385fb20318813da9db4c865"
     },
     "src/testing": {
-      "location_tags.json": "673093b7315de779a7f209fb81b697131dbf1d22"
+      "location_tags.json": "e6d3dc9b0c2a347b2a3852e7395b176c9919cf69"
     },
     "src/third_party/apache-win32/bin": {
       "ApacheMonitor.exe": {
@@ -133,38 +133,38 @@
       "php7apache2_4.dll": "dd2a2f476801fcd70587f54171120a10f8d148fc"
     },
     "src/third_party/llvm-build/Release+Asserts": {
-      "cr_build_revision": "293a212e9e5144ccd08d82618818142082d55459"
+      "cr_build_revision": "27ffde99f76d3f1e5f2220a6589ca99e7768cbe7"
     },
     "src/third_party/llvm-build/Release+Asserts/bin": {
       "clang-cl.exe": {
         "mode": 511,
-        "sha": "7a46f39b81b149e0129b846747b13dd7a943c6f3",
+        "sha": "a5664f5246166e8fb39f48e8208cd7db8d93e3c9",
         "type": "7z"
       },
       "lld-link.exe": {
         "mode": 511,
-        "sha": "6d5c53c4df8e33adfa705c0e390c2d2b4a2c8287",
+        "sha": "3025dd4292eb2b8c0f187c34a8f5a9ad70cbb1f7",
         "type": "7z"
       },
       "llvm-pdbutil.exe": {
         "mode": 511,
-        "sha": "3ec481e1287f5088646d52073e63c146815e44eb",
+        "sha": "7712be230c5635b3c225e95964b12a9a4ae31ccd",
         "type": "7z"
       },
       "llvm-symbolizer.exe": {
         "mode": 511,
-        "sha": "50e413f1a0b9c35b166df19c98ec0b5386d26ece",
+        "sha": "944015f0c6a1b0c63196819719cc5c6edf962884",
         "type": "7z"
       },
       "llvm-undname.exe": {
         "mode": 511,
-        "sha": "d521145c81958d5ee4586074f39b319c7aa9ac35"
+        "sha": "ef0f742536ec712123cbcbc48018652aa3c906ff"
       }
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include": {
       "__clang_cuda_builtin_vars.h": "412e823a827f01f7b61ab0f4f964096b323719b1",
       "__clang_cuda_cmath.h": "5bbb59a93b9e5a8d6960b10e9b77cef172c7d5fd",
-      "__clang_cuda_complex_builtins.h": "2b701fef0ea2a6857537a2e81f89a87d6d04208d",
+      "__clang_cuda_complex_builtins.h": "7bc7bc2ce63e18983cf8a77c369809a045c8fd1e",
       "__clang_cuda_device_functions.h": "cc4e1a4dd96ad8316616e300a67cc6b3f40e1596",
       "__clang_cuda_intrinsics.h": "c7bff6a9d8fe60181a0a48ba0f63d99a76f3b0f0",
       "__clang_cuda_libdevice_declares.h": "6173b589e3eff948a6efc0536f99fb0fba510eab",
@@ -173,15 +173,15 @@
       "__clang_cuda_runtime_wrapper.h": "f401964bd529c836e23b870ab0d66a42d9f1f75a",
       "__clang_hip_cmath.h": "d488db0a94d9d54d8e85269031506ee0bd5b53af",
       "__clang_hip_libdevice_declares.h": "8be848ba2aa36fa296a7dd3c605ec32307288aa8",
-      "__clang_hip_math.h": "9effaa18d3e8c14fdf9f6e28ef487565e1858e78",
+      "__clang_hip_math.h": "ef7e087b832ca8bd3f2fdcc4ee6b144f7c03d629",
       "__clang_hip_runtime_wrapper.h": "73021d256cbae90e8dc57db2fb14edebb43495ef",
       "__stddef_max_align_t.h": "e3b439285d0fd085d80b5c245171945fb78a87ed",
-      "__wmmintrin_aes.h": "f540319c7fd2be496bc8c2f41d11dde1b79aade5",
+      "__wmmintrin_aes.h": "3010b38711e676e08e0aaba6289a5ac0b2e6fe5b",
       "__wmmintrin_pclmul.h": "fef4b93dbb43368867bf684e95b345630deb55e7",
       "adxintrin.h": "72b9ed08f40c5a3bf242f9c30da343e7868ed97a",
-      "altivec.h": "d548d8a0dd75e07588bf4f8c368b52f662e1fd05",
+      "altivec.h": "fa9100a2639dba14b31b9fe9950ed2214be5dee6",
       "ammintrin.h": "3806be6ebc437c947708f0689103583ecf22836c",
-      "amxintrin.h": "ec601a58e7c3400d996e0a4598f950795c48ca02",
+      "amxintrin.h": "4940666e80836608c3661b761d7dc63996cc8c63",
       "arm64intr.h": "4943b2db69d0273ff3da21560d312c4a04bc7e43",
       "arm_acle.h": "45fac248dadbf53470d6a9f758c35344cc24a6f7",
       "arm_bf16.h": "329ae39e625dad80cdbbc67895f0bb52655dcd0f",
@@ -201,34 +201,36 @@
         "type": "7z"
       },
       "armintr.h": "300ed4ee470d7734c72fd3e5e2d8ea6b5c8a8aad",
-      "avx2intrin.h": "cc16720949ea3ab4e588e4ded60499ff649ecb5c",
+      "avx2intrin.h": "5064c87c2bb19f77276e406a9975fbcee49c91ac",
       "avx512bf16intrin.h": "d1d87e72f147e5d725eeb3ae9a51b6468fa806a0",
       "avx512bitalgintrin.h": "d4411d156ba51e661c67b23a87598cb221cbef41",
-      "avx512bwintrin.h": "4281a33d375c22e67b8a1d4623bbfb5365481f0d",
+      "avx512bwintrin.h": "6aee8aed8487177d7afbd71b50d8568bf848bd52",
       "avx512cdintrin.h": "bfdba84aa28b57739640a44433e232b0dec0fc07",
-      "avx512dqintrin.h": "337256c50f50d2466950b603105c4a669c9578a8",
-      "avx512erintrin.h": "857006169906841b2cf83c2d0ec6759e60cf3d61",
-      "avx512fintrin.h": "010bcadab019592486b73f4e815d38cbad85af6e",
+      "avx512dqintrin.h": "3ba0a0cfd5fdfb3c35dd8970db1eb09c9eb18ae9",
+      "avx512erintrin.h": "1c5a2d2d208ff4223811a8ff4d0654d5f533614a",
+      "avx512fintrin.h": "df298640523b7b65ac53e53b4a030feb5610982d",
+      "avx512fp16intrin.h": "8911b4e2ff42f91baf4db0efab53bf6d71f2c62f",
       "avx512ifmaintrin.h": "5f7da52f1f73ac6171b7f23167353cd5a6839854",
       "avx512ifmavlintrin.h": "5889401d105537c9147895b42857f38d1d37abbf",
       "avx512pfintrin.h": "b8bcf49c6b249c3a2ebe896d1a8b37d5c290f53b",
-      "avx512vbmi2intrin.h": "a23144616ce36252f9cf27ba03f3a91b3cdfe9bd",
+      "avx512vbmi2intrin.h": "17fa77722c64f6fa4403b7e7647f6656ab8b6fb0",
       "avx512vbmiintrin.h": "c0e0f94d48d489dfc7a7b5755f95fe6615faa8f6",
       "avx512vbmivlintrin.h": "c5b96ae8ada70a922088ce03460720ebb30604d1",
       "avx512vlbf16intrin.h": "1b1a744bcdbfd11576743332353c11eb2d8aedc9",
       "avx512vlbitalgintrin.h": "5154eae14cbb3c97774a2280db869372334fff1b",
-      "avx512vlbwintrin.h": "6ed10ed9803bab07f317c7777a7d60c6fbbc65af",
+      "avx512vlbwintrin.h": "7873516053ecee35580a839fe32bb349a6c5e042",
       "avx512vlcdintrin.h": "cc8b72528d012699700aa02652ac51223a487c48",
-      "avx512vldqintrin.h": "95ba574ea8210d79f380a07b8222467e3f4b860e",
-      "avx512vlintrin.h": "968c10efeac0ce2eea42ba0e74339c265987831f",
-      "avx512vlvbmi2intrin.h": "a40f926de75ab9ed26aff2e6f7c5dd797eae8add",
-      "avx512vlvnniintrin.h": "71ac1b4370d4f5c6900ec9c8a68e693397eb16e1",
+      "avx512vldqintrin.h": "713e1a18a1b3f14bcb7f33afe55ab22f62e7cc9a",
+      "avx512vlfp16intrin.h": "b8cd554717a03f90146ddeac965ffe45d2a47a3a",
+      "avx512vlintrin.h": "0519dba59081a506ebcf9971857375cde74bcf81",
+      "avx512vlvbmi2intrin.h": "fac1f232415affee1cb4033a6635cc5728341d69",
+      "avx512vlvnniintrin.h": "0fb29af262f710f107d733eaea3d63a85a20f379",
       "avx512vlvp2intersectintrin.h": "3e0815e5d46ffc50611fe169fd1fd31582657dc8",
       "avx512vnniintrin.h": "9935a119aacab2f69626aacbd7d370c1b3ace0bb",
       "avx512vp2intersectintrin.h": "5d3cb48cfd20f2882ea0d3ad24449ad7f84a59bb",
       "avx512vpopcntdqintrin.h": "bb435e62333029268db9cb5a6494fca43d3f0ea1",
       "avx512vpopcntdqvlintrin.h": "a3cb9b6bccb3d7897f3d626630811ea0a8b5c97e",
-      "avxintrin.h": "382b6215751ec777560797e8c4bd7e0672e6ba58",
+      "avxintrin.h": "7f4e9761f1e2cd9c1d5149173777d45083296335",
       "avxvnniintrin.h": "ad45cb7962e5451626f193830bd003b1451eaeab",
       "bmi2intrin.h": "0b56aed5f4cb7b4c9086e13a9ec78b091629d84c",
       "bmiintrin.h": "f583c215f919e6a552c3b69c2d5d2421c3f0dcc8",
@@ -239,15 +241,15 @@
       "clflushoptintrin.h": "060eb36f30f92cedd2ebc11cd238f3a986cbb810",
       "clwbintrin.h": "3360d203f7d7d651807abed5a992781628e09fc8",
       "clzerointrin.h": "a180984a3f285822b3271506ac48185cbda4fec0",
-      "cpuid.h": "34f0e76807c591456ea09780d93e8ef14af6ff19",
-      "emmintrin.h": "bb759721faeb3091392d4811ec857bda7888cf9e",
+      "cpuid.h": "6df1b4a111726ed7b3daceef7d259cdb56062351",
+      "emmintrin.h": "b79a4f17f9c7ff71404d658f601ab7a8fa22c026",
       "enqcmdintrin.h": "30af67f6b4601b8b7034b95b4cd8c769f8e4daed",
-      "f16cintrin.h": "109b604adae3b45023800a6325d5e91e2b2899e2",
+      "f16cintrin.h": "13905e6fb0ec8bc53d079aaf80debc14b893e3ed",
       "float.h": "ed610b24aa1039151206e63a4f72bf4cb40293c8",
       "fma4intrin.h": "694801b3e8dd4bc0b8639ca0a75c13be19523f71",
       "fmaintrin.h": "d889b7c5e27059e4c46c4c22ef7c9cecd2446aad",
       "fxsrintrin.h": "afee6aa976749307bc07ace87347c55d802089df",
-      "gfniintrin.h": "11a321b7c919b58bd930263a97fd06a8b61da1f9",
+      "gfniintrin.h": "a59238b0b13193d88a3dc785ed97cad9c6beeabd",
       "hexagon_circ_brev_intrinsics.h": "c53786d3c37bc470696d74b53a4e8223019b9ab8",
       "hexagon_protos.h": "cdffd93bb85938ba46c4ca73f98942114fd675b3",
       "hexagon_types.h": "6958809418d8ff6c4759adbfb6ce8e4e452b4a89",
@@ -256,8 +258,8 @@
       "htmxlintrin.h": "6ef6f4b34279a754e78e54563f23dc7648712f45",
       "hvx_hexagon_protos.h": "41ce7a6b93e93f5b139a1cf4a1285ca56b3163a7",
       "ia32intrin.h": "00138effd5055ef50e0b9c23169b010903bca7db",
-      "immintrin.h": "56d3dadf6a334b3898449785f38e571a315da58e",
-      "intrin.h": "ff8eb8fca268716d2f3528be1f493ffe40c54995",
+      "immintrin.h": "8a75895c6c5f1ddb4c9c3ec36586d9381df1f9c7",
+      "intrin.h": "4803277472ee8f29854a2bf6fc439eb78c146a35",
       "inttypes.h": "1c894c4aca4975d7439ed3abda221818dbc57e94",
       "invpcidintrin.h": "48dae0a86f92ab3f2a1b258032876abed23ee3f2",
       "iso646.h": "e0a20c6f1891b264c3ae7e116723bceea18919c1",
@@ -273,8 +275,8 @@
       "msa.h": "0ca4900870f1f7183bd6413f6c4d66a70ffd8eab",
       "mwaitxintrin.h": "ed485380af795bfdd1e2dc41f9441d7a8447ad73",
       "nmmintrin.h": "672aea4966817fb12988fde3738fa40d4d53cc39",
-      "opencl-c-base.h": "ff8b776d03bb8e0831f5c416d43139df10b7c7a8",
-      "opencl-c.h": "501126bf13ecd5a1fd3d54a1a7f0d4419905311f",
+      "opencl-c-base.h": "f3605c659d952a2ea6096763a5df101891fc050f",
+      "opencl-c.h": "bb3ca6aae20a2dc46fdeeea990fe31fed49bc920",
       "pconfigintrin.h": "d2014b026f3686618304538d29718920c5f8695f",
       "pkuintrin.h": "c62080becb0f2e0b82fa19fc9413f41bb365f983",
       "pmmintrin.h": "a83b2eb6d8e26973adfb051c6bc9cf73424a4f00",
@@ -283,7 +285,7 @@
       "ptwriteintrin.h": "0a04f7c1dfc404607e5eff99d048c082a8f7e24d",
       "rdseedintrin.h": "ccb3d2dd2294b4850fb51bc645f4f9a397c5c15a",
       "riscv_vector.h": {
-        "sha": "f818c19c9d2b55b718a7285b2159269884e4b0e6",
+        "sha": "d762636a3abb1252104f2e5b3ef777b74ba0c520",
         "type": "7z"
       },
       "rtmintrin.h": "36ff5835173f5d16796505de2de6ab1d11d1f1c6",
@@ -291,7 +293,7 @@
       "serializeintrin.h": "b774e5a24a0ba85ebc78095f72b52ab19b962531",
       "sgxintrin.h": "303a21f6b2e9fd6bcadbf060d3676445cd5c2da3",
       "shaintrin.h": "08b1fb1dc16a36f6a7d6a25b1a7d06447e1933f3",
-      "smmintrin.h": "025830a74280e4441ba7c346a43735a20f55bcc7",
+      "smmintrin.h": "8913a196144bb53c5f85e98dbcc79418be67c907",
       "stdalign.h": "6ad25db4539a1359146a428b3f2b8e646bdeae7b",
       "stdarg.h": "0bc39408c1e5feaadd6f0420d14324b477420b93",
       "stdatomic.h": "665551ea69a4692fe34778fe2dd8abd1e6b58584",
@@ -301,7 +303,7 @@
       "stdnoreturn.h": "e83cd8153752c1419991f3ac973f40baf4be76bd",
       "tbmintrin.h": "f4e848a1c0019c1ed5ce827d86fbe1054b203e60",
       "tgmath.h": "7acf18b9dd3578e1d315eda874bd3dfe189eeb6d",
-      "tmmintrin.h": "35533e115c7d26d46266f63b34833d57c283a6f8",
+      "tmmintrin.h": "dbd959d0a62cb3d8f65a3786b60e657c0f4fb2a0",
       "tsxldtrkintrin.h": "491823e93fc02779422902a244cba6e1ce155493",
       "uintrintrin.h": "e3839dcebe1ec5cffce3ea7a2c551860cabd86c6",
       "unwind.h": "029524b7bc84cea287545e7ca3cd7a32a092bf3d",
@@ -309,15 +311,15 @@
       "vaesintrin.h": "f3c0807bb94ab9977a27431ad31a8ef2429d22db",
       "varargs.h": "d241b7de3cb2a8590d7f7b4c3d935496d9b8fc44",
       "vecintrin.h": "ec1dbfd015f6ef4d20fe344afb870409bfa6fba6",
-      "vpclmulqdqintrin.h": "44daadb07d57c1f11742d0d2c06cbbbf223f2d3a",
+      "vpclmulqdqintrin.h": "485692ea2b5b17be49688eda073867a762fa8ecd",
       "waitpkgintrin.h": "7ecada4cf723d60a1cc32c14ab5179a5fe1f8dd8",
-      "wasm_simd128.h": "712fa03780986e65d011a2356ebf2be763a59eef",
+      "wasm_simd128.h": "3889a2769faf770448f780167f4a6442b1f30897",
       "wbnoinvdintrin.h": "cac0347efc4fc14a830ec864378ae68d30e32fc6",
       "wmmintrin.h": "f932ca81089cabec8549e6dc21c44557ac430a38",
-      "x86gprintrin.h": "1fc6cab4b28fcccb75fcc5d7a92df52064d56b4d",
+      "x86gprintrin.h": "327ccb724be807da6d9933a844ee925cb010e32f",
       "x86intrin.h": "768d0e56ab0570de8eae67ef286d916b1224d4d4",
-      "xmmintrin.h": "f4686691c7ed543c2b30f7ce4b6cf66fe3397209",
-      "xopintrin.h": "5cedde41b625f8b4ec9b346f4d404e88837ad682",
+      "xmmintrin.h": "620453c97783cd9d7e0013e90f90759635fb7080",
+      "xopintrin.h": "976cdf4902a4052a7e02d210fc72a79ac16d23fc",
       "xsavecintrin.h": "5524947fa98e761da1d36a0d6b6a55e42cdadc11",
       "xsaveintrin.h": "9429db6dde561e90a91c18bf8067024f2d8258f2",
       "xsaveoptintrin.h": "89a4c44db5d9f33f7e1a2ba6952520e09a95787e",
@@ -335,8 +337,8 @@
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include/openmp_wrappers": {
       "__clang_openmp_device_functions.h": "279fb26fbaf78bfe2cade435bc6f29b72fa27f9e",
       "cmath": "22a720aca9561bf613e6265d84f645f21dfb7859",
-      "complex": "dfd6193c97cbd73968330918f4cd9d707c2c6624",
-      "complex.h": "15dc415b8126dc6de293e27714a63a6032937224",
+      "complex": "d6e740df42fb3a8fdbcb0802d024e4f8b889bcc5",
+      "complex.h": "7e7c0866426bc9ec9ffb9e41f11c1c8b6c079243",
       "complex_cmath.h": "e3d9aebbbc2436a3acb0a81554f6994c2d14560f",
       "math.h": "1e3c07cfdb8cd53da2e7ed1117073c22533ada1f",
       "new": "985ddc567f49402a982bc064435c267fd4da3270"
@@ -355,8 +357,8 @@
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include/sanitizer": {
       "allocator_interface.h": "6226135ef84b3c961212361dbc34e84d4010a106",
-      "asan_interface.h": "792ef9cfaa32b08fd45be87e583250503076513f",
-      "common_interface_defs.h": "cd69285b8d4afec5f5615eff88129811db497912",
+      "asan_interface.h": "9bff21c117b39a211f0d7b5de041363285897ec8",
+      "common_interface_defs.h": "692b8f70c9697ece8558f75967e840020736a77a",
       "coverage_interface.h": "c063cfe60c5ba34e793951bc478da7e5a9932a18",
       "dfsan_interface.h": "d6209a3ea2b29dd8daa9275167ddde3b6f617573",
       "hwasan_interface.h": "14035c05c63535f531b60e248861d9dfcda1da0b",
@@ -371,28 +373,28 @@
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/lib/windows": {
       "clang_rt.asan-x86_64.lib": {
-        "sha": "c6462c3ffeb55acb73d7efb7e71c0e96e99f84bc",
+        "sha": "b99a52a087d4a2365dbf5a9ad04b07d3e1597e6c",
         "type": "7z"
       },
-      "clang_rt.asan_cxx-x86_64.lib": "cbf2f4a3d7bda21f87b1f15b03ddf93ccecd1d25",
-      "clang_rt.asan_dll_thunk-x86_64.lib": "312af53764280ba85b295ec02e19c2307156155e",
-      "clang_rt.asan_dynamic-x86_64.dll": "0d5b267f6880497a5eff2677253322bd31bf22a5",
+      "clang_rt.asan_cxx-x86_64.lib": "28ba599e636eabd30f6a9929ba9c2c425b10eef8",
+      "clang_rt.asan_dll_thunk-x86_64.lib": "dc904baac056cd3f0f4acf0a8f89df46c7c1a893",
+      "clang_rt.asan_dynamic-x86_64.dll": "bca14df28a5d5b34d6c4ed0d30f49777fbde42c5",
       "clang_rt.asan_dynamic-x86_64.lib": "1b3a6c0364c6e4a4b0f8b5b81f25fa5673e107cd",
-      "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib": "4fca7578a42358871c2ed9407e308c84adffc409",
-      "clang_rt.profile-i386.lib": "1f32ce31ae61179347046c52f1e9904d8e6ececb",
-      "clang_rt.profile-x86_64.lib": "9d7a395d6926c58a1d5724e9e3f855f27339cceb",
+      "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib": "761ec1867aa374671c2cba6066af7e8cfa447705",
+      "clang_rt.profile-i386.lib": "5af114fa69551cf2ece3d1ec646a4bb360eb138b",
+      "clang_rt.profile-x86_64.lib": "63c6a06920ffcd546c503f4ffc86d226f2e1152d",
       "clang_rt.ubsan_standalone-x86_64.lib": {
-        "sha": "ff3ffccd6dfdbb329c9db3ff35009d8f26835e43",
+        "sha": "12b74cfb927fa6067c0d1f2fdea555ddbc4a4430",
         "type": "7z"
       },
-      "clang_rt.ubsan_standalone_cxx-x86_64.lib": "d7939bd1373b0d537e469a770c9547f83d8b7575"
+      "clang_rt.ubsan_standalone_cxx-x86_64.lib": "5e5b75ca18b8b7a5b444d88d75042265feb2cf34"
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/share": {
       "asan_ignorelist.txt": "5ce59926ce2f3679909f3c48511cd593f24eb01f",
       "cfi_ignorelist.txt": "4a0f03949ca8cfdc3244439248788d5dfa96026d"
     },
     "src/third_party/node/node_modules": {
-      ".package-lock.json": "e83c657b52d05bf3a79f5b90cac614d4143e7d56"
+      ".package-lock.json": "cee3f9629a84072ce508eb49e84c6c89b53f8841"
     },
     "src/third_party/node/node_modules/@babel/code-frame": {
       "LICENSE": "f31575ec773bb199aeb7c0d0f1612cfe1c7038f1",
@@ -1938,6 +1940,23 @@
     },
     "src/third_party/node/node_modules/@nodelib/fs.walk/out/types": {
       "index.js": "c8ad2e549bdc6801e0d1c80b0308d4b9bd4985ce"
+    },
+    "src/third_party/node/node_modules/@types/dom-mediacapture-record": {
+      "index.d.ts": "5261f0125d25ccf526cea5a5534d92dd67905597"
+    },
+    "src/third_party/node/node_modules/@types/google.analytics": {
+      "index.d.ts": "97c7ffbaa83f3345fc041fdf07f57a6274d1393c"
+    },
+    "src/third_party/node/node_modules/@types/w3c-css-typed-object-model-level-1": {
+      "index.d.ts": "4b7b4b751634454d3ff3f135305be25d148f5c8c"
+    },
+    "src/third_party/node/node_modules/@types/w3c-image-capture": {
+      "index.d.ts": "e8e4c737359982f28783e497839b9529b26e2351"
+    },
+    "src/third_party/node/node_modules/@types/webrtc": {
+      "MediaStream.d.ts": "5b1e50554935a2685d41d1f604fbe7a3d01862e1",
+      "RTCPeerConnection.d.ts": "95c77cfdd382d35596c57470d8c3c9b3423225b1",
+      "index.d.ts": "e087a03f4e208d815e9af8d06926b28442a82bf1"
     },
     "src/third_party/node/node_modules/@typescript-eslint/eslint-plugin": {
       "LICENSE": "7e7370143b26b5e2a826528507c7cc8df2d2eacf",
@@ -13053,7 +13072,7 @@
       }
     },
     "src/third_party/subresource-filter-ruleset/data": {
-      "UnindexedRules": "4a7fcc7495ad686622ce779fc13b4ff8e5af9edc"
+      "UnindexedRules": "f3f154bebece8f67f5c0989308c91f28833dadfe"
     },
     "src/third_party/test_fonts/test_fonts": {
       ".uuid": "2ec1dfedd2aee49f35aca126e18b0e1581d2a6a9",

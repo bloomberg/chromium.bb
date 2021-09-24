@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -227,7 +227,7 @@ class PictureInPictureWindowControllerBrowserTest
                                        const base::FilePath& file_path) {
     GURL test_page_url = ui_test_utils::GetTestUrl(
         base::FilePath(base::FilePath::kCurrentDirectory), file_path);
-    ui_test_utils::NavigateToURL(browser, test_page_url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser, test_page_url));
 
     content::WebContents* active_web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -560,7 +560,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -583,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(active_web_contents->HasPictureInPictureVideo());
 
   // Reload page should not crash.
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 }
 
 // Tests that when creating a Picture-in-Picture window a size is sent to the
@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -667,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -853,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL(
           "media/picture-in-picture/player_metadata_poster.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -906,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
           FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1036,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1057,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
           FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1091,7 +1091,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       "example.com", "/media/picture-in-picture/iframe-test.html?embed_url=" +
                          embed_url.spec());
 
-  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1163,7 +1163,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
           FILE_PATH_LITERAL("media/picture-in-picture/iframe-size.html")));
-  ui_test_utils::NavigateToURL(browser(), another_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), another_page_url));
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
@@ -1282,7 +1282,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(FILE_PATH_LITERAL(
           "media/picture-in-picture/player_preload_none.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1307,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
           FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1357,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1484,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1853,7 +1853,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1881,7 +1881,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1950,7 +1950,7 @@ class WebAppPictureInPictureWindowControllerBrowserTest
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetOrigin();
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     const web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
 
     Browser* app_browser = LaunchWebAppBrowserAndWait(app_id);
@@ -2203,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(kPictureInPictureWindowSizePage));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_page_url));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

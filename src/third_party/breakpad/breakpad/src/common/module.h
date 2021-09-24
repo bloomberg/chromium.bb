@@ -41,6 +41,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -66,6 +67,8 @@ class Module {
   static constexpr uint64_t kMaxAddress = std::numeric_limits<Address>::max();
   struct File;
   struct Function;
+  struct InlineOrigin;
+  struct Inline;
   struct Line;
   struct Extern;
 
@@ -120,6 +123,50 @@ class Module {
     // Source lines belonging to this function, sorted by increasing
     // address.
     vector<Line> lines;
+
+    // Inlined call sites belonging to this functions.
+    vector<std::unique_ptr<Inline>> inlines;
+  };
+
+  struct InlineOrigin {
+    InlineOrigin(const string& name): id(-1), name(name), file(NULL) {}
+
+    // A unique id for each InlineOrigin object. INLINE records use the id to
+    // refer to its INLINE_ORIGIN record.
+    int id;
+
+    // The inlined function's name.
+    string name;
+
+    File* file;
+
+    int getFileID() const { return file ? file->source_id : -1; }
+  };
+
+  // A inlined call site.
+  struct Inline {
+    Inline(InlineOrigin* origin,
+           const vector<Range>& ranges,
+           int call_site_line,
+           int inline_nest_level,
+           vector<std::unique_ptr<Inline>> child_inlines)
+        : origin(origin),
+          ranges(ranges),
+          call_site_line(call_site_line),
+          inline_nest_level(inline_nest_level),
+          child_inlines(std::move(child_inlines)) {}
+
+    InlineOrigin* origin;
+
+    // The list of addresses and sizes.
+    vector<Range> ranges;
+
+    int call_site_line;
+
+    int inline_nest_level;
+
+    // A list of inlines which are children of this inline.
+    vector<std::unique_ptr<Inline>> child_inlines;
   };
 
   // A source line.
@@ -176,6 +223,14 @@ class Module {
       if (lhs->address == rhs->address)
         return lhs->name < rhs->name;
       return lhs->address < rhs->address;
+    }
+  };
+
+  struct InlineOriginCompare {
+    bool operator() (const InlineOrigin* lhs, const InlineOrigin* rhs) const {
+      if (lhs->getFileID() == rhs->getFileID())
+        return lhs->name < rhs->name;
+      return lhs->getFileID() < rhs->getFileID();
     }
   };
 
@@ -275,15 +330,19 @@ class Module {
   // symbol file, at which point we omit any unused files.
   void AssignSourceIds();
 
+  // This function should be called before AssignSourceIds() to get the set of
+  // valid InlineOrigins*.
+  void CreateInlineOrigins();
+
   // Call AssignSourceIds, and write this module to STREAM in the
   // breakpad symbol format. Return true if all goes well, or false if
   // an error occurs. This method writes out:
   // - a header based on the values given to the constructor,
-  // If symbol_data is not ONLY_CFI then:
+  // If symbol_data is not CFI then:
   // - the source files added via FindFile,
   // - the functions added via AddFunctions, each with its lines,
   // - all public records,
-  // If symbol_data is not NO_CFI then:
+  // If symbol_data is CFI then:
   // - all CFI records.
   // Addresses in the output are all relative to the load address
   // established by SetLoadAddress.
@@ -334,6 +393,9 @@ class Module {
   // A set containing Function structures, sorted by address.
   typedef set<Function*, FunctionCompare> FunctionSet;
 
+  // A set containing Function structures, sorted by address.
+  typedef set<InlineOrigin*, InlineOriginCompare> InlineOriginSet;
+
   // A set containing Extern structures, sorted by address.
   typedef set<Extern*, ExternCompare> ExternSet;
 
@@ -342,6 +404,7 @@ class Module {
   // point to.
   FileByNameMap files_;    // This module's source files.
   FunctionSet functions_;  // This module's functions.
+  InlineOriginSet inline_origins_; // This module's inline origins.
 
   // The module owns all the call frame info entries that have been
   // added to it.

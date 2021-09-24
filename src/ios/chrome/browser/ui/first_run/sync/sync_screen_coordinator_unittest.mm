@@ -7,6 +7,7 @@
 #import "components/sync/driver/mock_sync_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -15,7 +16,6 @@
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +55,7 @@ class SyncScreenCoordinatorTest : public PlatformTest {
     WebStateList* web_state_list = nullptr;
     browser_ =
         std::make_unique<TestBrowser>(browser_state_.get(), web_state_list);
+    PolicyWatcherBrowserAgent::CreateForBrowser(browser_.get());
 
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -71,6 +72,13 @@ class SyncScreenCoordinatorTest : public PlatformTest {
         initWithBaseNavigationController:navigationController_
                                  browser:browser_.get()
                                 delegate:delegate_];
+  }
+
+  void TearDown() override {
+    [coordinator_ stop];
+    coordinator_ = nil;
+
+    PlatformTest::TearDown();
   }
 
   web::WebTaskEnvironment task_environment_;

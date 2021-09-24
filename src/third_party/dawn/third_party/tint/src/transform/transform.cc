@@ -75,19 +75,6 @@ bool Transform::Requires(CloneContext& ctx,
   return true;
 }
 
-ast::DecorationList Transform::RemoveDecorations(
-    CloneContext& ctx,
-    const ast::DecorationList& in,
-    std::function<bool(const ast::Decoration*)> should_remove) {
-  ast::DecorationList new_decorations;
-  for (auto* deco : in) {
-    if (!should_remove(deco)) {
-      new_decorations.push_back(ctx.Clone(deco));
-    }
-  }
-  return new_decorations;
-}
-
 void Transform::RemoveStatement(CloneContext& ctx, ast::Statement* stmt) {
   auto* sem = ctx.src->Sem().Get(stmt);
   if (auto* block = tint::As<sem::BlockStatement>(sem->Parent())) {
@@ -133,7 +120,11 @@ ast::Type* Transform::CreateASTTypeFor(CloneContext& ctx, const sem::Type* ty) {
     if (!a->IsStrideImplicit()) {
       decos.emplace_back(ctx.dst->create<ast::StrideDecoration>(a->Stride()));
     }
-    return ctx.dst->create<ast::Array>(el, a->Count(), std::move(decos));
+    if (a->IsRuntimeSized()) {
+      return ctx.dst->ty.array(el, nullptr, std::move(decos));
+    } else {
+      return ctx.dst->ty.array(el, a->Count(), std::move(decos));
+    }
   }
   if (auto* s = ty->As<sem::Struct>()) {
     return ctx.dst->create<ast::TypeName>(ctx.Clone(s->Declaration()->name()));

@@ -39,7 +39,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_chromeos.h"
@@ -158,8 +158,6 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
     {"edu_coexistence_ui.js", IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_UI_JS},
     {"edu_coexistence_controller.js",
      IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_CONTROLLER_JS},
-    {"chromeos/add_supervision/post_message_api.js",
-     IDR_ADD_SUPERVISION_POST_MESSAGE_API_JS},
     {"edu_coexistence_browser_proxy.js",
      IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_BROWSER_PROXY_JS},
     {"edu_coexistence_button.js",
@@ -237,6 +235,9 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
                     chrome::GetOSSettingsUrl(
                         chromeos::settings::mojom::kMyAccountsSubpagePath)
                         .spec());
+
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameSrc, "frame-src chrome://test/;");
 #endif
 
   return source;

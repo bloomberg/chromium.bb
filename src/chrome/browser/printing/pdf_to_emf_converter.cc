@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/printing/printing_service.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
+#include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -216,6 +217,8 @@ std::unique_ptr<MetafilePlayer> PdfConverterImpl::GetMetaFileFromMapping(
   std::unique_ptr<Emf> metafile;
   if (settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2 ||
       settings_.mode == PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3 ||
+      settings_.mode ==
+          PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3_WITH_TYPE42_FONTS ||
       settings_.mode == PdfRenderSettings::Mode::TEXTONLY) {
     metafile = std::make_unique<PostScriptMetaFile>();
   } else {
@@ -418,6 +421,11 @@ void PdfConverterImpl::RecordConversionMetrics() {
     case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
       UMA_HISTOGRAM_MEMORY_KB(
           "Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText",
+          average_page_size_in_kb);
+      return;
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3_WITH_TYPE42_FONTS:
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Printing.ConversionSize.PostScript3WithType42Fonts",
           average_page_size_in_kb);
       return;
     default:

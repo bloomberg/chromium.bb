@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">主題顏色模式會使用從您桌布擷取的顏色，為介面添上淡雅色彩。</translation>
 <translation id="112308213915226829">自動隱藏捷徑列</translation>
 <translation id="1148499908455722006">打開 <ph name="USER_NAME" /> 嘅資料對話框</translation>
+<translation id="1150989369772528668">日曆</translation>
 <translation id="1153356358378277386">已配對的裝置</translation>
 <translation id="1165712434476988950">裝置必須重新啟動，才能套用更新。</translation>
 <translation id="1175572348579024023">捲動</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">開啟</translation>
 <translation id="1615402009686901181">當畫面上出現機密內容時，管理員政策就會停用螢幕截圖擷取功能</translation>
 <translation id="1632985212731562677">您可在 [設定] &gt; [無障礙功能] 中停用「按鈕控制」。</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> 部裝置</translation>
 <translation id="1654477262762802994">開始語音查詢</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />；<ph name="RESULT_TEXT" />；㩒搜尋鍵加空白鍵就可以睇到 Google 助理入面嘅結果。</translation>
 <translation id="1667964833127753507">中性色調模式不會使用從桌布擷取的顏色，而是改用一組中性的淺色或深色調。</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">按一下左鍵</translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="24452542372838207">展開通知</translation>
 <translation id="2450205753526923158">螢幕截圖模式</translation>
 <translation id="2473177541599297363">確認解像度</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">定義</translation>
 <translation id="3510164367642747937">突顯滑鼠遊標</translation>
 <translation id="3513798432020909783">帳戶由 <ph name="MANAGER_EMAIL" /> 管理</translation>
+<translation id="353086728817903341">已連接 <ph name="NUM_DEVICES" /> 部裝置</translation>
 <translation id="3552189655002856821">Wi-Fi 已關閉</translation>
 <translation id="3560866052109807830">標記繪製工具</translation>
 <translation id="3563775809269155755">啟用熱點</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">尼日利亞嘅人口</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">載入中…</translation>
+<translation id="3708186454126126312">之前已連接的裝置</translation>
 <translation id="371370241367527062">前置麥克風</translation>
 <translation id="3713734891607377840">下載完成後開啟</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷圖</translation>
@@ -403,6 +408,7 @@
 <translation id="4129129681837227511">如要在上鎖畫面上查看通知，請將裝置解鎖並變更相關設定</translation>
 <translation id="4146833061457621061">播音樂</translation>
 <translation id="4157822100366708405">深色主題背景設定</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">語言</translation>
 <translation id="4195877955194704651">自動點擊嘅掣</translation>
 <translation id="4197790712631116042">已關閉</translation>
@@ -554,6 +560,7 @@
 <translation id="5222676887888702881">登出</translation>
 <translation id="5234764350956374838">關閉</translation>
 <translation id="523505283826916779">協助工具設定</translation>
+<translation id="5253783950165989294">已連接名為「<ph name="DEVICE_NAME" />」的裝置，電量為 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5260676007519551770">桌面 4</translation>
 <translation id="5283198616748585639">增加 1 分鐘</translation>
 <translation id="528468243742722775">結束</translation>
@@ -564,6 +571,7 @@
 <translation id="5308380583665731573">連線</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5314219114274263156">已錄影螢幕畫面</translation>
+<translation id="5319712128756744240">配對新裝置</translation>
 <translation id="5322611492012084517">找不到手機</translation>
 <translation id="5329548388331921293">正在連線…</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左側後方連接埠)</translation>
@@ -766,6 +774,7 @@
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="698231206551913481">移除這位使用者後，系統便會永久刪除所有與該使用者相關的檔案和本機數據。</translation>
 <translation id="7007983414944123363">系統無法驗證您的 PIN 或密碼。請再試一次。</translation>
+<translation id="7014684956566476813">已連接名為「<ph name="DEVICE_NAME" />」的裝置</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 後才可使用。</translation>
 <translation id="70168403932084660">桌面 6</translation>
 <translation id="7025533177575372252">將 <ph name="DEVICE_NAME" /> 連結至您的手機</translation>
@@ -999,6 +1008,7 @@
 <translation id="8818320199597151042">正在移除設定檔。請等候幾分鐘。</translation>
 <translation id="8825863694328519386">從螢幕左側向右滑動即可返回</translation>
 <translation id="8828714802988429505">90 度</translation>
+<translation id="8834539327799336565">目前已連接的裝置</translation>
 <translation id="8841375032071747811">[返回] 按鈕</translation>
 <translation id="8843682306134542540">切換旋轉鎖定。<ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>
@@ -1029,6 +1039,7 @@
 <translation id="9024331582947483881">全螢幕</translation>
 <translation id="9047624247355796468">打開<ph name="NETWORK_NAME" />設定</translation>
 <translation id="9056839673611986238">系統將回復裝置</translation>
+<translation id="9059834730836941392">收合通知</translation>
 <translation id="9063800855227801443">無法擷取機密內容</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9070640332319875144">Google 助理設定</translation>

@@ -20,6 +20,7 @@
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/PipelineLayoutVk.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
 #include <tint/tint.h>
@@ -121,8 +122,7 @@ namespace dawn_native { namespace vulkan {
         BindingRemapper::BindingPoints bindingPoints;
         BindingRemapper::AccessControls accessControls;
 
-        const EntryPointMetadata::BindingInfoArray& moduleBindingInfo =
-            GetEntryPoint(entryPointName).bindings;
+        const BindingInfoArray& moduleBindingInfo = GetEntryPoint(entryPointName).bindings;
 
         for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             const BindGroupLayout* bgl = ToBackend(layout->GetBindGroupLayout(group));
@@ -187,6 +187,9 @@ namespace dawn_native { namespace vulkan {
             newHandle =
                 mTransformedShaderModuleCache.AddOrGetCachedShaderModule(cacheKey, newHandle);
         }
+
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_SHADER_MODULE,
+                     reinterpret_cast<uint64_t&>(newHandle), "Dawn_ShaderModule", GetLabel());
 
         return newHandle;
     }

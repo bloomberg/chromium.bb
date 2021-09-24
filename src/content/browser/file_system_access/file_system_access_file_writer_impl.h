@@ -36,7 +36,7 @@ class CONTENT_EXPORT FileSystemAccessFileWriterImpl
   // materializes the changes in the target file URL only after `Close`
   // is invoked and successfully completes. Assumes that swap_url represents a
   // file, and is valid.
-  // If no |quarantine_connection_callback| is passed in no quarantine is done,
+  // If no `quarantine_connection_callback` is passed in no quarantine is done,
   // other than setting source information directly if on windows.
   // FileWriters should only be created via the FileSystemAccessManagerImpl.
   FileSystemAccessFileWriterImpl(
@@ -45,6 +45,7 @@ class CONTENT_EXPORT FileSystemAccessFileWriterImpl
       const BindingContext& context,
       const storage::FileSystemURL& url,
       const storage::FileSystemURL& swap_url,
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
       const SharedHandleState& handle_state,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessFileWriter> receiver,
       bool has_transient_user_activation,
@@ -133,6 +134,9 @@ class CONTENT_EXPORT FileSystemAccessFileWriterImpl
   // execute a move operation from the swap URL to the target URL at `url_`. In
   // most filesystems, this move operation is atomic.
   storage::FileSystemURL swap_url_;
+
+  // Shared write lock on the file. It is released on destruction.
+  scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock_;
 
   CloseCallback close_callback_;
 

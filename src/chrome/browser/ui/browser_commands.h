@@ -201,6 +201,7 @@ void FocusInactivePopupForAccessibility(Browser* browser);
 void FocusHelpBubble(Browser* browser);
 void FocusNextPane(Browser* browser);
 void FocusPreviousPane(Browser* browser);
+void FocusWebContentsPane(Browser* browser);
 void ToggleDevToolsWindow(Browser* browser,
                           DevToolsToggleAction action,
                           DevToolsOpenedByAction opened_by);

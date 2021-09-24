@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Videozapis</translation>
 <translation id="3838931309141338733">Skeniraj bar kôd</translation>
 <translation id="3892148308691398805">Kopiraj tekst</translation>
-<translation id="4000398125663085899">Nove fotografije i videozapisi sada će se pohranjivati u folder aplikacije Fajlovi: Moji fajlovi &gt; Kamera</translation>
 <translation id="4118525110028899586">Pauziraj snimanje</translation>
 <translation id="4121305183798804752">Otkriven je dokument</translation>
 <translation id="4269820728363426813">Kopiraj adresu linka</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Idi u galeriju</translation>
 <translation id="520537883758714667">Skeniranje dokumenta je sada dostupno</translation>
 <translation id="5268823927180092501">Omogući način rada dokumenta na svim kamerama</translation>
-<translation id="5422455049771430511">Vaše fotografije i videozapisi imaju novi dom</translation>
 <translation id="5444515100983837161">Postavite sve ivice dokumenta unutar okvira. Skeniranje najbolje funkcionira ako su boje dokumenta i pozadine različite.</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5746169159649715125">Sačuvaj kao PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Način rada za stručnjake</translation>
 <translation id="5869546221129391014">Mreža</translation>
 <translation id="5975083100439434680">Smanji</translation>
-<translation id="6040143037577758943">Zatvori</translation>
 <translation id="6073451960410192870">Zaustavi snimanje</translation>
 <translation id="6197807149213783179">Sačuvaj metapodatke</translation>
 <translation id="6233780560267770709">3 sa 3</translation>
@@ -125,5 +122,6 @@ Ako se vaše povratne informacije odnose na kvalitet slike ili videozapisa, pril
 <translation id="8903921497873541725">Uvećaj</translation>
 <translation id="9045010116236796332">Postavite sve ivice dokumenta unutar okvira</translation>
 <translation id="9045155556724273246">10 sekundi</translation>
+<translation id="906331135292332864">Obrađivanje slike...</translation>
 <translation id="945522503751344254">Pošaljite povratne informacije</translation>
 </translationbundle>

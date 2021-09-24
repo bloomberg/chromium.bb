@@ -104,19 +104,19 @@ preprocess_if_expr("preprocess") {
   out_folder = "$target_gen_dir/$preprocess_folder"
   in_files = [
     "a11y_page/captions_browser_proxy.js",
-    "about_page/about_page_browser_proxy.js",
+    "about_page/about_page_browser_proxy.ts",
     "appearance_page/appearance_browser_proxy.ts",
     "appearance_page/fonts_browser_proxy.ts",
     "autofill_page/merge_exceptions_store_copies_behavior.js",
     "autofill_page/merge_passwords_store_copies_behavior.js",
-    "autofill_page/multi_store_exception_entry.js",
-    "autofill_page/multi_store_id_handler.js",
-    "autofill_page/multi_store_password_ui_entry.js",
-    "autofill_page/password_check_mixin.js",
-    "autofill_page/password_manager_proxy.js",
-    "autofill_page/show_password_mixin.js",
+    "autofill_page/multi_store_exception_entry.ts",
+    "autofill_page/multi_store_id_handler.ts",
+    "autofill_page/multi_store_password_ui_entry.ts",
+    "autofill_page/password_check_mixin.ts",
+    "autofill_page/password_manager_proxy.ts",
+    "autofill_page/show_password_mixin.ts",
     "base_mixin.js",
-    "chrome_cleanup_page/chrome_cleanup_proxy.js",
+    "chrome_cleanup_page/chrome_cleanup_proxy.ts",
     "clear_browsing_data_dialog/clear_browsing_data_browser_proxy.ts",
     "controls/pref_control_behavior.js",
     "controls/settings_boolean_control_behavior.js",
@@ -127,7 +127,7 @@ preprocess_if_expr("preprocess") {
     "global_scroll_target_mixin.js",
     "hats_browser_proxy.js",
     "i18n_setup.ts",
-    "incompatible_applications_page/incompatible_applications_browser_proxy.js",
+    "incompatible_applications_page/incompatible_applications_browser_proxy.ts",
     "lazy_load.ts",
     "lifetime_browser_proxy.ts",
     "metrics_browser_proxy.js",
@@ -147,7 +147,7 @@ preprocess_if_expr("preprocess") {
     "reset_page/reset_browser_proxy.ts",
     "route.js",
     "router.js",
-    "safety_check_page/safety_check_browser_proxy.js",
+    "safety_check_page/safety_check_browser_proxy.ts",
     "search_engines_page/search_engines_browser_proxy.ts",
     "search_settings.js",
     "setting_id_param_util.ts",
@@ -164,14 +164,14 @@ preprocess_if_expr("preprocess") {
 
   if (is_chromeos_ash) {
     in_files += [
-      "autofill_page/blocking_request_manager.js",
+      "autofill_page/blocking_request_manager.ts",
       "people_page/account_manager_browser_proxy.js",
       "site_settings/android_info_browser_proxy.js",
     ]
   } else {
     if (!is_chromeos_lacros) {
       in_files += [
-        "default_browser_page/default_browser_browser_proxy.js",
+        "default_browser_page/default_browser_browser_proxy.ts",
         "system_page/system_page_browser_proxy.ts",
       ]
     }
@@ -193,35 +193,35 @@ preprocess_if_expr("preprocess_generated") {
     "a11y_page/a11y_page.js",
     "a11y_page/captions_subpage.js",
     "a11y_page/live_caption_section.js",
-    "about_page/about_page.js",
+    "about_page/about_page.ts",
     "appearance_page/appearance_fonts_page.ts",
     "appearance_page/appearance_page.ts",
     "appearance_page/home_url_input.ts",
-    "autofill_page/autofill_page.js",
-    "autofill_page/avatar_icon.js",
-    "autofill_page/payments_list.js",
-    "autofill_page/credit_card_list_entry.js",
-    "autofill_page/upi_id_list_entry.js",
-    "autofill_page/passwords_shared_css.js",
-    "autofill_page/credit_card_edit_dialog.js",
-    "autofill_page/autofill_section.js",
-    "autofill_page/address_edit_dialog.js",
-    "autofill_page/address_remove_confirmation_dialog.js",
-    "autofill_page/password_check.js",
-    "autofill_page/password_check_edit_dialog.js",
-    "autofill_page/password_check_edit_disclaimer_dialog.js",
-    "autofill_page/password_check_list_item.js",
-    "autofill_page/password_list_item.js",
-    "autofill_page/passwords_list_handler.js",
-    "autofill_page/password_remove_confirmation_dialog.js",
-    "autofill_page/passwords_section.js",
-    "autofill_page/passwords_device_section.js",
-    "autofill_page/password_edit_dialog.js",
-    "autofill_page/password_move_multiple_passwords_to_account_dialog.js",
-    "autofill_page/password_move_to_account_dialog.js",
-    "autofill_page/password_remove_dialog.js",
-    "autofill_page/passwords_export_dialog.js",
-    "autofill_page/payments_section.js",
+    "autofill_page/autofill_page.ts",
+    "autofill_page/avatar_icon.ts",
+    "autofill_page/payments_list.ts",
+    "autofill_page/credit_card_list_entry.ts",
+    "autofill_page/upi_id_list_entry.ts",
+    "autofill_page/passwords_shared_css.ts",
+    "autofill_page/credit_card_edit_dialog.ts",
+    "autofill_page/autofill_section.ts",
+    "autofill_page/address_edit_dialog.ts",
+    "autofill_page/address_remove_confirmation_dialog.ts",
+    "autofill_page/password_check.ts",
+    "autofill_page/password_check_edit_dialog.ts",
+    "autofill_page/password_check_edit_disclaimer_dialog.ts",
+    "autofill_page/password_check_list_item.ts",
+    "autofill_page/password_list_item.ts",
+    "autofill_page/passwords_list_handler.ts",
+    "autofill_page/password_remove_confirmation_dialog.ts",
+    "autofill_page/passwords_section.ts",
+    "autofill_page/passwords_device_section.ts",
+    "autofill_page/password_edit_dialog.ts",
+    "autofill_page/password_move_multiple_passwords_to_account_dialog.ts",
+    "autofill_page/password_move_to_account_dialog.ts",
+    "autofill_page/password_remove_dialog.ts",
+    "autofill_page/passwords_export_dialog.ts",
+    "autofill_page/payments_section.ts",
     "basic_page/basic_page.js",
     "clear_browsing_data_dialog/clear_browsing_data_dialog.ts",
     "clear_browsing_data_dialog/history_deletion_dialog.ts",
@@ -260,10 +260,12 @@ preprocess_if_expr("preprocess_generated") {
     "privacy_page/secure_dns_input.js",
     "privacy_page/security_page.js",
     "privacy_page/disable_safebrowsing_dialog.js",
+    "privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.js",
     "privacy_page/privacy_review/privacy_review_description_item.js",
     "privacy_page/privacy_review/privacy_review_msbb_fragment.js",
     "privacy_page/privacy_review/privacy_review_page.js",
     "privacy_page/privacy_review/privacy_review_shared_css.js",
+    "privacy_page/privacy_review/step_indicator.js",
     "privacy_page/security_keys_bio_enroll_dialog.js",
     "privacy_page/security_keys_credential_management_dialog.js",
     "privacy_page/security_keys_pin_field.js",
@@ -273,12 +275,12 @@ preprocess_if_expr("preprocess_generated") {
     "reset_page/reset_page.ts",
     "reset_page/reset_profile_dialog.ts",
     "reset_page/reset_profile_banner.ts",
-    "safety_check_page/safety_check_child.js",
-    "safety_check_page/safety_check_extensions_child.js",
-    "safety_check_page/safety_check_page.js",
-    "safety_check_page/safety_check_passwords_child.js",
-    "safety_check_page/safety_check_safe_browsing_child.js",
-    "safety_check_page/safety_check_updates_child.js",
+    "safety_check_page/safety_check_child.ts",
+    "safety_check_page/safety_check_extensions_child.ts",
+    "safety_check_page/safety_check_page.ts",
+    "safety_check_page/safety_check_passwords_child.ts",
+    "safety_check_page/safety_check_safe_browsing_child.ts",
+    "safety_check_page/safety_check_updates_child.ts",
     "search_engines_page/omnibox_extension_entry.ts",
     "search_engines_page/search_engine_dialog.ts",
     "search_engines_page/search_engine_entry_css.ts",
@@ -288,8 +290,8 @@ preprocess_if_expr("preprocess_generated") {
     "search_page/search_page.ts",
     "settings_main/settings_main.js",
     "settings_page/settings_animated_pages.js",
-    "settings_page/settings_section.js",
-    "settings_page/settings_subpage.js",
+    "settings_page/settings_section.ts",
+    "settings_page/settings_subpage.ts",
     "settings_ui/settings_ui.js",
     "settings_page_css.ts",
     "settings_shared_css.ts",
@@ -324,11 +326,11 @@ preprocess_if_expr("preprocess_generated") {
 
   if (is_win) {
     in_files += [
-      "chrome_cleanup_page/chrome_cleanup_page.js",
-      "chrome_cleanup_page/items_to_remove_list.js",
-      "incompatible_applications_page/incompatible_applications_page.js",
-      "incompatible_applications_page/incompatible_application_item.js",
-      "safety_check_page/safety_check_chrome_cleaner_child.js",
+      "chrome_cleanup_page/chrome_cleanup_page.ts",
+      "chrome_cleanup_page/items_to_remove_list.ts",
+      "incompatible_applications_page/incompatible_applications_page.ts",
+      "incompatible_applications_page/incompatible_application_item.ts",
+      "safety_check_page/safety_check_chrome_cleaner_child.ts",
     ]
   }
 
@@ -338,7 +340,7 @@ preprocess_if_expr("preprocess_generated") {
 
   if (!is_chromeos) {
     in_files += [
-      "default_browser_page/default_browser_page.js",
+      "default_browser_page/default_browser_page.ts",
       "system_page/system_page.ts",
     ]
   }
@@ -375,8 +377,6 @@ group("closure_compile") {
   deps = [
     ":closure_compile_local",
     "a11y_page:closure_compile",
-    "about_page:closure_compile",
-    "autofill_page:closure_compile",
     "basic_page:closure_compile",
     "controls:closure_compile",
     "people_page:closure_compile",
@@ -384,7 +384,6 @@ group("closure_compile") {
     "privacy_page:closure_compile",
     "privacy_page/privacy_review:closure_compile",
     "privacy_sandbox:closure_compile",
-    "safety_check_page:closure_compile",
     "settings_main:closure_compile",
     "settings_menu:closure_compile",
     "settings_page:closure_compile",
@@ -395,17 +394,6 @@ group("closure_compile") {
 
   if (!is_chromeos_ash) {
     deps += [ "languages_page:closure_compile" ]
-  }
-
-  if (!is_chromeos) {
-    deps += [ "default_browser_page:closure_compile" ]
-  }
-
-  if (is_win) {
-    deps += [
-      "chrome_cleanup_page:closure_compile",
-      "incompatible_applications_page:closure_compile",
-    ]
   }
 
   if (is_chromeos_ash) {
@@ -444,14 +432,9 @@ js_library("settings") {
     ":lifetime_browser_proxy",
     ":metrics_browser_proxy",
     ":open_window_proxy",
-    "about_page:about_page_browser_proxy",
-    "autofill_page:multi_store_exception_entry",
-    "autofill_page:multi_store_password_ui_entry",
-    "autofill_page:password_manager_proxy",
     "people_page:sync_browser_proxy",
     "privacy_page:privacy_page",
     "privacy_page:privacy_page_browser_proxy",
-    "safety_check_page:safety_check_browser_proxy",
     "settings_ui:settings_ui",
   ]
   extra_deps = [ ":build_ts" ]
@@ -486,16 +469,12 @@ js_library("global_scroll_target_mixin") {
 }
 
 js_library("hats_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("lazy_load") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/tsc/lazy_load.js" ]
   deps = [
-    "autofill_page:autofill_section",
-    "autofill_page:payments_section",
-    "chrome_cleanup_page:chrome_cleanup_proxy",
     "privacy_page:cookies_page",
     "privacy_page:security_page",
     "privacy_page/privacy_review:privacy_review_page",
@@ -525,11 +504,9 @@ js_library("lifetime_browser_proxy") {
 }
 
 js_library("metrics_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("open_window_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("page_visibility") {
@@ -652,46 +629,46 @@ ts_library("build_ts") {
     "a11y_page/captions_browser_proxy.js",
     "a11y_page/captions_subpage.js",
     "a11y_page/live_caption_section.js",
-    "about_page/about_page_browser_proxy.js",
-    "about_page/about_page.js",
+    "about_page/about_page_browser_proxy.ts",
+    "about_page/about_page.ts",
     "appearance_page/appearance_browser_proxy.ts",
     "appearance_page/appearance_fonts_page.ts",
     "appearance_page/appearance_page.ts",
     "appearance_page/fonts_browser_proxy.ts",
     "appearance_page/home_url_input.ts",
-    "autofill_page/address_edit_dialog.js",
-    "autofill_page/address_remove_confirmation_dialog.js",
-    "autofill_page/autofill_page.js",
-    "autofill_page/autofill_section.js",
-    "autofill_page/avatar_icon.js",
-    "autofill_page/credit_card_edit_dialog.js",
-    "autofill_page/credit_card_list_entry.js",
+    "autofill_page/address_edit_dialog.ts",
+    "autofill_page/address_remove_confirmation_dialog.ts",
+    "autofill_page/autofill_page.ts",
+    "autofill_page/autofill_section.ts",
+    "autofill_page/avatar_icon.ts",
+    "autofill_page/credit_card_edit_dialog.ts",
+    "autofill_page/credit_card_list_entry.ts",
     "autofill_page/merge_exceptions_store_copies_behavior.js",
     "autofill_page/merge_passwords_store_copies_behavior.js",
-    "autofill_page/multi_store_exception_entry.js",
-    "autofill_page/multi_store_id_handler.js",
-    "autofill_page/multi_store_password_ui_entry.js",
-    "autofill_page/password_check_edit_dialog.js",
-    "autofill_page/password_check_edit_disclaimer_dialog.js",
-    "autofill_page/password_check.js",
-    "autofill_page/password_check_list_item.js",
-    "autofill_page/password_check_mixin.js",
-    "autofill_page/password_edit_dialog.js",
-    "autofill_page/password_list_item.js",
-    "autofill_page/password_manager_proxy.js",
-    "autofill_page/password_move_multiple_passwords_to_account_dialog.js",
-    "autofill_page/password_move_to_account_dialog.js",
-    "autofill_page/password_remove_confirmation_dialog.js",
-    "autofill_page/password_remove_dialog.js",
-    "autofill_page/passwords_device_section.js",
-    "autofill_page/passwords_export_dialog.js",
-    "autofill_page/passwords_list_handler.js",
-    "autofill_page/passwords_section.js",
-    "autofill_page/passwords_shared_css.js",
-    "autofill_page/payments_list.js",
-    "autofill_page/payments_section.js",
-    "autofill_page/show_password_mixin.js",
-    "autofill_page/upi_id_list_entry.js",
+    "autofill_page/multi_store_exception_entry.ts",
+    "autofill_page/multi_store_id_handler.ts",
+    "autofill_page/multi_store_password_ui_entry.ts",
+    "autofill_page/password_check_edit_dialog.ts",
+    "autofill_page/password_check_edit_disclaimer_dialog.ts",
+    "autofill_page/password_check.ts",
+    "autofill_page/password_check_list_item.ts",
+    "autofill_page/password_check_mixin.ts",
+    "autofill_page/password_edit_dialog.ts",
+    "autofill_page/password_list_item.ts",
+    "autofill_page/password_manager_proxy.ts",
+    "autofill_page/password_move_multiple_passwords_to_account_dialog.ts",
+    "autofill_page/password_move_to_account_dialog.ts",
+    "autofill_page/password_remove_confirmation_dialog.ts",
+    "autofill_page/password_remove_dialog.ts",
+    "autofill_page/passwords_device_section.ts",
+    "autofill_page/passwords_export_dialog.ts",
+    "autofill_page/passwords_list_handler.ts",
+    "autofill_page/passwords_section.ts",
+    "autofill_page/passwords_shared_css.ts",
+    "autofill_page/payments_list.ts",
+    "autofill_page/payments_section.ts",
+    "autofill_page/show_password_mixin.ts",
+    "autofill_page/upi_id_list_entry.ts",
     "base_mixin.js",
     "basic_page/basic_page.js",
     "clear_browsing_data_dialog/clear_browsing_data_browser_proxy.ts",
@@ -751,10 +728,12 @@ ts_library("build_ts") {
     "privacy_page/personalization_options.js",
     "privacy_page/privacy_page_browser_proxy.js",
     "privacy_page/privacy_page.js",
+    "privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.js",
     "privacy_page/privacy_review/privacy_review_description_item.js",
     "privacy_page/privacy_review/privacy_review_msbb_fragment.js",
     "privacy_page/privacy_review/privacy_review_page.js",
     "privacy_page/privacy_review/privacy_review_shared_css.js",
+    "privacy_page/privacy_review/step_indicator.js",
     "privacy_page/privacy_review_promo.js",
     "privacy_page/secure_dns_input.js",
     "privacy_page/secure_dns.js",
@@ -772,13 +751,13 @@ ts_library("build_ts") {
     "reset_page/reset_profile_dialog.ts",
     "route.js",
     "router.js",
-    "safety_check_page/safety_check_browser_proxy.js",
-    "safety_check_page/safety_check_child.js",
-    "safety_check_page/safety_check_extensions_child.js",
-    "safety_check_page/safety_check_page.js",
-    "safety_check_page/safety_check_passwords_child.js",
-    "safety_check_page/safety_check_safe_browsing_child.js",
-    "safety_check_page/safety_check_updates_child.js",
+    "safety_check_page/safety_check_browser_proxy.ts",
+    "safety_check_page/safety_check_child.ts",
+    "safety_check_page/safety_check_extensions_child.ts",
+    "safety_check_page/safety_check_page.ts",
+    "safety_check_page/safety_check_passwords_child.ts",
+    "safety_check_page/safety_check_safe_browsing_child.ts",
+    "safety_check_page/safety_check_updates_child.ts",
     "search_engines_page/omnibox_extension_entry.ts",
     "search_engines_page/search_engine_dialog.ts",
     "search_engines_page/search_engine_entry_css.ts",
@@ -795,8 +774,8 @@ ts_library("build_ts") {
     "settings_page_css.ts",
     "settings_page/main_page_mixin.js",
     "settings_page/settings_animated_pages.js",
-    "settings_page/settings_section.js",
-    "settings_page/settings_subpage.js",
+    "settings_page/settings_section.ts",
+    "settings_page/settings_subpage.ts",
     "settings_routes.js",
     "settings_shared_css.ts",
     "settings_ui/settings_ui.js",
@@ -837,27 +816,27 @@ ts_library("build_ts") {
 
   if (is_win) {
     in_files += [
-      "chrome_cleanup_page/chrome_cleanup_page.js",
-      "chrome_cleanup_page/chrome_cleanup_proxy.js",
-      "chrome_cleanup_page/items_to_remove_list.js",
-      "incompatible_applications_page/incompatible_application_item.js",
-      "incompatible_applications_page/incompatible_applications_browser_proxy.js",
-      "incompatible_applications_page/incompatible_applications_page.js",
-      "safety_check_page/safety_check_chrome_cleaner_child.js",
+      "chrome_cleanup_page/chrome_cleanup_page.ts",
+      "chrome_cleanup_page/chrome_cleanup_proxy.ts",
+      "chrome_cleanup_page/items_to_remove_list.ts",
+      "incompatible_applications_page/incompatible_application_item.ts",
+      "incompatible_applications_page/incompatible_applications_browser_proxy.ts",
+      "incompatible_applications_page/incompatible_applications_page.ts",
+      "safety_check_page/safety_check_chrome_cleaner_child.ts",
     ]
   }
 
   if (is_chromeos_ash) {
     in_files += [
-      "autofill_page/blocking_request_manager.js",
+      "autofill_page/blocking_request_manager.ts",
       "people_page/account_manager_browser_proxy.js",
       "site_settings/android_info_browser_proxy.js",
     ]
   } else {
     if (!is_chromeos_lacros) {
       in_files += [
-        "default_browser_page/default_browser_browser_proxy.js",
-        "default_browser_page/default_browser_page.js",
+        "default_browser_page/default_browser_browser_proxy.ts",
+        "default_browser_page/default_browser_page.ts",
         "system_page/system_page_browser_proxy.ts",
         "system_page/system_page.ts",
       ]
@@ -892,9 +871,12 @@ ts_library("build_ts") {
   }
 
   definitions = [
+    "//tools/typescript/definitions/autofill_private.d.ts",
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/management.d.ts",
     "//tools/typescript/definitions/metrics_private.d.ts",
+    "//tools/typescript/definitions/passwords_private.d.ts",
+    "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",
   ]
 

@@ -7,6 +7,7 @@
 #include <fuchsia/legacymetrics/cpp/fidl_test_base.h>
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/modular/cpp/fidl.h>
+#include <fuchsia/web/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
@@ -30,6 +31,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -40,9 +42,9 @@
 #include "fuchsia/base/test/fake_component_context.h"
 #include "fuchsia/base/test/fit_adapter.h"
 #include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/result_receiver.h"
 #include "fuchsia/base/test/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test/url_request_rewrite_test_util.h"
+#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/cast_runner_switches.h"
 #include "fuchsia/runners/cast/fake_api_bindings.h"
@@ -343,16 +345,14 @@ class TestCastComponent {
           EXPECT_TRUE(result.is_response());
         });
 
-    base::RunLoop response_loop;
-    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> response(
-        response_loop.QuitClosure());
+    base::test::TestFuture<fuchsia::web::WebMessage> response;
     test_port_->ReceiveMessage(
-        cr_fuchsia::CallbackToFitFunction(response.GetReceiveCallback()));
-    response_loop.Run();
+        cr_fuchsia::CallbackToFitFunction(response.GetCallback()));
+    EXPECT_TRUE(response.Wait());
 
     std::string response_string;
-    EXPECT_TRUE(
-        cr_fuchsia::StringFromMemBuffer(response->data(), &response_string));
+    EXPECT_TRUE(cr_fuchsia::StringFromMemBuffer(response.Get().data(),
+                                                &response_string));
 
     return response_string;
   }

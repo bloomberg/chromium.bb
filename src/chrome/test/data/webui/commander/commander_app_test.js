@@ -4,13 +4,14 @@
 
 import 'chrome://commander/app.js';
 
-import {BrowserProxyImpl} from 'chrome://commander/browser_proxy.js';
+import {BrowserProxy} from 'chrome://commander/browser_proxy.js';
 import {Action, Entity, ViewModel} from 'chrome://commander/types.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {assertDeepEquals, assertEquals, assertFalse, assertGT} from '../chai_assert.js';
-import {flushTasks} from '../test_util.m.js';
+import {assertDeepEquals, assertEquals, assertGT} from '../chai_assert.js';
+import {flushTasks} from '../test_util.js';
 
 import {TestCommanderBrowserProxy} from './test_commander_browser_proxy.js';
 
@@ -59,7 +60,7 @@ suite('CommanderWebUIBrowserTest', () => {
 
   setup(async () => {
     testProxy = new TestCommanderBrowserProxy();
-    BrowserProxyImpl.instance_ = testProxy;
+    BrowserProxy.setInstance(testProxy);
     document.body.innerHTML = '';
     app = document.createElement('commander-app');
     document.body.appendChild(app);

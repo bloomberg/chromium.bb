@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -30,13 +31,7 @@ class WebContents;
 
 namespace apps {
 
-std::string GetAppIdForWebContents(content::WebContents* web_contents);
-
 bool IsInstalledApp(Profile* profile, const std::string& app_id);
-
-void SetAppIdForWebContents(Profile* profile,
-                            content::WebContents* web_contents,
-                            const std::string& app_id);
 
 // Converts file arguments to an app on |command_line| into base::FilePaths.
 std::vector<base::FilePath> GetLaunchFilesFromCommandLine(

@@ -498,11 +498,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.remoteTabsViewController.preventUpdates = YES;
 }
 
-- (void)closeAllTabsConfirmationClosed {
-  self.closeAllConfirmationDisplayed = NO;
-  [self configureButtonsForActiveAndCurrentPage];
-}
-
 - (void)dismissModals {
   [self.regularTabsConsumer dismissModals];
   [self.incognitoTabsConsumer dismissModals];
@@ -587,6 +582,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   _incognitoTabsContextMenuProvider = provider;
 
   self.incognitoTabsViewController.menuProvider = provider;
+}
+
+- (void)setReauthAgent:(IncognitoReauthSceneAgent*)reauthAgent {
+  if (_reauthAgent) {
+    [_reauthAgent removeObserver:self];
+  }
+
+  _reauthAgent = reauthAgent;
+
+  [_reauthAgent addObserver:self];
 }
 
 #pragma mark - TabGridPaging
@@ -1943,35 +1948,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self updateSelectionModeToolbars];
 }
 
-// Shows an action sheet that asks for confirmation when 'Close All' button is
-// tapped.
-- (void)closeAllButtonTappedShowConfirmation {
-  // Sets the action sheet anchor on the to the anchor item of the top
-  // toolbar in order to avoid alignment issues when changing the device
-  // orientation to landscape in multi window mode.
-  UIBarButtonItem* buttonAnchor = self.topToolbar.anchorItem;
-  self.closeAllConfirmationDisplayed = YES;
-  self.topToolbar.pageControl.userInteractionEnabled = NO;
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      [self.incognitoTabsDelegate
-          showCloseAllConfirmationActionSheetWithAnchor:buttonAnchor];
-      break;
-    case TabGridPageRegularTabs:
-      [self.regularTabsDelegate
-          showCloseAllConfirmationActionSheetWithAnchor:buttonAnchor];
-      break;
-    case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is invalid to call close all tabs on remote tabs.";
-      break;
-  }
-}
-
 - (void)closeAllButtonTapped:(id)sender {
-  if (IsCloseAllTabsConfirmationEnabled()) {
-    [self closeAllButtonTappedShowConfirmation];
-    return;
-  }
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate closeAllItems];
@@ -2111,6 +2088,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didTapLinkWithURL:(const GURL&)URL {
   [self.delegate openLinkWithURL:URL];
+}
+
+#pragma mark - IncognitoReauthObserver
+
+- (void)reauthAgent:(IncognitoReauthSceneAgent*)agent
+    didUpdateAuthenticationRequirement:(BOOL)isRequired {
+  if (isRequired) {
+    self.tabGridMode = TabGridModeNormal;
+  }
 }
 
 #pragma mark - UIResponder

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -21,6 +22,10 @@
 namespace content {
 
 namespace {
+
+using AttributionAllowedStatus =
+    ::content::RateLimitTable::AttributionAllowedStatus;
+using CreateReportStatus = ::content::ConversionStorage::CreateReportStatus;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultConversionOrigin[] = "https://sub.conversion.test/";
@@ -110,7 +115,8 @@ int ConfigurableStorageDelegate::GetMaxAttributionDestinationsPerEventSource()
 }
 
 ConversionStorage::Delegate::RateLimitConfig
-ConfigurableStorageDelegate::GetRateLimits() const {
+ConfigurableStorageDelegate::GetRateLimits(
+    ConversionStorage::AttributionType attribution_type) const {
   return rate_limits_;
 }
 
@@ -188,6 +194,7 @@ void TestConversionManager::ClearData(
     base::OnceClosure done) {
   impressions_.clear();
   reports_.clear();
+  sent_reports_.clear();
   std::move(done).Run();
 }
 
@@ -235,21 +242,18 @@ ImpressionBuilder& ImpressionBuilder::SetData(uint64_t data) {
   return *this;
 }
 
-ImpressionBuilder& ImpressionBuilder::SetImpressionOrigin(
-    const url::Origin& origin) {
-  impression_origin_ = origin;
+ImpressionBuilder& ImpressionBuilder::SetImpressionOrigin(url::Origin origin) {
+  impression_origin_ = std::move(origin);
   return *this;
 }
 
-ImpressionBuilder& ImpressionBuilder::SetConversionOrigin(
-    const url::Origin& origin) {
-  conversion_origin_ = origin;
+ImpressionBuilder& ImpressionBuilder::SetConversionOrigin(url::Origin origin) {
+  conversion_origin_ = std::move(origin);
   return *this;
 }
 
-ImpressionBuilder& ImpressionBuilder::SetReportingOrigin(
-    const url::Origin& origin) {
-  reporting_origin_ = origin;
+ImpressionBuilder& ImpressionBuilder::SetReportingOrigin(url::Origin origin) {
+  reporting_origin_ = std::move(origin);
   return *this;
 }
 
@@ -265,7 +269,7 @@ ImpressionBuilder& ImpressionBuilder::SetPriority(int64_t priority) {
 }
 
 ImpressionBuilder& ImpressionBuilder::SetImpressionId(
-    absl::optional<int64_t> impression_id) {
+    absl::optional<StorableImpression::Id> impression_id) {
   impression_id_ = impression_id;
   return *this;
 }
@@ -310,14 +314,14 @@ ConversionBuilder& ConversionBuilder::SetEventSourceTriggerData(
 }
 
 ConversionBuilder& ConversionBuilder::SetConversionDestination(
-    const net::SchemefulSite& conversion_destination) {
-  conversion_destination_ = conversion_destination;
+    net::SchemefulSite conversion_destination) {
+  conversion_destination_ = std::move(conversion_destination);
   return *this;
 }
 
 ConversionBuilder& ConversionBuilder::SetReportingOrigin(
-    const url::Origin& reporting_origin) {
-  reporting_origin_ = reporting_origin;
+    url::Origin reporting_origin) {
+  reporting_origin_ = std::move(reporting_origin);
   return *this;
 }
 
@@ -358,18 +362,151 @@ bool operator==(const ConversionReport& a, const ConversionReport& b) {
   const auto tie = [](const ConversionReport& conversion) {
     return std::make_tuple(conversion.impression, conversion.conversion_data,
                            conversion.conversion_time, conversion.report_time,
-                           conversion.original_report_time);
+                           conversion.original_report_time,
+                           conversion.priority);
   };
   return tie(a) == tie(b);
 }
 
 bool operator==(const SentReportInfo& a, const SentReportInfo& b) {
   const auto tie = [](const SentReportInfo& info) {
-    return std::make_tuple(info.report_url, info.report_body,
-                           info.http_response_code, info.original_report_time,
-                           info.conversion_id);
+    return std::make_tuple(info.report, info.status, info.http_response_code);
   };
   return tie(a) == tie(b);
+}
+
+std::ostream& operator<<(std::ostream& out, CreateReportStatus status) {
+  switch (status) {
+    case CreateReportStatus::kSuccess:
+      out << "kSuccess";
+      break;
+    case CreateReportStatus::kSuccessDroppedLowerPriority:
+      out << "kSuccessDroppedLowerPriority";
+      break;
+    case CreateReportStatus::kInternalError:
+      out << "kInternalError";
+      break;
+    case CreateReportStatus::kNoCapacityForConversionDestination:
+      out << "kNoCapacityForConversionDestination";
+      break;
+    case CreateReportStatus::kNoMatchingImpressions:
+      out << "kNoMatchingImpressions";
+      break;
+    case CreateReportStatus::kDeduplicated:
+      out << "kDeduplicated";
+      break;
+    case CreateReportStatus::kRateLimited:
+      out << "kRateLimited";
+      break;
+    case CreateReportStatus::kPriorityTooLow:
+      out << "kPriorityTooLow";
+      break;
+    case CreateReportStatus::kDroppedForNoise:
+      out << "kDroppedForNoise";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, AttributionAllowedStatus status) {
+  switch (status) {
+    case AttributionAllowedStatus::kAllowed:
+      out << "kAllowed";
+      break;
+    case AttributionAllowedStatus::kNotAllowed:
+      out << "kNotAllowed";
+      break;
+    case AttributionAllowedStatus::kError:
+      out << "kError";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         StorableImpression::SourceType source_type) {
+  switch (source_type) {
+    case StorableImpression::SourceType::kNavigation:
+      out << "kNavigation";
+      break;
+    case StorableImpression::SourceType::kEvent:
+      out << "kEvent";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const StorableConversion& conversion) {
+  return out << "{conversion_data=" << conversion.conversion_data()
+             << ",conversion_destination="
+             << conversion.conversion_destination().Serialize()
+             << ",reporting_origin=" << conversion.reporting_origin()
+             << ",event_source_trigger_data="
+             << conversion.event_source_trigger_data()
+             << ",priority=" << conversion.priority() << ",dedup_key="
+             << (conversion.dedup_key()
+                     ? base::NumberToString(*conversion.dedup_key())
+                     : "null")
+             << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const StorableImpression& impression) {
+  out << "{impression_data=" << impression.impression_data()
+      << ",impression_origin=" << impression.impression_origin()
+      << ",conversion_origin=" << impression.conversion_origin()
+      << ",reporting_origin=" << impression.reporting_origin()
+      << ",impression_time=" << impression.impression_time()
+      << ",expiry_time=" << impression.expiry_time()
+      << ",source_type=" << impression.source_type()
+      << ",priority=" << impression.priority() << ",impression_id="
+      << (impression.impression_id()
+              ? base::NumberToString(**impression.impression_id())
+              : "null")
+      << ",dedup_keys=[";
+
+  const char* separator = "";
+  for (int64_t dedup_key : impression.dedup_keys()) {
+    out << separator << dedup_key;
+    separator = ", ";
+  }
+
+  return out << "]}";
+}
+
+std::ostream& operator<<(std::ostream& out, const ConversionReport& report) {
+  return out << "{impression=" << report.impression
+             << ",conversion_data=" << report.conversion_data
+             << ",conversion_time=" << report.conversion_time
+             << ",report_time=" << report.report_time
+             << ",priority=" << report.priority
+             << ",original_report_time=" << report.original_report_time
+             << ",conversion_id="
+             << (report.conversion_id
+                     ? base::NumberToString(**report.conversion_id)
+                     : "null")
+             << "}";
+}
+
+std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status) {
+  switch (status) {
+    case SentReportInfo::Status::kSent:
+      out << "kSent";
+      break;
+    case SentReportInfo::Status::kShouldRetry:
+      out << "kShouldRetry";
+      break;
+    case SentReportInfo::Status::kDropped:
+      out << "kDropped";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const SentReportInfo& info) {
+  return out << "{report=" << info.report << ",status=" << info.status
+             << ",http_response_code=" << info.http_response_code << "}";
 }
 
 std::vector<ConversionReport> GetConversionsToReportForTesting(
@@ -387,15 +524,6 @@ std::vector<ConversionReport> GetConversionsToReportForTesting(
           })));
   run_loop.Run();
   return conversion_reports;
-}
-
-SentReportInfo GetBlankSentReportInfo() {
-  return SentReportInfo(/*conversion_id=*/0,
-                        /*original_report_time=*/base::Time(),
-                        /*report_url=*/GURL(),
-                        /*report_body=*/"",
-                        /*http_response_code=*/0,
-                        /*should_retry*/ false);
 }
 
 }  // namespace content

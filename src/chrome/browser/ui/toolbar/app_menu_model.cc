@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/commander/commander.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -245,8 +246,9 @@ void ToolsMenuModel::Build(Browser* browser) {
   }
 
   AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
-  if (base::FeatureList::IsEnabled(features::kWindowNaming))
-    AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
+  AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
+  if (commander::IsEnabled())
+    AddItemWithStringId(IDC_TOGGLE_COMMANDER, IDS_TOGGLE_COMMANDER);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
@@ -866,7 +868,8 @@ void AppMenuModel::Build() {
     AddItem(IDC_INSTALL_PWA, *name);
   } else if (absl::optional<web_app::AppId> app_id =
                  web_app::GetWebAppForActiveTab(browser_)) {
-    auto* provider = web_app::WebAppProvider::Get(browser_->profile());
+    auto* provider =
+        web_app::WebAppProvider::GetForLocalAppsUnchecked(browser_->profile());
     const std::u16string short_name =
         base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
     const std::u16string truncated_name = gfx::TruncateString(
@@ -900,7 +903,7 @@ void AppMenuModel::Build() {
   // Always show this option if we're in tablet mode on Chrome OS.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableRequestTabletSite) ||
-      (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())) {
+      (ash::TabletMode::IsInTabletMode())) {
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
   }

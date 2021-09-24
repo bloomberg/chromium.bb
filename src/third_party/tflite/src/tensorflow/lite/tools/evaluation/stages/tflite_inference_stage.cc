@@ -51,6 +51,27 @@ void TfliteInferenceStage::UpdateModelInfo() {
   }
 }
 
+TfLiteStatus TfliteInferenceStage::ResizeInputs(
+    const std::vector<std::vector<int>>& shapes) {
+  const std::vector<int>& intepreter_inputs = interpreter_->inputs();
+  if (intepreter_inputs.size() != shapes.size()) {
+    LOG(ERROR) << "New shape is not compatible";
+    return kTfLiteError;
+  }
+
+  for (int j = 0; j < shapes.size(); ++j) {
+    int i = intepreter_inputs[j];
+    TfLiteTensor* t = interpreter_->tensor(i);
+    if (t->type != kTfLiteString) {
+      TF_LITE_ENSURE_STATUS(interpreter_->ResizeInputTensor(i, shapes[j]));
+    }
+  }
+
+  TF_LITE_ENSURE_STATUS(interpreter_->AllocateTensors());
+  UpdateModelInfo();
+  return kTfLiteOk;
+}
+
 TfLiteStatus TfliteInferenceStage::ApplyCustomDelegate(
     Interpreter::TfLiteDelegatePtr delegate) {
   if (!interpreter_) {
@@ -108,7 +129,7 @@ TfLiteStatus TfliteInferenceStage::Init(
     }
   } else {
     auto delegates = delegate_providers->CreateAllDelegates(params);
-    for (auto& one : delegates) delegates_.push_back(std::move(one));
+    for (auto& one : delegates) delegates_.push_back(std::move(one.delegate));
   }
 
   for (int i = 0; i < delegates_.size(); ++i) {

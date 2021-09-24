@@ -84,11 +84,15 @@ class SourceLineResolverBase : public SourceLineResolverInterface {
   virtual void UnloadModule(const CodeModule* module);
   virtual bool HasModule(const CodeModule* module);
   virtual bool IsModuleCorrupt(const CodeModule* module);
-  virtual void FillSourceLineInfo(StackFrame* frame);
+  virtual void FillSourceLineInfo(
+      StackFrame* frame,
+      std::vector<std::unique_ptr<StackFrame>>* inlined_frames);
   virtual WindowsFrameInfo* FindWindowsFrameInfo(const StackFrame* frame);
   virtual CFIFrameInfo* FindCFIFrameInfo(const StackFrame* frame);
 
   // Nested structs and classes.
+  struct InlineOrigin;
+  struct Inline;
   struct Line;
   struct Function;
   struct PublicSymbol;

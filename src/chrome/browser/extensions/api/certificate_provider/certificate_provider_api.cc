@@ -28,12 +28,12 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-namespace api_cp = extensions::api::certificate_provider;
-namespace api_cpi = extensions::api::certificate_provider_internal;
-using PinCodeType = chromeos::security_token_pin::CodeType;
-using PinErrorLabel = chromeos::security_token_pin::ErrorLabel;
-
 namespace {
+
+namespace api_cp = ::extensions::api::certificate_provider;
+namespace api_cpi = ::extensions::api::certificate_provider_internal;
+using PinCodeType = ::ash::security_token_pin::CodeType;
+using PinErrorLabel = ::ash::security_token_pin::ErrorLabel;
 
 PinErrorLabel GetErrorLabelForDialog(api_cp::PinRequestErrorType error_type) {
   switch (error_type) {
@@ -283,7 +283,7 @@ CertificateProviderInternalReportCertificatesFunction::
 ExtensionFunction::ResponseAction
 CertificateProviderInternalReportCertificatesFunction::Run() {
   std::unique_ptr<api_cpi::ReportCertificates::Params> params(
-      api_cpi::ReportCertificates::Params::Create(*args_));
+      api_cpi::ReportCertificates::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::CertificateProviderService* const service =
@@ -336,7 +336,7 @@ CertificateProviderStopPinRequestFunction::
 ExtensionFunction::ResponseAction
 CertificateProviderStopPinRequestFunction::Run() {
   std::unique_ptr<api_cp::StopPinRequest::Params> params(
-      api_cp::StopPinRequest::Params::Create(*args_));
+      api_cp::StopPinRequest::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
@@ -436,7 +436,7 @@ void CertificateProviderRequestPinFunction::GetQuotaLimitHeuristics(
 
 ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
   std::unique_ptr<api_cp::RequestPin::Params> params(
-      api_cp::RequestPin::Params::Create(*args_));
+      api_cp::RequestPin::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const api_cp::PinRequestType pin_request_type =
@@ -524,7 +524,7 @@ CertificateProviderSetCertificatesFunction::
 ExtensionFunction::ResponseAction
 CertificateProviderSetCertificatesFunction::Run() {
   std::unique_ptr<api_cp::SetCertificates::Params> params(
-      api_cp::SetCertificates::Params::Create(*args_));
+      api_cp::SetCertificates::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (!params->details.client_certificates.empty() && params->details.error) {
@@ -576,7 +576,7 @@ CertificateProviderInternalReportSignatureFunction::
 ExtensionFunction::ResponseAction
 CertificateProviderInternalReportSignatureFunction::Run() {
   std::unique_ptr<api_cpi::ReportSignature::Params> params(
-      api_cpi::ReportSignature::Params::Create(*args_));
+      api_cpi::ReportSignature::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::CertificateProviderService* const service =
@@ -605,7 +605,7 @@ CertificateProviderReportSignatureFunction::
 ExtensionFunction::ResponseAction
 CertificateProviderReportSignatureFunction::Run() {
   std::unique_ptr<api_cp::ReportSignature::Params> params(
-      api_cp::ReportSignature::Params::Create(*args_));
+      api_cp::ReportSignature::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->details.signature && !params->details.signature->empty() &&

@@ -258,10 +258,8 @@
   [self.baseViewController dismissModals];
   self.baseViewController.tabGridMode = TabGridModeNormal;
 
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
-  [self.sharingCoordinator stop];
-  self.sharingCoordinator = nil;
+  [self dismissPopovers];
+
   if (_bookmarkInteractionController) {
     [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
   }
@@ -567,6 +565,8 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  // TODO(crbug.com/1246931): refactor to call setIncognitoBrowser from this
+  // function.
   IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
       agentFromScene:SceneStateBrowserAgent::FromBrowser(_incognitoBrowser)
                          ->GetSceneState()];
@@ -581,6 +581,7 @@
       HandlerForProtocol(self.dispatcher, ApplicationCommands);
   baseViewController.reauthHandler =
       HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
+  baseViewController.reauthAgent = reauthAgent;
   baseViewController.tabPresentationDelegate = self;
   baseViewController.delegate = self;
   _baseViewController = baseViewController;
@@ -803,54 +804,6 @@
                focusOmnibox:focusOmnibox];
 }
 
-- (void)showCloseAllConfirmationActionSheetWitTabGridMediator:
-            (TabGridMediator*)tabGridMediator
-                                                 numberOfTabs:
-                                                     (NSInteger)numberOfTabs
-                                                       anchor:(UIBarButtonItem*)
-                                                                  buttonAnchor {
-  if (tabGridMediator == self.regularTabsMediator) {
-    base::RecordAction(base::UserMetricsAction(
-        "MobileTabGridCloseAllRegularTabsConfirmationPresented"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "MobileTabGridCloseAllIncognitoTabsConfirmationPresented"));
-  }
-
-  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:nil
-                         message:nil
-                   barButtonItem:buttonAnchor];
-
-  self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
-
-  __weak TabGridCoordinator* weakSelf = self;
-
-  [self.actionSheetCoordinator
-      addItemWithTitle:base::SysUTF16ToNSString(
-                           l10n_util::GetPluralStringFUTF16(
-                               IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION,
-                               numberOfTabs))
-                action:^{
-                  base::RecordAction(base::UserMetricsAction(
-                      "MobileTabGridCloseAllTabsConfirmationConfirmed"));
-                  [tabGridMediator closeAllItems];
-                  [weakSelf.baseViewController closeAllTabsConfirmationClosed];
-                }
-                 style:UIAlertActionStyleDestructive];
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:^{
-                  base::RecordAction(base::UserMetricsAction(
-                      "MobileTabGridCloseAllTabsConfirmationCanceled"));
-                  [weakSelf.baseViewController closeAllTabsConfirmationClosed];
-                }
-                 style:UIAlertActionStyleCancel];
-  [self.actionSheetCoordinator start];
-}
-
 - (void)
     showCloseItemsConfirmationActionSheetWithTabGridMediator:
         (TabGridMediator*)tabGridMediator
@@ -910,6 +863,13 @@
                           params:params
                           anchor:buttonAnchor];
   [self.sharingCoordinator start];
+}
+
+- (void)dismissPopovers {
+  [self.actionSheetCoordinator stop];
+  self.actionSheetCoordinator = nil;
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
 }
 
 #pragma mark - TabGridViewControllerDelegate

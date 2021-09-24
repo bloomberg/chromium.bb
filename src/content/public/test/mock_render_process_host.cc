@@ -85,6 +85,7 @@ MockRenderProcessHost::MockRenderProcessHost(
       is_process_backgrounded_(false),
       is_unused_(true),
       keep_alive_ref_count_(0),
+      worker_ref_count_(0),
       foreground_service_worker_count_(0),
       url_loader_factory_(std::make_unique<FakeNetworkURLLoaderFactory>()) {
   // Child process security operations can't be unit tested unless we add
@@ -195,6 +196,10 @@ bool MockRenderProcessHost::IsForGuestsOnly() {
 }
 
 bool MockRenderProcessHost::IsJitDisabled() {
+  return false;
+}
+
+bool MockRenderProcessHost::IsPdf() {
   return false;
 }
 
@@ -392,21 +397,34 @@ void MockRenderProcessHost::DecrementKeepAliveRefCount() {
   --keep_alive_ref_count_;
 }
 
-void MockRenderProcessHost::DisableKeepAliveRefCount() {
-  keep_alive_ref_count_ = 0;
+void MockRenderProcessHost::IncrementWorkerRefCount() {
+  ++worker_ref_count_;
+}
 
-  // RenderProcessHost::DisableKeepAliveRefCount() virtual method gets called as
-  // part of BrowserContext::NotifyWillBeDestroyed(...).  Normally
-  // MockRenderProcessHost::DisableKeepAliveRefCount doesn't call Cleanup,
-  // because the MockRenderProcessHost might be owned by a test.  However, when
-  // the MockRenderProcessHost is the spare RenderProcessHost, we know that it
-  // is owned by the SpareRenderProcessHostManager and we need to delete the
-  // spare to avoid reports/DCHECKs about memory leaks.
+void MockRenderProcessHost::DecrementWorkerRefCount() {
+  --worker_ref_count_;
+}
+
+size_t MockRenderProcessHost::GetWorkerRefCount() const {
+  return worker_ref_count_;
+}
+
+void MockRenderProcessHost::DisableRefCounts() {
+  keep_alive_ref_count_ = 0;
+  worker_ref_count_ = 0;
+
+  // RenderProcessHost::DisableRefCounts() virtual method gets called as part of
+  // BrowserContext::NotifyWillBeDestroyed(...).  Normally
+  // MockRenderProcessHost::DisableRefCounts() doesn't call Cleanup, because the
+  // MockRenderProcessHost might be owned by a test.  However, when the
+  // MockRenderProcessHost is the spare RenderProcessHost, we know that it is
+  // owned by the SpareRenderProcessHostManager and we need to delete the spare
+  // to avoid reports/DCHECKs about memory leaks.
   if (this == RenderProcessHostImpl::GetSpareRenderProcessHostForTesting())
     Cleanup();
 }
 
-bool MockRenderProcessHost::IsKeepAliveRefCountDisabled() {
+bool MockRenderProcessHost::AreRefCountsDisabled() {
   return false;
 }
 
@@ -490,6 +508,11 @@ MockRenderProcessHost::GetInfoForBrowserContextDestructionCrashReporting() {
 void MockRenderProcessHost::WriteIntoTrace(perfetto::TracedValue context) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", GetID());
+}
+
+void MockRenderProcessHost::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto) {
+  proto->set_id(GetID());
 }
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {

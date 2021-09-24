@@ -2,6 +2,7 @@ import { Fixture } from '../common/framework/fixture.js';
 import { attemptGarbageCollection } from '../common/util/collect_garbage.js';
 import {
   assert,
+  range,
   TypedArrayBufferView,
   TypedArrayBufferViewConstructor,
   unreachable,
@@ -19,6 +20,7 @@ import {
   checkElementsBetween,
   checkElementsFloat16Between,
 } from './util/check_contents.js';
+import { CommandBufferMaker, EncoderType } from './util/command_buffer_maker.js';
 import {
   DevicePool,
   DeviceProvider,
@@ -27,13 +29,30 @@ import {
 } from './util/device_pool.js';
 import { align, roundDown } from './util/math.js';
 import {
-  fillTextureDataWithTexelValue,
   getTextureCopyLayout,
   LayoutOptions as TextureLayoutOptions,
 } from './util/texture/layout.js';
 import { PerTexelComponent, kTexelRepresentationInfo } from './util/texture/texel_data.js';
 
 const devicePool = new DevicePool();
+
+const kResourceStateValues = ['valid', 'invalid', 'destroyed'] as const;
+export type ResourceState = typeof kResourceStateValues[number];
+export const kResourceStates: readonly ResourceState[] = kResourceStateValues;
+
+export function initUncanonicalizedDeviceDescriptor(
+  descriptor: UncanonicalizedDeviceDescriptor | GPUFeatureName | Array<GPUFeatureName | undefined>
+): UncanonicalizedDeviceDescriptor {
+  if (typeof descriptor === 'string') {
+    return { requiredFeatures: [descriptor] };
+  } else if (descriptor instanceof Array) {
+    return {
+      requiredFeatures: descriptor.filter(f => f !== undefined) as GPUFeatureName[],
+    };
+  } else {
+    return descriptor;
+  }
+}
 
 /**
  * Base fixture for WebGPU tests.
@@ -109,13 +128,6 @@ export class GPUTest extends Fixture {
       | Array<GPUFeatureName | undefined>
   ): Promise<void> {
     if (descriptor === undefined) return;
-    if (typeof descriptor === 'string') {
-      descriptor = { requiredFeatures: [descriptor] };
-    } else if (descriptor instanceof Array) {
-      descriptor = {
-        requiredFeatures: descriptor.filter(f => f !== undefined) as GPUFeatureName[],
-      };
-    }
 
     assert(this.provider !== undefined);
     // Make sure the device isn't replaced after it's been retrieved once.
@@ -128,7 +140,7 @@ export class GPUTest extends Fixture {
     this.provider = undefined;
     await devicePool.release(oldProvider);
 
-    this.provider = await devicePool.reserve(descriptor);
+    this.provider = await devicePool.reserve(initUncanonicalizedDeviceDescriptor(descriptor));
     this.acquiredDevice = this.provider.acquire();
   }
 
@@ -312,6 +324,140 @@ export class GPUTest extends Fixture {
     });
   }
 
+  /**
+   * Expect a buffer to consist exclusively of rows of some repeated expected value. The size of
+   * `expectedValue` must be 1, 2, or any multiple of 4 bytes. Rows in the buffer are expected to be
+   * zero-padded out to `bytesPerRow`. `minBytesPerRow` is the number of bytes per row that contain
+   * actual (non-padding) data and must be an exact multiple of the byte-length of `expectedValue`.
+   */
+  expectGPUBufferRepeatsSingleValue(
+    buffer: GPUBuffer,
+    {
+      expectedValue,
+      numRows,
+      minBytesPerRow,
+      bytesPerRow,
+    }: {
+      expectedValue: ArrayBuffer;
+      numRows: number;
+      minBytesPerRow: number;
+      bytesPerRow: number;
+    }
+  ) {
+    const valueSize = expectedValue.byteLength;
+    assert(valueSize === 1 || valueSize === 2 || valueSize % 4 === 0);
+    assert(minBytesPerRow % valueSize === 0);
+    assert(bytesPerRow % 4 === 0);
+
+    // If the buffer is small enough, just generate the full expected buffer contents and check
+    // against them on the CPU.
+    const kMaxBufferSizeToCheckOnCpu = 256 * 1024;
+    const bufferSize = bytesPerRow * (numRows - 1) + minBytesPerRow;
+    if (bufferSize <= kMaxBufferSizeToCheckOnCpu) {
+      const valueBytes = Array.from(new Uint8Array(expectedValue));
+      const rowValues = new Array(minBytesPerRow / valueSize).fill(valueBytes);
+      const rowBytes = new Uint8Array([].concat(...rowValues));
+      const expectedContents = new Uint8Array(bufferSize);
+      range(numRows, row => expectedContents.set(rowBytes, row * bytesPerRow));
+      this.expectGPUBufferValuesEqual(buffer, expectedContents);
+      return;
+    }
+
+    // Copy into a buffer suitable for STORAGE usage.
+    const storageBuffer = this.device.createBuffer({
+      size: bufferSize,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+    this.trackForCleanup(storageBuffer);
+
+    // This buffer conveys the data we expect to see for a single value read. Since we read 32 bits at
+    // a time, for values smaller than 32 bits we pad this expectation with repeated value data, or
+    // with zeroes if the width of a row in the buffer is less than 4 bytes. For value sizes larger
+    // than 32 bits, we assume they're a multiple of 32 bits and expect to read exact matches of
+    // `expectedValue` as-is.
+    const expectedDataSize = Math.max(4, valueSize);
+    const expectedDataBuffer = this.device.createBuffer({
+      size: expectedDataSize,
+      usage: GPUBufferUsage.STORAGE,
+      mappedAtCreation: true,
+    });
+    this.trackForCleanup(expectedDataBuffer);
+    const expectedData = new Uint32Array(expectedDataBuffer.getMappedRange());
+    if (valueSize === 1) {
+      const value = new Uint8Array(expectedValue)[0];
+      const values = new Array(Math.min(4, minBytesPerRow)).fill(value);
+      const padding = new Array(Math.max(0, 4 - values.length)).fill(0);
+      const expectedBytes = new Uint8Array(expectedData.buffer);
+      expectedBytes.set([...values, ...padding]);
+    } else if (valueSize === 2) {
+      const value = new Uint16Array(expectedValue)[0];
+      const expectedWords = new Uint16Array(expectedData.buffer);
+      expectedWords.set([value, minBytesPerRow > 2 ? value : 0]);
+    } else {
+      expectedData.set(new Uint32Array(expectedValue));
+    }
+    expectedDataBuffer.unmap();
+
+    // The output buffer has one 32-bit entry per buffer row. An entry's value will be 1 if every
+    // read from the corresponding row matches the expected data derived above, or 0 otherwise.
+    const resultBuffer = this.device.createBuffer({
+      size: numRows * 4,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+    });
+    this.trackForCleanup(resultBuffer);
+
+    const readsPerRow = Math.ceil(minBytesPerRow / expectedDataSize);
+    const reducer = `
+    [[block]] struct Buffer { data: array<u32>; };
+    [[group(0), binding(0)]] var<storage, read> expected: Buffer;
+    [[group(0), binding(1)]] var<storage, read> in: Buffer;
+    [[group(0), binding(2)]] var<storage, read_write> out: Buffer;
+    [[stage(compute), workgroup_size(1)]] fn reduce(
+        [[builtin(global_invocation_id)]] id: vec3<u32>) {
+      let rowBaseIndex = id.x * ${bytesPerRow / 4}u;
+      let readSize = ${expectedDataSize / 4}u;
+      out.data[id.x] = 1u;
+      for (var i: u32 = 0u; i < ${readsPerRow}u; i = i + 1u) {
+        let elementBaseIndex = rowBaseIndex + i * readSize;
+        for (var j: u32 = 0u; j < readSize; j = j + 1u) {
+          if (in.data[elementBaseIndex + j] != expected.data[j]) {
+            out.data[id.x] = 0u;
+            return;
+          }
+        }
+      }
+    }
+    `;
+
+    const pipeline = this.device.createComputePipeline({
+      compute: {
+        module: this.device.createShaderModule({ code: reducer }),
+        entryPoint: 'reduce',
+      },
+    });
+
+    const bindGroup = this.device.createBindGroup({
+      layout: pipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: { buffer: expectedDataBuffer } },
+        { binding: 1, resource: { buffer: storageBuffer } },
+        { binding: 2, resource: { buffer: resultBuffer } },
+      ],
+    });
+
+    const commandEncoder = this.device.createCommandEncoder();
+    commandEncoder.copyBufferToBuffer(buffer, 0, storageBuffer, 0, bufferSize);
+    const pass = commandEncoder.beginComputePass();
+    pass.setPipeline(pipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.dispatch(numRows);
+    pass.endPass();
+    this.device.queue.submit([commandEncoder.finish()]);
+
+    const expectedResults = new Array(numRows).fill(1);
+    this.expectGPUBufferValuesEqual(resultBuffer, new Uint32Array(expectedResults));
+  }
+
   // TODO: add an expectContents for textures, which logs data: uris on failure
 
   /**
@@ -334,7 +480,7 @@ export class GPUTest extends Fixture {
       layout?: TextureLayoutOptions;
     }
   ): void {
-    const { byteLength, bytesPerRow, rowsPerImage, mipSize } = getTextureCopyLayout(
+    const { byteLength, minBytesPerRow, bytesPerRow, rowsPerImage, mipSize } = getTextureCopyLayout(
       format,
       dimension,
       size,
@@ -356,9 +502,13 @@ export class GPUTest extends Fixture {
       mipSize
     );
     this.queue.submit([commandEncoder.finish()]);
-    const arrayBuffer = new ArrayBuffer(byteLength);
-    fillTextureDataWithTexelValue(expectedTexelData, format, dimension, arrayBuffer, size, layout);
-    this.expectGPUBufferValuesEqual(buffer, new Uint8Array(arrayBuffer));
+
+    this.expectGPUBufferRepeatsSingleValue(buffer, {
+      expectedValue: expectedTexelData,
+      numRows: rowsPerImage,
+      minBytesPerRow,
+      bytesPerRow,
+    });
   }
 
   /** Return a GPUBuffer that data are going to be written into. */
@@ -534,6 +684,49 @@ export class GPUTest extends Fixture {
   }
 
   /**
+   * Expect a validation error inside the callback.
+   *
+   * Tests should always do just one WebGPU call in the callback, to make sure that's what's tested.
+   */
+  expectValidationError(fn: () => void, shouldError: boolean = true): void {
+    // If no error is expected, we let the scope surrounding the test catch it.
+    if (shouldError) {
+      this.device.pushErrorScope('validation');
+    }
+
+    // Note: A return value is not allowed for the callback function. This is to avoid confusion
+    // about what the actual behavior would be; either of the following could be reasonable:
+    //   - Make expectValidationError async, and have it await on fn(). This causes an async split
+    //     between pushErrorScope and popErrorScope, so if the caller doesn't `await` on
+    //     expectValidationError (either accidentally or because it doesn't care to do so), then
+    //     other test code will be (nondeterministically) caught by the error scope.
+    //   - Make expectValidationError NOT await fn(), but just execute its first block (until the
+    //     first await) and return the return value (a Promise). This would be confusing because it
+    //     would look like the error scope includes the whole async function, but doesn't.
+    // If we do decide we need to return a value, we should use the latter semantic.
+    const returnValue = fn() as unknown;
+    assert(
+      returnValue === undefined,
+      'expectValidationError callback should not return a value (or be async)'
+    );
+
+    if (shouldError) {
+      const promise = this.device.popErrorScope();
+
+      this.eventualAsyncExpectation(async niceStack => {
+        const gpuValidationError = await promise;
+        if (!gpuValidationError) {
+          niceStack.message = 'Validation succeeded unexpectedly.';
+          this.rec.validationFailed(niceStack);
+        } else if (gpuValidationError instanceof GPUValidationError) {
+          niceStack.message = `Validation failed, as expected - ${gpuValidationError.message}`;
+          this.rec.debug(niceStack);
+        }
+      });
+    }
+  }
+
+  /**
    * Create a GPUBuffer with the specified contents and usage.
    *
    * TODO: Several call sites would be simplified if this took ArrayBuffer as well.
@@ -557,7 +750,7 @@ export class GPUTest extends Fixture {
       mipLevelCount,
       size: { width: textureSizeMipmap0, height: textureSizeMipmap0, depthOrArrayLayers: 1 },
       format,
-      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.SAMPLED,
+      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
     });
     this.trackForCleanup(texture);
 
@@ -596,5 +789,118 @@ export class GPUTest extends Fixture {
     this.device.queue.submit([textureEncoder.finish()]);
 
     return texture;
+  }
+
+  /**
+   * Returns a GPUCommandEncoder, GPUComputePassEncoder, GPURenderPassEncoder, or
+   * GPURenderBundleEncoder, and a `finish` method returning a GPUCommandBuffer.
+   * Allows testing methods which have the same signature across multiple encoder interfaces.
+   *
+   * @example
+   * ```
+   * g.test('popDebugGroup')
+   *   .params(u => u.combine('encoderType', kEncoderTypes))
+   *   .fn(t => {
+   *     const { encoder, finish } = t.createEncoder(t.params.encoderType);
+   *     encoder.popDebugGroup();
+   *   });
+   *
+   * g.test('writeTimestamp')
+   *   .params(u => u.combine('encoderType', ['non-pass', 'compute pass', 'render pass'] as const)
+   *   .fn(t => {
+   *     const { encoder, finish } = t.createEncoder(t.params.encoderType);
+   *     // Encoder type is inferred, so `writeTimestamp` can be used even though it doesn't exist
+   *     // on GPURenderBundleEncoder.
+   *     encoder.writeTimestamp(args);
+   *   });
+   * ```
+   */
+  createEncoder<T extends EncoderType>(
+    encoderType: T,
+    {
+      attachmentInfo,
+      occlusionQuerySet,
+    }: {
+      attachmentInfo?: GPURenderBundleEncoderDescriptor;
+      occlusionQuerySet?: GPUQuerySet;
+    } = {}
+  ): CommandBufferMaker<T> {
+    const fullAttachmentInfo = {
+      // Defaults if not overridden:
+      colorFormats: ['rgba8unorm'],
+      sampleCount: 1,
+      // Passed values take precedent.
+      ...attachmentInfo,
+    } as const;
+
+    switch (encoderType) {
+      case 'non-pass': {
+        const encoder = this.device.createCommandEncoder();
+
+        return new CommandBufferMaker(this, encoder, (shouldSucceed: boolean) =>
+          this.expectGPUError('validation', () => encoder.finish(), !shouldSucceed)
+        );
+      }
+      case 'render bundle': {
+        const device = this.device;
+        const rbEncoder = device.createRenderBundleEncoder(fullAttachmentInfo);
+        const pass = this.createEncoder('render pass', { attachmentInfo });
+
+        return new CommandBufferMaker(this, rbEncoder, (shouldSucceed: boolean) => {
+          // If !shouldSucceed, the resulting bundle should be invalid.
+          const rb = this.expectGPUError('validation', () => rbEncoder.finish(), !shouldSucceed);
+          pass.encoder.executeBundles([rb]);
+          // Then, the pass should also be invalid if the bundle was invalid.
+          return pass.validateFinish(shouldSucceed);
+        });
+      }
+      case 'compute pass': {
+        const commandEncoder = this.device.createCommandEncoder();
+        const encoder = commandEncoder.beginComputePass();
+
+        return new CommandBufferMaker(this, encoder, (shouldSucceed: boolean) => {
+          encoder.endPass();
+          return this.expectGPUError('validation', () => commandEncoder.finish(), !shouldSucceed);
+        });
+      }
+      case 'render pass': {
+        const makeAttachmentView = (format: GPUTextureFormat) =>
+          this.trackForCleanup(
+            this.device.createTexture({
+              size: [16, 16, 1],
+              format,
+              usage: GPUTextureUsage.RENDER_ATTACHMENT,
+              sampleCount: fullAttachmentInfo.sampleCount,
+            })
+          ).createView();
+
+        const passDesc: GPURenderPassDescriptor = {
+          colorAttachments: Array.from(fullAttachmentInfo.colorFormats, format => ({
+            view: makeAttachmentView(format),
+            loadValue: [0, 0, 0, 0],
+            storeOp: 'store',
+          })),
+          depthStencilAttachment:
+            fullAttachmentInfo.depthStencilFormat !== undefined
+              ? {
+                  view: makeAttachmentView(fullAttachmentInfo.depthStencilFormat),
+                  depthLoadValue: 0,
+                  depthStoreOp: 'discard',
+                  stencilLoadValue: 1,
+                  stencilStoreOp: 'discard',
+                }
+              : undefined,
+          occlusionQuerySet,
+        };
+
+        const commandEncoder = this.device.createCommandEncoder();
+        const encoder = commandEncoder.beginRenderPass(passDesc);
+        return new CommandBufferMaker(this, encoder, (shouldSucceed: boolean) => {
+          encoder.endPass();
+          return this.expectGPUError('validation', () => commandEncoder.finish(), !shouldSucceed);
+        });
+      }
+    }
+    unreachable();
   }
 }

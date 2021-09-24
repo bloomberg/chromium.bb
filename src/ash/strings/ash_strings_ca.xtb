@@ -24,6 +24,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1119348796022671382">El mode de color temàtic utilitza colors extrets del fons de pantalla per acolorir lleugerament la interfície.</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
 <translation id="1148499908455722006">Obre el quadre de diàleg d'informació per a <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Calendari</translation>
 <translation id="1153356358378277386">Dispositius vinculats</translation>
 <translation id="1165712434476988950">Cal reiniciar el dispositiu per aplicar l'actualització.</translation>
 <translation id="1175572348579024023">Desplaça</translation>
@@ -92,6 +93,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1611993646327628135">Activat</translation>
 <translation id="1615402009686901181">La política de l'administrador desactiva la captura de pantalla quan es mostra contingut confidencial</translation>
 <translation id="1632985212731562677">L'accés amb interruptors es pot desactivar a Configuració &gt; Accessibilitat.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositius</translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Prem Cerca+Espai per veure el resultat a l'Assistent.</translation>
 <translation id="1667964833127753507">El mode de color neutre no utilitza colors extrets del fons de pantalla, sinó que els substitueix per un conjunt de tons neutres clars o foscos.</translation>
@@ -192,6 +194,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2427507373259914951">Fes clic amb el botó esquerre</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per vincular-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY" />.</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
+<translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2450205753526923158">Mode de captura de pantalla</translation>
 <translation id="2473177541599297363">Confirma la resolució</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
@@ -320,6 +323,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3486220673238053218">definició</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Connectat a <ph name="NUM_DEVICES" /> dispositius</translation>
 <translation id="3552189655002856821">La Wi-Fi està desactivada</translation>
 <translation id="3560866052109807830">Eines de dibuix del marcador</translation>
 <translation id="3563775809269155755">Activa el punt d'accés Wi‑Fi</translation>
@@ -348,6 +352,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3702846122927433391">Quants habitants té Nigèria?</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">S'està carregant...</translation>
+<translation id="3708186454126126312">Connectats anteriorment</translation>
 <translation id="371370241367527062">Micròfon frontal</translation>
 <translation id="3713734891607377840">Obre'l en acabar</translation>
 <translation id="3742055079367172538">Captura de pantalla feta</translation>
@@ -403,6 +408,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4157822100366708405">Configuració del tema fosc</translation>
+<translation id="4170634509222878053"><ph name="TITLE" />: <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4195877955194704651">Botó Clics automàtics</translation>
 <translation id="4197790712631116042">Desactivat</translation>
@@ -555,6 +561,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5234764350956374838">Ignora</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
+<translation id="5253783950165989294">Connectat a un dispositiu anomenat <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="5260676007519551770">Escriptori 4</translation>
 <translation id="5283198616748585639">Afegeix 1 minut</translation>
 <translation id="528468243742722775">Finalitza</translation>
@@ -565,6 +572,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
 <translation id="5314219114274263156">S'ha fet una gravació de pantalla</translation>
+<translation id="5319712128756744240">Vincula un dispositiu nou</translation>
 <translation id="5322611492012084517">No es troba el telèfon</translation>
 <translation id="5329548388331921293">S'està connectant...</translation>
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -767,6 +775,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
 <translation id="7007983414944123363">El PIN o la contrasenya no s'han pogut verificar. Torna-ho a provar.</translation>
+<translation id="7014684956566476813">Connectat a un dispositiu Bluetooth anomenat <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Pots tornar a aquesta hora: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Escriptori 6</translation>
 <translation id="7025533177575372252">Connecta <ph name="DEVICE_NAME" /> al telèfon</translation>
@@ -1000,6 +1009,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8818320199597151042">S'està suprimint el perfil. Espera uns minuts.</translation>
 <translation id="8825863694328519386">Llisca des de l'esquerra per tornar enrere</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Connectats actualment</translation>
 <translation id="8841375032071747811">Botó Enrere</translation>
 <translation id="8843682306134542540">Activa o desactiva el bloqueig de rotació. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Cerca + Esc</translation>
@@ -1030,6 +1040,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="9024331582947483881">pantalla completa</translation>
 <translation id="9047624247355796468">Obre la configuració de la xarxa <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">El dispositiu es revertirà a una versió anterior</translation>
+<translation id="9059834730836941392">Replega la notificació</translation>
 <translation id="9063800855227801443">No es pot capturar contingut confidencial</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9070640332319875144">Configuració de l'Assistent</translation>

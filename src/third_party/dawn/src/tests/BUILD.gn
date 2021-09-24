@@ -203,6 +203,7 @@ test("dawn_unittests") {
     "unittests/validation/GetBindGroupLayoutValidationTests.cpp",
     "unittests/validation/IndexBufferValidationTests.cpp",
     "unittests/validation/InternalUsageValidationTests.cpp",
+    "unittests/validation/LabelTests.cpp",
     "unittests/validation/MinimumBufferSizeValidationTests.cpp",
     "unittests/validation/MultipleDeviceTests.cpp",
     "unittests/validation/QueryValidationTests.cpp",
@@ -438,6 +439,7 @@ source_set("dawn_white_box_tests_sources") {
   }
 
   sources += [
+    "white_box/BufferAllocatedSizeTests.cpp",
     "white_box/InternalResourceUsageTests.cpp",
     "white_box/InternalStorageBufferBindingTests.cpp",
     "white_box/QueryInternalShaderTests.cpp",

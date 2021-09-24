@@ -653,6 +653,18 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // The ping interval (ms) when the connection is stable and writable. This
     // parameter overrides the default value in the ICE implementation if set.
     absl::optional<int> stable_writable_connection_ping_interval_ms;
+
+    // Whether this PeerConnection will avoid VPNs (kAvoidVpn), prefer VPNs
+    // (kPreferVpn), only work over VPN (kOnlyUseVpn) or only work over non-VPN
+    // (kNeverUseVpn) interfaces. This controls which local interfaces the
+    // PeerConnection will prefer to connect over. Since VPN detection is not
+    // perfect, adherence to this preference cannot be guaranteed.
+    VpnPreference vpn_preference = VpnPreference::kDefault;
+
+    // List of address/length subnets that should be treated like
+    // VPN (in case webrtc fails to auto detect them).
+    std::vector<rtc::NetworkMask> vpn_list;
+
     //
     // Don't forget to update operator== if adding something.
     //

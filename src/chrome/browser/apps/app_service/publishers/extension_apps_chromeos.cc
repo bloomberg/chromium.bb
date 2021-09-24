@@ -44,7 +44,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -298,7 +298,8 @@ void ExtensionAppsChromeOs::OnAppWindowAdded(
   }
 
   DCHECK(!instance_registry_->Exists(
-      apps::Instance::InstanceKey(app_window->GetNativeWindow())));
+      apps::Instance::InstanceKey::ForWindowBasedApp(
+          app_window->GetNativeWindow())));
   app_window_to_aura_window_[app_window] = app_window->GetNativeWindow();
 
   // Attach window to multi-user manager now to let it manage visibility state
@@ -322,7 +323,8 @@ void ExtensionAppsChromeOs::OnAppWindowShown(extensions::AppWindow* app_window,
   }
 
   InstanceState state = instance_registry_->GetState(
-      apps::Instance::InstanceKey(app_window->GetNativeWindow()));
+      apps::Instance::InstanceKey::ForWindowBasedApp(
+          app_window->GetNativeWindow()));
 
   // If the window is shown, it should be started, running and not hidden.
   state = static_cast<apps::InstanceState>(
@@ -748,7 +750,8 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
 
   // If the current state has been marked as |new_state|, we don't need to
   // update.
-  if (instance_registry_->GetState(apps::Instance::InstanceKey(window)) ==
+  if (instance_registry_->GetState(
+          apps::Instance::InstanceKey::ForWindowBasedApp(window)) ==
       new_state) {
     return;
   }
@@ -759,7 +762,8 @@ void ExtensionAppsChromeOs::RegisterInstance(extensions::AppWindow* app_window,
   }
   std::vector<std::unique_ptr<apps::Instance>> deltas;
   auto instance = std::make_unique<apps::Instance>(
-      app_window->extension_id(), apps::Instance::InstanceKey(window));
+      app_window->extension_id(),
+      apps::Instance::InstanceKey::ForWindowBasedApp(window));
   instance->SetLaunchId(GetLaunchId(app_window));
   instance->UpdateState(new_state, base::Time::Now());
   instance->SetBrowserContext(app_window->browser_context());

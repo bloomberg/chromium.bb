@@ -146,12 +146,12 @@ export class LighthouseReportRenderer extends LighthouseReport.ReportRenderer {
 
   static handleDarkMode(el: Element): void {
     if (ThemeSupport.ThemeSupport.instance().themeName() === 'dark') {
-      el.classList.add('dark');
+      el.classList.add('lh-dark');
     }
   }
 }
 
-// @ts-expect-error https://github.com/GoogleChrome/lighthouse/issues/11628
+// @ts-ignore https://github.com/GoogleChrome/lighthouse/issues/11628
 export class LighthouseReportUIFeatures extends LighthouseReport.ReportUIFeatures {
   private beforePrint: (() => void)|null;
   private afterPrint: (() => void)|null;

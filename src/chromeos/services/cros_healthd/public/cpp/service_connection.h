@@ -252,6 +252,20 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunHttpsLatencyRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the ARC HTTP routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunArcHttpRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunArcHttpRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the ARC PING routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunArcPingRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunArcPingRoutineCallback
+          callback) = 0;
+
   // Requests that cros_healthd runs the video conferencing routine. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

@@ -8,8 +8,11 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/diagnostics_ui/backend/networking_log.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_map.h"
+#include "base/strings/string_util.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 
@@ -47,6 +50,19 @@ bool IsConnectedOrConnecting(
   }
 }
 
+bool IsConnectedOrOnline(mojom::NetworkState state) {
+  switch (state) {
+    case mojom::NetworkState::kOnline:
+    case mojom::NetworkState::kConnected:
+    case mojom::NetworkState::kPortal:
+      return true;
+    case mojom::NetworkState::kNotConnected:
+    case mojom::NetworkState::kConnecting:
+    case mojom::NetworkState::kDisabled:
+      return false;
+  }
+}
+
 constexpr mojom::NetworkState ConnectionStateToNetworkState(
     network_mojom::ConnectionStateType connection_state) {
   switch (connection_state) {
@@ -61,6 +77,21 @@ constexpr mojom::NetworkState ConnectionStateToNetworkState(
     case network_mojom::ConnectionStateType::kNotConnected:
       return mojom::NetworkState::kNotConnected;
   }
+}
+
+bool DeviceIsDisabledOrDisabling(network_mojom::DeviceStateType device_state) {
+  return device_state == network_mojom::DeviceStateType::kDisabled ||
+         device_state == network_mojom::DeviceStateType::kDisabling;
+}
+
+constexpr mojom::NetworkState CombineNetworkStates(
+    network_mojom::ConnectionStateType connection_state,
+    network_mojom::DeviceStateType device_state) {
+  if (DeviceIsDisabledOrDisabling(device_state)) {
+    return mojom::NetworkState::kDisabled;
+  }
+
+  return ConnectionStateToNetworkState(connection_state);
 }
 
 constexpr mojom::NetworkType ConvertNetworkType(
@@ -81,6 +112,11 @@ constexpr mojom::NetworkType ConvertNetworkType(
   }
 }
 
+mojom::SecurityType ConvertSecurityType(network_mojom::SecurityType type) {
+  return mojo::EnumTraits<mojom::SecurityType,
+                          network_mojom::SecurityType>::ToMojom(type);
+}
+
 mojom::IPConfigPropertiesPtr CreateIPConfigProperties(
     const network_mojom::IPConfigPropertiesPtr& ip_config_props) {
   mojom::IPConfigPropertiesPtr ip_config = mojom::IPConfigProperties::New();
@@ -97,7 +133,9 @@ mojom::WiFiStatePropertiesPtr CreateWiFiStateProperties(
   wifi_props->signal_strength = network_type_props.get_wifi()->signal_strength;
   wifi_props->frequency = network_type_props.get_wifi()->frequency;
   wifi_props->ssid = network_type_props.get_wifi()->ssid;
-  wifi_props->bssid = network_type_props.get_wifi()->bssid;
+  wifi_props->bssid = base::ToUpperASCII(network_type_props.get_wifi()->bssid);
+  wifi_props->security =
+      ConvertSecurityType(network_type_props.get_wifi()->security);
   return wifi_props;
 }
 
@@ -107,10 +145,17 @@ mojom::EthernetStatePropertiesPtr CreateEthernetStateProperties(
   return mojom::EthernetStateProperties::New();
 }
 
-// TODO(michaelcheco): Add Cellular properties.
 mojom::CellularStatePropertiesPtr CreateCellularStateProperties(
     const network_mojom::NetworkTypeStateProperties& network_type_props) {
-  return mojom::CellularStateProperties::New();
+  auto cellular_props = mojom::CellularStateProperties::New();
+  cellular_props->iccid = network_type_props.get_cellular()->iccid;
+  cellular_props->eid = network_type_props.get_cellular()->eid;
+  cellular_props->network_technology =
+      network_type_props.get_cellular()->network_technology;
+  cellular_props->roaming = network_type_props.get_cellular()->roaming;
+  cellular_props->signal_strength =
+      network_type_props.get_cellular()->signal_strength;
+  return cellular_props;
 }
 
 bool IsMatchingDevice(const network_mojom::DeviceStatePropertiesPtr& device,
@@ -150,6 +195,29 @@ bool ClearDisconnectedNetwork(NetworkObserverInfo* network_info) {
   return true;
 }
 
+mojom::RoamingState GetRoamingState(
+    absl::optional<std::string>& roaming_state) {
+  if (!roaming_state.has_value()) {
+    return mojom::RoamingState::kNone;
+  }
+
+  std::string state = roaming_state.value();
+  // Possible values are 'Home' and 'Roaming'.
+  DCHECK(state == "Home" || state == "Roaming");
+  return state == "Home" ? mojom::RoamingState::kHome
+                         : mojom::RoamingState::kRoaming;
+}
+
+constexpr mojom::LockType GetLockType(const std::string& lock_type) {
+  // Possible values are 'sim-pin', 'sim-puk' or empty.
+  if (lock_type.empty()) {
+    return mojom::LockType::kNone;
+  }
+  DCHECK(lock_type == "sim-pin" || lock_type == "sim-puk");
+  return lock_type == "sim-pin" ? mojom::LockType::kSimPin
+                                : mojom::LockType::kSimPuk;
+}
+
 void UpdateNetwork(
     const network_mojom::NetworkTypeStateProperties& network_type_props,
     mojom::Network* network) {
@@ -162,10 +230,22 @@ void UpdateNetwork(
       type_properties->set_ethernet(
           CreateEthernetStateProperties(network_type_props));
       break;
-    case mojom::NetworkType::kCellular:
-      type_properties->set_cellular(
-          CreateCellularStateProperties(network_type_props));
+    case mojom::NetworkType::kCellular: {
+      auto cellular_props = CreateCellularStateProperties(network_type_props);
+      // If we have existing Cellular type properties, i.e., Sim Lock Status
+      // was present for this network, combine the newly created Cellular
+      // properties with the existing ones.
+      if (network->type_properties) {
+        cellular_props->lock_type =
+            network->type_properties->get_cellular()->lock_type;
+        cellular_props->sim_locked =
+            network->type_properties->get_cellular()->sim_locked;
+        cellular_props->roaming_state =
+            network->type_properties->get_cellular()->roaming_state;
+      }
+      type_properties->set_cellular(std::move(cellular_props));
       break;
+    }
     case mojom::NetworkType::kUnsupported:
       NOTREACHED();
       break;
@@ -179,8 +259,8 @@ void UpdateNetwork(
     NetworkObserverInfo* network_info) {
   mojom::Network* network = network_info->network.get();
   network->name = network_state->name;
-  network->state =
-      ConnectionStateToNetworkState(network_state->connection_state);
+  network->state = CombineNetworkStates(network_state->connection_state,
+                                        network_info->device_state);
 
   // Network type must be populated before calling UpdateNetwork.
   network->type = ConvertNetworkType(network_state->type);
@@ -194,18 +274,35 @@ void UpdateNetwork(
   ClearDisconnectedNetwork(network_info);
 }
 
+void CreateEmptyCellularPropertiesForNetwork(mojom::Network* network) {
+  auto type_properties = mojom::NetworkTypeProperties::New();
+  auto cellular_props = mojom::CellularStateProperties::New();
+  type_properties->set_cellular(std::move(cellular_props));
+  network->type_properties = std::move(type_properties);
+}
+
 void UpdateNetwork(const network_mojom::DeviceStatePropertiesPtr& device,
                    NetworkObserverInfo* network_info) {
   mojom::Network* network = network_info->network.get();
-  DCHECK(!network->guid.empty());
+  DCHECK(!network->observer_guid.empty());
 
   network->type = ConvertNetworkType(device->type);
   network->mac_address = device->mac_address;
+  network_info->device_state = device->device_state;
+  if (network->type == mojom::NetworkType::kCellular &&
+      device->sim_lock_status) {
+    // Create partially populated CellularStateProperties struct.
+    // Remaining properties will be added in CreateCellularStateProperties.
+    CreateEmptyCellularPropertiesForNetwork(network);
+    DCHECK(network->type_properties->is_cellular());
+    network->type_properties->get_cellular()->lock_type =
+        GetLockType(device->sim_lock_status->lock_type);
+    network->type_properties->get_cellular()->sim_locked =
+        device->sim_lock_status->lock_enabled;
+  }
 
-  // TODO(michaelcheco): Combine the applicable device states like
-  // kDisabled and kDisabling into the combined NetworkState enum.
-  if (device->device_state != network_mojom::DeviceStateType::kEnabled) {
-    network->state = mojom::NetworkState::kNotConnected;
+  if (DeviceIsDisabledOrDisabling(device->device_state)) {
+    network->state = mojom::NetworkState::kDisabled;
     ClearDisconnectedNetwork(network_info);
   }
 }
@@ -231,6 +328,42 @@ void UpdateNetwork(
     auto ip_config = managed_properties->ip_configs.value()[0].Clone();
     network->ip_config = CreateIPConfigProperties(ip_config);
   }
+
+  if (network->type == mojom::NetworkType::kCellular && managed_properties) {
+    auto roaming_state = GetRoamingState(
+        managed_properties->type_properties->get_cellular()->roaming_state);
+    if (!network->type_properties) {
+      CreateEmptyCellularPropertiesForNetwork(network);
+    }
+    DCHECK(network->type_properties->is_cellular());
+    network->type_properties->get_cellular()->roaming_state = roaming_state;
+  }
+}
+
+// Calculate a score for a network based on its type and state.
+// Network state takes precedence over network type. In the case
+// of a tie (Ethernet Connected & WiFi Connected for ex), the network
+// type considered to have the higher priority will take precedence.
+int GetScoreForNetwork(const mojom::NetworkPtr& network) {
+  static constexpr auto kNetworkStatePriorityMap =
+      base::MakeFixedFlatMap<mojom::NetworkState, int>(
+          {{mojom::NetworkState::kOnline, 300},
+           {mojom::NetworkState::kPortal, 200},
+           {mojom::NetworkState::kConnected, 100}});
+
+  static constexpr auto kNetworkTypePriorityMap =
+      base::MakeFixedFlatMap<mojom::NetworkType, int>(
+          {{mojom::NetworkType::kEthernet, 3},
+           {mojom::NetworkType::kWiFi, 2},
+           {mojom::NetworkType::kCellular, 1}});
+
+  int state_priority = 0;
+  if (base::Contains(kNetworkStatePriorityMap, network->state)) {
+    state_priority += kNetworkStatePriorityMap.at(network->state);
+  }
+
+  DCHECK(base::Contains(kNetworkTypePriorityMap, network->type));
+  return kNetworkTypePriorityMap.at(network->type) + state_priority;
 }
 
 }  // namespace
@@ -327,8 +460,8 @@ void NetworkHealthProvider::UpdateMatchingNetwork(
 
   // Get the managed properties using the network guid, and pass the observer
   // guid.
-  GetManagedPropertiesForNetwork(/*network_guid=*/network->guid,
-                                 /*observer_guid=*/network_info->network->guid);
+  GetManagedPropertiesForNetwork(network->guid,
+                                 network_info->network->observer_guid);
 }
 
 void NetworkHealthProvider::OnDeviceStateListReceived(
@@ -362,16 +495,16 @@ void NetworkHealthProvider::OnDeviceStateListReceived(
 
     // If a matching entry could not be found, add a new entry to |networks_|.
     if (!matched) {
-      std::string guid = AddNewNetwork(device);
-      networks_seen.insert(std::move(guid));
+      std::string observer_guid = AddNewNetwork(device);
+      networks_seen.insert(std::move(observer_guid));
       list_changed = true;
     }
   }
 
   // Remove any entry in |networks_| that doesn't match a device.
   for (auto it = networks_.begin(); it != networks_.end();) {
-    const std::string& guid = it->first;
-    if (!base::Contains(networks_seen, guid)) {
+    const std::string& observer_guid = it->first;
+    if (!base::Contains(networks_seen, observer_guid)) {
       it = networks_.erase(it);
       list_changed = true;
       continue;
@@ -392,7 +525,7 @@ std::string NetworkHealthProvider::AddNewNetwork(
     const chromeos::network_config::mojom::DeviceStatePropertiesPtr& device) {
   std::string observer_guid = base::GenerateGUID();
   auto network = mojom::Network::New();
-  network->guid = observer_guid;
+  network->observer_guid = observer_guid;
 
   // Initial state set to kNotConnected.
   network->state = mojom::NetworkState::kNotConnected;
@@ -418,50 +551,33 @@ NetworkObserverInfo* NetworkHealthProvider::LookupNetwork(
   return nullptr;
 }
 
-bool NetworkHealthProvider::UpdateActiveGuid() {
-  std::string new_active_guid;
-  for (auto& pair : networks_) {
-    if (new_active_guid.empty()) {
-      if (pair.second.network->state == mojom::NetworkState::kOnline ||
-          pair.second.network->state == mojom::NetworkState::kConnected) {
-        new_active_guid = pair.first;
-      }
-    } else {
-      auto iter = networks_.find(new_active_guid);
-      if (iter == networks_.end()) {
-        continue;
-      }
-
-      // If the current network is online and ethernet and the existing one was
-      // only wifi then this is a better match.
-      // TODO(michaelcheco): Add a mechanism for ranking/ordering all networks
-      // based on connection state and type, and use that instead.
-      const bool is_better_match =
-          (pair.second.network->state == mojom::NetworkState::kOnline) &&
-          (pair.second.network->type == mojom::NetworkType::kEthernet) &&
-          (iter->second.network->type == mojom::NetworkType::kWiFi);
-
-      if (is_better_match) {
-        new_active_guid = pair.first;
-      }
-    }
-  }
-
-  if (active_guid_ != new_active_guid) {
-    active_guid_ = std::move(new_active_guid);
-    return true;
-  }
-
-  return false;
-}
-
-std::vector<std::string> NetworkHealthProvider::GetObserverGuids() {
+std::vector<std::string>
+NetworkHealthProvider::GetObserverGuidsAndUpdateActiveGuid() {
   std::vector<std::string> observer_guids;
   observer_guids.reserve(networks_.size());
   for (auto& pair : networks_) {
     observer_guids.push_back(pair.first);
   }
 
+  // Sort list of observer guids in descending order based on score.
+  sort(observer_guids.begin(), observer_guids.end(),
+       [&](const std::string& lhs, const std::string& rhs) -> bool {
+         mojom::NetworkPtr& network1 = networks_.at(lhs).network;
+         mojom::NetworkPtr& network2 = networks_.at(rhs).network;
+         return GetScoreForNetwork(network1) > GetScoreForNetwork(network2);
+       });
+
+  // Update |active_guid_| if the observer guid with the highest score
+  // corresponds to a network interface that is either online or connected.
+  std::string new_active_guid;
+  if (observer_guids.size() > 0) {
+    const std::string& guid = observer_guids[0];
+    if (IsConnectedOrOnline(GetNetworkStateForGuid(guid))) {
+      new_active_guid = guid;
+    }
+  }
+
+  active_guid_ = std::move(new_active_guid);
   return observer_guids;
 }
 
@@ -497,12 +613,24 @@ void NetworkHealthProvider::OnManagedPropertiesReceived(
 void NetworkHealthProvider::BindInterface(
     mojo::PendingReceiver<mojom::NetworkHealthProvider> pending_receiver) {
   DCHECK(features::IsNetworkingInDiagnosticsAppEnabled());
+  DCHECK(!ReceiverIsBound());
   receiver_.Bind(std::move(pending_receiver));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&NetworkHealthProvider::OnBoundInterfaceDisconnect,
+                     base::Unretained(this)));
+}
+
+bool NetworkHealthProvider::ReceiverIsBound() {
+  return receiver_.is_bound();
+}
+
+void NetworkHealthProvider::OnBoundInterfaceDisconnect() {
+  receiver_.reset();
 }
 
 void NetworkHealthProvider::NotifyNetworkListObservers() {
-  UpdateActiveGuid();
-  std::vector<std::string> observer_guids = GetObserverGuids();
+  std::vector<std::string> observer_guids =
+      GetObserverGuidsAndUpdateActiveGuid();
   for (auto& observer : network_list_observers_) {
     observer->OnNetworkListChanged(mojo::Clone(observer_guids), active_guid_);
   }
@@ -516,6 +644,11 @@ void NetworkHealthProvider::NotifyNetworkStateObserver(
 
   network_info.observer->OnNetworkStateChanged(
       mojo::Clone(network_info.network));
+
+  if (IsLoggingEnabled() &&
+      network_info.network->observer_guid == active_guid_) {
+    networking_log_ptr_->UpdateContents(network_info.network.Clone());
+  }
 }
 
 void NetworkHealthProvider::GetActiveNetworkState() {
@@ -533,8 +666,20 @@ void NetworkHealthProvider::GetDeviceState() {
                      base::Unretained(this)));
 }
 
+void NetworkHealthProvider::SetNetworkingLogForTesting(
+    NetworkingLog* networking_log_ptr) {
+  networking_log_ptr_ = networking_log_ptr;
+}
+
 bool NetworkHealthProvider::IsLoggingEnabled() const {
   return networking_log_ptr_ != nullptr;
+}
+
+mojom::NetworkState NetworkHealthProvider::GetNetworkStateForGuid(
+    const std::string& guid) {
+  auto it = networks_.find(guid);
+  DCHECK(it != networks_.end());
+  return it->second.network->state;
 }
 
 }  // namespace diagnostics

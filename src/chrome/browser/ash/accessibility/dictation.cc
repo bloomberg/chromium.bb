@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/network_speech_recognizer.h"
 #include "chrome/browser/speech/on_device_speech_recognizer.h"
+#include "chrome/common/extensions/api/accessibility_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
@@ -29,6 +31,7 @@
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
@@ -237,6 +240,7 @@ Dictation::Dictation(Profile* profile)
     : current_state_(SPEECH_RECOGNIZER_OFF),
       composition_(std::make_unique<ui::CompositionText>()),
       profile_(profile) {
+  DCHECK(!switches::IsExperimentalAccessibilityDictationExtensionEnabled());
   if (GetInputContext() && GetInputContext()->GetInputMethod())
     GetInputContext()->GetInputMethod()->AddObserver(this);
 }
@@ -247,10 +251,11 @@ Dictation::~Dictation() {
 }
 
 bool Dictation::OnToggleDictation() {
-  if (speech_recognizer_) {
+  if (is_started_) {
     DictationOff();
     return false;
   }
+  is_started_ = true;
   has_committed_text_ = false;
   const std::string locale = GetUserLocale(profile_);
   // Log the locale used with LocaleCodeISO639 values.
@@ -366,6 +371,11 @@ void Dictation::OnTextInputStateChanged(const ui::TextInputClient* client) {
 }
 
 void Dictation::DictationOff() {
+  is_started_ = false;
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleDictation, false /* enabled */);
+  AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
+
   current_state_ = SPEECH_RECOGNIZER_OFF;
   StopSpeechTimeout();
   if (!speech_recognizer_)
@@ -381,10 +391,6 @@ void Dictation::DictationOff() {
     audio::SoundsManager::Get()->Play(
         static_cast<int>(Sound::kDictationCancel));
   }
-
-  AccessibilityStatusEventDetails details(
-      AccessibilityNotificationType::kToggleDictation, false /* enabled */);
-  AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
   speech_recognizer_.reset();
 
   // Duration matches the lifetime of the speech recognizer.

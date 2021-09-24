@@ -77,13 +77,15 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
     return QUIC_FAILURE;
   }
 
+  bool cert_matched_sni;
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
-      proof_source_->GetCertChain(server_address, client_address, hostname);
+      proof_source_->GetCertChain(server_address, client_address, hostname,
+                                  &cert_matched_sni);
 
   handshaker_->OnSelectCertificateDone(
       /*ok=*/true, /*is_sync=*/true, chain.get(),
       /*handshake_hints=*/absl::string_view(),
-      /*ticket_encryption_key=*/absl::string_view());
+      /*ticket_encryption_key=*/absl::string_view(), cert_matched_sni);
   if (!handshaker_->select_cert_status().has_value()) {
     QUIC_BUG(quic_bug_12423_1)
         << "select_cert_status() has no value after a synchronous select cert";
@@ -138,26 +140,42 @@ void TlsServerHandshaker::DecryptCallback::Run(std::vector<uint8_t> plaintext) {
     // The callback was cancelled before we could run.
     return;
   }
-  handshaker_->decrypted_session_ticket_ = std::move(plaintext);
+
+  TlsServerHandshaker* handshaker = handshaker_;
+  handshaker_ = nullptr;
+
+  handshaker->decrypted_session_ticket_ = std::move(plaintext);
+  const bool is_async =
+      (handshaker->expected_ssl_error() == SSL_ERROR_PENDING_TICKET);
+
+  absl::optional<QuicConnectionContextSwitcher> context_switcher;
+  if (handshaker->restore_connection_context_in_callbacks_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_tls_restore_connection_context_in_callbacks, 1, 3);
+    if (is_async) {
+      context_switcher.emplace(handshaker->connection_context());
+    }
+    QUIC_TRACESTRING(
+        absl::StrCat("TLS ticket decryption done. len(decrypted_ticket):",
+                     handshaker->decrypted_session_ticket_.size()));
+  }
+
   // DecryptCallback::Run could be called synchronously. When that happens, we
   // are currently in the middle of a call to AdvanceHandshake.
-  // (AdvanceHandshake called SSL_do_handshake, which through some layers called
-  // SessionTicketOpen, which called TicketCrypter::Decrypt, which synchronously
-  // called this function.) In that case, the handshake will continue to be
-  // processed when this function returns.
+  // (AdvanceHandshake called SSL_do_handshake, which through some layers
+  // called SessionTicketOpen, which called TicketCrypter::Decrypt, which
+  // synchronously called this function.) In that case, the handshake will
+  // continue to be processed when this function returns.
   //
-  // When this callback is called asynchronously (i.e. the ticket decryption is
-  // pending), TlsServerHandshaker is not actively processing handshake
+  // When this callback is called asynchronously (i.e. the ticket decryption
+  // is pending), TlsServerHandshaker is not actively processing handshake
   // messages. We need to have it resume processing handshake messages by
   // calling AdvanceHandshake.
-  if (handshaker_->expected_ssl_error() == SSL_ERROR_PENDING_TICKET) {
-    handshaker_->AdvanceHandshakeFromCallback();
+  if (is_async) {
+    handshaker->AdvanceHandshakeFromCallback();
   }
-  // The TicketDecrypter took ownership of this callback when Decrypt was
-  // called. Once the callback returns, it will be deleted. Remove the
-  // (non-owning) pointer to the callback from the handshaker so the handshaker
-  // doesn't have an invalid pointer hanging around.
-  handshaker_->ticket_decryption_callback_ = nullptr;
+
+  handshaker->ticket_decryption_callback_ = nullptr;
 }
 
 void TlsServerHandshaker::DecryptCallback::Cancel() {
@@ -188,8 +206,12 @@ TlsServerHandshaker::TlsServerHandshaker(
   }
   SSL_set_quic_use_legacy_codepoint(ssl(), use_legacy_extension);
 
-  if (GetQuicFlag(FLAGS_quic_disable_server_tls_resumption)) {
-    SSL_set_options(ssl(), SSL_OP_NO_TICKET);
+  if (!session->quic_tls_disable_resumption_refactor()) {
+    if (GetQuicFlag(FLAGS_quic_disable_server_tls_resumption)) {
+      SSL_set_options(ssl(), SSL_OP_NO_TICKET);
+    }
+  } else {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_tls_disable_resumption_refactor);
   }
 
   if (GetQuicReloadableFlag(quic_trace_ssl_events) &&
@@ -336,6 +358,8 @@ bool TlsServerHandshaker::ValidateAddressToken(absl::string_view token) const {
 bool TlsServerHandshaker::ShouldSendExpectCTHeader() const {
   return false;
 }
+
+bool TlsServerHandshaker::DidCertMatchSni() const { return cert_matched_sni_; }
 
 const ProofSource::Details* TlsServerHandshaker::ProofSourceDetails() const {
   return proof_source_details_.get();
@@ -663,6 +687,19 @@ void TlsServerHandshaker::OnComputeSignatureDone(
   QUIC_DVLOG(1) << "OnComputeSignatureDone. ok:" << ok
                 << ", is_sync:" << is_sync
                 << ", len(signature):" << signature.size();
+  absl::optional<QuicConnectionContextSwitcher> context_switcher;
+  if (restore_connection_context_in_callbacks_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_tls_restore_connection_context_in_callbacks, 2, 3);
+
+    if (!is_sync) {
+      context_switcher.emplace(connection_context());
+    }
+
+    QUIC_TRACESTRING(absl::StrCat("TLS compute signature done. ok:", ok,
+                                  ", len(signature):", signature.size()));
+  }
+
   if (ok) {
     cert_verify_sig_ = std::move(signature);
     proof_source_details_ = std::move(details);
@@ -713,7 +750,7 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
     absl::string_view in) {
   QUICHE_DCHECK(proof_source_->GetTicketCrypter());
 
-  if (allow_ignore_ticket_open_ && ignore_ticket_open_) {
+  if (ignore_ticket_open_) {
     // SetIgnoreTicketOpen has been called. Typically this means the caller is
     // using handshake hints and expect the hints to contain ticket decryption
     // results.
@@ -722,21 +759,20 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
   }
 
   if (!ticket_decryption_callback_) {
-    if (!allow_ignore_ticket_open_) {
-      ticket_received_ = true;
-    }
     ticket_decryption_callback_ = new DecryptCallback(this);
     proof_source_->GetTicketCrypter()->Decrypt(
         in, std::unique_ptr<DecryptCallback>(ticket_decryption_callback_));
+
     // Decrypt can run the callback synchronously. In that case, the callback
     // will clear the ticket_decryption_callback_ pointer, and instead of
-    // returning ssl_ticket_aead_retry, we should continue processing to return
-    // the decrypted ticket.
+    // returning ssl_ticket_aead_retry, we should continue processing to
+    // return the decrypted ticket.
     //
     // If the callback is not run synchronously, return ssl_ticket_aead_retry
     // and when the callback is complete this function will be run again to
     // return the result.
     if (ticket_decryption_callback_) {
+      QUICHE_DCHECK(!ticket_decryption_callback_->IsDone());
       set_expected_ssl_error(SSL_ERROR_PENDING_TICKET);
       if (async_op_timer_.has_value()) {
         QUIC_CODE_COUNT(
@@ -744,8 +780,14 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
       }
       async_op_timer_ = QuicTimeAccumulator();
       async_op_timer_->Start(now());
-      return ssl_ticket_aead_retry;
     }
+  }
+
+  // If the async ticket decryption is pending, either started by this
+  // SessionTicketOpen call or one that happened earlier, return
+  // ssl_ticket_aead_retry.
+  if (ticket_decryption_callback_ && !ticket_decryption_callback_->IsDone()) {
+    return ssl_ticket_aead_retry;
   }
 
   ssl_ticket_aead_result_t result =
@@ -817,8 +859,7 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
     return ssl_select_cert_error;
   }
 
-  if (allow_ignore_ticket_open_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_tls_allow_ignore_ticket_open);
+  {
     const uint8_t* unused_extension_bytes;
     size_t unused_extension_len;
     ticket_received_ = SSL_early_callback_ctx_extension_get(
@@ -919,15 +960,30 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
 
 void TlsServerHandshaker::OnSelectCertificateDone(
     bool ok, bool is_sync, const ProofSource::Chain* chain,
-    absl::string_view handshake_hints,
-    absl::string_view ticket_encryption_key) {
+    absl::string_view handshake_hints, absl::string_view ticket_encryption_key,
+    bool cert_matched_sni) {
   QUIC_DVLOG(1) << "OnSelectCertificateDone. ok:" << ok
                 << ", is_sync:" << is_sync
                 << ", len(handshake_hints):" << handshake_hints.size()
                 << ", len(ticket_encryption_key):"
                 << ticket_encryption_key.size();
+  absl::optional<QuicConnectionContextSwitcher> context_switcher;
+  if (restore_connection_context_in_callbacks_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_tls_restore_connection_context_in_callbacks, 3, 3);
+
+    if (!is_sync) {
+      context_switcher.emplace(connection_context());
+    }
+
+    QUIC_TRACESTRING(absl::StrCat(
+        "TLS select certificate done: ok:", ok,
+        ", len(handshake_hints):", handshake_hints.size(),
+        ", len(ticket_encryption_key):", ticket_encryption_key.size()));
+  }
   ticket_encryption_key_ = std::string(ticket_encryption_key);
   select_cert_status_ = QUIC_FAILURE;
+  cert_matched_sni_ = cert_matched_sni;
   if (ok) {
     if (chain && !chain->certs.empty()) {
       tls_connection_.SetCertChain(chain->ToCryptoBuffers().value);
@@ -1047,14 +1103,11 @@ TlsServerHandshaker::SetApplicationSettings(absl::string_view alpn) {
   const std::string& hostname = crypto_negotiated_params_->sni;
   std::string accept_ch_value = GetAcceptChValueForHostname(hostname);
   std::string origin = absl::StrCat("https://", hostname);
-  if (GetQuicReloadableFlag(quic_include_port_in_alps_origin)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_include_port_in_alps_origin);
-    uint16_t port = session()->self_address().port();
-    if (port != kDefaultPort) {
-      // This should be rare in production, but useful for test servers.
-      QUIC_CODE_COUNT(quic_server_alps_non_default_port);
-      absl::StrAppend(&origin, ":", port);
-    }
+  uint16_t port = session()->self_address().port();
+  if (port != kDefaultPort) {
+    // This should be rare in production, but useful for test servers.
+    QUIC_CODE_COUNT(quic_server_alps_non_default_port);
+    absl::StrAppend(&origin, ":", port);
   }
 
   if (!accept_ch_value.empty()) {

@@ -140,10 +140,6 @@
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-#include "net/ftp/ftp_auth_cache.h"
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
 #if BUILDFLAG(IS_CT_SUPPORTED)
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "services/network/public/mojom/ct_log_info.mojom.h"
@@ -671,8 +667,7 @@ TEST_F(NetworkContextTest, UnhandedProtocols) {
       GURL("file:///not/a/path/that/leads/anywhere/but/it/should/not/matter/"
            "anyways"),
 
-      // FTP is handled by the network service on some platforms, but support
-      // for it is not enabled by default.
+      // FTP is not supported natively by Chrome.
       GURL("ftp://foo.test/"),
   };
 
@@ -738,8 +733,11 @@ TEST_F(NetworkContextTest, EnableReportingWithStore) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  context_params->reporting_and_nel_store_path =
-      temp_dir.GetPath().Append(kFilename);
+  base::FilePath database_path = temp_dir.GetPath().Append(kFilename);
+  context_params->file_paths = mojom::NetworkContextFilePaths::New();
+  context_params->file_paths->data_path = database_path.DirName();
+  context_params->file_paths->reporting_and_nel_store_database_name =
+      database_path.BaseName();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(network_context->url_request_context()->reporting_service());
@@ -788,8 +786,11 @@ TEST_F(NetworkContextTest, EnableNetworkErrorLoggingWithStore) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  context_params->reporting_and_nel_store_path =
-      temp_dir.GetPath().Append(kFilename);
+  base::FilePath reporting_and_nel_store = temp_dir.GetPath().Append(kFilename);
+  context_params->file_paths = mojom::NetworkContextFilePaths::New();
+  context_params->file_paths->data_path = reporting_and_nel_store.DirName();
+  context_params->file_paths->reporting_and_nel_store_database_name =
+      reporting_and_nel_store.BaseName();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(
@@ -1009,7 +1010,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
   // Create a context with on-disk storage of HTTP server properties.
   mojom::NetworkContextParamsPtr context_params =
       CreateNetworkContextParamsForTesting();
-  context_params->http_server_properties_path = file_path;
+  context_params->file_paths = mojom::NetworkContextFilePaths::New();
+  context_params->file_paths->data_path = file_path.DirName();
+  context_params->file_paths->http_server_properties_file_name =
+      file_path.BaseName();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -1031,7 +1035,10 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
 
   // Create a new NetworkContext using the same path for HTTP server properties.
   context_params = CreateNetworkContextParamsForTesting();
-  context_params->http_server_properties_path = file_path;
+  context_params->file_paths = mojom::NetworkContextFilePaths::New();
+  context_params->file_paths->data_path = file_path.DirName();
+  context_params->file_paths->http_server_properties_file_name =
+      file_path.BaseName();
   network_context = CreateContextWithParams(std::move(context_params));
 
   // Wait for properties to load from disk.
@@ -1144,8 +1151,11 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     mojom::NetworkContextParamsPtr context_params =
         CreateNetworkContextParamsForTesting();
     if (on_disk) {
-      context_params->transport_security_persister_file_path =
-          transport_security_persister_file_path;
+      context_params->file_paths = mojom::NetworkContextFilePaths::New();
+      context_params->file_paths->data_path =
+          transport_security_persister_file_path.DirName();
+      context_params->file_paths->transport_security_persister_file_name =
+          transport_security_persister_file_path.BaseName();
     }
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
@@ -1172,8 +1182,11 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     // added STS entry still exists.
     context_params = CreateNetworkContextParamsForTesting();
     if (on_disk) {
-      context_params->transport_security_persister_file_path =
-          transport_security_persister_file_path;
+      context_params->file_paths = mojom::NetworkContextFilePaths::New();
+      context_params->file_paths->data_path =
+          transport_security_persister_file_path.DirName();
+      context_params->file_paths->transport_security_persister_file_name =
+          transport_security_persister_file_path.BaseName();
     }
     network_context = CreateContextWithParams(std::move(context_params));
     // Wait for the entry to load.
@@ -1412,7 +1425,7 @@ TEST_F(NetworkContextTest, P2PHostResolution) {
         host_resolver.CreateRequest(kHostPortPair, other_nik,
                                     net::NetLogWithSource(), params);
     net::TestCompletionCallback callback2;
-    int result = request2->Start(callback2.callback());
+    result = request2->Start(callback2.callback());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
   }
 }
@@ -1599,9 +1612,9 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
       mock_cache.http_cache());
 
   std::vector<std::string> entry_urls = {
-      "http://www.google.com",    "https://www.google.com",
-      "http://www.wikipedia.com", "https://www.wikipedia.com",
-      "http://localhost:1234",    "https://localhost:1234",
+      "http://www.google.com/",    "https://www.google.com/",
+      "http://www.wikipedia.com/", "https://www.wikipedia.com/",
+      "http://localhost:1234/",    "https://localhost:1234/",
   };
 
   // The disk cache is lazily instanitated, force it and ensure it's valid.
@@ -1614,11 +1627,13 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
     net::NetworkIsolationKey key;
     network_context->NotifyExternalCacheHit(
         test_url, test_url.scheme(), key,
-        false /* is_subframe_document_resource */);
+        /*is_subframe_document_resource=*/false,
+        /*include_credentials=*/true);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Note: if this breaks check HttpCache::GenerateCacheKey() for changes.
-    EXPECT_EQ(test_url, mock_cache.disk_cache()->GetExternalCacheHits().back());
+    EXPECT_EQ("1/0/" + entry_urls[i],
+              mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }
 
@@ -1661,12 +1676,13 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
     }
 
     network_context->NotifyExternalCacheHit(test_url, test_url.scheme(), key,
-                                            is_subframe_document_resource);
+                                            is_subframe_document_resource,
+                                            /*include_credentials=*/true);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Since this is splitting the cache, the key also includes the network
     // isolation key and optionally, the subframe prefix.
-    EXPECT_EQ(base::StrCat({"_dk_", subframe_prefix, key.ToString(), " ",
+    EXPECT_EQ(base::StrCat({"1/0/_dk_", subframe_prefix, key.ToString(), " ",
                             test_url.spec()}),
               mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
@@ -2144,8 +2160,9 @@ TEST_F(NetworkContextTest, ClearReportingCacheReports) {
       reporting_service.get());
 
   GURL domain("http://google.com");
-  reporting_service->QueueReport(domain, net::NetworkIsolationKey(),
-                                 "Mozilla/1.0", "group", "type", nullptr, 0);
+  reporting_service->QueueReport(domain, absl::nullopt,
+                                 net::NetworkIsolationKey(), "Mozilla/1.0",
+                                 "group", "type", nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);
@@ -2174,11 +2191,13 @@ TEST_F(NetworkContextTest, ClearReportingCacheReportsWithFilter) {
       reporting_service.get());
 
   GURL url1("http://google.com");
-  reporting_service->QueueReport(url1, net::NetworkIsolationKey(),
-                                 "Mozilla/1.0", "group", "type", nullptr, 0);
+  reporting_service->QueueReport(url1, absl::nullopt,
+                                 net::NetworkIsolationKey(), "Mozilla/1.0",
+                                 "group", "type", nullptr, 0);
   GURL url2("http://chromium.org");
-  reporting_service->QueueReport(url2, net::NetworkIsolationKey(),
-                                 "Mozilla/1.0", "group", "type", nullptr, 0);
+  reporting_service->QueueReport(url2, absl::nullopt,
+                                 net::NetworkIsolationKey(), "Mozilla/1.0",
+                                 "group", "type", nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);
@@ -2213,11 +2232,13 @@ TEST_F(NetworkContextTest,
       reporting_service.get());
 
   GURL url1("http://192.168.0.1");
-  reporting_service->QueueReport(url1, net::NetworkIsolationKey(),
-                                 "Mozilla/1.0", "group", "type", nullptr, 0);
+  reporting_service->QueueReport(url1, absl::nullopt,
+                                 net::NetworkIsolationKey(), "Mozilla/1.0",
+                                 "group", "type", nullptr, 0);
   GURL url2("http://192.168.0.2");
-  reporting_service->QueueReport(url2, net::NetworkIsolationKey(),
-                                 "Mozilla/1.0", "group", "type", nullptr, 0);
+  reporting_service->QueueReport(url2, absl::nullopt,
+                                 net::NetworkIsolationKey(), "Mozilla/1.0",
+                                 "group", "type", nullptr, 0);
 
   std::vector<const net::ReportingReport*> reports;
   reporting_cache->GetReports(&reports);
@@ -3839,10 +3860,11 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       net::MockDnsClientRule::Result(
           net::BuildTestDnsAddressResponse(kQueryHostname, result)),
       false /* delay */);
-  rules.emplace_back(
-      kQueryHostname, net::dns_protocol::kTypeAAAA, false /* secure */,
-      net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
-      false /* delay */);
+  rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeAAAA,
+                     false /* secure */,
+                     net::MockDnsClientRule::Result(
+                         net::MockDnsClientRule::ResultType::kEmpty),
+                     false /* delay */);
   auto mock_dns_client = std::make_unique<net::MockDnsClient>(
       base_configuration, std::move(rules));
   mock_dns_client->SetInsecureEnabled(/*enabled=*/true,
@@ -6069,37 +6091,6 @@ TEST_F(NetworkContextTest, BlockAllCookies) {
   EXPECT_EQ("None", response_body);
 }
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-TEST_F(NetworkContextTest, AddFtpAuthCacheEntry) {
-  GURL url("ftp://example.test/");
-  const char16_t kUsername[] = u"test_user";
-  const char16_t kPassword[] = u"test_pass";
-  mojom::NetworkContextParamsPtr params =
-      CreateNetworkContextParamsForTesting();
-  params->enable_ftp_url_support = true;
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(params));
-  net::AuthChallengeInfo challenge;
-  challenge.is_proxy = false;
-  challenge.challenger = url::Origin::Create(url);
-
-  ASSERT_TRUE(network_context->url_request_context()->ftp_auth_cache());
-  ASSERT_FALSE(
-      network_context->url_request_context()->ftp_auth_cache()->Lookup(url));
-  base::RunLoop run_loop;
-  network_context->AddAuthCacheEntry(challenge, net::NetworkIsolationKey(),
-                                     net::AuthCredentials(kUsername, kPassword),
-                                     run_loop.QuitClosure());
-  run_loop.Run();
-  net::FtpAuthCache::Entry* entry =
-      network_context->url_request_context()->ftp_auth_cache()->Lookup(url);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(url, entry->origin);
-  EXPECT_EQ(kUsername, entry->credentials.username());
-  EXPECT_EQ(kPassword, entry->credentials.password());
-}
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
-
 #if BUILDFLAG(IS_CT_SUPPORTED)
 TEST_F(NetworkContextTest, CertificateTransparencyConfig) {
   // Configure CT logs in network service.
@@ -6714,12 +6705,12 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
 
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath temp_path =
-      dir.GetPath().Append(FILE_PATH_LITERAL("my_token_store"));
-
+  base::FilePath database_name(FILE_PATH_LITERAL("my_token_store"));
   {
     auto params = CreateNetworkContextParamsForTesting();
-    params->trust_token_path = temp_path;
+    params->file_paths = mojom::NetworkContextFilePaths::New();
+    params->file_paths->data_path = dir.GetPath();
+    params->file_paths->trust_token_database_name = database_name;
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(params));
 
@@ -6746,7 +6737,9 @@ TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
   task_environment_.RunUntilIdle();
   {
     auto params = CreateNetworkContextParamsForTesting();
-    params->trust_token_path = temp_path;
+    params->file_paths = mojom::NetworkContextFilePaths::New();
+    params->file_paths->data_path = dir.GetPath();
+    params->file_paths->trust_token_database_name = database_name;
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(params));
 

@@ -57,6 +57,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -100,36 +101,40 @@ SyncConfigInfo::SyncConfigInfo()
 SyncConfigInfo::~SyncConfigInfo() {}
 
 bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
-  std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadDeprecated(json);
-  base::DictionaryValue* result;
-  if (!parsed_value || !parsed_value->GetAsDictionary(&result)) {
+  absl::optional<base::Value> parsed_value = base::JSONReader::Read(json);
+  if (!parsed_value.has_value() || !parsed_value->is_dict()) {
     DLOG(ERROR) << "GetConfiguration() not passed a Dictionary";
     return false;
   }
 
-  if (!result->GetBoolean("syncAllDataTypes", &config->sync_everything)) {
+  absl::optional<bool> sync_everything =
+      parsed_value->FindBoolKey("syncAllDataTypes");
+  if (!sync_everything.has_value()) {
     DLOG(ERROR) << "GetConfiguration() not passed a syncAllDataTypes value";
     return false;
   }
+  config->sync_everything = *sync_everything;
 
-  if (!result->GetBoolean("paymentsIntegrationEnabled",
-                          &config->payments_integration_enabled)) {
+  absl::optional<bool> payments_integration_enabled =
+      parsed_value->FindBoolKey("paymentsIntegrationEnabled");
+  if (!payments_integration_enabled.has_value()) {
     DLOG(ERROR) << "GetConfiguration() not passed a paymentsIntegrationEnabled "
                 << "value";
     return false;
   }
+  config->payments_integration_enabled = *payments_integration_enabled;
 
   for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
     std::string key_name =
         syncer::GetUserSelectableTypeName(type) + std::string("Synced");
-    bool sync_value;
-    if (!result->GetBoolean(key_name, &sync_value)) {
+    absl::optional<bool> type_synced = parsed_value->FindBoolKey(key_name);
+    if (!type_synced.has_value()) {
       DLOG(ERROR) << "GetConfiguration() not passed a value for " << key_name;
       return false;
     }
-    if (sync_value)
+    if (*type_synced) {
       config->selected_types.Put(type);
+    }
   }
 
   return true;
@@ -173,13 +178,13 @@ std::string GetSyncErrorAction(SyncStatusActionType action_type) {
 base::Value GetAccountValue(const AccountInfo& account) {
   DCHECK(!account.IsEmpty());
   base::Value dictionary(base::Value::Type::DICTIONARY);
-  dictionary.SetKey("email", base::Value(account.email));
-  dictionary.SetKey("fullName", base::Value(account.full_name));
-  dictionary.SetKey("givenName", base::Value(account.given_name));
+  dictionary.SetStringKey("email", account.email);
+  dictionary.SetStringKey("fullName", account.full_name);
+  dictionary.SetStringKey("givenName", account.given_name);
   if (!account.account_image.IsEmpty()) {
-    dictionary.SetKey(
+    dictionary.SetStringKey(
         "avatarImage",
-        base::Value(webui::GetBitmapDataUrl(account.account_image.AsBitmap())));
+        webui::GetBitmapDataUrl(account.account_image.AsBitmap()));
   }
   return dictionary;
 }
@@ -215,70 +220,70 @@ PeopleHandler::~PeopleHandler() {
 
 void PeopleHandler::RegisterMessages() {
   InitializeSyncBlocker();
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupDidClosePage",
       base::BindRepeating(&PeopleHandler::OnDidClosePage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupSetDatatypes",
       base::BindRepeating(&PeopleHandler::HandleSetDatatypes,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupSetEncryptionPassphrase",
       base::BindRepeating(&PeopleHandler::HandleSetEncryptionPassphrase,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupSetDecryptionPassphrase",
       base::BindRepeating(&PeopleHandler::HandleSetDecryptionPassphrase,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupShowSetupUI",
       base::BindRepeating(&PeopleHandler::HandleShowSyncSetupUI,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupGetSyncStatus",
       base::BindRepeating(&PeopleHandler::HandleGetSyncStatus,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncPrefsDispatch",
       base::BindRepeating(&PeopleHandler::HandleSyncPrefsDispatch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncOfferTrustedVaultOptInDispatch",
       base::BindRepeating(&PeopleHandler::HandleOfferTrustedVaultOptInDispatch,
                           base::Unretained(this)));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "AttemptUserExit",
       base::BindRepeating(&PeopleHandler::HandleAttemptUserExit,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "TurnOnSync", base::BindRepeating(&PeopleHandler::HandleTurnOnSync,
                                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "TurnOffSync", base::BindRepeating(&PeopleHandler::HandleTurnOffSync,
                                          base::Unretained(this)));
 #else
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupSignout", base::BindRepeating(&PeopleHandler::HandleSignout,
                                               base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupPauseSync", base::BindRepeating(&PeopleHandler::HandlePauseSync,
                                                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupStartSignIn",
       base::BindRepeating(&PeopleHandler::HandleStartSignin,
                           base::Unretained(this)));
 #endif
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupGetStoredAccounts",
       base::BindRepeating(&PeopleHandler::HandleGetStoredAccounts,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncSetupStartSyncingWithEmail",
       base::BindRepeating(&PeopleHandler::HandleStartSyncingWithEmail,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "SyncStartKeyRetrieval",
       base::BindRepeating(&PeopleHandler::HandleStartKeyRetrieval,
                           base::Unretained(this)));
@@ -410,7 +415,7 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
 
 void PeopleHandler::HandleGetStoredAccounts(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
@@ -681,7 +686,7 @@ void PeopleHandler::HandleStartKeyRetrieval(const base::ListValue* args) {
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 

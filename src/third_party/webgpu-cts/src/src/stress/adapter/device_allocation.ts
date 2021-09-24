@@ -7,7 +7,17 @@ import { makeTestGroup } from '../../common/framework/test_group.js';
 
 export const g = makeTestGroup(Fixture);
 
-g.test('coexisting').desc(`Tests allocation of many coexisting GPUDevice objects.`).unimplemented();
+g.test('coexisting')
+  .desc(
+    `Tests allocation of many coexisting GPUDevice objects.
+
+TODO: These stress tests might not make sense. Allocating lots of GPUDevices is
+currently crashy in Chrome, and there's not a great reason for applications to
+do it. UAs should probably limit the number of simultaneously active devices,
+but this is effectively blocked on implementing GPUDevice.destroy() to give
+applications the necessary controls.`
+  )
+  .unimplemented();
 
 g.test('continuous,with_destroy')
   .desc(

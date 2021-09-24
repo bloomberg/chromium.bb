@@ -13,13 +13,13 @@
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
@@ -86,7 +86,7 @@ ApkWebAppService::ApkWebAppService(Profile* profile)
   if (arc_app_list_prefs_)
     arc_app_list_prefs_observer_.Observe(arc_app_list_prefs_);
 
-  provider_ = web_app::WebAppProvider::Get(profile);
+  provider_ = web_app::WebAppProvider::GetDeprecated(profile);
   DCHECK(provider_);
   registrar_observer_.Observe(&provider_->registrar());
 }
@@ -131,7 +131,7 @@ absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
 absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     const GURL& url) {
   web_app::WebAppRegistrar& registrar =
-      web_app::WebAppProvider::Get(profile_)->registrar();
+      web_app::WebAppProvider::GetDeprecated(profile_)->registrar();
   absl::optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
   if (!app_id)
     return absl::nullopt;

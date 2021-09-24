@@ -292,12 +292,12 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
 
   const auto& dictionary = concept_data->FindKey("dictionary")->GetList();
   dictionary_.reserve(dictionary.size());
-  int id = 0;
+  int token_id = 0;
   for (const auto& token_value : dictionary) {
     std::u16string token;
     token_value.GetAsString(&token);
-    dictionary_.insert({token, id});
-    ++id;
+    dictionary_.insert({token, token_id});
+    ++token_id;
   }
 
   if (OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled()) {
@@ -318,9 +318,8 @@ void OmniboxPedalProvider::LoadPedalConcepts() {
     // not enabled for the current locale.
     if (id >= static_cast<int>(OmniboxPedalId::RUN_CHROME_SAFETY_CHECK) &&
         id <= static_cast<int>(OmniboxPedalId::CHANGE_GOOGLE_PASSWORD) &&
-        !(OmniboxFieldTrial::IsPedalsBatch2Enabled() &&
-          (locale_is_english ||
-           OmniboxFieldTrial::IsPedalsBatch2NonEnglishEnabled()))) {
+        !(locale_is_english ||
+          OmniboxFieldTrial::IsPedalsBatch2NonEnglishEnabled())) {
       continue;
     }
     const auto pedal_iter = pedals_.find(static_cast<OmniboxPedalId>(id));

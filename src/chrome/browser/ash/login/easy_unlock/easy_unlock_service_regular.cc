@@ -240,7 +240,7 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
       base::Base64UrlEncode(
           multidevice::ToCryptAuthSeed(beacon_seed).SerializeAsString(),
           base::Base64UrlEncodePolicy::INCLUDE_PADDING, &b64_beacon_seed);
-      beacon_seed_list->AppendString(b64_beacon_seed);
+      beacon_seed_list->Append(b64_beacon_seed);
     }
 
     std::string serialized_beacon_seeds;
@@ -263,10 +263,10 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     device_list->Append(std::move(dict));
   }
 
-  if (device_list->GetSize() != 2u) {
+  if (device_list->GetList().size() != 2u) {
     PA_LOG(ERROR) << "There should only be 2 devices persisted, the host and "
                      "the client, but there are: "
-                  << device_list->GetSize();
+                  << device_list->GetList().size();
     NOTREACHED();
   }
 

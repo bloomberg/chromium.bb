@@ -27,6 +27,7 @@
 #include "libANGLE/Uniform.h"
 #include "libANGLE/VaryingPacking.h"
 #include "libANGLE/Version.h"
+#include "libANGLE/capture/FrameCapture.h"
 #include "libANGLE/features.h"
 #include "libANGLE/histogram_macros.h"
 #include "libANGLE/queryconversions.h"
@@ -788,6 +789,46 @@ void LoadInterfaceBlock(BinaryInputStream *stream, InterfaceBlock *block)
     LoadShaderVariableBuffer(stream, block);
 }
 
+void WriteShInterfaceBlock(BinaryOutputStream *stream, const sh::InterfaceBlock &block)
+{
+    stream->writeString(block.name);
+    stream->writeString(block.mappedName);
+    stream->writeString(block.instanceName);
+    stream->writeInt(block.arraySize);
+    stream->writeEnum(block.layout);
+    stream->writeBool(block.isRowMajorLayout);
+    stream->writeInt(block.binding);
+    stream->writeBool(block.staticUse);
+    stream->writeBool(block.active);
+    stream->writeEnum(block.blockType);
+
+    stream->writeInt<size_t>(block.fields.size());
+    for (const sh::ShaderVariable &shaderVariable : block.fields)
+    {
+        WriteShaderVar(stream, shaderVariable);
+    }
+}
+
+void LoadShInterfaceBlock(BinaryInputStream *stream, sh::InterfaceBlock *block)
+{
+    block->name             = stream->readString();
+    block->mappedName       = stream->readString();
+    block->instanceName     = stream->readString();
+    block->arraySize        = stream->readInt<unsigned int>();
+    block->layout           = stream->readEnum<sh::BlockLayoutType>();
+    block->isRowMajorLayout = stream->readBool();
+    block->binding          = stream->readInt<int>();
+    block->staticUse        = stream->readBool();
+    block->active           = stream->readBool();
+    block->blockType        = stream->readEnum<sh::BlockType>();
+
+    block->fields.resize(stream->readInt<size_t>());
+    for (sh::ShaderVariable &variable : block->fields)
+    {
+        LoadShaderVar(stream, &variable);
+    }
+}
+
 // Saves the linking context for later use in resolveLink().
 struct Program::LinkingState
 {
@@ -1515,6 +1556,7 @@ angle::Result Program::linkImpl(const Context *context)
 
     std::unique_ptr<LinkingState> linkingState(new LinkingState());
     ProgramMergedVaryings mergedVaryings;
+    LinkingVariables linkingVariables(mState);
     ProgramLinkedResources &resources = linkingState->resources;
 
     if (mState.mAttachedShaders[ShaderType::Compute])
@@ -1590,7 +1632,7 @@ angle::Result Program::linkImpl(const Context *context)
             return angle::Result::Continue;
         }
 
-        if (!LinkValidateProgramGlobalNames(infoLog, *this))
+        if (!LinkValidateProgramGlobalNames(infoLog, getExecutable(), linkingVariables))
         {
             return angle::Result::Continue;
         }
@@ -1620,10 +1662,10 @@ angle::Result Program::linkImpl(const Context *context)
         InitUniformBlockLinker(mState, &resources.uniformBlockLinker);
         InitShaderStorageBlockLinker(mState, &resources.shaderStorageBlockLinker);
 
-        mergedVaryings = GetMergedVaryingsFromShaders(*this, getExecutable());
-        if (!mState.mExecutable->linkMergedVaryings(context, *this, mergedVaryings,
-                                                    mState.mTransformFeedbackVaryingNames,
-                                                    isSeparable(), &resources.varyingPacking))
+        mergedVaryings = GetMergedVaryingsFromLinkingVariables(linkingVariables);
+        if (!mState.mExecutable->linkMergedVaryings(
+                context, mergedVaryings, mState.mTransformFeedbackVaryingNames, linkingVariables,
+                isSeparable(), &resources.varyingPacking))
         {
             return angle::Result::Continue;
         }
@@ -1857,7 +1899,6 @@ angle::Result Program::loadBinary(const Context *context,
 
     BinaryInputStream stream(binary, length);
     ANGLE_TRY(deserialize(context, stream, infoLog));
-
     // Currently we require the full shader text to compute the program hash.
     // We could also store the binary in the internal program cache.
 
@@ -4665,6 +4706,29 @@ angle::Result Program::serialize(const Context *context, angle::MemoryBuffer *bi
     stream.writeInt(mState.getAtomicCounterUniformRange().low());
     stream.writeInt(mState.getAtomicCounterUniformRange().high());
 
+    if (context->getShareGroup()->getFrameCaptureShared()->enabled())
+    {
+        // Serialize the source for each stage for re-use during capture
+        for (ShaderType shaderType : mState.mExecutable->getLinkedShaderStages())
+        {
+            gl::Shader *shader = getAttachedShader(shaderType);
+            if (shader)
+            {
+                stream.writeString(shader->getSourceString());
+            }
+            else
+            {
+                // If we dont have an attached shader, which would occur if this program was
+                // created via glProgramBinary, pull from our cached copy
+                const angle::ProgramSources &cachedLinkedSources =
+                    context->getShareGroup()->getFrameCaptureShared()->getProgramSources(id());
+                const std::string &cachedSourceString = cachedLinkedSources[shaderType];
+                ASSERT(!cachedSourceString.empty());
+                stream.writeString(cachedSourceString.c_str());
+            }
+        }
+    }
+
     mProgram->save(context, &stream);
 
     ASSERT(binaryOut);
@@ -4772,6 +4836,23 @@ angle::Result Program::deserialize(const Context *context,
     postResolveLink(context);
     mState.mExecutable->updateCanDrawWith();
 
+    if (context->getShareGroup()->getFrameCaptureShared()->enabled())
+    {
+        // Extract the source for each stage from the program binary
+        angle::ProgramSources sources;
+
+        for (ShaderType shaderType : mState.mExecutable->getLinkedShaderStages())
+        {
+            std::string shaderSource = stream.readString();
+            ASSERT(shaderSource.length() > 0);
+            sources[shaderType] = std::move(shaderSource);
+        }
+
+        // Store it for use during mid-execution capture
+        context->getShareGroup()->getFrameCaptureShared()->setProgramSources(id(),
+                                                                             std::move(sources));
+    }
+
     return angle::Result::Continue;
 }
 
@@ -4793,19 +4874,5 @@ void Program::postResolveLink(const gl::Context *context)
         mState.mBaseVertexLocation   = getUniformLocation("gl_BaseVertex").value;
         mState.mBaseInstanceLocation = getUniformLocation("gl_BaseInstance").value;
     }
-}
-
-// HasAttachedShaders implementation.
-ShaderType HasAttachedShaders::getTransformFeedbackStage() const
-{
-    if (getAttachedShader(ShaderType::Geometry))
-    {
-        return ShaderType::Geometry;
-    }
-    if (getAttachedShader(ShaderType::TessEvaluation))
-    {
-        return ShaderType::TessEvaluation;
-    }
-    return ShaderType::Vertex;
 }
 }  // namespace gl

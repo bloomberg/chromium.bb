@@ -120,10 +120,10 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
 
 void PaymentRequestBrowserTestBase::NavigateTo(const std::string& file_path) {
   if (file_path.find("data:") == 0U) {
-    ui_test_utils::NavigateToURL(browser(), GURL(file_path));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(file_path)));
   } else {
-    ui_test_utils::NavigateToURL(browser(),
-                                 https_server()->GetURL("a.com", file_path));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_server()->GetURL("a.com", file_path)));
   }
 }
 
@@ -506,7 +506,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   DCHECK(render_frame_host->IsActive());
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       std::make_unique<TestChromePaymentRequestDelegate>(
-          render_frame_host, /*observer=*/this, &prefs_, is_incognito_,
+          render_frame_host, /*observer=*/GetWeakPtr(), &prefs_, is_incognito_,
           is_valid_ssl_, is_browser_window_active_, skip_ui_for_basic_card_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(

@@ -387,6 +387,12 @@ set_defaults("static_library") {
 set_defaults("source_set") {
   configs = default_compiler_configs
 }
+set_defaults("rust_library") {
+  configs = default_compiler_configs
+}
+set_defaults("rust_proc_macro") {
+  configs = default_compiler_configs
+}
 
 # Compute the set of configs common to all linked targets (shared libraries,
 # loadable modules, executables) to avoid duplication below.

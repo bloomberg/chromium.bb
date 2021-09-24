@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
+#include "third_party/blink/renderer/core/css/container_query_data.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -416,8 +417,10 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
     // on). Inline display types end up on a line, and are therefore monolithic,
     // so we can allow those.
     if (!style.IsDisplayInlineType()) {
-      if (style.IsDisplayTableType() || style.IsDisplayFlexibleOrGridBox() ||
-          style.IsDeprecatedFlexboxUsingFlexLayout()) {
+      if (style.IsDisplayTableType() || style.IsDisplayGridBox() ||
+          ((style.IsDisplayFlexibleBox() ||
+            style.IsDeprecatedFlexboxUsingFlexLayout()) &&
+           !RuntimeEnabledFeatures::LayoutNGFlexFragmentationEnabled())) {
         UseCounter::Count(
             document,
             WebFeature::
@@ -484,8 +487,8 @@ HeapLinkedHashSet<WeakMember<Element>>* GetExplicitlySetElementsForAttr(
     const QualifiedName& name) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
       element->GetDocument().GetExplicitlySetAttrElementsMap(element);
-  return element_attribute_map->Contains(name) ? element_attribute_map->at(name)
-                                               : nullptr;
+  auto it = element_attribute_map->find(name);
+  return it != element_attribute_map->end() ? it->value : nullptr;
 }
 
 // Checks that the given element |candidate| is a descendant of
@@ -868,9 +871,9 @@ void Element::SetElementArrayAttribute(
   // This is needed as modifying the content attribute (|setAttribute|) will
   // run the synchronization steps which modify the map invalidating any
   // outstanding iterators.
+  auto it = element_attribute_map->find(name);
   HeapLinkedHashSet<WeakMember<Element>>* stored_elements =
-      element_attribute_map->Contains(name) ? element_attribute_map->at(name)
-                                            : nullptr;
+      it != element_attribute_map->end() ? it->value : nullptr;
   if (!stored_elements) {
     stored_elements =
         MakeGarbageCollected<HeapLinkedHashSet<WeakMember<Element>>>();
@@ -1205,6 +1208,11 @@ void Element::ScrollIntoViewNoVisualUpdate(
     const ScrollIntoViewOptions* options) {
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
+
+  if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+          *this, DisplayLockActivationReason::kScrollIntoView)) {
+    return;
+  }
 
   mojom::blink::ScrollBehavior behavior =
       (options->behavior() == "smooth") ? mojom::blink::ScrollBehavior::kSmooth
@@ -2829,8 +2837,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
       GetDocument().ActiveChainNodeDetached(*this);
     GetDocument().UserActionElements().DidDetach(*this);
   }
-
-  GetDocument().GetStyleEngine().ClearNeedsWhitespaceReattachmentFor(this);
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
@@ -2853,12 +2859,9 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   }
 
   if (ElementAnimations* element_animations = GetElementAnimations()) {
-    // With CSSIsolatedAnimationUpdates enabled, animation updates are not
-    // applied during an Element's style recalc, but during
-    // Document::UpdateStyle.
-    if (!RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled())
+    // See also CSSAnimationUpdateScope.
+    if (!RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled())
       element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
-    element_animations->UpdateAnimationFlags(*style);
   }
 
   style->UpdateIsStackingContextWithoutContainment(
@@ -2879,6 +2882,54 @@ void Element::RecalcStyleForTraversalRootAncestor() {
     UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
   if (HasCustomStyleCallbacks())
     DidRecalcStyle({});
+}
+
+bool Element::SkipStyleRecalcForContainer(
+    const ComputedStyle& style,
+    const StyleRecalcChange& child_change) {
+  DCHECK(RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled());
+  if (child_change.ReattachLayoutTree()) {
+    if (!LayoutObjectIsNeeded(style) || style.Display() == EDisplay::kInline ||
+        style.IsDisplayTableType()) {
+      return false;
+    }
+  } else {
+    LayoutObject* layout_object = GetLayoutObject();
+    if (!layout_object || !layout_object->NeedsLayout() ||
+        !layout_object->IsEligibleForSizeContainment()) {
+      return false;
+    }
+  }
+  // Store the child_change so that we can continue interleaved style layout
+  // from where we left off.
+  EnsureElementRareData().EnsureContainerQueryData().SkipStyleRecalc(
+      child_change);
+
+  GetDocument().GetStyleEngine().SkipStyleRecalcForContainer();
+
+  if (HasCustomStyleCallbacks())
+    DidRecalcStyle(child_change);
+  return true;
+}
+
+void Element::MarkNonSlottedHostChildrenForStyleRecalc() {
+  // Mark non-slotted children of shadow hosts for style recalc for forced
+  // subtree recalcs when they have ensured computed style outside the flat
+  // tree. Elements outside the flat tree are not recomputed during the style
+  // recalc step, but we need to make sure the ensured styles are dirtied so
+  // that we know to clear out old styles from
+  // StyleEngine::ClearEnsuredDescendantStyles() the next time we call
+  // getComputedStyle() on any of the descendant elements.
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    if (child->NeedsStyleRecalc())
+      continue;
+    if (!child->IsElementNode())
+      continue;
+    if (auto* style = child->GetComputedStyle()) {
+      if (style->IsEnsuredOutsideFlatTree())
+        child->SetStyleChangeForNonSlotted();
+    }
+  }
 }
 
 void Element::RecalcStyle(const StyleRecalcChange change,
@@ -2937,11 +2988,43 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     return;
   }
 
+  if (!child_change.ReattachLayoutTree()) {
+    LayoutObject* layout_object = GetLayoutObject();
+    if (layout_object && layout_object->WhitespaceChildrenMayChange()) {
+      if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*this))
+        first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
+      else
+        layout_object->SetWhitespaceChildrenMayChange(false);
+    }
+  }
+
   StyleRecalcContext child_recalc_context = style_recalc_context;
 
-  if (const ComputedStyle* style = GetComputedStyle()) {
-    if (style->IsContainerForContainerQueries())
-      child_recalc_context.container = this;
+  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
+    if (const ComputedStyle* style = GetComputedStyle()) {
+      if (style->IsContainerForContainerQueries()) {
+        if (RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled()) {
+          if (change.IsSuppressed()) {
+            // IsSuppressed() means we are at the root of a container subtree
+            // called from UpdateStyleAndLayoutTreeForContainer(). If we skipped
+            // the subtree during style recalc, retrieve the StyleRecalcChange
+            // which was the current change for the skipped subtree and combine
+            // it with any current container flags.
+            auto* cq_data = GetContainerQueryData();
+            // Should be guaranteed to have ContainerQueryData here since we at
+            // least have a ContainerQueryEvaluator at this point.
+            DCHECK(cq_data);
+            if (cq_data->SkippedStyleRecalc()) {
+              child_change = cq_data->ClearAndReturnRecalcChangeForChildren()
+                                 .WithRecalcContainerFlags(child_change);
+            }
+          } else if (SkipStyleRecalcForContainer(*style, child_change)) {
+            return;
+          }
+        }
+        child_recalc_context.container = this;
+      }
+    }
   }
 
   if (child_change.TraversePseudoElements(*this)) {
@@ -2954,16 +3037,8 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     SelectorFilterParentScope filter_scope(*this);
     if (ShadowRoot* root = GetShadowRoot()) {
       root->RecalcDescendantStyles(child_change, child_recalc_context);
-      // Sad panda. This is only to clear ensured ComputedStyles for elements
-      // outside the flat tree for getComputedStyle() in the cases where we
-      // kSubtreeStyleChange. Style invalidation and kLocalStyleChange will
-      // make sure we clear out-of-date ComputedStyles outside the flat tree
-      // in Element::EnsureComputedStyle().
-      if (child_change.RecalcDescendants()) {
-        RecalcDescendantStyles(
-            StyleRecalcChange(StyleRecalcChange::kClearEnsured),
-            child_recalc_context);
-      }
+      if (child_change.RecalcDescendants())
+        MarkNonSlottedHostChildrenForStyleRecalc();
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
       slot->RecalcStyleForSlotChildren(child_change, child_recalc_context);
     } else {
@@ -3023,7 +3098,7 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
       element.LayoutObjectIsNeeded(*old_style)) {
     return MakeGarbageCollected<ContainerQueryEvaluator>();
   }
-  // Othewise, the existing ContainerQueryEvaluator can be used, if any.
+  // Otherwise, the existing ContainerQueryEvaluator can be used, if any.
   if (auto* evaluator = element.GetContainerQueryEvaluator())
     return evaluator;
   return MakeGarbageCollected<ContainerQueryEvaluator>();
@@ -3155,8 +3230,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
     }
     auto* evaluator =
         ComputeContainerQueryEvaluator(*this, old_style.get(), *new_style);
-    if (evaluator != GetContainerQueryEvaluator())
-      SetContainerQueryEvaluator(evaluator);
+    if (evaluator != GetContainerQueryEvaluator()) {
+      EnsureElementRareData()
+          .EnsureContainerQueryData()
+          .SetContainerQueryEvaluator(evaluator);
+    }
   }
 
   if (child_change.ReattachLayoutTree()) {
@@ -3197,6 +3275,11 @@ StyleRecalcChange Element::RecalcOwnStyle(
         diff == ComputedStyle::Difference::kEqual
             ? LayoutObject::ApplyStyleChanges::kNo
             : LayoutObject::ApplyStyleChanges::kYes;
+    // TODO(crbug.com/1246826): Remove CompositablePaintAnimationChanged.
+    if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled()) {
+      if (layout_style->CompositablePaintAnimationChanged())
+        apply_changes = LayoutObject::ApplyStyleChanges::kYes;
+    }
     layout_object->SetStyle(layout_style.get(), apply_changes);
   }
   return child_change;
@@ -3228,10 +3311,13 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     // layout tree siblings.
     WhitespaceAttacher local_attacher;
     WhitespaceAttacher* child_attacher;
-    if (GetLayoutObject() || !HasDisplayContentsStyle()) {
+    LayoutObject* layout_object = GetLayoutObject();
+    if (layout_object || !HasDisplayContentsStyle()) {
       whitespace_attacher.DidVisitElement(this);
-      if (GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(this))
+      if (layout_object && layout_object->WhitespaceChildrenMayChange()) {
+        layout_object->SetWhitespaceChildrenMayChange(false);
         local_attacher.SetReattachAllWhitespaceNodes();
+      }
       child_attacher = &local_attacher;
     } else {
       child_attacher = &whitespace_attacher;
@@ -3423,6 +3509,8 @@ void Element::SetAnimationStyleChange(bool animation_style_change) {
 
 void Element::SetNeedsAnimationStyleRecalc() {
   if (GetDocument().InStyleRecalc())
+    return;
+  if (GetDocument().GetStyleEngine().InApplyAnimationUpdate())
     return;
   if (GetStyleChangeType() != kNoStyleChange)
     return;
@@ -4066,15 +4154,30 @@ void Element::focus(const FocusParams& params) {
     // not lead to a cursor triggered tooltip update. The only tooltip update
     // that there should be in that case is the one triggered from the spatial
     // navigation keypress. This issue is tracked in https://crbug.com/1206446.
+    bool is_focused_from_keypress = false;
     switch (params.type) {
+      case mojom::blink::FocusType::kNone:
+        if (GetDocument()
+                .GetFrame()
+                ->LocalFrameRoot()
+                .GetEventHandler()
+                .IsHandlingKeyEvent()) {
+          is_focused_from_keypress = true;
+        }
+        break;
       case mojom::blink::FocusType::kForward:
       case mojom::blink::FocusType::kBackward:
       case mojom::blink::FocusType::kAccessKey:
-        chrome_client.ElementFocusedFromKeypress(*GetDocument().GetFrame(),
-                                                 this);
+        is_focused_from_keypress = true;
         break;
       default:
         break;
+    }
+
+    if (is_focused_from_keypress) {
+      chrome_client.ElementFocusedFromKeypress(*GetDocument().GetFrame(), this);
+    } else {
+      chrome_client.ClearKeyboardTriggeredTooltip(*GetDocument().GetFrame());
     }
   }
 }
@@ -4145,6 +4248,8 @@ void Element::blur() {
     if (doc.GetPage()) {
       doc.GetPage()->GetFocusController().SetFocusedElement(nullptr,
                                                             doc.GetFrame());
+      doc.GetPage()->GetChromeClient().ClearKeyboardTriggeredTooltip(
+          *doc.GetFrame());
     } else {
       doc.ClearFocusedElement();
     }
@@ -4698,9 +4803,15 @@ DisplayLockContext& Element::EnsureDisplayLockContext() {
   return *EnsureElementRareData().EnsureDisplayLockContext(this);
 }
 
+ContainerQueryData* Element::GetContainerQueryData() const {
+  if (!HasRareData())
+    return nullptr;
+  return GetElementRareData()->GetContainerQueryData();
+}
+
 ContainerQueryEvaluator* Element::GetContainerQueryEvaluator() const {
-  if (HasRareData())
-    return GetElementRareData()->GetContainerQueryEvaluator();
+  if (const auto* cq_data = GetContainerQueryData())
+    return cq_data->GetContainerQueryEvaluator();
   return nullptr;
 }
 

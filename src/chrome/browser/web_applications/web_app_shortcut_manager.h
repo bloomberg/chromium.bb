@@ -9,18 +9,18 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/web_app_shortcut.h"
-#include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_shortcut.h"
+#include "chrome/browser/web_applications/web_app_shortcuts_menu.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Profile;
 
 namespace web_app {
 
-class FileHandlerManager;
-class ProtocolHandlerManager;
+class WebAppFileHandlerManager;
+class WebAppProtocolHandlerManager;
 class WebApp;
 class WebAppIconManager;
 struct ShortcutInfo;
@@ -38,8 +38,8 @@ class WebAppShortcutManager {
  public:
   WebAppShortcutManager(Profile* profile,
                         WebAppIconManager* icon_manager,
-                        FileHandlerManager* file_handler_manager,
-                        ProtocolHandlerManager* protocol_handler_manager);
+                        WebAppFileHandlerManager* file_handler_manager,
+                        WebAppProtocolHandlerManager* protocol_handler_manager);
   WebAppShortcutManager(const WebAppShortcutManager&) = delete;
   WebAppShortcutManager& operator=(const WebAppShortcutManager&) = delete;
   virtual ~WebAppShortcutManager();
@@ -150,8 +150,8 @@ class WebAppShortcutManager {
 
   WebAppRegistrar* registrar_ = nullptr;
   WebAppIconManager* icon_manager_ = nullptr;
-  FileHandlerManager* file_handler_manager_ = nullptr;
-  ProtocolHandlerManager* protocol_handler_manager_ = nullptr;
+  WebAppFileHandlerManager* file_handler_manager_ = nullptr;
+  WebAppProtocolHandlerManager* protocol_handler_manager_ = nullptr;
 
   base::WeakPtrFactory<WebAppShortcutManager> weak_ptr_factory_{this};
 };

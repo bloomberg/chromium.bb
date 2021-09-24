@@ -70,9 +70,14 @@ void LogLoadRulesetResult(LoadRulesetResult result) {
   UMA_HISTOGRAM_ENUMERATION(kLoadRulesetResultHistogram, result);
 }
 
+// Whether the `extension` has the permission to use the declarativeNetRequest
+// API.
 bool HasAPIPermission(const Extension& extension) {
-  return extension.permissions_data()->HasAPIPermission(
-      mojom::APIPermissionID::kDeclarativeNetRequest);
+  const PermissionsData* permissions = extension.permissions_data();
+  return permissions->HasAPIPermission(
+             mojom::APIPermissionID::kDeclarativeNetRequest) ||
+         permissions->HasAPIPermission(
+             mojom::APIPermissionID::kDeclarativeNetRequestWithHostAccess);
 }
 
 // Returns whether the extension's allocation should be released. This would
@@ -110,7 +115,8 @@ std::unique_ptr<RulesetMatcher> CreateSessionScopedMatcher(
   RulesetSource source(kSessionRulesetID, GetDynamicAndSessionRuleLimit(),
                        extension_id, true /* enabled */);
 
-  ParseInfo info = source.IndexRules(std::move(rules));
+  ParseInfo info = source.IndexRules(
+      std::move(rules), RulesetSource::InvalidRuleParseBehavior::kError);
   if (info.has_error()) {
     *error = info.error();
     return nullptr;
@@ -345,7 +351,7 @@ RulesMonitorService::GetSessionRules(const ExtensionId& extension_id) const {
   std::vector<api::declarative_net_request::Rule> result;
   std::u16string error;
   bool populate_result = json_schema_compiler::util::PopulateArrayFromList(
-      GetSessionRulesValue(extension_id), &result, &error);
+      GetSessionRulesValue(extension_id).GetList(), &result, &error);
   DCHECK(populate_result);
   DCHECK(error.empty());
   return result;
@@ -449,7 +455,8 @@ void RulesMonitorService::OnExtensionLoaded(
   // Static rulesets.
   {
     std::vector<FileBackedRulesetSource> sources =
-        FileBackedRulesetSource::CreateStatic(*extension);
+        FileBackedRulesetSource::CreateStatic(
+            *extension, FileBackedRulesetSource::RulesetFilter::kIncludeAll);
 
     absl::optional<std::set<RulesetID>> prefs_enabled_rulesets =
         prefs_->GetDNREnabledStaticRulesets(extension->id());
@@ -692,19 +699,18 @@ void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
   LoadRequestData load_data(extension_id);
   int expected_ruleset_checksum = -1;
   for (const RulesetID& id_to_enable : ids_to_enable) {
-    if (!prefs_->GetDNRStaticRulesetChecksum(extension_id, id_to_enable,
-                                             &expected_ruleset_checksum)) {
-      // This might happen on prefs corruption.
-      LogLoadRulesetResult(LoadRulesetResult::kErrorChecksumNotFound);
-      std::move(callback).Run(kInternalErrorUpdatingEnabledRulesets);
-      return;
-    }
-
     const DNRManifestData::RulesetInfo& info =
         DNRManifestData::GetRuleset(*extension, id_to_enable);
     RulesetInfo static_ruleset(
         FileBackedRulesetSource::CreateStatic(*extension, info));
-    static_ruleset.set_expected_checksum(expected_ruleset_checksum);
+
+    // Take note of the expected checksum if this ruleset has been indexed in
+    // the past.
+    if (prefs_->GetDNRStaticRulesetChecksum(extension_id, id_to_enable,
+                                            &expected_ruleset_checksum)) {
+      static_ruleset.set_expected_checksum(expected_ruleset_checksum);
+    }
+
     load_data.rulesets.push_back(std::move(static_ruleset));
   }
 
@@ -849,22 +855,23 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
   if (matcher) {
     // Iterate over the existing matchers to compute `static_rule_count` and
     // `static_ruleset_count`.
-    for (const std::unique_ptr<RulesetMatcher>& matcher : matcher->matchers()) {
+    for (const std::unique_ptr<RulesetMatcher>& ruleset_matcher :
+         matcher->matchers()) {
       // Exclude since we are only including static rulesets.
-      if (matcher->id() == kDynamicRulesetID)
+      if (ruleset_matcher->id() == kDynamicRulesetID)
         continue;
 
       // Exclude since we'll be removing this |matcher|.
-      if (base::Contains(ids_to_disable, matcher->id()))
+      if (base::Contains(ids_to_disable, ruleset_matcher->id()))
         continue;
 
       // Exclude to prevent double counting. This will be a part of
       // |new_matchers| below.
-      if (base::Contains(ids_to_enable, matcher->id()))
+      if (base::Contains(ids_to_enable, ruleset_matcher->id()))
         continue;
 
       static_ruleset_count += 1;
-      static_rule_count += matcher->GetRulesCountPair();
+      static_rule_count += ruleset_matcher->GetRulesCountPair();
     }
   }
 
@@ -876,9 +883,9 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
       return;
     }
 
-    std::unique_ptr<RulesetMatcher> matcher = ruleset.TakeMatcher();
+    std::unique_ptr<RulesetMatcher> ruleset_matcher = ruleset.TakeMatcher();
 
-    RulesCountPair matcher_count = matcher->GetRulesCountPair();
+    RulesCountPair matcher_count = ruleset_matcher->GetRulesCountPair();
 
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
@@ -888,7 +895,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
 
     static_ruleset_count += 1;
     static_rule_count += matcher_count;
-    new_matchers.push_back(std::move(matcher));
+    new_matchers.push_back(std::move(ruleset_matcher));
   }
 
   if (static_ruleset_count > dnr_api::MAX_NUMBER_OF_ENABLED_STATIC_RULESETS) {

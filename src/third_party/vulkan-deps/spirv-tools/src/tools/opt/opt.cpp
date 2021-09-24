@@ -143,6 +143,15 @@ Options (in lexicographical order):)",
                does not support RelaxedPrecision or ignores it. This pass also
                removes all RelaxedPrecision decorations.)");
   printf(R"(
+  --convert-to-sampled-image "<descriptor set>:<binding> ..."
+               convert images and/or samplers with the given pairs of descriptor
+               set and binding to sampled images. If a pair of an image and a
+               sampler have the same pair of descriptor set and binding that is
+               one of the given pairs, they will be converted to a sampled
+               image. In addition, if only an image or a sampler has the
+               descriptor set and binding that is one of the given pairs, it
+               will be converted to a sampled image.)");
+  printf(R"(
   --copy-propagate-arrays
                Does propagation of memory references when an array is a copy of
                another.  It will only propagate an array if the source is never
@@ -378,9 +387,12 @@ Options (in lexicographical order):)",
                Change the scope of private variables that are used in a single
                function to that function.)");
   printf(R"(
-  --reduce-load-size
+  --reduce-load-size[=<threshold>]
                Replaces loads of composite objects where not every component is
-               used by loads of just the elements that are used.)");
+               used by loads of just the elements that are used.  If the ratio
+               of the used components of the load is less than the <threshold>,
+               we replace the load.  <threshold> is a double type number.  If
+               it is bigger than 1.0, we always replaces the load.)");
   printf(R"(
   --redundancy-elimination
                Looks for instructions in the same function that compute the

@@ -65,7 +65,8 @@ private:
 
     void setVertexBuffer(GrMtlRenderCommandEncoder*, const GrBuffer*, size_t offset,
                          size_t inputBufferIndex);
-    void precreateCmdEncoder();
+
+    void setupResolve();
 
     GrMtlGpu*                   fGpu;
 
@@ -79,12 +80,6 @@ private:
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     bool                        fDebugGroupActive = false;
 #endif
-
-    static constexpr size_t kNumBindings = GrMtlUniformHandler::kUniformBindingCount + 2;
-    struct {
-        id<MTLBuffer> fBuffer;
-        size_t fOffset;
-    } fBufferBindings[kNumBindings];
 
     using INHERITED = GrOpsRenderPass;
 };

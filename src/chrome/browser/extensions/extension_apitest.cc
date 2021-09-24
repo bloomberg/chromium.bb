@@ -58,7 +58,8 @@ const char kEmbeddedTestServerPort[] = "testServer.port";
 
 }  // namespace
 
-ExtensionApiTest::ExtensionApiTest() {
+ExtensionApiTest::ExtensionApiTest(ContextType context_type)
+    : ExtensionBrowserTest(context_type) {
   net::test_server::RegisterDefaultHandlers(embedded_test_server());
 }
 
@@ -161,7 +162,7 @@ void ExtensionApiTest::OpenURL(const GURL& url, bool open_in_incognito) {
   if (open_in_incognito) {
     OpenURLOffTheRecord(browser()->profile(), url);
   } else {
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   }
 }
 

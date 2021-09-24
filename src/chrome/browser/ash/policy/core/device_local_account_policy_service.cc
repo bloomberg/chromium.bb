@@ -212,12 +212,11 @@ void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
 }
 
 std::string DeviceLocalAccountPolicyBroker::GetDisplayName() const {
-  std::string display_name;
   const base::Value* display_name_value =
       store_->policy_map().GetValue(policy::key::kUserDisplayName);
-  if (display_name_value)
-    display_name_value->GetAsString(&display_name);
-  return display_name;
+  if (display_name_value && display_name_value->is_string())
+    return display_name_value->GetString();
+  return std::string();
 }
 
 void DeviceLocalAccountPolicyBroker::OnStoreLoaded(CloudPolicyStore* store) {
@@ -240,9 +239,8 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
       /* max_cache_size */ absl::nullopt));
 
   component_policy_service_ = std::make_unique<ComponentCloudPolicyService>(
-      dm_protocol::kChromeExtensionPolicyType, POLICY_SOURCE_CLOUD, this,
-      &schema_registry_, core(), client, std::move(resource_cache),
-      resource_cache_task_runner_);
+      dm_protocol::kChromeExtensionPolicyType, this, &schema_registry_, core(),
+      client, std::move(resource_cache), resource_cache_task_runner_);
 }
 
 DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(

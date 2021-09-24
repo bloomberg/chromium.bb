@@ -32,6 +32,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
@@ -110,7 +111,7 @@ public class ChromeContextMenuPopulatorTest {
         features.put(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS, false);
         features.put(ChromeFeatureList.READ_LATER, false);
 
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
@@ -231,7 +232,7 @@ public class ChromeContextMenuPopulatorTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.READ_LATER, false);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL, params);
         int[] expected1 = {R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
@@ -284,15 +285,13 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(expected2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB, params);
-        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_share_link,
-                R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
-                R.id.contextmenu_copy};
+        int[] expected3 = {R.id.contextmenu_share_link, R.id.contextmenu_send_message,
+                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
         checkMenuOptions(expected3);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP, params);
         int[] expected4 = {R.id.contextmenu_share_link, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy,
-                R.id.contextmenu_open_in_chrome};
+                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
         checkMenuOptions(expected4);
     }
 
@@ -326,15 +325,15 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(expected2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB, params);
-        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_share_link,
-                R.id.contextmenu_call, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
+        int[] expected3 = {R.id.contextmenu_share_link, R.id.contextmenu_call,
+                R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
+                R.id.contextmenu_copy};
         checkMenuOptions(expected3);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP, params);
         int[] expected4 = {R.id.contextmenu_share_link, R.id.contextmenu_call,
                 R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
-                R.id.contextmenu_copy, R.id.contextmenu_open_in_chrome};
+                R.id.contextmenu_copy};
         checkMenuOptions(expected4);
     }
 
@@ -480,7 +479,7 @@ public class ChromeContextMenuPopulatorTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.READ_LATER, true);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
                 new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
@@ -527,7 +526,7 @@ public class ChromeContextMenuPopulatorTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.READ_LATER, true);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
                 new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
@@ -550,7 +549,7 @@ public class ChromeContextMenuPopulatorTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.READ_LATER, false);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
                 new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
@@ -574,7 +573,7 @@ public class ChromeContextMenuPopulatorTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.READ_LATER, false);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         ContextMenuParams params = new ContextMenuParams(0, 0, new GURL(PAGE_URL),
                 new GURL(LINK_URL), LINK_TEXT, GURL.emptyGURL(), GURL.emptyGURL(), "", null, false,
@@ -677,12 +676,10 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(normal_expected);
 
         // In custom tab or web app mode, only the remove option should be present.
-        int[] custom_tab_expected = {R.id.contextmenu_remove_highlight};
+        int[] other_expected = {R.id.contextmenu_remove_highlight};
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB, params);
-        checkMenuOptions(custom_tab_expected);
-        int[] web_app_expected = {
-                R.id.contextmenu_remove_highlight, R.id.contextmenu_open_in_chrome};
+        checkMenuOptions(other_expected);
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP, params);
-        checkMenuOptions(web_app_expected);
+        checkMenuOptions(other_expected);
     }
 }

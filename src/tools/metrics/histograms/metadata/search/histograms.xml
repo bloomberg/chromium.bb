@@ -231,7 +231,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearch.ResolveRequested"
-    enum="ContextualSearchGestureIsTap" expires_after="2021-08-09">
+    enum="ContextualSearchGestureIsTap" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -242,7 +242,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2021-10-10">
+    enum="ContextualSearchGestureIsTap" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -277,7 +277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearch.TranslationNeeded"
-    enum="ContextualSearchGestureIsTap" expires_after="2021-10-25">
+    enum="ContextualSearchGestureIsTap" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -290,7 +290,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearch.TranslationsOptInIPHShown"
-    enum="BooleanPreviouslyShown" expires_after="2021-12-26">
+    enum="BooleanPreviouslyShown" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>contextual-search-eng@google.com</owner>
   <summary>
@@ -301,7 +301,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearch.TranslationsOptInIPHWorked"
-    enum="BooleanOptedIn" expires_after="2021-10-25">
+    enum="BooleanOptedIn" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>contextual-search-eng@google.com</owner>
   <summary>
@@ -746,6 +746,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchPrivacyOptInPreferenceStateChange"
+    enum="BooleanOptedIn" expires_after="M98">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <summary>
+    The Contextual Search privacy opt-in preference state after a modification
+    from the preference menu. Recorded when the opt-in switch in Settings page
+    is toggled. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoCardChoice" enum="BooleanOptedIn"
+    expires_after="M98">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <summary>
+    The user's choice in the Contextual Search promo card. Recorded when the 'No
+    thanks' or 'Turn on' button on the Contextual Search Promo Card is chosen.
+    Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchPromoOpenCount" units="opens"
     expires_after="M77">
   <owner>donnd@chromium.org</owner>
@@ -753,6 +775,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The total count of times that the bar with the promo has been opened. Once
     the user decides, this counter is no longer updated.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPromoOpenCount2" units="opens"
+    expires_after="M98">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@chromium.org</owner>
+  <summary>
+    The total count of times that the revised promo has been shown. Once the
+    user decides, this counter is no longer updated. Logged for each show of the
+    promo card. Implemented for Android.
   </summary>
 </histogram>
 
@@ -808,7 +841,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.ContextualSearchQuickActions.Category"
-    enum="ContextualSearchQuickActionCategory" expires_after="2021-10-04">
+    enum="ContextualSearchQuickActionCategory" expires_after="2022-04-04">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1433,8 +1466,44 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Search.RegionSearch.Lens.RegionAspectRatio"
+    enum="LensRegionSearchAspectRatio" expires_after="2022-03-02">
+  <owner>juanmojica@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>stanfield@google.com</owner>
+  <owner>lens-chrome-eng@google.com</owner>
+  <summary>
+    Records an enum representing the aspect ratio of the region selected after
+    using the Lens Region Search feature.
+  </summary>
+</histogram>
+
+<histogram name="Search.RegionSearch.Lens.RegionViewportProportion" units="pct"
+    expires_after="2022-03-02">
+  <owner>juanmojica@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>stanfield@google.com</owner>
+  <owner>lens-chrome-eng@google.com</owner>
+  <summary>
+    Records a percentage to represent the proportion of the selected region to
+    the screen after selecting a region with the Lens Region Search feature.
+  </summary>
+</histogram>
+
+<histogram name="Search.RegionSearch.Lens.Result"
+    enum="LensRegionSearchCaptureResult" expires_after="2022-03-02">
+  <owner>juanmojica@google.com</owner>
+  <owner>benwgold@google.com</owner>
+  <owner>stanfield@google.com</owner>
+  <owner>lens-chrome-eng@google.com</owner>
+  <summary>
+    Records an enum representing the result of the capture of the region for
+    Lens Region Search feature.
+  </summary>
+</histogram>
+
 <histogram name="Search.RelatedSearches.AllUserPermissions"
-    enum="ContextualSearchPermissions" expires_after="2021-12-19">
+    enum="ContextualSearchPermissions" expires_after="2022-02-20">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>
@@ -1527,7 +1596,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Search.RelatedSearches.QualifiedUsers" enum="Boolean"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>

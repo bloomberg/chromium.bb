@@ -41,10 +41,10 @@ class SenderSession final {
 
     // If the sender is audio- or video-only, either of the senders
     // may be nullptr. However, in the majority of cases they will be populated.
-    Sender* audio_sender;
+    Sender* audio_sender = nullptr;
     AudioCaptureConfig audio_config;
 
-    Sender* video_sender;
+    Sender* video_sender = nullptr;
     VideoCaptureConfig video_config;
   };
 

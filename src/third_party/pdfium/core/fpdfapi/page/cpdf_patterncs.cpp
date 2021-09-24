@@ -11,8 +11,7 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "third_party/base/notreached.h"
 
-CPDF_PatternCS::CPDF_PatternCS(CPDF_Document* pDoc)
-    : CPDF_ColorSpace(pDoc, Family::kPattern) {}
+CPDF_PatternCS::CPDF_PatternCS() : CPDF_BasedCS(Family::kPattern) {}
 
 CPDF_PatternCS::~CPDF_PatternCS() = default;
 
@@ -47,10 +46,6 @@ bool CPDF_PatternCS::GetRGB(pdfium::span<const float> pBuf,
                             float* B) const {
   NOTREACHED();
   return false;
-}
-
-CPDF_PatternCS* CPDF_PatternCS::AsPatternCS() {
-  return this;
 }
 
 const CPDF_PatternCS* CPDF_PatternCS::AsPatternCS() const {

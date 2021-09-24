@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "chrome/browser/sharesheet/sharesheet_ui_delegate.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -50,6 +51,8 @@ class SharesheetServiceDelegate {
   // TODO(crbug.com/1233830) : Remove after business logic is moved
   // out of SharesheetHeaderView.
   Profile* GetProfile();
+
+  SharesheetUiDelegate* GetUiDelegateForTesting();
 
   // ==========================================================================
   // ======================== SHARESHEET SERVICE TO UI ========================

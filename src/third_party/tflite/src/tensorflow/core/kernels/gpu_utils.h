@@ -57,7 +57,7 @@ se::DeviceMemoryBase WrapRedzoneBestEffort(se::RedzoneAllocator* rz_allocator,
 // If violations have occurred, mark the corresponding autotune result
 // as a failure.
 void CheckRedzones(const se::RedzoneAllocator& rz_allocator,
-                   tensorflow::AutotuneResult* autotune_result);
+                   AutotuneResult* autotune_result);
 
 template <typename T>
 inline se::DeviceMemory<T> AsDeviceMemory(const T* cuda_memory, uint64 size) {
@@ -77,7 +77,15 @@ inline se::DeviceMemory<T> AsDeviceMemory(const T* cuda_memory, uint64 size) {
 // settles is O(threshold ^ 2). So we recommend that number of warmup runs
 // for any benchmarks.
 template <typename Parameters, typename Config>
-class AutoTuneMap {
+class AutotuneMap {
+ private:
+  // Retrieves the hash code of Parameters class.
+  struct Hasher {
+    std::size_t operator()(const Parameters& parameter) const {
+      return parameter.hash();
+    }
+  };
+
  public:
   bool Find(const Parameters& params, Config* config) const {
     mutex_lock lock(mu_);
@@ -145,12 +153,34 @@ class AutoTuneMap {
     autotune_global_count_++;
   }
 
+  std::unordered_map<Parameters, Config, Hasher> GetMap() const {
+    mutex_lock lock(mu_);
+    std::unordered_map<Parameters, Config, Hasher> map;
+    for (const auto& entry : params_config_map_) {
+      map.insert(std::make_pair(entry.first, entry.second.config));
+    }
+    return map;
+  }
+
+  // Only for testing
+  void ClearMap() {
+    mutex_lock lock(mu_);
+    params_config_map_.clear();
+  }
+
  private:
-  AutoTuneMap(const string& name) : name_(name) {
+  // Underlying data structure of values in the map.
+  struct ValueType {
+    Config config;
+    int32 score;
+    int32 count;
+  };
+  AutotuneMap(const std::string& name) : name_(name) {
     min_score_threshold_ = 1;
     int min_warmup_iterations = 10;
     const char* threshold_str = getenv("TF_AUTOTUNE_THRESHOLD");
     if (threshold_str != nullptr) {
+      VLOG(1) << "TF_AUTOTUNE_THRESHOLD = " << threshold_str;
       strings::safe_strto32(threshold_str, &min_score_threshold_);
     }
     const char* min_warmup_iteration_str =
@@ -166,36 +196,26 @@ class AutoTuneMap {
   }
 
   template <class Group, class Params, class Cfg>
-  friend class AutoTuneSingleton;
+  friend class AutotuneSingleton;
 
-  struct Hasher {
-    std::size_t operator()(const Parameters& parameter) const {
-      return parameter.hash();
-    }
-  };
-
-  string GetActionSummary(StringPiece action, const Parameters& params,
-                          const Config& config) {
+  std::string GetActionSummary(StringPiece action, const Parameters& params,
+                               const Config& config) {
     return strings::Printf("autotune_map %s %s: %s -> (%s)", name_.c_str(),
                            string(action).c_str(), params.ToString().c_str(),
                            config.ToString().c_str());
   }
 
   mutable mutex mu_;
-  struct ValueType {
-    Config config;
-    int32 score;
-    int32 count;
-  };
+
   std::unordered_map<Parameters, ValueType, Hasher> params_config_map_
       TF_GUARDED_BY(mu_);
-  string name_;
+  std::string name_;
   int32 min_score_threshold_;
   int32 max_autotune_count_;
   int32 max_autotune_global_count_;
   int32 autotune_global_count_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(AutoTuneMap);
+  TF_DISALLOW_COPY_AND_ASSIGN(AutotuneMap);
 };
 
 // A Singleton helper that manages the global autotune results by groups.
@@ -203,11 +223,11 @@ class AutoTuneMap {
 // different autotune results, even if their Parameters and Configs are the
 // same.
 template <class Group, typename Parameters, typename Config>
-class AutoTuneSingleton {
+class AutotuneSingleton {
  public:
-  typedef AutoTuneMap<Parameters, Config> AutoTuneType;
-  static AutoTuneType* GetInstance() {
-    static AutoTuneType* instance = new AutoTuneType(Group::name());
+  typedef AutotuneMap<Parameters, Config> AutotuneType;
+  static AutotuneType* GetInstance() {
+    static AutotuneType* instance = new AutotuneType(Group::name());
     return instance;
   }
 };
@@ -239,9 +259,12 @@ void LogFusedConvForwardAutotuneResults(
 
 // Returns the best algorithms for the config, one is the fastest, the other is
 // other is fastest with 0 scratch space. Unsuccessful autotuning results are
-// allowed and ignored.
-Status BestCudnnConvAlgorithm(absl::Span<const AutotuneResult> results,
-                              se::dnn::AlgorithmConfig* algo);
+// allowed and ignored. The "plans" can be null when Cudnn frontend APIs are not
+// used.
+Status BestCudnnConvAlgorithm(
+    absl::Span<const AutotuneResult> results,
+    std::vector<std::unique_ptr<se::dnn::ConvolveExecutionPlan>>* plans,
+    se::dnn::AlgorithmConfig* algo);
 
 }  // namespace tensorflow
 

@@ -10,8 +10,14 @@ assert(is_chromeos, "Bluetooth dialog is Chrome OS only.")
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
+    ":bluetooth_base_page",
     ":bluetooth_dialog",
+    ":bluetooth_icon",
+    ":bluetooth_icons",
     ":bluetooth_metrics_utils",
+    ":bluetooth_pairing_device_item",
+    ":bluetooth_pairing_device_selection_page",
+    ":bluetooth_pairing_ui",
     ":bluetooth_utils",
     ":cros_bluetooth_config",
   ]
@@ -26,6 +32,25 @@ js_library("bluetooth_metrics_utils") {
 }
 
 js_library("bluetooth_utils") {
+}
+
+js_library("bluetooth_icons") {
+}
+
+js_library("bluetooth_icon") {
+  deps = [
+    ":bluetooth_icons",
+    "//chromeos/services/bluetooth_config/public/mojom:mojom_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("bluetooth_pairing_device_item") {
+  deps = [
+    ":bluetooth_icon",
+    "//chromeos/services/bluetooth_config/public/mojom:mojom_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
 }
 
 js_library("bluetooth_dialog") {
@@ -46,10 +71,42 @@ js_library("bluetooth_dialog") {
   ]
 }
 
+js_library("bluetooth_pairing_device_selection_page") {
+  deps = [
+    ":bluetooth_pairing_device_item",
+    "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements:cr_scrollable_behavior.m",
+  ]
+}
+
+js_library("bluetooth_pairing_ui") {
+  deps = [
+    ":bluetooth_pairing_device_selection_page",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("bluetooth_base_page") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+  ]
+}
+
 js_library("cros_bluetooth_config") {
   deps = [ "//chromeos/services/bluetooth_config/public/mojom:mojom_js_library_for_compile" ]
 }
 
 html_to_js("polymer3_elements") {
-  js_files = [ "bluetooth_dialog.js" ]
+  js_files = [
+    "bluetooth_dialog.js",
+    "bluetooth_icon.js",
+    "bluetooth_icons.js",
+    "bluetooth_pairing_device_selection_page.js",
+    "bluetooth_pairing_device_item.js",
+    "bluetooth_pairing_ui.js",
+    "bluetooth_base_page.js",
+  ]
 }

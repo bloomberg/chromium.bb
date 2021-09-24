@@ -131,15 +131,15 @@ struct FieldMatches {
             strings.begin(),
             strings.end(),
             String16Vector(),
-            [](String16Vector words, const std::string* string) {
+            [](String16Vector word_vec, const std::string* string) {
               if (string) {
                 const auto string_words =
                     SplitByColon(String16VectorFromString16(
                         base::UTF8ToUTF16(string->c_str()), false, nullptr));
-                words.insert(words.end(), string_words.begin(),
-                             string_words.end());
+                word_vec.insert(word_vec.end(), string_words.begin(),
+                                string_words.end());
               }
-              return words;
+              return word_vec;
             })),
         count(0) {}
 
@@ -697,7 +697,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
   if (!root_dict->GetList("results", &results_list)) {
     return matches;
   }
-  size_t num_results = results_list->GetSize();
+  size_t num_results = results_list->GetList().size();
   UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
 
   // During development/quality iteration we may wish to defeat server scores.

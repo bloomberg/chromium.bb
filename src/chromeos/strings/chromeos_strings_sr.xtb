@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Откривен је заштитни зид</translation>
 <translation id="1075811647922107217">Величина странице</translation>
+<translation id="1119447706177454957">Интерна грешка</translation>
 <translation id="1124772482545689468">Корисник</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> управља овим <ph name="DEVICE_TYPE" /> уређајем.</translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Улазни портал</translation>
 <translation id="2006864819935886708">Успостављање везе</translation>
 <translation id="2008685064673031089">Примарна претрага</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Више подешавања</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, верзија <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Доступно: <ph name="AVAILABLE_MEMORY" /> GB од <ph name="TOTAL_MEMORY" /> GB</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">НА ЧЕКАЊУ</translation>
 <translation id="2161394479394250669">Откажи задатак штампања</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
 <translation id="2364498172489649528">Прошло</translation>
+<translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Пошаљи извештај са повратним информацијама</translation>
+<translation id="2407209115954268704">Статус закључавања SIM картице</translation>
 <translation id="2418150275289244458">Отвори у подешавањима</translation>
 <translation id="2446553403094072641">Прецизност покретног зареза</translation>
 <translation id="2448312741937722512">Тип</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
+<translation id="3156846309055100599">Скенира се <ph name="PAGE_NUMBER" />. страница...</translation>
 <translation id="315738237743207937">Откривен је улазни портал</translation>
 <translation id="3188257591659621405">Моје датотеке</translation>
 <translation id="3199982728237701504">Увлачење документа (двострано)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567">Задаци штампања старији од <ph name="NUMBER_OF_DAYS" /> дана се уклањају</translation>
 <translation id="4003384961948020559">Није успело – излаз је пун</translation>
 <translation id="4034824040120875894">Штампач</translation>
+<translation id="409427325554347132">Сачувај детаље теста</translation>
 <translation id="4131410914670010031">Црно-бело</translation>
 <translation id="4145784616224233563">HTTP заштитни зид</translation>
 <translation id="4155551848414053977">Проверите да ли је скенер укључен и доступан преко мреже или директне везе</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ниједан задатак штампања није у току</translation>
 <translation id="4244962993387259361">Треба да имате слободно барем 500 MB да бисте покренули тест меморије. Да бисте ослободили простор, идите у Подешавања &gt; Управљање меморијским простором.</translation>
+<translation id="4258281355379922695">HTTP кашњење</translation>
+<translation id="4271957103967917607">Прикажи преко целог екрана</translation>
 <translation id="4289540628985791613">Преглед</translation>
 <translation id="4297501883039923494">Заустављено – непозната грешка</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> слика</translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">IP конфигурација</translation>
 <translation id="4548483925627140043">Сигнал није пронађен</translation>
 <translation id="455835558791489930">Батерија од <ph name="CHARGE_VALUE" /> mAh</translation>
+<translation id="4561801978359312462">SIM је откључан</translation>
 <translation id="4562494484721939086">Мобилна мрежа није доступна</translation>
 <translation id="458794348635939462">Разрешење свих хостова није успело</translation>
 <translation id="4593212453765072419">Потребна је потврда аутентичности проксија</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> од <ph name="TOTAL_PAGE_NUMBER" />. Притисните тастер Enter да бисте отказали задатак штампања.</translation>
+<translation id="463791356324567266">Отказује се скенирање...</translation>
 <translation id="4646949265910132906">Безбедна WiFi веза</translation>
-<translation id="4652335678334611408">Сачувај евиденцију сесије</translation>
 <translation id="4654549501020883054">Мењај сваког дана</translation>
 <translation id="4665014895760275686">Произвођач</translation>
 <translation id="467510802200863975">Лозинке се не подударају</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Сакриј извештај</translation>
 <translation id="500920857929044050">Заустави тест</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM је закључан (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Назив групе</translation>
 <translation id="5088172560898466307">Име хоста сервера</translation>
 <translation id="5089810972385038852">Држава</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Прикажи у директоријуму</translation>
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
+<translation id="5212593641110061691">Таблоид</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="5234764350956374838">Одбаци</translation>
 <translation id="5252456968953390977">Роминг</translation>
@@ -248,6 +260,7 @@
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Преостаје {0} покушај}one{Преостаје {0} покушај}few{Преостају {0} покушаја}other{Преостаје {0} покушаја}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Нисмо успели да довршимо скенирање</translation>
+<translation id="5502931783115429516">Android није покренут</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@
 <translation id="5701381305118179107">Центрирај</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> од <ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Статус портала</translation>
+<translation id="5784136236926853061">Велико HTTP кашњење</translation>
 <translation id="5832805196449965646">Додај особу</translation>
 <translation id="583281660410589416">Непознато</translation>
 <translation id="5849570051105887917">Кôд добављача за Home</translation>
+<translation id="5860033963881614850">Искључено</translation>
 <translation id="5866840822086176774">Веома јак</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5916084858004523819">Забрањено</translation>
@@ -281,6 +296,7 @@
 <translation id="6146993107019042706">Да бисте завршили, унесите нову лозинку</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Капацитет батерије се смањује током коришћења</translation>
 <translation id="6191293864534840972">Сервери за имена су погрешног формата</translation>
 <translation id="6223752125779001553">Нису доступни скенери</translation>
@@ -302,6 +318,7 @@
 <translation id="6527081081771465939">Непознат безбедносни протокол за WiFi</translation>
 <translation id="65587193855025101">Положено</translation>
 <translation id="6564646048574748301">Није успело – штампач није доступан</translation>
+<translation id="6566314079205407217">Скенирање више страница</translation>
 <translation id="6574762126505704998">Попуни</translation>
 <translation id="6575134580692778371">Није конфигурисан</translation>
 <translation id="6596816719288285829">IP адреса</translation>
@@ -341,9 +358,11 @@
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Колекције позадина</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Мрежни уређаји</translation>
 <translation id="7359657277149375382">Тип датотеке</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">Веома велико HTTP кашњење</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Скенирање је завршено. Скенирана је 1 страница}one{Скенирање је завршено. Скенирана је {NUMBER_OF_PAGES} страница}few{Скенирање је завршено. Скениране су {NUMBER_OF_PAGES} странице}other{Скенирање је завршено. Скенирано је {NUMBER_OF_PAGES} страница}}</translation>
 <translation id="7469648432129124067">Откривен је портал</translation>
@@ -351,9 +370,11 @@
 <translation id="7490813197707563893">MAC адреса</translation>
 <translation id="7497215489070763236">CA сертификат сервера</translation>
 <translation id="7502658306369382406">IPv6 адреса</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Дијагностичке рутине</translation>
 <translation id="7561454561030345039">Овим подешавањем управља администратор</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">Пинговање времена извршавања апликације за Chrome</translation>
 <translation id="7595982850646262331">Још <ph name="TIME_VALUE" /></translation>
 <translation id="7620771111601174153">Сазнајте више у Центру за помоћ</translation>
 <translation id="763165478673169849">Време последњег ресетовања</translation>

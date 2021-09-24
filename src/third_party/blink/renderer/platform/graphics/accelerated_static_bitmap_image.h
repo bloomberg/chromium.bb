@@ -75,9 +75,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
             const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
-            const ImageDrawOptions& draw_options,
-            ImageClampingMode,
-            ImageDecodingMode) override;
+            const ImageDrawOptions&) override;
 
   bool IsValid() const final;
   WebGraphicsContext3DProvider* ContextProvider() const final;
@@ -115,6 +113,10 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // sync token before accessing this mailbox.
   gpu::MailboxHolder GetMailboxHolder() const final;
   bool IsOriginTopLeft() const final { return is_origin_top_left_; }
+
+  SkColorType GetSkColorType() const override {
+    return sk_image_info_.colorType();
+  }
 
   PaintImage PaintImageForCurrentFrame() override;
 

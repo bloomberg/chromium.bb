@@ -73,6 +73,7 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
         rmad::RmadState::kWpDisableMethod},
        {mojom::RmaState::kEnterRSUWPDisableCode,
         rmad::RmadState::kWpDisableRsu},
+       {mojom::RmaState::kVerifyRsu, rmad::RmadState::kVerifyRsu},
        {mojom::RmaState::kWaitForManualWPDisable,
         rmad::RmadState::kWpDisablePhysical},
        {mojom::RmaState::kWPDisableComplete,
@@ -91,7 +92,7 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
        {mojom::RmaState::kRepairComplete, rmad::RmadState::kFinalize}});
 
   // rmad::RmadState::STATE_NOT_SET is used when RMA is not active so the
-  // toMojo conversion is reachable, unlike other enums.
+  // toMojo conversion is reachable, unlike most other enums.
   EXPECT_EQ(static_cast<int32_t>(mojom::RmaState::kUnknown), 0);
   EXPECT_EQ(static_cast<int32_t>(rmad::RmadState::STATE_NOT_SET), 0);
   // This test hits a NOTREACHED so it is a release mode only test.
@@ -163,8 +164,12 @@ TEST_F(ShimlessRmaMojoToProtoTest, ErrorsMatch) {
         rmad::RmadErrorCode::RMAD_ERROR_REIMAGING_UNKNOWN_FAILURE},
        {mojom::RmadErrorCode::kDeviceInfoInvalid,
         rmad::RmadErrorCode::RMAD_ERROR_DEVICE_INFO_INVALID},
-       {mojom::RmadErrorCode::kCalibrationMissingComponent,
-        rmad::RmadErrorCode::RMAD_ERROR_MISSING_CALIBRATION_COMPONENT},
+       {mojom::RmadErrorCode::kCalibrationComponentMissing,
+        rmad::RmadErrorCode::RMAD_ERROR_CALIBRATION_COMPONENT_MISSING},
+       {mojom::RmadErrorCode::kCalibrationStatusMissing,
+        rmad::RmadErrorCode::RMAD_ERROR_CALIBRATION_STATUS_MISSING},
+       {mojom::RmadErrorCode::kCalibrationComponentInvalid,
+        rmad::RmadErrorCode::RMAD_ERROR_CALIBRATION_COMPONENT_INVALID},
        {mojom::RmadErrorCode::kCalibrationFailed,
         rmad::RmadErrorCode::RMAD_ERROR_CALIBRATION_FAILED},
        {mojom::RmadErrorCode::kProvisioningFailed,
@@ -181,7 +186,9 @@ TEST_F(ShimlessRmaMojoToProtoTest, ErrorsMatch) {
        {mojom::RmadErrorCode::kLogUploadFtpServerTransferFailed,
         rmad::RmadErrorCode::RMAD_ERROR_LOG_UPLOAD_FTP_SERVER_TRANSFER_FAILED},
        {mojom::RmadErrorCode::kCannotCancelRma,
-        rmad::RmadErrorCode::RMAD_ERROR_CANNOT_CANCEL_RMA}});
+        rmad::RmadErrorCode::RMAD_ERROR_CANNOT_CANCEL_RMA},
+       {mojom::RmadErrorCode::kCannotGetLog,
+        rmad::RmadErrorCode::RMAD_ERROR_CANNOT_GET_LOG}});
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);
@@ -221,8 +228,10 @@ TEST_F(ShimlessRmaMojoToProtoTest, RepairComponentsMatch) {
            // Additional rmad components.
            {mojom::ComponentType::kGyroscope,
             rmad::RmadComponent::RMAD_COMPONENT_GYROSCOPE},
-           {mojom::ComponentType::kAccelerometer,
-            rmad::RmadComponent::RMAD_COMPONENT_ACCELEROMETER},
+           {mojom::ComponentType::kBaseAccelerometer,
+            rmad::RmadComponent::RMAD_COMPONENT_BASE_ACCELEROMETER},
+           {mojom::ComponentType::kLidAccelerometer,
+            rmad::RmadComponent::RMAD_COMPONENT_LID_ACCELEROMETER},
            {mojom::ComponentType::kScreen,
             rmad::RmadComponent::RMAD_COMPONENT_SCREEN},
 
@@ -249,21 +258,14 @@ TEST_F(ShimlessRmaMojoToProtoTest, RepairStatesMatch) {
        {mojom::ComponentRepairStatus::kMissing,
         rmad::ComponentsRepairState::ComponentRepairStatus::
             RMAD_REPAIR_STATUS_MISSING}});
-
-  TestProtoToMojo(enums);
-  TestMojoToProto(enums);
-}
-
-TEST_F(ShimlessRmaMojoToProtoTest, CalibrationComponentsMatch) {
-  constexpr auto enums = base::MakeFixedFlatMap<
-      mojom::CalibrationComponent,
-      rmad::CheckCalibrationState::CalibrationStatus::Component>(
-      {{mojom::CalibrationComponent::kAccelerometer,
-        rmad::CheckCalibrationState::CalibrationStatus::
-            RMAD_CALIBRATION_COMPONENT_ACCELEROMETER},
-       {mojom::CalibrationComponent::kGyroscope,
-        rmad::CheckCalibrationState::CalibrationStatus::
-            RMAD_CALIBRATION_COMPONENT_GYROSCOPE}});
+  // RMAD_REPAIR_STATUS_UNKNOWN is used when components are first received from
+  // rmad to indicate that repair state has not been set.
+  EXPECT_EQ(static_cast<int32_t>(mojom::ComponentRepairStatus::kRepairUnknown),
+            0);
+  EXPECT_EQ(
+      static_cast<int32_t>(rmad::ComponentsRepairState::ComponentRepairStatus::
+                               RMAD_REPAIR_STATUS_UNKNOWN),
+      0);
 
   TestProtoToMojo(enums);
   TestMojoToProto(enums);

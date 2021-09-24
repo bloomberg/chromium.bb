@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -238,7 +239,27 @@ base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
 
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
-class ProfileManagerBrowserTest : public InProcessBrowserTest,
+
+class ProfileManagerBrowserTestBase : public InProcessBrowserTest {
+ protected:
+  void SetUp() override {
+    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
+    // See crbug.com/1073451.
+#if defined(OS_WIN)
+    AppShortcutManager::SuppressShortcutsForTesting();
+#endif
+    InProcessBrowserTest::SetUp();
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
+  }
+};
+
+class ProfileManagerBrowserTest : public ProfileManagerBrowserTestBase,
                                   public testing::WithParamInterface<bool> {
  protected:
   ProfileManagerBrowserTest() {
@@ -250,21 +271,6 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest,
       feature_list_.InitAndDisableFeature(
           features::kDestroyProfileOnBrowserClose);
     }
-  }
-
-  void SetUp() override {
-    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
-    // See crbug.com/1073451.
-#if defined(OS_WIN)
-    AppShortcutManager::SuppressShortcutsForTesting();
-#endif
-    InProcessBrowserTest::SetUp();
-  }
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
-#endif
   }
 
  private:
@@ -372,7 +378,8 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteCurrentProfile) {
   EXPECT_EQ(new_path, last_used->GetPath());
 }
 
-#if defined(OS_LINUX)
+// Test is flaky. https://crbug.com/1206184
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
 #else
 #define MAYBE_DeleteAllProfiles DeleteAllProfiles
@@ -571,13 +578,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, SwitchToProfile) {
 
 // Prepares the setup for AddMultipleProfiles test, creates multiple browser
 // windows with multiple browser windows.
-// TODO(crbug.com/1243925): Fix and re-enable.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_PRE_AddMultipleProfiles DISABLED_PRE_AddMultipleProfiles
-#else
-#define MAYBE_PRE_AddMultipleProfiles PRE_AddMultipleProfiles
-#endif
-IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, MAYBE_PRE_AddMultipleProfiles) {
+IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, PRE_AddMultipleProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   ProfileAttributesStorage& storage =
@@ -795,3 +796,29 @@ INSTANTIATE_TEST_SUITE_P(DestroyProfileOnBrowserClose,
                          ProfileManagerBrowserTest,
                          testing::Bool());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+
+const base::FilePath::CharType kNonAsciiProfileDir[] =
+    FILE_PATH_LITERAL("\xd9\x85\xd8\xb5\xd8\xb1");
+
+class ProfileManagerNonAsciiBrowserTest : public ProfileManagerBrowserTestBase {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ProfileManagerBrowserTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitchNative(switches::kProfileDirectory,
+                                     kNonAsciiProfileDir);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileManagerNonAsciiBrowserTest,
+                       LaunchInNonAsciiProfileDirectoryDoesntCrash) {
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetAllProfilesAttributes();
+  ASSERT_EQ(entries.size(), 1u);
+  EXPECT_EQ(entries[0]->GetPath().BaseName().value(), kNonAsciiProfileDir);
+}
+
+#endif  //! BUILDFLAG(IS_CHROMEOS_ASH)

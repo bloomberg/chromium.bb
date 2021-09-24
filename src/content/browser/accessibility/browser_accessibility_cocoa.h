@@ -15,6 +15,8 @@
 #include "content/common/content_export.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
+#include "ui/accessibility/platform/ax_platform_node_cocoa.h"
+#include "ui/accessibility/platform/ax_platform_node_mac.h"
 
 namespace content {
 
@@ -66,7 +68,7 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 // object. The renderer converts webkit's accessibility tree into a
 // WebAccessibility tree and passes it to the browser process over IPC.
 // This class converts it into a format Cocoa can query.
-@interface BrowserAccessibilityCocoa : NSAccessibilityElement {
+@interface BrowserAccessibilityCocoa : AXPlatformNodeCocoa {
  @private
   content::BrowserAccessibility* _owner;
   // An array of children of this object. Cached to avoid re-computing.
@@ -81,7 +83,8 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 
 // This creates a cocoa browser accessibility object around
 // the cross platform BrowserAccessibility object, which can't be nullptr.
-- (instancetype)initWithObject:(content::BrowserAccessibility*)accessibility;
+- (instancetype)initWithObject:(content::BrowserAccessibility*)accessibility
+              withPlatformNode:(ui::AXPlatformNodeMac*)platform_node;
 
 // Clear this object's pointer to the wrapped BrowserAccessibility object
 // because the wrapped object has been deleted, but this object may
@@ -104,9 +107,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 
 // Computes the text that was added or deleted in a text field after an edit.
 - (content::AXTextEdit)computeTextEdit;
-
-// Determines if this object is alive, i.e. it hasn't been detached.
-- (BOOL)instanceActive;
 
 // Convert from the view's local coordinate system (with the origin in the upper
 // left) to the primary NSScreen coordinate system (with the origin in the lower
@@ -149,6 +149,7 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) NSArray* columnHeaders;
 @property(nonatomic, readonly) NSValue* columnIndexRange;
 @property(nonatomic, readonly) NSString* descriptionForAccessibility;
+@property(nonatomic, readonly) NSArray* detailsElements;
 @property(nonatomic, readonly) NSNumber* disclosing;
 @property(nonatomic, readonly) id disclosedByRow;
 @property(nonatomic, readonly) NSNumber* disclosureLevel;

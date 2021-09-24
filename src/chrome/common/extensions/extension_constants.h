@@ -171,9 +171,11 @@ enum AppLaunchBucket {
   APP_LAUNCH_BUCKET_INVALID
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 // The extension id of the Assessment Assistant extension.
 extern const char kAssessmentAssistantExtensionId[];
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the Accessibility Common extension.
 extern const char kAccessibilityCommonExtensionId[];
 // Path to preinstalled Accessibility Common extension (relative to
@@ -232,10 +234,6 @@ extern const char kEspeakSpeechSynthesisExtensionPath[];
 extern const char kEspeakSpeechSynthesisExtensionId[];
 // The extension id of the wallpaper manager application.
 extern const char kWallpaperManagerId[];
-// The extension id of the zip archiver extension.
-extern const char kZipArchiverExtensionId[];
-// Path to preinstalled zip archiver extension.
-extern const char kZipArchiverExtensionPath[];
 // Path to preinstalled Chrome camera app.
 extern const char kCameraAppPath[];
 #endif

@@ -84,13 +84,14 @@ class StubFeedApi : public FeedApi {
   void ReportOtherUserAction(const StreamType& stream_type,
                              FeedUserActionType action_type) override {}
   DebugStreamData GetDebugStreamData() override;
-  void ForceRefreshForDebugging() override {}
+  void ForceRefreshForDebugging(const StreamType& stream_type) override {}
   std::string DumpStateForDebugging() override;
   void SetForcedStreamUpdateForDebugging(
       const feedui::StreamUpdate& stream_update) override {}
   base::Time GetLastFetchTime(const StreamType& stream_type) override;
   void SetContentOrder(const StreamType& stream_type,
                        ContentOrder content_order) override {}
+  ContentOrder GetContentOrder(const StreamType& stream_type) override;
   ContentOrder GetContentOrderFromPrefs(const StreamType& stream_type) override;
 
  private:

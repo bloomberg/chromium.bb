@@ -68,6 +68,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -145,8 +146,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/feature_list.h"
+#include "chrome/browser/ash/printing/printer_metrics_provider.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/printing/printer_metrics_provider.h"
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -375,7 +376,6 @@ bool IsProcessRunning(base::ProcessId pid) {
 #elif defined(OS_FUCHSIA)
   // TODO(crbug.com/1235293)
   NOTIMPLEMENTED_LOG_ONCE();
-  return false;
 #else
 #error Unsupported OS. Might be okay to just return false.
 #endif
@@ -436,6 +436,22 @@ MakeDemographicMetricsProvider(
   return std::make_unique<metrics::DemographicMetricsProvider>(
       std::make_unique<ProfileClientImpl>(), metrics_service_type);
 }
+
+class ChromeComponentMetricsProviderDelegate
+    : public metrics::ComponentMetricsProviderDelegate {
+ public:
+  explicit ChromeComponentMetricsProviderDelegate(
+      component_updater::ComponentUpdateService* component_updater_service)
+      : component_updater_service_(component_updater_service) {}
+  ~ChromeComponentMetricsProviderDelegate() override = default;
+
+  std::vector<component_updater::ComponentInfo> GetComponents() override {
+    return component_updater_service_->GetComponents();
+  }
+
+ private:
+  component_updater::ComponentUpdateService* component_updater_service_;
+};
 
 }  // namespace
 
@@ -689,7 +705,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ComponentMetricsProvider>(
-          g_browser_process->component_updater()));
+          std::make_unique<ChromeComponentMetricsProviderDelegate>(
+              g_browser_process->component_updater())));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<tracing::BackgroundTracingMetricsProvider>());

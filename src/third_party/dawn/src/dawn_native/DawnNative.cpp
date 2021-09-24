@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "dawn_native/DawnNative.h"
+
+#include "dawn_native/BindGroupLayout.h"
+#include "dawn_native/Buffer.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/Texture.h"
@@ -223,6 +226,22 @@ namespace dawn_native {
     // ExternalImageExportInfo
 
     ExternalImageExportInfo::ExternalImageExportInfo(ExternalImageType type) : type(type) {
+    }
+
+    const char* GetObjectLabelForTesting(void* objectHandle) {
+        ObjectBase* object = reinterpret_cast<ObjectBase*>(objectHandle);
+        return object->GetLabel().c_str();
+    }
+
+    uint64_t GetAllocatedSizeForTesting(WGPUBuffer buffer) {
+        return reinterpret_cast<const BufferBase*>(buffer)->GetAllocatedSize();
+    }
+
+    bool BindGroupLayoutBindingsEqualForTesting(WGPUBindGroupLayout a, WGPUBindGroupLayout b) {
+        BindGroupLayoutBase* aBase = reinterpret_cast<BindGroupLayoutBase*>(a);
+        BindGroupLayoutBase* bBase = reinterpret_cast<BindGroupLayoutBase*>(b);
+        bool excludePipelineCompatibiltyToken = true;
+        return aBase->IsLayoutEqual(bBase, excludePipelineCompatibiltyToken);
     }
 
 }  // namespace dawn_native

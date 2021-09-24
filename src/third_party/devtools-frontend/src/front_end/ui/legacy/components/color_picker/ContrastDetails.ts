@@ -62,7 +62,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/color_picker/ContrastDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
+export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private contrastInfo: ContrastInfo;
   private readonly elementInternal: HTMLElement;
   private readonly toggleMainColorPicker:
@@ -211,7 +211,6 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   private onSuggestColor(threshold: string): void {
-    Host.userMetrics.colorFixed(threshold);
     const color = this.computeSuggestedColor(threshold);
     if (color) {
       this.colorSelectedCallback(color);
@@ -465,8 +464,12 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
   }
 }
 
-export const Events = {
-  BackgroundColorPickerWillBeToggled: Symbol('BackgroundColorPickerWillBeToggled'),
+export const enum Events {
+  BackgroundColorPickerWillBeToggled = 'BackgroundColorPickerWillBeToggled',
+}
+
+export type EventTypes = {
+  [Events.BackgroundColorPickerWillBeToggled]: boolean,
 };
 
 export class Swatch {

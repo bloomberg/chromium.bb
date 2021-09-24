@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory.h"
 #include "chrome/browser/ash/night_light/night_light_client.h"
 #include "chrome/browser/ash/policy/display/display_resolution_handler.h"
@@ -43,12 +44,14 @@
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
+#include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
 #include "chrome/browser/ui/ash/projector/projector_client_impl.h"
 #include "chrome/browser/ui/ash/quick_answers/quick_answers_browser_client_impl.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
@@ -59,6 +62,7 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -86,6 +90,8 @@ class ChromeShelfControllerInitializer
   ~ChromeShelfControllerInitializer() override {
     if (!chrome_shelf_controller_)
       session_manager::SessionManager::Get()->RemoveObserver(this);
+    if (chrome_shelf_item_factory_)
+      ash::ShelfModel::Get()->SetShelfItemFactory(nullptr);
   }
 
   // session_manager::SessionManagerObserver:
@@ -95,8 +101,11 @@ class ChromeShelfControllerInitializer
 
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
+      chrome_shelf_item_factory_ = std::make_unique<ChromeShelfItemFactory>();
+      ash::ShelfModel::Get()->SetShelfItemFactory(
+          chrome_shelf_item_factory_.get());
       chrome_shelf_controller_ = std::make_unique<ChromeShelfController>(
-          nullptr, ash::ShelfModel::Get());
+          nullptr, ash::ShelfModel::Get(), chrome_shelf_item_factory_.get());
       chrome_shelf_controller_->Init();
 
       session_manager::SessionManager::Get()->RemoveObserver(this);
@@ -104,6 +113,7 @@ class ChromeShelfControllerInitializer
   }
 
  private:
+  std::unique_ptr<ChromeShelfItemFactory> chrome_shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShelfControllerInitializer);
@@ -214,6 +224,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   night_light_client_->Start();
 
   if (chromeos::features::IsProjectorEnabled()) {
+    projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
     projector_client_ = std::make_unique<ProjectorClientImpl>();
   }
 
@@ -233,6 +244,12 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     microphone_mute_notification_delegate_ =
         std::make_unique<MicrophoneMuteNotificationDelegateImpl>();
   }
+
+  // Check if Lacros is enabled for crash reporting here to give the user
+  // manager a chance to be initialized first.
+  constexpr char kLacrosEnabledDataKey[] = "lacros-enabled";
+  static crash_reporter::CrashKeyString<4> key(kLacrosEnabledDataKey);
+  key.Set(crosapi::browser_util::IsLacrosEnabled() ? "yes" : "no");
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.

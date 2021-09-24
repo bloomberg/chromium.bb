@@ -502,8 +502,6 @@ ChannelSend::ChannelSend(
   configuration.rtcp_packet_type_counter_observer = this;
 
   configuration.local_media_ssrc = ssrc;
-  configuration.use_deferred_sequencing =
-      !field_trial::IsDisabled("WebRTC-Audio-DeferredSequencing");
 
   rtp_rtcp_ = ModuleRtpRtcpImpl2::Create(configuration);
   rtp_rtcp_->SetSendingMediaStatus(false);
@@ -537,9 +535,12 @@ void ChannelSend::StartSend() {
   RTC_DCHECK(!sending_);
   sending_ = true;
 
+  RTC_DCHECK(packet_router_);
+  packet_router_->AddSendRtpModule(rtp_rtcp_.get(), /*remb_candidate=*/false);
   rtp_rtcp_->SetSendingMediaStatus(true);
   int ret = rtp_rtcp_->SetSendingStatus(true);
   RTC_DCHECK_EQ(0, ret);
+
   // It is now OK to start processing on the encoder task queue.
   encoder_queue_.PostTask([this] {
     RTC_DCHECK_RUN_ON(&encoder_queue_);
@@ -568,6 +569,9 @@ void ChannelSend::StopSend() {
     RTC_DLOG(LS_ERROR) << "StartSend() RTP/RTCP failed to stop sending";
   }
   rtp_rtcp_->SetSendingMediaStatus(false);
+
+  RTC_DCHECK(packet_router_);
+  packet_router_->RemoveSendRtpModule(rtp_rtcp_.get());
 }
 
 void ChannelSend::SetEncoder(int payload_type,
@@ -723,8 +727,6 @@ void ChannelSend::RegisterSenderCongestionControlObjects(
   rtcp_observer_->SetBandwidthObserver(bandwidth_observer);
   rtp_packet_pacer_proxy_->SetPacketPacer(rtp_packet_pacer);
   rtp_rtcp_->SetStorePacketsStatus(true, 600);
-  constexpr bool remb_candidate = false;
-  packet_router->AddSendRtpModule(rtp_rtcp_.get(), remb_candidate);
   packet_router_ = packet_router;
 }
 
@@ -733,7 +735,6 @@ void ChannelSend::ResetSenderCongestionControlObjects() {
   RTC_DCHECK(packet_router_);
   rtp_rtcp_->SetStorePacketsStatus(false, 600);
   rtcp_observer_->SetBandwidthObserver(nullptr);
-  packet_router_->RemoveSendRtpModule(rtp_rtcp_.get());
   packet_router_ = nullptr;
   rtp_packet_pacer_proxy_->SetPacketPacer(nullptr);
 }

@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Выяўлены брандмаўар</translation>
 <translation id="1075811647922107217">Памер старонкі</translation>
+<translation id="1119447706177454957">Унутраная памылка</translation>
 <translation id="1124772482545689468">Карыстальнік</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" /></translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Партал узаемадзеяння</translation>
 <translation id="2006864819935886708">Магчымасць падключэння</translation>
 <translation id="2008685064673031089">Пошук простых лікаў</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Іншыя налады</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, версія <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Даступна: <ph name="AVAILABLE_MEMORY" /> з <ph name="TOTAL_MEMORY" /> ГБ</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">У ЧАРЗЕ</translation>
 <translation id="2161394479394250669">Скасаваць заданне друку</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Каб знайсці прылады паблізу, уключыце Bluetooth</translation>
 <translation id="2364498172489649528">Пройдзена</translation>
+<translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Адправіць справаздачу з водгукам</translation>
+<translation id="2407209115954268704">Стан блакіроўкі SIM-карты</translation>
 <translation id="2418150275289244458">Адкрыць у наладах</translation>
 <translation id="2446553403094072641">Дакладнасць выкарыстання нефіксаванай коскі</translation>
 <translation id="2448312741937722512">Тып</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Кэш</translation>
 <translation id="3122464029669770682">Працэсар</translation>
 <translation id="315116470104423982">Мабільная перадача даных</translation>
+<translation id="3156846309055100599">Сканіруецца старонка <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Выяўлены партал узаемадзеяння</translation>
 <translation id="3188257591659621405">Мае файлы</translation>
 <translation id="3199982728237701504">Прылада для падачы дакументаў (абодвума бакамі)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567">Заданні друку, старэйшыя за <ph name="NUMBER_OF_DAYS" /> сут, будуць выдалены</translation>
 <translation id="4003384961948020559">Збой: выхадны латок запоўнены</translation>
 <translation id="4034824040120875894">Прынтар</translation>
+<translation id="409427325554347132">Захаваць даныя тэста</translation>
 <translation id="4131410914670010031">Чорна-белы друк</translation>
 <translation id="4145784616224233563">Брандмаўар HTTP</translation>
 <translation id="4155551848414053977">Упэўніцеся, што сканер уключаны і даступны праз вашу сетку або прамое падключэнне.</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Няма дзеючых заданняў друку</translation>
 <translation id="4244962993387259361">Каб выканаць праверку памяці, вам патрэбна не менш за 500 МБ вольнага месца. Каб вызваліць месца, перайдзіце ў раздзел "Налады &gt; Кіраванне сховішчам".</translation>
+<translation id="4258281355379922695">Затрымка HTTP-запытаў</translation>
+<translation id="4271957103967917607">Праглядзець у поўнаэкранным рэжыме</translation>
 <translation id="4289540628985791613">Агляд</translation>
 <translation id="4297501883039923494">Спынена: невядомая памылка</translation>
 <translation id="4300073214558989">Відарысаў: <ph name="IMAGE_COUNT" /></translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">Канфігурацыя IP-адраса</translation>
 <translation id="4548483925627140043">Сігнал не знойдзены</translation>
 <translation id="455835558791489930">Магутнасць акумулятара: <ph name="CHARGE_VALUE" /> мА·г</translation>
+<translation id="4561801978359312462">SIM-карта разблакіравана</translation>
 <translation id="4562494484721939086">Не абслугоўваецца</translation>
 <translation id="458794348635939462">Не ўдалося супаставіць усе хосты</translation>
 <translation id="4593212453765072419">Патрабуецца аўтэнтыфікацыя проксі-сервера</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> з <ph name="TOTAL_PAGE_NUMBER" />. Каб скасаваць заданне друку, націсніце Enter.</translation>
+<translation id="463791356324567266">Сканіраванне скасоўваецца…</translation>
 <translation id="4646949265910132906">Бяспечнае падключэнне да сеткі Wi-Fi</translation>
-<translation id="4652335678334611408">Захаваць журнал сеанса</translation>
 <translation id="4654549501020883054">Змяняць штодня</translation>
 <translation id="4665014895760275686">Вытворца</translation>
 <translation id="467510802200863975">Паролі не супадаюць</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Схаваць справаздачу</translation>
 <translation id="500920857929044050">Спыніць праверку</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM-карта заблакіравана (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Назва групы</translation>
 <translation id="5088172560898466307">Назва хоста сервера</translation>
 <translation id="5089810972385038852">Штат</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Паказаць у папцы</translation>
 <translation id="5212543919916444558">Я не магу знайсці на экране нічога, з чым я мог бы вам дапамагчы.
 Каб спытаць мяне аб чым-небудзь, паспрабуйце дакрануцца да мікрафона.</translation>
+<translation id="5212593641110061691">Таблоід</translation>
 <translation id="5222676887888702881">Выйсці</translation>
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="5252456968953390977">Роўмінг</translation>
@@ -248,6 +260,7 @@
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Засталася {0} спроба}one{Засталася {0} спроба}few{Засталося {0} спробы}many{Засталося {0} спроб}other{Засталося {0} спробы}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Не ўдалося завяршыць сканіраванне</translation>
+<translation id="5502931783115429516">Android не працуе</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Ідзе актывацыя</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@
 <translation id="5701381305118179107">У цэнтры</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> з <ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Стан партала</translation>
+<translation id="5784136236926853061">Вялікая затрымка HTTP-запытаў</translation>
 <translation id="5832805196449965646">Дадаць карыстальніка</translation>
 <translation id="583281660410589416">Невядома</translation>
 <translation id="5849570051105887917">Код аператара</translation>
+<translation id="5860033963881614850">Выключана</translation>
 <translation id="5866840822086176774">Вельмі моцны</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
 <translation id="5916084858004523819">Забароненая</translation>
@@ -281,6 +296,7 @@
 <translation id="6146993107019042706">Каб закончыць, увядзіце новы пароль</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Ёмістасць акумулятара зніжаецца па меры яго выкарыстання</translation>
 <translation id="6191293864534840972">Серверы даменных імён маюць няправільны фармат</translation>
 <translation id="6223752125779001553">Няма даступных сканераў</translation>
@@ -302,6 +318,7 @@
 <translation id="6527081081771465939">Невядомы пратакол сістэмы бяспекі Wi-Fi</translation>
 <translation id="65587193855025101">Планшэтны сканер</translation>
 <translation id="6564646048574748301">Збой: прынтар недаступны</translation>
+<translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
 <translation id="6574762126505704998">Запоўніць</translation>
 <translation id="6575134580692778371">Не наладжана</translation>
 <translation id="6596816719288285829">IP-адрас</translation>
@@ -341,9 +358,11 @@
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Калекцыі шпалер</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Сеткавыя прылады</translation>
 <translation id="7359657277149375382">Тып файла</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">Вельмі вялікая затрымка HTTP-запытаў</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Сканіраванне завершана. Адсканіравана 1 старонка}one{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонка}few{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонкі}many{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонак}other{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонкі}}</translation>
 <translation id="7469648432129124067">Выяўлены партал</translation>
@@ -351,9 +370,11 @@
 <translation id="7490813197707563893">MAC-адрас</translation>
 <translation id="7497215489070763236">Сертыфікат ЦС сервера</translation>
 <translation id="7502658306369382406">Адрас IPv6</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Паслядоўнасці дзеянняў для дыягностыкі</translation>
 <translation id="7561454561030345039">Гэтым дзеяннем кіруе адміністратар</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">ARC Ping</translation>
 <translation id="7595982850646262331">Застаецца <ph name="TIME_VALUE" /></translation>
 <translation id="7620771111601174153">Атрымаць больш інфармацыі ў Даведачным цэнтры</translation>
 <translation id="763165478673169849">Час апошняга скіду</translation>

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './page_toolbar.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {MenuSelectorItem, SelectorItem, SelectorProperties} from './navigation_selector.js';
+import {SelectorItem} from './navigation_selector.js';
 
 const navigationPageChanged = 'onNavigationPageChanged';
 
@@ -21,6 +23,10 @@ const navigationPageChanged = 'onNavigationPageChanged';
  * To send events between pages, the component that has <navigation-view-panel>
  * must call on "notifyEvent(functionName, params)". |params| is an optional
  * parameter.
+ *
+ * To provide page components with initial data, include a "initialData" object
+ * as part of the "addSelector()" function. Page components will then have an
+ * implicit property, details, with the object provided.
  */
 export class NavigationViewPanelElement extends PolymerElement {
   static get is() {
@@ -39,19 +45,86 @@ export class NavigationViewPanelElement extends PolymerElement {
        */
       selectedItem: {
         type: Object,
-        observer: "selectedItemChanged_",
+        observer: 'selectedItemChanged_',
         value: null,
       },
 
       /**
-       * @type {!Array<!MenuSelectorItem>}
+       * @type {!Array<!SelectorItem>}
        * @private
        */
-      menuItems_: {
+      selectorItems_: {
         type: Array,
         value: () => [],
+      },
+
+      /**
+       * This title only appears if |showToolBar| is True. Is otherwise a
+       * no-opt if title is set and |showToolbar| is False.
+       */
+      title: {
+        type: String,
+        value: '',
+      },
+
+      /**
+       * Can only be set to True if specified from the parent element by
+       * adding show-tool-bar as an attribute to <navigation-view-panel>. If
+       * True, a toolbar will appear at the top of the navigation view panel
+       * with a 2 column view below it (sidebar + page). If False,
+       * navigation view panel will only be a 2 column view (sidebar +
+       * page).
+       */
+      showToolBar: {
+        type: Boolean,
+        value: false,
+      },
+    }
+  }
+
+  /**
+   * @param {string} name
+   * @param {string} pageIs
+   * @param {string} icon
+   * @param {?string} id
+   * @param {?Object} initialData
+   * @return {!SelectorItem}
+   */
+  createSelectorItem(
+      name, pageIs, icon = '', id = null, initialData = null) {
+    id = id || pageIs;
+    return {
+      name, pageIs, icon, id, initialData
+    }
+  }
+
+  /**
+   * Set the initially active page (defaults to the first selector item),
+   * Callers can override this default behavior by providing a
+   * query param including the id of a specific page.
+   * @protected
+   */
+  setDefaultPage_() {
+    assert(!this.selectedItem);
+    const params = new URLSearchParams(window.location.search);
+
+    for (let item of this.selectorItems_) {
+      if (params.has(item.id)) {
+        this.selectedItem = item;
+        return;
       }
     }
+
+    // Default to first entry if query param isn't provided.
+    this.selectedItem = this.selectorItems_[0];
+  }
+
+  /**
+   * @param {!Array<!SelectorItem>} pages
+   */
+  addSelectors(pages) {
+    this.set('selectorItems_', pages);
+    this.setDefaultPage_();
   }
 
   /**
@@ -64,36 +137,12 @@ export class NavigationViewPanelElement extends PolymerElement {
    * @param {string} pageIs
    * @param {string} icon
    * @param {?string} id
-   * @param {!Array<SelectorItem>} subItems
+   * @param {?Object} initialData
    */
-  addSelector(name, pageIs, icon = '', id = null, subItems = []) {
-    if (!id) {
-      id = pageIs;
-    }
-
-    let item = /** @type {SelectorItem} */ (
-        {'name': name, 'pageIs': pageIs, 'icon': icon, 'id': id});
-    let property = /** @type {SelectorProperties} */ ({
-        'isCollapsible': subItems.length,
-        'isExpanded': false,
-        'subMenuItems': subItems,
-    });
-    let menuItem = /** @type {!MenuSelectorItem} */ ({
-        'selectorItem': item,
-        'properties': property,
-    });
-
-    this.push('menuItems_', menuItem);
-    // Set the initial default page, if the first entry is a collapsible entry
-    // the initial page is the first sub menu item. Otherwise, the first entry
-    // is the first menu item.
-    if (!this.selectedItem) {
-      if (property.isCollapsible) {
-        this.selectedItem = property.subMenuItems[0];
-      } else {
-        this.selectedItem = item;
-      }
-    }
+  addSelector(name, pageIs, icon = '', id = null, initialData = null) {
+    let selectorItem =
+        this.createSelectorItem(name, pageIs, icon, id, initialData);
+    this.push('selectorItems_', selectorItem);
   }
 
   /** @protected */
@@ -138,6 +187,11 @@ export class NavigationViewPanelElement extends PolymerElement {
       assert(pageComponent);
       pageComponent.setAttribute('id', item.id);
       pageComponent.setAttribute('class', 'view-content');
+
+      if (item.initialData) {
+        pageComponent.initialData = item.initialData;
+      }
+
       pageComponent.hidden = true;
 
       this.$.navigationBody.appendChild(pageComponent);

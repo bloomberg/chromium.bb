@@ -31,7 +31,6 @@ class SyncSetupService : public KeyedService {
     kSyncServiceNeedsTrustedVaultKey,
     kSyncServiceTrustedVaultRecoverabilityDegraded,
     kSyncServiceUnrecoverableError,
-    kSyncSettingsNotConfirmed,
     kLastSyncServiceError = kSyncServiceUnrecoverableError
   };
 
@@ -55,7 +54,6 @@ class SyncSetupService : public KeyedService {
   syncer::ModelType GetModelType(SyncableDatatype datatype);
 
   // Returns whether the user wants Sync to run.
-  // It should be used only with kMobileIdentityConsistency enabled.
   virtual bool IsSyncRequested() const;
   // Returns whether Sync-the-transport can start the Sync feature.
   virtual bool CanSyncFeatureStart() const;

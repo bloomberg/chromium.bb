@@ -35,7 +35,6 @@
 #include "common/intops.h"
 
 #include "src/intra_edge.h"
-#include "src/levels.h"
 #include "src/tables.h"
 
 #define INVALID_MV 0x80008000
@@ -55,11 +54,11 @@ typedef union refmvs_mvpair {
     uint64_t n;
 } refmvs_mvpair;
 
-typedef struct refmvs_block {
+PACKED(typedef struct refmvs_block {
     refmvs_mvpair mv;
     refmvs_refpair ref;
     uint8_t bs, mf; // 1 = globalmv+affine, 2 = newmv
-} refmvs_block;
+}) ALIGN(refmvs_block, 4);
 
 typedef struct refmvs_frame {
     const Dav1dFrameHeader *frm_hdr;
@@ -96,6 +95,14 @@ typedef struct refmvs_candidate {
     refmvs_mvpair mv;
     int weight;
 } refmvs_candidate;
+
+#define decl_splat_mv_fn(name) \
+void (name)(refmvs_block **rr, const refmvs_block *rmv, int bx4, int bw4, int bh4)
+typedef decl_splat_mv_fn(*splat_mv_fn);
+
+typedef struct Dav1dRefmvsDSPContext {
+    splat_mv_fn splat_mv;
+} Dav1dRefmvsDSPContext;
 
 // call once per frame thread
 void dav1d_refmvs_init(refmvs_frame *rf);
@@ -137,97 +144,8 @@ void dav1d_refmvs_find(const refmvs_tile *rt,
                        int *ctx, const refmvs_refpair ref, enum BlockSize bs,
                        enum EdgeFlags edge_flags, int by4, int bx4);
 
-static inline void splat_oneref_mv(refmvs_tile *const rt,
-                                   const int by4, const int bx4,
-                                   const enum BlockSize bs,
-                                   const enum InterPredMode mode,
-                                   const int ref, const mv mv,
-                                   const int is_interintra)
-{
-    const int bw4 = dav1d_block_dimensions[bs][0];
-    int bh4 = dav1d_block_dimensions[bs][1];
-    refmvs_block **rr = &rt->r[(by4 & 31) + 5];
-
-    const refmvs_block tmpl = (refmvs_block) {
-        .ref.ref = { ref + 1, is_interintra ? 0 : -1 },
-        .mv.mv[0] = mv,
-        .bs = bs,
-        .mf = (mode == GLOBALMV && imin(bw4, bh4) >= 2) | ((mode == NEWMV) * 2),
-    };
-    do {
-        refmvs_block *r = *rr++ + bx4;
-        for (int x = 0; x < bw4; x++)
-            r[x] = tmpl;
-    } while (--bh4);
-}
-
-static inline void splat_intrabc_mv(refmvs_tile *const rt,
-                                    const int by4, const int bx4,
-                                    const enum BlockSize bs, const mv mv)
-{
-    const int bw4 = dav1d_block_dimensions[bs][0];
-    int bh4 = dav1d_block_dimensions[bs][1];
-    refmvs_block **rr = &rt->r[(by4 & 31) + 5];
-
-    const refmvs_block tmpl = (refmvs_block) {
-        .ref.ref = { 0, -1 },
-        .mv.mv[0] = mv,
-        .bs = bs,
-        .mf = 0,
-    };
-    do {
-        refmvs_block *r = *rr++ + bx4;
-        for (int x = 0; x < bw4; x++) {
-            r[x] = tmpl;
-        }
-    } while (--bh4);
-}
-
-static inline void splat_tworef_mv(refmvs_tile *const rt,
-                                   const int by4, const int bx4,
-                                   const enum BlockSize bs,
-                                   const enum CompInterPredMode mode,
-                                   const refmvs_refpair ref,
-                                   const refmvs_mvpair mv)
-{
-    const int bw4 = dav1d_block_dimensions[bs][0];
-    int bh4 = dav1d_block_dimensions[bs][1];
-    refmvs_block **rr = &rt->r[(by4 & 31) + 5];
-
-    assert(bw4 >= 2 && bh4 >= 2);
-    const refmvs_block tmpl = (refmvs_block) {
-        .ref.pair = ref.pair + 0x0101,
-        .mv = mv,
-        .bs = bs,
-        .mf = (mode == GLOBALMV_GLOBALMV) | !!((1 << mode) & (0xbc)) * 2,
-    };
-    do {
-        refmvs_block *r = *rr++ + bx4;
-        for (int x = 0; x < bw4; x++)
-            r[x] = tmpl;
-    } while (--bh4);
-}
-
-static inline void splat_intraref(refmvs_tile *const rt,
-                                  const int by4, const int bx4,
-                                  const enum BlockSize bs)
-{
-    const int bw4 = dav1d_block_dimensions[bs][0];
-    int bh4 = dav1d_block_dimensions[bs][1];
-    refmvs_block **rr = &rt->r[(by4 & 31) + 5];
-
-    const refmvs_block tmpl = (refmvs_block) {
-        .ref.ref = { 0, -1 },
-        .mv.mv[0].n = INVALID_MV,
-        .bs = bs,
-        .mf = 0,
-    };
-    do {
-        refmvs_block *r = *rr++ + bx4;
-        for (int x = 0; x < bw4; x++) {
-            r[x] = tmpl;
-        }
-    } while (--bh4);
-}
+void dav1d_refmvs_dsp_init(Dav1dRefmvsDSPContext *dsp);
+void dav1d_refmvs_dsp_init_arm(Dav1dRefmvsDSPContext *dsp);
+void dav1d_refmvs_dsp_init_x86(Dav1dRefmvsDSPContext *dsp);
 
 #endif /* DAV1D_SRC_REF_MVS_H */

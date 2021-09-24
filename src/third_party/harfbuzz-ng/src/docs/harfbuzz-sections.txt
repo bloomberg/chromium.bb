@@ -195,7 +195,6 @@ HB_OT_VAR_NO_AXIS_INDEX
 hb_ot_var_axis_t
 hb_ot_var_find_axis
 hb_ot_var_get_axes
-hb_set_invert
 hb_unicode_eastasian_width_func_t
 hb_unicode_eastasian_width
 hb_unicode_funcs_set_eastasian_width_func
@@ -614,6 +613,7 @@ hb_set_get_population
 hb_set_get_user_data
 hb_set_has
 hb_set_intersect
+hb_set_invert
 hb_set_is_empty
 hb_set_is_equal
 hb_set_is_subset
@@ -709,7 +709,7 @@ hb_version_string
 
 <SECTION>
 <FILE>hb-subset</FILE>
-hb_subset_flag_t
+hb_subset_flags_t
 hb_subset_input_t
 hb_subset_input_create_or_fail
 hb_subset_input_reference
@@ -723,7 +723,7 @@ hb_subset_input_namelangid_set
 hb_subset_input_layout_features_set
 hb_subset_input_no_subset_tables_set
 hb_subset_input_drop_tables_set
-hb_subset_input_get_flag
-hb_subset_input_set_flag
+hb_subset_input_get_flags
+hb_subset_input_set_flags
 hb_subset_or_fail
 </SECTION>

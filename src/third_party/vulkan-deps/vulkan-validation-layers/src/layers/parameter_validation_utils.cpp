@@ -3308,6 +3308,35 @@ bool StatelessValidation::manual_PreCallValidateCreateComputePipelines(VkDevice 
                              "VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV.",
                              i, flags);
         }
+        if (flags & VK_PIPELINE_CREATE_DERIVATIVE_BIT) {
+            if (pCreateInfos[i].basePipelineIndex != -1) {
+                if (pCreateInfos[i].basePipelineHandle != VK_NULL_HANDLE) {
+                    skip |= LogError(device, "VUID-VkComputePipelineCreateInfo-flags-00699",
+                                     "vkCreateComputePipelines parameter, pCreateInfos[%" PRIu32
+                                     "]->basePipelineHandle, must be VK_NULL_HANDLE if pCreateInfos->flags contains the "
+                                     "VK_PIPELINE_CREATE_DERIVATIVE_BIT flag and pCreateInfos->basePipelineIndex is not -1.",
+                                     i);
+                }
+            }
+
+            if (pCreateInfos[i].basePipelineHandle != VK_NULL_HANDLE) {
+                if (pCreateInfos[i].basePipelineIndex != -1) {
+                    skip |= LogError(
+                        device, "VUID-VkComputePipelineCreateInfo-flags-00700",
+                        "vkCreateComputePipelines parameter, pCreateInfos[%" PRIu32
+                        "]->basePipelineIndex, must be -1 if pCreateInfos->flags contains the VK_PIPELINE_CREATE_DERIVATIVE_BIT "
+                        "flag and pCreateInfos->basePipelineHandle is not VK_NULL_HANDLE.",
+                        i);
+                }
+            } else {
+                if (static_cast<uint32_t>(pCreateInfos[i].basePipelineIndex) >= createInfoCount) {
+                    skip |= LogError(device, "VUID-VkComputePipelineCreateInfo-flags-00698",
+                                     "vkCreateComputePipelines parameter pCreateInfos[%" PRIu32 "]->basePipelineIndex (%" PRIi32
+                                     ") must be a valid index into the pCreateInfos array, of size %" PRIu32 ".",
+                                     i, pCreateInfos[i].basePipelineIndex, createInfoCount);
+                }
+            }
+        }
 
         std::stringstream msg;
         msg << "pCreateInfos[%" << i << "].stage";
@@ -4193,6 +4222,35 @@ bool StatelessValidation::ValidateGetPhysicalDeviceImageFormatProperties2(VkPhys
                 }
             }
         }
+        const auto image_drm_format = LvlFindInChain<VkPhysicalDeviceImageDrmFormatModifierInfoEXT>(pImageFormatInfo->pNext);
+        if (image_drm_format) {
+            if (pImageFormatInfo->tiling != VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
+                skip |= LogError(
+                    physicalDevice, "VUID-VkPhysicalDeviceImageFormatInfo2-tiling-02249",
+                    "%s(): pNext chain of VkPhysicalDeviceImageFormatInfo2 includes VkPhysicalDeviceImageDrmFormatModifierInfoEXT, "
+                    "but tiling (%s) is not VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT.",
+                    apiName, string_VkImageTiling(pImageFormatInfo->tiling));
+            }
+        } else {
+            if (pImageFormatInfo->tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
+                skip |= LogError(
+                    physicalDevice, "VUID-VkPhysicalDeviceImageFormatInfo2-tiling-02249",
+                    "%s(): pNext chain of VkPhysicalDeviceImageFormatInfo2 does not include "
+                    "VkPhysicalDeviceImageDrmFormatModifierInfoEXT, but tiling is VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT.",
+                    apiName);
+            }
+        }
+        if (pImageFormatInfo->tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT &&
+            (pImageFormatInfo->flags & VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT)) {
+            const auto format_list = LvlFindInChain<VkImageFormatListCreateInfo>(pImageFormatInfo->pNext);
+            if (!format_list || format_list->viewFormatCount == 0) {
+                skip |= LogError(
+                    physicalDevice, "VUID-VkPhysicalDeviceImageFormatInfo2-tiling-02313",
+                    "%s(): tiling is VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT and flags contain VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT "
+                    "bit, but the pNext chain does not include VkImageFormatListCreateInfo with non-zero viewFormatCount.",
+                    apiName);
+            }
+        }
     }
 
     return skip;
@@ -4238,7 +4296,7 @@ bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceVideoFormatProp
                          "VK_IMAGE_USAGE_VIDEO_ENCODE_SRC_BIT_KHR, or VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR.");
     }
 
-    return false;
+    return skip;
 }
 
 bool StatelessValidation::manual_PreCallValidateCmdCopyBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer,
@@ -7472,6 +7530,19 @@ bool StatelessValidation::manual_PreCallValidateCmdSetDiscardRectangleEXT(VkComm
                                  pDiscardRectangles[i].offset.y, pDiscardRectangles[i].extent.height, y_sum, i);
             }
         }
+    }
+
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateGetQueryPoolResults(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery,
+                                                                    uint32_t queryCount, size_t dataSize, void *pData,
+                                                                    VkDeviceSize stride, VkQueryResultFlags flags) const {
+    bool skip = false;
+
+    if ((flags & VK_QUERY_RESULT_WITH_STATUS_BIT_KHR) && (flags & VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)) {
+        skip |= LogError(device, "VUID-vkGetQueryPoolResults-flags-04811",
+                         "vkGetQueryPoolResults(): flags include both VK_QUERY_RESULT_WITH_STATUS_BIT_KHR bit and VK_QUERY_RESULT_WITH_AVAILABILITY_BIT bit.");
     }
 
     return skip;

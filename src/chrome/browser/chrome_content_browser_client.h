@@ -40,7 +40,7 @@ class ScopedKeepAlive;
 
 namespace base {
 class CommandLine;
-}
+}  // namespace base
 
 namespace blink {
 namespace mojom {
@@ -62,9 +62,14 @@ enum class SmsFetchFailureType;
 struct ServiceWorkerVersionBaseInfo;
 }  // namespace content
 
+namespace net {
+class IsolationInfo;
+class SiteForCookies;
+}  // namespace net
+
 namespace permissions {
 class BluetoothDelegateImpl;
-}
+}  // namespace permissions
 
 namespace safe_browsing {
 class RealTimeUrlLookupServiceBase;
@@ -78,23 +83,19 @@ class SeatbeltExecClient;
 
 namespace ui {
 class NativeTheme;
-}
+}  // namespace ui
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
 namespace version_info {
 enum class Channel;
-}
-
-namespace net {
-class IsolationInfo;
-}
+}  // namespace version_info
 
 class ChromeFontAccessDelegate;
 class ChromeHidDelegate;
@@ -132,9 +133,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceClosure task) override;
   bool IsBrowserStartupComplete() override;
   void SetBrowserStartupIsCompleteForTesting() override;
-  content::StoragePartitionId GetStoragePartitionIdForSite(
-      content::BrowserContext* browser_context,
-      const GURL& site) override;
   bool IsShuttingDown() override;
   content::StoragePartitionConfig GetStoragePartitionConfigForSite(
       content::BrowserContext* browser_context,
@@ -240,17 +238,17 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       blink::RendererPreferences* out_prefs) override;
   bool AllowAppCache(const GURL& manifest_url,
 
-                     const GURL& site_for_cookies,
+                     const net::SiteForCookies& site_for_cookies,
                      const absl::optional<url::Origin>& top_frame_origin,
                      content::BrowserContext* context) override;
   content::AllowServiceWorkerResult AllowServiceWorker(
       const GURL& scope,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context) override;
   bool AllowSharedWorker(const GURL& worker_url,
-                         const GURL& site_for_cookies,
+                         const net::SiteForCookies& site_for_cookies,
                          const absl::optional<url::Origin>& top_frame_origin,
                          const std::string& name,
                          const blink::StorageKey& storage_key,
@@ -327,8 +325,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   content::MediaObserver* GetMediaObserver() override;
   content::FeatureObserverClient* GetFeatureObserverClient() override;
-  content::PlatformNotificationService* GetPlatformNotificationService(
-      content::BrowserContext* browser_context) override;
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
@@ -359,6 +355,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::FilePath GetFontLookupTableCacheDir() override;
   base::FilePath GetShaderDiskCacheDirectory() override;
   base::FilePath GetGrShaderDiskCacheDirectory() override;
+  base::FilePath GetNetLogDefaultDirectory() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
@@ -429,6 +426,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
+  void RegisterWebUIInterfaceBrokers(
+      content::WebUIBrowserInterfaceBrokerRegistry& registry) override;
   void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       content::MojoBinderPolicyMap& policy_map) override;
   void RegisterBrowserInterfaceBindersForServiceWorker(
@@ -519,9 +518,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const absl::optional<std::string>& user_agent,
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
           handshake_client) override;
-  void WillCreateWebTransport(content::RenderFrameHost* frame,
-                              const GURL& url,
-                              WillCreateWebTransportCallback callback) override;
+  void WillCreateWebTransport(
+      content::RenderFrameHost* frame,
+      const GURL& url,
+      mojo::PendingRemote<network::mojom::WebTransportHandshakeClient>
+          handshake_client,
+      WillCreateWebTransportCallback callback) override;
 
   bool WillCreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole role,
@@ -669,7 +671,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ArePersistentMediaDeviceIDsAllowed(
       content::BrowserContext* browser_context,
       const GURL& scope,
-      const GURL& site_for_cookies,
+      const net::SiteForCookies& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin) override;
 
 #if !defined(OS_ANDROID)
@@ -807,8 +809,18 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   void SafeBrowsingWebApiHandshakeChecked(
       std::unique_ptr<safe_browsing::WebApiHandshakeChecker> checker,
+      const content::GlobalRenderFrameHostId& frame_id,
+      const GURL& url,
+      mojo::PendingRemote<network::mojom::WebTransportHandshakeClient>
+          handshake_client,
       WillCreateWebTransportCallback callback,
       safe_browsing::WebApiHandshakeChecker::CheckResult result);
+  void MaybeInterceptWebTransport(
+      const content::GlobalRenderFrameHostId& frame_id,
+      const GURL& url,
+      mojo::PendingRemote<network::mojom::WebTransportHandshakeClient>
+          handshake_client,
+      WillCreateWebTransportCallback callback);
 
 #if !defined(OS_ANDROID)
   void OnKeepaliveTimerFired(

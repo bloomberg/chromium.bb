@@ -337,6 +337,85 @@ namespace dawn_native { namespace vulkan {
                 return VK_FORMAT_BC7_UNORM_BLOCK;
             case wgpu::TextureFormat::BC7RGBAUnormSrgb:
                 return VK_FORMAT_BC7_SRGB_BLOCK;
+
+            case wgpu::TextureFormat::ETC2RGB8Unorm:
+                return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8A1Unorm:
+                return VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGB8A1UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK;
+            case wgpu::TextureFormat::ETC2RGBA8Unorm:
+                return VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ETC2RGBA8UnormSrgb:
+                return VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
+            case wgpu::TextureFormat::EACR11Unorm:
+                return VK_FORMAT_EAC_R11_UNORM_BLOCK;
+            case wgpu::TextureFormat::EACR11Snorm:
+                return VK_FORMAT_EAC_R11_SNORM_BLOCK;
+            case wgpu::TextureFormat::EACRG11Unorm:
+                return VK_FORMAT_EAC_R11G11_UNORM_BLOCK;
+            case wgpu::TextureFormat::EACRG11Snorm:
+                return VK_FORMAT_EAC_R11G11_SNORM_BLOCK;
+
+            case wgpu::TextureFormat::ASTC4x4Unorm:
+                return VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC4x4UnormSrgb:
+                return VK_FORMAT_ASTC_4x4_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC5x4Unorm:
+                return VK_FORMAT_ASTC_5x4_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC5x4UnormSrgb:
+                return VK_FORMAT_ASTC_5x4_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC5x5Unorm:
+                return VK_FORMAT_ASTC_5x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC5x5UnormSrgb:
+                return VK_FORMAT_ASTC_5x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC6x5Unorm:
+                return VK_FORMAT_ASTC_6x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC6x5UnormSrgb:
+                return VK_FORMAT_ASTC_6x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC6x6Unorm:
+                return VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC6x6UnormSrgb:
+                return VK_FORMAT_ASTC_6x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x5Unorm:
+                return VK_FORMAT_ASTC_8x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x5UnormSrgb:
+                return VK_FORMAT_ASTC_8x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x6Unorm:
+                return VK_FORMAT_ASTC_8x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x6UnormSrgb:
+                return VK_FORMAT_ASTC_8x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC8x8Unorm:
+                return VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC8x8UnormSrgb:
+                return VK_FORMAT_ASTC_8x8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x5Unorm:
+                return VK_FORMAT_ASTC_10x5_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x5UnormSrgb:
+                return VK_FORMAT_ASTC_10x5_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x6Unorm:
+                return VK_FORMAT_ASTC_10x6_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x6UnormSrgb:
+                return VK_FORMAT_ASTC_10x6_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x8Unorm:
+                return VK_FORMAT_ASTC_10x8_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x8UnormSrgb:
+                return VK_FORMAT_ASTC_10x8_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC10x10Unorm:
+                return VK_FORMAT_ASTC_10x10_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC10x10UnormSrgb:
+                return VK_FORMAT_ASTC_10x10_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC12x10Unorm:
+                return VK_FORMAT_ASTC_12x10_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC12x10UnormSrgb:
+                return VK_FORMAT_ASTC_12x10_SRGB_BLOCK;
+            case wgpu::TextureFormat::ASTC12x12Unorm:
+                return VK_FORMAT_ASTC_12x12_UNORM_BLOCK;
+            case wgpu::TextureFormat::ASTC12x12UnormSrgb:
+                return VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
+
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
             case wgpu::TextureFormat::Stencil8:
             case wgpu::TextureFormat::Undefined:
@@ -577,6 +656,8 @@ namespace dawn_native { namespace vulkan {
                                   GetAllSubresources(), TextureBase::ClearValue::NonZero));
         }
 
+        SetLabelImpl();
+
         return {};
     }
 
@@ -611,11 +692,15 @@ namespace dawn_native { namespace vulkan {
         baseCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         DAWN_TRY_ASSIGN(mHandle, externalMemoryService->CreateImage(descriptor, baseCreateInfo));
+
+        SetLabelHelper("Dawn_ExternalTexture");
+
         return {};
     }
 
     void Texture::InitializeForSwapChain(VkImage nativeImage) {
         mHandle = nativeImage;
+        SetLabelHelper("Dawn_SwapChainTexture");
     }
 
     MaybeError Texture::BindExternalMemory(const ExternalImageDescriptorVk* descriptor,
@@ -718,6 +803,15 @@ namespace dawn_native { namespace vulkan {
 
     Texture::~Texture() {
         DestroyInternal();
+    }
+
+    void Texture::SetLabelHelper(const char* prefix) {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE,
+                     reinterpret_cast<uint64_t&>(mHandle), prefix, GetLabel());
+    }
+
+    void Texture::SetLabelImpl() {
+        SetLabelHelper("Dawn_InternalTexture");
     }
 
     void Texture::DestroyImpl() {

@@ -32,6 +32,7 @@
 #include <ostream>
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
@@ -403,7 +404,9 @@ const RoleEntry kAriaRoles[] = {
     {"spinbutton", ax::mojom::blink::Role::kSpinButton},
     {"status", ax::mojom::blink::Role::kStatus},
     {"strong", ax::mojom::blink::Role::kStrong},
+    {"subscript", ax::mojom::blink::Role::kSubscript},
     {"suggestion", ax::mojom::blink::Role::kSuggestion},
+    {"superscript", ax::mojom::blink::Role::kSuperscript},
     {"switch", ax::mojom::blink::Role::kSwitch},
     {"tab", ax::mojom::blink::Role::kTab},
     {"table", ax::mojom::blink::Role::kTable},
@@ -502,7 +505,8 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       last_modification_count_(-1),
       cached_is_ignored_(false),
       cached_is_ignored_but_included_in_tree_(false),
-      cached_is_inert_or_aria_hidden_(false),
+      cached_is_inert_(false),
+      cached_is_aria_hidden_(false),
       cached_is_descendant_of_disabled_node_(false),
       cached_live_region_root_(nullptr),
       cached_aria_column_index_(0),
@@ -1125,6 +1129,8 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     node_data->SetHasPopup(HasPopup());
   else if (RoleValue() == ax::mojom::blink::Role::kPopUpButton)
     node_data->SetHasPopup(ax::mojom::blink::HasPopup::kMenu);
+  else if (ui::IsComboBox(RoleValue()))
+    node_data->SetHasPopup(ax::mojom::blink::HasPopup::kListbox);
 
   if (IsAutofillAvailable())
     node_data->AddState(ax::mojom::blink::State::kAutofillAvailable);
@@ -1236,10 +1242,6 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     return;
   }
 
-  TruncateAndAddStringAttribute(
-      node_data, ax::mojom::blink::StringAttribute::kValue,
-      SlowGetValueForControlIncludingContentEditable().Utf8());
-
   switch (Restriction()) {
     case AXRestriction::kRestrictionReadOnly:
       node_data->SetRestriction(ax::mojom::blink::Restriction::kReadOnly);
@@ -1267,6 +1269,15 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
   SerializeSparseAttributes(node_data);
 
   if (Element* element = GetElement()) {
+    String value_text = SlowGetValueForControlIncludingContentEditable();
+    if (!value_text.IsEmpty() || !IsRangeValueSupported()) {
+      // TODO(nektar) Once contenteditable values are computed on the browser
+      // side, only expose this when value text is non-empty.
+      TruncateAndAddStringAttribute(node_data,
+                                    ax::mojom::blink::StringAttribute::kValue,
+                                    value_text.Utf8());
+    }
+
     if (IsAtomicTextField()) {
       // Selection offsets are only used for plain text controls, (input of a
       // text field type, and textarea). Rich editable areas, such as
@@ -1451,7 +1462,7 @@ void AXObject::SerializeHTMLAttributes(ui::AXNodeData* node_data) {
 
 // TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
 // and remove ifdef.
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   if (node_data->role == ax::mojom::blink::Role::kMath &&
       element->innerHTML().length()) {
     TruncateAndAddStringAttribute(node_data,
@@ -2067,11 +2078,14 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   // the entire subtree needs to recompute descendants.
   // In addition, the below computations for is_ignored_but_included_in_tree is
   // dependent on having the correct new cached value.
-  bool is_inert_or_aria_hidden = ComputeIsInertOrAriaHidden();
-  if (cached_is_inert_or_aria_hidden_ != is_inert_or_aria_hidden) {
+  bool is_inert = ComputeIsInert();
+  bool is_aria_hidden = ComputeIsAriaHidden();
+  if (cached_is_inert_ != is_inert ||
+      cached_is_aria_hidden_ != is_aria_hidden) {
     // Update children if not already dirty (e.g. during Init() time.
     SetNeedsToUpdateChildren();
-    cached_is_inert_or_aria_hidden_ = is_inert_or_aria_hidden;
+    cached_is_inert_ = is_inert;
+    cached_is_aria_hidden_ = is_aria_hidden;
   }
   cached_is_descendant_of_disabled_node_ = ComputeIsDescendantOfDisabledNode();
 
@@ -2152,30 +2166,31 @@ bool AXObject::AccessibilityIsIgnoredByDefault(
 
 AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
-  if (IsInertOrAriaHidden()) {
+  if (IsAriaHidden()) {
     // Keep focusable elements that are aria-hidden in tree, so that they can
     // still fire events such as focus and value changes.
     if (!CanSetFocusAttribute()) {
       if (ignored_reasons)
-        ComputeIsInertOrAriaHidden(ignored_reasons);
+        ComputeIsAriaHidden(ignored_reasons);
       return kIgnoreObject;
     }
+  }
+
+  if (IsInert()) {
+    if (ignored_reasons)
+      ComputeIsInert(ignored_reasons);
+    return kIgnoreObject;
   }
 
   return kDefaultBehavior;
 }
 
-bool AXObject::IsInertOrAriaHidden() const {
+bool AXObject::IsInert() const {
   UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_inert_or_aria_hidden_;
+  return cached_is_inert_;
 }
 
-bool AXObject::IsAriaHidden() const {
-  return IsInertOrAriaHidden() && AriaHiddenRoot();
-}
-
-bool AXObject::ComputeIsInertOrAriaHidden(
-    IgnoredReasons* ignored_reasons) const {
+bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
   if (GetNode()) {
     if (GetNode()->IsInert()) {
       if (ignored_reasons) {
@@ -2204,24 +2219,44 @@ bool AXObject::ComputeIsInertOrAriaHidden(
     }
   } else {
     AXObject* parent = ParentObject();
-    if (parent && parent->IsInertOrAriaHidden()) {
+    if (parent && parent->IsInert()) {
       if (ignored_reasons)
-        parent->ComputeIsInertOrAriaHidden(ignored_reasons);
+        parent->ComputeIsInert(ignored_reasons);
       return true;
     }
   }
+  return false;
+}
 
-  const AXObject* hidden_root = AriaHiddenRoot();
-  if (hidden_root) {
-    if (ignored_reasons) {
-      if (hidden_root == this) {
-        ignored_reasons->push_back(IgnoredReason(kAXAriaHiddenElement));
-      } else {
-        ignored_reasons->push_back(
-            IgnoredReason(kAXAriaHiddenSubtree, hidden_root));
-      }
-    }
+bool AXObject::IsAriaHidden() const {
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_is_aria_hidden_;
+}
+
+bool AXObject::ComputeIsAriaHidden(IgnoredReasons* ignored_reasons) const {
+  if (IsA<Document>(GetNode()))
+    return false;  // The root node cannot be aria-hidden.
+
+  // aria-hidden:true works a bit like display:none.
+  // * aria-hidden=true affects entire subtree.
+  // * aria-hidden=false cannot override aria-hidden=true on an ancestor.
+  //   It can only affect elements that are styled as hidden, and only when
+  //   there is no aria-hidden=true in the ancestor chain.
+  // Therefore aria-hidden=true must be checked on every ancestor.
+  if (AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden)) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXAriaHiddenElement));
     return true;
+  }
+
+  if (AXObject* parent = ParentObject()) {
+    if (parent->IsAriaHidden()) {
+      if (ignored_reasons) {
+        ignored_reasons->push_back(
+            IgnoredReason(kAXAriaHiddenSubtree, AriaHiddenRoot()));
+      }
+      return true;
+    }
   }
 
   return false;
@@ -2265,10 +2300,14 @@ bool AXObject::IsBlockedByAriaModalDialog(
 }
 
 bool AXObject::IsVisible() const {
-  return !IsInertOrAriaHidden() && !IsHiddenViaStyle();
+  // TODO(accessibility) Consider exposing inert objects as visible, since they
+  // are visible. It should be fine, since the objexcts are ignored.
+  return !IsAriaHidden() && !IsInert() && !IsHiddenViaStyle();
 }
 
 const AXObject* AXObject::AriaHiddenRoot() const {
+  if (!IsAriaHidden())
+    return nullptr;
   for (const AXObject* object = this; object; object = object->ParentObject()) {
     if (object->AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kHidden))
       return object;
@@ -2920,6 +2959,21 @@ bool AXObject::SupportsARIASetSizeAndPosInSet() const {
            ancestor.current_->RoleValue() == ax::mojom::blink::Role::kTreeGrid;
   }
   return ui::IsSetLike(RoleValue()) || ui::IsItemLike(RoleValue());
+}
+
+bool AXObject::IsProhibited(ax::mojom::blink::StringAttribute attribute) const {
+  // ARIA 1.2 prohibits aria-roledescription on the "generic" role.
+  if (attribute == ax::mojom::blink::StringAttribute::kRoleDescription)
+    return RoleValue() == ax::mojom::blink::Role::kGenericContainer;
+  return false;
+}
+
+bool AXObject::IsProhibited(ax::mojom::blink::IntAttribute attribute) const {
+  // ARIA 1.2 prohibits exposure of aria-errormessage when aria-invalid is
+  // false.
+  if (attribute == ax::mojom::blink::IntAttribute::kErrormessageId)
+    return GetInvalidState() == ax::mojom::blink::InvalidState::kFalse;
+  return false;
 }
 
 // Simplify whitespace, but preserve a single leading and trailing whitespace
@@ -4230,6 +4284,15 @@ AXObject* AXObject::ContainerWidget() const {
   return ancestor;
 }
 
+AXObject* AXObject::ContainerListMarkerIncludingIgnored() const {
+  AXObject* ancestor = ParentObject();
+  while (ancestor && (!ancestor->GetLayoutObject() ||
+                      !ancestor->GetLayoutObject()->IsListMarkerIncludingAll()))
+    ancestor = ancestor->ParentObject();
+
+  return ancestor;
+}
+
 // Determine which traversal approach is used to get children of an object.
 bool AXObject::ShouldUseLayoutObjectTraversalForChildren() const {
   // There are two types of traversal used to find AXObjects:
@@ -5469,6 +5532,8 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kRuby:
     case ax::mojom::blink::Role::kSection:
     case ax::mojom::blink::Role::kStrong:
+    case ax::mojom::blink::Role::kSubscript:
+    case ax::mojom::blink::Role::kSuperscript:
     case ax::mojom::blink::Role::kTime:
       if (recursive) {
         // Use contents if part of a recursive name computation.
@@ -5721,15 +5786,15 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       }
     }
     if (cached_values_only) {
-      if (cached_is_inert_or_aria_hidden_ && GetNode() && !GetNode()->IsInert())
+      if (cached_is_aria_hidden_)
         string_builder = string_builder + " ariaHidden";
-    } else {
-      if (const AXObject* aria_hidden_root = AriaHiddenRoot()) {
-        string_builder = string_builder + " ariaHiddenRoot";
-        if (aria_hidden_root != this) {
-          string_builder =
-              string_builder + GetNodeString(aria_hidden_root->GetNode());
-        }
+    } else if (IsAriaHidden()) {
+      const AXObject* aria_hidden_root = AriaHiddenRoot();
+      DCHECK(aria_hidden_root);
+      string_builder = string_builder + " ariaHiddenRoot";
+      if (aria_hidden_root != this) {
+        string_builder =
+            string_builder + GetNodeString(aria_hidden_root->GetNode());
       }
     }
     if (cached_values_only ? cached_is_hidden_via_style : IsHiddenViaStyle())

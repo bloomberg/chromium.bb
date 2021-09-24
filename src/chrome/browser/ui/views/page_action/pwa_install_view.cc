@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,9 +20,9 @@
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -35,19 +33,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace {
-
-const base::Feature kInstallIconExperiment{"InstallIconExperiment",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-enum class ExperimentIcon { kDownloadToDevice, kDownload };
-
-constexpr base::FeatureParam<ExperimentIcon>::Option kIconParamOptions[] = {
-    {ExperimentIcon::kDownloadToDevice, "downloadToDevice"},
-    {ExperimentIcon::kDownload, "download"}};
-
-constexpr base::FeatureParam<ExperimentIcon> kInstallIconParam{
-    &kInstallIconExperiment, "installIcon", ExperimentIcon::kDownloadToDevice,
-    &kIconParamOptions};
 
 // Site engagement score threshold to show In-Product Help.
 // Add x_ prefix so the IPH feature engagement tracker can ignore this.
@@ -188,21 +173,18 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
 }
 
 views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {
-  // TODO(https://907351): Implement.
+  views::BubbleDialogDelegate* bubble = PWAConfirmationBubbleView::GetBubble();
+  // Only return the active bubble if it's anchored to `this`. (This check takes
+  // the more generic approach of verifying that it's the same widget as to
+  // avoid depending too heavily on the exact details of how anchoring works.)
+  if (bubble && (bubble->GetAnchorView()->GetWidget() == GetWidget()))
+    return bubble;
+
   return nullptr;
 }
 
 const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {
-  if (base::FeatureList::IsEnabled(kInstallIconExperiment)) {
-    ExperimentIcon icon = kInstallIconParam.Get();
-    switch (icon) {
-      case ExperimentIcon::kDownloadToDevice:
-        return omnibox::kInstallDesktopIcon;
-      case ExperimentIcon::kDownload:
-        return omnibox::kInstallDownloadIcon;
-    }
-  }
-  return omnibox::kPlusIcon;
+  return omnibox::kInstallDesktopIcon;
 }
 
 std::u16string PwaInstallView::GetTextForTooltipAndAccessibleName() const {

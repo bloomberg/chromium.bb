@@ -28,7 +28,7 @@ struct SameSizeAsNGFragmentItem {
   } type_data;
   PhysicalRect rect;
   NGInkOverflow ink_overflow;
-  void* pointer;
+  UntracedMember<void*> members[1];
   wtf_size_t sizes[2];
   unsigned flags;
 };
@@ -457,8 +457,10 @@ inline const LayoutBox* NGFragmentItem::InkOverflowOwnerBox() const {
 }
 
 inline LayoutBox* NGFragmentItem::MutableInkOverflowOwnerBox() {
-  if (Type() == kBox)
-    return DynamicTo<LayoutBox>(const_cast<LayoutObject*>(layout_object_));
+  if (Type() == kBox) {
+    return DynamicTo<LayoutBox>(
+        const_cast<LayoutObject*>(layout_object_.Get()));
+  }
   return nullptr;
 }
 
@@ -699,6 +701,13 @@ float NGFragmentItem::SvgScalingFactor() const {
   return scaling_factor;
 }
 
+const Font& NGFragmentItem::ScaledFont() const {
+  if (const auto* svg_inline_text =
+          DynamicTo<LayoutSVGInlineText>(GetLayoutObject()))
+    return svg_inline_text->ScaledFont();
+  return Style().GetFont();
+}
+
 String NGFragmentItem::ToString() const {
   // TODO(yosin): Once |NGPaintFragment| is removed, we should get rid of
   // following if-statements.
@@ -809,8 +818,11 @@ void NGFragmentItem::RecalcInkOverflow(
 
     NGTextFragmentPaintInfo paint_info = TextPaintInfo(cursor.Items());
     if (paint_info.shape_result) {
+      // TODO(tkent): We should pass ScaledFont() instead of Style().GetFont().
+      // ScaledFont() breaks svg/transforms/transformed-text-fill-pattern.html,
+      // and we need more changes to fix it.
       ink_overflow_type_ = ink_overflow_.SetTextInkOverflow(
-          InkOverflowType(), paint_info, Style(), Size(),
+          InkOverflowType(), paint_info, Style(), Style().GetFont(), Size(),
           self_and_contents_rect_out);
       return;
     }

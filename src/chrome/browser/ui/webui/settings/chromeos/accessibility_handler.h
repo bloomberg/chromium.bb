@@ -49,19 +49,22 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler,
   void OpenExtensionOptionsPage(const char extension_id[]);
 
   void MaybeAddSodaInstallerObserver();
+  void OnSodaInstallSucceeded();
+  void OnSodaInstallProgress(int progress, speech::LanguageCode language_code);
+  void OnSodaInstallFailed(speech::LanguageCode language_code);
 
   // SodaInstaller::Observer:
   void OnSodaInstalled() override;
-  void OnSodaLanguagePackInstalled(
-      speech::LanguageCode language_code) override {}
-  void OnSodaProgress(int progress) override;
+  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
+  void OnSodaProgress(int progress) override {}
   void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override {
-  }
+                                  speech::LanguageCode language_code) override;
   void OnSodaError() override;
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override {}
+  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
 
   void MaybeAddDictationLocales();
+  speech::LanguageCode GetDictationLocale();
+  std::u16string GetDictationLocaleDisplayName();
 
   Profile* profile_;  // Weak pointer.
 

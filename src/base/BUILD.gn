@@ -131,6 +131,14 @@ if (is_android) {
   }
 }
 
+if (is_fuchsia) {
+  config("fuchsia_sync_lib") {
+    libs = [
+      "sync",  # Used by spinning_mutex.h.
+    ]
+  }
+}
+
 config("perfetto_config") {
   if (use_perfetto_client_library) {
     defines = [
@@ -148,11 +156,11 @@ config("perfetto_config") {
 # still leaves a lot of code behind that isn't always used. For example, this
 # saves more than 40K for a smaller target like chrome_elf.
 #
-# Use static libraries for the helper stuff as well like //base/debug since
-# those things refer back to base code, which will force base compilation units
-# to be linked in where they wouldn't have otherwise. This does not include
-# test code (test support and anything in the test directory) which should use
-# source_set as is recommended for GN targets).
+# Use static libraries for the helper stuff as well for things like
+# //base/debug since those targets refer back to base code, which will force
+# base compilation units to be linked in where they wouldn't have otherwise.
+# This does not include test code (test support and anything in the test
+# directory) which should use source_set as is recommended for GN targets).
 component("base") {
   sources = [
     "allocator/allocator_check.cc",
@@ -257,12 +265,16 @@ component("base") {
     "debug/alias.h",
     "debug/asan_invalid_access.cc",
     "debug/asan_invalid_access.h",
+    "debug/buffered_dwarf_reader.cc",
+    "debug/buffered_dwarf_reader.h",
     "debug/crash_logging.cc",
     "debug/crash_logging.h",
     "debug/debugger.cc",
     "debug/debugger.h",
     "debug/dump_without_crashing.cc",
     "debug/dump_without_crashing.h",
+    "debug/dwarf_line_no.cc",
+    "debug/dwarf_line_no.h",
     "debug/leak_annotations.h",
     "debug/profiler.cc",
     "debug/profiler.h",
@@ -1039,6 +1051,8 @@ component("base") {
       "win/map.h",
       "win/message_window.cc",
       "win/message_window.h",
+      "win/nt_status.cc",
+      "win/nt_status.h",
       "win/object_watcher.cc",
       "win/object_watcher.h",
       "win/patch_util.cc",
@@ -1589,6 +1603,8 @@ component("base") {
     }
     if (current_cpu == "arm") {
       sources += [
+        "profiler/chrome_unwind_table_android.cc",
+        "profiler/chrome_unwind_table_android.h",
         "profiler/chrome_unwinder_android.cc",
         "profiler/chrome_unwinder_android.h",
       ]
@@ -1715,6 +1731,7 @@ component("base") {
       "//third_party/fuchsia-sdk/sdk/pkg/async",
       "//third_party/fuchsia-sdk/sdk/pkg/fdio",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/sync",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/syslog",
       "//third_party/fuchsia-sdk/sdk/pkg/vfs_cpp",
@@ -1732,6 +1749,11 @@ component("base") {
       "//third_party/fuchsia-sdk/sdk/pkg/syslog",
       "//third_party/icu",
     ]
+
+    # Needed for users of spinning_mutex.h, which for performance reasons,
+    # contains inlined calls to `libsync` inside the header file.
+    # It appends an entry to the "libs" section of the dependent target.
+    public_configs = [ ":fuchsia_sync_lib" ]
   }
 
   # Use the base implementation of hash functions when building for
@@ -1884,13 +1906,13 @@ component("base") {
         "allocator/partition_allocator/partition_alloc_forward.h",
         "allocator/partition_allocator/partition_alloc_hooks.cc",
         "allocator/partition_allocator/partition_alloc_hooks.h",
+        "allocator/partition_allocator/partition_alloc_notreached.h",
         "allocator/partition_allocator/partition_bucket.cc",
         "allocator/partition_allocator/partition_bucket.h",
         "allocator/partition_allocator/partition_bucket_lookup.h",
         "allocator/partition_allocator/partition_cookie.h",
         "allocator/partition_allocator/partition_direct_map_extent.h",
         "allocator/partition_allocator/partition_freelist_entry.h",
-        "allocator/partition_allocator/partition_lock.cc",
         "allocator/partition_allocator/partition_lock.h",
         "allocator/partition_allocator/partition_oom.cc",
         "allocator/partition_allocator/partition_oom.h",
@@ -1910,7 +1932,6 @@ component("base") {
         "allocator/partition_allocator/spinning_mutex.h",
         "allocator/partition_allocator/starscan/metadata_allocator.cc",
         "allocator/partition_allocator/starscan/metadata_allocator.h",
-        "allocator/partition_allocator/starscan/object_bitmap.h",
         "allocator/partition_allocator/starscan/pcscan.cc",
         "allocator/partition_allocator/starscan/pcscan.h",
         "allocator/partition_allocator/starscan/pcscan_internal.cc",
@@ -2428,6 +2449,7 @@ buildflag_header("debugging_buildflags") {
     "ENABLE_GDBINIT_WARNING=$enable_gdbinit_warning",
     "ENABLE_LLDBINIT_WARNING=$enable_lldbinit_warning",
     "EXPENSIVE_DCHECKS_ARE_ON=$enable_expensive_dchecks",
+    "ENABLE_STACK_TRACE_LINE_NUMBERS=$enable_stack_trace_line_numbers",
   ]
 }
 
@@ -2625,9 +2647,11 @@ test("base_perftests") {
     "synchronization/waitable_event_perftest.cc",
     "threading/thread_perftest.cc",
   ]
-  if (!is_ios) {
-    # iOS doesn't use the partition allocator, therefore it can't run this test.
-    sources += [ "allocator/partition_allocator/partition_alloc_perftest.cc" ]
+  if (use_partition_alloc) {
+    sources += [
+      "allocator/partition_allocator/partition_alloc_perftest.cc",
+      "allocator/partition_allocator/partition_lock_perftest.cc",
+    ]
   }
   deps = [
     ":base",
@@ -3373,7 +3397,10 @@ test("base_unittests") {
       sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
     }
     if (current_cpu == "arm") {
-      sources += [ "profiler/chrome_unwinder_android_unittest.cc" ]
+      sources += [
+        "profiler/chrome_unwind_table_android_unittest.cc",
+        "profiler/chrome_unwinder_android_unittest.cc",
+      ]
     }
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
@@ -3484,12 +3511,12 @@ test("base_unittests") {
     sources += [
       "allocator/partition_allocator/address_pool_manager_unittest.cc",
       "allocator/partition_allocator/address_space_randomization_unittest.cc",
+      "allocator/partition_allocator/hardening_unittest.cc",
       "allocator/partition_allocator/memory_reclaimer_unittest.cc",
       "allocator/partition_allocator/page_allocator_unittest.cc",
       "allocator/partition_allocator/partition_address_space_unittest.cc",
       "allocator/partition_allocator/partition_alloc_unittest.cc",
       "allocator/partition_allocator/partition_lock_unittest.cc",
-      "allocator/partition_allocator/starscan/object_bitmap_unittest.cc",
       "allocator/partition_allocator/starscan/pcscan_scheduling_unittest.cc",
       "allocator/partition_allocator/starscan/pcscan_unittest.cc",
       "allocator/partition_allocator/starscan/scan_loop_unittest.cc",

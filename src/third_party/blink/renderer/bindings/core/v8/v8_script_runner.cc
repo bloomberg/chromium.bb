@@ -31,6 +31,7 @@
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_cache_consumer.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -119,7 +120,8 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     v8::ScriptOrigin origin,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
-    inspector_compile_script_event::V8CacheResult* cache_result) {
+    absl::optional<inspector_compile_script_event::V8ConsumeCacheResult>*
+        cache_result) {
   v8::Local<v8::String> code = V8String(isolate, source_code.Source());
 
   // TODO(kouhei): Plumb the ScriptState into this function and replace all
@@ -162,9 +164,17 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     case v8::ScriptCompiler::kConsumeCodeCache: {
       // Compile a script, and consume a V8 cache that was generated previously.
       SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
-      v8::ScriptCompiler::CachedData* cached_data =
-          V8CodeCache::CreateCachedData(cache_handler);
-      v8::ScriptCompiler::Source source(code, origin, cached_data);
+      ScriptCacheConsumer* cache_consumer = source_code.CacheConsumer();
+      scoped_refptr<CachedMetadata> cached_metadata =
+          V8CodeCache::GetCachedMetadata(cache_handler);
+      v8::ScriptCompiler::Source source(
+          code, origin,
+          V8CodeCache::CreateCachedData(cached_metadata).release(),
+          cache_consumer
+              ? cache_consumer->TakeV8ConsumeTask(cached_metadata.get())
+              : nullptr);
+      const v8::ScriptCompiler::CachedData* cached_data =
+          source.GetCachedData();
       v8::MaybeLocal<v8::Script> script =
           v8::ScriptCompiler::Compile(script_state->GetContext(), &source,
                                       v8::ScriptCompiler::kConsumeCodeCache);
@@ -190,10 +200,9 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
             CachedMetadataHandler::kDiscardLocally);
       }
       if (cache_result) {
-        cache_result->consume_result = absl::make_optional(
-            inspector_compile_script_event::V8CacheResult::ConsumeResult(
-                v8::ScriptCompiler::kConsumeCodeCache, cached_data->length,
-                cached_data->rejected));
+        *cache_result = absl::make_optional(
+            inspector_compile_script_event::V8ConsumeCacheResult(
+                cached_data->length, cached_data->rejected));
       }
       return script;
     }
@@ -256,7 +265,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
                                  compile_options, no_cache_reason, nullptr);
   }
 
-  inspector_compile_script_event::V8CacheResult cache_result;
+  absl::optional<inspector_compile_script_event::V8ConsumeCacheResult>
+      cache_result;
   v8::MaybeLocal<v8::Script> script =
       CompileScriptInternal(isolate, script_state, source, origin,
                             compile_options, no_cache_reason, &cache_result);
@@ -264,8 +274,9 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
                    [&](perfetto::TracedValue context) {
                      inspector_compile_script_event::Data(
                          std::move(context), file_name, script_start_position,
-                         cache_result, source.Streamer(),
-                         source.NotStreamingReason());
+                         cache_result,
+                         compile_options == v8::ScriptCompiler::kEagerCompile,
+                         source.Streamer(), source.NotStreamingReason());
                    });
   return script;
 }
@@ -297,7 +308,8 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       referrer_info.ToV8HostDefinedOptions(isolate, params.SourceURL()));
 
   v8::Local<v8::String> code = V8String(isolate, params.GetSourceText());
-  inspector_compile_script_event::V8CacheResult cache_result;
+  absl::optional<inspector_compile_script_event::V8ConsumeCacheResult>
+      cache_result;
   v8::MaybeLocal<v8::Module> script;
   ScriptStreamer* streamer = params.GetScriptStreamer();
   if (streamer) {
@@ -324,9 +336,12 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
         // previously.
         SingleCachedMetadataHandler* cache_handler = params.CacheHandler();
         DCHECK(cache_handler);
-        v8::ScriptCompiler::CachedData* cached_data =
-            V8CodeCache::CreateCachedData(cache_handler);
-        v8::ScriptCompiler::Source source(code, origin, cached_data);
+        // TODO(leszeks): Add support for passing in ScriptCacheConsumer.
+        v8::ScriptCompiler::Source source(
+            code, origin,
+            V8CodeCache::CreateCachedData(cache_handler).release());
+        const v8::ScriptCompiler::CachedData* cached_data =
+            source.GetCachedData();
         script = v8::ScriptCompiler::CompileModule(
             isolate, &source, compile_options, no_cache_reason);
         // The ScriptState also has an associated context. We expect the current
@@ -346,9 +361,9 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
               ExecutionContext::GetCodeCacheHostFromContext(execution_context),
               CachedMetadataHandler::kDiscardLocally);
         }
-        cache_result.consume_result = absl::make_optional(
-            inspector_compile_script_event::V8CacheResult::ConsumeResult(
-                compile_options, cached_data->length, cached_data->rejected));
+        cache_result = absl::make_optional(
+            inspector_compile_script_event::V8ConsumeCacheResult(
+                cached_data->length, cached_data->rejected));
         break;
       }
     }
@@ -358,7 +373,9 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
                    [&](perfetto::TracedValue context) {
                      inspector_compile_script_event::Data(
                          std::move(context), file_name, start_position,
-                         cache_result, streamer, params.NotStreamingReason());
+                         cache_result,
+                         compile_options == v8::ScriptCompiler::kEagerCompile,
+                         streamer, params.NotStreamingReason());
                    });
   return script;
 }

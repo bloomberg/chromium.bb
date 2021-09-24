@@ -10,7 +10,9 @@
 #include "base/feature_list.h"
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -220,79 +223,85 @@ void ProfilePickerHandler::EnableStartupMetrics() {
 }
 
 void ProfilePickerHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "mainViewInitialize",
       base::BindRepeating(&ProfilePickerHandler::HandleMainViewInitialize,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchSelectedProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
                           base::Unretained(this), /*open_settings=*/false));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "openManageProfileSettingsSubPage",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchSelectedProfile,
                           base::Unretained(this), /*open_settings=*/true));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchGuestProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleLaunchGuestProfile,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "askOnStartupChanged",
       base::BindRepeating(&ProfilePickerHandler::HandleAskOnStartupChanged,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getNewProfileSuggestedThemeInfo",
       base::BindRepeating(
           &ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getProfileThemeInfo",
       base::BindRepeating(&ProfilePickerHandler::HandleGetProfileThemeInfo,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleRemoveProfile,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getProfileStatistics",
       base::BindRepeating(&ProfilePickerHandler::HandleGetProfileStatistics,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "loadSignInProfileCreationFlow",
       base::BindRepeating(
           &ProfilePickerHandler::HandleLoadSignInProfileCreationFlow,
           base::Unretained(this)));
   // TODO(crbug.com/1115056): Consider renaming this message to
   // 'createLocalProfile' as this is only used for local profiles.
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAvailableIcons",
       base::BindRepeating(&ProfilePickerHandler::HandleGetAvailableIcons,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "createProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleCreateProfile,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSwitchProfile",
       base::BindRepeating(&ProfilePickerHandler::HandleGetSwitchProfile,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "confirmProfileSwitch",
       base::BindRepeating(&ProfilePickerHandler::HandleConfirmProfileSwitch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "cancelProfileSwitch",
       base::BindRepeating(&ProfilePickerHandler::HandleCancelProfileSwitch,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setProfileName",
       base::BindRepeating(&ProfilePickerHandler::HandleSetProfileName,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "recordSignInPromoImpression",
       base::BindRepeating(
           &ProfilePickerHandler::HandleRecordSignInPromoImpression,
           base::Unretained(this)));
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  web_ui()->RegisterDeprecatedMessageCallback(
+      "getUnassignedAccounts",
+      base::BindRepeating(&ProfilePickerHandler::HandleGetUnassignedAccounts,
+                          base::Unretained(this)));
+#endif
   Profile* profile = Profile::FromWebUI(web_ui());
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 }
@@ -373,7 +382,7 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   if (!profiles::AreSecondaryProfilesAllowed()) {
-    if (Profile::IsMainProfilePath(*profile_path)) {
+    if (!Profile::IsMainProfilePath(*profile_path)) {
       LoginUIServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui())->GetOriginalProfile())
           ->SetProfileBlockingErrorMessage();
@@ -413,7 +422,7 @@ void ProfilePickerHandler::HandleAskOnStartupChanged(
 void ProfilePickerHandler::HandleGetNewProfileSuggestedThemeInfo(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value& callback_id = args->GetList()[0];
   chrome_colors::ColorInfo color_info = GenerateNewProfileColor();
   int avatar_icon_size =
@@ -455,7 +464,7 @@ void ProfilePickerHandler::HandleGetProfileThemeInfo(
 void ProfilePickerHandler::HandleGetAvailableIcons(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value& callback_id = args->GetList()[0];
   ResolveJavascriptCallback(
       callback_id,
@@ -490,7 +499,7 @@ void ProfilePickerHandler::HandleCreateProfile(const base::ListValue* args) {
 
 void ProfilePickerHandler::HandleGetSwitchProfile(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value& callback_id = args->GetList()[0];
   int avatar_icon_size =
       kProfileCardAvatarSize * web_ui()->GetDeviceScaleFactor();
@@ -525,7 +534,7 @@ void ProfilePickerHandler::HandleConfirmProfileSwitch(
 
 void ProfilePickerHandler::HandleCancelProfileSwitch(
     const base::ListValue* args) {
-  ProfilePicker::CancelSignIn();
+  ProfilePicker::CancelSignedInFlow();
 }
 
 void ProfilePickerHandler::OnProfileCreated(
@@ -599,7 +608,7 @@ void ProfilePickerHandler::HandleRecordSignInPromoImpression(
 }
 
 void ProfilePickerHandler::HandleSetProfileName(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   const base::Value& profile_path_value = args->GetList()[0];
   absl::optional<base::FilePath> profile_path =
       base::ValueToFilePath(profile_path_value);
@@ -621,7 +630,7 @@ void ProfilePickerHandler::HandleSetProfileName(const base::ListValue* args) {
 }
 
 void ProfilePickerHandler::HandleRemoveProfile(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value& profile_path_value = args->GetList()[0];
   absl::optional<base::FilePath> profile_path =
       base::ValueToFilePath(profile_path_value);
@@ -644,7 +653,7 @@ void ProfilePickerHandler::HandleRemoveProfile(const base::ListValue* args) {
 void ProfilePickerHandler::HandleGetProfileStatistics(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value& profile_path_value = args->GetList()[0];
   absl::optional<base::FilePath> profile_path =
       base::ValueToFilePath(profile_path_value);
@@ -691,16 +700,36 @@ void ProfilePickerHandler::OnProfileStatisticsReceived(
 
 void ProfilePickerHandler::HandleLoadSignInProfileCreationFlow(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::FeatureList::IsEnabled(kMultiProfileAccountConsistency)) {
+    // TODO(https://crbug.com/1226054): Implement the signin flow on Lacros: if
+    // the `gaiaId` parameter is non-empty, this the a unassigned account that
+    // should be used. If `gaiaId` is empty, an account should be added to the
+    // system and then used for the new profile.
+    NOTIMPLEMENTED();
+    FireWebUIListener("load-signin-finished", base::Value(/*success=*/false));
+    return;
+  }
+#endif
+
+  DCHECK(args->GetList()[1].GetString().empty())
+      << "gaiaId is only supported on Lacros with account consistency";
   absl::optional<SkColor> profile_color = args->GetList()[0].GetIfInt();
   if (signin_util::IsForceSigninEnabled()) {
     // Force sign-in policy uses a separate flow that doesn't initialize the
     // profile color. Generate a new profile color here.
     profile_color = GenerateNewProfileColor().color;
   }
-  ProfilePicker::SwitchToSignIn(
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  ProfilePicker::SwitchToDiceSignIn(
       profile_color, base::BindOnce(&ProfilePickerHandler::OnLoadSigninFinished,
                                     weak_factory_.GetWeakPtr()));
+#else
+  NOTIMPLEMENTED() << "Lacros/mirror flow is not implemented yet";
+#endif
 }
 
 void ProfilePickerHandler::OnLoadSigninFinished(bool success) {
@@ -921,3 +950,16 @@ void ProfilePickerHandler::OnVisibilityChanged(content::Visibility visibility) {
   if (visibility != content::Visibility::VISIBLE)
     Observe(nullptr);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+
+void ProfilePickerHandler::HandleGetUnassignedAccounts(
+    const base::ListValue* args) {
+  AllowJavascript();
+  base::Value accounts_list(base::Value::Type::LIST);
+  // TODO(https://crbug/1226050): Add actual account info to the list, and
+  // listen for account changes.
+  FireWebUIListener("unassigned-accounts-changed", std::move(accounts_list));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

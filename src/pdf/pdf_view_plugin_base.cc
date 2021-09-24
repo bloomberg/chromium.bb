@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -77,6 +78,9 @@ constexpr double kMinZoom = 0.01;
 // A delay to wait between each accessibility page to keep the system
 // responsive.
 constexpr base::TimeDelta kAccessibilityPageDelay =
+    base::TimeDelta::FromMilliseconds(100);
+
+constexpr base::TimeDelta kFindResultCooldown =
     base::TimeDelta::FromMilliseconds(100);
 
 constexpr char kChromePrintHost[] = "chrome://print/";
@@ -244,6 +248,40 @@ void PdfViewPluginBase::NavigateToDestination(int page,
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::UpdateTickMarks(
+    const std::vector<gfx::Rect>& tickmarks) {
+  float inverse_scale = 1.0f / device_scale_;
+  tickmarks_.clear();
+  tickmarks_.reserve(tickmarks.size());
+  std::transform(tickmarks.begin(), tickmarks.end(),
+                 std::back_inserter(tickmarks_),
+                 [inverse_scale](const gfx::Rect& t) -> gfx::Rect {
+                   return gfx::ScaleToEnclosingRect(t, inverse_scale);
+                 });
+}
+
+void PdfViewPluginBase::NotifyNumberOfFindResultsChanged(int total,
+                                                         bool final_result) {
+  // We don't want to spam the renderer with too many updates to the number of
+  // find results. Don't send an update if we sent one too recently. If it's the
+  // final update, we always send it though.
+  if (recently_sent_find_update_ && !final_result)
+    return;
+
+  NotifyFindResultsChanged(total, final_result);
+  NotifyFindTickmarks(tickmarks_);
+
+  if (final_result)
+    return;
+
+  recently_sent_find_update_ = true;
+  ScheduleTaskOnMainThread(
+      FROM_HERE,
+      base::BindOnce(&PdfViewPluginBase::ResetRecentlySentFindUpdate,
+                     GetWeakPtr()),
+      /*result=*/0, kFindResultCooldown);
+}
+
 void PdfViewPluginBase::NotifyTouchSelectionOccurred() {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "touchSelectionOccurred");
@@ -327,7 +365,6 @@ void PdfViewPluginBase::DocumentLoadComplete() {
   SendAttachments();
   SendBookmarks();
   SendMetadata();
-  SendLoadingProgress(/*percentage=*/100);
 
   if (accessibility_state_ == AccessibilityState::kPending)
     LoadAccessibility();
@@ -390,7 +427,6 @@ void PdfViewPluginBase::DocumentLoadProgress(uint32_t available,
   if (progress <= last_progress_sent_ + 1)
     return;
 
-  last_progress_sent_ = progress;
   SendLoadingProgress(progress);
 }
 
@@ -568,6 +604,7 @@ void PdfViewPluginBase::ConsumeSaveToken(const std::string& token) {
 
 void PdfViewPluginBase::SendLoadingProgress(double percentage) {
   DCHECK(percentage == -1 || (percentage >= 0 && percentage <= 100));
+  last_progress_sent_ = percentage;
 
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "loadProgress");
@@ -682,6 +719,8 @@ void PdfViewPluginBase::ValidateDocumentUrl(base::StringPiece document_url) {
 }
 
 void PdfViewPluginBase::LoadUrl(const std::string& url, bool is_print_preview) {
+  last_progress_sent_ = 0;
+
   UrlRequest request;
   request.url = url;
   request.method = "GET";
@@ -926,6 +965,22 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
   SetAccessibilityViewportInfo(viewport_info);
 }
 
+bool PdfViewPluginBase::StartFind(const std::string& text,
+                                  bool case_sensitive) {
+  engine_->StartFind(text, case_sensitive);
+  return true;
+}
+
+void PdfViewPluginBase::SelectFindResult(bool forward) {
+  engine_->SelectFindResult(forward);
+}
+
+void PdfViewPluginBase::StopFind() {
+  engine_->StopFind();
+  tickmarks_.clear();
+  NotifyFindTickmarks(tickmarks_);
+}
+
 void PdfViewPluginBase::SetZoom(double scale) {
   double old_zoom = zoom_;
   zoom_ = scale;
@@ -1149,6 +1204,10 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
     // TODO(crbug.com/1013800): Eliminate need to get document size from here.
     document_size_ = engine()->ApplyDocumentLayout(layout_options);
     OnGeometryChanged(zoom_, device_scale_);
+
+    // Send 100% loading progress only after initial layout negotiated.
+    if (last_progress_sent_ < 100)
+      SendLoadingProgress(/*percentage=*/100);
   }
 
   gfx::PointF scroll_position(message.FindDoubleKey("xOffset").value(),
@@ -1494,6 +1553,11 @@ void PdfViewPluginBase::LoadAccessibility() {
       base::BindOnce(&PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo,
                      GetWeakPtr()),
       /*result=*/0, kAccessibilityPageDelay);
+}
+
+void PdfViewPluginBase::ResetRecentlySentFindUpdate(
+    int32_t /*unused_but_required*/) {
+  recently_sent_find_update_ = false;
 }
 
 namespace {

@@ -190,7 +190,7 @@ build:ppc64le:linux:gcc-10:cxx11-on:
     - linux
     - ppc64le
 
-# Clang-10
+# # Clang-10
 build:ppc64le:linux:clang-10:cxx11-off:
   allow_failure: true
   extends: .build:linux:base

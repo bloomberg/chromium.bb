@@ -233,6 +233,14 @@ class FakeFastInitiationScannerFactory : public FastInitiationScanner::Factory {
     return std::move(scanner);
   }
 
+  bool IsHardwareSupportAvailable() override {
+    return is_hardware_support_available_;
+  }
+
+  void SetHardwareSupportAvailable(bool is_hardware_support_available) {
+    is_hardware_support_available_ = is_hardware_support_available;
+  }
+
   FakeFastInitiationScanner* last_fake_fast_initiation_scanner() {
     return last_fake_fast_initiation_scanner_;
   }
@@ -245,6 +253,7 @@ class FakeFastInitiationScannerFactory : public FastInitiationScanner::Factory {
   FakeFastInitiationScanner* last_fake_fast_initiation_scanner_ = nullptr;
   size_t scanner_created_count_ = 0u;
   size_t scanner_destroyed_count_ = 0u;
+  bool is_hardware_support_available_ = true;
 
   base::WeakPtrFactory<FakeFastInitiationScannerFactory> weak_ptr_factory_{
       this};
@@ -596,6 +605,15 @@ class NearbySharingServiceImplTest : public testing::Test {
   void SetIsEnabled(bool is_enabled) {
     NearbyShareSettings settings(&prefs_, local_device_data_manager());
     settings.SetEnabled(is_enabled);
+
+    // This ensures that the change propagates through mojo and the observers
+    // are called.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetIsFastInitiationNotificationEnabled(bool is_enabled) {
+    NearbyShareSettings settings(&prefs_, local_device_data_manager());
+    settings.SetFastInitiationNotificationEnabled(is_enabled);
 
     // This ensures that the change propagates through mojo and the observers
     // are called.
@@ -4636,6 +4654,24 @@ TEST_F(NearbySharingServiceImplTest, FastInitiationScanning_StartAndStop) {
 }
 
 TEST_F(NearbySharingServiceImplTest,
+       FastInitiationScanning_OnFastInitiationNotificationEnabledChanged) {
+  // Fast init notifications are enabled by default so a scanner is created on
+  // initialization of the service.
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_created_count());
+  EXPECT_EQ(0u, fast_initiation_scanner_factory_->scanner_destroyed_count());
+
+  // The existing scanner is destroyed when fast init notifications are turned
+  // off.
+  SetIsFastInitiationNotificationEnabled(false);
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_created_count());
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_destroyed_count());
+
+  SetIsFastInitiationNotificationEnabled(true);
+  EXPECT_EQ(2u, fast_initiation_scanner_factory_->scanner_created_count());
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_destroyed_count());
+}
+
+TEST_F(NearbySharingServiceImplTest,
        FastInitiationScanning_MultipleReceiveSurfaces) {
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_BLUETOOTH);
   EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_created_count());
@@ -4681,6 +4717,25 @@ TEST_F(NearbySharingServiceImplTest,
   scanner->SetAreFastInitiationDevicesDetected(false);
   EXPECT_EQ(scanner->AreFastInitiationDevicesDetected(),
             service_->AreFastInitiationDevicesDetected());
+}
+
+TEST_F(NearbySharingServiceImplTest, FastInitiationScanning_NoHardwareSupport) {
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_BLUETOOTH);
+
+  // Hardware support is enabled by default in these tests, so we expect that a
+  // scanner has been created.
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_created_count());
+  EXPECT_EQ(0u, fast_initiation_scanner_factory_->scanner_destroyed_count());
+
+  fast_initiation_scanner_factory_->SetHardwareSupportAvailable(false);
+
+  // Toggle Bluetooth to trigger InvalidateFastInitiationScanning().
+  SetBluetoothIsPowered(false);
+  SetBluetoothIsPowered(true);
+
+  // Make sure we stopped scanning and didn't restart.
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_created_count());
+  EXPECT_EQ(1u, fast_initiation_scanner_factory_->scanner_destroyed_count());
 }
 
 }  // namespace NearbySharingServiceUnitTests

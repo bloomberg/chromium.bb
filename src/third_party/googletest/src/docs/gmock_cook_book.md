@@ -1754,7 +1754,7 @@ specifies the following DAG (where `s1` is `A -> B`, and `s2` is `A -> C -> D`):
        |
   A ---|
        |
-        +---> C ---> D
+       +---> C ---> D
 ```
 
 This means that A must occur before B and C, and C must occur before D. There's
@@ -2033,10 +2033,7 @@ class MockRolodex : public Rolodex {
 }
 ...
   MockRolodex rolodex;
-  vector<string> names;
-  names.push_back("George");
-  names.push_back("John");
-  names.push_back("Thomas");
+  vector<string> names = {"George", "John", "Thomas"};
   EXPECT_CALL(rolodex, GetNames(_))
       .WillOnce(SetArrayArgument<0>(names.begin(), names.end()));
 ```

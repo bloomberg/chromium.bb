@@ -85,6 +85,7 @@ struct DispatchVuidsCmdDraw : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDraw-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDraw-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDraw_VertexInput;
+        blend_enable                       = "VUID-vkCmdDraw-blendEnable-04727";
     }
 };
 
@@ -130,6 +131,7 @@ struct DispatchVuidsCmdDrawMultiEXT : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawMultiEXT-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawMultiEXT-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMultiEXT_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawMultiEXT-blendEnable-04727";
     }
 };
 
@@ -175,6 +177,7 @@ struct DispatchVuidsCmdDrawIndexed : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndexed-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndexed-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndexed_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndexed-blendEnable-04727";
     }
 };
 
@@ -220,6 +223,7 @@ struct DispatchVuidsCmdDrawMultiIndexedEXT : DrawDispatchVuid {
         primitive_restart_enable = "VUID-vkCmdDrawMultiIndexedEXT-None-04879";
         vertex_input_binding_stride = "VUID-vkCmdDrawMultiIndexedEXT-pStrides-04884";
         vertex_input = kVUID_Core_CmdDrawMultiIndexedEXT_VertexInput;
+        blend_enable = "VUID-vkCmdDrawMultiIndexedEXT-blendEnable-04727";
     }
 };
 
@@ -267,6 +271,7 @@ struct DispatchVuidsCmdDrawIndirect : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndirect-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndirect-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndirect_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndirect-blendEnable-04727";
     }
 };
 
@@ -314,6 +319,7 @@ struct DispatchVuidsCmdDrawIndexedIndirect : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndexedIndirect-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndexedIndirect-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndexedIndirect_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndexedIndirect-blendEnable-04727";
     }
 };
 
@@ -409,6 +415,7 @@ struct DispatchVuidsCmdDrawIndirectCount : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndirectCount-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndirectCount-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndirectCount_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndirectCount-blendEnable-04727";
     }
 };
 
@@ -456,6 +463,7 @@ struct DispatchVuidsCmdDrawIndexedIndirectCount : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndexedIndirectCount-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndexedIndirectCount-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndexedIndirectCount_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndexedIndirectCount-blendEnable-04727";
     }
 };
 
@@ -568,6 +576,7 @@ struct DispatchVuidsCmdDrawMeshTasksNV: DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksNV-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksNV_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawMeshTasksNV-blendEnable-04727";
     }
 };
 
@@ -612,6 +621,7 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectNV: DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksIndirectNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksIndirectNV_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawMeshTasksIndirectNV-blendEnable-04727";
     }
 };
 
@@ -656,6 +666,7 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectCountNV : DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksIndirectCountNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksIndirectCountNV_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawMeshTasksIndirectCountNV-blendEnable-04727";
     }
 };
 
@@ -703,6 +714,7 @@ struct DispatchVuidsCmdDrawIndirectByteCountEXT: DrawDispatchVuid {
         primitive_restart_enable           = "VUID-vkCmdDrawIndirectByteCountEXT-None-04879";
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndirectByteCountEXT-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndirectByteCountEXT_VertexInput;
+        blend_enable                       = "VUID-vkCmdDrawIndirectByteCountEXT-blendEnable-04727";
     }
 };
 
@@ -953,7 +965,7 @@ bool CoreChecks::ValidateBaseGroups(VkCommandBuffer commandBuffer, uint32_t base
         const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
         const auto lv_bind_point = ConvertToLvlBindPoint(VK_PIPELINE_BIND_POINT_COMPUTE);
         const PIPELINE_STATE *pipeline_state = cb_state->lastBound[lv_bind_point].pipeline_state;
-        if (pipeline_state && !(pipeline_state->computePipelineCI.flags & VK_PIPELINE_CREATE_DISPATCH_BASE)) {
+        if (pipeline_state && !(pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_DISPATCH_BASE)) {
             skip |= LogError(commandBuffer, "VUID-vkCmdDispatchBase-baseGroupX-00427",
                              "%s(): If any of baseGroupX, baseGroupY, or baseGroupZ are not zero, then the bound compute pipeline "
                              "must have been created with the VK_PIPELINE_CREATE_DISPATCH_BASE flag",
@@ -1166,7 +1178,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
         skip |= LogError(device, "VUID-vkCmdTraceRaysKHR-None-02700",
                          "vkCmdTraceRaysKHR: A valid pipeline must be bound to the pipeline bind point used by this command.");
     } else {  // bound to valid RT pipeline
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable->deviceAddress) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysKHR-flags-03697",
                                  "vkCmdTraceRaysKHR: If the currently bound ray tracing pipeline was created with flags "
@@ -1181,7 +1193,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
                                  "execute an intersection shader must not be set to zero.");
             }
         }
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable->deviceAddress) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysKHR-flags-03696",
                                  "vkCmdTraceRaysKHR: If the currently bound ray tracing pipeline was created with flags "
@@ -1196,7 +1208,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
                                  "execute a closest hit shader must not be set to zero.");
             }
         }
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable || pHitShaderBindingTable->size == 0 || pHitShaderBindingTable->stride == 0) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysKHR-flags-03512",
                                  "vkCmdTraceRaysKHR: If the currently bound ray tracing pipeline was created with "
@@ -1225,7 +1237,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
             LogError(device, "VUID-vkCmdTraceRaysIndirectKHR-None-02700",
                      "vkCmdTraceRaysIndirectKHR: A valid pipeline must be bound to the pipeline bind point used by this command.");
     } else {  // valid bind point
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable || pHitShaderBindingTable->deviceAddress == 0) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysIndirectKHR-flags-03697",
                                  "vkCmdTraceRaysIndirectKHR: If the currently bound ray tracing pipeline was created with "
@@ -1240,7 +1252,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
                                  "execute an intersection shader must not be set to zero.");
             }
         }
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable || pHitShaderBindingTable->deviceAddress == 0) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysIndirectKHR-flags-03696",
                                  "vkCmdTraceRaysIndirectKHR:If the currently bound ray tracing pipeline was created with "
@@ -1255,7 +1267,7 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
                                  "execute a closest hit shader must not be set to zero.");
             }
         }
-        if (pipeline_state->raytracingPipelineCI.flags & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR) {
+        if (pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR) {
             if (!pHitShaderBindingTable || pHitShaderBindingTable->size == 0 || pHitShaderBindingTable->stride == 0) {
                 skip |= LogError(device, "VUID-vkCmdTraceRaysIndirectKHR-flags-03512",
                                  "vkCmdTraceRaysIndirectKHR: If the currently bound ray tracing pipeline was created with "

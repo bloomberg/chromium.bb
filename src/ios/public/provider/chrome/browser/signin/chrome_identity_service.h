@@ -43,9 +43,6 @@ typedef void (^AccessTokenCallback)(NSString* token,
 // completed with success.
 typedef void (^ForgetIdentityCallback)(NSError* error);
 
-// Callback passed to method |GetAvatarForIdentity()|.
-typedef void (^GetAvatarCallback)(UIImage* avatar);
-
 // Callback passed to method |GetHostedDomainForIdentity()|.
 // |hosted_domain|:
 //   + nil, if error.
@@ -138,13 +135,6 @@ class ChromeIdentityService {
 
   // Handles open URL authentication callback. Returns whether the URL was
   // actually handled. This should be called within
-  // -[<UIApplicationDelegate> application:openURL:options:].
-  virtual bool HandleApplicationOpenURL(UIApplication* application,
-                                        NSURL* url,
-                                        NSDictionary* options);
-
-  // Handles open URL authentication callback. Returns whether the URL was
-  // actually handled. This should be called within
   // -[<UISceneDelegate> application:openURLContexts:].
   virtual bool HandleSessionOpenURLContexts(UIScene* scene, NSSet* url_contexts)
       API_AVAILABLE(ios(13.0));
@@ -211,9 +201,9 @@ class ChromeIdentityService {
 
   // Fetches the profile avatar, from the cache or the network.
   // For high resolution iPads, returns large images (200 x 200) to avoid
-  // pixelization. Calls back on the main thread. |callback| may be nil.
-  virtual void GetAvatarForIdentity(ChromeIdentity* identity,
-                                    GetAvatarCallback callback);
+  // pixelization.
+  // Observer::OnProfileUpdate() will be called when the avatar is available.
+  virtual void GetAvatarForIdentity(ChromeIdentity* identity);
 
   // Synchronously returns any cached avatar, or nil.
   // GetAvatarForIdentity() should be generally used instead of this method.
@@ -239,6 +229,9 @@ class ChromeIdentityService {
   // will evaluate to false.
   void CanOfferExtendedSyncPromos(ChromeIdentity* identity,
                                   CapabilitiesCallback callback);
+
+  // Returns true if the service can be used, and supports ChromeIdentity list.
+  virtual bool IsServiceSupported();
 
   // Returns the MDM device status associated with |user_info|.
   virtual MDMDeviceStatus GetMDMDeviceStatus(NSDictionary* user_info);

@@ -1,37 +1,55 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/lens/region_search/lens_region_search_controller.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/image_editor/screenshot_flow.h"
 #include "chrome/browser/lens/metrics/lens_metrics.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "components/lens/lens_entrypoints.h"
 #include "components/lens/lens_features.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_util.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace lens {
 
 LensRegionSearchController::LensRegionSearchController(
-    content::WebContents* web_contents)
-    : source_web_contents_(web_contents) {
+    content::WebContents* web_contents,
+    Browser* browser)
+    : content::WebContentsObserver(web_contents), browser_(browser) {
   screenshot_flow_ =
       std::make_unique<image_editor::ScreenshotFlow>(web_contents);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-LensRegionSearchController::~LensRegionSearchController() = default;
+LensRegionSearchController::~LensRegionSearchController() {
+  CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+}
 
 void LensRegionSearchController::Start() {
-  if (!source_web_contents_)
+  if (!web_contents() || !browser_)
     return;
 
   if (!screenshot_flow_)
     screenshot_flow_ =
-        std::make_unique<image_editor::ScreenshotFlow>(source_web_contents_);
+        std::make_unique<image_editor::ScreenshotFlow>(web_contents());
+
+  // Create user education bubble anchored to the toolbar container.
+  bubble_widget_ = lens::OpenLensRegionSearchInstructions(
+      browser_, base::BindRepeating(&LensRegionSearchController::Close,
+                                    base::Unretained(this)));
+  bubble_widget_->Show();
 
   base::OnceCallback<void(const image_editor::ScreenshotCaptureResult&)>
       callback = base::BindOnce(&LensRegionSearchController::OnCaptureCompleted,
@@ -126,6 +144,9 @@ void LensRegionSearchController::RecordRegionSizeRelatedMetrics(
 
 void LensRegionSearchController::OnCaptureCompleted(
     const image_editor::ScreenshotCaptureResult& result) {
+  // Close all open UI overlays and bubbles.
+  CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+
   const gfx::Image& captured_image = result.image;
   // If image is empty, then record UMA and close.
   if (captured_image.IsEmpty()) {
@@ -139,7 +160,7 @@ void LensRegionSearchController::OnCaptureCompleted(
 
   const gfx::Image& image = ResizeImageIfNecessary(captured_image);
   CoreTabHelper* core_tab_helper =
-      CoreTabHelper::FromWebContents(source_web_contents_);
+      CoreTabHelper::FromWebContents(web_contents());
   if (!core_tab_helper) {
     RecordCaptureResult(
         lens::LensRegionSearchCaptureResult::FAILED_TO_OPEN_TAB);
@@ -147,8 +168,32 @@ void LensRegionSearchController::OnCaptureCompleted(
   }
   core_tab_helper->SearchWithLensInNewTab(
       image, captured_image.Size(),
-      lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM);
+      lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM,
+      lens::features::kEnableSidePanelForLensRegionSearch.Get());
   RecordCaptureResult(lens::LensRegionSearchCaptureResult::SUCCESS);
+}
+
+void LensRegionSearchController::WebContentsDestroyed() {
+  CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+}
+
+void LensRegionSearchController::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN)
+    CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+}
+
+void LensRegionSearchController::Close() {
+  CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+}
+
+void LensRegionSearchController::CloseWithReason(
+    views::Widget::ClosedReason reason) {
+  if (bubble_widget_) {
+    std::exchange(bubble_widget_, nullptr)->CloseWithReason(reason);
+  }
+  if (screenshot_flow_)
+    screenshot_flow_->CancelCapture();
 }
 
 }  // namespace lens

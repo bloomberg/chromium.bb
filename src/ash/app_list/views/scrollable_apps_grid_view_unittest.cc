@@ -7,7 +7,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -21,9 +20,12 @@
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/guid.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -38,19 +40,26 @@ void AddAppListItem(const std::string& id) {
       std::make_unique<AppListItem>(id));
 }
 
-void AddPageBreakItem() {
-  auto page_break_item = std::make_unique<AppListItem>(base::GenerateGUID());
-  page_break_item->set_is_page_break(true);
-  Shell::Get()->app_list_controller()->GetModel()->AddItem(
-      std::move(page_break_item));
-}
-
 void PopulateApps(int n) {
   AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
   for (int i = 0; i < n; ++i) {
     model->AddItem(std::make_unique<AppListItem>(base::NumberToString(i)));
   }
 }
+
+class ShelfItemFactoryFake : public ShelfModel::ShelfItemFactory {
+ public:
+  virtual ~ShelfItemFactoryFake() = default;
+  bool CreateShelfItemForAppId(
+      const std::string& app_id,
+      ShelfItem* item,
+      std::unique_ptr<ShelfItemDelegate>* delegate) override {
+    *item = ShelfItem();
+    item->id = ShelfID(app_id);
+    *delegate = std::make_unique<TestShelfItemDelegate>(item->id);
+    return true;
+  }
+};
 
 }  // namespace
 
@@ -65,6 +74,13 @@ class ScrollableAppsGridViewTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     Shell::Get()->app_list_controller()->SetClient(&app_list_client_);
+    shelf_item_factory_ = std::make_unique<ShelfItemFactoryFake>();
+    ShelfModel::Get()->SetShelfItemFactory(shelf_item_factory_.get());
+  }
+
+  void TearDown() override {
+    ShelfModel::Get()->SetShelfItemFactory(nullptr);
+    AshTestBase::TearDown();
   }
 
   // TODO(crbug.com/1222777): Convert the methods below to use
@@ -103,7 +119,10 @@ class ScrollableAppsGridViewTest : public AshTestBase {
     return GetAppListTestHelper()->GetScrollableAppsGridView();
   }
 
+  void AddPageBreakItem() { GetAppListTestHelper()->AddPageBreakItem(); }
+
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<ShelfItemFactoryFake> shelf_item_factory_;
   TestAppListClient app_list_client_;
 
   // Cache some view pointers to make the tests more concise.
@@ -199,9 +218,15 @@ TEST_F(ScrollableAppsGridViewTest, ItemIndicesForMove) {
   PagedViewStructure* structure =
       test::AppsGridViewTestApi(view).GetPagedViewStructure();
 
-  // The last visual index is 0,2.
+  // The last visual index to add an item is 0,3.
+  EXPECT_EQ(GridIndex(0, 3), structure->GetLastTargetIndex());
+  EXPECT_EQ(GridIndex(0, 3), structure->GetLastTargetIndexOfPage(0));
+
+  // During a drag, the last visual index to add an item is 0,2.
+  StartDragOnItemViewAt(0);
   EXPECT_EQ(GridIndex(0, 2), structure->GetLastTargetIndex());
   EXPECT_EQ(GridIndex(0, 2), structure->GetLastTargetIndexOfPage(0));
+  GetEventGenerator()->ReleaseLeftButton();
 
   // Visual index directly maps to target index in "view model".
   EXPECT_EQ(0, structure->GetTargetModelIndexForMove(nullptr, GridIndex(0, 0)));

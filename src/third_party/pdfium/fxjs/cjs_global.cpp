@@ -14,7 +14,6 @@
 #include "fxjs/cfx_globaldata.h"
 #include "fxjs/cfx_keyvalue.h"
 #include "fxjs/cjs_event_context.h"
-#include "fxjs/cjs_eventrecorder.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/js_define.h"
@@ -175,8 +174,6 @@ void CJS_Global::DefineJSObjects(CFXJS_Engine* pEngine) {
 
 CJS_Global::CJS_Global(v8::Local<v8::Object> pObject, CJS_Runtime* pRuntime)
     : CJS_Object(pObject, pRuntime) {
-  CPDFSDK_FormFillEnvironment* pFormFillEnv = GetRuntime()->GetFormFillEnv();
-  m_pFormFillEnv.Reset(pFormFillEnv);
   m_pGlobalData = CFX_GlobalData::GetRetainedInstance(nullptr);
   UpdateGlobalPersistentVariables();
 }

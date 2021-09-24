@@ -47,6 +47,9 @@ class SimpleBigQueryQuerier(queries_module.BigQueryQuerier):
       return SimpleFixedQueryGenerator(builder_type, 'AND True')
     return SimpleSplitQueryGenerator(builder_type, ['test_id'], 200)
 
+  def _GetRelevantExpectationFilesForQueryResult(self, _):
+    return None
+
   def _StripPrefixFromTestId(self, test_id):
     return test_id.split('.')[-1]
 
@@ -151,7 +154,7 @@ def RegisterGenericBuildersImplementation():
 
 
 class GenericExpectations(expectations.Expectations):
-  def _GetExpectationFilepaths(self):
+  def GetExpectationFilepaths(self):
     return []
 
   def _GetExpectationFileTagHeader(self):

@@ -55,7 +55,6 @@ constexpr int kShelfBlurRadius = 30;
 // The maximum size of the opaque layer during an "overshoot" (drag away from
 // the screen edge).
 constexpr int kShelfMaxOvershootHeight = 40;
-constexpr float kShelfBlurQuality = 0.33f;
 constexpr int kDragHandleCornerRadius = 2;
 
 // Return the first or last focusable child of |root|.
@@ -301,7 +300,8 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
 
   opaque_background()->SetBackgroundBlur(
       should_blur_background ? kShelfBlurRadius : 0);
-  opaque_background()->SetBackdropFilterQuality(kShelfBlurQuality);
+  opaque_background()->SetBackdropFilterQuality(
+      ColorProvider::kBackgroundBlurQuality);
 
   background_is_currently_blurred_ = should_blur_background;
 }
@@ -795,20 +795,26 @@ void ShelfWidget::CalculateTargetBounds() {
 void ShelfWidget::UpdateLayout(bool animate) {
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
   hide_animation_observer_.reset();
+  gfx::Rect current_shelf_bounds = GetWindowBoundsInScreen();
+
   const float target_opacity = layout_manager->GetOpacity();
   if (GetLayer()->opacity() != target_opacity) {
-    if (target_opacity == 0 && animate) {
-      // On hide, set the opacity after the animation completes.
-      hide_animation_observer_ =
-          std::make_unique<HideAnimationObserver>(GetLayer());
+    if (target_opacity == 0) {
+      if (animate) {
+        // On hide, set the opacity after the animation completes if |animate|
+        // is true.
+        hide_animation_observer_ =
+            std::make_unique<HideAnimationObserver>(GetLayer());
+      } else {
+        // Otherwise, directly set the opacity to 0.
+        GetLayer()->SetOpacity(0.0f);
+      }
     } else {
       // On show, set the opacity before the animation begins to ensure the blur
       // is shown while the shelf moves.
       GetLayer()->SetOpacity(1.0f);
     }
   }
-
-  gfx::Rect current_shelf_bounds = GetWindowBoundsInScreen();
 
   if (GetNativeView()->layer()->GetAnimator()->is_animating()) {
     // When the |shelf_widget_| needs to reverse the direction of the current

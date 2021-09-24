@@ -99,7 +99,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
       has_elements_associated_by_form_attribute_(false),
       did_finish_parsing_children_(false),
       is_in_reset_function_(false) {
-  static unsigned next_unique_renderer_form_id = 1;
+  static uint64_t next_unique_renderer_form_id = 1;
   unique_renderer_form_id_ = next_unique_renderer_form_id++;
 
   UseCounter::Count(document, WebFeature::kFormElement);
@@ -871,7 +871,8 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
     const AtomicString& past_name) {
   if (past_name.IsEmpty() || !past_names_map_)
     return nullptr;
-  Element* element = past_names_map_->DeprecatedAtOrEmptyValue(past_name);
+  auto it = past_names_map_->find(past_name);
+  Element* element = it != past_names_map_->end() ? it->value : nullptr;
 #if DCHECK_IS_ON()
   if (!element)
     return nullptr;

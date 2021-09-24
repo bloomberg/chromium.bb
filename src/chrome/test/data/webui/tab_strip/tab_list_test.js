@@ -10,7 +10,7 @@ import {setScrollAnimationEnabledForTesting, TabListElement} from 'chrome://tab-
 import {PageRemote, Tab} from 'chrome://tab-strip.top-chrome/tab_strip.mojom-webui.js';
 import {TabsApiProxyImpl} from 'chrome://tab-strip.top-chrome/tabs_api_proxy.js';
 
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
@@ -888,7 +888,8 @@ suite('TabList', () => {
         testTabsApiProxy.getCallCount('setThumbnailTracked'), tabs.length);
   });
 
-  test('ShouldDebounceThumbnailTrackerWhenScrollingFast', async () => {
+  // Flaky on all platforms. https://crbug.com/1247687.
+  test.skip('ShouldDebounceThumbnailTrackerWhenScrollingFast', async () => {
     // Set tab widths such that 3 tabs fit in the viewport. This should reach a
     // state where the first 6 thumbnails are being tracked: 3 in the viewport
     // and 3 within the IntersectionObserver's rootMargin. The widths need to be

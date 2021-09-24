@@ -18,6 +18,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 struct wl_cursor;
@@ -81,12 +82,6 @@ void ReportShellUMA(UMALinuxWaylandShell shell);
 
 class WaylandConnection {
  public:
-  // Stores the last serial and the event type it is associated with.
-  struct EventSerial {
-    uint32_t serial = 0;
-    EventType event_type = EventType::ET_UNKNOWN;
-  };
-
   WaylandConnection();
   WaylandConnection(const WaylandConnection&) = delete;
   WaylandConnection& operator=(const WaylandConnection&) = delete;
@@ -143,16 +138,9 @@ class WaylandConnection {
     return extended_drag_v1_.get();
   }
 
-  void set_serial(uint32_t serial, EventType event_type) {
-    serial_ = {serial, event_type};
+  zxdg_output_manager_v1* xdg_output_manager_v1() const {
+    return xdg_output_manager_.get();
   }
-  uint32_t serial() const { return serial_.serial; }
-  EventSerial event_serial() const { return serial_; }
-
-  void set_pointer_enter_serial(uint32_t serial) {
-    pointer_enter_serial_ = serial;
-  }
-  uint32_t pointer_enter_serial() const { return pointer_enter_serial_; }
 
   void SetPlatformCursor(wl_cursor* cursor_data, int buffer_scale);
 
@@ -245,6 +233,10 @@ class WaylandConnection {
     return zwp_idle_inhibit_manager_.get();
   }
 
+  // Returns whether protocols that support setting window geometry are
+  // available.
+  bool SupportsSetWindowGeometry() const;
+
   // Returns true when dragging is entered or started.
   bool IsDragInProgress() const;
 
@@ -266,6 +258,8 @@ class WaylandConnection {
       const {
     return available_globals_;
   }
+
+  wl::SerialTracker& serial_tracker() { return serial_tracker_; }
 
  private:
   friend class WaylandConnectionTestApi;
@@ -347,6 +341,7 @@ class WaylandConnection {
       linux_explicit_synchronization_;
   wl::Object<zxdg_decoration_manager_v1> xdg_decoration_manager_;
   wl::Object<zcr_extended_drag_v1> extended_drag_v1_;
+  wl::Object<zxdg_output_manager_v1> xdg_output_manager_;
 
   // Event source instance. Must be declared before input objects so it
   // outlives them so thus being able to properly handle their destruction.
@@ -407,9 +402,7 @@ class WaylandConnection {
 
   bool scheduled_flush_ = false;
 
-  EventSerial serial_;
-
-  uint32_t pointer_enter_serial_ = 0;
+  wl::SerialTracker serial_tracker_;
 
   // Global Wayland interfaces available in the current session, with their
   // versions.

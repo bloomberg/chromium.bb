@@ -25,6 +25,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_dimmer.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_flags.h"
@@ -504,10 +505,12 @@ class CaptureModeSession::ScopedA11yOverrideWindowSetter
 // -----------------------------------------------------------------------------
 // CaptureModeSession:
 
-CaptureModeSession::CaptureModeSession(CaptureModeController* controller)
+CaptureModeSession::CaptureModeSession(CaptureModeController* controller,
+                                       bool projector_mode)
     : controller_(controller),
       current_root_(GetPreferredRootWindow()),
       magnifier_glass_(kMagnifierParams),
+      is_in_projector_mode_(projector_mode),
       cursor_setter_(std::make_unique<CursorSetter>()),
       focus_cycler_(std::make_unique<CaptureModeSessionFocusCycler>(this)) {}
 
@@ -559,7 +562,7 @@ void CaptureModeSession::Initialize() {
       CreateWidgetParams(parent, CaptureModeBarView::GetBounds(current_root_),
                          "CaptureModeBarWidget"));
   capture_mode_bar_view_ = capture_mode_bar_widget_->SetContentsView(
-      std::make_unique<CaptureModeBarView>());
+      std::make_unique<CaptureModeBarView>(is_in_projector_mode_));
   capture_mode_bar_widget_->Show();
 
   scoped_a11y_overrider_ = std::make_unique<ScopedA11yOverrideWindowSetter>(
@@ -685,7 +688,7 @@ void CaptureModeSession::SetSettingsMenuShown(bool shown) {
         "CaptureModeSettingsWidget"));
     capture_mode_settings_view_ =
         capture_mode_settings_widget_->SetContentsView(
-            std::make_unique<CaptureModeSettingsView>());
+            std::make_unique<CaptureModeSettingsView>(is_in_projector_mode_));
     parent->layer()->StackAtTop(capture_mode_settings_widget_->GetLayer());
     focus_cycler_->OnSettingsMenuWidgetCreated();
     capture_mode_settings_widget_->Show();
@@ -966,6 +969,13 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   }
 }
 
+void CaptureModeSession::HighlightWindowForTab(aura::Window* window) {
+  DCHECK(window);
+  DCHECK_EQ(CaptureModeSource::kWindow, controller_->source());
+  MaybeChangeRoot(window->GetRootWindow());
+  capture_window_observer_->SetSelectedWindow(window);
+}
+
 gfx::Rect CaptureModeSession::GetSelectedWindowBounds() const {
   auto* window = GetSelectedWindow();
   return window ? window->bounds() : gfx::Rect();
@@ -1100,7 +1110,27 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
     return;
   }
 
-  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+  // |ui::ET_MOUSE_EXITED| and |ui::ET_MOUSE_ENTERED| events will be generated
+  // during moving capture mode bar to another display. We should ignore them
+  // here, since they will overwrite the capture mode bar's root change during
+  // keyboard tabbing in capture window mode.
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED ||
+      event->type() == ui::ET_MOUSE_EXITED ||
+      event->type() == ui::ET_MOUSE_ENTERED) {
+    return;
+  }
+
+  // We should ignore synthesized events here. Otherwise, synthesized events
+  // will overwrite the change by the actual event because of the
+  // asynchronism (please check |WindowEventDispatcher::PostSynthesizeMouseMove|
+  // for more information).
+  // For example, during keyboard navigation in capture window mode, changing
+  // root of capture mode bar will generate the synthesized mouse move event. It
+  // will overwrite the root change since the location of the synthesized event
+  // is still on the previous root.
+  // For the window related synthesized events (window activation, window
+  // destroy), |capture_window_observer_| can take care of them.
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
     return;
 
   gfx::Point screen_location = event->location();

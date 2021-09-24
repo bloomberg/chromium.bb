@@ -8,8 +8,7 @@
 
 import("//chromeos/assistant/assistant.gni")
 import("//chromeos/components/eche_app_ui/eche_app_ui.gni")
-import("//chromeos/components/help_app_ui/help_app_ui.gni")
-import("//chromeos/components/media_app_ui/media_app_ui.gni")
+import("//chromeos/components/projector_app/projector_app.gni")
 import("//tools/grit/grit_rule.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
@@ -27,7 +26,6 @@ grit("resources") {
 
   defines = [
     "enable_cros_libassistant=$enable_cros_libassistant",
-    "enable_cros_media_app=$enable_cros_media_app",
     "enable_cros_eche_app=$enable_cros_eche_app",
   ]
 
@@ -41,6 +39,11 @@ grit("resources") {
     "//chromeos/services/bluetooth_config/public/mojom:mojom_js",
     "//chromeos/services/cellular_setup/public/mojom:mojom_js",
     "//chromeos/services/device_sync/public/mojom:mojom_js",
+
+    # Generated ml service js bindings are required by external clients, the
+    # clients are not found within Chromium. The clients pull the generated
+    # js bindings as part of their build process.
+    "//chromeos/services/machine_learning/public/mojom:mojom_js",
     "//chromeos/services/multidevice_setup/public/mojom:mojom_js",
     "//chromeos/services/network_config/public/mojom:mojom_js",
     "//chromeos/services/network_health/public/mojom:mojom_js",
@@ -99,12 +102,24 @@ chromeos_generated_grit("projector_app_trusted_resources") {
   deps = [ "//chromeos/components/projector_app/resources:build_trusted_grd" ]
 }
 
-if (!is_official_build) {
-  # Resources used by chrome://demo-mode-app
-  chromeos_generated_grit("demo_mode_app_resources") {
-    source = "$root_gen_dir/chromeos/components/demo_mode_app_ui/chromeos_demo_mode_app_resources.grd"
-    deps = [ "//chromeos/components/demo_mode_app_ui:build_grd" ]
+# Resources automatically served by the chrome-untrusted://projector bundle, obtained via DEPS.
+grit("projector_app_bundle_resources") {
+  if (enable_cros_projector_app) {
+    # Obtained via an internal CIPD package in src/DEPS.
+    source = "../components/projector_app/resources/prod/projector_app_bundle_resources.grd"
+  } else {
+    source = "../components/projector_app/resources/mock/projector_app_bundle_mock_resources.grd"
   }
+
+  use_brotli = true
+
+  outputs = [
+    "grit/chromeos_projector_app_bundle_resources.h",
+    "grit/chromeos_projector_app_bundle_resources_map.cc",
+    "grit/chromeos_projector_app_bundle_resources_map.h",
+    "chromeos_projector_app_bundle_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
 }
 
 # Resources used by chrome://connectivity-diagnostics
@@ -128,147 +143,10 @@ grit("connectivity_diagnostics_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
-# Resources used by chrome://help-app, and parts of the sandboxed app it hosts
-# that do not come from the app bundle (below).
-grit("help_app_resources") {
-  source = "../components/help_app_ui/resources/help_app_resources.grd"
-
-  outputs = [
-    "grit/chromeos_help_app_resources.h",
-    "grit/chromeos_help_app_resources_map.cc",
-    "grit/chromeos_help_app_resources_map.h",
-    "chromeos_help_app_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chromeos"
-
-  deps = [
-    "//chromeos/components/help_app_ui:mojo_bindings_js",
-    "//chromeos/components/help_app_ui/resources:browser_proxy_rollup",
-    "//chromeos/components/help_app_ui/resources:receiver_rollup",
-    "//chromeos/components/help_app_ui/search:mojo_bindings_js",
-    "//chromeos/components/local_search_service/public/mojom:mojom_js",
-  ]
-}
-
-# Resources automatically served by the chrome://help-app bundle, obtained via DEPS.
-grit("help_app_bundle_resources") {
-  if (enable_cros_help_app) {
-    # Obtained via an internal CIPD package in src/DEPS.
-    source =
-        "../components/help_app_ui/resources/prod/help_app_bundle_resources.grd"
-  } else {
-    source = "../components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd"
-  }
-
-  use_brotli = true
-
-  outputs = [
-    "grit/chromeos_help_app_bundle_resources.h",
-    "grit/chromeos_help_app_bundle_resources_map.cc",
-    "grit/chromeos_help_app_bundle_resources_map.h",
-    "chromeos_help_app_bundle_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chromeos"
-}
-
-grit("help_app_kids_magazine_bundle_resources") {
-  if (enable_cros_help_app) {
-    source = "../components/help_app_ui/resources/prod/help_app_kids_magazine_bundle_resources.grd"
-  } else {
-    source = "../components/help_app_ui/resources/mock/help_app_kids_magazine_bundle_mock_resources.grd"
-  }
-
-  use_brotli = true
-
-  outputs = [
-    "grit/chromeos_help_app_kids_magazine_bundle_resources.h",
-    "grit/chromeos_help_app_kids_magazine_bundle_resources_map.cc",
-    "grit/chromeos_help_app_kids_magazine_bundle_resources_map.h",
-    "chromeos_help_app_kids_magazine_bundle_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chromeos"
-}
-
-# Resources used by chrome://telemetry-extension
-grit("telemetry_extension_resources") {
-  source = "../components/telemetry_extension_ui/resources/telemetry_extension_resources.grd"
-
-  deps = [ "../components/telemetry_extension_ui/mojom:mojom_js" ]
-
-  outputs = [
-    "grit/chromeos_telemetry_extension_resources.h",
-    "grit/chromeos_telemetry_extension_resources_map.cc",
-    "grit/chromeos_telemetry_extension_resources_map.h",
-    "chromeos_telemetry_extension_resources.pak",
-  ]
-
-  output_dir = "$root_gen_dir/chromeos"
-}
-
-# Resources used by chrome://media-app, and parts of the sandboxed app it hosts
-# that do not come from the app bundle (below).
-grit("media_app_resources") {
-  source = "../components/media_app_ui/resources/media_app_resources.grd"
-
-  outputs = [
-    "grit/chromeos_media_app_resources.h",
-    "chromeos_media_app_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chromeos"
-
-  use_brotli = true
-
-  deps = [
-    "//chromeos/components/media_app_ui:mojo_bindings_js",
-    "//chromeos/components/media_app_ui/resources/js:launch_rollup",
-    "//chromeos/components/media_app_ui/resources/js:piex_rollup",
-    "//chromeos/components/media_app_ui/resources/js:receiver_rollup",
-  ]
-}
-
-# Resources automatically served by the chrome://media-app bundle, obtained via DEPS.
-grit("media_app_bundle_resources") {
-  if (enable_cros_media_app) {
-    # Obtained via an internal CIPD package in src/DEPS.
-    source = "../components/media_app_ui/resources/prod/media_app_bundle_resources.grd"
-  } else {
-    source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
-  }
-
-  use_brotli = true
-
-  outputs = [
-    "grit/chromeos_media_app_bundle_resources.h",
-    "grit/chromeos_media_app_bundle_resources_map.cc",
-    "grit/chromeos_media_app_bundle_resources_map.h",
-    "chromeos_media_app_bundle_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chromeos"
-}
-
-grit("print_management_resources") {
-  source =
-      "../components/print_management/resources/print_management_resources.grd"
-
-  deps = [
-    "../components/print_management/mojom:mojom_js",
-    "../components/print_management/resources:web_components",
-  ]
-
-  outputs = [
-    "grit/chromeos_print_management_resources.h",
-    "grit/chromeos_print_management_resources_map.cc",
-    "grit/chromeos_print_management_resources_map.h",
-    "chromeos_print_management_resources.pak",
-  ]
-
-  output_dir = "$root_gen_dir/chromeos"
-}
-
 # Resources automatically served by the chrome://eche-app bundle, obtained via DEPS.
 grit("eche_bundle_resources") {
   # Obtained via an internal CIPD package in src/DEPS.
-  if (enable_cros_media_app) {
+  if (enable_cros_eche_app) {
     # Obtained via an internal CIPD package in src/DEPS.
     source =
         "../components/eche_app_ui/resources/prod/eche_bundle_resources.grd"

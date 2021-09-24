@@ -62,8 +62,7 @@ SkImageInfo make_info(skgpu::v1::SurfaceDrawContext* sdc, bool opaque) {
 }
 
 bool force_aa_clip(const skgpu::v1::SurfaceDrawContext* sdc) {
-    return (sdc->numSamples() > 1 && !sdc->caps()->multisampleDisableSupport()) ||
-           sdc->alwaysAntialias();
+    return sdc->numSamples() > 1 || sdc->alwaysAntialias();
 }
 
 inline GrPrimitiveType point_mode_to_primitive_type(SkCanvas::PointMode mode) {
@@ -124,29 +123,6 @@ bool init_vertices_paint(GrRecordingContext* rContext,
 
 namespace skgpu::v1 {
 
-/** Checks that the alpha type is legal and gets constructor flags. Returns false if device creation
-    should fail. */
-bool Device::CheckAlphaTypeAndGetFlags(const SkImageInfo* info,
-                                       Device::InitContents init,
-                                       unsigned* flags) {
-    *flags = 0;
-    if (info) {
-        switch (info->alphaType()) {
-            case kPremul_SkAlphaType:
-                break;
-            case kOpaque_SkAlphaType:
-                *flags |= Device::kIsOpaque_Flag;
-                break;
-            default: // If it is unpremul or unknown don't try to render
-                return false;
-        }
-    }
-    if (kClear_InitContents == init) {
-        *flags |= kNeedClear_Flag;
-    }
-    return true;
-}
-
 sk_sp<BaseDevice> Device::Make(GrRecordingContext* rContext,
                                GrColorType colorType,
                                sk_sp<GrSurfaceProxy> proxy,
@@ -161,11 +137,11 @@ sk_sp<BaseDevice> Device::Make(GrRecordingContext* rContext,
                                         origin,
                                         surfaceProps);
 
-    return Device::Make(std::move(sdc), nullptr, init);
+    return Device::Make(std::move(sdc), kPremul_SkAlphaType, init);
 }
 
 sk_sp<BaseDevice> Device::Make(std::unique_ptr<SurfaceDrawContext> sdc,
-                               const SkImageInfo* ii,
+                               SkAlphaType alphaType,
                                InitContents init) {
     if (!sdc) {
         return nullptr;
@@ -178,9 +154,9 @@ sk_sp<BaseDevice> Device::Make(std::unique_ptr<SurfaceDrawContext> sdc,
 
     SkColorType ct = GrColorTypeToSkColorType(sdc->colorInfo().colorType());
 
-    unsigned flags;
+    DeviceFlags flags;
     if (!rContext->colorTypeSupportedAsSurface(ct) ||
-        !CheckAlphaTypeAndGetFlags(ii, init, &flags)) {
+        !CheckAlphaTypeAndGetFlags(alphaType, init, &flags)) {
         return nullptr;
     }
     return sk_sp<Device>(new Device(std::move(sdc), flags));
@@ -206,18 +182,18 @@ sk_sp<BaseDevice> Device::Make(GrRecordingContext* rContext,
                                       origin,
                                       props);
 
-    return Device::Make(std::move(sdc), &ii, init);
+    return Device::Make(std::move(sdc), ii.alphaType(), init);
 }
 
-Device::Device(std::unique_ptr<SurfaceDrawContext> sdc, unsigned flags)
+Device::Device(std::unique_ptr<SurfaceDrawContext> sdc, DeviceFlags flags)
         : INHERITED(sk_ref_sp(sdc->recordingContext()),
-                    make_info(sdc.get(), SkToBool(flags & kIsOpaque_Flag)),
+                    make_info(sdc.get(), SkToBool(flags & DeviceFlags::kIsOpaque)),
                     sdc->surfaceProps())
         , fSurfaceDrawContext(std::move(sdc))
         , fClip(SkIRect::MakeSize(fSurfaceDrawContext->dimensions()),
                 &this->asMatrixProvider(),
                 force_aa_clip(fSurfaceDrawContext.get())) {
-    if (flags & kNeedClear_Flag) {
+    if (flags & DeviceFlags::kNeedClear) {
         this->clearAll();
     }
 }
@@ -333,7 +309,7 @@ void Device::onAsRgnClip(SkRegion* region) const {
     // Assume wide open and then perform intersect/difference operations reducing the region
     region->setRect(bounds);
     const SkRegion deviceBounds(bounds);
-    for (const GrClipStack::Element& e : fClip) {
+    for (const ClipStack::Element& e : fClip) {
         SkRegion tmp;
         if (e.fShape.isRect() && e.fLocalToDevice.isIdentity()) {
             tmp.setRect(e.fShape.rect().roundOut());
@@ -349,7 +325,7 @@ void Device::onAsRgnClip(SkRegion* region) const {
 }
 
 bool Device::onClipIsAA() const {
-    for (const GrClipStack::Element& e : fClip) {
+    for (const ClipStack::Element& e : fClip) {
         if (e.fAA == GrAA::kYes) {
             return true;
         }
@@ -359,11 +335,11 @@ bool Device::onClipIsAA() const {
 }
 
 SkBaseDevice::ClipType Device::onGetClipType() const {
-    GrClipStack::ClipState state = fClip.clipState();
-    if (state == GrClipStack::ClipState::kEmpty) {
+    ClipStack::ClipState state = fClip.clipState();
+    if (state == ClipStack::ClipState::kEmpty) {
         return ClipType::kEmpty;
-    } else if (state == GrClipStack::ClipState::kDeviceRect ||
-               state == GrClipStack::ClipState::kWideOpen) {
+    } else if (state == ClipStack::ClipState::kDeviceRect ||
+               state == ClipStack::ClipState::kWideOpen) {
         return ClipType::kRect;
     } else {
         return ClipType::kComplex;
@@ -418,9 +394,12 @@ void Device::drawPoints(SkCanvas::PointMode mode,
     bool isHairline = (0 == width) ||
                        (1 == width && this->localToDevice().getMinMaxScales(scales) &&
                         SkScalarNearlyEqual(scales[0], 1.f) && SkScalarNearlyEqual(scales[1], 1.f));
-    // we only handle non-antialiased hairlines and paints without path effects or mask filters,
+    // we only handle non-coverage-aa hairlines and paints without path effects or mask filters,
     // else we let the SkDraw call our drawPath()
-    if (!isHairline || paint.getPathEffect() || paint.getMaskFilter() || aa == GrAA::kYes) {
+    if (!isHairline ||
+        paint.getPathEffect() ||
+        paint.getMaskFilter() ||
+        fSurfaceDrawContext->chooseAAType(aa) == GrAAType::kCoverage) {
         SkRasterClip rc(this->devClipBounds());
         SkDraw draw;
         draw.fDst = SkPixmap(SkImageInfo::MakeUnknown(this->width(), this->height()), nullptr, 0);
@@ -1079,9 +1058,9 @@ SkBaseDevice* Device::onCreateDevice(const CreateInfo& cinfo, const SkPaint*) {
     }
 
     // Skia's convention is to only clear a device if it is non-opaque.
-    InitContents init = cinfo.fInfo.isOpaque() ? kUninit_InitContents : kClear_InitContents;
+    InitContents init = cinfo.fInfo.isOpaque() ? InitContents::kUninit : InitContents::kClear;
 
-    return Device::Make(std::move(sdc), &cinfo.fInfo, init).release();
+    return Device::Make(std::move(sdc), cinfo.fInfo.alphaType(), init).release();
 }
 
 sk_sp<SkSurface> Device::makeSurface(const SkImageInfo& info, const SkSurfaceProps& props) {

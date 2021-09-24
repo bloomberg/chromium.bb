@@ -7,10 +7,16 @@
 
 #include <stdint.h>
 
+#include <string>
+
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "base/types/strong_alias.h"
 #include "content/browser/conversions/storable_impression.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+class GURL;
 
 namespace content {
 
@@ -18,17 +24,26 @@ namespace content {
 // report. This represents the report for a conversion event and its associated
 // impression.
 struct CONTENT_EXPORT ConversionReport {
+  using Id = base::StrongAlias<ConversionReport, int64_t>;
+
   // The conversion_id may not be set for a conversion report.
   ConversionReport(StorableImpression impression,
                    uint64_t conversion_data,
                    base::Time conversion_time,
                    base::Time report_time,
-                   absl::optional<int64_t> conversion_id);
+                   int64_t priority,
+                   absl::optional<Id> conversion_id);
   ConversionReport(const ConversionReport& other);
   ConversionReport& operator=(const ConversionReport& other);
   ConversionReport(ConversionReport&& other);
   ConversionReport& operator=(ConversionReport&& other);
   ~ConversionReport();
+
+  // Returns the URL to which the report will be sent.
+  GURL ReportURL() const WARN_UNUSED_RESULT;
+
+  // Returns the JSON for the report body.
+  std::string ReportBody(bool pretty_print = false) const WARN_UNUSED_RESULT;
 
   // Impression associated with this conversion report.
   StorableImpression impression;
@@ -43,6 +58,9 @@ struct CONTENT_EXPORT ConversionReport {
   // The time this conversion report should be sent.
   base::Time report_time;
 
+  // Priority specified in conversion redirect.
+  int64_t priority;
+
   // The original report time assigned to this report when it was created,
   // ignoring any ephemeral increases to |report_time| for this conversion
   // report.
@@ -50,7 +68,7 @@ struct CONTENT_EXPORT ConversionReport {
 
   // Id assigned by storage to uniquely identify a completed conversion. If
   // null, an ID has not been assigned yet.
-  absl::optional<int64_t> conversion_id;
+  absl::optional<Id> conversion_id;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `conversion_test_utils.h` should also be updated.

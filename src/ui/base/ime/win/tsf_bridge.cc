@@ -491,14 +491,13 @@ HRESULT TSFBridgeImpl::InitializeDocumentMapInternal() {
     DWORD* cookie_ptr = use_null_text_store ? nullptr : &cookie;
     scoped_refptr<TSFTextStore> text_store =
         use_null_text_store ? nullptr : new TSFTextStore();
-    HRESULT hr = S_OK;
     if (text_store) {
       HRESULT hr = text_store->Initialize();
       if (FAILED(hr))
         return hr;
     }
-    hr = CreateDocumentManager(text_store.get(), &document_manager, &context,
-                               cookie_ptr);
+    HRESULT hr = CreateDocumentManager(text_store.get(), &document_manager,
+                                       &context, cookie_ptr);
     if (FAILED(hr))
       return hr;
     if (input_type == TEXT_INPUT_TYPE_PASSWORD) {
@@ -675,10 +674,6 @@ void TSFBridge::InitializeForTesting() {
   if (!base::CurrentUIThread::IsSet()) {
     return;
   }
-
-  TSFBridgeImpl* delegate = GetThreadLocalTSFBridge();
-  if (delegate)
-    return;
   if (!base::FeatureList::IsEnabled(features::kTSFImeSupport))
     return;
   ReplaceThreadLocalTSFBridge(new MockTSFBridge());
@@ -689,8 +684,7 @@ void TSFBridge::ReplaceThreadLocalTSFBridge(TSFBridge* new_instance) {
   if (!base::CurrentUIThread::IsSet()) {
     return;
   }
-
-  TSFBridgeImpl* old_instance = GetThreadLocalTSFBridge();
+  TSFBridge* old_instance = GetThreadLocalTSFBridge();
   TSFBridgeTLS().Set(new_instance);
   delete old_instance;
 }
@@ -698,8 +692,6 @@ void TSFBridge::ReplaceThreadLocalTSFBridge(TSFBridge* new_instance) {
 // static
 void TSFBridge::Shutdown() {
   TRACE_EVENT0("ime", "TSFBridge::Shutdown");
-  if (!base::CurrentUIThread::IsSet()) {
-  }
   ReplaceThreadLocalTSFBridge(nullptr);
 }
 

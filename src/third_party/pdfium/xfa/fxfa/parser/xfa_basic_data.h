@@ -20,11 +20,23 @@ typedef void (*XFA_ATTRIBUTE_CALLBACK)(v8::Isolate* pIsolate,
                                        bool bSetting,
                                        XFA_Attribute eAttribute);
 
+enum class XFA_PacketMatch : uint8_t {
+  kCompleteMatch = 1,
+  kPrefixMatch,
+  kNoMatch,
+};
+
+enum class XFA_PacketSupport : uint8_t {
+  kSupportOne = 1,
+  kSupportMany,
+};
+
 struct XFA_PACKETINFO {
-  const wchar_t* name;
   XFA_PacketType packet_type;
-  const wchar_t* uri;
-  uint32_t flags;
+  XFA_PacketMatch match;
+  XFA_PacketSupport support;
+  const char* name;
+  const char* uri;
 };
 
 struct XFA_ATTRIBUTEINFO {

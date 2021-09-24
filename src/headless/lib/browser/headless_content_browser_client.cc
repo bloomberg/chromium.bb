@@ -38,7 +38,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/url_util.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_identity.h"
+#include "net/ssl/ssl_private_key.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -59,7 +61,7 @@
 #endif  // defined(HEADLESS_USE_POLICY)
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "headless/lib/browser/headless_print_manager.h"
+#include "components/printing/browser/print_to_pdf/pdf_print_manager.h"
 #endif  // defined(ENABLE_PRINTING)
 
 namespace headless {
@@ -195,7 +197,7 @@ bool HeadlessContentBrowserClient::BindAssociatedReceiverFromFrame(
     mojo::ScopedInterfaceEndpointHandle* handle) {
 #if BUILDFLAG(ENABLE_PRINTING)
   if (interface_name == printing::mojom::PrintManagerHost::Name_) {
-    HeadlessPrintManager::BindPrintManagerHost(
+    print_to_pdf::PdfPrintManager::BindPrintManagerHost(
         mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost>(
             std::move(*handle)),
         render_frame_host);

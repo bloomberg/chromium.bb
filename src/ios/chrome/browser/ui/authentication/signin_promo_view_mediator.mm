@@ -12,19 +12,17 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
+#import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/signin/signin_presenter.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -326,10 +324,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 }  // namespace
 
-@interface SigninPromoViewMediator () <ChromeBrowserProviderObserver,
-                                       ChromeIdentityServiceObserver> {
-  std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  std::unique_ptr<ChromeBrowserProviderObserverBridge> _browserProviderObserver;
+@interface SigninPromoViewMediator () <ChromeAccountManagerServiceObserver> {
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
 }
 
 // Redefined to be readwrite.
@@ -423,10 +420,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
       [self setIdentity:defaultIdentity];
     }
 
-    _identityServiceObserver =
-        std::make_unique<ChromeIdentityServiceObserverBridge>(self);
-    _browserProviderObserver =
-        std::make_unique<ChromeBrowserProviderObserverBridge>(self);
+    _accountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, _accountManagerService);
   }
   return self;
 }
@@ -496,33 +492,12 @@ const char* AlreadySeenSigninViewPreferenceKey(
   self.signinPromoViewVisible = NO;
 }
 
-- (void)signinPromoViewIsRemoved {
-  DCHECK_NE(ios::SigninPromoViewState::Invalid, self.signinPromoViewState);
-  BOOL wasNeverVisible =
-      self.signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
-  BOOL wasUnused =
-      self.signinPromoViewState == ios::SigninPromoViewState::Unused;
-  self.signinPromoViewState = ios::SigninPromoViewState::Invalid;
-  self.signinPromoViewVisible = NO;
-  if (wasNeverVisible)
-    return;
-
-  // If the sign-in promo view has been used at least once, it should not be
-  // counted as dismissed (even if the sign-in has been canceled).
-  const char* displayedCountPreferenceKey =
-      DisplayedCountPreferenceKey(self.accessPoint);
-  if (!displayedCountPreferenceKey || !wasUnused)
-    return;
-
-  // If the sign-in view is removed when the user is authenticated, then the
-  // sign-in for sync has been done by another view, and this mediator cannot be
-  // counted as being dismissed.
-  if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSync))
-    return;
-  int displayedCount =
-      self.prefService->GetInteger(displayedCountPreferenceKey);
-  RecordImpressionsTilDismissHistogramForAccessPoint(self.accessPoint,
-                                                     displayedCount);
+- (void)disconnect {
+  [self signinPromoViewIsRemoved];
+  self.consumer = nil;
+  self.accountManagerService = nullptr;
+  self.authService = nullptr;
+  _accountManagerServiceObserver.reset();
 }
 
 #pragma mark - Public properties
@@ -558,22 +533,10 @@ const char* AlreadySeenSigninViewPreferenceKey(
   if (!self.identity) {
     self.identityAvatar = nil;
   } else {
-    __weak SigninPromoViewMediator* weakSelf = self;
-    ios::GetChromeBrowserProvider()
-        .GetChromeIdentityService()
-        ->GetAvatarForIdentity(identity, ^(UIImage* identityAvatar) {
-          if (weakSelf.identity != identity) {
-            return;
-          }
-          [weakSelf identityAvatarUpdated:identityAvatar];
-        });
+    self.identityAvatar =
+        self.accountManagerService->GetIdentityAvatarWithIdentity(
+            identity, IdentityAvatarSize::SmallSize);
   }
-}
-
-// Updates the Chrome identity avatar in the sign-in promo.
-- (void)identityAvatarUpdated:(UIImage*)identityAvatar {
-  self.identityAvatar = identityAvatar;
-  [self sendConsumerNotificationWithIdentityChanged:NO];
 }
 
 // Sends the update notification to the consummer if the signin-in is not in
@@ -648,7 +611,37 @@ const char* AlreadySeenSigninViewPreferenceKey(
   }
 }
 
-#pragma mark - ChromeIdentityServiceObserver
+// Changes the promo view state, and records the metrics.
+- (void)signinPromoViewIsRemoved {
+  DCHECK_NE(ios::SigninPromoViewState::Invalid, self.signinPromoViewState);
+  BOOL wasNeverVisible =
+      self.signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
+  BOOL wasUnused =
+      self.signinPromoViewState == ios::SigninPromoViewState::Unused;
+  self.signinPromoViewState = ios::SigninPromoViewState::Invalid;
+  self.signinPromoViewVisible = NO;
+  if (wasNeverVisible)
+    return;
+
+  // If the sign-in promo view has been used at least once, it should not be
+  // counted as dismissed (even if the sign-in has been canceled).
+  const char* displayedCountPreferenceKey =
+      DisplayedCountPreferenceKey(self.accessPoint);
+  if (!displayedCountPreferenceKey || !wasUnused)
+    return;
+
+  // If the sign-in view is removed when the user is authenticated, then the
+  // sign-in for sync has been done by another view, and this mediator cannot be
+  // counted as being dismissed.
+  if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSync))
+    return;
+  int displayedCount =
+      self.prefService->GetInteger(displayedCountPreferenceKey);
+  RecordImpressionsTilDismissHistogramForAccessPoint(self.accessPoint,
+                                                     displayedCount);
+}
+
+#pragma mark - ChromeAccountManagerServiceObserver
 
 - (void)identityListChanged {
   ChromeIdentity* newIdentity = [self defaultIdentity];
@@ -658,24 +651,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   }
 }
 
-- (void)profileUpdate:(ChromeIdentity*)identity {
+- (void)identityChanged:(ChromeIdentity*)identity {
   [self sendConsumerNotificationWithIdentityChanged:NO];
-}
-
-- (void)chromeIdentityServiceWillBeDestroyed {
-  _identityServiceObserver.reset();
-}
-
-#pragma mark - ChromeBrowserProviderObserver
-
-- (void)chromeIdentityServiceDidChange:(ios::ChromeIdentityService*)identity {
-  DCHECK(!_identityServiceObserver.get());
-  _identityServiceObserver =
-      std::make_unique<ChromeIdentityServiceObserverBridge>(self);
-}
-
-- (void)chromeBrowserProviderWillBeDestroyed {
-  _browserProviderObserver.reset();
 }
 
 #pragma mark - SigninPromoViewDelegate

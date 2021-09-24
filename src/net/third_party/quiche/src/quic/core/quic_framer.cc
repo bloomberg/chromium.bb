@@ -1300,81 +1300,45 @@ size_t QuicFramer::GetMinStatelessResetPacketLength() {
 
 // static
 std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
-    QuicConnectionId /*connection_id*/,
-    size_t received_packet_length,
+    QuicConnectionId /*connection_id*/, size_t received_packet_length,
     StatelessResetToken stateless_reset_token) {
   QUIC_DVLOG(1) << "Building IETF stateless reset packet.";
-  if (GetQuicRestartFlag(quic_fix_stateless_reset2)) {
-    if (received_packet_length <= GetMinStatelessResetPacketLength()) {
-      QUICHE_DLOG(ERROR)
-          << "Tried to build stateless reset packet with received packet "
-             "length "
-          << received_packet_length;
-      return nullptr;
-    }
-    // To ensure stateless reset is indistinguishable from a valid packet,
-    // include the max connection ID length.
-    size_t len = std::min(received_packet_length - 1,
-                          GetMinStatelessResetPacketLength() + 1 +
-                              kQuicMaxConnectionIdWithLengthPrefixLength);
-    std::unique_ptr<char[]> buffer(new char[len]);
-    QuicDataWriter writer(len, buffer.get());
-    // Append random bytes. This randomness only exists to prevent middleboxes
-    // from comparing the entire packet to a known value. Therefore it has no
-    // cryptographic use, and does not need a secure cryptographic pseudo-random
-    // number generator. It's therefore safe to use WriteInsecureRandomBytes.
-    if (!writer.WriteInsecureRandomBytes(QuicRandom::GetInstance(),
-                                         len - kStatelessResetTokenLength)) {
-      QUIC_BUG(362045737_2) << "Failed to append random bytes of length: "
-                            << len - kStatelessResetTokenLength;
-      return nullptr;
-    }
-    // Change first 2 fixed bits to 01.
-    buffer[0] &= ~FLAGS_LONG_HEADER;
-    buffer[0] |= FLAGS_FIXED_BIT;
-
-    // Append stateless reset token.
-    if (!writer.WriteBytes(&stateless_reset_token,
-                           sizeof(stateless_reset_token))) {
-      QUIC_BUG(362045737_3) << "Failed to write stateless reset token";
-      return nullptr;
-    }
-    QUIC_RESTART_FLAG_COUNT(quic_fix_stateless_reset2);
-    return std::make_unique<QuicEncryptedPacket>(buffer.release(), len,
-                                                 /*owns_buffer=*/true);
-  }
-
-  size_t len = kPacketHeaderTypeSize + kMinRandomBytesLengthInStatelessReset +
-               sizeof(stateless_reset_token);
-  std::unique_ptr<char[]> buffer(new char[len]);
-  QuicDataWriter writer(len, buffer.get());
-
-  uint8_t type = 0;
-  type |= FLAGS_FIXED_BIT;
-  type |= FLAGS_SHORT_HEADER_RESERVED_1;
-  type |= FLAGS_SHORT_HEADER_RESERVED_2;
-  type |= PacketNumberLengthToOnWireValue(PACKET_1BYTE_PACKET_NUMBER);
-
-  // Append type byte.
-  if (!writer.WriteUInt8(type)) {
+  if (received_packet_length <= GetMinStatelessResetPacketLength()) {
+    QUICHE_DLOG(ERROR)
+        << "Tried to build stateless reset packet with received packet "
+           "length "
+        << received_packet_length;
     return nullptr;
   }
-
+  // To ensure stateless reset is indistinguishable from a valid packet,
+  // include the max connection ID length.
+  size_t len = std::min(received_packet_length - 1,
+                        GetMinStatelessResetPacketLength() + 1 +
+                            kQuicMaxConnectionIdWithLengthPrefixLength);
+  std::unique_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get());
   // Append random bytes. This randomness only exists to prevent middleboxes
   // from comparing the entire packet to a known value. Therefore it has no
   // cryptographic use, and does not need a secure cryptographic pseudo-random
   // number generator. It's therefore safe to use WriteInsecureRandomBytes.
   if (!writer.WriteInsecureRandomBytes(QuicRandom::GetInstance(),
-                                       kMinRandomBytesLengthInStatelessReset)) {
+                                       len - kStatelessResetTokenLength)) {
+    QUIC_BUG(362045737_2) << "Failed to append random bytes of length: "
+                          << len - kStatelessResetTokenLength;
     return nullptr;
   }
+  // Change first 2 fixed bits to 01.
+  buffer[0] &= ~FLAGS_LONG_HEADER;
+  buffer[0] |= FLAGS_FIXED_BIT;
 
   // Append stateless reset token.
   if (!writer.WriteBytes(&stateless_reset_token,
                          sizeof(stateless_reset_token))) {
+    QUIC_BUG(362045737_3) << "Failed to write stateless reset token";
     return nullptr;
   }
-  return std::make_unique<QuicEncryptedPacket>(buffer.release(), len, true);
+  return std::make_unique<QuicEncryptedPacket>(buffer.release(), len,
+                                               /*owns_buffer=*/true);
 }
 
 // static
@@ -6557,6 +6521,27 @@ QuicErrorCode QuicFramer::ParsePublicHeaderDispatcher(
     return QUIC_INVALID_PACKET_HEADER;
   }
   const uint8_t first_byte = reader.PeekByte();
+  if (GetQuicRestartFlag(quic_drop_invalid_flags)) {
+    QUIC_RESTART_FLAG_COUNT(quic_drop_invalid_flags);
+    if ((first_byte & FLAGS_LONG_HEADER) == 0 &&
+        (first_byte & FLAGS_FIXED_BIT) == 0 &&
+        (first_byte & FLAGS_DEMULTIPLEXING_BIT) == 0) {
+      // All versions of Google QUIC up to and including Q043 set
+      // FLAGS_DEMULTIPLEXING_BIT to one on all client-to-server packets. Q044
+      // and Q045 were never default-enabled in production. All subsequent
+      // versions of Google QUIC (starting with Q046) require FLAGS_FIXED_BIT to
+      // be set to one on all packets. All versions of IETF QUIC (since
+      // draft-ietf-quic-transport-17 which was earlier than the first IETF QUIC
+      // version that was deployed in production by any implementation) also
+      // require FLAGS_FIXED_BIT to be set to one on all packets. If a packet
+      // has the FLAGS_LONG_HEADER bit set to one, it could be a first flight
+      // from an unknown future version that allows the other two bits to be set
+      // to zero. Based on this, packets that have all three of those bits set
+      // to zero are known to be invalid.
+      *detailed_error = "Invalid flags.";
+      return QUIC_INVALID_PACKET_HEADER;
+    }
+  }
   const bool ietf_format = QuicUtils::IsIetfPacketHeader(first_byte);
   uint8_t unused_first_byte;
   QuicVariableLengthIntegerLength retry_token_length_length;

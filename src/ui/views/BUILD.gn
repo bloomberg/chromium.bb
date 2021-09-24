@@ -56,6 +56,7 @@ component("views") {
   all_dependent_configs = [ ":flags" ]
 
   public = [
+    "accessibility/accessibility_paint_checks.h",
     "accessibility/ax_event_manager.h",
     "accessibility/ax_event_observer.h",
     "accessibility/ax_virtual_view.h",
@@ -64,6 +65,7 @@ component("views") {
     "accessibility/views_ax_tree_manager.h",
     "accessibility/widget_ax_tree_id_map.h",
     "accessible_pane_view.h",
+    "animation/animation_abort_handle.h",
     "animation/animation_builder.h",
     "animation/animation_delegate_views.h",
     "animation/animation_sequence_block.h",
@@ -282,12 +284,14 @@ component("views") {
   ]
 
   sources = [
+    "accessibility/accessibility_paint_checks.cc",
     "accessibility/ax_event_manager.cc",
     "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
     "accessibility/view_accessibility.cc",
     "accessibility/view_accessibility_utils.cc",
     "accessible_pane_view.cc",
+    "animation/animation_abort_handle.cc",
     "animation/animation_builder.cc",
     "animation/animation_delegate_views.cc",
     "animation/animation_key.h",
@@ -564,6 +568,7 @@ component("views") {
       "linux_ui/nav_button_provider.h",
       "linux_ui/status_icon_linux.h",
       "linux_ui/window_button_order_observer.h",
+      "linux_ui/window_frame_provider.h",
     ]
     sources += [
       "linux_ui/linux_ui.cc",
@@ -800,8 +805,6 @@ component("views") {
           "//ui/base/x",
           "//ui/platform_window/x11",
         ]
-        public += [ "widget/desktop_aura/desktop_screen_x11.h" ]
-        sources += [ "widget/desktop_aura/desktop_screen_x11.cc" ]
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
@@ -1051,8 +1054,6 @@ source_set("test_support") {
     ]
     if (use_x11) {
       sources += [
-        "test/test_desktop_screen_x11.cc",
-        "test/test_desktop_screen_x11.h",
         "test/ui_controls_factory_desktop_aurax11.cc",
         "test/ui_controls_factory_desktop_aurax11.h",
       ]
@@ -1363,10 +1364,7 @@ test("views_unittests") {
         "widget/desktop_widget_unittest.cc",
       ]
       if (use_x11) {
-        sources += [
-          "widget/desktop_aura/desktop_screen_x11_unittest.cc",
-          "widget/desktop_aura/x11_drag_drop_client_unittest.cc",
-        ]
+        sources += [ "widget/desktop_aura/x11_drag_drop_client_unittest.cc" ]
         deps += [
           "//ui/base/x",
           "//ui/base/x:test_support",

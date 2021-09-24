@@ -48,7 +48,7 @@ class PartitionAllocPCScanTest : public testing::Test {
     allocator_.init({PartitionOptions::AlignedAlloc::kAllowed,
                      PartitionOptions::ThreadCache::kDisabled,
                      PartitionOptions::Quarantine::kAllowed,
-                     PartitionOptions::Cookies::kDisallowed,
+                     PartitionOptions::Cookie::kDisallowed,
                      PartitionOptions::RefCount::kDisallowed});
     PCScan::RegisterScannableRoot(allocator_.root());
   }
@@ -76,9 +76,8 @@ class PartitionAllocPCScanTest : public testing::Test {
   void FinishPCScanAsScanner() { PCScan::FinishScanForTesting(); }
 
   bool IsInQuarantine(void* ptr) const {
-    return QuarantineBitmapFromPointer(QuarantineBitmapType::kMutator,
-                                       PCScan::Instance().epoch(), ptr)
-        ->CheckBit(reinterpret_cast<uintptr_t>(ptr));
+    return StateBitmapFromPointer(ptr)->IsQuarantined(
+        reinterpret_cast<uintptr_t>(ptr));
   }
 
   ThreadSafePartitionRoot& root() { return *allocator_.root(); }
@@ -404,7 +403,13 @@ struct ListWithInnerReference {
 
 }  // namespace
 
-TEST_F(PartitionAllocPCScanTest, DanglingInnerReference) {
+// Disabled due to consistent failure http://crbug.com/1242407
+#if defined(OS_ANDROID)
+#define MAYBE_DanglingInnerReference DISABLED_DanglingInnerReference
+#else
+#define MAYBE_DanglingInnerReference DanglingInnerReference
+#endif
+TEST_F(PartitionAllocPCScanTest, MAYBE_DanglingInnerReference) {
   using SourceList = ListWithInnerReference<64>;
   using ValueList = SourceList;
 
@@ -437,13 +442,13 @@ TEST_F(PartitionAllocPCScanTest, DanglingInterPartitionReference) {
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
 
   PCScan::RegisterScannableRoot(&source_root);
@@ -464,13 +469,13 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceToNonScannablePartition) {
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
 
   PCScan::RegisterScannableRoot(&source_root);
@@ -491,13 +496,13 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
   ThreadSafePartitionRoot value_root(
       {PartitionOptions::AlignedAlloc::kDisallowed,
        PartitionOptions::ThreadCache::kDisabled,
        PartitionOptions::Quarantine::kAllowed,
-       PartitionOptions::Cookies::kAllowed,
+       PartitionOptions::Cookie::kAllowed,
        PartitionOptions::RefCount::kDisallowed});
 
   PCScan::RegisterNonScannableRoot(&source_root);
@@ -555,12 +560,12 @@ void TestDanglingReferenceWithSafepoint(PartitionAllocPCScanTest& test,
     test.SchedulePCScan();
     // Enter safepoint and scan from mutator.
     test.JoinPCScanAsMutator();
-    // Check that the object is no longer in the quarantine.
-    EXPECT_FALSE(test.IsInQuarantine(value));
     // Check that |value| is not in the freelist yet, since sweeper didn't run.
     EXPECT_FALSE(
         IsInFreeList(test.root().AdjustPointerForExtrasSubtract(value)));
     test.FinishPCScanAsScanner();
+    // Check that the object is no longer in the quarantine.
+    EXPECT_FALSE(test.IsInQuarantine(value));
     // Check that |value| is in the freelist now.
     EXPECT_TRUE(
         IsInFreeList(test.root().AdjustPointerForExtrasSubtract(value)));

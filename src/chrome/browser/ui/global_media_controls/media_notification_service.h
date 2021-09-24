@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_producer.h"
@@ -85,6 +86,9 @@ class MediaNotificationService : public MediaItemsManager, public KeyedService {
   // cast notifications associated with |web_contents|.
   bool HasActiveNotificationsForWebContents(
       content::WebContents* web_contents) const;
+
+  // True if there are local cast notifications.
+  bool HasLocalCastNotifications() const;
 
   // True if there are active frozen media session notifications.
   bool HasFrozenNotifications() const;

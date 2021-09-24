@@ -53,7 +53,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
@@ -105,6 +104,32 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
         std::make_unique<password_manager::PasswordForm>(form));
   }
   return password_list_copy;
+}
+
+bool ArePasswordsListsEqual(
+    const std::vector<password_manager::PasswordForm>& lhs,
+    const std::vector<password_manager::PasswordForm>& rhs) {
+  if (lhs.size() != rhs.size())
+    return false;
+
+  for (size_t i = 0; i < lhs.size(); i++) {
+    if (CreateSortKey(lhs[i]) != CreateSortKey(rhs[i]))
+      return false;
+  }
+  return true;
+}
+
+void RemoveFormsToBeDeleted(
+    std::vector<password_manager::PasswordForm>& forms,
+    const std::vector<password_manager::PasswordForm>& to_delete) {
+  std::unordered_set<std::string> sort_keys_to_delete;
+  base::ranges::for_each(to_delete, [&sort_keys_to_delete](const auto& form) {
+    sort_keys_to_delete.insert(CreateSortKey(form));
+  });
+  base::EraseIf(forms, [&sort_keys_to_delete](const auto& form) {
+    return sort_keys_to_delete.find(CreateSortKey(form)) !=
+           sort_keys_to_delete.end();
+  });
 }
 
 }  // namespace
@@ -233,6 +258,9 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 // Number of compromised passwords.
 @property(assign) NSInteger compromisedPasswordsCount;
 
+// Button to add new password profile in the toolbar.
+@property(nonatomic, strong) UIBarButtonItem* addPasswordButton;
+
 @end
 
 @implementation PasswordsTableViewController
@@ -253,7 +281,12 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
     self.exampleHeaders = [[NSMutableDictionary alloc] init];
     self.title = l10n_util::GetNSString(IDS_IOS_PASSWORDS);
-    self.shouldHideDoneButton = YES;
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kSupportForAddPasswordsInSettings)) {
+      self.shouldDisableDoneButtonOnEdit = YES;
+    } else {
+      self.shouldHideDoneButton = YES;
+    }
     self.searchTerm = @"";
     _passwordManagerEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:_browserState->GetPrefs()
@@ -337,9 +370,13 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   UIOffset offset =
       UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
   UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
   [cancelButton setTitlePositionAdjustment:offset
                              forBarMetrics:UIBarMetricsDefault];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    self.navigationController.toolbarHidden = NO;
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -347,7 +384,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
   // Restore to default origin offset for cancel button proxy style.
   UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
   [cancelButton setTitlePositionAdjustment:UIOffsetZero
                              forBarMetrics:UIBarMetricsDefault];
 }
@@ -481,12 +518,46 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 }
 
 - (BOOL)shouldShowEditButton {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    // The edit button is put in the toolbar instead of the navigation bar.
+    return NO;
+  }
   return YES;
 }
 
 - (BOOL)editButtonEnabled {
-  DCHECK([self shouldShowEditButton]);
   return !_savedForms.empty() || !_blockedForms.empty();
+}
+
+- (BOOL)shouldHideToolbar {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    // There is a bug from apple that this method might be called in this view
+    // controller even if it is not the top view controller.
+    if (self.navigationController.topViewController == self) {
+      return NO;
+    }
+  }
+
+  return [super shouldHideToolbar];
+}
+
+- (BOOL)shouldShowEditDoneButton {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    // The "Done" button in the navigation bar closes the sheet.
+    return NO;
+  }
+  return YES;
+}
+
+- (void)updateUIForEditState {
+  [super updateUIForEditState];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    [self setToolbarItemsWithEditing:self.tableView.editing];
+  }
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -561,7 +632,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
       [[TableViewTextItem alloc] initWithType:ItemTypeCheckForProblemsButton];
   checkForProblemsItem.text =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
-  checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+  checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
   checkForProblemsItem.accessibilityTraits = UIAccessibilityTraitButton;
   return checkForProblemsItem;
 }
@@ -650,6 +721,12 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
   // Update the item.
   _savePasswordsItem.on = [_passwordManagerEnabled value];
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    // Disable the "Add" button if the password manager is not enabled.
+    self.addPasswordButton.enabled = [_passwordManagerEnabled value];
+  }
 }
 
 // Called when the user clicks on the information button of the managed
@@ -693,6 +770,14 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   [self presentViewController:errorInfoPopover animated:YES completion:nil];
 }
 
+- (void)handleAddPassword:(id)sender {
+  [self.handler showAddPasswordSheet];
+}
+
+- (void)editOrDoneButtonPressed {
+  [self setEditing:!self.tableView.editing animated:YES];
+}
+
 #pragma mark - PasswordsConsumer
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state
@@ -726,15 +811,21 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
             (std::vector<password_manager::PasswordForm>)savedForms
              blockedForms:
                  (std::vector<password_manager::PasswordForm>)blockedForms {
-  _blockedForms = std::move(blockedForms);
-  _savedForms = std::move(savedForms);
-
   if (!_didReceiveSavedForms) {
+    _blockedForms = std::move(blockedForms);
+    _savedForms = std::move(savedForms);
     _didReceiveSavedForms = YES;
     [self hideLoadingSpinnerBackground];
     [self updateUIForEditState];
     [self reloadData];
   } else {
+    if (ArePasswordsListsEqual(_savedForms, savedForms) &&
+        ArePasswordsListsEqual(_blockedForms, blockedForms)) {
+      return;
+    }
+
+    _blockedForms = std::move(blockedForms);
+    _savedForms = std::move(savedForms);
     TableViewModel* model = self.tableViewModel;
     NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
 
@@ -832,6 +923,13 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
         [self clearSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
                         withRowAnimation:UITableViewRowAnimationTop];
+
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::
+                    kSupportForAddPasswordsInSettings)) {
+          // Hide the toolbar when the search controller is presented.
+          self.navigationController.toolbarHidden = YES;
+        }
       }
                         completion:nil];
 }
@@ -880,6 +978,12 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
         [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
                               withRowAnimation:UITableViewRowAnimationTop];
+
+        if (base::FeatureList::IsEnabled(
+                password_manager::features::
+                    kSupportForAddPasswordsInSettings)) {
+          self.navigationController.toolbarHidden = NO;
+        }
       }
                completion:nil];
 }
@@ -894,6 +998,41 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
   }
 
   [self searchForTerm:searchText];
+}
+
+#pragma mark - Toolbar Buttons
+
+// Returns "Add Password" button, to be added to the toolbar.
+- (UIBarButtonItem*)addPasswordButton {
+  if (!_addPasswordButton) {
+    // TODO(crbug.com/1226006): Use i18n string for the add password button.
+    _addPasswordButton =
+        [[UIBarButtonItem alloc] initWithTitle:@"Add"
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(handleAddPassword:)];
+    _addPasswordButton.accessibilityIdentifier = kPasswordsAddPasswordButtonId;
+  }
+  _addPasswordButton.enabled = [_passwordManagerEnabled value];
+  return _addPasswordButton;
+}
+
+// Creates and returns "Edit" or "Done" button based on |editing|, to be added
+// to the toolbar.
+- (UIBarButtonItem*)editOrDoneButtonWithEditing:(BOOL)editing {
+  // TODO(crbug.com/1226006): Create separate accessibility identifiers for the
+  // toolbar "Edit" and "Done" buttons.
+  NSString* title =
+      l10n_util::GetNSString(editing ? IDS_IOS_NAVIGATION_BAR_DONE_BUTTON
+                                     : IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
+  UIBarButtonItem* button = [[UIBarButtonItem alloc]
+      initWithTitle:title
+              style:(editing ? UIBarButtonItemStyleDone
+                             : UIBarButtonItemStylePlain)
+             target:self
+             action:@selector(editOrDoneButtonPressed)];
+  button.enabled = editing || [self editButtonEnabled];
+  return button;
 }
 
 #pragma mark - Private methods
@@ -1100,7 +1239,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
 
   if (self.editing) {
-    _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+    _checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _checkForProblemsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
     return;
   }
@@ -1117,7 +1256,8 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     case PasswordCheckStateRunning:
     // Fall through.
     case PasswordCheckStateDisabled:
-      _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+      _checkForProblemsItem.textColor =
+          [UIColor colorNamed:kTextSecondaryColor];
       _checkForProblemsItem.accessibilityTraits |=
           UIAccessibilityTraitNotEnabled;
       break;
@@ -1205,7 +1345,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
     _exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];
     _exportPasswordsItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    _exportPasswordsItem.textColor = UIColor.cr_secondaryLabelColor;
+    _exportPasswordsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _exportPasswordsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
   [self reconfigureCellsForItems:@[ _exportPasswordsItem ]];
@@ -1266,17 +1406,65 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 }
 
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
-  std::vector<password_manager::PasswordForm> formsToDelete;
+  std::vector<password_manager::PasswordForm> passwordsToDelete;
+  std::vector<password_manager::PasswordForm> blockedToDelete;
 
   for (NSIndexPath* indexPath in indexPaths) {
     // Only form items are editable.
     PasswordFormContentItem* item =
         base::mac::ObjCCastStrict<PasswordFormContentItem>(
             [self.tableViewModel itemAtIndexPath:indexPath]);
-    formsToDelete.push_back(item.form);
+    BOOL blocked = [item isKindOfClass:[BlockedFormContentItem class]];
+    blocked ? blockedToDelete.push_back(item.form)
+            : passwordsToDelete.push_back(item.form);
   }
 
-  [self.delegate deletePasswordForms:formsToDelete];
+  RemoveFormsToBeDeleted(_savedForms, passwordsToDelete);
+  RemoveFormsToBeDeleted(_blockedForms, blockedToDelete);
+
+  // Remove empty sections.
+  __weak PasswordsTableViewController* weakSelf = self;
+  [self.tableView
+      performBatchUpdates:^{
+        PasswordsTableViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+
+        [strongSelf removeFromModelItemAtIndexPaths:indexPaths];
+        [strongSelf.tableView
+            deleteRowsAtIndexPaths:indexPaths
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+
+        // Delete in reverse order of section indexes (bottom up of section
+        // displayed), so that indexes in model matches those in the view.  if
+        // we don't we'll cause a crash.
+        if (strongSelf->_blockedForms.empty()) {
+          [self clearSectionWithIdentifier:SectionIdentifierBlocked
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+        if (strongSelf->_savedForms.empty()) {
+          [strongSelf
+              clearSectionWithIdentifier:SectionIdentifierSavedPasswords
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+      }
+      completion:^(BOOL finished) {
+        PasswordsTableViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        // If both lists are empty, exit editing mode.
+        if (strongSelf->_savedForms.empty() &&
+            strongSelf->_blockedForms.empty())
+          [strongSelf setEditing:NO animated:YES];
+        [strongSelf updateUIForEditState];
+        [strongSelf updateExportPasswordsButton];
+      }];
+
+  passwordsToDelete.insert(passwordsToDelete.end(),
+                           std::make_move_iterator(blockedToDelete.begin()),
+                           std::make_move_iterator(blockedToDelete.end()));
+
+  [self.delegate deletePasswordForms:passwordsToDelete];
 }
 
 - (void)showPasswordIssuesPage {
@@ -1288,6 +1476,23 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
       password_manager::PasswordCheckReferrer::kPasswordSettings);
 }
 
+// Sets toolbar items based on |editing|.
+- (void)setToolbarItemsWithEditing:(BOOL)editing {
+  UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  UIBarButtonItem* toolbarLeftButton =
+      editing ? self.deleteButton : self.addPasswordButton;
+  [self setToolbarItems:@[
+    toolbarLeftButton, flexibleSpace, [self editOrDoneButtonWithEditing:editing]
+  ]
+               animated:YES];
+  if (editing) {
+    self.deleteButton.enabled = NO;
+  }
+}
+
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -1296,6 +1501,7 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
 
   // Actions should only take effect when not in editing mode.
   if (self.editing) {
+    self.deleteButton.enabled = YES;
     return;
   }
 
@@ -1346,6 +1552,18 @@ std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
       NOTREACHED();
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didDeselectRowAtIndexPath:indexPath];
+  if (!self.editing) {
+    return;
+  }
+
+  if (self.tableView.indexPathsForSelectedRows.count == 0) {
+    self.deleteButton.enabled = NO;
+  }
 }
 
 - (BOOL)tableView:(UITableView*)tableView

@@ -53,9 +53,9 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -320,11 +320,6 @@ void ChromeNewWindowClient::NewTab() {
   browser->SetFocusToLocationBar();
 }
 
-void ChromeNewWindowClient::NewTabWithUrl(const GURL& url,
-                                          bool from_user_interaction) {
-  OpenUrlImpl(url, from_user_interaction);
-}
-
 void ChromeNewWindowClient::NewWindow(bool is_incognito,
                                       bool should_trigger_session_restore) {
   if (is_incognito && !IsIncognitoAllowed())
@@ -338,6 +333,11 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito,
       is_incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
                    : profile,
       should_trigger_session_restore);
+}
+
+void ChromeNewWindowClient::OpenUrl(const GURL& url,
+                                    bool from_user_interaction) {
+  OpenUrlImpl(url, from_user_interaction);
 }
 
 void ChromeNewWindowClient::OpenCalculator() {

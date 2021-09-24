@@ -63,7 +63,7 @@
 #include "third_party/blink/public/platform/web_v8_value_converter.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
 #include "third_party/webrtc/api/video/video_codec_type.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 
 class SkCanvas;
 class SkBitmap;
@@ -303,6 +303,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns the User-Agent string.
   virtual WebString UserAgent() { return WebString(); }
+  virtual WebString ReducedUserAgent() { return WebString(); }
 
   // Returns the User Agent metadata. This will replace `UserAgent()` if we
   // end up shipping https://github.com/WICG/ua-client-hints.
@@ -440,7 +441,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // used for resources which have compress="gzip" in *.grd.
   virtual WebData GetDataResource(
       int resource_id,
-      ui::ResourceScaleFactor scale_factor = ui::SCALE_FACTOR_NONE) {
+      ui::ResourceScaleFactor scale_factor = ui::kScaleFactorNone) {
     return WebData();
   }
 
@@ -663,10 +664,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) {
     return media::AudioLatency::LATENCY_PLAYBACK;
-  }
-
-  virtual absl::optional<std::string> GetWebRTCAudioProcessingConfiguration() {
-    return absl::nullopt;
   }
 
   virtual bool ShouldEnforceWebRTCRoutingPreferences() { return true; }

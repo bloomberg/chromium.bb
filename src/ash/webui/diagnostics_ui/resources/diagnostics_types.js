@@ -352,6 +352,45 @@ export let NetworkGuidInfo;
 export let WiFiStateProperties = ash.diagnostics.mojom.WiFiStateProperties;
 
 /**
+ * Type alias for SecurityType.
+ * @typedef {ash.diagnostics.mojom.SecurityType}
+ */
+export let SecurityType = ash.diagnostics.mojom.SecurityType;
+
+/**
+ * Type alias for RoamingState.
+ * @typedef {ash.diagnostics.mojom.RoamingState}
+ */
+export let RoamingState = ash.diagnostics.mojom.RoamingState;
+
+/**
+ * Type alias for LockType.
+ * @typedef {ash.diagnostics.mojom.LockType}
+ */
+export let LockType = ash.diagnostics.mojom.LockType;
+
+/**
+ * Radio band related to channel frequency.
+ * @enum {number}
+ */
+export const ChannelBand = {
+  UNKNOWN: 0,
+  /** 5Ghz radio band. */
+  FIVE_GHZ: 1,
+  /** 2.4Ghz radio band. */
+  TWO_DOT_FOUR_GHZ: 2,
+};
+
+/**
+ * Struct for holding data related to WiFi network channel.
+ * @typedef {{
+ *   channel: number,
+ *   band: !ChannelBand,
+ * }}
+ */
+export let ChannelProperties;
+
+/**
  * Type alias for ConnectionType.
  * @typedef {ash.diagnostics.mojom.ConnectionType}
  */
@@ -370,10 +409,22 @@ export let PhysicalLayout = ash.diagnostics.mojom.PhysicalLayout;
 export let MechanicalLayout = ash.diagnostics.mojom.MechanicalLayout;
 
 /**
+ * Type alias for NumberPadPresence.
+ * @typedef {ash.diagnostics.mojom.NumberPadPresence}
+ */
+export let NumberPadPresence = ash.diagnostics.mojom.NumberPadPresence;
+
+/**
  * Type alias for KeyboardInfo.
  * @typedef {ash.diagnostics.mojom.KeyboardInfo}
  */
 export let KeyboardInfo = ash.diagnostics.mojom.KeyboardInfo;
+
+/**
+ * Type alias for KeyGlyphSet.
+ * @typedef {ash.diagnostics.mojom.KeyGlyphSet}
+ */
+export let KeyGlyphSet = ash.diagnostics.mojom.KeyGlyphSet;
 
 /**
  * Type alias for TouchDeviceType.
@@ -421,6 +472,12 @@ export let ConnectedDevicesObserverReceiver =
  *            touchDevices: !Array<!TouchDeviceInfo>}}
  */
 export let GetConnectedDevicesResponse;
+
+/**
+ * Type alias for the response from InputDataProvider.GetKeyboardVisualLayout.
+ * @typedef {{layout: !Object<number, !KeyGlyphSet>}}
+ */
+export let GetKeyboardVisualLayoutResponse;
 
 /**
  * Type alias for InputDataProviderInterface.

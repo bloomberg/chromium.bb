@@ -30,7 +30,12 @@ import {
 import {PROCESS_SUMMARY_TRACK} from '../tracks/process_summary/common';
 
 import {DEFAULT_VIEWING_OPTION} from './flamegraph_util';
-import {AggregationAttrs, PivotAttrs} from './pivot_table_query_generator';
+import {
+  AggregationAttrs,
+  PivotAttrs,
+  SubQueryAttrs,
+  TableAttrs
+} from './pivot_table_data';
 import {
   AdbRecordingTarget,
   Area,
@@ -75,16 +80,17 @@ export interface AddTrackArgs {
 }
 
 export interface PostedTrace {
+  buffer: ArrayBuffer;
   title: string;
   fileName?: string;
   url?: string;
-  buffer: ArrayBuffer;
+  uuid?: string;
+  localOnly?: boolean;
 }
 
 function clearTraceState(state: StateDraft) {
   const nextId = state.nextId;
   const recordConfig = state.recordConfig;
-  const route = state.route;
   const recordingTarget = state.recordingTarget;
   const updateChromeCategories = state.updateChromeCategories;
   const extensionInstalled = state.extensionInstalled;
@@ -95,7 +101,6 @@ function clearTraceState(state: StateDraft) {
   Object.assign(state, createEmptyState());
   state.nextId = nextId;
   state.recordConfig = recordConfig;
-  state.route = route;
   state.recordingTarget = recordingTarget;
   state.updateChromeCategories = updateChromeCategories;
   state.extensionInstalled = extensionInstalled;
@@ -118,77 +123,7 @@ function rankIndex<T>(element: T, array: T[]): number {
   return index;
 }
 
-function getSelectedPivotTableColumnAttrs(
-    state: StateDraft, args: {pivotTableId: string}):
-    {aggregation?: string, tableName: string, columnName: string} {
-  const availableColumns = state.pivotTableConfig.availableColumns;
-  const columnCount = state.pivotTableConfig.totalColumnsCount;
-  let columnIdx = state.pivotTable[args.pivotTableId].selectedColumnIndex;
-  if (!availableColumns || !columnCount) {
-    throw Error('No columns available');
-  }
-  if (columnIdx === undefined) {
-    throw Error('No column selected');
-  }
-  let tableName, columnName;
-  // Finds column index relative to its table.
-  for (let i = 0; i < availableColumns.length; ++i) {
-    if (columnIdx >= availableColumns[i].columns.length) {
-      columnIdx -= availableColumns[i].columns.length;
-      continue;
-    }
-    tableName = availableColumns[i].tableName;
-    columnName = availableColumns[i].columns[columnIdx];
-    break;
-  }
-  if (tableName === undefined || columnName === undefined) {
-    throw Error('Pivot table requested column does not exist');
-  }
-
-  // Get aggregation if selected column is not a pivot, undefined otherwise.
-  let aggregation;
-  if (state.pivotTable[args.pivotTableId].isPivot === false) {
-    const aggregations = state.pivotTableConfig.availableAggregations;
-    const aggregationIdx =
-        state.pivotTable[args.pivotTableId].selectedAggregationIndex;
-    if (!aggregations) {
-      throw Error('No aggregations available');
-    }
-    if (aggregationIdx === undefined) {
-      throw Error('No aggregation selected');
-    }
-    if (aggregationIdx >= aggregations.length) {
-      throw Error('Pivot table requested aggregation out of bounds');
-    }
-    aggregation = aggregations[aggregationIdx];
-  }
-
-  return {aggregation, tableName, columnName};
-}
-
-function equalTableAttrs(
-    left: PivotAttrs|AggregationAttrs, right: PivotAttrs|AggregationAttrs) {
-  if (left.columnName !== right.columnName) {
-    return false;
-  }
-
-  if (left.tableName !== right.tableName) {
-    return false;
-  }
-
-  if ('aggregation' in left && 'aggregation' in right) {
-    if (left.aggregation !== right.aggregation) {
-      return false;
-    }
-  }
-  return true;
-}
-
 export const StateActions = {
-
-  navigate(state: StateDraft, args: {route: string}): void {
-    state.route = args.route;
-  },
 
   openTraceFromFile(state: StateDraft, args: {file: File}): void {
     clearTraceState(state);
@@ -198,7 +133,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'FILE', file: args.file},
     };
-    state.route = '/viewer';
   },
 
   openTraceFromBuffer(state: StateDraft, args: PostedTrace): void {
@@ -209,7 +143,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'ARRAY_BUFFER', ...args},
     };
-    state.route = '/viewer';
   },
 
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
@@ -220,7 +153,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'URL', url: args.url},
     };
-    state.route = '/viewer';
   },
 
   openTraceFromHttpRpc(state: StateDraft, _args: {}): void {
@@ -231,7 +163,6 @@ export const StateActions = {
       ready: false,
       source: {type: 'HTTP_RPC'},
     };
-    state.route = '/viewer';
   },
 
   setTraceUuid(state: StateDraft, args: {traceUuid: string}) {
@@ -923,7 +854,7 @@ export const StateActions = {
       name: args.name,
       selectedPivots: args.selectedPivots,
       selectedAggregations: args.selectedAggregations,
-      isPivot: true,
+      isLoadingQuery: false,
     };
   },
 
@@ -931,83 +862,45 @@ export const StateActions = {
     delete state.pivotTable[args.pivotTableId];
   },
 
-  // Adds column to selectedPivots or selectedAggregations if it doesn't
-  // already exist, remove otherwise.
-  toggleRequestedPivotTablePivot(
-      state: StateDraft, args: {pivotTableId: string}): void {
-    const {aggregation, tableName, columnName} =
-        getSelectedPivotTableColumnAttrs(
-            state, {pivotTableId: args.pivotTableId});
-    let storage: Array<PivotAttrs|AggregationAttrs>;
-    let attrs: PivotAttrs|AggregationAttrs;
-    if (state.pivotTable[args.pivotTableId].isPivot) {
-      storage = state.pivotTable[args.pivotTableId].selectedPivots;
-      attrs = {tableName, columnName};
-    } else {
-      storage = state.pivotTable[args.pivotTableId].selectedAggregations;
-      attrs = {tableName, columnName, aggregation, order: 'DESC'};
-    }
-
-    // Gets index of requested column in selectedPivots or selectedAggregations
-    // if exists.
-    const index = storage.findIndex(element => equalTableAttrs(element, attrs));
-
-    if (index === -1) {
-      storage.push(attrs);
-    } else {
-      storage.splice(index, 1);
-    }
-  },
-
-  clearPivotTableColumns(state: StateDraft, args: {pivotTableId: string}):
-      void {
-        state.pivotTable[args.pivotTableId].selectedPivots = [];
-        state.pivotTable[args.pivotTableId].selectedAggregations = [];
-      },
-
   resetPivotTableRequest(state: StateDraft, args: {pivotTableId: string}):
       void {
         state.pivotTable[args.pivotTableId].requestedAction = undefined;
       },
 
   setPivotTableRequest(
-      state: StateDraft, args: {pivotTableId: string, action: string}): void {
-    state.pivotTable[args.pivotTableId].requestedAction = args.action;
+      state: StateDraft,
+      args: {pivotTableId: string, action: string, attrs?: SubQueryAttrs}):
+      void {
+        state.pivotTable[args.pivotTableId].requestedAction = {
+          action: args.action,
+          attrs: args.attrs
+        };
+      },
+
+  setAvailablePivotTableColumns(
+      state: StateDraft,
+      args: {availableColumns: TableAttrs[], availableAggregations: string[]}):
+      void {
+        state.pivotTableConfig.availableColumns = args.availableColumns;
+        state.pivotTableConfig.availableAggregations =
+            args.availableAggregations;
+      },
+
+  toggleQueryLoading(state: StateDraft, args: {pivotTableId: string}): void {
+    state.pivotTable[args.pivotTableId].isLoadingQuery =
+        !state.pivotTable[args.pivotTableId].isLoadingQuery;
   },
 
-  setAvailablePivotTableColumns(state: StateDraft, args: {
-    availableColumns: Array<{tableName: string, columns: string[]}>,
-    totalColumnsCount: number,
-    availableAggregations: string[]
-  }): void {
-    state.pivotTableConfig.availableColumns = args.availableColumns;
-    state.pivotTableConfig.totalColumnsCount = args.totalColumnsCount;
-    state.pivotTableConfig.availableAggregations = args.availableAggregations;
-  },
-
-  // Dictates if the selected indexes refer to a pivot or aggregation.
-  togglePivotSelection(state: StateDraft, args: {pivotTableId: string}): void {
-    state.pivotTable[args.pivotTableId].isPivot =
-        !state.pivotTable[args.pivotTableId].isPivot;
-  },
-
-  setSelectedPivotTableColumnIndex(
-      state: StateDraft, args: {pivotTableId: string, index: number}): void {
-    if (!state.pivotTableConfig.availableColumns ||
-        !state.pivotTableConfig.totalColumnsCount ||
-        args.index >= state.pivotTableConfig.totalColumnsCount) {
-      throw Error('Column selection out of bounds');
-    }
-    state.pivotTable[args.pivotTableId].selectedColumnIndex = args.index;
-  },
-
-  setSelectedPivotTableAggregationIndex(
-      state: StateDraft, args: {pivotTableId: string, index: number}): void {
-    if (!state.pivotTableConfig.availableAggregations ||
-        args.index >= state.pivotTableConfig.availableAggregations.length) {
-      throw Error('Aggregation selection out of bounds');
-    }
-    state.pivotTable[args.pivotTableId].selectedAggregationIndex = args.index;
+  setSelectedPivotsAndAggregations(state: StateDraft, args: {
+    pivotTableId: string,
+    selectedPivots: PivotAttrs[],
+    selectedAggregations: AggregationAttrs[]
+  }) {
+    state.pivotTable[args.pivotTableId].selectedPivots =
+        args.selectedPivots.map(pivot => Object.assign({}, pivot));
+    state.pivotTable[args.pivotTableId].selectedAggregations =
+        args.selectedAggregations.map(
+            aggregation => Object.assign({}, aggregation));
   },
 };
 

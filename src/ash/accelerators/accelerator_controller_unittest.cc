@@ -28,7 +28,7 @@
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/capture_mode_test_api.h"
+#include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -248,7 +248,7 @@ class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
   MOCK_METHOD(void, OpenCalculator, (), (override));
   MOCK_METHOD(void, ShowKeyboardShortcutViewer, (), (override));
   MOCK_METHOD(void,
-              NewTabWithUrl,
+              OpenUrl,
               (const GURL& url, bool from_user_interaction),
               (override));
 };
@@ -2433,7 +2433,7 @@ TEST_F(AcceleratorControllerStartupNotificationTest,
 
   // Setup the expectation that the learn more button opens this shortcut
   // help link.
-  EXPECT_CALL(*new_window_delegate_, NewTabWithUrl)
+  EXPECT_CALL(*new_window_delegate_, OpenUrl)
       .WillOnce([](const GURL& url, bool from_user_interaction) {
         EXPECT_EQ(GURL(kKeyboardShortcutHelpPageUrl), url);
         EXPECT_TRUE(from_user_interaction);

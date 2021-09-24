@@ -10,9 +10,10 @@
 
 #include <algorithm>
 
-#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "build/build_config.h"
 
 #if defined(OS_APPLE) && defined(ARCH_CPU_64_BITS)
@@ -119,7 +120,7 @@ MaxRegularSlotSpanSize() {
 //     | Guard page (4 KiB)    |
 //     | Metadata page (4 KiB) |
 //     | Guard pages (8 KiB)   |
-//     | QuarantineBitmaps     |
+//     | *Scan State Bitmap    |
 //     | Slot span             |
 //     | Slot span             |
 //     | ...                   |
@@ -127,7 +128,7 @@ MaxRegularSlotSpanSize() {
 //     | Guard pages (16 KiB)  |
 //     +-----------------------+
 //
-// QuarantineBitmaps are inserted for partitions that may have PCScan enabled.
+// State Bitmap is inserted for partitions that may have quarantine enabled.
 //
 // If refcount_at_end_allocation is enabled, RefcountBitmap(4KiB) is inserted
 // after the Metadata page for BackupRefPtr. The guard pages after the bitmap
@@ -194,12 +195,19 @@ constexpr size_t kSuperPageSize = 1 << kSuperPageShift;
 constexpr size_t kSuperPageAlignment = kSuperPageSize;
 constexpr size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
 constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
+
+// GigaCage is split into two pools, one which supports BackupRefPtr (BRP) and
+// one that doesn't.
+constexpr size_t kNumPools = 2;
 #if defined(PA_HAS_64_BITS_POINTERS)
 constexpr size_t kPoolMaxSize = 8 * kGiB;
 #else
 constexpr size_t kPoolMaxSize = 4 * kGiB;
 #endif
 constexpr size_t kMaxSuperPages = kPoolMaxSize / kSuperPageSize;
+
+static constexpr internal::pool_handle kNonBRPPoolHandle = 1;
+static constexpr internal::pool_handle kBRPPoolHandle = 2;
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
@@ -240,27 +248,6 @@ PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 DirectMapAllocationGranularityOffsetMask() {
   return DirectMapAllocationGranularity() - 1;
 }
-
-// Alignment has two constraints:
-// - Alignment requirement for scalar types: alignof(std::max_align_t)
-// - Alignment requirement for operator new().
-//
-// The two are separate on Windows 64 bits, where the first one is 8 bytes, and
-// the second one 16. We could technically return something different for
-// malloc() and operator new(), but this would complicate things, and most of
-// our allocations are presumably coming from operator new() anyway.
-//
-// __STDCPP_DEFAULT_NEW_ALIGNMENT__ is C++17. As such, it is not defined on all
-// platforms, as Chrome's requirement is C++14 as of 2020.
-#if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
-constexpr size_t kAlignment =
-    std::max(alignof(max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
-#else
-constexpr size_t kAlignment = alignof(max_align_t);
-#endif
-static_assert(kAlignment <= 16,
-              "PartitionAlloc doesn't support a fundamental alignment larger "
-              "than 16 bytes.");
 
 // The "order" of an allocation is closely related to the power-of-1 size of the
 // allocation. More precisely, the order is the bit index of the

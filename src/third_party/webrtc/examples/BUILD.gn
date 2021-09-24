@@ -150,7 +150,7 @@ if (is_android) {
       "../sdk/android:video_api_java",
       "../sdk/android:video_java",
       "androidapp/third_party/autobanh:autobanh_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
   }
 
@@ -239,11 +239,6 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
 
   config("apprtc_signaling_config") {
     include_dirs = [ "objc/AppRTCMobile" ]
-    cflags_objc = [
-      # TODO(bugs.webrtc.org/10837): Remove this when usage of
-      # archivedDataWithRootObject will be removed.
-      "-Wno-unguarded-availability",
-    ]
   }
 
   rtc_library("apprtc_signaling") {
@@ -869,7 +864,7 @@ if (is_android) {
       "../sdk/android:peerconnection_java",
       "../sdk/android:video_api_java",
       "../sdk/android:video_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
   }
 
@@ -885,7 +880,7 @@ if (is_android) {
       "../rtc_base:base_java",
       "../sdk/android:libjingle_peerconnection_java",
       "../sdk/android:libjingle_peerconnection_metrics_default_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
     ]
   }
 

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/base_switches.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
@@ -58,7 +60,6 @@
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -139,7 +140,7 @@ void IOSChromeMainParts::PreCreateMainMessageLoop() {
   base::FilePath resources_pack_path;
   base::PathService::Get(ios::FILE_RESOURCES_PACK, &resources_pack_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_100P);
+      resources_pack_path, ui::k100Percent);
 }
 
 void IOSChromeMainParts::PreCreateThreads() {
@@ -338,6 +339,9 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   CHECK(base::PathService::Get(ios::DIR_USER_DATA, &user_data_path));
   safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
                                     user_data_path);
+
+  // Set monitoring for some experimental flags.
+  MonitorExperimentalSettingsChanges();
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {

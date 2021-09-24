@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
+#include "chrome/browser/enterprise/connectors/file_system/account_info_utils.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_uploader.h"
 #include "chrome/browser/enterprise/connectors/file_system/rename_handler.h"
 #include "chrome/browser/enterprise/connectors/file_system/signin_experience.h"
@@ -87,6 +88,7 @@ const char kBoxAccountUserName[] = "user_name";
 const char kBoxAccountPassword[] = "password";
 
 enum TestExecutionMode { kReplay, kRecord, kLive };
+enum DownloadServiceProvider { kLocal, kBox, kUnknown };
 
 const std::string GetBoxAccountUserName() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -144,6 +146,44 @@ std::string GetAllAllowedTestPolicy(const char* enterprise_id) {
            "service_provider": "box"
         } ])PREFIX";
   return base::StringPrintf(kConnectorPolicyString, enterprise_id);
+}
+
+std::string GetTestPolicyWithEnabledFilter(const char* enterprise_id,
+                                           const char* include_url,
+                                           const char* include_mime) {
+  const char kConnectorPolicyString[] = R"PREFIX(
+        [ {
+           "domain": "*",
+           "enable": [ {
+               "mime_types": [ "%s" ],
+               "url_list": [ "%s" ]
+           } ],
+           "enterprise_id": "%s",
+           "service_provider": "box"
+        } ])PREFIX";
+  return base::StringPrintf(kConnectorPolicyString, include_mime, include_url,
+                            enterprise_id);
+}
+
+std::string GetTestPolicyWithDisabledFilter(const char* enterprise_id,
+                                            const char* exclude_url,
+                                            const char* exclude_mime) {
+  const char kConnectorPolicyString[] = R"PREFIX(
+        [ {
+           "domain": "*",
+           "enable": [ {
+               "mime_types": [ "*" ],
+               "url_list": [ "*" ]
+           } ],
+           "disable": [ {
+               "mime_types": [ "%s" ],
+               "url_list": [ "%s" ]
+           } ],
+           "enterprise_id": "%s",
+           "service_provider": "box"
+        } ])PREFIX";
+  return base::StringPrintf(kConnectorPolicyString, exclude_mime, exclude_url,
+                            enterprise_id);
 }
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str) {
@@ -344,7 +384,7 @@ class WebPageReplayUtil {
           << "Please press Ctrl-C in the xterm to end the WPR record process.";
       int exit_code;
       web_page_record_server_.WaitForExit(&exit_code);
-      ASSERT_EQ(exit_code, 0);
+      EXPECT_EQ(exit_code, 0);
     }
   }
 
@@ -444,12 +484,12 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
   // Accept the Sign in confirmation dialog to bring up the Box.com
   // sign in dialog.
   void AcceptBoxSigninConfirmation() {
-    signin_confirmation_dlg_->Accept();
+    signin_confirmation_dlg_->AcceptDialog();
     WaitForSignInDialogToShow();
   }
 
   void CancelBoxSignInConfirmation() {
-    signin_confirmation_dlg_->Cancel();
+    signin_confirmation_dlg_->CancelDialog();
   }
 
   // Bypass Single-Factor-Authentication sign in and authorize
@@ -458,18 +498,22 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
                                        const std::string& password) {
     if (current_page_ != Page::kSignin)
       WaitForPageLoad();
-    ASSERT_EQ(current_page_, Page::kSignin);
+    ASSERT_EQ(current_page_, Page::kSignin)
+        << "The sign-in dialog did not load the account sign in page!";
     // Set username and password, then click the submit button.
-    EXPECT_TRUE(content::ExecuteScript(
-        web_contents(), GetSubmitAccountSignInScript(username, password)));
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents(), GetSubmitAccountSignInScript(username, password)))
+        << "Failed to execute script to sign in!";
     WaitForPageLoad();
-    ASSERT_EQ(current_page_, Page::kAuth);
-    WaitForSignInDialogToClose(base::BindOnce(
+    ASSERT_EQ(current_page_, Page::kAuth)
+        << "The Sign In dialog did not load the authorization page!";
+    ASSERT_NO_FATAL_FAILURE(WaitForSignInDialogToClose(base::BindOnce(
         [](const content::ToRenderFrameHost& adapter) {
-          EXPECT_TRUE(
-              content::ExecuteScript(adapter, GetClickAuthorizeScript()));
+          ASSERT_TRUE(
+              content::ExecuteScript(adapter, GetClickAuthorizeScript()))
+              << "Failed to execute script to authorize access!";
         },
-        std::move(web_contents())));
+        std::move(web_contents()))));
   }
 
   // Bypass 2-Factor-Authentication sign in and authorize
@@ -479,17 +523,21 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
                                        const std::string& sms_code) {
     if (current_page_ != Page::kSignin)
       WaitForPageLoad();
-    ASSERT_EQ(current_page_, Page::kSignin);
+    ASSERT_EQ(current_page_, Page::kSignin)
+        << "The Sign In dialog did not load the account sign in page!";
     // Set username and password, then click the authorize button.
-    EXPECT_TRUE(content::ExecuteScript(
-        web_contents(), GetSubmitAccountSignInScript(username, password)));
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents(), GetSubmitAccountSignInScript(username, password)))
+        << "Failed to execute script to sign in!";
     WaitForPageLoad();
 
-    ASSERT_EQ(current_page_, Page::kSignin);
+    ASSERT_EQ(current_page_, Page::kSignin)
+        << "The Sign In dialog did not load the sms code page!";
     // In replay mode, supply the temporary password given as a parameter.
     if (GetTestExecutionMode() == TestExecutionMode::kReplay) {
-      EXPECT_TRUE(content::ExecuteScript(web_contents(),
-                                         GetSubmitSmsCodeScript(sms_code)));
+      ASSERT_TRUE(content::ExecuteScript(web_contents(),
+                                         GetSubmitSmsCodeScript(sms_code)))
+          << "Failed to execute script to submit the sms code!";
     } else {
       // If test is running the recording mode or live mode, one must manually
       // supply a valid Short Message Service code.
@@ -497,25 +545,41 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
     }
     WaitForPageLoad();
 
-    ASSERT_EQ(current_page_, Page::kAuth);
-    WaitForSignInDialogToClose(base::BindOnce(
+    ASSERT_EQ(current_page_, Page::kAuth)
+        << "The Sign In dialog did not load the authorization page!";
+    ASSERT_NO_FATAL_FAILURE(WaitForSignInDialogToClose(base::BindOnce(
         [](const content::ToRenderFrameHost& adapter) {
-          EXPECT_TRUE(
-              content::ExecuteScript(adapter, GetClickAuthorizeScript()));
+          ASSERT_TRUE(
+              content::ExecuteScript(adapter, GetClickAuthorizeScript()))
+              << "Failed to execute script to authorize access!";
         },
-        std::move(web_contents())));
+        std::move(web_contents()))));
   }
 
   void SubmitInvalidSignInCredentials(const std::string& username,
                                       const std::string& password) {
     if (current_page_ != Page::kSignin)
       WaitForPageLoad();
-    ASSERT_EQ(current_page_, Page::kSignin);
+    ASSERT_EQ(current_page_, Page::kSignin)
+        << "The Sign In dialog did not load the account sign in page!";
     // Set username and password, then click the authorize button.
-    EXPECT_TRUE(content::ExecuteScript(
-        web_contents(), GetSubmitAccountSignInScript(username, password)));
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents(), GetSubmitAccountSignInScript(username, password)))
+        << "Failed to execute script to submit invalid credentials!";
     WaitForPageLoad();
-    ASSERT_EQ(current_page_, Page::kSignin);
+    ASSERT_EQ(current_page_, Page::kSignin)
+        << "The Sign In dialog did not reload the account sign in page!";
+  }
+
+  bool GetUserNameFromSignInPage(std::string* result) {
+    DCHECK_EQ(current_page_, Page::kSignin);
+
+    const std::string get_login_value = R"(
+      window.domAutomationController.send(
+          document.getElementById('login').value);
+    )";
+    return ExecuteScriptAndExtractString(web_contents()->GetMainFrame(),
+                                         get_login_value, result);
   }
 
   void CloseSignInWidget() {
@@ -553,7 +617,7 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
     base::RunLoop run_loop;
     stop_waiting_for_dialog_shutdown_ = run_loop.QuitClosure();
     expecting_dialog_shutdown_ = true;
-    std::move(trigger_close_action).Run();
+    ASSERT_NO_FATAL_FAILURE(std::move(trigger_close_action).Run());
     run_loop.Run();
   }
 
@@ -567,7 +631,6 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
       current_page_ = Page::kAuth;
     else
       current_page_ = Page::kUnknown;
-    VLOG(0) << url.spec();
   }
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -580,15 +643,23 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
 
   // views::WidgetObserver
   void OnWidgetDestroying(views::Widget* widget) override {
-    ASSERT_EQ(sign_in_widget_, widget);
-    EXPECT_TRUE(expecting_dialog_shutdown_);
+    DCHECK_EQ(sign_in_widget_, widget);
+    // Report unexpected shut down as an error.
+    // Note that ASSERT macros can only be called on subroutines that executes
+    // in the same thread as the test body function. This subroutine executes
+    // in a separate thread.
+    // If the sign in dialog closes unexpectedly, the main test body will catch
+    // the error and abort.
+    EXPECT_TRUE(expecting_dialog_shutdown_)
+        << R"(Detected unexpected shutdown of the sign in dialog!
+              Test should abort)";
     sign_in_widget_ = nullptr;
     if (stop_waiting_for_dialog_shutdown_)
       std::move(stop_waiting_for_dialog_shutdown_).Run();
   }
 
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
-    ASSERT_EQ(sign_in_widget_, widget);
+    DCHECK_EQ(sign_in_widget_, widget);
     if (visible) {
       if (stop_waiting_for_widget_to_show_)
         std::move(stop_waiting_for_widget_to_show_).Run();
@@ -663,6 +734,7 @@ class BoxSignInObserver : public SigninExperienceTestObserver,
   base::OnceClosure stop_waiting_for_page_load_;
   base::OnceClosure stop_waiting_for_widget_to_show_;
   base::OnceClosure stop_waiting_for_dialog_shutdown_;
+  base::OnceClosure stop_waiting_for_authorization_completion_;
 };
 
 class BoxDownloadItemObserver : public download::DownloadItem::Observer {
@@ -678,12 +750,22 @@ class BoxDownloadItemObserver : public download::DownloadItem::Observer {
   }
 
   void OnDownloadDestroyed(download::DownloadItem* item) override {
-    ASSERT_EQ(item, download_item_);
+    DCHECK_EQ(item, download_item_);
     download_item_ = nullptr;
   }
 
   void OnDownloadUpdated(download::DownloadItem* item) override {
-    ASSERT_EQ(item, download_item_);
+    DCHECK_EQ(item, download_item_);
+
+    if ((item->GetState() !=
+         download::DownloadItem::DownloadState::IN_PROGRESS) &&
+        (!stop_waiting_for_download_near_completion_.is_null())) {
+      // The download is no longer in progress (either because download
+      // completed, or because it was interrupted or cancelled). We can exit the
+      // wait loop for download to be near completion.
+      std::move(stop_waiting_for_download_near_completion_).Run();
+      stop_waiting_for_download_near_completion_.Reset();
+    }
 
     // Calling download::DownloadItem::GetRenameHandler before the
     // download::DownloadItem has a full path will result in the
@@ -700,23 +782,64 @@ class BoxDownloadItemObserver : public download::DownloadItem::Observer {
     rename_handler_created_ = true;
     FileSystemRenameHandler* rename_handler =
         static_cast<FileSystemRenameHandler*>(item->GetRenameHandler());
+    rename_start_observer_ =
+        std::make_unique<RenameStartObserver>(rename_handler);
     sign_in_observer_ = std::make_unique<BoxSignInObserver>(rename_handler);
     fetch_access_token_observer_ =
         std::make_unique<BoxFetchAccessTokenTestObserver>(rename_handler);
     upload_observer_ =
         std::make_unique<BoxUploader::TestObserver>(rename_handler);
-    if (run_loop_rename_handler_.running())
-      run_loop_rename_handler_.Quit();
+
+    if (!stop_waiting_for_rename_handler_creation_.is_null()) {
+      std::move(stop_waiting_for_rename_handler_creation_).Run();
+      stop_waiting_for_rename_handler_creation_.Reset();
+    }
+
+    if (!stop_waiting_for_download_near_completion_.is_null()) {
+      std::move(stop_waiting_for_download_near_completion_).Run();
+      stop_waiting_for_download_near_completion_.Reset();
+    }
+  }
+
+  // Wait for when the reroute info on a download::DownloadItem is accurate.
+  // If the DownloadItem downloads to a local file, then this method should
+  // stop when the download completes.
+  // If the DownloadItem will be rerouted, then this method should stop when
+  // the DownloadItem's rename handler kicks off.
+  void WaitForDownloadItemRerouteInfo() {
+    if ((download_item_->GetState() ==
+         download::DownloadItem::DownloadState::IN_PROGRESS) &&
+        (!rename_handler_created_)) {
+      base::RunLoop run_loop;
+      stop_waiting_for_download_near_completion_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+
+    if (rename_start_observer_) {
+      rename_start_observer_->WaitForStart();
+    }
   }
 
   void WaitForRenameHandlerCreation() {
-    if (sign_in_observer_.get() == nullptr)
-      run_loop_rename_handler_.Run();
+    if (!rename_handler_created_) {
+      base::RunLoop run_loop;
+      stop_waiting_for_rename_handler_creation_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
   }
 
   void WaitForSignInConfirmationDialog() {
     WaitForRenameHandlerCreation();
     sign_in_observer_->WaitForSignInConfirmationDialog();
+  }
+
+  DownloadServiceProvider GetServiceProvider() {
+    auto& reroute_info = download_item_->GetRerouteInfo();
+    if (!reroute_info.has_service_provider())
+      return DownloadServiceProvider::kLocal;
+    if (reroute_info.service_provider() == FileSystemServiceProvider::BOX)
+      return DownloadServiceProvider::kBox;
+    return DownloadServiceProvider::kUnknown;
   }
 
   download::DownloadItem* download_item() { return download_item_; }
@@ -733,8 +856,10 @@ class BoxDownloadItemObserver : public download::DownloadItem::Observer {
 
  private:
   download::DownloadItem* download_item_ = nullptr;
-  base::RunLoop run_loop_rename_handler_;
+  base::OnceClosure stop_waiting_for_rename_handler_creation_;
+  base::OnceClosure stop_waiting_for_download_near_completion_;
   bool rename_handler_created_ = false;
+  std::unique_ptr<RenameStartObserver> rename_start_observer_;
   std::unique_ptr<BoxSignInObserver> sign_in_observer_;
   std::unique_ptr<BoxFetchAccessTokenTestObserver> fetch_access_token_observer_;
   std::unique_ptr<BoxUploader::TestObserver> upload_observer_;
@@ -753,7 +878,7 @@ class DownloadManagerObserver : public content::DownloadManager::Observer {
   }
 
   void ManagerGoingDown(content::DownloadManager* manager) override {
-    ASSERT_EQ(manager, download_manager_);
+    DCHECK_EQ(manager, download_manager_);
     download_manager_ = nullptr;
   }
 
@@ -781,8 +906,12 @@ class DownloadManagerObserver : public content::DownloadManager::Observer {
   }
 
   download::DownloadItem* GetLatestDownloadItem() {
-    EXPECT_FALSE(download_items_.empty());
+    DCHECK(!download_items_.empty());
     return download_items_.back();
+  }
+
+  std::vector<download::DownloadItem*> GetAllDownloadItems() {
+    return download_items_;
   }
 
   content::DownloadManager* download_manager() { return download_manager_; }
@@ -826,6 +955,18 @@ class BoxCapturedSitesInteractiveTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     // Make sure any pending requests have finished
     base::RunLoop().RunUntilIdle();
+
+    // Make sure that this function terminates all in-progress downloads.
+    // Otherwise Chrome will prompt the user to confirm closing the Chrome
+    // window while there are active downloads. The prompt in turn prevents
+    // the test from terminating.
+    if (download_manager_observer()) {
+      for (auto* download_item :
+           download_manager_observer()->GetAllDownloadItems()) {
+        if (!download_item->IsDone())
+          download_item->Cancel(false);
+      }
+    }
   }
 
   void SetCloudFSCPolicy(const std::string& policy_value) {
@@ -833,7 +974,8 @@ class BoxCapturedSitesInteractiveTest : public InProcessBrowserTest {
         ConnectorPref(FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD),
         *base::JSONReader::Read(policy_value.c_str()));
     // Verify that the FSC is enabled.
-    ASSERT_TRUE(IsFSCEnabled());
+    ASSERT_TRUE(IsFSCEnabled())
+        << "Failed to enable the File System Connector!";
   }
 
   bool IsFSCEnabled() {
@@ -843,18 +985,21 @@ class BoxCapturedSitesInteractiveTest : public InProcessBrowserTest {
 
   void StartWprUsingFSCCaptureDir(const char* replay_file_relative_path) {
     base::FilePath capture_dir;
-    ASSERT_TRUE(GetWPRCaptureDir(&capture_dir));
+    ASSERT_TRUE(GetWPRCaptureDir(&capture_dir))
+        << "Failed to get the FSC integration test root capture directory!";
     const base::FilePath replay_file_abs_path =
         capture_dir.AppendASCII(replay_file_relative_path);
 
     switch (GetTestExecutionMode()) {
       case TestExecutionMode::kRecord:
         ASSERT_TRUE(web_page_replay_util()->StartWebPageRecordServer(
-            replay_file_abs_path));
+            replay_file_abs_path))
+            << "Failed to start WPR recording session!";
         break;
       case TestExecutionMode::kReplay:
         ASSERT_TRUE(web_page_replay_util()->StartWebPageReplayServer(
-            replay_file_abs_path));
+            replay_file_abs_path))
+            << "Failed to start WPR replay session!";
         break;
       case TestExecutionMode::kLive:
         break;
@@ -872,14 +1017,66 @@ class BoxCapturedSitesInteractiveTest : public InProcessBrowserTest {
     download_manager_observer_->WaitForDownloadCreation();
   }
 
-  DownloadItemView* GetItemViewForLastDownload() {
+  void GetItemViewForLastDownload(DownloadItemView** item_view) {
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
     DownloadShelfView* shelf = static_cast<DownloadShelfView*>(
         browser()->window()->GetDownloadShelf());
-    EXPECT_TRUE(shelf);
-    DownloadItemView* item = shelf->GetViewOfLastDownloadItemForTesting();
-    EXPECT_TRUE(item);
-    return item;
+    ASSERT_TRUE(shelf) << "No download shelf found!";
+    *item_view = shelf->GetViewOfLastDownloadItemForTesting();
+    ASSERT_TRUE(item_view) << "No download item view found!";
+  }
+
+  void StartDownloadFromEmbeddedServerUrlByDownloadManagerRequest(
+      const char* relative_url) {
+    GURL url = embedded_test_server()->GetURL(relative_url);
+    VLOG(1) << url;
+    // First, set the tab URL to the download url's parent directory.
+    // I.e. If the url is https://www.foo.com/path/file.zip, then set the
+    // parent directory is https://www.foo.com/path.
+    // This is to avoid leaving the current tab on about:blank.
+    // When it comes to applying filters, the FSC will apply the url filter
+    // to both the download url and to the tab url. Leaving the tab at
+    // about:blank will result in unexpected filter behaviors.
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url.GetWithoutFilename(), WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+    download_manager_observer_->download_manager()->DownloadUrl(
+        content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+            browser()->tab_strip_model()->GetActiveWebContents(), url,
+            TRAFFIC_ANNOTATION_FOR_TESTS));
+    download_manager_observer_->WaitForDownloadCreation();
+  }
+
+  void DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+      const char* relative_url,
+      DownloadServiceProvider expected_service_provider,
+      bool& need_to_bypass_box_signin,
+      const char* expected_mime,
+      const std::string& username,
+      const std::string& password) {
+    StartDownloadFromEmbeddedServerUrlByDownloadManagerRequest(relative_url);
+    BoxDownloadItemObserver download_item_observer(
+        download_manager_observer()->GetLatestDownloadItem());
+    if (strlen(expected_mime) > 0)
+      EXPECT_EQ(download_item_observer.download_item()->GetMimeType(),
+                expected_mime);
+
+    download_item_observer.WaitForDownloadItemRerouteInfo();
+    auto service_provider = download_item_observer.GetServiceProvider();
+    ASSERT_NE(service_provider, DownloadServiceProvider::kUnknown);
+    EXPECT_EQ(service_provider, expected_service_provider);
+
+    if (service_provider == DownloadServiceProvider::kBox &&
+        need_to_bypass_box_signin) {
+      download_item_observer.WaitForSignInConfirmationDialog();
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
+      download_item_observer.sign_in_observer()
+          ->AuthorizeWithUserAndPasswordSFA(username, password);
+      need_to_bypass_box_signin = false;
+      download_item_observer.upload_observer()->WaitForUploadCompletion();
+      download_manager_observer()->WaitForDownloadToFinish();
+    }
   }
 
   DownloadManagerObserver* download_manager_observer() {
@@ -896,8 +1093,9 @@ class BoxCapturedSitesInteractiveTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
                        SFA_DownloadSmallFileSuccess) {
-  SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721"));
-  StartWprUsingFSCCaptureDir("box.com.sfa.wpr");
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir("box.com.sfa.wpr"));
 
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
@@ -906,29 +1104,36 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
       "direct_download_gibben.epub");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   download_item_observer.WaitForSignInConfirmationDialog();
-  download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation());
 
   // Make sure that the download shelf is showing.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Bypass the Box signin and authorize dialog.
-  download_item_observer.sign_in_observer()->AuthorizeWithUserAndPasswordSFA(
-      GetBoxAccountUserName(), GetBoxAccountPassword());
-  EXPECT_TRUE(
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()
+          ->AuthorizeWithUserAndPasswordSFA(GetBoxAccountUserName(),
+                                            GetBoxAccountPassword()));
+  ASSERT_TRUE(
       download_item_observer.fetch_access_token_observer()->WaitForFetch());
 
   // Check that the download shelf is displaying the expected "uploading"
   // text.
-  DownloadItemView* item_view = GetItemViewForLastDownload();
+  DownloadItemView* item_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetItemViewForLastDownload(&item_view));
   download_item_observer.upload_observer()->WaitForUploadStart();
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_UPLOADING,
                 l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX)),
             item_view->GetStatusTextForTesting());
 
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       download_item_observer.upload_observer()->WaitForUploadCompletion());
   download_manager_observer()->WaitForDownloadToFinish();
   EXPECT_TRUE(
@@ -945,32 +1150,39 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
   ui_test_utils::TabAddedWaiter tab_waiter(browser());
   item_view->OpenItemForTesting();
   tab_waiter.Wait();
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL(),
             download_item_observer.upload_observer()->GetFileUrl());
 }
 
 IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
                        MFA_DownloadSmallFileSuccess) {
-  SetCloudFSCPolicy(GetAllAllowedTestPolicy("611447719"));
-  StartWprUsingFSCCaptureDir("box.com.mfa.wpr");
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("611447719")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir("box.com.mfa.wpr"));
 
   StartDownloadByNavigatingToEmbeddedServerUrl(
       "/enterprise/connectors/file_system/downloads/cipd/"
       "direct_download_gibben.epub");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   download_item_observer.WaitForSignInConfirmationDialog();
-  download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation());
 
   // Bypass the Box signin and authorize dialog.
-  download_item_observer.sign_in_observer()->AuthorizeWithUserAndPassword2FA(
-      GetBoxAccountUserName(), GetBoxAccountPassword(), "123456");
-  EXPECT_TRUE(
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()
+          ->AuthorizeWithUserAndPassword2FA(GetBoxAccountUserName(),
+                                            GetBoxAccountPassword(), "123456"));
+  ASSERT_TRUE(
       download_item_observer.fetch_access_token_observer()->WaitForFetch());
 
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       download_item_observer.upload_observer()->WaitForUploadCompletion());
   download_manager_observer()->WaitForDownloadToFinish();
   EXPECT_TRUE(
@@ -979,34 +1191,43 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
                        DownloadLargeFileSuccess) {
-  SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721"));
-  StartWprUsingFSCCaptureDir("box.com.large_download.wpr");
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721")));
+  ASSERT_NO_FATAL_FAILURE(
+      StartWprUsingFSCCaptureDir("box.com.large_download.wpr"));
 
   StartDownloadByNavigatingToEmbeddedServerUrl(
       "/enterprise/connectors/file_system/downloads/cipd/"
       "large_download_gibben.mobi");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   // Sign in to authorize Chrome to upload to Box.com.
   download_item_observer.WaitForSignInConfirmationDialog();
-  download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
-  download_item_observer.sign_in_observer()->AuthorizeWithUserAndPasswordSFA(
-      GetBoxAccountUserName(), GetBoxAccountPassword());
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation());
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()
+          ->AuthorizeWithUserAndPasswordSFA(GetBoxAccountUserName(),
+                                            GetBoxAccountPassword()));
 
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       download_item_observer.fetch_access_token_observer()->WaitForFetch());
 
   // Check that the download shelf is displaying the expected "uploading"
   // text.
-  DownloadItemView* item_view = GetItemViewForLastDownload();
+  DownloadItemView* item_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetItemViewForLastDownload(&item_view));
   download_item_observer.upload_observer()->WaitForUploadStart();
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_UPLOADING,
                 l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX)),
             item_view->GetStatusTextForTesting());
 
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       download_item_observer.upload_observer()->WaitForUploadCompletion());
   download_manager_observer()->WaitForDownloadToFinish();
   EXPECT_TRUE(
@@ -1023,7 +1244,7 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
   ui_test_utils::TabAddedWaiter tab_waiter(browser());
   item_view->OpenItemForTesting();
   tab_waiter.Wait();
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(browser()->tab_strip_model()->GetWebContentsAt(1)->GetURL(),
             download_item_observer.upload_observer()->GetFileUrl());
 }
@@ -1037,6 +1258,9 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest, EnterpriseIdMismatch) {
       "direct_download_gibben.epub");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   download_item_observer.WaitForSignInConfirmationDialog();
   download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
@@ -1059,24 +1283,31 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest, EnterpriseIdMismatch) {
   // Check that the download shelf is displaying the expected "upload
   // cancelled" text.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  DownloadItemView* item_view = GetItemViewForLastDownload();
+  DownloadItemView* item_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetItemViewForLastDownload(&item_view));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED),
             item_view->GetStatusTextForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
                        CancelSignInConfirmation) {
-  SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721"));
-  StartWprUsingFSCCaptureDir("box.com.cancel.sign.in.confirmation.wpr");
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721")));
+  ASSERT_NO_FATAL_FAILURE(
+      StartWprUsingFSCCaptureDir("box.com.cancel.sign.in.confirmation.wpr"));
 
   StartDownloadByNavigatingToEmbeddedServerUrl(
       "/enterprise/connectors/file_system/downloads/"
       "small_download.zip");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   download_item_observer.WaitForSignInConfirmationDialog();
-  download_item_observer.sign_in_observer()->CancelBoxSignInConfirmation();
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->CancelBoxSignInConfirmation());
   EXPECT_FALSE(
       download_item_observer.upload_observer()->WaitForUploadCompletion());
   EXPECT_TRUE(
@@ -1085,25 +1316,33 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
   // Check that the download shelf is displaying the expected "upload
   // cancelled" text.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  DownloadItemView* item_view = GetItemViewForLastDownload();
+  DownloadItemView* item_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetItemViewForLastDownload(&item_view));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED),
             item_view->GetStatusTextForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest, ExitSignInDialog) {
-  SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721"));
-  StartWprUsingFSCCaptureDir("box.com.sign.in.fail.wpr");
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721")));
+  ASSERT_NO_FATAL_FAILURE(
+      StartWprUsingFSCCaptureDir("box.com.sign.in.fail.wpr"));
 
   StartDownloadByNavigatingToEmbeddedServerUrl(
       "/enterprise/connectors/file_system/downloads/"
       "small_download.zip");
   BoxDownloadItemObserver download_item_observer(
       download_manager_observer()->GetLatestDownloadItem());
+  download_item_observer.WaitForDownloadItemRerouteInfo();
+  ASSERT_EQ(download_item_observer.GetServiceProvider(),
+            DownloadServiceProvider::kBox);
 
   download_item_observer.WaitForSignInConfirmationDialog();
-  download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation();
-  download_item_observer.sign_in_observer()->SubmitInvalidSignInCredentials(
-      GetBoxAccountUserName(), GetBoxAccountPassword());
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation());
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->SubmitInvalidSignInCredentials(
+          GetBoxAccountUserName(), GetBoxAccountPassword()));
   download_item_observer.sign_in_observer()->CloseSignInWidget();
   EXPECT_FALSE(
       download_item_observer.upload_observer()->WaitForUploadCompletion());
@@ -1113,9 +1352,242 @@ IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest, ExitSignInDialog) {
   // Check that the download shelf is displaying the expected "upload
   // cancelled" text.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  DownloadItemView* item_view = GetItemViewForLastDownload();
+  DownloadItemView* item_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetItemViewForLastDownload(&item_view));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED),
             item_view->GetStatusTextForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByEnabledSettings_match_mime_only) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com IFF:
+  // - The download has a mime type of "application/zip".
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(
+      GetTestPolicyWithEnabledFilter("797972721", "*", "application/zip")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir(
+      "box.com.filter.by.enabled.matching.mime.wpr"));
+
+  bool need_to_link_box_account = true;
+
+  // Download a svg image, which should be downloaded directly to the local
+  // file system.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/example.svg",
+          DownloadServiceProvider::kLocal, need_to_link_box_account,
+          "image/svg+xml", GetBoxAccountUserName(), GetBoxAccountPassword()));
+
+  // Download a zip file, which should be downloaded to Box.com.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kBox, need_to_link_box_account,
+          "application/zip", GetBoxAccountUserName(), GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByEnabledSettings_match_url_only) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com IFF:
+  // - The download comes from the '.../sub/' url.
+  std::string include_url =
+      embedded_test_server()
+          ->GetURL("/enterprise/connectors/file_system/downloads/sub/")
+          .GetContent();
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(
+      GetTestPolicyWithEnabledFilter("797972721", include_url.c_str(), "*")));
+  ASSERT_NO_FATAL_FAILURE(
+      StartWprUsingFSCCaptureDir("box.com.filter.by.enabled.matching.url.wpr"));
+
+  bool need_to_link_box_account = true;
+
+  // Download a zip file from outside the .../sub/ url, which should be
+  // downloaded directly to the local file system.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kLocal, need_to_link_box_account,
+          "" /* No need to check mime. */, GetBoxAccountUserName(),
+          GetBoxAccountPassword()));
+
+  // Download a zip file from the .../sub/ url, which should be downloaded to
+  // Box.com.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kBox, need_to_link_box_account,
+          "" /* No need to check mime. */, GetBoxAccountUserName(),
+          GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByEnabledSettings_match_mime_and_url) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com IFF:
+  // - The download comes from the '.../sub/' url.
+  // - The download has a mime type of "application/zip".
+  std::string include_url =
+      embedded_test_server()
+          ->GetURL("/enterprise/connectors/file_system/downloads/sub/")
+          .GetContent();
+  // Configure a policy to only to upload downloaded files to Box.com IFF:
+  // 1. The download comes from the '.../sub/' url.
+  // 2. The download has a mime type of "application/zip".
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(GetTestPolicyWithEnabledFilter(
+      "797972721", include_url.c_str(), "application/zip")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir(
+      "box.com.filter.by.enabled.matching.url.and.mime.wpr"));
+
+  // Download a zip file from the .../sub/ url, which should be downloaded to
+  // Box.com.
+  bool need_to_link_box_account = true;
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kBox, need_to_link_box_account,
+          "application/zip", GetBoxAccountUserName(), GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByDisabledSettings_match_mime_only) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com UNLESS:
+  // - The download has a mime type of "application/zip".
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(
+      GetTestPolicyWithDisabledFilter("797972721", "*", "application/zip")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir(
+      "box.com.filter.by.disabled.matching.mime.wpr"));
+
+  bool need_to_link_box_account = true;
+
+  // Download a svg image, which should be downloaded to Box.com.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/example.svg",
+          DownloadServiceProvider::kBox, need_to_link_box_account,
+          "image/svg+xml", GetBoxAccountUserName(), GetBoxAccountPassword()));
+
+  // Download a zip file, which should be downloaded directly to the local
+  // file system.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kLocal, need_to_link_box_account,
+          "application/zip", GetBoxAccountUserName(), GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByDisabledSettings_match_url_only) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com UNLESS:
+  // - The download comes from the '.../sub/' url.
+  std::string include_url =
+      embedded_test_server()
+          ->GetURL("/enterprise/connectors/file_system/downloads/sub/")
+          .GetContent();
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(
+      GetTestPolicyWithDisabledFilter("797972721", include_url.c_str(), "*")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir(
+      "box.com.filter.by.disabled.matching.url.wpr"));
+
+  bool need_to_link_box_account = true;
+
+  // Download a zip file from outside the .../sub/ url, which should be
+  // downloaded to Box.com.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kBox, need_to_link_box_account,
+          "" /* No need to check mime. */, GetBoxAccountUserName(),
+          GetBoxAccountPassword()));
+
+  // Download a zip file from the .../sub/ url, which should be
+  // downloaded directly to the local file system.
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kLocal, need_to_link_box_account,
+          "" /* No need to check mime. */, GetBoxAccountUserName(),
+          GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       FilterByDisabledSettings_match_mime_and_url) {
+  // Set the SendDownloadToCloudEnterpriseConnector policy
+  // Configure a policy to only to upload downloaded files to Box.com IFF:
+  // - The download comes from the '.../sub/' url.
+  // - The download has a mime type of "application/zip".
+  std::string include_url =
+      embedded_test_server()
+          ->GetURL("/enterprise/connectors/file_system/downloads/sub/")
+          .GetContent();
+  // Configure a policy to only to upload downloaded files to Box.com UNLESS:
+  // 1. The download comes from the '.../sub/' url.
+  // 2. The download has a mime type of "application/zip".
+  ASSERT_NO_FATAL_FAILURE(SetCloudFSCPolicy(GetTestPolicyWithDisabledFilter(
+      "797972721", include_url.c_str(), "application/zip")));
+  ASSERT_NO_FATAL_FAILURE(StartWprUsingFSCCaptureDir(
+      "box.com.filter.by.disabled.matching.url.and.mime.wpr"));
+
+  // Download a zip file from the .../sub/ url, which should be
+  // downloaded directly to the local file system.
+  bool need_to_link_box_account = true;
+  ASSERT_NO_FATAL_FAILURE(
+      DownloadFromEmbeddedServerAndVerifyDownloadServiceProvider(
+          "/enterprise/connectors/file_system/downloads/sub/"
+          "angry_clouds.mp4.zip",
+          DownloadServiceProvider::kLocal, need_to_link_box_account,
+          "" /* No need to check mime. */, GetBoxAccountUserName(),
+          GetBoxAccountPassword()));
+}
+
+IN_PROC_BROWSER_TEST_F(BoxCapturedSitesInteractiveTest,
+                       SignInDlg_PrepopulateAccount) {
+  const char kUserName[] = "Test User";
+  const char kLogin[] = "test_user@test.com";
+  base::DictionaryValue account_info;
+  account_info.SetStringKey(enterprise_connectors::kBoxNameFieldName,
+                            kUserName);
+  account_info.SetStringKey(enterprise_connectors::kBoxLoginFieldName, kLogin);
+  SetFileSystemAccountInfo(
+      browser()->profile()->GetPrefs(),
+      enterprise_connectors::kFileSystemServiceProviderPrefNameBox,
+      std::move(account_info));
+
+  ASSERT_NO_FATAL_FAILURE(
+      SetCloudFSCPolicy(GetAllAllowedTestPolicy("797972721")));
+  ASSERT_NO_FATAL_FAILURE(
+      StartWprUsingFSCCaptureDir("box.com.sign.in.prepop.account.wpr"));
+
+  StartDownloadByNavigatingToEmbeddedServerUrl(
+      "/enterprise/connectors/file_system/downloads/"
+      "small_download.zip");
+  BoxDownloadItemObserver download_item_observer(
+      download_manager_observer()->GetLatestDownloadItem());
+
+  download_item_observer.WaitForSignInConfirmationDialog();
+  ASSERT_NO_FATAL_FAILURE(
+      download_item_observer.sign_in_observer()->AcceptBoxSigninConfirmation());
+
+  std::string login_val;
+  ASSERT_TRUE(
+      download_item_observer.sign_in_observer()->GetUserNameFromSignInPage(
+          &login_val));
+  EXPECT_EQ(kLogin, login_val);
+
+  download_item_observer.sign_in_observer()->CloseSignInWidget();
+  EXPECT_FALSE(
+      download_item_observer.upload_observer()->WaitForUploadCompletion());
+  EXPECT_TRUE(
+      download_item_observer.upload_observer()->WaitForTmpFileDeletion());
 }
 
 }  // namespace enterprise_connectors

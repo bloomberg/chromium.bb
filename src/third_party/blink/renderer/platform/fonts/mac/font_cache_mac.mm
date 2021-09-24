@@ -286,15 +286,19 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   // TODO(eae): Remove once skia supports bold emoji. See
   // https://bugs.chromium.org/p/skia/issues/detail?id=4904
   // Bold emoji look the same as normal emoji, so syntheticBold isn't needed.
-  bool synthetic_bold = [platform_font.familyName isEqual:@"Apple Color Emoji"]
-                            ? false
-                            : (IsAppKitFontWeightBold(app_kit_weight) &&
-                               !IsAppKitFontWeightBold(actual_weight)) ||
+  bool synthetic_bold_requested = (IsAppKitFontWeightBold(app_kit_weight) &&
+                                   !IsAppKitFontWeightBold(actual_weight)) ||
                                   font_description.IsSyntheticBold();
+  bool synthetic_bold =
+      [platform_font.familyName isEqual:@"Apple Color Emoji"]
+          ? false
+          : synthetic_bold_requested && font_description.SyntheticBoldAllowed();
 
-  bool synthetic_italic =
+  bool synthetic_italic_requested =
       ((traits & NSFontItalicTrait) && !(actual_traits & NSFontItalicTrait)) ||
       font_description.IsSyntheticItalic();
+  bool synthetic_italic =
+      synthetic_italic_requested && font_description.SyntheticItalicAllowed();
 
   // FontPlatformData::typeface() is null in the case of Chromium out-of-process
   // font loading failing.  Out-of-process loading occurs for registered fonts

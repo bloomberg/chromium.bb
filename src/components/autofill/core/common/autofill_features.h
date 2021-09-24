@@ -48,8 +48,6 @@ extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAllowNonHttpActivation;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillAugmentFormsInRenderer;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillCreateDataForTest;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillDisableFilling;
 COMPONENT_EXPORT(AUTOFILL)
@@ -154,6 +152,8 @@ extern const base::Feature kAutofillUseNewFormExtraction;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature
     kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillUseUnassociatedListedElements;
 
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableAblationStudy;
@@ -172,6 +172,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillManualFallbackAndroid;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRefreshStyleAndroid;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillTouchToFillForCreditCardsAndroid;
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

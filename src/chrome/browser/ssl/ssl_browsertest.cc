@@ -66,8 +66,8 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -636,8 +636,8 @@ class SSLUITestBase : public InProcessBrowserTest,
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
 
-    ui_test_utils::NavigateToURL(browser,
-                                 https_server_expired_.GetURL("/title1.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser, https_server_expired_.GetURL("/title1.html")));
 
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab != nullptr);
@@ -707,8 +707,8 @@ class SSLUITestBase : public InProcessBrowserTest,
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
 
-    ui_test_utils::NavigateToURL(browser,
-                                 https_server_expired_.GetURL("/title1.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser, https_server_expired_.GetURL("/title1.html")));
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
     WaitForInterstitial(tab);
 
@@ -835,8 +835,8 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     // Navigate to an unsafe site. Proceed with interstitial page to indicate
     // the user approves the bad certificate.
-    ui_test_utils::NavigateToURL(
-        browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     ssl_test_util::CheckAuthenticationBrokenState(
         tab, net::CERT_STATUS_COMMON_NAME_INVALID,
@@ -847,8 +847,8 @@ class SSLUITestBase : public InProcessBrowserTest,
 
     std::string replacement_path = GetFilePathWithHostAndPortReplacement(
         path, https_server_mismatched_.host_port_pair());
-    ui_test_utils::NavigateToURL(browser(),
-                                 https_server_.GetURL(replacement_path));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_server_.GetURL(replacement_path)));
   }
 
   Browser* InstallAndOpenTestWebApp(const GURL& start_url) {
@@ -1023,8 +1023,8 @@ class SSLUITestHSTS : public SSLUITest {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
 
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
@@ -1042,8 +1042,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPWithBrokenHTTPSResource) {
       "/ssl/page_with_unsafe_contents.html",
       https_server_expired_.host_port_pair());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(replacement_path)));
 
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
@@ -1057,13 +1057,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentWithSamePageNavigation) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Navigate to a secure page (no mixed content).
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   // Add a mixed form after a same-document navigation.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html#foo"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html#foo")));
   ssl_test_util::SecurityStateWebContentsObserver observer(tab);
   ASSERT_NE(false, content::EvalJs(tab,
                                    "var f = document.createElement('form');"
@@ -1102,8 +1102,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
       "/ssl/page_displays_insecure_content.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL(replacement_path)));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -1119,8 +1119,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithInsecureContent) {
 // Tests that the NavigationEntry gets marked as active mixed content,
 // even if there is a certificate error. Regression test for
 // https://crbug.com/593950.
-// TODO(crbug.com/1239347): Flaky on Mac and Linux bots.
-#if defined(OS_MAC) || defined(OS_LINUX)
+// TODO(crbug.com/1239347): Flaky on Mac, Linux, Lacros, and ChromeOs.
+#if defined(OS_MAC) || defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_TestBrokenHTTPSWithActiveInsecureContent \
   DISABLED_TestBrokenHTTPSWithActiveInsecureContent
 #else
@@ -1136,9 +1137,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
   // Navigate to a page with a certificate error and click through the
   // interstitial.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_expired_.GetURL("/ssl/page_runs_insecure_content.html"));
+      https_server_expired_.GetURL("/ssl/page_runs_insecure_content.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
   ProceedThroughInterstitial(tab);
@@ -1214,8 +1215,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, GoBackToMixedContent) {
 
   // Navigate to a URL and dynamically load mixed content.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
   ssl_test_util::SecurityStateWebContentsObserver observer(tab);
   ASSERT_TRUE(content::ExecuteScript(tab,
@@ -1229,8 +1230,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, GoBackToMixedContent) {
 
   // Now navigate somewhere else, and then back to the page that dynamically
   // loaded mixed content.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -1245,8 +1246,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSameDocumentNavigation) {
 
   // Navigate to a URL and dynamically load mixed content.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
   ssl_test_util::SecurityStateWebContentsObserver security_state_observer(tab);
   ASSERT_TRUE(content::ExecuteScript(tab,
@@ -1261,8 +1262,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSameDocumentNavigation) {
   // Initiate a same-document navigation and check that the page is still
   // marked as having displayed mixed content.
   SameDocumentNavigationObserver navigation_observer(tab);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html#foo"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html#foo")));
   navigation_observer.WaitForSameDocumentNavigation();
   ssl_test_util::CheckSecurityState(tab, CertError::NONE,
                                     security_state::WARNING,
@@ -1271,8 +1272,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSameDocumentNavigation) {
 
 // Tests that the WebContents's flag for displaying content with cert
 // errors get cleared upon navigation.
-IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       DisplayedContentWithCertErrorsClearedOnNavigation) {
+// Flaky on Mac. https://crbug.com/1242369.
+#if defined(OS_MAC)
+#define MAYBE_DisplayedContentWithCertErrorsClearedOnNavigation \
+  DISABLED_DisplayedContentWithCertErrorsClearedOnNavigation
+#else
+#define MAYBE_DisplayedContentWithCertErrorsClearedOnNavigation \
+  DisplayedContentWithCertErrorsClearedOnNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SSLUITest,
+    MAYBE_DisplayedContentWithCertErrorsClearedOnNavigation) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -1281,9 +1291,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
   // Navigate to a page with a certificate error and click through the
   // interstitial.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_expired_.GetURL("/ssl/page_with_subresource.html"));
+      https_server_expired_.GetURL("/ssl/page_with_subresource.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
   ProceedThroughInterstitial(tab);
@@ -1294,8 +1304,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
               content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
 
   // Navigate away to a different page, and check that the flag gets cleared.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   entry = tab->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_FALSE(entry->GetSSL().content_status &
@@ -1315,8 +1325,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
   histograms.ExpectTotalCount(interaction_histogram, 0);
 
   // After navigating to the page, the totals should be set.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
   histograms.ExpectTotalCount(decision_histogram, 1);
   histograms.ExpectBucketCount(decision_histogram,
@@ -1354,8 +1364,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
   histograms.ExpectTotalCount(interaction_histogram, 0);
 
   // After navigating to the page, the totals should be set.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
   histograms.ExpectTotalCount(decision_histogram, 1);
   histograms.ExpectBucketCount(decision_histogram,
@@ -1385,8 +1395,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
 
   ssl_test_util::CheckAuthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
@@ -1396,8 +1406,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
@@ -1436,7 +1446,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");
 
   // Go through the interstitial in a regular browser tab.
-  ui_test_utils::NavigateToURL(browser(), app_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), app_url));
 
   WebContents* initial_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1475,14 +1485,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialCrossSiteNavigation) {
   // First navigate to an OK page.
   GURL initial_url = https_server_.GetURL("/ssl/google.html");
   ASSERT_EQ("127.0.0.1", initial_url.host());
-  ui_test_utils::NavigateToURL(browser(), initial_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Navigate from 127.0.0.1 to localhost so it triggers a
   // cross-site navigation to make sure http://crbug.com/5800 is gone.
   GURL cross_site_url = https_server_mismatched_.GetURL("/ssl/google.html");
   ASSERT_EQ("localhost", cross_site_url.host());
-  ui_test_utils::NavigateToURL(browser(), cross_site_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), cross_site_url));
   // An interstitial should be showing.
   WaitForInterstitial(tab);
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -1497,8 +1507,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialCrossSiteNavigation) {
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   // Navigate to a new page to make sure bug 5800 is fixed.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 }
 
@@ -1516,7 +1526,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
   replacements.SetHostStr(new_host);
   url = url.ReplaceComponents(replacements);
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // We should see no interstitial, but we should have an error
   // (red-crossed-out-https) in the URL bar.
@@ -1542,8 +1552,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingBuildTime) {
   SSLErrorHandler::SetClockForTesting(mock_clock.get());
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(clock_tab);
   ASSERT_TRUE(
@@ -1564,8 +1574,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingNetwork) {
       base::TimeDelta::FromMilliseconds(500), /* latency */
       base::TimeTicks::Now() /* posting time of this update */);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(clock_tab);
   ASSERT_TRUE(
@@ -1581,13 +1591,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // First navigate to an HTTP page.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Now go to a bad HTTPS page that shows an interstitial.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
@@ -1606,13 +1616,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaMenu) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // First navigate to an HTTP page.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Now go to a bad HTTPS page that shows an interstitial.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
@@ -1634,13 +1644,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertGoBackUsingCommand) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // First navigate to an HTTP page.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   // Now go to a bad HTTPS page that shows an interstitial.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
@@ -1662,8 +1672,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SHA1IsDefaultDisabled) {
                    ->initial_ssl_config->sha1_local_anchors_enabled);
 
   ASSERT_TRUE(https_server_sha1_.Start());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_sha1_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_sha1_.GetURL("/ssl/google.html")));
 
   int expected_error = net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
 
@@ -1790,8 +1800,8 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
   mock_cert_verifier()->AddResultForCert(https_server()->GetCertificate().get(),
                                          verify_result, net::OK);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
 
   ssl_test_util::CheckSecurityState(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -1826,8 +1836,8 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
       certificate_transparency::prefs::kCTExcludedSPKIs,
       {verify_result.public_key_hashes.back().ToString()}));
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   ssl_test_util::CheckSecurityState(
       browser()->tab_strip_model()->GetActiveWebContents(), CertError::NONE,
       security_state::SECURE, AuthState::NONE);
@@ -1868,8 +1878,8 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
       certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       {verify_result.public_key_hashes.back().ToString()}));
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   ssl_test_util::CheckSecurityState(
       browser()->tab_strip_model()->GetActiveWebContents(), CertError::NONE,
       security_state::SECURE, AuthState::NONE);
@@ -1909,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
 
   // Visit a page which waits for one TLS handshake failure.
   // The title will be changed to 'PASS'.
-  ui_test_utils::NavigateToURL(browser(), wss_close_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), wss_close_url));
   const std::u16string result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
 
@@ -1934,9 +1944,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCert) {
   // Visit bad HTTPS page.
   GURL::Replacements replacements;
   replacements.SetSchemeStr("https");
-  ui_test_utils::NavigateToURL(browser(),
-                               wss_server_expired_.GetURL("connect_check.html")
-                                   .ReplaceComponents(replacements));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), wss_server_expired_.GetURL("connect_check.html")
+                     .ReplaceComponents(replacements)));
   WaitForInterstitial(tab);
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
@@ -1959,7 +1969,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
 
-  ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello")));
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
@@ -2049,7 +2060,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
           std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   // Test page runs a WebSocket wss connection test. The result will be shown
@@ -2314,7 +2325,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
       https_server_expired_.GetURL("/downloads/dangerous/dangerous.exe");
 
   // Visit a non-dangerous page.
-  ui_test_utils::NavigateToURL(browser(), url_non_dangerous);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_non_dangerous));
 
   // Now, start a transition to dangerous download.
   {
@@ -2369,8 +2380,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContent) {
       embedded_test_server()->host_port_pair());
 
   // Load a page that displays insecure content.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   ssl_test_util::CheckSecurityState(
       browser()->tab_strip_model()->GetActiveWebContents(), CertError::NONE,
@@ -2386,8 +2397,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureForm) {
       "/ssl/page_displays_insecure_form.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   // If mixed form warnings are enabled, we display the lock icon on otherwise
   // secure sites with an insecure form.
@@ -2434,7 +2445,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestExtensionEvents) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   GURL request_url = https_server_expired_.GetURL("/title1.html");
-  ui_test_utils::NavigateToURL(browser(), request_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), request_url));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab != nullptr);
@@ -2471,8 +2482,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
   certificate_reporting_test_utils::SetCertReportingOptIn(
       browser(), certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab != nullptr);
@@ -2608,8 +2619,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
       browser(), certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
   safe_browsing::SetEnhancedProtectionPrefForTests(
       browser()->profile()->GetPrefs(), true);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   ExpectInterstitialElementHidden(tab, "extended-reporting-opt-in",
@@ -2623,8 +2634,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecuredContentRandomizeHash) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/ssl/page_runs_insecure_content.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/page_runs_insecure_content.html")));
 
   ssl_test_util::CheckAuthenticationBrokenState(
       browser()->tab_strip_model()->GetActiveWebContents(), CertError::NONE,
@@ -2649,8 +2660,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
     // broken in the good case.
     std::string replacement_path = GetFilePathWithHostAndPortReplacement(
         "/ssl/page_with_unsafe_contents.html", https_server_.host_port_pair());
-    ui_test_utils::NavigateToURL(browser(),
-                                 https_server_.GetURL(replacement_path));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_server_.GetURL(replacement_path)));
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     // The state is expected to be authenticated.
     ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
@@ -2674,8 +2685,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
     std::string replacement_path = GetFilePathWithHostAndPortReplacement(
         "/ssl/page_with_unsafe_contents.html",
         https_server_expired_.host_port_pair());
-    ui_test_utils::NavigateToURL(browser(),
-                                 https_server_.GetURL(replacement_path));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_server_.GetURL(replacement_path)));
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     // When the bad content is filtered, the state is expected to be
     // authenticated.
@@ -2716,8 +2727,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_dynamic_insecure_content.html", replacement_pair);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
@@ -2741,8 +2752,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/blank_page.html")));
 
   WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2783,8 +2794,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestRunsInsecureContentTwoTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/blank_page.html")));
 
   WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -2836,14 +2847,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
 
   // Load original page over HTTP.
   const GURL url_http = embedded_test_server()->GetURL(replacement_path);
-  ui_test_utils::NavigateToURL(browser(), url_http);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_http));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Load again but over SSL.  It should be marked as displaying insecure
   // content (even though the image comes from the WebCore memory cache).
   const GURL url_https = https_server_.GetURL(replacement_path);
-  ui_test_utils::NavigateToURL(browser(), url_https);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_https));
   ssl_test_util::CheckSecurityState(tab, CertError::NONE,
                                     security_state::WARNING,
                                     AuthState::DISPLAYED_INSECURE_CONTENT);
@@ -2862,14 +2873,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsCachedInsecureContent) {
 
   // Load original page over HTTP.
   const GURL url_http = embedded_test_server()->GetURL(replacement_path);
-  ui_test_utils::NavigateToURL(browser(), url_http);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_http));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Load again but over SSL.  It should be marked as displaying insecure
   // content (even though the image comes from the WebCore memory cache).
   const GURL url_https = https_server_.GetURL(replacement_path);
-  ui_test_utils::NavigateToURL(browser(), url_https);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_https));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
 }
@@ -2883,8 +2894,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
 
   // First we hit the server with hostname, this generates an invalid policy
   // error.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/google.html")));
 
   // We get an interstitial page as a result.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -2897,14 +2908,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
 
   // Now we try again with the right host name this time.
   GURL url(https_server_.GetURL("/ssl/google.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Security state should be OK.
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   // Now try again the broken one to make sure it is still broken.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/google.html")));
 
   // Since we OKed the interstitial last time, we get right to the page.
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -2915,8 +2926,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCNInvalidStickiness) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
   ASSERT_TRUE(https_server_expired_.Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/page_with_refs.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/page_with_refs.html")));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -2928,8 +2939,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
   // Now navigate to a ref in the page, the security state should not have
   // changed.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/page_with_refs.html#jp"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/page_with_refs.html#jp")));
 
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
@@ -2960,8 +2971,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestCloseTabWithUnsafePopup) {
       https_server_expired_.GetURL("/ssl/bad_iframe.html"));
   nav_observer.StartWatchingNewWebContents();
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(replacement_path)));
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Last activated browser should be the popup.
@@ -2996,7 +3007,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
   GURL url1 = https_server_expired_.GetURL("/server-redirect?");
   GURL url2 = https_server_.GetURL("/ssl/google.html");
 
-  ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec()));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec())));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -3017,7 +3029,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
   GURL url1 = https_server_.GetURL("/server-redirect?");
   GURL url2 = https_server_expired_.GetURL("/ssl/google.html");
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec()));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec())));
   WaitForInterstitial(tab);
 
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -3040,8 +3053,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToGoodHTTPS) {
   GURL http_url = embedded_test_server()->GetURL("/server-redirect?");
   GURL good_https_url = https_server_.GetURL("/ssl/google.html");
 
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(http_url.spec() + good_https_url.spec()));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(http_url.spec() + good_https_url.spec())));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
@@ -3054,8 +3067,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPToBadHTTPS) {
 
   const GURL http_url = embedded_test_server()->GetURL("/server-redirect?");
   const GURL bad_https_url = https_server_expired_.GetURL("/ssl/google.html");
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(http_url.spec() + bad_https_url.spec()));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(http_url.spec() + bad_https_url.spec())));
   WaitForInterstitial(tab);
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
@@ -3075,8 +3088,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
   GURL https_url = https_server_.GetURL("/server-redirect?");
   GURL http_url = embedded_test_server()->GetURL("/ssl/google.html");
 
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(https_url.spec() + http_url.spec()));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(https_url.spec() + http_url.spec())));
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
 }
@@ -3094,8 +3107,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToInvalidHTTP) {
   // sure we always get an error page.
   GURL invalid_url = embedded_test_server()->GetURL("/close-socket");
 
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(https_url.spec() + invalid_url.spec()));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(https_url.spec() + invalid_url.spec())));
   auto* helper = SecurityStateTabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   // Check we don't keep the previous certificate state around.
@@ -3151,8 +3164,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/blank_page.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
@@ -3205,13 +3218,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
 // Visits a page to which we could not connect (bad port) over http and https
 // and make sure the security style is correct.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
-  ui_test_utils::NavigateToURL(browser(), GURL("http://localhost:17"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("http://localhost:17")));
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(),
       AuthState::SHOWING_ERROR);
 
   // Same thing over HTTPS.
-  ui_test_utils::NavigateToURL(browser(), GURL("https://localhost:17"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("https://localhost:17")));
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(),
       AuthState::SHOWING_ERROR);
@@ -3241,7 +3256,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
       *embedded_test_server(), https_server_, https_server_expired_);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(top_frame_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(top_frame_path)));
 
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
@@ -3343,8 +3359,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
       *embedded_test_server(), https_server_, https_server_expired_);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL(top_frame_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL(top_frame_path)));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
@@ -3377,8 +3393,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnauthenticatedFrameNavigation) {
       *embedded_test_server(), https_server_, https_server_expired_);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(top_frame_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(top_frame_path)));
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Now navigate inside the frame to a secure HTTPS frame.
@@ -3541,8 +3557,8 @@ class SSLUIWorkerFetchTest
       // First load.
       content::TitleWatcher watcher(tab, loaded_title);
       watcher.AlsoWaitForTitle(failed_title);
-      ui_test_utils::NavigateToURL(browser(),
-                                   https_server_.GetURL("/worker_test.html"));
+      ASSERT_TRUE(ui_test_utils::NavigateToURL(
+          browser(), https_server_.GetURL("/worker_test.html")));
       EXPECT_EQ(expected_load ? loaded_title : failed_title,
                 watcher.WaitAndGetTitle());
     }
@@ -3644,8 +3660,8 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 
   // This page will spawn a Worker which will try to load content from
   // BadCertServer.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/worker_test.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/worker_test.html")));
   // Expect Worker not to load insecure content.
   EXPECT_EQ(failed_title, watcher.WaitAndGetTitle());
   // The bad content is filtered, expect the state to be authenticated.
@@ -3672,8 +3688,8 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 
   // Navigate to an unsafe site. Proceed with interstitial page to indicate
   // the user approves the bad certificate.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_COMMON_NAME_INVALID,
@@ -3708,8 +3724,8 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   // Navigate to safe page that has Worker loading unsafe content.
   // Expect content to load but be marked as auth broken due to running insecure
   // content.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/worker_test.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/worker_test.html")));
   // Worker loads insecure content
   EXPECT_EQ(loaded_title, watcher.WaitAndGetTitle());
   ssl_test_util::CheckAuthenticationBrokenState(tab, CertError::NONE,
@@ -3769,16 +3785,9 @@ IN_PROC_BROWSER_TEST_P(
 // from a dedicated worker by changing the settings in WebPreferences
 // with allow_running_insecure_content = false.
 // Disabled due to being flaky. crbug.com/1116670
-#if defined(OS_MAC)
-#define MAYBE_MixedContentSettings_DisallowRunningInsecureContent \
-  DISABLED_MixedContentSettings_DisallowRunningInsecureContent
-#else
-#define MAYBE_MixedContentSettings_DisallowRunningInsecureContent \
-  MixedContentSettings_DisallowRunningInsecureContent
-#endif
 IN_PROC_BROWSER_TEST_P(
     SSLUIWorkerFetchTest,
-    MAYBE_MixedContentSettings_DisallowRunningInsecureContent) {
+    DISABLED_MixedContentSettings_DisallowRunningInsecureContent) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   ScopedContentBrowserClientSetting setting(browser_client);
 
@@ -3994,8 +4003,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_unsafe_contents.html",
       https_server_mismatched_.host_port_pair());
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL(replacement_path)));
   js_result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       tab, "window.domAutomationController.send(IsFooSet());", &js_result));
@@ -4046,8 +4055,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockDisplayingInsecureIframe) {
       "/ssl/page_displays_insecure_iframe.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   ssl_test_util::CheckAuthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
@@ -4065,8 +4074,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockRunningInsecureContent) {
       "/ssl/page_runs_insecure_content.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   ssl_test_util::CheckAuthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
@@ -4087,9 +4096,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
   // Visit bad HTTPS page.
   GURL::Replacements replacements;
   replacements.SetSchemeStr("https");
-  ui_test_utils::NavigateToURL(browser(),
-                               wss_server_expired_.GetURL("connect_check.html")
-                                   .ReplaceComponents(replacements));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), wss_server_expired_.GetURL("connect_check.html")
+                     .ReplaceComponents(replacements)));
 
   // We shouldn't have an interstitial page showing here.
 
@@ -4122,9 +4131,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIWSS,
   // Visit bad HTTPS page.
   GURL::Replacements replacements;
   replacements.SetSchemeStr("https");
-  ui_test_utils::NavigateToURL(browser(),
-                               wss_server_expired_.GetURL("connect_check.html")
-                                   .ReplaceComponents(replacements));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), wss_server_expired_.GetURL("connect_check.html")
+                     .ReplaceComponents(replacements)));
 
   // We shouldn't have an interstitial page showing here.
 
@@ -4143,9 +4152,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS, TestHTTPS) {
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_mismatched_.GetURL("/ssl/page_with_subresource.html"));
+      https_server_mismatched_.GetURL("/ssl/page_with_subresource.html")));
 
   // We should see no interstitial. The script tag in the page should have
   // loaded and ran (and wasn't blocked by the certificate error).
@@ -4169,8 +4178,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS,
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
       "/ssl/page_with_unsafe_image.html",
       https_server_mismatched_.host_port_pair());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
 
   // We should see no interstitial.
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
@@ -4191,8 +4200,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
 
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
@@ -4219,8 +4228,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
 
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
   WaitForInterstitial(tab);
@@ -4239,8 +4248,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, ProceedLinkOverridable) {
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(tab);
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
@@ -4255,8 +4264,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestLearnMoreLinkContainsErrorCode) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   // Navigate to a site that causes an interstitial.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
 
   // Simulate clicking the learn more link.
@@ -4276,8 +4285,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SubframeCertError) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
 
   // Insert a broken-HTTPS iframe on the page and check that a generic net
   // error, not a certificate error page, is shown.
@@ -4314,7 +4323,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestHSTS, TestInterstitialOptionsNonOverridable) {
   GURL url = https_server_expired_.GetURL("/ssl/google.html")
                  .ReplaceComponents(replacements);
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   WaitForInterstitial(tab);
   // Since we are connecting to a different domain than the test server default,
   // we also expect CERT_STATUS_COMMON_NAME_INVALID.
@@ -4344,8 +4353,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialLinksOpenInNewTab) {
 
   WebContents* interstitial_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(
       chrome_browser_interstitials::IsShowingSSLInterstitial(interstitial_tab));
@@ -4393,8 +4402,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
@@ -4492,8 +4501,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByBlobUrl) {
           profile->GetSSLHostStateDelegate());
 
   // Proceed through the interstitial, accepting the broken cert.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   ProceedThroughInterstitial(tab);
   ASSERT_TRUE(state->HasAllowException(https_server_host, tab));
 
@@ -4530,8 +4539,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(tab);
   EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(tab));
 
@@ -4565,8 +4574,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   SSLErrorHandler::SetClockForTesting(&mock_clock);
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingBadClockInterstitial(tab));
 
@@ -4578,8 +4587,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // Put the clock back to normal, trigger a normal SSL interstitial,
   // and proceed through it.
   mock_clock.SetNow(base::Time::NowFromSystemTime());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_expired_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/title1.html")));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   ProceedThroughInterstitial(tab);
@@ -4756,7 +4765,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
   // Set the timer to fire immediately.
   SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
 
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           https_server_expired_.GetURL("/")));
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   WaitForInterstitial(contents);
@@ -4766,7 +4776,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
   // Navigate away, and then trigger the network time response; no crash should
   // occur.
   ASSERT_TRUE(https_server_.Start());
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/")));
   ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
   TriggerTimeResponse();
 }
@@ -4803,7 +4814,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, StopBeforeTimeoutExpires) {
   // Navigate away, and then trigger the network time response; no crash should
   // occur.
   ASSERT_TRUE(https_server_.Start());
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/title1.html")));
   ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
   TriggerTimeResponse();
 }
@@ -4837,7 +4849,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, ReloadBeforeTimeoutExpires) {
   // Navigate away, and then trigger the network time response and wait
   // for the response; no crash should occur.
   ASSERT_TRUE(https_server_.Start());
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/")));
   ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
   TriggerTimeResponse();
 }
@@ -4875,7 +4888,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
 
   // Navigate away, and then trigger the network time response and wait
   // for the response; no crash should occur.
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/")));
   ASSERT_NO_FATAL_FAILURE(CheckTimeQueryPending());
   TriggerTimeResponse();
 }
@@ -4888,7 +4902,8 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
   // Set the timer to fire immediately.
   SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
 
-  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           https_server_expired_.GetURL("/")));
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   WaitForInterstitial(contents);
@@ -4970,7 +4985,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(contents, 1);
-  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url));
   observer.Wait();
 
   ssl_test_util::CheckSecurityState(contents, CertError::NONE,
@@ -5027,7 +5043,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   // Should simply show an interstitial, because both subdomains have common
   // name errors.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url));
   WaitForInterstitial(contents);
 
   ssl_test_util::CheckSecurityState(
@@ -5072,7 +5089,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(contents, 1);
-  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url));
   observer.Wait();
 
   ssl_test_util::CheckSecurityState(contents, CertError::NONE,
@@ -5150,7 +5168,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   // Should simply show an interstitial, because the suggested URL
   // (https://www.example.org) redirected to http://example.org.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url));
   WaitForInterstitial(contents);
 
   ssl_test_util::CheckSecurityState(
@@ -5390,8 +5409,8 @@ IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
   mock_cert_verifier()->set_default_result(
       net::ERR_CERT_NAME_CONSTRAINT_VIOLATION);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server.GetURL("/ssl/google.html")));
 
   ssl_test_util::CheckSecurityState(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -5402,7 +5421,7 @@ IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, RestoreHasSSLState) {
   ASSERT_TRUE(https_server_.Start());
   GURL url(https_server_.GetURL("/ssl/google.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
@@ -5438,7 +5457,7 @@ void SetupRestoredTabWithNavigation(
     Browser* browser) {
   ASSERT_TRUE(https_server->Start());
   GURL url(https_server->GetURL("/ssl/google.html"));
-  ui_test_utils::NavigateToURL(browser, url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser, url));
   WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
 
   content::TestNavigationObserver observer(tab);
@@ -5531,7 +5550,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ExistingPageHTTPToHTTPSSSLState) {
   const GURL url = embedded_test_server()->GetURL(relative_url);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 
   content::TestNavigationObserver observer(tab, 1);
@@ -5555,7 +5574,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ExistingPageHTTPSToHTTPSSLState) {
   const GURL url = https_server_.GetURL(relative_url);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   content::TestNavigationObserver observer(tab, 1);
@@ -5581,7 +5600,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_RestoreThenNavigateHasSSLState) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  ui_test_utils::NavigateToURL(browser(), url2);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url2));
   chrome::CloseTab(browser());
 
   ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
@@ -5607,10 +5626,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentHasSSLState) {
 
   // Navigate to a simple page and then perform an in-page navigation.
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));
-  ui_test_utils::NavigateToURL(browser(), start_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), start_url));
 
   GURL fragment_change_url(embedded_test_server()->GetURL("/title1.html#foo"));
-  ui_test_utils::NavigateToURL(browser(), fragment_change_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), fragment_change_url));
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 
   // Replace the URL of the current NavigationEntry with one that will cause
@@ -5646,7 +5665,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentHasSSLStateNoLoad) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   GURL start_url(https_server_.GetURL("/ssl/google.html#foo"));
-  ui_test_utils::NavigateToURL(browser(), start_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), start_url));
 
   // Simulate clicking on a bookmark.
   {
@@ -5696,7 +5715,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectFromMixedContentSSLState) {
       "?" + https_server_.GetURL("/ssl/google.html").spec());
 
   // Load a page that displays insecure content.
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
@@ -5733,9 +5752,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectToMixedContentSSLState) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationDuringLoadSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_.GetURL("/ssl/same_document_navigation_during_load.html"));
+      https_server_.GetURL("/ssl/same_document_navigation_during_load.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
@@ -5745,8 +5764,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationDuringLoadSSLState) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationAfterLoadSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(tab, "location.hash = Math.random()"));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
@@ -5757,8 +5776,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationAfterLoadSSLState) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_PushStateSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
@@ -5798,8 +5817,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
   ASSERT_TRUE(https_server_.Start());
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(tab));
 
   std::unique_ptr<CertificateManagerModel> model;
@@ -5833,8 +5852,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
 
   content::FlushNetworkServiceInstanceForTesting();
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/google.html")));
   EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(tab));
 }
 
@@ -5972,8 +5991,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
   // The certificate that is trusted in |profile_2_| should not be respected in
   // browsers that belong to |profile_1_|.
   Browser* browser_for_profile_1 = CreateBrowser(profile_1_);
-  ui_test_utils::NavigateToURL(browser_for_profile_1,
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser_for_profile_1, https_server_.GetURL("/ssl/google.html")));
   WebContents* tab_for_profile_1 =
       browser_for_profile_1->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab_for_profile_1);
@@ -5984,8 +6003,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
   // The certificate that is trusted in |profile_2_| should be respected in
   // browsers that belong to |profile_2_|.
   Browser* browser_for_profile_2 = CreateBrowser(profile_2_);
-  ui_test_utils::NavigateToURL(browser_for_profile_2,
-                               https_server_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser_for_profile_2, https_server_.GetURL("/ssl/google.html")));
   WebContents* tab_for_profile_2 =
       browser_for_profile_2->tab_strip_model()->GetActiveWebContents();
   ssl_test_util::CheckAuthenticatedState(tab_for_profile_2, AuthState::NONE);
@@ -5999,8 +6018,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
                        NoCrashOnLoadWithNoNavigationEntry) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(tab, "window.open()"));
 }
@@ -6056,8 +6075,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListDisabledTest, Disabled) {
   // be displayed since CaptivePortalCertificateList feature is disabled.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
 
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
@@ -6091,8 +6110,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListEnabledTest, Enabled_FromProto) {
   // should be displayed since CaptivePortalCertificateList feature is enabled.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
 
   ASSERT_TRUE(
@@ -6128,8 +6147,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal) {
   // Navigate to an unsafe page on the server.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
 
   ASSERT_TRUE(
@@ -6147,8 +6166,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal) {
                                SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 1);
 
   // Reload the URL. This time the OS should not report a captive portal.
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   EXPECT_TRUE(netwok_connectivity_reported);
@@ -6178,8 +6197,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithCaptivePortalInterstitialDisabled,
   // Navigate to an unsafe page on the server.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
 
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
@@ -6204,8 +6223,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithCaptivePortalInterstitialDisabled,
 IN_PROC_BROWSER_TEST_F(SSLUITest, ErrorPage) {
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
 
   ssl_test_util::CheckSecurityState(tab, net::CERT_STATUS_DATE_INVALID,
                                     security_state::DANGEROUS,
@@ -6243,8 +6262,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       "/ssl/page_displays_insecure_form.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6279,8 +6298,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       "/ssl/page_displays_form_redirects_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6323,8 +6342,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_insecure_form_in_iframe.html",
       https_server_.host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   content::TestNavigationObserver nav_observer(tab, 1);
   content::WebContentsConsoleObserver console_observer(tab);
   console_observer.SetPattern(
@@ -6355,8 +6374,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       "/ssl/page_displays_insecure_form_target_blank.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   nav_observer.StartWatchingNewWebContents();
@@ -6383,8 +6402,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       embedded_test_server()->host_port_pair());
 
   // Navigate to an insecure form, make sure we get a warning.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6421,8 +6440,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       embedded_test_server()->host_port_pair());
   GURL form_target_url("http://does-not-exist.test/ssl/google_files/logo.gif");
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6452,7 +6471,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
       embedded_test_server()->host_port_pair());
   GURL form_site_url = https_server_.GetURL(replacement_path);
 
-  ui_test_utils::NavigateToURL(browser(), form_site_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), form_site_url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6498,8 +6517,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_insecure_form.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6534,8 +6553,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_form_redirects_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6572,8 +6591,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_form_redirects_308_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6610,8 +6629,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_form_redirects_301_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6648,8 +6667,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_form_redirects_302_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6714,8 +6733,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabledWithAllRedirects,
       "/ssl/page_displays_form_redirects_insecure_get.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6765,8 +6784,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_insecure_form.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6802,8 +6821,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_form_redirects_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6841,8 +6860,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_form_redirects_308_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6880,8 +6899,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_form_redirects_301_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6917,8 +6936,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_form_redirects_302_insecure.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -6956,8 +6975,8 @@ IN_PROC_BROWSER_TEST_F(
       "/ssl/page_displays_form_redirects_insecure_get.html",
       embedded_test_server()->host_port_pair());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -7017,7 +7036,7 @@ IN_PROC_BROWSER_TEST_F(MixedFormsPolicyTest, NoWarningOptOutPolicy) {
   GURL form_target_url("http://does-not-exist.test/ssl/google_files/logo.gif");
 
   // Navigate to site with insecure form and submit it.
-  ui_test_utils::NavigateToURL(browser(), form_site_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), form_site_url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver nav_observer(tab, 1);
   ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
@@ -7075,7 +7094,8 @@ class SSLUICaptivePortalListResourceBundleTest
     // the only error, so a generic SSL interstitial should be displayed.
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
@@ -7133,7 +7153,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
   // should be displayed since CaptivePortalCertificateList feature is enabled.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
   WaitForInterstitial(tab);
 
   ASSERT_TRUE(
@@ -7179,7 +7200,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
     // of the captive portal certificate.
     base::HistogramTester histograms;
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
@@ -7209,7 +7231,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
     // interstitial should be displayed.
     base::HistogramTester histograms;
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     ASSERT_TRUE(
@@ -7240,7 +7263,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
     // interstitial should be displayed.
     base::HistogramTester histograms;
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     ASSERT_TRUE(
@@ -7355,7 +7379,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
     // equal the one set for HSTS.
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL()));
     WaitForInterstitial(tab);
     ASSERT_TRUE(chrome_browser_interstitials::IsShowingMITMInterstitial(tab));
     EXPECT_FALSE(interstitial_timer_observer.timer_started());
@@ -7384,7 +7408,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
     // equal the one set for HSTS.
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-    ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL()));
     WaitForInterstitial(tab);
     ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
     EXPECT_TRUE(interstitial_timer_observer.timer_started());
@@ -7508,7 +7532,7 @@ IN_PROC_BROWSER_TEST_F(
   // equal the one set for HSTS.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL()));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   EXPECT_TRUE(interstitial_timer_observer.timer_started());
@@ -7556,7 +7580,7 @@ IN_PROC_BROWSER_TEST_F(
   // equal the one set for HSTS.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL()));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   EXPECT_TRUE(interstitial_timer_observer.timer_started());
@@ -7602,7 +7626,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   // equal the one set for HSTS.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL()));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   EXPECT_TRUE(interstitial_timer_observer.timer_started());
@@ -7653,8 +7677,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   // the host name with the one set for HSTS.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(tab);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/blank_page.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/blank_page.html")));
   WaitForInterstitial(tab);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(tab));
   EXPECT_TRUE(interstitial_timer_observer.timer_started());
@@ -7786,7 +7810,7 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, NoWarningTLS12) {
   console_observer.SetPattern(base::StringPrintf(
       "*The connection used to load resources from https://%s:%s*",
       url.host().c_str(), url.port().c_str()));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   EXPECT_EQ(0u, console_observer.messages().size());
 }
 
@@ -7801,7 +7825,7 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS11) {
   console_observer.SetPattern(base::StringPrintf(
       "*The connection used to load resources from https://%s:%s*",
       url.host().c_str(), url.port().c_str()));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Click through the interstitial (the console warning is only shown on the
   // affected page, not the interstitial).
@@ -7827,7 +7851,7 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS1) {
   console_observer.SetPattern(base::StringPrintf(
       "*The connection used to load resources from https://%s:%s*",
       url.host().c_str(), url.port().c_str()));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Click through the interstitial (the console warning is only shown on the
   // affected page, not the interstitial).
@@ -7861,8 +7885,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
   ASSERT_TRUE(https_server()->Start());
   base::HistogramTester histograms;
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   ASSERT_TRUE(
@@ -7880,8 +7904,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
   ProceedThroughInterstitial(tab);
 
   // Navigating to the same page now shouldn't cause an interstitial.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(
       chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
@@ -7907,8 +7931,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest,
 
   base::HistogramTester histograms;
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(
       chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
@@ -7950,19 +7974,19 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, FixedServerDropsBypass) {
 
   // Connect over TLS 1.0 and proceed through the interstitial to set an error
   // bypass.
-  ui_test_utils::NavigateToURL(browser(), kSiteWithLegacyTLS);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kSiteWithLegacyTLS));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   ProceedThroughInterstitial(tab);
 
   // Connect over a "fixed" TLS 1.2 connection.
-  ui_test_utils::NavigateToURL(browser(), kSiteWithModernTLS);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kSiteWithModernTLS));
   EXPECT_FALSE(
       chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
 
   // Go back to connecting over TLS 1.0. Visiting should once again show the
   // legacy TLS interstitial
-  ui_test_utils::NavigateToURL(browser(), kSiteWithLegacyTLS);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kSiteWithLegacyTLS));
   WaitForInterstitial(tab);
   EXPECT_TRUE(
       chrome_browser_interstitials::IsShowingLegacyTLSInterstitial(tab));
@@ -7976,8 +8000,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, BackToSafety) {
   // Connect over TLS 1.0 and don't proceed through the interstitial.
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
   ASSERT_TRUE(https_server()->Start());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/ssl/google.html")));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   DontProceedThroughInterstitial(tab);
@@ -8018,7 +8042,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
   // bypass.
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
   ASSERT_TRUE(https_server()->Start());
-  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/cachetime"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/cachetime")));
   auto* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab1);
   ProceedThroughInterstitial(tab1);
@@ -8033,7 +8058,8 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSPagesNotCached) {
   auto* tab2 = browser()->tab_strip_model()->GetActiveWebContents();
 
   CacheNavigationObserver observer(tab2, false);
-  ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/cachetime"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("/cachetime")));
   observer.WaitForNavigation();  // Will fail if resource is loaded from cache.
 }
 
@@ -8046,8 +8072,9 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, LegacyTLSNotFatal) {
   // Connect over TLS 1.0 and proceed through the interstitial.
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
   ASSERT_TRUE(https_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), https_server()->GetURL(kHstsTestHostName, "/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server()->GetURL(kHstsTestHostName, "/ssl/google.html")));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
 
@@ -8086,7 +8113,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
   int server_port = expired_url.IntPort();
 
   // Navigate to the expired cert URL, make sure we get an interstitial.
-  ui_test_utils::NavigateToURL(browser(), expired_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), expired_url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(tab));
 
@@ -8095,7 +8122,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
 
   // Shut down the server and navigate again to cause a network error.
   ASSERT_TRUE(https_server_expired_.ShutdownAndWaitUntilComplete());
-  ui_test_utils::NavigateToURL(browser(), expired_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), expired_url));
 
   // Create a new server in the same url (including port), the certificate
   // should still be invalid.
@@ -8104,7 +8131,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
   new_https_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(new_https_server.Start(server_port));
 
-  ui_test_utils::NavigateToURL(browser(), expired_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), expired_url));
 
   // We shouldn't get an interstitial this time.
   EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(tab));
@@ -8118,7 +8145,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, NoInterstitialOnNetworkErrorPage) {
   GURL::Replacements replacements;
   replacements.SetPathStr("-207");
   invalid_cert_url = invalid_cert_url.ReplaceComponents(replacements);
-  ui_test_utils::NavigateToURL(browser(), invalid_cert_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), invalid_cert_url));
   EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(
       browser()->tab_strip_model()->GetActiveWebContents()));
 }
@@ -8260,7 +8287,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, Match) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8294,7 +8322,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MatchUnknownCertError) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8329,7 +8358,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8364,7 +8394,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8400,7 +8431,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchHash) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8435,7 +8467,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCertError) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8469,7 +8502,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCommonNameRegex) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8504,7 +8538,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest,
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8539,7 +8574,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchWhenOverridable) {
     ASSERT_EQ(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting(),
               kLargeVersionId);
 
-    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/")));
     WaitForInterstitial(tab);
 
     security_interstitials::SecurityInterstitialPage* interstitial_page =
@@ -8644,8 +8680,8 @@ IN_PROC_BROWSER_TEST_F(SSLPKPBrowserTest, SendPKPReport) {
       pkp_test_server.GetCertificate(), kPreloadedPKPHost, verify_result,
       net::OK);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               pkp_test_server.GetURL(kPreloadedPKPHost, "/"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), pkp_test_server.GetURL(kPreloadedPKPHost, "/")));
   wait_for_report_loop.Run();
 
   // Shut down the test server, to make it unlikely this will end up in the same
@@ -8683,8 +8719,8 @@ IN_PROC_BROWSER_TEST_F(SSLPKPBrowserTest, SendPKPReportServerHangs) {
       pkp_test_server.GetCertificate(), kPreloadedPKPHost, verify_result,
       net::OK);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               pkp_test_server.GetURL(kPreloadedPKPHost, "/"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), pkp_test_server.GetURL(kPreloadedPKPHost, "/")));
   wait_for_report_loop.Run();
 }
 
@@ -8723,14 +8759,14 @@ IN_PROC_BROWSER_TEST_F(RecurrentInterstitialBrowserTest,
   // Use different hostnames for the two test cases to avoid the clickthrough
   // from one interfering with the other.
   GURL url = https_server.GetURL("show_error_message.test", "/");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   ExpectInterstitialElementHidden(tab, "recurrent-error-message",
                                   true /* expect_hidden */);
   histograms.ExpectUniqueSample(kRecurrentInterstitialHistogram, false, 1);
 
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   WaitForInterstitial(tab);
   ExpectInterstitialElementHidden(tab, "recurrent-error-message",
                                   false /* expect_hidden */);
@@ -8775,8 +8811,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ActiveMixedContentTrackedByOrigin) {
 
   // The insecure script is allowed to load because SSLUITestBase sets the
   // --allow-running-insecure-content flag.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(replacement_path)));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, CertError::NONE, AuthState::RAN_INSECURE_CONTENT);
 
@@ -8845,9 +8881,9 @@ IN_PROC_BROWSER_TEST_F(
   // page_with_subresource.html loads both a script (which would count as
   // blockable mixed content), and an image (which would count as optionally
   // blockable mixed content) from the same origin as the main site.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_expired_.GetURL("/ssl/page_with_subresource.html"));
+      https_server_expired_.GetURL("/ssl/page_with_subresource.html")));
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
   ProceedThroughInterstitial(tab);
@@ -8889,10 +8925,10 @@ IN_PROC_BROWSER_TEST_F(
 
   // Navigate to a page with a certificate error, and click through the
   // interstitial so the certificate is allowlisted.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       GURL("https://site.test:" + std::to_string(https_server_expired_.port()) +
-           "/ssl/blank_page.html"));
+           "/ssl/blank_page.html")));
   ProceedThroughInterstitial(tab);
 
   // Navigate to a page with a valid certificate, that contains subresouces from
@@ -8902,10 +8938,10 @@ IN_PROC_BROWSER_TEST_F(
       make_pair("REPLACE_WITH_HOST_AND_PORT",
                 ("site.test:" + std::to_string(https_server_expired_.port()))));
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       https_server_.GetURL((net::test_server::GetFilePathWithReplacements(
-          "/ssl/page_with_unsafe_contents.html", replacement_text))));
+          "/ssl/page_with_unsafe_contents.html", replacement_text)))));
 
   // Check mixed content histogram is logged for content with cert errors.
   histograms.ExpectTotalCount(mixed_content_histogram, 3);
@@ -8926,8 +8962,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentHistogramLoggedForInsecureForm) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/ssl/page_displays_insecure_form.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_.GetURL("/ssl/page_displays_insecure_form.html")));
   histograms.ExpectTotalCount(mixed_content_histogram, 1);
   histograms.ExpectBucketCount(mixed_content_histogram,
                                MixedContentType::kMixedForm, 1);
@@ -8947,8 +8984,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/ssl/page_runs_insecure_content.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/page_runs_insecure_content.html")));
   histograms.ExpectTotalCount(mixed_content_histogram, 1);
   histograms.ExpectBucketCount(mixed_content_histogram,
                                MixedContentType::kBlockableMixedContent, 1);
@@ -8970,9 +9007,9 @@ IN_PROC_BROWSER_TEST_F(
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
 
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      https_server_.GetURL("/ssl/page_displays_insecure_content.html"));
+      https_server_.GetURL("/ssl/page_displays_insecure_content.html")));
   histograms.ExpectTotalCount(mixed_content_histogram, 1);
   histograms.ExpectBucketCount(
       mixed_content_histogram,
@@ -8992,8 +9029,8 @@ class SSLUIAutoReloadTest : public SSLUITest {
 // SSL interstitials should disable autoreload timer.
 IN_PROC_BROWSER_TEST_F(SSLUIAutoReloadTest, AutoReloadDisabled) {
   ASSERT_TRUE(https_server_expired_.Start());
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab);
   ssl_test_util::CheckAuthenticationBrokenState(
@@ -9027,8 +9064,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(contents);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
   ExpectInterstitialElementHidden(contents, "extended-reporting-opt-in",
@@ -9055,8 +9092,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(contents);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
   ExpectInterstitialElementHidden(contents, "extended-reporting-opt-in",
@@ -9076,8 +9113,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithEnhancedProtectionMessage,
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
-  ui_test_utils::NavigateToURL(
-      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html")));
   WaitForInterstitial(contents);
   ASSERT_TRUE(chrome_browser_interstitials::IsShowingSSLInterstitial(contents));
   ExpectInterstitialElementHidden(contents, "enhanced-protection-message",

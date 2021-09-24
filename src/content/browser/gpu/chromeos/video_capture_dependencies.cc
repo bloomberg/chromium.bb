@@ -42,11 +42,8 @@ void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
 void VideoCaptureDependencies::CreateJpegEncodeAccelerator(
     mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
         accelerator) {
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  if (!task_runner->BelongsToCurrentThread()) {
-    task_runner->PostTask(
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&VideoCaptureDependencies::CreateJpegEncodeAccelerator,
                        std::move(accelerator)));

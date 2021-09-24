@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
@@ -90,6 +89,16 @@ void EmitKeywordHistogram(
       static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
 }
 
+void RecordActionShownForAllActions(const AutocompleteResult& result) {
+  // Record the presence of any actions in the result set.
+  for (size_t i = 0; i < result.size(); ++i) {
+    const AutocompleteMatch& match_in_result = result.match_at(i);
+    if (match_in_result.action) {
+      match_in_result.action->RecordActionShown(i);
+    }
+  }
+}
+
 }  // namespace
 
 
@@ -144,6 +153,15 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
+}
+
+void OmniboxEditModel::set_popup_view(OmniboxPopupView* popup_view) {
+  if (popup_view) {
+    popup_model_ =
+        std::make_unique<OmniboxPopupModel>(popup_view, this, GetPrefService());
+  } else {
+    popup_model_.reset();
+  }
 }
 
 metrics::OmniboxEventProto::PageClassification
@@ -597,7 +615,7 @@ void OmniboxEditModel::PasteAndGo(const std::u16string& text,
   }
 
   view_->OpenMatch(match, WindowOpenDisposition::CURRENT_TAB, alternate_nav_url,
-                   text, OmniboxPopupModel::kNoMatch,
+                   text, OmniboxPopupSelection::kNoMatch,
                    match_selection_timestamp);
 }
 
@@ -717,15 +735,11 @@ void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(
 
 void OmniboxEditModel::ExecuteAction(
     const AutocompleteMatch& match,
+    size_t match_position,
     base::TimeTicks match_selection_timestamp) {
-  // Record the presence of any actions in the result set.
-  for (const AutocompleteMatch& match_in_result : result()) {
-    if (match_in_result.action) {
-      match_in_result.action->RecordActionShown();
-    }
-  }
+  RecordActionShownForAllActions(result());
 
-  match.action->RecordActionExecuted();
+  match.action->RecordActionExecuted(match_position);
   OmniboxPedal::ExecutionContext context(*client_, *controller_,
                                          match_selection_timestamp);
   match.action->Execute(context);
@@ -754,12 +768,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   // Save the result of the interaction, but do not record the histogram yet.
   focus_resulted_in_navigation_ = true;
 
-  // Record the presence of any Pedals in the result set.
-  for (const AutocompleteMatch& match_in_result : result()) {
-    if (match_in_result.action) {
-      match_in_result.action->RecordActionShown();
-    }
-  }
+  RecordActionShownForAllActions(result());
 
   std::u16string input_text(pasted_text);
   if (input_text.empty())
@@ -961,7 +970,7 @@ bool OmniboxEditModel::AcceptKeyword(
   user_text_ = MaybeStripKeyword(user_text_);
 
   if (PopupIsOpen()) {
-    popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD_MODE);
+    popup_model()->SetSelectedLineState(OmniboxPopupSelection::KEYWORD_MODE);
   } else {
     StartAutocomplete(false, true);
   }
@@ -1029,8 +1038,8 @@ void OmniboxEditModel::ClearKeyword() {
   // (usually because the user has typed a search string).  Keep track of the
   // difference, as we'll need it below. popup_model() may be nullptr in tests.
   bool was_toggled_into_keyword_mode =
-      popup_model() &&
-      popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD_MODE;
+      popup_model() && popup_model()->selected_line_state() ==
+                           OmniboxPopupSelection::KEYWORD_MODE;
 
   bool entry_by_tab = keyword_mode_entry_method_ == OmniboxEventProto::TAB;
 
@@ -1268,8 +1277,9 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // (user_input_in_progress_ is false) unless the first result is a
     // verbatim match of the omnibox input (on-focus query refinements on SERP).
     const auto next_selection = popup_model()->GetNextSelection(
-        count > 0 ? OmniboxPopupModel::kForward : OmniboxPopupModel::kBackward,
-        OmniboxPopupModel::kWholeLine);
+        count > 0 ? OmniboxPopupSelection::kForward
+                  : OmniboxPopupSelection::kBackward,
+        OmniboxPopupSelection::kWholeLine);
     if (result().default_match() && has_temporary_text_ &&
         next_selection.line == 0 &&
         (user_input_in_progress_ ||
@@ -1623,11 +1633,12 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       // stopped. So the default match must be the desired selection.
       *match = *result().default_match();
       found_match_for_text = true;
-    } else if (popup_model()->selected_line() != OmniboxPopupModel::kNoMatch) {
+    } else if (popup_model()->selected_line() !=
+               OmniboxPopupSelection::kNoMatch) {
       const AutocompleteMatch& selected_match =
           result().match_at(popup_model()->selected_line());
       *match = (popup_model()->selected_line_state() ==
-                OmniboxPopupModel::KEYWORD_MODE)
+                OmniboxPopupSelection::KEYWORD_MODE)
                    ? *selected_match.associated_keyword
                    : selected_match;
       found_match_for_text = true;
@@ -1684,12 +1695,58 @@ bool OmniboxEditModel::ShouldPreventElision() const {
   return controller()->GetLocationBarModel()->ShouldPreventElision();
 }
 
+bool OmniboxEditModel::IsStarredMatch(const AutocompleteMatch& match) const {
+  auto* bookmark_model = client()->GetBookmarkModel();
+  return bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
+}
+
+// Android and iOS have their own platform-specific icon logic.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+gfx::Image OmniboxEditModel::GetMatchIcon(const AutocompleteMatch& match,
+                                          SkColor vector_icon_color) {
+  gfx::Image extension_icon = client()->GetIconIfExtensionMatch(match);
+  // Extension icons are the correct size for non-touch UI but need to be
+  // adjusted to be the correct size for touch mode.
+  if (!extension_icon.IsEmpty()) {
+    return client()->GetSizedIcon(extension_icon);
+  }
+
+  // Get the favicon for navigational suggestions.
+  if (!AutocompleteMatch::IsSearchType(match.type) &&
+      match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+    // Because the Views UI code calls GetMatchIcon in both the layout and
+    // painting code, we may generate multiple OnFaviconFetched callbacks,
+    // all run one after another. This seems to be harmless as the callback
+    // just flips a flag to schedule a repaint. However, if it turns out to be
+    // costly, we can optimize away the redundant extra callbacks.
+    gfx::Image favicon = client()->GetFaviconForPageUrl(
+        match.destination_url,
+        base::BindOnce(&OmniboxPopupModel::OnFaviconFetched,
+                       popup_model()->weak_factory_.GetWeakPtr(),
+                       match.destination_url));
+
+    // Extension icons are the correct size for non-touch UI but need to be
+    // adjusted to be the correct size for touch mode.
+    if (!favicon.IsEmpty()) {
+      return client()->GetSizedIcon(favicon);
+    }
+  }
+
+  bool is_starred_match = IsStarredMatch(match);
+  const auto& vector_icon_type = match.GetVectorIcon(is_starred_match);
+
+  return client()->GetSizedIcon(vector_icon_type, vector_icon_color);
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+PrefService* OmniboxEditModel::GetPrefService() const {
+  return autocomplete_controller()->autocomplete_provider_client()->GetPrefs();
+}
+
 bool OmniboxEditModel::AllowKeywordSpaceTriggering() const {
-  PrefService* pref_service =
-      autocomplete_controller()->autocomplete_provider_client()->GetPrefs();
   return !base::FeatureList::IsEnabled(
              omnibox::kKeywordSpaceTriggeringSetting) ||
-         pref_service->GetBoolean(omnibox::kKeywordSpaceTriggeringEnabled);
+         GetPrefService()->GetBoolean(omnibox::kKeywordSpaceTriggeringEnabled);
 }
 
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(

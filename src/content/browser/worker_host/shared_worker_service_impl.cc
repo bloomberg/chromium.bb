@@ -25,7 +25,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "content/browser/worker_host/worker_script_fetch_initiator.h"
+#include "content/browser/worker_host/worker_script_fetcher.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +48,7 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -146,8 +147,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 
   RenderFrameHost* main_frame = render_frame_host->frame_tree()->GetMainFrame();
   if (!GetContentClient()->browser()->AllowSharedWorker(
-          info->url,
-          render_frame_host->ComputeSiteForCookies().RepresentativeUrl(),
+          info->url, render_frame_host->ComputeSiteForCookies(),
           main_frame->GetLastCommittedOrigin(), info->options->name,
           storage_key,
           WebContentsImpl::FromRenderFrameHostID(client_render_frame_host_id)
@@ -305,8 +305,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       site_instance = SiteInstanceImpl::CreateForUrlInfo(
           partition->browser_context(),
           UrlInfo(UrlInfoInit(instance.url())
-                      .WithStoragePartitionConfig(partition->GetConfig())),
-          WebExposedIsolationInfo::CreateNonIsolated());
+                      .WithStoragePartitionConfig(partition->GetConfig())
+                      .WithWebExposedIsolationInfo(
+                          WebExposedIsolationInfo::CreateNonIsolated())));
     }
   }
 
@@ -361,16 +362,29 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // Cloning before std::move() so that the object can be used in two functions.
   auto cloned_outside_fetch_client_settings_object =
       outside_fetch_client_settings_object.Clone();
+
   // TODO(mmenke): The site-for-cookies and NetworkIsolationKey arguments leak
   // data across NetworkIsolationKeys and allow same-site cookies to be sent in
   // cross-site contexts. Fix this.
-  WorkerScriptFetchInitiator::Start(
+  // Also, we should probably use `host->instance().storage_key().origin()`
+  // instead of `worker_origin`, see following DCHECK.
+  DCHECK(host->instance().url().SchemeIs(url::kDataScheme) ||
+         GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
+             host->instance().storage_key().origin().scheme()) ||
+         worker_origin == host->instance().storage_key().origin())
+      << worker_origin << " and " << host->instance().storage_key().origin()
+      << " should be the same.";
+  WorkerScriptFetcher::CreateAndStart(
       worker_process_host->GetID(), host->token(), host->instance().url(),
       &creator, net::SiteForCookies::FromOrigin(worker_origin),
       host->instance().storage_key().origin(),
       net::IsolationInfo::Create(
           net::IsolationInfo::RequestType::kOther, worker_origin, worker_origin,
-          net::SiteForCookies::FromOrigin(worker_origin)),
+          net::SiteForCookies::FromOrigin(worker_origin),
+          /*party_context=*/absl::nullopt,
+          host->instance().storage_key().nonce().has_value()
+              ? &host->instance().storage_key().nonce().value()
+              : nullptr),
       credentials_mode, std::move(outside_fetch_client_settings_object),
       network::mojom::RequestDestination::kSharedWorker,
       service_worker_context_, service_worker_handle_raw,
@@ -382,7 +396,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
                      weak_factory_.GetWeakPtr(), weak_host, message_port,
                      std::move(cloned_outside_fetch_client_settings_object)));
 
-  // Ensures that WorkerScriptFetchInitiator::Start() doesn't synchronously
+  // Ensures that WorkerScriptFetcher::CreateAndStart() doesn't synchronously
   // destroy the SharedWorkerHost.
   DCHECK(weak_host);
 

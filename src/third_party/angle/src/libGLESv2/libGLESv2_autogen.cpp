@@ -3771,6 +3771,21 @@ void GL_APIENTRY glLoseContextCHROMIUM(GLenum current, GLenum other)
 
 // GL_EXT_EGL_image_array
 
+// GL_EXT_EGL_image_storage
+void GL_APIENTRY glEGLImageTargetTexStorageEXT(GLenum target,
+                                               GLeglImageOES image,
+                                               const GLint *attrib_list)
+{
+    return GL_EGLImageTargetTexStorageEXT(target, image, attrib_list);
+}
+
+void GL_APIENTRY glEGLImageTargetTextureStorageEXT(GLuint texture,
+                                                   GLeglImageOES image,
+                                                   const GLint *attrib_list)
+{
+    return GL_EGLImageTargetTextureStorageEXT(texture, image, attrib_list);
+}
+
 // GL_EXT_YUV_target
 
 // GL_EXT_blend_func_extended
@@ -4228,6 +4243,8 @@ void GL_APIENTRY glPrimitiveBoundingBoxEXT(GLfloat minX,
 }
 
 // GL_EXT_protected_textures
+
+// GL_EXT_pvrtc_sRGB
 
 // GL_EXT_read_format_bgra
 
@@ -4745,6 +4762,10 @@ void GL_APIENTRY glTexStorage3DEXT(GLenum target,
     return GL_TexStorage3DEXT(target, levels, internalformat, width, height, depth);
 }
 
+// GL_IMG_texture_compression_pvrtc
+
+// GL_IMG_texture_compression_pvrtc2
+
 // GL_KHR_blend_equation_advanced
 void GL_APIENTRY glBlendBarrierKHR()
 {
@@ -4840,6 +4861,12 @@ void GL_APIENTRY glMaxShaderCompilerThreadsKHR(GLuint count)
 {
     return GL_MaxShaderCompilerThreadsKHR(count);
 }
+
+// GL_KHR_texture_compression_astc_hdr
+
+// GL_KHR_texture_compression_astc_ldr
+
+// GL_KHR_texture_compression_astc_sliced_3d
 
 // GL_NV_fence
 void GL_APIENTRY glDeleteFencesNV(GLsizei n, const GLuint *fences)

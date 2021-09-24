@@ -34,11 +34,14 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/structured_headers.h"
+#include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -112,6 +115,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -367,7 +371,12 @@ void FrameFetchContext::PrepareRequest(
     request.SetTopFrameOrigin(GetTopFrameOrigin());
   }
 
-  String user_agent = GetUserAgent();
+  const bool ua_reduced =
+      request.HttpHeaderField(
+          network::kClientHintsNameMapping[static_cast<size_t>(
+              network::mojom::blink::WebClientHintsType::kUAReduced)]) == "?1";
+  String user_agent = ua_reduced ? GetReducedUserAgent() : GetUserAgent();
+  base::UmaHistogramBoolean("Blink.Fetch.ReducedUserAgent", ua_reduced);
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
   if (GetResourceFetcherProperties().IsDetached())
@@ -468,8 +477,10 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     image_info = ClientHintImageInfo();
     image_info->dpr = GetDevicePixelRatio();
     image_info->resource_width = resource_width;
-    if (!GetResourceFetcherProperties().IsDetached() && GetFrame()->View())
+    if (!GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
       image_info->viewport_width = GetFrame()->View()->ViewportWidth();
+      image_info->viewport_height = GetFrame()->View()->ViewportHeight();
+    }
 
     lang = GetFrame()
                ->DomWindow()
@@ -729,6 +740,12 @@ String FrameFetchContext::GetUserAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
+String FrameFetchContext::GetReducedUserAgent() const {
+  if (GetResourceFetcherProperties().IsDetached())
+    return frozen_state_->user_agent;
+  return GetFrame()->Loader().ReducedUserAgent();
+}
+
 absl::optional<UserAgentMetadata> FrameFetchContext::GetUserAgentMetadata()
     const {
   if (GetResourceFetcherProperties().IsDetached())
@@ -762,10 +779,20 @@ FetchContext* FrameFetchContext::Detach() {
   if (GetResourceFetcherProperties().IsDetached())
     return this;
 
+  // If the Sec-CH-UA-Reduced client hint header is set on the request, then the
+  // reduced User-Agent string should also be set on the User-Agent request
+  // header.
+  const ClientHintsPreferences& client_hints_prefs =
+      GetClientHintsPreferences();
+  String user_agent = client_hints_prefs.ShouldSend(
+                          network::mojom::WebClientHintsType::kUAReduced)
+                          ? GetReducedUserAgent()
+                          : GetUserAgent();
+
   frozen_state_ = MakeGarbageCollected<FrozenState>(
       Url(), GetParentSecurityOrigin(), GetContentSecurityPolicy(),
-      GetSiteForCookies(), GetTopFrameOrigin(), GetClientHintsPreferences(),
-      GetDevicePixelRatio(), GetUserAgent(), GetUserAgentMetadata(),
+      GetSiteForCookies(), GetTopFrameOrigin(), client_hints_prefs,
+      GetDevicePixelRatio(), user_agent, GetUserAgentMetadata(),
       IsSVGImageChromeClient(), IsPrerendering());
   document_loader_ = nullptr;
   document_ = nullptr;
@@ -837,36 +864,11 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
         document_->domWindow(),
         AttributionReportingIssueType::kPermissionPolicyDisabled,
         GetFrame()->GetDevToolsFrameToken(), nullptr, devtools_request_id);
-
-    // TODO(crbug.com/1178400): Remove console message once the issue reported
-    //     above is actually shown in DevTools.
-    String message =
-        "The 'attribution-reporting' feature policy must be enabled to "
-        "register a conversion.";
-    document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kError, message));
     return false;
   }
 
-  // Only allow conversion registration on secure pages with a secure conversion
-  // redirect.
-  const Frame& main_frame = GetFrame()->Tree().Top();
-  if (!main_frame.GetSecurityContext()
-           ->GetSecurityOrigin()
-           ->IsPotentiallyTrustworthy()) {
-    AuditsIssue::ReportAttributionIssue(
-        document_->domWindow(),
-        AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
-        main_frame.GetDevToolsFrameToken(), nullptr, devtools_request_id,
-        main_frame.GetSecurityContext()->GetSecurityOrigin()->ToString());
-    return false;
-  }
-
-  if (!GetFrame()->IsMainFrame() && !GetFrame()
-                                         ->GetSecurityContext()
-                                         ->GetSecurityOrigin()
-                                         ->IsPotentiallyTrustworthy()) {
+  // Only allow conversion registration in secure context.
+  if (!document_->GetExecutionContext()->IsSecureContext()) {
     AuditsIssue::ReportAttributionIssue(
         document_->domWindow(),
         AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
@@ -896,6 +898,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   conversion->conversion_data = 0UL;
   conversion->event_source_trigger_data = 0UL;
   conversion->dedup_key = nullptr;
+  conversion->devtools_request_id = devtools_request_id;
 
   const char kTriggerDataParam[] = "trigger-data";
   URLSearchParams* search_params = URLSearchParams::Create(url.Query());

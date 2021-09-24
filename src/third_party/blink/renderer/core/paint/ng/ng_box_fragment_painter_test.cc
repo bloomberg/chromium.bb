@@ -72,7 +72,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
 
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
-                          IsSameId(&text_fragment, kForegroundType)));
+                          IsSameId(text_fragment.Id(), kForegroundType)));
   HitTestData scroll_hit_test;
   scroll_hit_test.scroll_translation =
       scroller.FirstFragment().PaintProperties()->ScrollTranslation();
@@ -82,13 +82,13 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
         ContentPaintChunks(),
         ElementsAre(
             VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
+            IsPaintChunk(1, 1,
+                         PaintChunk::Id(scroller.Layer()->Id(),
+                                        DisplayItem::kLayerChunk),
+                         scroller.FirstFragment().LocalBorderBoxProperties()),
             IsPaintChunk(
                 1, 1,
-                PaintChunk::Id(*scroller.Layer(), DisplayItem::kLayerChunk),
-                scroller.FirstFragment().LocalBorderBoxProperties()),
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
+                PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
                 scroller.FirstFragment().LocalBorderBoxProperties(),
                 &scroll_hit_test, IntRect(0, 0, 40, 40)),
             IsPaintChunk(1, 2)));
@@ -99,7 +99,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
             VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
             IsPaintChunk(
                 1, 1,
-                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
+                PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
                 scroller.FirstFragment().LocalBorderBoxProperties(),
                 &scroll_hit_test, IntRect(0, 0, 40, 40)),
             IsPaintChunk(1, 2)));
@@ -220,6 +220,27 @@ TEST_P(NGBoxFragmentPainterTest, ClippedText) {
   UpdateAllLifecyclePhasesForTest();
   // Only "A" should be painted.
   EXPECT_EQ(num_all_display_items - 3, ContentDisplayItems().size());
+}
+
+TEST_P(NGBoxFragmentPainterTest, NodeAtPointWithSvgInline) {
+  ScopedSVGTextNGForTest enable_svg_text_ng(true);
+  SetBodyInnerHTML(R"HTML(
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"
+     viewBox="0 0 100 100" id="svg">
+ <g font-size="13">
+  <text x="10%" y="25%" id="pass">Expected paragraph.</text>
+  <text x="10%" y="54%">
+  <tspan id="fail">Should not be selected.</tspan>
+  </text>
+ </g>
+</svg>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* root = GetDocument().getElementById("svg")->GetLayoutBox();
+  HitTestResult result;
+  root->NodeAtPoint(result, HitTestLocation(FloatPoint(256, 192)),
+                    PhysicalOffset(0, 0), kHitTestForeground);
+  EXPECT_EQ(GetDocument().getElementById("pass"), result.InnerElement());
 }
 
 }  // namespace blink

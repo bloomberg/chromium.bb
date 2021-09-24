@@ -120,7 +120,12 @@ export class TestGroup<F extends Fixture> implements TestGroupBuilder<F> {
 
 interface TestBuilderWithName<F extends Fixture> extends TestBuilderWithParams<F, {}> {
   desc(description: string): this;
-
+  /**
+   * A noop function with the purpose of highlighting value `id`.
+   *
+   * @param id a value uniquely assigned to this test.
+   */
+  uniqueId(id: number): this;
   /**
    * Parameterize the test, generating multiple cases, each possibly having subcases.
    *
@@ -182,6 +187,10 @@ class TestBuilder {
 
   desc(description: string): this {
     this.description = description.trim();
+    return this;
+  }
+
+  uniqueId(id: number): this {
     return this;
   }
 

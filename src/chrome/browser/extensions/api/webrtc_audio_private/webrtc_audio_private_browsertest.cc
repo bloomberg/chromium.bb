@@ -123,14 +123,13 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     params->Append(std::move(request_info));
   }
 
-  std::unique_ptr<base::Value> InvokeGetSinks(base::ListValue** sink_list) {
+  std::unique_ptr<base::Value> InvokeGetSinks() {
     scoped_refptr<WebrtcAudioPrivateGetSinksFunction> function =
         new WebrtcAudioPrivateGetSinksFunction();
     function->set_source_url(source_url_);
 
     std::unique_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
-    result->GetAsList(sink_list);
     return result;
   }
 
@@ -143,23 +142,22 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   AudioDeviceDescriptions devices;
   GetAudioDeviceDescriptions(false, &devices);
 
-  base::ListValue* sink_list = NULL;
-  std::unique_ptr<base::Value> result = InvokeGetSinks(&sink_list);
+  std::unique_ptr<base::Value> result = InvokeGetSinks();
+  const base::ListValue& sink_list = base::Value::AsListValue(*result);
 
   std::string result_string;
   JSONWriter::Write(*result, &result_string);
   VLOG(2) << result_string;
 
-  EXPECT_EQ(devices.size(), sink_list->GetSize());
+  EXPECT_EQ(devices.size(), sink_list.GetList().size());
 
   // Iterate through both lists in lockstep and compare. The order
   // should be identical.
   size_t ix = 0;
   AudioDeviceDescriptions::const_iterator it = devices.begin();
-  for (; ix < sink_list->GetSize() && it != devices.end();
-       ++ix, ++it) {
-    base::DictionaryValue* dict = NULL;
-    sink_list->GetDictionary(ix, &dict);
+  for (; ix < sink_list.GetList().size() && it != devices.end(); ++ix, ++it) {
+    const base::DictionaryValue* dict = NULL;
+    sink_list.GetDictionary(ix, &dict);
     std::string sink_id;
     dict->GetString("sinkId", &sink_id);
 
@@ -205,8 +203,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
         raw_device_id);
 
     base::ListValue parameters;
-    parameters.AppendString(origin.spec());
-    parameters.AppendString(source_id_in_origin);
+    parameters.Append(origin.spec());
+    parameters.Append(source_id_in_origin);
     std::string parameter_string;
     JSONWriter::Write(parameters, &parameter_string);
 
@@ -292,10 +290,10 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   // This runs the end-to-end JavaScript test for the Hangout Services
   // component extension, which uses the webrtcAudioPrivate API among
   // others.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       https_server().GetURL("any-subdomain.google.com",
-                            "/extensions/hangout_services_test.html"));
+                            "/extensions/hangout_services_test.html")));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitUntilAudioIsPlaying(tab);

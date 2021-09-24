@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">У цьому режимі кольори інтерфейсу відповідають гамі фонового малюнка.</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
 <translation id="1148499908455722006">Відкрити вікно з інформацією про обліковий запис <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1165712434476988950">Щоб застосувати оновлення, потрібно перезапустити пристрій.</translation>
 <translation id="1175572348579024023">Прокрутити</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">Увімкнено</translation>
 <translation id="1615402009686901181">Адміністратор заборонив запис екрана, якщо видно конфіденційний контент</translation>
 <translation id="1632985212731562677">Щоб вимкнути кнопковий доступ, відкрийте "Налаштування" &gt; "Спеціальні можливості".</translation>
+<translation id="1637505162081889933">Пристроїв: <ph name="NUM_DEVICES" /></translation>
 <translation id="1654477262762802994">Ввести голосовий запит</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Щоб переглянути результат в Асистенті, натисніть клавішу пошуку та пробіл.</translation>
 <translation id="1667964833127753507">У цьому режимі не використовуються кольори фонового малюнка, а підбираються нейтральні світлі або темні відтінки.</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">Натиснути лівою кнопкою</translation>
 <translation id="2429753432712299108">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Перш ніж надати його, підтвердьте, що на пристрої відображається цей ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Показати пароль</translation>
+<translation id="24452542372838207">Розгорнути сповіщення</translation>
 <translation id="2450205753526923158">Режим знімка екрана</translation>
 <translation id="2473177541599297363">Підтвердьте роздільну здатність</translation>
 <translation id="2475982808118771221">Сталася помилка</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">визначення</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
 <translation id="3513798432020909783">Обліковим записом керує <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Підключено до стількох пристроїв: <ph name="NUM_DEVICES" /></translation>
 <translation id="3552189655002856821">Wi-Fi вимкнено</translation>
 <translation id="3560866052109807830">Інструменти малювання маркером</translation>
 <translation id="3563775809269155755">Увімкнути точку доступу</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">Яка чисельність населення в Нігерії</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Завантаження...</translation>
+<translation id="3708186454126126312">Підключені раніше</translation>
 <translation id="371370241367527062">Мікрофон на передній панелі</translation>
 <translation id="3713734891607377840">Відкриється після завершення</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
@@ -403,6 +408,7 @@
 <translation id="4129129681837227511">Щоб переглядати сповіщення на заблокованому екрані, розблокуйте його й змініть налаштування</translation>
 <translation id="4146833061457621061">Увімкни музику</translation>
 <translation id="4157822100366708405">Налаштування темної теми</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4195877955194704651">Кнопка автоматичного натискання</translation>
 <translation id="4197790712631116042">Вимкнено</translation>
@@ -555,6 +561,7 @@
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5234764350956374838">Закрити</translation>
 <translation id="523505283826916779">Налаштування доступності</translation>
+<translation id="5253783950165989294">Підключено до пристрою "<ph name="DEVICE_NAME" />", заряд акумулятора – <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5260676007519551770">Робочий стіл 4</translation>
 <translation id="5283198616748585639">Додати 1 хв</translation>
 <translation id="528468243742722775">Завершити</translation>
@@ -565,6 +572,7 @@
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
 <translation id="5314219114274263156">Запис екрана зроблено</translation>
+<translation id="5319712128756744240">Підключити новий пристрій</translation>
 <translation id="5322611492012084517">Не вдається знайти телефон</translation>
 <translation id="5329548388331921293">З'єднання…</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -767,6 +775,7 @@
 <translation id="6981982820502123353">Спеціальні можливості</translation>
 <translation id="698231206551913481">Якщо видалити цього користувача, усі файли та локальні дані, зв’язані з ним, буде видалено назавжди.</translation>
 <translation id="7007983414944123363">Не вдалося підтвердити PIN-код або пароль. Повторіть спробу.</translation>
+<translation id="7014684956566476813">Підключено до пристрою "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7015766095477679451">Поверніться о <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Робочий стіл 6</translation>
 <translation id="7025533177575372252">Під’єднайте <ph name="DEVICE_NAME" /> до телефона</translation>
@@ -1000,6 +1009,7 @@
 <translation id="8818320199597151042">Видаляється профіль. Зачекайте кілька хвилин.</translation>
 <translation id="8825863694328519386">Щоб повернутися, проведіть пальцем від лівого краю</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Підключено</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8843682306134542540">Заблокувати/розблокувати обертання. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>
@@ -1030,6 +1040,7 @@
 <translation id="9024331582947483881">усього екрана</translation>
 <translation id="9047624247355796468">Відкрити налаштування <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Пристрій буде відновлено до попереднього стану</translation>
+<translation id="9059834730836941392">Згорнути сповіщення</translation>
 <translation id="9063800855227801443">Не вдається зробити знімок конфіденційного контенту</translation>
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9070640332319875144">Налаштування Асистента</translation>

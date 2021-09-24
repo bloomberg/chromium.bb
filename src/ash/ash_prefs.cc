@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/clipboard/clipboard_nudge_controller.h"
+#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/display/display_prefs.h"
@@ -44,7 +45,6 @@
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
-#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/live_caption/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -94,7 +94,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   // Provide prefs registered in the browser for ash_unittests.
   if (for_test) {
     chromeos::assistant::prefs::RegisterProfilePrefs(registry);
-    chromeos::quick_answers::prefs::RegisterProfilePrefs(registry);
+    quick_answers::prefs::RegisterProfilePrefs(registry);
     registry->RegisterBooleanPref(
         prefs::kMouseReverseScroll, false,
         user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);

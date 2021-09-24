@@ -68,7 +68,6 @@ public class ChromeCachedFlags {
         // Workaround for crbug.com/1223545: Do not use Arrays.asList().
         List<String> featuresToCache = new ArrayList<String>() {
             {
-                add(ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE);
                 add(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION);
                 add(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION);
                 add(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET);
@@ -154,6 +153,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP);
                         add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE);
                         add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION);
+                        add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING);
                         add(TabUiFeatureUtilities.ZOOMING_MIN_MEMORY);
                         add(TabUiFeatureUtilities.ZOOMING_MIN_SDK);
                         add(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);

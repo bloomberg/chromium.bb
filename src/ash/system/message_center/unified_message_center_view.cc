@@ -21,6 +21,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -75,17 +76,30 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       message_center_bubble_(bubble),
       notification_bar_(new StackedNotificationBar(this)),
       scroll_bar_(new MessageCenterScrollBar(this)),
+      // TODO(crbug.com/1247455): Determine how to use ScrollWithLayers without
+      // breaking ARC.
       scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this, model)),
       last_scroll_position_from_bottom_(0),
       animation_(std::make_unique<gfx::LinearAnimation>(this)),
-      focus_search_(std::make_unique<views::FocusSearch>(this, false, false)) {
+      focus_search_(std::make_unique<views::FocusSearch>(this, false, false)) {}
+
+UnifiedMessageCenterView::~UnifiedMessageCenterView() {
+  model_->set_notification_target_mode(
+      UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
+
+  RemovedFromWidget();
+}
+
+void UnifiedMessageCenterView::Init() {
   message_list_view_->Init();
 
   AddChildView(notification_bar_);
 
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
+  // TODO(crbug.com/1247455): Be able to do
+  // SetContentsLayerType(LAYER_NOT_DRAWN).
   scroller_->SetContents(
       std::make_unique<ScrollerContentsView>(message_list_view_));
   scroller_->SetBackgroundColor(absl::nullopt);
@@ -97,13 +111,6 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       message_list_view_->GetTotalNotificationCount(),
       message_list_view_->GetTotalPinnedNotificationCount(),
       GetStackedNotifications());
-}
-
-UnifiedMessageCenterView::~UnifiedMessageCenterView() {
-  model_->set_notification_target_mode(
-      UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
-
-  RemovedFromWidget();
 }
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
@@ -125,7 +132,6 @@ void UnifiedMessageCenterView::SetExpanded() {
   collapsed_ = false;
   notification_bar_->SetExpanded();
   scroller_->SetVisible(true);
-  Layout();
 }
 
 void UnifiedMessageCenterView::SetCollapsed(bool animate) {
@@ -182,8 +188,6 @@ void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
   SetMaxHeight(available_height_);
-
-  Layout();
 
   if (GetWidget() && !GetWidget()->IsClosed())
     GetWidget()->SynthesizeMouseMoveEvent();
@@ -277,7 +281,6 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
       GetStackedNotifications());
   if (was_count_updated) {
     const int previous_y = scroller_->y();
-    Layout();
     // Adjust scroll position when counter visibility is changed so that
     // on-screen position of notification list does not change.
     scroll_bar_->ScrollByContentsOffset(previous_y - scroller_->y());

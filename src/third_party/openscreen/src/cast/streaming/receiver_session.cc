@@ -302,6 +302,7 @@ void ReceiverSession::OnOffer(SenderMessage message) {
   properties->sequence_number = message.sequence_number;
 
   const Offer& offer = absl::get<Offer>(message.body);
+
   if (offer.cast_mode == CastMode::kRemoting) {
     if (!preferences_.remoting) {
       SendErrorAnswerReply(message.sequence_number,

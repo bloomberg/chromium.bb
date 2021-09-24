@@ -158,61 +158,54 @@ enum class AccessCheckResult {
 constexpr char kAccessCheckHistogram[] = "Net.Cors.AccessCheckResult";
 constexpr char kAccessCheckHistogramNotSecure[] =
     "Net.Cors.AccessCheckResult.NotSecureRequestor";
+constexpr char kAccessCheckHistogramError[] = "Net.Cors.AccessCheckError";
 
-TEST_F(CorsTest, CheckAccessLogsAllowMetricsSecureOrigin) {
+TEST_F(CorsTest, CheckAccessAndReportMetricsForPermittedSecureOrigin) {
   base::HistogramTester histogram_tester;
   const GURL response_url("http://example.com/data");
   const url::Origin origin = url::Origin::Create(GURL("https://google.com"));
 
-  CheckAccess(response_url, origin.Serialize() /* allow_origin_header */,
-              absl::nullopt /* allow_credentials_header */,
-              network::mojom::CredentialsMode::kOmit, origin);
+  CheckAccessAndReportMetrics(response_url,
+                              origin.Serialize() /* allow_origin_header */,
+                              absl::nullopt /* allow_credentials_header */,
+                              network::mojom::CredentialsMode::kOmit, origin);
   histogram_tester.ExpectUniqueSample(kAccessCheckHistogram,
                                       AccessCheckResult::kPermitted, 1);
   histogram_tester.ExpectTotalCount(kAccessCheckHistogramNotSecure, 0);
+  histogram_tester.ExpectTotalCount(kAccessCheckHistogramError, 0);
 }
 
-TEST_F(CorsTest, CheckAccessLogsBlockMetricsSecureOrigin) {
+TEST_F(CorsTest, CheckAccessAndReportMetricsForPermittedNotSecureOrigin) {
+  base::HistogramTester histogram_tester;
+  const GURL response_url("http://example.com/data");
+  const url::Origin origin = url::Origin::Create(GURL("http://google.com"));
+
+  CheckAccessAndReportMetrics(response_url,
+                              origin.Serialize() /* allow_origin_header */,
+                              absl::nullopt /* allow_credentials_header */,
+                              network::mojom::CredentialsMode::kOmit, origin);
+  histogram_tester.ExpectUniqueSample(kAccessCheckHistogram,
+                                      AccessCheckResult::kPermitted, 1);
+  histogram_tester.ExpectUniqueSample(kAccessCheckHistogramNotSecure,
+                                      AccessCheckResult::kPermitted, 1);
+  histogram_tester.ExpectTotalCount(kAccessCheckHistogramError, 0);
+}
+
+TEST_F(CorsTest, CheckAccessAndReportMetricsForNotPermittedSecureOrigin) {
   base::HistogramTester histogram_tester;
   const GURL response_url("http://example.com/data");
   const url::Origin origin = url::Origin::Create(GURL("https://google.com"));
 
-  CheckAccess(response_url,
-              std::string("https://not.google.com") /* allow_origin_header */,
-              absl::nullopt /* allow_credentials_header */,
-              network::mojom::CredentialsMode::kOmit, origin);
+  CheckAccessAndReportMetrics(response_url,
+                              absl::nullopt /* allow_origin_header */,
+                              absl::nullopt /* allow_credentials_header */,
+                              network::mojom::CredentialsMode::kOmit, origin);
   histogram_tester.ExpectUniqueSample(kAccessCheckHistogram,
                                       AccessCheckResult::kNotPermitted, 1);
   histogram_tester.ExpectTotalCount(kAccessCheckHistogramNotSecure, 0);
-}
-
-TEST_F(CorsTest, CheckAccessLogsAllowMetricsInsecureOrigin) {
-  base::HistogramTester histogram_tester;
-  const GURL response_url("http://example.com/data");
-  const url::Origin origin = url::Origin::Create(GURL("http://google.com"));
-
-  CheckAccess(response_url, origin.Serialize() /* allow_origin_header */,
-              absl::nullopt /* allow_credentials_header */,
-              network::mojom::CredentialsMode::kOmit, origin);
-  histogram_tester.ExpectUniqueSample(kAccessCheckHistogram,
-                                      AccessCheckResult::kPermitted, 1);
-  histogram_tester.ExpectUniqueSample(kAccessCheckHistogramNotSecure,
-                                      AccessCheckResult::kPermitted, 1);
-}
-
-TEST_F(CorsTest, CheckAccessLogsBlockMetricsInsecureOrigin) {
-  base::HistogramTester histogram_tester;
-  const GURL response_url("http://example.com/data");
-  const url::Origin origin = url::Origin::Create(GURL("http://google.com"));
-
-  CheckAccess(response_url,
-              std::string("http://not.google.com") /* allow_origin_header */,
-              absl::nullopt /* allow_credentials_header */,
-              network::mojom::CredentialsMode::kOmit, origin);
-  histogram_tester.ExpectUniqueSample(kAccessCheckHistogram,
-                                      AccessCheckResult::kNotPermitted, 1);
-  histogram_tester.ExpectUniqueSample(kAccessCheckHistogramNotSecure,
-                                      AccessCheckResult::kNotPermitted, 1);
+  histogram_tester.ExpectUniqueSample(
+      kAccessCheckHistogramError, mojom::CorsError::kMissingAllowOriginHeader,
+      1);
 }
 
 // Tests if CheckRedirectLocation detects kCorsDisabledScheme and
@@ -330,40 +323,6 @@ TEST_F(CorsTest, CheckRedirectLocation) {
   }
 }
 
-TEST_F(CorsTest, CheckPreflightAccessDetectsErrorStatus) {
-  const GURL response_url("http://example.com/data");
-  const url::Origin origin = url::Origin::Create(GURL("http://google.com"));
-  const std::string allow_all_header("*");
-
-  // Status 200-299 should pass.
-  EXPECT_FALSE(
-      CheckPreflightAccess(response_url, 200, allow_all_header,
-                           absl::nullopt /* allow_credentials_header */,
-                           network::mojom::CredentialsMode::kOmit, origin));
-  EXPECT_FALSE(
-      CheckPreflightAccess(response_url, 299, allow_all_header,
-                           absl::nullopt /* allow_credentials_header */,
-                           network::mojom::CredentialsMode::kOmit, origin));
-
-  // Status 300 should fail.
-  absl::optional<CorsErrorStatus> invalid_status_error =
-      CheckPreflightAccess(response_url, 300, allow_all_header,
-                           absl::nullopt /* allow_credentials_header */,
-                           network::mojom::CredentialsMode::kOmit, origin);
-  ASSERT_TRUE(invalid_status_error);
-  EXPECT_EQ(mojom::CorsError::kPreflightInvalidStatus,
-            invalid_status_error->cors_error);
-
-  // Status 0 should fail too.
-  invalid_status_error =
-      CheckPreflightAccess(response_url, 0, allow_all_header,
-                           absl::nullopt /* allow_credentials_header */,
-                           network::mojom::CredentialsMode::kOmit, origin);
-  ASSERT_TRUE(invalid_status_error);
-  EXPECT_EQ(mojom::CorsError::kPreflightInvalidStatus,
-            invalid_status_error->cors_error);
-}
-
 TEST_F(CorsTest, CheckExternalPreflightErrors) {
   EXPECT_FALSE(CheckExternalPreflight(std::string("true")));
 
@@ -458,9 +417,9 @@ TEST_F(CorsTest, SafelistedSecCHPrefersColorScheme) {
 }
 
 TEST_F(CorsTest, SafelistedSecCHLang) {
-  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-Lang", "\"en\", \"de\""));
+  EXPECT_TRUE(IsCorsSafelistedHeader("Lang", "\"en\", \"de\""));
 
-  // TODO(mkwst): Validate that `Sec-CH-Lang` is a structured header.
+  // TODO(mkwst): Validate that `Lang` is a structured header.
   // https://crbug.com/924969
 }
 
@@ -475,6 +434,11 @@ TEST_F(CorsTest, SafelistedSecCHUA) {
 
   // TODO(mkwst): Validate that `Sec-CH-UA-*` is a structured header.
   // https://crbug.com/924969
+}
+
+TEST_F(CorsTest, SafelistedSecCHViewportHeight) {
+  EXPECT_TRUE(
+      IsCorsSafelistedHeader("Sec-CH-Viewport-Height", "\"Viewport-Height!\""));
 }
 
 TEST_F(CorsTest, SafelistedContentLanguage) {
@@ -678,115 +642,6 @@ TEST_F(CorsTest, CorsUnsafeRequestHeaderNames) {
            {"width", std::string(127, '1')},
            {"hogE", "fuga"}}),
       List({"content-type", "hoge"}));
-}
-
-TEST_F(CorsTest, CorsUnsafeNotForbiddenRequestHeaderNames) {
-  // Needed because initializer list is not allowed for a macro argument.
-  using List = std::vector<std::string>;
-
-  // Empty => Empty
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({}, false /* is_revalidating */),
-      List({}));
-
-  // "user-agent" is NOT forbidden per spec, but forbidden in Chromium.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({{"content-type", "text/plain"},
-                                                {"dpr", "12345"},
-                                                {"aCCept", "en,ja"},
-                                                {"accept-charset", "utf-8"},
-                                                {"uSer-Agent", "foo"},
-                                                {"hogE", "fuga"}},
-                                               false /* is_revalidating */),
-      List({"hoge"}));
-
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({{"content-type", "text/html"},
-                                                {"dpr", "123-45"},
-                                                {"aCCept", "en,ja"},
-                                                {"accept-charset", "utf-8"},
-                                                {"hogE", "fuga"}},
-                                               false /* is_revalidating */),
-      List({"content-type", "dpr", "hoge"}));
-
-  // |safelistValueSize| is 1024.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames(
-          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
-           {"accept", std::string(128, '1')},
-           {"accept-language", std::string(128, '1')},
-           {"content-language", std::string(128, '1')},
-           {"dpr", std::string(128, '1')},
-           {"device-memory", std::string(128, '1')},
-           {"save-data", "on"},
-           {"viewport-width", std::string(128, '1')},
-           {"width", std::string(126, '1')},
-           {"accept-charset", "utf-8"},
-           {"hogE", "fuga"}},
-          false /* is_revalidating */),
-      List({"hoge"}));
-
-  // |safelistValueSize| is 1025.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames(
-          {{"content-type", "text/plain; charset=" + std::string(108, '1')},
-           {"accept", std::string(128, '1')},
-           {"accept-language", std::string(128, '1')},
-           {"content-language", std::string(128, '1')},
-           {"dpr", std::string(128, '1')},
-           {"device-memory", std::string(128, '1')},
-           {"save-data", "on"},
-           {"viewport-width", std::string(128, '1')},
-           {"width", std::string(127, '1')},
-           {"accept-charset", "utf-8"},
-           {"hogE", "fuga"}},
-          false /* is_revalidating */),
-      List({"hoge", "content-type", "accept", "accept-language",
-            "content-language", "dpr", "device-memory", "save-data",
-            "viewport-width", "width"}));
-
-  // |safelistValueSize| is 897 because "content-type" is not safelisted.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames(
-          {{"content-type", "text/plain; charset=" + std::string(128, '1')},
-           {"accept", std::string(128, '1')},
-           {"accept-language", std::string(128, '1')},
-           {"content-language", std::string(128, '1')},
-           {"dpr", std::string(128, '1')},
-           {"device-memory", std::string(128, '1')},
-           {"save-data", "on"},
-           {"viewport-width", std::string(128, '1')},
-           {"width", std::string(127, '1')},
-           {"accept-charset", "utf-8"},
-           {"hogE", "fuga"}},
-          false /* is_revalidating */),
-      List({"content-type", "hoge"}));
-}
-
-TEST_F(CorsTest, CorsUnsafeNotForbiddenRequestHeaderNamesWithRevalidating) {
-  // Needed because initializer list is not allowed for a macro argument.
-  using List = std::vector<std::string>;
-
-  // Empty => Empty
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({}, true /* is_revalidating */),
-      List({}));
-
-  // These three headers will be ignored.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({{"If-MODifIED-since", "x"},
-                                                {"iF-nONE-MATCh", "y"},
-                                                {"CACHE-ContrOl", "z"}},
-                                               true /* is_revalidating */),
-      List({}));
-
-  // Without is_revalidating set, these three headers will not be safelisted.
-  EXPECT_EQ(
-      CorsUnsafeNotForbiddenRequestHeaderNames({{"If-MODifIED-since", "x"},
-                                                {"iF-nONE-MATCh", "y"},
-                                                {"CACHE-ContrOl", "z"}},
-                                               false /* is_revalidating */),
-      List({"if-modified-since", "if-none-match", "cache-control"}));
 }
 
 TEST_F(CorsTest, NoCorsSafelistedHeaderName) {

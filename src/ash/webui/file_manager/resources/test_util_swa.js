@@ -50,16 +50,29 @@ test.swaTestMessageListener = (request) => {
   });
 };
 
-test.swaLoadTestUtils = async () => {
+let testUtilsLoaded = false;
+
+test.swaLoadTestUtils = async (sendResults=true) => {
   const scriptUrl = './runtime_loaded_test_util_swa.js';
   let result = false;
   try {
     console.log('Loading ' + scriptUrl);
     await new ScriptLoader(scriptUrl, {type: 'module'}).load();
+    testUtilsLoaded = true;
     result = true;
   } finally {
-    window.domAutomationController.send(result);
+    if (sendResults) {
+      window.domAutomationController.send(result);
+    }
   }
 
   return result;
+};
+
+test.getSwaAppId = async () => {
+  if (!testUtilsLoaded) {
+    await test.swaLoadTestUtils(false);
+  }
+
+  window.domAutomationController.send(String(window.appID));
 };

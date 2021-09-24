@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">将地址栏设为焦点</translation>
 <translation id="3256109297135787951">取消任务栏中某项内容的突出显示状态</translation>
 <translation id="3288816184963444640">关闭当前窗口</translation>
+<translation id="3350805006883559974">在顶部悬浮活动窗口</translation>
 <translation id="3407560819924487926">启动任务管理器</translation>
 <translation id="3417835166382867856">搜索标签页</translation>
 <translation id="3422679037938588196">转到上一个相符的搜索结果</translation>
@@ -208,6 +209,7 @@
 <translation id="8881584919399569791">将活动窗口移至左侧的桌面</translation>
 <translation id="88986195241502842">向下翻页</translation>
 <translation id="8924883688469390268">切换回上一位用户</translation>
+<translation id="8941626538514548667">聚焦于浏览器中的网络内容</translation>
 <translation id="8977648847395357314">选择地址栏中的内容</translation>
 <translation id="8982190978301344584">显示包含可用 IME 列表的菜单</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 至 8</translation>

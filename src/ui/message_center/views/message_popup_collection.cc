@@ -8,16 +8,19 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_view_controller.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_popup_view.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/message_center/views/notification_view_md.h"
+#include "ui/message_center/views/notification_view.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
 namespace message_center {
 
 namespace {
@@ -37,7 +40,9 @@ constexpr base::TimeDelta kWaitForReset = base::TimeDelta::FromSeconds(10);
 
 MessagePopupCollection::MessagePopupCollection()
     : animation_(std::make_unique<gfx::LinearAnimation>(this)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  message_center_observation_.Observe(MessageCenter::Get());
+}
 
 MessagePopupCollection::~MessagePopupCollection() {
   // Ignore calls to update which can cause crashes.
@@ -126,8 +131,8 @@ void MessagePopupCollection::NotifyPopupClosed(MessagePopupView* popup) {
 
 MessageView* MessagePopupCollection::GetMessageViewForNotificationId(
     const std::string& notification_id) {
-  auto it =
-      std::find_if(popup_items_.begin(), popup_items_.end(), [&](auto child) {
+  auto it = std::find_if(
+      popup_items_.begin(), popup_items_.end(), [&](const auto& child) {
         return child.popup->message_view()->notification_id() ==
                notification_id;
       });
@@ -138,9 +143,34 @@ MessageView* MessagePopupCollection::GetMessageViewForNotificationId(
   return it->popup->message_view();
 }
 
+void MessagePopupCollection::ConvertNotificationViewToGroupedNotificationView(
+    const std::string& ungrouped_notification_id,
+    const std::string& new_grouped_notification_id) {
+  auto it = std::find_if(
+      popup_items_.begin(), popup_items_.end(),
+      [&](const auto& popup) { return popup.id == ungrouped_notification_id; });
+  if (it == popup_items_.end())
+    return;
+
+  it->id = new_grouped_notification_id;
+  it->popup->message_view()->set_notification_id(new_grouped_notification_id);
+}
+
+void MessagePopupCollection::ConvertGroupedNotificationViewToNotificationView(
+    const std::string& grouped_notification_id,
+    const std::string& new_single_notification_id) {
+  auto it = std::find_if(
+      popup_items_.begin(), popup_items_.end(),
+      [&](const auto& popup) { return popup.id == grouped_notification_id; });
+  if (it == popup_items_.end())
+    return;
+
+  it->id = new_single_notification_id;
+  it->popup->message_view()->set_notification_id(new_single_notification_id);
+}
+
 void MessagePopupCollection::OnNotificationAdded(
     const std::string& notification_id) {
-  NotificationViewController::OnNotificationAdded(notification_id);
   // Should not call MessagePopupCollection::Update here. Because notification
   // may be removed before animation which is triggered by the previous
   // operation on MessagePopupCollection ends. As result, when a new
@@ -153,8 +183,6 @@ void MessagePopupCollection::OnNotificationAdded(
 void MessagePopupCollection::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
-  NotificationViewController::OnNotificationRemoved(notification_id, by_user);
-
   if (by_user) {
     recently_closed_by_user_ = true;
     recently_closed_by_user_timer_ = std::make_unique<base::OneShotTimer>();
@@ -247,7 +275,7 @@ MessagePopupView* MessagePopupCollection::CreatePopup(
   bool a11_feedback_on_init =
       notification.rich_notification_data()
           .should_make_spoken_feedback_for_popup_updates;
-  return new MessagePopupView(new NotificationViewMD(notification), this,
+  return new MessagePopupView(new NotificationView(notification), this,
                               a11_feedback_on_init);
 }
 
@@ -504,8 +532,9 @@ bool MessagePopupCollection::AddPopup() {
       return false;
     }
 
-    item.popup->Show();
     popup_items_.push_back(item);
+
+    item.popup->Show();
     NotifyPopupAdded(item.popup);
   }
 

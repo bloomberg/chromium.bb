@@ -322,20 +322,6 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithNotAwaitQuiescence);
 };
 
-class SingleClientNigoriSyncTestWithFullKeystoreMigration
-    : public SingleClientNigoriSyncTest {
- public:
-  SingleClientNigoriSyncTestWithFullKeystoreMigration() {
-    override_features_.InitAndEnableFeature(
-        switches::kSyncTriggerFullKeystoreMigration);
-  }
-
-  ~SingleClientNigoriSyncTestWithFullKeystoreMigration() override = default;
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldCommitKeystoreNigoriWhenReceivedDefault) {
   // SetupSync() should make FakeServer send default NigoriSpecifics.
@@ -494,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest, ShouldRotateKeystoreKey) {
 }
 
 // Performs initial sync with backward compatible keystore Nigori.
-IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithFullKeystoreMigration,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        PRE_ShouldCompleteKeystoreMigrationAfterRestart) {
   const std::vector<std::vector<uint8_t>>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -517,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithFullKeystoreMigration,
 
 // After browser restart the client should commit full keystore Nigori (e.g. it
 // should use keystore key as encryption key).
-IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithFullKeystoreMigration,
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldCompleteKeystoreMigrationAfterRestart) {
   ASSERT_TRUE(SetupClients());
   const std::string expected_key_bag_key_name =
@@ -567,8 +553,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetSyncService(0)->GetUserSettings()->SetDecryptionPassphrase(
       "password"));
   EXPECT_TRUE(WaitForPasswordForms({password_form}));
-  // TODO(crbug.com/1042251): verify that client fixes NigoriSpecifics once
-  // such behavior is supported.
 }
 
 // Performs initial sync for Nigori, but doesn't allow initialized Nigori to be
@@ -1323,10 +1307,9 @@ class SingleClientNigoriWithRecoveryAndPasswordsAccountStorageTest
   base::test::ScopedFeatureList override_features_;
 };
 
-// TODO(crbug.com/1218713): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithRecoveryAndPasswordsAccountStorageTest,
-    DISABLED_ShouldAcceptEncryptionKeysFromTheWeb) {
+    ShouldAcceptEncryptionKeysFromTheWeb) {
   // Mimic the account using a trusted vault passphrase.
   const std::vector<uint8_t> kTestEncryptionKey = {1, 2, 3, 4};
   SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
@@ -1372,10 +1355,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(GetAvatarSyncErrorType(GetProfile(0)).has_value());
 }
 
-// TODO(crbug.com/1218713): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithRecoveryAndPasswordsAccountStorageTest,
-    DISABLED_ShouldReportDegradedTrustedVaultRecoverability) {
+    ShouldReportDegradedTrustedVaultRecoverability) {
   const std::vector<uint8_t> kTestRecoveryMethodPublicKey =
       syncer::SecureBoxKeyPair::GenerateRandom()->public_key().ExportToBytes();
   base::HistogramTester histogram_tester;

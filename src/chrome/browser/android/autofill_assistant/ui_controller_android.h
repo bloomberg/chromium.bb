@@ -129,6 +129,8 @@ class UiControllerAndroid : public ControllerObserver {
   void OnPersistentGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) override;
   void OnShouldShowOverlayChanged(bool should_show) override;
+  void OnTtsButtonVisibilityChanged(bool visible) override;
+  void OnTtsButtonStateChanged(TtsButtonState state) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -136,6 +138,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantHeaderDelegate:
   void OnHeaderFeedbackButtonClicked();
+  void OnTtsButtonClicked();
 
   // Called by AssistantGenericUiDelegate:
   void OnViewEvent(const EventHandler::EventKey& key);
@@ -279,6 +282,9 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Restore the UI for the current UIDelegate.
   void RestoreUi();
+
+  // Performs tasks to update Display String Changes.
+  void OnClientSettingsDisplayStringsChanged(const ClientSettings& settings);
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

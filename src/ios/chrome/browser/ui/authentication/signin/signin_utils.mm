@@ -14,18 +14,21 @@
 #import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "ios/chrome/app/tests_hook.h"
+#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -96,7 +99,7 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
   DCHECK(browser_state);
   DCHECK(current_version.IsValid());
 
-  if (tests_hook::DisableSigninRecallPromo())
+  if (tests_hook::DisableUpgradeSigninPromo())
     return false;
 
   if (browser_state->IsOffTheRecord())
@@ -117,6 +120,15 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
   if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSignin))
     return false;
 
+  // Don't show the promo if there are no identities. This should be tested
+  // before ForceStartupSigninPromo() to avoid any DCHECK failures if
+  // ForceStartupSigninPromo() returns true.
+  ChromeAccountManagerService* account_manager_service =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state);
+  NSArray* identities = account_manager_service->GetAllIdentities();
+  if (identities.count == 0)
+    return false;
+
   // Used for testing purposes only.
   if (signin::ForceStartupSigninPromo())
     return true;
@@ -133,13 +145,6 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
         return false;
     }
   }
-
-  // Don't show the promo if there are no identities.
-  ChromeAccountManagerService* account_manager_service =
-      ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state);
-  NSArray* identities = account_manager_service->GetAllIdentities();
-  if (identities.count == 0)
-    return false;
 
   // The SSO promo should not be disabled if it is force disabled.
   if (signin::ForceDisableExtendedSyncPromos())
@@ -177,21 +182,34 @@ void RecordVersionSeen(ChromeAccountManagerService* account_manager_service,
 }
 
 bool IsSigninAllowed(const PrefService* prefs) {
-  DCHECK(signin::IsMobileIdentityConsistencyEnabled() ||
-         prefs->GetBoolean(prefs::kSigninAllowed));
-  return prefs->GetBoolean(prefs::kSigninAllowed) &&
-         prefs->GetBoolean(prefs::kSigninAllowedByPolicy);
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider().GetChromeIdentityService();
+  return identityService->IsServiceSupported() &&
+         prefs->GetBoolean(prefs::kSigninAllowed) && IsSigninAllowedByPolicy();
 }
 
-bool IsSigninAllowedByPolicy(const PrefService* prefs) {
-  return prefs->GetBoolean(prefs::kSigninAllowedByPolicy);
+bool IsSigninAllowedByPolicy() {
+  BrowserSigninMode policy_mode = static_cast<BrowserSigninMode>(
+      GetApplicationContext()->GetLocalState()->GetInteger(
+          prefs::kBrowserSigninPolicy));
+
+  switch (policy_mode) {
+    case BrowserSigninMode::kDisabled:
+      return false;
+    case BrowserSigninMode::kEnabled:
+    case BrowserSigninMode::kForced:
+      return true;
+  }
 }
 
 IdentitySigninState GetPrimaryIdentitySigninState(
     ChromeBrowserState* browser_state) {
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
-  if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSync)) {
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(browser_state);
+  if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSync) &&
+      syncSetupService->IsFirstSetupComplete()) {
     return IdentitySigninStateSignedInWithSyncEnabled;
   } else if (auth_service->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     return IdentitySigninStateSignedInWithSyncDisabled;

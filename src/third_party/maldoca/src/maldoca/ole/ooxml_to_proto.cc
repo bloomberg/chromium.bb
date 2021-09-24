@@ -32,7 +32,7 @@
 
 namespace maldoca {
 
-using maldoca::ooxml::OoxmlToProtoSettings;
+using ::maldoca::ooxml::OoxmlToProtoSettings;
 using utils::XmlCharDeleter;
 using utils::XmlDocDeleter;
 
@@ -276,7 +276,6 @@ absl::Status OOXMLToProto::ExtractPropertiesFromFile(absl::string_view filename,
   if (!absl::StrContains(root_node_name, "Properties")) {
     return ::maldoca::AbortedError("Unable to get root of the document!",
                                    MaldocaErrorCode::MISSING_PROPERTIES);
-    return absl::AbortedError("File does not contain properties!");
   }
 
   // Beginning of the linked list with all the properties.

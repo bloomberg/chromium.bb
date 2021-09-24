@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/external_install_options.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -161,7 +161,9 @@ class ExternallyManagedAppManager {
 
  private:
   struct SynchronizeRequest {
-    SynchronizeRequest(SynchronizeCallback callback, int remaining_requests);
+    SynchronizeRequest(SynchronizeCallback callback,
+                       std::vector<ExternalInstallOptions> pending_installs,
+                       int remaining_uninstall_requests);
     SynchronizeRequest(const SynchronizeRequest&) = delete;
     SynchronizeRequest& operator=(const SynchronizeRequest&) = delete;
     ~SynchronizeRequest();
@@ -170,7 +172,9 @@ class ExternallyManagedAppManager {
     SynchronizeRequest(SynchronizeRequest&& other);
 
     SynchronizeCallback callback;
-    int remaining_requests;
+    int remaining_install_requests;
+    std::vector<ExternalInstallOptions> pending_installs;
+    int remaining_uninstall_requests;
     std::map<GURL, InstallResult> install_results;
     std::map<GURL, bool> uninstall_results;
   };
@@ -182,7 +186,7 @@ class ExternallyManagedAppManager {
   void UninstallForSynchronizeCallback(ExternalInstallSource source,
                                        const GURL& app_url,
                                        bool succeeded);
-  void OnAppSynchronized(ExternalInstallSource source, const GURL& app_url);
+  void ContinueOrCompleteSynchronization(ExternalInstallSource source);
 
   WebAppRegistrar* registrar_ = nullptr;
   OsIntegrationManager* os_integration_manager_ = nullptr;

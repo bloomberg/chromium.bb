@@ -30,9 +30,10 @@ def make_rfft2d_tests(options):
 
   test_parameters = [{
       "input_dtype": [tf.float32],
-      "input_shape": [[8, 8], [3, 8, 8]],
+      "input_shape": [[8, 8], [3, 8, 8], [3, 1, 16]],
       "fft_length": [
-          None, [4, 4], [4, 8], [8, 4], [8, 8], [8, 16], [16, 8], [16, 16]
+          None, [4, 4], [4, 8], [8, 4], [8, 8], [8, 16], [16, 8], [16, 16],
+          [1, 8], [1, 16]
       ]
   }]
 
@@ -51,6 +52,5 @@ def make_rfft2d_tests(options):
         outputs, feed_dict=dict(zip(inputs, [input_value])))
 
   extra_toco_options = ExtraTocoOptions()
-  extra_toco_options.allow_custom_ops = True
   make_zip_of_tests(options, test_parameters, build_graph, build_inputs,
                     extra_toco_options)

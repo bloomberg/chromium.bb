@@ -277,16 +277,17 @@ void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
     // approaches peak. If that is the case we should track a
     // |peak_since_last_sequence_update_| on the the memory changes. Then only
     // update the sequences with a new one is added, or the peak is requested.
-    for (auto& sequence : sequence_trackers_) {
-      if (current_memory_ > sequence.second.total_memory_) {
-        sequence.second.total_memory_ = current_memory_;
+    for (auto& seq : sequence_trackers_) {
+      if (current_memory_ > seq.second.total_memory_) {
+        seq.second.total_memory_ = current_memory_;
         for (auto& sequence : sequence_trackers_) {
           TRACE_EVENT_ASYNC_STEP_INTO1("gpu", "PeakMemoryTracking",
                                        sequence.first, "Peak", "peak",
                                        current_memory_);
         }
-        for (auto& source : current_memory_per_source_) {
-          sequence.second.peak_memory_per_source_[source.first] = source.second;
+        for (auto& memory_per_source : current_memory_per_source_) {
+          seq.second.peak_memory_per_source_[memory_per_source.first] =
+              memory_per_source.second;
         }
       }
     }
@@ -802,8 +803,12 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     // TODO(crbug.com/1192632): disable robust_resource_initialization for
     // SwANGLE.
     // TODO(crbug.com/1238413): disable robust_resource_initialization for Mac.
+    // TODO(crbug.com/1116174): Currently disabling robust initialization is
+    // breaking some tests with OOP canvas. Once that's fixed remove check for
+    // kCanvasOopRasterization feature.
     if (gl::GLSurfaceEGL::GetDisplayType() != gl::ANGLE_SWIFTSHADER &&
-        features::IsUsingSkiaRenderer()) {
+        features::IsUsingSkiaRenderer() &&
+        !base::FeatureList::IsEnabled(features::kCanvasOopRasterization)) {
       attribs.robust_resource_initialization = false;
     }
 #endif
@@ -867,16 +872,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   // Log crash reports when GL errors are generated.
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
       enable_angle_validation && feature_info->feature_flags().khr_debug) {
-    static int remaining_gl_error_reports =
-#if defined(OS_ANDROID)
-        // Don't generate crash reports on Android due to errors generated
-        // during video decode.
-        0;
-#else
-        // Limit the total number of gl error crash reports to 1 per GPU
-        // process.
-        1;
-#endif
+    // Limit the total number of gl error crash reports to 1 per GPU
+    // process.
+    static int remaining_gl_error_reports = 1;
     gles2::InitializeGLDebugLogging(false, CrashReportOnGLErrorDebugCallback,
                                     &remaining_gl_error_reports);
   }

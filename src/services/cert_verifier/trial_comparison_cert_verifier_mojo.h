@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -28,7 +29,7 @@ namespace cert_verifier {
 
 // Wrapper around TrialComparisonCertVerifier that does trial configuration and
 // reporting over Mojo pipes.
-class COMPONENT_EXPORT(NETWORK_SERVICE) TrialComparisonCertVerifierMojo
+class TrialComparisonCertVerifierMojo
     : public net::CertVerifier,
       public mojom::TrialComparisonCertVerifierConfigClient {
  public:

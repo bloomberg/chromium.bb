@@ -1071,6 +1071,9 @@ genrule(
         "src/trace_processor/metrics/chrome/cpu_time_by_rail_mode.sql",
         "src/trace_processor/metrics/chrome/estimated_power_by_category.sql",
         "src/trace_processor/metrics/chrome/estimated_power_by_rail_mode.sql",
+        "src/trace_processor/metrics/chrome/gesture_flow_event.sql",
+        "src/trace_processor/metrics/chrome/gesture_flow_event_queuing_delay.sql",
+        "src/trace_processor/metrics/chrome/gesture_jank.sql",
         "src/trace_processor/metrics/chrome/rail_modes.sql",
         "src/trace_processor/metrics/chrome/scroll_flow_event.sql",
         "src/trace_processor/metrics/chrome/scroll_flow_event_queuing_delay.sql",
@@ -1081,6 +1084,9 @@ genrule(
         "src/trace_processor/metrics/chrome/scroll_jank_cause_get_bitmap.sql",
         "src/trace_processor/metrics/chrome/scroll_jank_cause_queuing_delay.sql",
         "src/trace_processor/metrics/chrome/test_chrome_metric.sql",
+        "src/trace_processor/metrics/chrome/touch_flow_event.sql",
+        "src/trace_processor/metrics/chrome/touch_flow_event_queuing_delay.sql",
+        "src/trace_processor/metrics/chrome/touch_jank.sql",
         "src/trace_processor/metrics/experimental/blink_gc_metric.sql",
         "src/trace_processor/metrics/experimental/frame_times.sql",
         "src/trace_processor/metrics/experimental/media_metric.sql",
@@ -1290,8 +1296,8 @@ filegroup(
         "src/trace_processor/dynamic/ancestor_generator.h",
         "src/trace_processor/dynamic/connected_flow_generator.cc",
         "src/trace_processor/dynamic/connected_flow_generator.h",
-        "src/trace_processor/dynamic/descendant_slice_generator.cc",
-        "src/trace_processor/dynamic/descendant_slice_generator.h",
+        "src/trace_processor/dynamic/descendant_generator.cc",
+        "src/trace_processor/dynamic/descendant_generator.h",
         "src/trace_processor/dynamic/describe_slice_generator.cc",
         "src/trace_processor/dynamic/describe_slice_generator.h",
         "src/trace_processor/dynamic/experimental_annotated_stack_generator.cc",
@@ -1423,6 +1429,8 @@ filegroup(
         "src/trace_processor/importers/proto/chrome_system_probes_module.h",
         "src/trace_processor/importers/proto/chrome_system_probes_parser.cc",
         "src/trace_processor/importers/proto/chrome_system_probes_parser.h",
+        "src/trace_processor/importers/proto/flamegraph_construction_algorithms.cc",
+        "src/trace_processor/importers/proto/flamegraph_construction_algorithms.h",
         "src/trace_processor/importers/proto/heap_profile_tracker.cc",
         "src/trace_processor/importers/proto/heap_profile_tracker.h",
         "src/trace_processor/importers/proto/memory_tracker_snapshot_module.cc",
@@ -2589,6 +2597,7 @@ perfetto_proto_library(
         "protos/perfetto/metrics/chrome/reported_by_page.proto",
         "protos/perfetto/metrics/chrome/scroll_jank.proto",
         "protos/perfetto/metrics/chrome/test_chrome_metric.proto",
+        "protos/perfetto/metrics/chrome/touch_jank.proto",
     ],
     visibility = [
         PERFETTO_CONFIG.proto_library_visibility,
@@ -4111,38 +4120,10 @@ perfetto_py_binary(
     python_version = "PY3",
 )
 
-# Noop targets used to represent targets of the protobuf library.
-# These will be rewritten in Google3 to be dependencies on the real targets.
-
-perfetto_py_library(
-    name = "pyglib_noop",
-    srcs = [],
-)
-
-perfetto_py_library(
-    name = "protobuf_noop",
-    srcs = [],
-)
-
-perfetto_py_library(
-    name = "protobuf_descriptor_pb2_noop",
-    srcs = [],
-)
-
-perfetto_py_library(
-    name = "gfile_noop",
-    srcs = [],
-)
-
-perfetto_py_library(
-    name = "trace_processor_init_noop",
-    srcs = [],
-)
-
 perfetto_py_binary(
     name = "trace_processor_py_example",
     srcs = ["src/trace_processor/python/example.py"],
-    deps = [":trace_processor_py"],
+    deps = [":trace_processor_py"] + PERFETTO_CONFIG.deps.pandas_py,
     main = "src/trace_processor/python/example.py",
     python_version = "PY3",
 )
@@ -4151,17 +4132,14 @@ perfetto_py_library(
     name = "trace_processor_py",
     srcs = glob(["src/trace_processor/python/perfetto/trace_processor/*.py"]),
     data = [
-        ":trace_processor_init_noop",
         "src/trace_processor/python/perfetto/trace_processor/trace_processor.descriptor",
         "src/trace_processor/python/perfetto/trace_processor/metrics.descriptor",
         ":trace_processor_shell",
-    ],
-    deps = [
-        ":gfile_noop",
-        ":protobuf_noop",
-        ":protobuf_descriptor_pb2_noop",
-        ":pyglib_noop",
-    ],
+    ] + PERFETTO_CONFIG.deps.tp_init_py,
+    deps = PERFETTO_CONFIG.deps.gfile_py + 
+        PERFETTO_CONFIG.deps.protobuf_py + 
+        PERFETTO_CONFIG.deps.protobuf_descriptor_pb2_py + 
+        PERFETTO_CONFIG.deps.pyglib_py,
     imports = [
         "src/trace_processor/python",
     ],
@@ -4181,12 +4159,12 @@ perfetto_py_library(
 
 perfetto_py_binary(
     name = "experimental_slice_breakdown_bin",
-    srcs = glob(["tools/slice_breakdown/main.py"]),
+    srcs = ["tools/slice_breakdown/main.py"],
     main = "tools/slice_breakdown/main.py",
     deps = [
         ":experimental_slice_breakdown_lib",
         ":trace_processor_py",
-    ],
+    ] + PERFETTO_CONFIG.deps.pandas_py,
     python_version = "PY3",
     legacy_create_init = 0,
 )

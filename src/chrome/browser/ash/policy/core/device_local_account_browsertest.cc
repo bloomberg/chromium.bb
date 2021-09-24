@@ -53,8 +53,10 @@
 #include "chrome/browser/ash/login/signin_specifics.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/ash/login/test/login_or_lock_screen_visible_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/profile_prepared_waiter.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
@@ -76,7 +78,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -111,7 +112,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -134,9 +134,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
@@ -407,12 +404,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   ~DeviceLocalAccountTest() override {}
 
-  void SetUp() override {
-    BrowserList::AddObserver(this);
-
-    DevicePolicyCrosBrowserTest::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
@@ -436,14 +427,12 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void SetUpOnMainThread() override {
     DevicePolicyCrosBrowserTest::SetUpOnMainThread();
+    BrowserList::AddObserver(this);
 
     initial_locale_ = g_browser_process->GetApplicationLocale();
     initial_language_ = l10n_util::GetLanguage(initial_locale_);
 
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources())
-        .Wait();
+    chromeos::LoginOrLockScreenVisibleWaiter().Wait();
 
     auto* host = ash::LoginDisplayHost::default_host();
     contents_ = host->GetOobeWebContents();
@@ -2026,8 +2015,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
           .spec());
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
-
   WaitForPolicy();
+
+  // Prevent browser start in user session so that we do not need to wait
+  // for its initialization.
+  ash::test::UserSessionManagerTestApi(ash::UserSessionManager::GetInstance())
+      .SetShouldLaunchBrowserInTests(false);
+
   ExpandPublicSessionPod(false);
 
   // Select a different locale.
@@ -2037,29 +2031,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // point. Wait for the constructions of this list to finish.
   WaitForGetKeyboardLayoutsForLocaleToFinish();
 
-  // Set up an observer that will quit the message loop when login has succeeded
-  // and the first wizard screen, if any, is being shown.
-  base::RunLoop login_wait_run_loop;
-  chromeos::MockAuthStatusConsumer login_status_consumer(
-      login_wait_run_loop.QuitClosure());
-  EXPECT_CALL(login_status_consumer, OnAuthSuccess(_))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
-  chromeos::ExistingUserController* controller =
-      chromeos::ExistingUserController::current_controller();
-  ASSERT_TRUE(controller);
-  controller->AddLoginStatusConsumer(&login_status_consumer);
-
+  ::chromeos::test::ProfilePreparedWaiter profile_prepared(account_id_1_);
   // Manually select a different keyboard layout and click the enter button to
   // start the session.
   ash::LoginScreenTestApi::SetPublicSessionKeyboard(
       public_session_input_method_id_);
   ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
-
-  // Spin the loop until the login observer fires. Then, unregister the
-  // observer.
-  login_wait_run_loop.Run();
-  controller->RemoveLoginStatusConsumer(&login_status_consumer);
+  profile_prepared.Wait();
 
   // Wait for the Terms of Service screen is being shown.
   chromeos::OobeScreenWaiter(chromeos::TermsOfServiceScreenView::kScreenId)
@@ -2601,7 +2579,17 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
 }
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
-                                   public testing::WithParamInterface<bool> {};
+                                   public testing::WithParamInterface<bool> {
+ public:
+  void SetUpOnMainThread() override {
+    DeviceLocalAccountTest::SetUpOnMainThread();
+
+    // Prevent browser start in user session so that we do not need to wait
+    // for its initialization.
+    ash::test::UserSessionManagerTestApi(ash::UserSessionManager::GetInstance())
+        .SetShouldLaunchBrowserInTests(false);
+  }
+};
 
 IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   // Parameterization for using valid and invalid URLs.
@@ -2620,24 +2608,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
 
   WaitForPolicy();
 
+  ::chromeos::test::ProfilePreparedWaiter profile_prepared(account_id_1_);
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
-
-  // Set up an observer that will quit the message loop when login has succeeded
-  // and the first wizard screen, if any, is being shown.
-  base::RunLoop login_wait_run_loop;
-  chromeos::MockAuthStatusConsumer login_status_consumer(
-      login_wait_run_loop.QuitClosure());
-  EXPECT_CALL(login_status_consumer, OnAuthSuccess(_))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
-
-  // Spin the loop until the observer fires. Then, unregister the observer.
-  chromeos::ExistingUserController* controller =
-      chromeos::ExistingUserController::current_controller();
-  ASSERT_TRUE(controller);
-  controller->AddLoginStatusConsumer(&login_status_consumer);
-  login_wait_run_loop.Run();
-  controller->RemoveLoginStatusConsumer(&login_status_consumer);
+  profile_prepared.Wait();
 
   // Verify that the Terms of Service screen is being shown.
   auto* wizard_controller = ash::WizardController::default_controller();
@@ -2729,24 +2702,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
 
   WaitForPolicy();
 
+  ::chromeos::test::ProfilePreparedWaiter profile_prepared(account_id_1_);
   ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
-
-  // Set up an observer that will quit the message loop when login has succeeded
-  // and the first wizard screen, if any, is being shown.
-  base::RunLoop login_wait_run_loop;
-  chromeos::MockAuthStatusConsumer login_status_consumer(
-      login_wait_run_loop.QuitClosure());
-  EXPECT_CALL(login_status_consumer, OnAuthSuccess(_))
-      .Times(1)
-      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
-
-  // Spin the loop until the observer fires. Then, unregister the observer.
-  chromeos::ExistingUserController* controller =
-      chromeos::ExistingUserController::current_controller();
-  ASSERT_TRUE(controller);
-  controller->AddLoginStatusConsumer(&login_status_consumer);
-  login_wait_run_loop.Run();
-  controller->RemoveLoginStatusConsumer(&login_status_consumer);
+  profile_prepared.Wait();
 
   // Verify that the Terms of Service screen is being shown.
   auto* wizard_controller = ash::WizardController::default_controller();
@@ -2777,7 +2735,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, WebAppsInPublicSession) {
   // WebAppProvider should be enabled for TYPE_PUBLIC_SESSION user account.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  EXPECT_TRUE(web_app::WebAppProvider::Get(profile));
+  EXPECT_TRUE(web_app::WebAppProvider::GetForTest(profile));
 }
 
 }  // namespace policy

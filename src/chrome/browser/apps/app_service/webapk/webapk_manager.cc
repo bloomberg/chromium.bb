@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -16,24 +18,36 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 constexpr char kGeneratedWebApkPackagePrefix[] = "org.chromium.webapk.";
+
+bool HasShareIntentFilter(const apps::AppUpdate& app) {
+  auto intent = apps::mojom::Intent::New();
+  intent->action = apps_util::kIntentActionSend;
+  for (const auto& filter : app.IntentFilters()) {
+    for (const auto& condition : filter->conditions) {
+      if (apps_util::IntentMatchesCondition(intent, condition)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace apps {
 
 WebApkManager::WebApkManager(Profile* profile)
     : profile_(profile),
-      web_app_registrar_(web_app::WebAppProvider::Get(profile_)->registrar()),
       initialized_(false),
       install_queue_(std::make_unique<WebApkInstallQueue>(profile_)),
       pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
@@ -178,6 +192,39 @@ void WebApkManager::OnPackageListInitialRefreshed() {
     UninstallInternal(app_id);
   }
   uninstall_queue_.clear();
+
+  // Uninstall any WebAPK packages which are installed in ARC but not linked to
+  // an app in Prefs. This could happen if the WebAPK installation callback is
+  // never delivered properly, or if the Play Store retries an error in the
+  // background.
+  // If an installed WebAPK is not listed in WebAPK prefs, then we will generate
+  // and install a new WebAPK automatically, possibly resulting in duplicate
+  // apps visible to the user.
+  int uninstall_count = 0;
+  std::vector<std::string> installed_packages =
+      app_list_prefs_->GetPackagesFromPrefs();
+  base::flat_set<std::string> installed_webapk_packages =
+      webapk_prefs::GetInstalledWebApkPackageNames(profile_);
+  for (const auto& package_name : installed_packages) {
+    if (base::StartsWith(package_name, kGeneratedWebApkPackagePrefix) &&
+        !installed_webapk_packages.contains(package_name)) {
+      uninstall_count++;
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          app_list_prefs_->app_connection_holder(), UninstallPackage);
+      if (!instance) {
+        return;
+      }
+      instance->UninstallPackage(package_name);
+    }
+  }
+
+  if (uninstall_count > 0) {
+    // Record the number of instances of this issue so we can determine whether
+    // further investigation/prevention is warranted.
+    base::UmaHistogramCustomCounts("ChromeOS.WebAPK.UnlinkedWebAPKCount",
+                                   uninstall_count, /*min=*/1, /*max=*/20,
+                                   /*buckets=*/10);
+  }
 }
 
 void WebApkManager::OnPackageRemoved(const std::string& package_name,
@@ -230,8 +277,7 @@ bool WebApkManager::IsAppEligibleForWebApk(const AppUpdate& app) {
     return false;
   }
 
-  if (!(web_app_registrar_.IsInstalled(app.AppId()) &&
-        web_app_registrar_.GetAppShareTarget(app.AppId()))) {
+  if (!HasShareIntentFilter(app)) {
     return false;
   }
 

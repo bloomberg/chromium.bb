@@ -113,6 +113,11 @@ enum class PresentationUrlType {
   kPresentationUrlTypeCount
 };
 
+enum class UiType {
+  kCastDialog,
+  kGlobalMediaControls,
+};
+
 class MediaRouterMetrics {
  public:
   MediaRouterMetrics();
@@ -180,13 +185,20 @@ class MediaRouterMetrics {
 
   // Records the type of the sink that media is being Cast to.
   static void RecordMediaSinkType(SinkIconType sink_icon_type);
+  static void RecordMediaSinkTypeForGlobalMediaControls(
+      SinkIconType sink_icon_type);
+  static void RecordMediaSinkTypeForCastDialog(SinkIconType sink_icon_type);
+  static void RecordMediaSinkTypeWhenCastAndDialPresent(
+      SinkIconType sink_icon_type,
+      UiType ui);
 
   // Records the number of devices shown in the Cast dialog. The device count
   // may be 0.
   static void RecordDeviceCount(int device_count);
 
   // Records the number of sinks in |is_available| state, provided by |provider|
-  // that was opened via |origin|.
+  // that was opened via |origin|. Recorded for the global media controls and
+  // the Cast dialog, respectively.
   static void RecordGmcDeviceCount(MediaRouterDialogOpenOrigin origin,
                                    mojom::MediaRouteProviderId provider,
                                    bool is_available,

@@ -13,6 +13,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # See //content/BUILD.gn for how this works.
 group("common") {
   if (is_component_build) {
@@ -117,6 +121,8 @@ source_set("common_sources") {
     "content_switch_dependent_feature_overrides.h",
     "content_switches.cc",
     "content_switches.h",
+    "custom_handlers/protocol_handler.cc",
+    "custom_handlers/protocol_handler.h",
     "drop_data.cc",
     "drop_data.h",
     "input_event_ack_state.h",
@@ -137,6 +143,8 @@ source_set("common_sources") {
     "process_type.h",
     "profiling.cc",
     "profiling.h",
+    "pseudonymization_util.cc",
+    "pseudonymization_util.h",
     "referrer.cc",
     "referrer.h",
     "referrer_type_converters.cc",
@@ -380,4 +388,19 @@ mojom("trust_tokens_mojo_bindings") {
 
 mojom("renderer_type") {
   sources = [ "media_playback_renderer_type.mojom" ]
+}
+
+if (is_android) {
+  java_cpp_features("java_features_srcjar") {
+    # External code should depend on ":common_java" instead.
+    visibility = [ ":*" ]
+    sources = [ "//content/public/common/content_features.cc" ]
+    template = "//content/public/common/android/java_templates/ContentFeatures.java.tmpl"
+  }
+
+  android_library("common_java") {
+    # Right now, this only includes the Java features. But if we need more Java
+    # files, they should be added here as necessary.
+    srcjar_deps = [ ":java_features_srcjar" ]
+  }
 }

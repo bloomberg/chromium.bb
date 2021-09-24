@@ -93,8 +93,6 @@ extern const int kTrayPopupInkDropInset;
 // The radius used to draw the corners of the rounded rect style ink drops.
 extern const int kTrayPopupInkDropCornerRadius;
 
-constexpr float kUnifiedMenuBackgroundBlur = 30.f;
-
 // Threshold to ignore update on the slider value.
 constexpr float kAudioSliderIgnoreUpdateThreshold = 0.01;
 
@@ -124,7 +122,7 @@ constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedMessageCenterBubbleSpacing = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 18;
-constexpr int kUnifiedTrayTextTopPadding = 2;
+constexpr int kUnifiedTrayTextTopPadding = 1;
 constexpr int kUnifiedTrayTextRightPadding = 1;
 constexpr int kUnifiedTrayTimeLeftPadding = 1;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;

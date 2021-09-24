@@ -47,7 +47,7 @@
     "infra_step": true,
     "name": "read revision",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
+      "@@@STEP_TEXT@<br/>checked out u'deadbeef'<br/>@@@"
     ]
   },
   {
@@ -187,6 +187,20 @@
     },
     "infra_step": true,
     "name": "git new-branch feature"
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "track_current",
+      "--upstream_current"
+    ],
+    "cwd": "[START_DIR]/src",
+    "env": {
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
+    },
+    "infra_step": true,
+    "name": "git new-branch track_current"
   },
   {
     "cmd": [

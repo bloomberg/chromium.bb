@@ -2,48 +2,149 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AcceleratorLookupManager} from 'chrome://shortcut-customization/accelerator_lookup_manager.js';
+import {AcceleratorSubsectionElement} from 'chrome://shortcut-customization/accelerator_subsection.js';
+import {fakeAcceleratorConfig, fakeLayoutInfo, fakeSubCategories} from 'chrome://shortcut-customization/fake_data.js';
 import {getShortcutProvider, setShortcutProviderForTesting} from 'chrome://shortcut-customization/mojo_interface_provider.js';
 import {ShortcutCustomizationAppElement} from 'chrome://shortcut-customization/shortcut_customization_app.js';
-import {ShortcutProviderInterface} from 'chrome://shortcut-customization/shortcut_types.js';
+import {AcceleratorInfo, Modifier, ShortcutProviderInterface} from 'chrome://shortcut-customization/shortcut_types.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
+
+import {CreateDefaultAccelerator} from './shortcut_customization_test_util.js';
 
 export function shortcutCustomizationAppTest() {
   /** @type {?ShortcutCustomizationAppElement} */
   let page = null;
 
+  /** @type {?AcceleratorLookupManager} */
+  let manager = null;
+
   setup(() => {
+    manager = AcceleratorLookupManager.getInstance();
+
     page = /** @type {!ShortcutCustomizationAppElement} */ (
         document.createElement('shortcut-customization-app'));
     document.body.appendChild(page);
   });
 
   teardown(() => {
+    manager.reset();
     page.remove();
     page = null;
   });
 
-  test('LandingPageLoaded', () => {
-    // TODO(jimmyxgong): Remove this stub test once the page has more
-    // capabilities to test.
-    assertTrue(!!page.shadowRoot.querySelector('navigation-view-panel'));
+  /**
+   * @param {string} subpageId
+   * @return {!Array<!AcceleratorSubsectionElement>}
+   */
+  function getSubsections_(subpageId) {
+    const navPanel = page.shadowRoot.querySelector('navigation-view-panel');
+    const navBody = navPanel.shadowRoot.querySelector('#navigationBody');
+    const subPage = navBody.querySelector(`#${subpageId}`);
+    return subPage.shadowRoot.querySelectorAll('accelerator-subsection');
+  }
+
+  test('LoadFakeChromeOSPage', async () => {
+    await flushTasks();
+
+    const subSections = getSubsections_('chromeos-page-id');
+    const expectedLayouts = manager.getSubcategories(/**ChromeOS*/ 0);
+    // Two subsections for ChromeOS (Window Management + Virtual Desks).
+    assertEquals(expectedLayouts.size, subSections.length);
+
+    let keyIterator = expectedLayouts.keys();
+    // Assert subsection title (Window management) matches expected value from
+    // fake lookup.
+    const windowManagementValue = keyIterator.next().value;
+    assertEquals(
+        fakeSubCategories.get(windowManagementValue), subSections[0].title);
+    // Asert 2 accelerators are loaded for Window Management.
+    assertEquals(
+        expectedLayouts.get(windowManagementValue).length,
+        subSections[0].acceleratorContainer.length);
+
+    // Assert subsection title (Virtual Desks) matches expected value from
+    // fake lookup.
+    const virtualDesksValue = keyIterator.next().value;
+    assertEquals(
+        fakeSubCategories.get(virtualDesksValue), subSections[1].title);
+    // Asert 2 accelerators are loaded for Virtual Desks.
+    assertEquals(
+        expectedLayouts.get(virtualDesksValue).length,
+        subSections[1].acceleratorContainer.length);
+  });
+
+  test('LoadFakeBrowserPage', async () => {
+    await flushTasks();
+
+    const navPanel = page.shadowRoot.querySelector('navigation-view-panel');
+    const navSelector = navPanel.shadowRoot.querySelector('#navigationSelector')
+                            .querySelector('navigation-selector');
+    const navMenuItems =
+        navSelector.shadowRoot.querySelector('#navigationSelectorMenu')
+            .querySelectorAll('.navigation-item');
+    // Index[1] represents the Browser subpage.
+    navMenuItems[1].click();
+
+    await flushTasks();
+
+    const subSections = getSubsections_('browser-page-id');
+    const expectedLayouts = manager.getSubcategories(/**Browser*/ 1);
+    // One subsection for the Browser (Tabs).
+    assertEquals(expectedLayouts.size, subSections.length);
+
+    const keyIterator = expectedLayouts.keys().next();
+    // Assert subsection names match name lookup (Tabs).
+    assertEquals(
+        fakeSubCategories.get(keyIterator.value), subSections[0].title);
+    // Assert only 1 accelerator is within Tabs.
+    assertEquals(
+        expectedLayouts.get(keyIterator.value).length,
+        subSections[0].acceleratorContainer.length);
+  });
+
+  test('OpenDialogFromAccelerator', async () => {
+    await flushTasks();
+
+    // The edit dialog should not be stamped and visible.
+    let editDialog = page.shadowRoot.querySelector('#editDialog');
+    assertFalse(!!editDialog);
+
+    const subSections = getSubsections_('chromeos-page-id');
+    const accelerators =
+        subSections[0].shadowRoot.querySelectorAll('accelerator-row');
+    // Only two accelerators rows for "Window Management".
+    assertEquals(2, accelerators.length);
+    // Click on the first accelerator, expect the edit dialog to open.
+    accelerators[0].click();
+    await flushTasks();
+    editDialog = page.shadowRoot.querySelector('#editDialog');
+    assertTrue(!!editDialog);
   });
 
   test('DialogOpensOnEvent', async () => {
     await flushTasks();
+
     // The edit dialog should not be stamped and visible.
     let editDialog = page.shadowRoot.querySelector('#editDialog');
     assertFalse(!!editDialog);
 
     const nav = page.shadowRoot.querySelector('navigation-view-panel');
 
+    /** @type {!AcceleratorInfo} */
+    const acceleratorInfo = CreateDefaultAccelerator(
+        Modifier.SHIFT,
+        /*key=*/ 67,
+        /*key_display=*/ 'c');
+
     // Simulate the trigger event to display the dialog.
     nav.dispatchEvent(new CustomEvent('show-edit-dialog', {
       bubbles: true,
       composed: true,
       detail: /**@type {!Object}*/ (
-          {description: 'test', accelerators: [{modifiers: 1 << 1, key: 'c'}]})
+          {description: 'test', accelerators: [acceleratorInfo]})
     }));
     await flushTasks();
 

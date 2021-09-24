@@ -57,33 +57,37 @@ SearchEnginesHandler::~SearchEnginesHandler() {
 }
 
 void SearchEnginesHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getSearchEnginesList",
       base::BindRepeating(&SearchEnginesHandler::HandleGetSearchEnginesList,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setDefaultSearchEngine",
       base::BindRepeating(&SearchEnginesHandler::HandleSetDefaultSearchEngine,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
+      "setIsActiveSearchEngine",
+      base::BindRepeating(&SearchEnginesHandler::HandleSetIsActiveSearchEngine,
+                          base::Unretained(this)));
+  web_ui()->RegisterDeprecatedMessageCallback(
       "removeSearchEngine",
       base::BindRepeating(&SearchEnginesHandler::HandleRemoveSearchEngine,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "validateSearchEngineInput",
       base::BindRepeating(
           &SearchEnginesHandler::HandleValidateSearchEngineInput,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "searchEngineEditStarted",
       base::BindRepeating(&SearchEnginesHandler::HandleSearchEngineEditStarted,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "searchEngineEditCancelled",
       base::BindRepeating(
           &SearchEnginesHandler::HandleSearchEngineEditCancelled,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "searchEngineEditCompleted",
       base::BindRepeating(
           &SearchEnginesHandler::HandleSearchEngineEditCompleted,
@@ -243,7 +247,7 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
 
 void SearchEnginesHandler::HandleGetSearchEnginesList(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
   AllowJavascript();
@@ -263,6 +267,18 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
   list_controller_.MakeDefaultTemplateURL(index);
 
   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));
+}
+
+void SearchEnginesHandler::HandleSetIsActiveSearchEngine(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetList().size());
+  const int index = args->GetList()[0].GetInt();
+  const bool is_active = args->GetList()[1].GetBool();
+
+  if (index < 0 || index >= list_controller_.table_model()->RowCount())
+    return;
+
+  list_controller_.SetIsActiveTemplateURL(index, is_active);
 }
 
 void SearchEnginesHandler::HandleRemoveSearchEngine(
@@ -316,7 +332,7 @@ void SearchEnginesHandler::OnEditedKeyword(TemplateURL* template_url,
 
 void SearchEnginesHandler::HandleValidateSearchEngineInput(
     const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
+  CHECK_EQ(3U, args->GetList().size());
 
   const base::Value* callback_id;
   std::string field_name;

@@ -126,6 +126,10 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
+#endif
+
 using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
@@ -353,7 +357,8 @@ void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
 
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
-    const gfx::Rect& bounds_in_screen) {
+    const gfx::Rect& bounds_in_screen,
+    const gfx::Rect& anchor_rect) {
   DCHECK_EQ(widget_type_, WidgetType::kPopup);
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(parent_host_view)
               ->IsRenderWidgetHostViewChildFrame());
@@ -391,6 +396,12 @@ void RenderWidgetHostViewAura::InitAsPopup(
     transient_window_client->AddTransientChild(
         popup_parent_host_view_->window_, window_);
   }
+
+  ui::OwnedWindowAnchor owned_window_anchor = {
+      anchor_rect, ui::OwnedWindowAnchorPosition::kBottomLeft,
+      ui::OwnedWindowAnchorGravity::kBottomRight,
+      ui::OwnedWindowConstraintAdjustment::kAdjustmentFlipY};
+  window_->SetProperty(aura::client::kOwnedWindowAnchor, owned_window_anchor);
 
   aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
   aura::client::ParentWindowWithContext(window_, root, bounds_in_screen);
@@ -785,6 +796,19 @@ void RenderWidgetHostViewAura::UpdateTooltipFromKeyboard(
     tooltip_client->SetHideTooltipTimeout(window_, {});
     tooltip_client->UpdateTooltipFromKeyboard(bounds, window_);
   }
+}
+
+void RenderWidgetHostViewAura::ClearKeyboardTriggeredTooltip() {
+  if (!window_ || !window_->GetHost())
+    return;
+
+  wm::TooltipClient* tooltip_client =
+      wm::GetTooltipClient(window_->GetRootWindow());
+  if (!tooltip_client || !tooltip_client->IsTooltipSetFromKeyboard(window_))
+    return;
+
+  SetTooltipText(std::u16string());
+  tooltip_client->UpdateTooltipFromKeyboard(gfx::Rect(), window_);
 }
 
 uint32_t RenderWidgetHostViewAura::GetCaptureSequenceNumber() const {
@@ -2507,6 +2531,18 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
 
   const ui::mojom::TextInputState* state =
       text_input_manager_->GetTextInputState();
+
+#if defined(OS_CHROMEOS)
+  if (state) {
+    if (state->last_vk_visibility_request ==
+        ui::mojom::VirtualKeyboardVisibilityRequest::SHOW) {
+      GetInputMethod()->SetVirtualKeyboardVisibilityIfEnabled(true);
+    } else if (state->last_vk_visibility_request ==
+               ui::mojom::VirtualKeyboardVisibilityRequest::HIDE) {
+      GetInputMethod()->SetVirtualKeyboardVisibilityIfEnabled(false);
+    }
+  }
+#endif
 
   // Show the virtual keyboard if needed.
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&

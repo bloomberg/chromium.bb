@@ -40,7 +40,6 @@ UtilitySandboxedProcessLauncherDelegate::
       sandbox_type_ ==
           sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges ||
       sandbox_type_ == sandbox::policy::SandboxType::kXrCompositing ||
-      sandbox_type_ == sandbox::policy::SandboxType::kProxyResolver ||
       sandbox_type_ == sandbox::policy::SandboxType::kPdfConversion ||
       sandbox_type_ == sandbox::policy::SandboxType::kIconReader ||
       sandbox_type_ == sandbox::policy::SandboxType::kMediaFoundationCdm ||
@@ -55,8 +54,12 @@ UtilitySandboxedProcessLauncherDelegate::
       sandbox_type_ == sandbox::policy::SandboxType::kPrintBackend ||
 #endif
       sandbox_type_ == sandbox::policy::SandboxType::kPrintCompositor ||
+#if BUILDFLAG(ENABLE_PLUGINS)
       sandbox_type_ == sandbox::policy::SandboxType::kPpapi ||
+#endif
+#if defined(OS_FUCHSIA)
       sandbox_type_ == sandbox::policy::SandboxType::kVideoCapture ||
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       sandbox_type_ == sandbox::policy::SandboxType::kIme ||
       sandbox_type_ == sandbox::policy::SandboxType::kTts ||

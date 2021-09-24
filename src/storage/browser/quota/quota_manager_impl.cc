@@ -1030,8 +1030,6 @@ QuotaManagerImpl::QuotaManagerImpl(
       is_incognito_(is_incognito),
       profile_path_(profile_path),
       proxy_(base::MakeRefCounted<QuotaManagerProxy>(this, io_thread)),
-      db_disabled_(false),
-      eviction_disabled_(false),
       io_thread_(std::move(io_thread)),
       db_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -1251,6 +1249,19 @@ void QuotaManagerImpl::DeleteBucketData(const BucketInfo& bucket,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DeleteBucketDataInternal(bucket, std::move(quota_client_types), false,
                            std::move(callback));
+}
+
+void QuotaManagerImpl::FindAndDeleteBucketData(const StorageKey& storage_key,
+                                               const std::string& bucket_name,
+                                               StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureDatabaseOpened();
+
+  PostTaskAndReplyWithResultForDBThread(
+      base::BindOnce(&GetBucketOnDBThread, storage_key, bucket_name,
+                     StorageType::kTemporary),
+      base::BindOnce(&QuotaManagerImpl::DidGetBucketForDeletion,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void QuotaManagerImpl::PerformStorageCleanup(
@@ -2165,6 +2176,25 @@ void QuotaManagerImpl::DidGetBucket(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DidDatabaseWork(result.ok() || result.error() != QuotaError::kDatabaseError);
   std::move(callback).Run(std::move(result));
+}
+
+void QuotaManagerImpl::DidGetBucketForDeletion(
+    StatusCallback callback,
+    QuotaErrorOr<BucketInfo> result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DidDatabaseWork(result.ok() || result.error() != QuotaError::kDatabaseError);
+
+  if (!result.ok()) {
+    // Return QuotaStatusCode::kOk if bucket not found. No work needed.
+    std::move(callback).Run(result.error() == QuotaError::kNotFound
+                                ? blink::mojom::QuotaStatusCode::kOk
+                                : blink::mojom::QuotaStatusCode::kUnknown);
+    return;
+  }
+
+  DeleteBucketDataInternal(result.value(), AllQuotaClientTypes(),
+                           /*is_eviction=*/false, std::move(callback));
+  return;
 }
 
 void QuotaManagerImpl::DidGetStorageKeys(

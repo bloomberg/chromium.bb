@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_view.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -56,8 +56,10 @@ IN_PROC_BROWSER_TEST_F(
   GURL protocol_url("web+test://test");
   web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
 
-  base::MockCallback<base::OnceCallback<void(bool)>> show_dialog;
-  EXPECT_CALL(show_dialog, Run(false));
+  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
+      show_dialog;
+  EXPECT_CALL(show_dialog,
+              Run(/*allowed=*/false, /*remember_user_choice=*/false));
 
   auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
       browser()->profile(),
@@ -80,8 +82,10 @@ IN_PROC_BROWSER_TEST_F(
   GURL protocol_url("web+test://test");
   web_app::AppId test_app_id = InstallTestWebApp(browser()->profile());
 
-  base::MockCallback<base::OnceCallback<void(bool)>> show_dialog;
-  EXPECT_CALL(show_dialog, Run(true));
+  base::MockCallback<chrome::WebAppProtocolHandlerAcceptanceCallback>
+      show_dialog;
+  EXPECT_CALL(show_dialog,
+              Run(/*allowed=*/true, /*remember_user_choice=*/true));
 
   auto profile_keep_alive = std::make_unique<ScopedProfileKeepAlive>(
       browser()->profile(),

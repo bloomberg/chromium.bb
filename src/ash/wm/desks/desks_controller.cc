@@ -182,42 +182,6 @@ bool IsApplistActiveInTabletMode(const aura::Window* active_window) {
   return active_window == app_list_controller->GetWindow();
 }
 
-// Observer to observe the desk switch animation and destroy itself when the
-// animation is finished.
-class DeskSwitchAnimationObserver : public DesksController::Observer {
- public:
-  explicit DeskSwitchAnimationObserver(
-      base::OnceCallback<void(bool)> complete_callback)
-      : complete_callback_(std::move(complete_callback)) {
-    DesksController::Get()->AddObserver(this);
-  }
-  DeskSwitchAnimationObserver(const DeskSwitchAnimationObserver& other) =
-      delete;
-  DeskSwitchAnimationObserver& operator=(
-      const DeskSwitchAnimationObserver& rhs) = delete;
-
-  ~DeskSwitchAnimationObserver() override {
-    DesksController::Get()->RemoveObserver(this);
-  }
-
-  // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {}
-  void OnDeskRemoved(const Desk* desk) override {}
-  void OnDeskReordered(int old_index, int new_index) override {}
-  void OnDeskActivationChanged(const Desk* activated,
-                               const Desk* deactivated) override {}
-  void OnDeskSwitchAnimationLaunching() override {}
-  void OnDeskSwitchAnimationFinished() override {
-    std::move(complete_callback_).Run(/*success=*/true);
-    delete this;
-  }
-  void OnDeskNameChanged(const Desk* desk,
-                         const std::u16string& new_name) override {}
-
- private:
-  base::OnceCallback<void(bool)> complete_callback_;
-};
-
 }  // namespace
 
 // Helper class which wraps around a OneShotTimer and used for recording how
@@ -318,7 +282,7 @@ DesksController* DesksController::Get() {
   // |DesksController::NotifyDeskNameChanged())| could be called
   // during the construction of |DesksController|, and at this point
   // |Shell::desks_controller_| has not been assigned yet.
-  return static_cast<DesksController*>(DesksHelper::Get());
+  return static_cast<DesksController*>(chromeos::DesksHelper::Get(nullptr));
 }
 
 // static
@@ -699,7 +663,8 @@ bool DesksController::MoveWindowFromActiveDeskTo(
     }
   }
 
-  active_desk_->MoveWindowToDesk(window, target_desk, target_root);
+  active_desk_->MoveWindowToDesk(window, target_desk, target_root,
+                                 /*unminimize=*/true);
 
   MaybeUpdateShelfItems(/*windows_on_inactive_desk=*/{window},
                         /*windows_on_active_desk=*/{});
@@ -922,6 +887,8 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
 void DesksController::CreateAndActivateNewDeskForTemplate(
     const std::u16string& template_name,
     base::OnceCallback<void(bool)> callback) {
+  DCHECK(!callback.is_null());
+
   if (!CanCreateDesks()) {
     std::move(callback).Run(/*success=*/false);
     return;
@@ -946,9 +913,13 @@ void DesksController::CreateAndActivateNewDeskForTemplate(
   desk->SetName(desk_name, /*set_by_user=*/true);
   // Force update user prefs because `SetName()` does not trigger it.
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
-  new DeskSwitchAnimationObserver(std::move(callback));
   ActivateDesk(desk, DesksSwitchSource::kLaunchTemplate);
   DCHECK(animation_);
+  animation_->set_finished_callback(base::BindOnce(
+      [](base::OnceCallback<void(bool)> passed_callback) {
+        std::move(passed_callback).Run(/*success=*/true);
+      },
+      std::move(callback)));
 }
 
 bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
@@ -992,7 +963,8 @@ bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
   DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
   src_desk->MoveWindowToDesk(existing_app_instance_window, active_desk_,
-                             existing_app_instance_window->GetRootWindow());
+                             existing_app_instance_window->GetRootWindow(),
+                             /*unminimize=*/false);
   MaybeUpdateShelfItems(
       /*windows_on_inactive_desk=*/{},
       /*windows_on_active_desk=*/{existing_app_instance_window});

@@ -348,6 +348,10 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		if b.extraConfig("CommandBuffer") {
 			// skbug.com/10412
 			skip("_ test _ GLBackendAllocationTest")
+			skip("_ test _ InitialTextureClear")
+			// skbug.com/12437
+			skip("_ test _ GrDDLImage_MakeSubset")
+                        skip("_ test _ GrContext_oomed")
 		}
 
 		// skbug.com/9043 - these devices render this test incorrectly
@@ -360,6 +364,10 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			// MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926, skia:9023
 			if !b.matchGpu("Intel") {
 				configs = append(configs, "vkmsaa4")
+			}
+			// Temporarily limit the bots we test dynamic MSAA on.
+			if b.gpu("QuadroP400", "MaliG77") && !b.extraConfig("TSAN") {
+				configs = append(configs, "vkdmsaa")
 			}
 		}
 		if b.extraConfig("Metal") {
@@ -426,7 +434,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip("mtltestprecompile gm _ glyph_pos_h_f")
 			skip("mtltestprecompile gm _ glyph_pos_n_f")
 			skip("mtltestprecompile gm _ persp_images")
+			skip("mtltestprecompile gm _ ovals")
+			skip("mtltestprecompile gm _ roundrects")
+			skip("mtltestprecompile gm _ shadow_utils_occl")
 			skip("mtltestprecompile gm _ strokedlines")
+			skip("mtltestprecompile gm _ strokerect")
 			skip("mtltestprecompile gm _ strokes3")
 			skip("mtltestprecompile gm _ texel_subset_linear_mipmap_nearest_down")
 			skip("mtltestprecompile gm _ texel_subset_linear_mipmap_linear_down")
@@ -437,6 +449,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip("mtltestprecompile svg _ Ghostscript_Tiger.svg")
 			skip("mtltestprecompile svg _ Seal_of_American_Samoa.svg")
 			skip("mtltestprecompile svg _ Seal_of_Illinois.svg")
+			skip("mtltestprecompile svg _ tiger-8.svg")
+			skip("mtltestprecompile svg _ desk_motionmark_paths.svg")
 		}
 		// Test reduced shader mode on iPhone 11 as representative iOS device
 		if b.model("iPhone11") && b.extraConfig("Metal") {
@@ -861,15 +875,31 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	}
 
 	if b.matchGpu("Adreno[3456][0-9][0-9]") { // disable broken tests on Adreno 3/4/5/6xx
+		skip("_", "tests", "_", "SkSLArrayCast_GPU")       // skia:12332
+		skip("_", "tests", "_", "SkSLArrayComparison_GPU") // skia:12332
+	}
+
+	if b.matchGpu("Adreno[3456][0-9][0-9]") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 3/4/5/6xx GLSL
 		skip("_", "tests", "_", "DSLFPTest_SwitchStatement")  // skia:11891
-		skip("_", "tests", "_", "SkSLArrayCast_GPU")          // skia:12332
-		skip("_", "tests", "_", "SkSLArrayComparison_GPU")    // skia:12332
 		skip("_", "tests", "_", "SkSLMatrixToVectorCast_GPU") // skia:12192
 		skip("_", "tests", "_", "SkSLStructsInFunctions_GPU") // skia:11929
 	}
 
+	if b.matchGpu("Adreno6[0-9][0-9]") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 6xx GLSL
+		skip("_", "tests", "_", "SkSLIntrinsicIsInf_GPU") // skia:12377
+	}
+
 	if b.gpu("IntelIris6100", "IntelHD4400") && b.matchOs("Win") && !b.extraConfig("Vulkan") {
 		skip("_", "tests", "_", "SkSLVectorToMatrixCast_GPU") // skia:12179
+	}
+
+	if b.matchGpu("Intel") { // some Intel GPUs don't return zero for the derivative of a uniform
+		skip("_", "tests", "_", "SkSLIntrinsicDFdy_GPU")
+		skip("_", "tests", "_", "SkSLIntrinsicDFdx_GPU")
+	}
+
+	if b.matchOs("Mac") && b.matchGpu("Intel(Iris5100|HD6000)") {
+		skip("_", "tests", "_", "SkSLLoopFloat_GPU") // skia:12426
 	}
 
 	match := []string{}

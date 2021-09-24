@@ -28,23 +28,13 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
   // If there's a pre-set break token, we shouldn't be here.
   DCHECK(!break_token_);
 
-  if (appeal) {
-    break_appeal_ = *appeal;
-    // If we're violating any orphans / widows or
-    // break-{after,before,inside}:avoid requests, remember this. If we're
-    // balancing columns, we may be able to stretch the columns to resolve the
-    // situation. Note that we should consider handling kBreakAppealLastResort
-    // as well here, but that's currently causing trouble for large leading
-    // margins, which would cause taller columns than desirable in some cases.
-    if (break_appeal_ == kBreakAppealViolatingBreakAvoid ||
-        break_appeal_ == kBreakAppealViolatingOrphansAndWidows)
-      has_violating_break_ = true;
-  }
   if (is_forced_break) {
     SetHasForcedBreak();
     // A forced break is considered to always have perfect appeal; they should
     // never be weighed against other potential breakpoints.
     DCHECK(!appeal || *appeal == kBreakAppealPerfect);
+  } else if (appeal) {
+    ClampBreakAppeal(*appeal);
   }
 
   DCHECK(has_block_fragmentation_);
@@ -74,7 +64,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
           // If there is an inline break token, it will always be the last
           // child.
           last_inline_break_token_ =
-              DynamicTo<NGInlineBreakToken>(child_tokens.back());
+              DynamicTo<NGInlineBreakToken>(child_tokens.back().Get());
           if (last_inline_break_token_)
             return;
         }
@@ -87,7 +77,7 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
     }
     return;
   }
-  auto token = NGBlockBreakToken::CreateBreakBefore(child, is_forced_break);
+  auto* token = NGBlockBreakToken::CreateBreakBefore(child, is_forced_break);
   child_break_tokens_.push_back(token);
 }
 
@@ -97,9 +87,21 @@ void NGBoxFragmentBuilder::AddResult(
     absl::optional<LogicalOffset> relative_offset,
     bool propagate_oof_descendants) {
   const auto& fragment = child_layout_result.PhysicalFragment();
-  if (items_builder_) {
+  const NGLayoutResult* child_box_layout_result = nullptr;
+  if (fragment.IsBox()) {
+    child_box_layout_result = &child_layout_result;
+  } else if (items_builder_) {
     if (const NGPhysicalLineBoxFragment* line =
             DynamicTo<NGPhysicalLineBoxFragment>(&fragment)) {
+      if (UNLIKELY(line->IsBlockInInline() && has_block_fragmentation_)) {
+        // If this line box contains a block-in-inline, propagate break data
+        // from the block-in-inline.
+        const NGLogicalLineItems& line_items =
+            items_builder_->LogicalLineItems(*line);
+        child_box_layout_result = line_items.BlockInInlineLayoutResult();
+        DCHECK(child_box_layout_result);
+      }
+
       items_builder_->AddLine(*line, offset);
       // TODO(kojii): We probably don't need to AddChild this line, but there
       // maybe OOF objects. Investigate how to handle them.
@@ -117,8 +119,9 @@ void NGBoxFragmentBuilder::AddResult(
   AddChild(fragment, offset, /* inline_container */ nullptr, &end_margin_strut,
            child_layout_result.IsSelfCollapsing(), relative_offset,
            adjustment_for_oof_propagation);
-  if (fragment.IsBox())
-    PropagateBreak(child_layout_result);
+
+  if (child_box_layout_result)
+    PropagateBreak(*child_box_layout_result);
 }
 
 void NGBoxFragmentBuilder::AddChild(
@@ -255,14 +258,13 @@ void NGBoxFragmentBuilder::AddChild(
   AddChildInternal(&child, child_offset + *relative_offset);
 }
 
-void NGBoxFragmentBuilder::AddBreakToken(
-    scoped_refptr<const NGBreakToken> token,
-    bool is_in_parallel_flow) {
+void NGBoxFragmentBuilder::AddBreakToken(const NGBreakToken* token,
+                                         bool is_in_parallel_flow) {
   // If there's a pre-set break token, we shouldn't be here.
   DCHECK(!break_token_);
 
-  DCHECK(token.get());
-  child_break_tokens_.push_back(std::move(token));
+  DCHECK(token);
+  child_break_tokens_.push_back(token);
   has_inflow_child_break_inside_ |= !is_in_parallel_flow;
 }
 
@@ -343,21 +345,25 @@ void NGBoxFragmentBuilder::PropagateBreak(
     const NGLayoutResult& child_layout_result) {
   if (LIKELY(!has_block_fragmentation_))
     return;
-  if (!has_inflow_child_break_inside_ || !has_float_break_inside_) {
+  const auto& child_fragment =
+      To<NGPhysicalBoxFragment>(child_layout_result.PhysicalFragment());
+  if (const auto* token = child_fragment.BreakToken()) {
     // Figure out if this child break is in the same flow as this parent. If
     // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
     // it's also not.
-    const auto& child_fragment =
-        To<NGPhysicalBoxFragment>(child_layout_result.PhysicalFragment());
-    if (const auto* token = child_fragment.BreakToken()) {
-      if (!token->IsBlockType() ||
-          !To<NGBlockBreakToken>(token)->IsAtBlockEnd()) {
-        if (child_fragment.IsFloating())
-          has_float_break_inside_ = true;
-        else if (!child_fragment.IsOutOfFlowPositioned())
-          has_inflow_child_break_inside_ = true;
-      }
+    if (!token->IsBlockType() ||
+        !To<NGBlockBreakToken>(token)->IsAtBlockEnd()) {
+      if (child_fragment.IsFloating())
+        has_float_break_inside_ = true;
+      else if (!child_fragment.IsOutOfFlowPositioned())
+        has_inflow_child_break_inside_ = true;
     }
+
+    // Downgrade the appeal of breaking inside this container, if the break
+    // inside the child is less appealing than what we've found so far.
+    NGBreakAppeal appeal_inside =
+        CalculateBreakAppealInside(*ConstraintSpace(), child_layout_result);
+    ClampBreakAppeal(appeal_inside);
   }
   if (child_layout_result.HasForcedBreak()) {
     SetHasForcedBreak();
@@ -368,8 +374,18 @@ void NGBoxFragmentBuilder::PropagateBreak(
     PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
   }
 
-  if (!is_fragmentation_context_root_)
-    has_violating_break_ |= child_layout_result.HasViolatingBreak();
+  // If a spanner was found inside the child, we need to finish up and propagate
+  // the spanner to the column layout algorithm, so that it can take care of it.
+  if (UNLIKELY(ConstraintSpace()->IsInColumnBfc())) {
+    if (NGBlockNode spanner_node = child_layout_result.ColumnSpanner()) {
+      DCHECK(HasInflowChildBreakInside() ||
+             !child_layout_result.PhysicalFragment().IsBox());
+      SetColumnSpanner(spanner_node);
+      SetIsEmptySpannerParent(child_layout_result.IsEmptySpannerParent());
+    }
+  } else {
+    DCHECK(!child_layout_result.ColumnSpanner());
+  }
 }
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
@@ -385,6 +401,10 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
   }
 #endif
+
+  if (UNLIKELY(box_type_ == NGPhysicalFragment::kNormalBox && node_ &&
+               node_.IsBlockInInline()))
+    SetIsBlockInInline();
 
   if (UNLIKELY(has_block_fragmentation_ && !break_token_ && node_)) {
     if (last_inline_break_token_)

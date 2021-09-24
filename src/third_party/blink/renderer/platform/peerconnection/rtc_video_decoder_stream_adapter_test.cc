@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_adapter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_decoder_stream_adapter.h"
 #include "third_party/webrtc/api/video_codecs/video_codec.h"
-#include "third_party/webrtc/media/base/vp9_profile.h"
+#include "third_party/webrtc/api/video_codecs/vp9_profile.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -164,7 +164,7 @@ class RTCVideoDecoderStreamAdapterTest : public ::testing::TestWithParam<bool> {
   bool BasicSetup() {
     if (!CreateAndInitialize())
       return false;
-    if (InitDecode() != WEBRTC_VIDEO_CODEC_OK)
+    if (!InitDecode())
       return false;
     if (RegisterDecodeCompleteCallback() != WEBRTC_VIDEO_CODEC_OK)
       return false;
@@ -197,10 +197,10 @@ class RTCVideoDecoderStreamAdapterTest : public ::testing::TestWithParam<bool> {
     return !!adapter_;
   }
 
-  int32_t InitDecode() {
-    webrtc::VideoCodec codec_settings;
-    codec_settings.codecType = webrtc::kVideoCodecVP9;
-    return adapter_->InitDecode(&codec_settings, 1);
+  bool InitDecode() {
+    webrtc::VideoDecoder::Settings settings;
+    settings.set_codec_type(webrtc::kVideoCodecVP9);
+    return adapter_->Configure(settings);
   }
 
   int32_t RegisterDecodeCompleteCallback() {
@@ -290,7 +290,7 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, FailInit_InitDecodeFails) {
   // If initialization fails before InitDecode runs, then InitDecode should too.
   EXPECT_TRUE(CreateAndInitialize(false));
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(InitDecode(), WEBRTC_VIDEO_CODEC_UNINITIALIZED);
+  EXPECT_FALSE(InitDecode());
   EXPECT_FALSE(BasicTeardown());
 }
 
@@ -298,7 +298,7 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, FailInit_DecodeFails) {
   // If initialization fails after InitDecode runs, then the first Decode should
   // fail instead.
   EXPECT_TRUE(CreateAndInitialize(false));
-  EXPECT_EQ(InitDecode(), WEBRTC_VIDEO_CODEC_OK);
+  EXPECT_TRUE(InitDecode());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(Decode(0), WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
   EXPECT_FALSE(BasicTeardown());
@@ -384,11 +384,11 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, ReallySlowDecodingCausesFallback) {
 
   // Add decodes without calling FinishDecode.
   int limit = -1;
-  for (int i = 0; i < 100 && limit < 0; i++) {
+  for (int i = 0; i < 400 && limit < 0; i++) {
     switch (auto result = Decode(i)) {
       case WEBRTC_VIDEO_CODEC_OK:
       case WEBRTC_VIDEO_CODEC_ERROR:
-        // Keep going -- it's still happy, or not sufficiretrvg.
+        // Keep going -- it's still happy.
         break;
       case WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE:
         // Yay -- it now believes that it's hopelessly behind, and has requested

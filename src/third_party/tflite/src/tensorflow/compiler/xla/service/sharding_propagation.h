@@ -30,7 +30,9 @@ namespace xla {
 // a simple local greedy heuristic.
 class ShardingPropagation : public HloModulePass {
  public:
-  explicit ShardingPropagation(bool is_spmd = false) : is_spmd_(is_spmd) {}
+  explicit ShardingPropagation(bool is_spmd = false,
+                               bool propagate_metadata = false)
+      : is_spmd_(is_spmd), propagate_metadata_(propagate_metadata) {}
   absl::string_view name() const override { return "sharding-propagation"; }
   StatusOr<bool> Run(HloModule* module) override;
 
@@ -41,8 +43,13 @@ class ShardingPropagation : public HloModulePass {
   static Status NormalizeDomain(const DomainMetadata::Domain& domain,
                                 const DomainMetadata* metadata);
 
+  static absl::optional<HloSharding> GetShardingFromUser(
+      const HloInstruction& instruction, const HloInstruction& user,
+      int64_t aggressiveness, bool is_spmd);
+
  private:
   bool is_spmd_;
+  bool propagate_metadata_;
 };
 
 }  // namespace xla

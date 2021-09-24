@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -247,7 +248,7 @@ class CreditCardFIDOAuthenticator
   void UpdateUserPref();
 
   // Gets or creates Authenticator pointer to facilitate WebAuthn.
-  InternalAuthenticator* authenticator();
+  webauthn::InternalAuthenticator* authenticator();
 
   // Card being unmasked.
   const CreditCard* card_;
@@ -272,7 +273,7 @@ class CreditCardFIDOAuthenticator
   payments::PaymentsClient* const payments_client_;
 
   // Authenticator pointer to facilitate WebAuthn.
-  InternalAuthenticator* authenticator_ = nullptr;
+  webauthn::InternalAuthenticator* authenticator_ = nullptr;
 
   // Responsible for getting the full card details, including the PAN and the
   // CVC.

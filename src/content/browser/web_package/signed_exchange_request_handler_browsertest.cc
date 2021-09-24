@@ -36,7 +36,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -83,7 +82,7 @@ namespace content {
 namespace {
 
 constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
-    "application/signed-exchange;v=b3;q=0.9,*/*;q=0.8";
+    "application/signed-exchange;v=b3;q=0.7,*/*;q=0.8";
 
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchResultHistogram[] =
@@ -290,11 +289,8 @@ class SignedExchangeRequestHandlerBrowserTest
 
   void WaitUntilSXGIsCached(const GURL& url) {
     scoped_refptr<PrefetchedSignedExchangeCache> cache =
-        static_cast<RenderFrameHostImpl*>(shell()
-                                              ->web_contents()
-                                              ->GetMainFrame()
-                                              ->GetRenderViewHost()
-                                              ->GetMainFrame())
+        static_cast<RenderFrameHostImpl*>(
+            shell()->web_contents()->GetMainFrame())
             ->EnsurePrefetchedSignedExchangeCache();
 
     if (cache->GetExchanges().find(url) != cache->GetExchanges().end())

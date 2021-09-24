@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Video</translation>
 <translation id="3838931309141338733">Scan stregkode</translation>
 <translation id="3892148308691398805">Kopiér tekst</translation>
-<translation id="4000398125663085899">Nye billeder og videoer gemmes nu i en mappe i appen Filer: Mine filer &gt; Kamera</translation>
 <translation id="4118525110028899586">Sæt optagelsen på pause</translation>
 <translation id="4121305183798804752">Et dokument blev registreret</translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Gå til galleri</translation>
 <translation id="520537883758714667">Det er nu muligt at scanne dokumenter</translation>
 <translation id="5268823927180092501">Aktivér dokumenttilstand på alle kameraer</translation>
-<translation id="5422455049771430511">Dine billeder og videoer har fået et nyt hjem</translation>
 <translation id="5444515100983837161">Sørg for, at alle dokumentets kanter er inden for rammen. Scanning fungerer bedst, når dokumentet har en anden farve end baggrunden.</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5746169159649715125">Gem som PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Eksperttilstand</translation>
 <translation id="5869546221129391014">Gitter</translation>
 <translation id="5975083100439434680">Zoom ud</translation>
-<translation id="6040143037577758943">Luk</translation>
 <translation id="6073451960410192870">Stop optagelse</translation>
 <translation id="6197807149213783179">Gem metadata</translation>
 <translation id="6233780560267770709">3 gange 3</translation>
@@ -126,5 +123,6 @@ Hvis din feedback omhandler billed- eller videokvalitet, bedes du vedhæfte et b
 <translation id="8903921497873541725">Zoom ind</translation>
 <translation id="9045010116236796332">Sørg for, at alle dokumentets kanter er inden for rammen</translation>
 <translation id="9045155556724273246">10 sekunder</translation>
+<translation id="906331135292332864">Billedet behandles…</translation>
 <translation id="945522503751344254">Send feedback</translation>
 </translationbundle>

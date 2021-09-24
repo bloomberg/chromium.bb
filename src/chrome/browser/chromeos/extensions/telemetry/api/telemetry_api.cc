@@ -18,24 +18,23 @@ TelemetryApiFunctionBase::TelemetryApiFunctionBase()
     : probe_service_(remote_probe_service_.BindNewPipeAndPassReceiver()) {}
 TelemetryApiFunctionBase::~TelemetryApiFunctionBase() = default;
 
-// getVpdInfo ------------------------------------------------------------------
+// OsTelemetryGetVpdInfoFunction -----------------------------------------------
 
 OsTelemetryGetVpdInfoFunction::OsTelemetryGetVpdInfoFunction() = default;
 OsTelemetryGetVpdInfoFunction::~OsTelemetryGetVpdInfoFunction() = default;
 
-ExtensionFunction::ResponseAction OsTelemetryGetVpdInfoFunction::Run() {
-  // We don't need Unretained() or WeakPtr because ExtensionFunction is
-  // ref-counted.
+ExtensionFunction::ResponseAction
+OsTelemetryGetVpdInfoFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetVpdInfoFunction::OnResult, this);
 
   remote_probe_service_->ProbeTelemetryInfo(
-      {health::mojom::ProbeCategoryEnum::kCachedVpdData}, std::move(cb));
+      {ash::health::mojom::ProbeCategoryEnum::kCachedVpdData}, std::move(cb));
 
   return RespondLater();
 }
 
 void OsTelemetryGetVpdInfoFunction::OnResult(
-    health::mojom::TelemetryInfoPtr ptr) {
+    ash::health::mojom::TelemetryInfoPtr ptr) {
   if (!ptr || !ptr->vpd_result || !ptr->vpd_result->is_vpd_info()) {
     Respond(Error("API internal error"));
     return;
@@ -64,14 +63,13 @@ void OsTelemetryGetVpdInfoFunction::OnResult(
   Respond(ArgumentList(api::os_telemetry::GetVpdInfo::Results::Create(result)));
 }
 
-// getOemData ------------------------------------------------------------------
+// OsTelemetryGetOemDataFunction -----------------------------------------------
 
 OsTelemetryGetOemDataFunction::OsTelemetryGetOemDataFunction() = default;
 OsTelemetryGetOemDataFunction::~OsTelemetryGetOemDataFunction() = default;
 
-ExtensionFunction::ResponseAction OsTelemetryGetOemDataFunction::Run() {
-  // We don't need Unretained() or WeakPtr because ExtensionFunction is
-  // ref-counted.
+ExtensionFunction::ResponseAction
+OsTelemetryGetOemDataFunction::RunIfAllowed() {
   auto cb = base::BindOnce(&OsTelemetryGetOemDataFunction::OnResult, this);
 
   remote_probe_service_->GetOemData(std::move(cb));
@@ -79,7 +77,8 @@ ExtensionFunction::ResponseAction OsTelemetryGetOemDataFunction::Run() {
   return RespondLater();
 }
 
-void OsTelemetryGetOemDataFunction::OnResult(health::mojom::OemDataPtr ptr) {
+void OsTelemetryGetOemDataFunction::OnResult(
+    ash::health::mojom::OemDataPtr ptr) {
   if (!ptr || !ptr->oem_data.has_value()) {
     Respond(Error("API internal error"));
     return;

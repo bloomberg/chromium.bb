@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/browser_context_keyed_service_factories.h"
 
-#include "chrome/browser/ash/account_manager/account_manager_migrator.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h"
 #include "chrome/browser/ash/bluetooth/debug_logs_manager_factory.h"
@@ -23,6 +22,9 @@
 #include "chrome/browser/ash/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/policy/networking/user_network_configuration_updater_factory.h"
+#include "chrome/browser/ash/printing/history/print_job_history_service_factory.h"
+#include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
+#include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
 #include "chrome/browser/ash/web_applications/crosh_loader_factory.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
@@ -40,9 +42,6 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
-#include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
-#include "chrome/browser/chromeos/printing/print_management/printing_manager_factory.h"
-#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/secure_channel/nearby_connector_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
@@ -55,11 +54,9 @@
 
 namespace chromeos {
 
-using ::ash::AccountManagerMigratorFactory;
 using ::ash::AuthPolicyCredentialsManagerFactory;
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  AccountManagerMigratorFactory::GetInstance();
   android_sms::AndroidSmsServiceFactory::GetInstance();
   arc::ArcAccessibilityHelperBridge::CreateFactory();
   ash::CalendarKeyedServiceFactory::GetInstance();

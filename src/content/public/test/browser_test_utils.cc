@@ -40,6 +40,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
+#include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
@@ -2031,15 +2032,14 @@ uint32_t DeleteCookies(BrowserContext* browser_context,
 }
 
 void FetchHistogramsFromChildProcesses() {
-  // Wait for all the renderer processes to be initialized before fetching
-  // histograms for the first time.
+  // Wait for all initialized processes to be ready before fetching histograms
+  // for the first time.
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    if (!it.GetCurrentValue()->IsReady()) {
-      RenderProcessHost* render_process_host = it.GetCurrentValue();
+    RenderProcessHost* process = it.GetCurrentValue();
+    if (process->IsInitializedAndNotDead() && !process->IsReady()) {
       RenderProcessHostWatcher ready_watcher(
-          render_process_host,
-          RenderProcessHostWatcher::WATCH_FOR_PROCESS_READY);
+          process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_READY);
       ready_watcher.Wait();
     }
   }
@@ -2059,6 +2059,15 @@ void FetchHistogramsFromChildProcesses() {
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
   embedded_test_server->RegisterRequestHandler(base::BindRepeating(
       &CrossSiteRedirectResponseHandler, embedded_test_server));
+}
+
+void SetFileSystemAccessPermissionContext(
+    BrowserContext* browser_context,
+    FileSystemAccessPermissionContext* permission_context) {
+  static_cast<content::FileSystemAccessManagerImpl*>(
+      browser_context->GetDefaultStoragePartition()
+          ->GetFileSystemAccessEntryFactory())
+      ->SetPermissionContextForTesting(permission_context);
 }
 
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
@@ -2154,6 +2163,13 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
   if (!manager)
     return ui::AXTreeUpdate();
   return manager->SnapshotAXTreeForTesting();
+}
+
+ui::AXTreeUpdate GetAccessibilityTreeSnapshotFromId(
+    const ui::AXTreeID& tree_id) {
+  BrowserAccessibilityManager* manager =
+      BrowserAccessibilityManager::FromID(tree_id);
+  return manager ? manager->SnapshotAXTreeForTesting() : ui::AXTreeUpdate();
 }
 
 ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(

@@ -171,9 +171,10 @@ size_t BrowserContext::GetStoragePartitionCount() {
 
 void BrowserContext::AsyncObliterateStoragePartition(
     const std::string& partition_domain,
-    base::OnceClosure on_gc_required) {
+    base::OnceClosure on_gc_required,
+    base::OnceClosure done_callback) {
   impl()->GetOrCreateStoragePartitionMap()->AsyncObliterate(
-      partition_domain, std::move(on_gc_required));
+      partition_domain, std::move(on_gc_required), std::move(done_callback));
 }
 
 void BrowserContext::GarbageCollectStoragePartitions(
@@ -402,6 +403,11 @@ BrowserContext::CreateVideoDecodePerfHistory() {
 
   return std::make_unique<media::VideoDecodePerfHistory>(
       std::move(stats_db), BrowserFeatureProvider::GetFactoryCB());
+}
+
+FederatedIdentityActiveSessionPermissionContextDelegate*
+BrowserContext::GetFederatedIdentityActiveSessionPermissionContext() {
+  return nullptr;
 }
 
 FederatedIdentityRequestPermissionContextDelegate*

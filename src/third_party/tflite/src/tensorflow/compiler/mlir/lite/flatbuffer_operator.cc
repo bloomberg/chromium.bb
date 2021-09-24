@@ -18,13 +18,16 @@ limitations under the License.
 #include <vector>
 
 #include "absl/strings/str_cat.h"
+#include "flatbuffers/flatbuffers.h"  // from @flatbuffers
 #include "flatbuffers/flexbuffers.h"  // from @flatbuffers
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "mlir/IR/Attributes.h"  // from @llvm-project
 #include "mlir/IR/Builders.h"  // from @llvm-project
-#include "mlir/IR/StandardTypes.h"  // from @llvm-project
+#include "mlir/IR/BuiltinTypes.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/lite/ir/tfl_ops.h"
+#include "tensorflow/compiler/mlir/lite/utils/convert_type.h"
 #include "tensorflow/compiler/mlir/tensorflow/ir/tf_types.h"
 #include "tensorflow/compiler/xla/statusor.h"
 #include "tensorflow/core/platform/errors.h"
@@ -95,50 +98,17 @@ static tflite::MirrorPadMode ConvertTFL_MirrorPaddingAttrForOptionWriter(
 
 static tflite::TensorType ConvertDerivedTypeAttrForOptionWriter(
     mlir::Type type, flatbuffers::FlatBufferBuilder* builder) {
-  switch (type.getKind()) {
-    case mlir::StandardTypes::F16:
-      return tflite::TensorType_FLOAT16;
-    case mlir::StandardTypes::F32:
-      return tflite::TensorType_FLOAT32;
-    case mlir::TF::TensorFlowTypes::STRING:
-      return tflite::TensorType_STRING;
-    case mlir::StandardTypes::Complex: {
-      auto etype = type.cast<mlir::ComplexType>().getElementType();
-      if (etype.isF32()) {
-        return tflite::TensorType_COMPLEX64;
-      }
-      llvm_unreachable("invalid complex Type in conversion");
-    }
-    case mlir::StandardTypes::Integer: {
-      const auto& itype = type.cast<mlir::IntegerType>();
-      switch (itype.getWidth()) {
-        case 1:
-          return tflite::TensorType_BOOL;
-        case 8:
-          return tflite::TensorType_INT8;
-        case 16:
-          return tflite::TensorType_INT16;
-        case 32:
-          return tflite::TensorType_INT32;
-        case 64:
-          return tflite::TensorType_INT64;
-        default:
-          llvm_unreachable("invalid integer Type in conversion");
-      }
-    }
-    default:
-      llvm_unreachable("invalid Type in conversion");
-  }
+  return tflite::ConvertTypeToTensorType(type);
 }
 
 // I32Attr already returns an int as required by flatbuffer builders.
 static int ConvertI32AttrForOptionWriter(
-    llvm::APInt i, flatbuffers::FlatBufferBuilder* builder) {
-  return i.getSExtValue();
+    int i, flatbuffers::FlatBufferBuilder* builder) {
+  return i;
 }
 
 static int ConvertPositiveI32AttrForOptionWriter(
-    llvm::APInt i, flatbuffers::FlatBufferBuilder* builder) {
+    int i, flatbuffers::FlatBufferBuilder* builder) {
   return ConvertI32AttrForOptionWriter(i, builder);
 }
 
@@ -163,6 +133,16 @@ static float ConvertF32AttrForOptionWriter(
 static bool ConvertBoolAttrForOptionWriter(
     bool b, flatbuffers::FlatBufferBuilder* builder) {
   return b;
+}
+
+static flatbuffers::Offset<flatbuffers::String> ConvertStrAttrForOptionWriter(
+    llvm::StringRef str, flatbuffers::FlatBufferBuilder* builder) {
+  return builder->CreateString(str.str());
+}
+
+static tflite::TensorType ConvertTypeAttrForOptionWriter(
+    mlir::Type type, flatbuffers::FlatBufferBuilder* builder) {
+  return tflite::ConvertTypeToTensorType(type);
 }
 
 static flatbuffers::Offset<flatbuffers::Vector<int32_t>>
@@ -192,6 +172,11 @@ static mlir::Attribute BuildBoolAttr(bool value, mlir::Builder builder) {
   return builder.getBoolAttr(value);
 }
 
+static mlir::Attribute BuildStrAttr(llvm::StringRef str,
+                                    mlir::Builder builder) {
+  return builder.getStringAttr(str);
+}
+
 static mlir::Attribute BuildF32Attr(float value, mlir::Builder builder) {
   return builder.getF32FloatAttr(value);
 }
@@ -209,6 +194,11 @@ static mlir::Attribute BuildI64ArrayAttr(std::vector<int32_t> value,
 static mlir::Attribute BuildPositiveI32Attr(int32_t value,
                                             mlir::Builder builder) {
   return builder.getI32IntegerAttr(value);
+}
+
+static mlir::Attribute BuildTypeAttr(tflite::TensorType value,
+                                     mlir::Builder builder) {
+  return mlir::TypeAttr::get(ConvertElementType(value, builder));
 }
 
 static mlir::Attribute BuildTFL_AFAttr(tflite::ActivationFunctionType value,
@@ -255,7 +245,7 @@ Status mlir::CustomOptionsToAttributes(
       {static_cast<int64_t>(custom_options.size())}, builder.getIntegerType(8));
   attributes->emplace_back(builder.getNamedAttr(
       "custom_option",
-      OpaqueElementsAttr::get(builder.getContext()->getRegisteredDialect("tfl"),
+      OpaqueElementsAttr::get(builder.getContext()->getLoadedDialect("tfl"),
                               type, content)));
 
   return Status::OK();

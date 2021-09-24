@@ -24,7 +24,7 @@
     request.statusCode = 200;
     request.statusText = 'OK';
     request.resourceSize = 1000;
-    request._transferSize = 539;  // 39 = header size at the end of the day
+    request.transferSizeInternal = 539;  // 39 = header size at the end of the day
     request.setPriority('VeryHigh');
     request.setResourceType(Common.resourceTypes.Fetch);
 

@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#import "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
@@ -24,6 +23,7 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/authentication_service_observer.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
@@ -103,16 +103,6 @@ void AuthenticationService::Initialize(
   delegate_ = std::move(delegate);
   initialized_ = true;
 
-  // The preference |kSigninAllowed| is not available for pre-MICE users. Except
-  // for policy exceptions pre-MICE users cannot choose to be in a permanently
-  // not signed-in state (ie. kSigninAllowed = false).
-  // If a user sets the preference in MICE and then is rolled back to a pre-MICE
-  // state, they will be returned to the default state (ie. kSigninAllowed =
-  // true).
-  if (!signin::IsMobileIdentityConsistencyEnabled()) {
-    pref_service_->ClearPref(prefs::kSigninAllowed);
-  }
-
   MigrateAccountsStoredInPrefsIfNeeded();
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
@@ -139,6 +129,16 @@ void AuthenticationService::Shutdown() {
   identity_manager_observation_.Reset();
   account_manager_service_observation_.Reset();
   delegate_.reset();
+}
+
+void AuthenticationService::AddObserver(
+    AuthenticationServiceObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AuthenticationService::RemoveObserver(
+    AuthenticationServiceObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void AuthenticationService::OnApplicationWillEnterForeground() {
@@ -199,6 +199,16 @@ void AuthenticationService::ApproveAccountList() {
       identity_manager_->GetAccountsWithRefreshTokens();
   user_approved_account_list_manager_.SetApprovedAccountList(
       current_accounts_info);
+}
+
+void AuthenticationService::OnChromeIdentityServiceDidChange(
+    ios::ChromeIdentityService* new_service) {
+  identity_service_observation_.Observe(
+      ios::GetChromeBrowserProvider().GetChromeIdentityService());
+}
+
+void AuthenticationService::OnChromeBrowserProviderWillBeDestroyed() {
+  identity_service_observation_.Reset();
 }
 
 void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
@@ -358,16 +368,9 @@ void AuthenticationService::SignOut(
       signout_source, signin_metrics::SignoutDelete::kIgnoreMetric);
   crash_keys::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
-  bool clear_browsing_data;
-  if (base::FeatureList::IsEnabled(signin::kSimplifySignOutIOS)) {
-    // With kSimplifySignOutIOS feature, browsing data for managed account needs
-    // to be cleared only if sync has started at least once.
-    clear_browsing_data =
-        force_clear_browsing_data || (is_managed && is_first_setup_complete);
-  } else {
-    clear_browsing_data = force_clear_browsing_data || is_managed;
-  }
-  if (clear_browsing_data) {
+  // Browsing data for managed account needs to be cleared only if sync has
+  // started at least once.
+  if (force_clear_browsing_data || (is_managed && is_first_setup_complete)) {
     delegate_->ClearBrowsingData(completion);
   } else if (completion) {
     completion();
@@ -410,12 +413,6 @@ bool AuthenticationService::ShowMDMErrorDialogForIdentity(
   identity_service->HandleMDMNotification(identity, cached_info, ^(bool){
                                                     });
   return true;
-}
-
-void AuthenticationService::ResetChromeIdentityServiceObserverForTesting() {
-  DCHECK(!identity_service_observation_.IsObserving());
-  identity_service_observation_.Observe(
-      ios::GetChromeBrowserProvider().GetChromeIdentityService());
 }
 
 base::WeakPtr<AuthenticationService> AuthenticationService::GetWeakPtr() {
@@ -582,4 +579,9 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
     // since this change comes from the user.
     ApproveAccountList();
   }
+}
+
+void AuthenticationService::FirePrimaryAccountRestricted() {
+  for (auto& observer : observer_list_)
+    observer.OnPrimaryAccountRestricted();
 }

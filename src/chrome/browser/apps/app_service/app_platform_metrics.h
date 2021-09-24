@@ -13,9 +13,12 @@
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "ui/aura/window.h"
 
 class Profile;
+
+namespace aura {
+class Window;
+}
 
 namespace apps {
 
@@ -110,6 +113,12 @@ std::string GetAppTypeHistogramNameV2(apps::AppTypeNameV2 app_type_name);
 
 const std::set<apps::AppTypeName>& GetAppTypeNameSet();
 
+// Returns AppTypeName used for app launch metrics.
+apps::AppTypeName GetAppTypeName(Profile* profile,
+                                 apps::mojom::AppType app_type,
+                                 const std::string& app_id,
+                                 apps::mojom::LaunchContainer container);
+
 // Records metrics when launching apps.
 void RecordAppLaunchMetrics(Profile* profile,
                             apps::mojom::AppType app_type,
@@ -187,8 +196,10 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   };
 
   struct BrowserToTab {
-    aura::Window* browser_window = nullptr;
-    aura::Window* tab_window = nullptr;
+    BrowserToTab(const Instance::InstanceKey& browser_key,
+                 const Instance::InstanceKey& tab_key);
+    Instance::InstanceKey browser_key;
+    Instance::InstanceKey tab_key;
   };
 
   using BrowserToTabs = std::list<BrowserToTab>;
@@ -204,31 +215,31 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
 
-  // Updates the browser window status when the web app tab of `tab_window` is
+  // Updates the browser window status when the web app tab of `tab_key` is
   // inactivated.
-  void UpdateBrowserWindowStatus(aura::Window* tab_window);
+  void UpdateBrowserWindowStatus(const Instance::InstanceKey& tab_key);
 
-  // Returns true if the browser with `browser_window` has activated tabs.
+  // Returns true if the browser with `browser_key` has activated tabs.
   // Otherwise, returns false.
-  bool HasActivatedTab(aura::Window* browser_window);
+  bool HasActivatedTab(const Instance::InstanceKey& browser_key);
 
-  // Returns the browser window for `tab_window`.
-  aura::Window* GetBrowserWindow(aura::Window* tab_window) const;
+  // Returns the browser window for `tab_key`.
+  aura::Window* GetBrowserWindow(const Instance::InstanceKey& tab_key) const;
 
-  // Adds an activated `browser_window` and `tab_window` to
-  // `active_browser_to_tabs_`.
-  void AddActivatedTab(aura::Window* browser_window, aura::Window* tab_window);
+  // Adds an activated `browser_key` and `tab_key` to `active_browser_to_tabs_`.
+  void AddActivatedTab(const Instance::InstanceKey& browser_key,
+                       const Instance::InstanceKey& tab_key);
 
-  // Removes `tab_window` from `active_browser_to_tabs_`.
-  void RemoveActivatedTab(aura::Window* tab_window);
+  // Removes `tab_key` from `active_browser_to_tabs_`.
+  void RemoveActivatedTab(const Instance::InstanceKey& tab_key);
 
   void SetWindowActivated(apps::mojom::AppType app_type,
                           AppTypeName app_type_name,
                           AppTypeNameV2 app_type_name_v2,
                           const std::string& app_id,
-                          aura::Window* window);
+                          const apps::Instance::InstanceKey& instance_key);
   void SetWindowInActivated(const std::string& app_id,
-                            aura::Window* window,
+                            const apps::Instance::InstanceKey& instance_key,
                             apps::InstanceState state);
 
   void InitRunningDuration();
@@ -258,6 +269,9 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   // Returns the SourceId of UKM for `app_id`.
   ukm::SourceId GetSourceId(const std::string& app_id);
 
+  // Records the previous app readiness status.
+  void RecordAppReadinessStatus(const apps::AppUpdate& update);
+
   Profile* const profile_ = nullptr;
 
   AppRegistryCache& app_registry_cache_;
@@ -274,7 +288,7 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
 
   // |running_start_time_| and |running_duration_| are used for accumulating app
   // running duration per each day interval.
-  std::map<aura::Window*, RunningStartTime> running_start_time_;
+  std::map<apps::Instance::InstanceKey, RunningStartTime> running_start_time_;
   std::map<AppTypeName, base::TimeDelta> running_duration_;
   std::map<AppTypeName, int> activated_count_;
 
@@ -282,12 +296,13 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   // |app_type_v2_running_time_per_five_minutes_|, and
   // |usage_time_per_five_minutes_| are used for accumulating app
   // running duration per 5 minutes interval.
-  std::map<aura::Window*, RunningStartTime> start_time_per_five_minutes_;
+  std::map<apps::Instance::InstanceKey, RunningStartTime>
+      start_time_per_five_minutes_;
   std::map<AppTypeName, base::TimeDelta>
       app_type_running_time_per_five_minutes_;
   std::map<AppTypeNameV2, base::TimeDelta>
       app_type_v2_running_time_per_five_minutes_;
-  std::map<aura::Window*, UsageTime> usage_time_per_five_minutes_;
+  std::map<apps::Instance::InstanceKey, UsageTime> usage_time_per_five_minutes_;
 };
 
 }  // namespace apps

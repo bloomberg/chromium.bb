@@ -1934,39 +1934,48 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-const CSSValue* ContainIntrinsicSize::ParseSingleValue(
+const CSSValue* ContainIntrinsicWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueID::kAuto)
-    return css_parsing_utils::ConsumeIdent(range);
-  CSSValue* width =
-      css_parsing_utils::ConsumeLength(range, context, kValueRangeNonNegative);
-  if (!width)
-    return nullptr;
-  CSSValue* height =
-      css_parsing_utils::ConsumeLength(range, context, kValueRangeNonNegative);
-  if (!height)
-    height = width;
-  return MakeGarbageCollected<CSSValuePair>(width, height,
-                                            CSSValuePair::kDropIdenticalValues);
+  return css_parsing_utils::ConsumeIntrinsicSizeLonghand(range, context);
 }
 
-const CSSValue* ContainIntrinsicSize::CSSValueFromComputedStyleInternal(
+const CSSValue* ContainIntrinsicWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  auto& size = style.ContainIntrinsicSize();
-  if (size.Width().IsAuto()) {
-    DCHECK(size.Height().IsAuto());
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  }
-  return MakeGarbageCollected<CSSValuePair>(
-      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-          style.ContainIntrinsicSize().Width(), style),
-      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-          style.ContainIntrinsicSize().Height(), style),
-      CSSValuePair::kDropIdenticalValues);
+  return ComputedStyleUtils::ValueForIntrinsicLength(
+      style, style.ContainIntrinsicWidth());
+}
+
+const CSSValue* ContainIntrinsicHeight::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeIntrinsicSizeLonghand(range, context);
+}
+
+const CSSValue* ContainIntrinsicHeight::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForIntrinsicLength(
+      style, style.ContainIntrinsicHeight());
+}
+
+const CSSValue* ContainIntrinsicInlineSize::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeIntrinsicSizeLonghand(range, context);
+}
+
+const CSSValue* ContainIntrinsicBlockSize::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeIntrinsicSizeLonghand(range, context);
 }
 
 const CSSValue* ContainerName::ParseSingleValue(
@@ -1998,12 +2007,14 @@ const CSSValue* ContainerType::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.ContainerType() == kContainerTypeNone)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (style.ContainerType() & kContainerTypeInlineSize)
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kInlineSize));
-  if (style.ContainerType() & kContainerTypeBlockSize)
-    list->Append(*CSSIdentifierValue::Create(CSSValueID::kBlockSize));
-  return list;
+  if (style.ContainerType() == kContainerTypeSize)
+    return CSSIdentifierValue::Create(CSSValueID::kSize);
+  if (style.ContainerType() == kContainerTypeInlineSize)
+    return CSSIdentifierValue::Create(CSSValueID::kInlineSize);
+  if (style.ContainerType() == kContainerTypeBlockSize)
+    return CSSIdentifierValue::Create(CSSValueID::kBlockSize);
+  NOTREACHED();
+  return nullptr;
 }
 
 namespace {
@@ -3122,6 +3133,24 @@ const CSSValue* FontWeight::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontWeight(style);
+}
+
+const CSSValue* FontSynthesisWeight::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
+  return CSSIdentifierValue::Create(
+      style.GetFontDescription().GetFontSynthesisWeight());
+}
+
+const CSSValue* FontSynthesisStyle::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
+  return CSSIdentifierValue::Create(
+      style.GetFontDescription().GetFontSynthesisStyle());
 }
 
 const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
@@ -7409,7 +7438,7 @@ const CSSValue* Visibility::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Visibility());
 }
 
-const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
+const CSSValue* AppRegion::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
@@ -7421,12 +7450,12 @@ const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
                                         : CSSValueID::kNoDrag);
 }
 
-void WebkitAppRegion::ApplyInitial(StyleResolverState& state) const {}
+void AppRegion::ApplyInitial(StyleResolverState& state) const {}
 
-void WebkitAppRegion::ApplyInherit(StyleResolverState& state) const {}
+void AppRegion::ApplyInherit(StyleResolverState& state) const {}
 
-void WebkitAppRegion::ApplyValue(StyleResolverState& state,
-                                 const CSSValue& value) const {
+void AppRegion::ApplyValue(StyleResolverState& state,
+                           const CSSValue& value) const {
   const auto& identifier_value = To<CSSIdentifierValue>(value);
   state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
                                                 CSSValueID::kDrag

@@ -42,12 +42,15 @@ public:
     bool supportsDistanceFieldText() const { return fShaderDerivativeSupport; }
 
     bool shaderDerivativeSupport() const { return fShaderDerivativeSupport; }
-    bool geometryShaderSupport() const { return fGeometryShaderSupport; }
-    bool gsInvocationsSupport() const { return fGSInvocationsSupport; }
     bool dstReadInShaderSupport() const { return fDstReadInShaderSupport; }
     bool dualSourceBlendingSupport() const { return fDualSourceBlendingSupport; }
-    bool integerSupport() const { return fIntegerSupport; }
     bool nonsquareMatrixSupport() const { return fNonsquareMatrixSupport; }
+
+    /** Indicates true 32-bit integer support, with unsigned types and bitwise operations */
+    bool integerSupport() const { return fIntegerSupport; }
+
+    /** asinh(), acosh(), atanh() */
+    bool inverseHyperbolicSupport() const { return fInverseHyperbolicSupport; }
 
     /**
      * Some helper functions for encapsulating various extensions to read FB Buffer on openglES
@@ -91,6 +94,14 @@ public:
     // Use a reduced set of rendering algorithms or less optimal effects in order to
     // reduce the number of unique shaders generated.
     bool reducedShaderMode() const { return fReducedShaderMode; }
+
+    /**
+     * SkSL ES3 requires support for derivatives, nonsquare matrices and bitwise integer operations.
+     */
+    bool supportsSkSLES3() const {
+        return fShaderDerivativeSupport && fNonsquareMatrixSupport && fIntegerSupport &&
+               fGLSLGeneration >= k330_GrGLSLGeneration;
+    }
 
     // SkSL only.
     bool builtinFMASupport() const { return fBuiltinFMASupport; }
@@ -211,22 +222,6 @@ public:
         return fShaderDerivativeExtensionString;
     }
 
-    // Returns the string of an extension that must be enabled in the shader to support geometry
-    // shaders. If nullptr is returned then no extension needs to be enabled. Before calling this
-    // function, the caller must verify that geometryShaderSupport exists.
-    const char* geometryShaderExtensionString() const {
-        SkASSERT(this->geometryShaderSupport());
-        return fGeometryShaderExtensionString;
-    }
-
-    // Returns the string of an extension that must be enabled in the shader to support
-    // geometry shader invocations. If nullptr is returned then no extension needs to be enabled.
-    // Before calling this function, the caller must verify that gsInvocationsSupport exists.
-    const char* gsInvocationsExtensionString() const {
-        SkASSERT(this->gsInvocationsSupport());
-        return fGSInvocationsExtensionString;
-    }
-
     // This returns the name of an extension that must be enabled in the shader, if such a thing is
     // required in order to use a secondary output in the shader. This returns a nullptr if no such
     // extension is required. However, the return value of this function does not say whether dual
@@ -277,12 +272,11 @@ private:
     GrGLSLGeneration fGLSLGeneration;
 
     bool fShaderDerivativeSupport           : 1;
-    bool fGeometryShaderSupport             : 1;
-    bool fGSInvocationsSupport              : 1;
     bool fDstReadInShaderSupport            : 1;
     bool fDualSourceBlendingSupport         : 1;
     bool fIntegerSupport                    : 1;
     bool fNonsquareMatrixSupport            : 1;
+    bool fInverseHyperbolicSupport          : 1;
     bool fFBFetchSupport                    : 1;
     bool fFBFetchNeedsCustomOutput          : 1;
     bool fUsesPrecisionModifiers            : 1;
@@ -337,8 +331,6 @@ private:
     const char* fVersionDeclString;
 
     const char* fShaderDerivativeExtensionString;
-    const char* fGeometryShaderExtensionString;
-    const char* fGSInvocationsExtensionString;
     const char* fSecondaryOutputExtensionString;
     const char* fExternalTextureExtensionString;
     const char* fSecondExternalTextureExtensionString;

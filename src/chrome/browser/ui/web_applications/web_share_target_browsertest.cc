@@ -119,7 +119,7 @@ class WebShareTargetBrowserTest : public WebAppControllerBrowserTest {
 
   std::string ExecuteShare(const std::string& script) {
     const GURL url = embedded_test_server()->GetURL("/webshare/index.html");
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     content::WebContents* const contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     return content::EvalJs(contents, script).ExtractString();
@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, PostLink) {
       embedded_test_server()->GetURL("/web_share_target/poster.html");
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const apps::ShareTarget* share_target =
-      WebAppProvider::Get(browser()->profile())
+      WebAppProvider::GetForTest(browser()->profile())
           ->registrar()
           .GetAppShareTarget(app_id);
   EXPECT_EQ(share_target->method, apps::ShareTarget::Method::kPost);
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, GetLink) {
       embedded_test_server()->GetURL("/web_share_target/gatherer.html");
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const apps::ShareTarget* share_target =
-      WebAppProvider::Get(browser()->profile())
+      WebAppProvider::GetForTest(browser()->profile())
           ->registrar()
           .GetAppShareTarget(app_id);
   EXPECT_EQ(share_target->method, apps::ShareTarget::Method::kGet);

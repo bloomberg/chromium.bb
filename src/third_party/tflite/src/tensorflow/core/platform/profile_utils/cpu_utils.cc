@@ -23,6 +23,10 @@ limitations under the License.
 #include <windows.h>
 #endif
 
+#if defined(__APPLE__)
+#include <sys/sysctl.h>
+#endif
+
 #include "absl/base/call_once.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/profile_utils/android_armv7a_cpu_utils_helper.h"
@@ -30,7 +34,7 @@ limitations under the License.
 namespace tensorflow {
 namespace profile_utils {
 
-/* static */ constexpr int64 CpuUtils::INVALID_FREQUENCY;
+/* static */ constexpr int64_t CpuUtils::INVALID_FREQUENCY;
 
 static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
 
@@ -42,8 +46,8 @@ static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
   return cpu_frequency;
 }
 #else
-/* static */ int64 CpuUtils::GetCycleCounterFrequency() {
-  static const int64 cpu_frequency = GetCycleCounterFrequencyImpl();
+/* static */ int64_t CpuUtils::GetCycleCounterFrequency() {
+  static const int64_t cpu_frequency = GetCycleCounterFrequencyImpl();
   return cpu_frequency;
 }
 #endif
@@ -58,17 +62,21 @@ static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
   GetCpuUtilsHelperSingletonInstance().ResetClockCycle();
 }
 
-/* static */ void CpuUtils::EnableClockCycleProfiling(const bool enable) {
-  GetCpuUtilsHelperSingletonInstance().EnableClockCycleProfiling(enable);
+/* static */ void CpuUtils::EnableClockCycleProfiling() {
+  GetCpuUtilsHelperSingletonInstance().EnableClockCycleProfiling();
+}
+
+/* static */ void CpuUtils::DisableClockCycleProfiling() {
+  GetCpuUtilsHelperSingletonInstance().DisableClockCycleProfiling();
 }
 
 /* static */ std::chrono::duration<double> CpuUtils::ConvertClockCycleToTime(
-    const int64 clock_cycle) {
+    const int64_t clock_cycle) {
   return std::chrono::duration<double>(static_cast<double>(clock_cycle) /
                                        GetCycleCounterFrequency());
 }
 
-/* static */ int64 CpuUtils::GetCycleCounterFrequencyImpl() {
+/* static */ int64_t CpuUtils::GetCycleCounterFrequencyImpl() {
 // TODO(satok): do not switch by macro here
 #if defined(__ANDROID__)
   return GetCpuUtilsHelperSingletonInstance().CalculateCpuFrequency();
@@ -90,6 +98,8 @@ static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
     freq_factor = 1.0;
 #elif defined(__s390x__)
     retval = sscanf(line.c_str(), "bogomips per cpu: %lf", &cpu_freq);
+#elif defined(__aarch64__)
+    retval = sscanf(line.c_str(), "BogoMIPS : %lf", &cpu_freq);
 #else
     retval = sscanf(line.c_str(), "bogomips : %lf", &cpu_freq);
 #endif
@@ -99,9 +109,9 @@ static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
         LOG(WARNING) << "Failed to get CPU frequency: " << freq_ghz << " GHz";
         return INVALID_FREQUENCY;
       }
-      const int64 freq_n =
-          static_cast<int64>(freq_ghz * 1000.0 * 1000.0 * 1000.0);
-      LOG(INFO) << "CPU Frequency: " << freq_n << " Hz";
+      const int64_t freq_n =
+          static_cast<int64_t>(freq_ghz * 1000.0 * 1000.0 * 1000.0);
+      VLOG(1) << "CPU Frequency: " << freq_n << " Hz";
       return freq_n;
     }
   }
@@ -110,17 +120,11 @@ static ICpuUtilsHelper* cpu_utils_helper_instance_ = nullptr;
          "CPU frequency";
   return INVALID_FREQUENCY;
 #elif defined(__APPLE__)
-  int64 freq_hz;
-  FILE* fp =
-      popen("sysctl hw | grep hw.cpufrequency_max: | cut -d' ' -f 2", "r");
-  if (fp == nullptr) {
-    return INVALID_FREQUENCY;
-  }
-  if (fscanf(fp, "%lld", &freq_hz) != 1) {
-    return INVALID_FREQUENCY;
-  }
-  pclose(fp);
-  if (freq_hz < 1e6) {
+  int64 freq_hz = 0;
+  size_t freq_size = sizeof(freq_hz);
+  int retval =
+      sysctlbyname("hw.cpufrequency_max", &freq_hz, &freq_size, NULL, 0);
+  if (retval != 0 || freq_hz < 1e6) {
     LOG(WARNING) << "Failed to get CPU frequency: " << freq_hz << " Hz";
     return INVALID_FREQUENCY;
   }

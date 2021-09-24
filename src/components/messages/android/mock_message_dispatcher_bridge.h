@@ -27,6 +27,7 @@ class MockMessageDispatcherBridge : public MessageDispatcherBridge {
               (MessageWrapper * message,
                DismissReason dismiss_reason),
               (override));
+  int MapToJavaDrawableId(int resource_id) override;
 };
 
 }  // namespace messages

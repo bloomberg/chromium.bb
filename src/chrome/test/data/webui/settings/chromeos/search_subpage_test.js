@@ -10,7 +10,7 @@
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 suite('SearchSubpage', function() {
@@ -189,9 +189,6 @@ suite('SearchSubpage', function() {
   });
 
   test('Deep link to Preferred Search Engine', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     const params = new URLSearchParams;
     params.append('settingId', '600');
     settings.Router.getInstance().navigateTo(
@@ -207,9 +204,6 @@ suite('SearchSubpage', function() {
   });
 
   test('Deep link to Quick Answers On/Off', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     const params = new URLSearchParams;
     params.append('settingId', '608');
     settings.Router.getInstance().navigateTo(
@@ -224,9 +218,6 @@ suite('SearchSubpage', function() {
   });
 
   test('Deep link to Quick Answers Definition', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     page.setPrefValue('settings.quick_answers.enabled', true);
     Polymer.dom.flush();
 
@@ -245,9 +236,6 @@ suite('SearchSubpage', function() {
   });
 
   test('Deep link to Quick Answers Translation', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     page.setPrefValue('settings.quick_answers.enabled', true);
     Polymer.dom.flush();
 
@@ -266,9 +254,6 @@ suite('SearchSubpage', function() {
   });
 
   test('Deep link to Quick Answers Unit Conversion', async () => {
-    loadTimeData.overrideValues({isDeepLinkingEnabled: true});
-    assertTrue(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-
     page.setPrefValue('settings.quick_answers.enabled', true);
     Polymer.dom.flush();
 

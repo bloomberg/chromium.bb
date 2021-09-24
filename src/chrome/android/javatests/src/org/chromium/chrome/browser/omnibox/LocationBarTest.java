@@ -36,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.stubbing.Answer;
@@ -514,6 +515,33 @@ public class LocationBarTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testFocusLogic_lenButtonVisibilityOnStartNtpPhone_updatedOnceWhenNtpScrolled() {
+        startActivityNormally();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+
+        ViewUtils.waitForView(allOf(withId(R.id.mic_button), isDisplayed()));
+        ViewUtils.waitForView(allOf(withId(R.id.lens_camera_button_end), isDisplayed()));
+        ViewUtils.waitForView(allOf(withId(R.id.lens_camera_button_start), not(isDisplayed())));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Mockito.reset(mVoiceRecognitionHandler);
+            doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+            // Updating the fraction once should query voice search visibility.
+            mLocationBarMediator.setUrlFocusChangeFraction(.5f);
+            Mockito.verify(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+            // Further updates to the fraction shouldn't trigger a button visibility update.
+            mLocationBarMediator.setUrlFocusChangeFraction(.6f);
+            Mockito.verify(mVoiceRecognitionHandler, Mockito.times(1)).isVoiceSearchEnabled();
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testFocusLogic_lenButtonVisibilityOnLocationBarOnIncognitoStateChange() {
         startActivityNormally();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
@@ -593,8 +621,12 @@ public class LocationBarTest {
 
     @Test
     @MediumTest
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.VOICE_BUTTON_IN_TOP_TOOLBAR,
+            "disable-features=" + ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR + ","
+                    + ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
-    public void testFocusLogic_buttonVisibilityTablet() {
+    public void
+    testFocusLogic_buttonVisibilityTablet() {
         startActivityNormally();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
         String url = mActivityTestRule.getEmbeddedTestServerRule().getServer().getURLWithHostName(
@@ -717,6 +749,7 @@ public class LocationBarTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1237419")
     public void testOmniboxSearchEngineLogo_siteToSite() {
         setupSearchEngineLogo(GOOGLE_URL);
         startActivityNormally();

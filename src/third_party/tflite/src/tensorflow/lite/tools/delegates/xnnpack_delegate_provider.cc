@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include <string>
+#include <utility>
 
 #include "tensorflow/lite/tools/delegates/delegate_provider.h"
 #include "tensorflow/lite/tools/evaluation/utils.h"
@@ -28,9 +29,11 @@ class XnnpackDelegateProvider : public DelegateProvider {
 
   std::vector<Flag> CreateFlags(ToolParams* params) const final;
 
-  void LogParams(const ToolParams& params) const final;
+  void LogParams(const ToolParams& params, bool verbose) const final;
 
   TfLiteDelegatePtr CreateTfLiteDelegate(const ToolParams& params) const final;
+  std::pair<TfLiteDelegatePtr, int> CreateRankedTfLiteDelegate(
+      const ToolParams& params) const final;
 
   std::string GetName() const final { return "XNNPACK"; }
 };
@@ -43,9 +46,9 @@ std::vector<Flag> XnnpackDelegateProvider::CreateFlags(
   return flags;
 }
 
-void XnnpackDelegateProvider::LogParams(const ToolParams& params) const {
-  TFLITE_LOG(INFO) << "Use xnnpack : [" << params.Get<bool>("use_xnnpack")
-                   << "]";
+void XnnpackDelegateProvider::LogParams(const ToolParams& params,
+                                        bool verbose) const {
+  LOG_TOOL_PARAM(params, bool, "use_xnnpack", "Use xnnpack", verbose);
 }
 
 TfLiteDelegatePtr XnnpackDelegateProvider::CreateTfLiteDelegate(
@@ -55,6 +58,14 @@ TfLiteDelegatePtr XnnpackDelegateProvider::CreateTfLiteDelegate(
         params.Get<int32_t>("num_threads"));
   }
   return TfLiteDelegatePtr(nullptr, [](TfLiteDelegate*) {});
+}
+
+std::pair<TfLiteDelegatePtr, int>
+XnnpackDelegateProvider::CreateRankedTfLiteDelegate(
+    const ToolParams& params) const {
+  auto ptr = CreateTfLiteDelegate(params);
+  return std::make_pair(std::move(ptr),
+                        params.GetPosition<bool>("use_xnnpack"));
 }
 
 }  // namespace tools

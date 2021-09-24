@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">테마 색상 모드는 배경화면에서 추출한 색상을 사용하여 인터페이스에 부드럽게 반영합니다.</translation>
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> 정보 대화상자 열기</translation>
+<translation id="1150989369772528668">캘린더</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1165712434476988950">업데이트를 적용하려면 기기를 다시 시작해야 합니다.</translation>
 <translation id="1175572348579024023">스크롤</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">켜짐</translation>
 <translation id="1615402009686901181">기밀 콘텐츠가 보일 때 관리자 정책에서 화면 캡처를 사용 중지합니다.</translation>
 <translation id="1632985212731562677">설정 &gt; 접근성에서 스위치 제어를 사용 중지할 수 있습니다.</translation>
+<translation id="1637505162081889933">기기 <ph name="NUM_DEVICES" />대</translation>
 <translation id="1654477262762802994">음성 검색 시작</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />, <ph name="RESULT_TEXT" />, Search와 Space키를 눌러 어시스턴트에서 검색결과를 확인하세요.</translation>
 <translation id="1667964833127753507">중성 색상 모드는 배경화면에서 추출한 색상을 사용하지 않고 밝거나 어두운 중성 색상으로 대체합니다.</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">왼쪽 클릭</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
+<translation id="24452542372838207">알림 펼치기</translation>
 <translation id="2450205753526923158">스크린샷 모드</translation>
 <translation id="2473177541599297363">해상도 확인</translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">정의</translation>
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3513798432020909783">계정 관리자: <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">기기 <ph name="NUM_DEVICES" />대에 연결됨</translation>
 <translation id="3552189655002856821">Wi-Fi가 사용 중지됨</translation>
 <translation id="3560866052109807830">마커 그리기 도구</translation>
 <translation id="3563775809269155755">핫스팟 사용</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">나이지리아의 인구</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">로드 중...</translation>
+<translation id="3708186454126126312">이전에 연결된 기기</translation>
 <translation id="371370241367527062">전면 마이크</translation>
 <translation id="3713734891607377840">완료되면 열기</translation>
 <translation id="3742055079367172538">찍은 스크린샷</translation>
@@ -403,6 +408,7 @@
 <translation id="4129129681837227511">잠금 화면에 알림이 표시되도록 하려면 잠금을 해제하여 설정을 변경하세요.</translation>
 <translation id="4146833061457621061">음악을 틀어 줘</translation>
 <translation id="4157822100366708405">어두운 테마 설정</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4195877955194704651">자동 클릭 버튼</translation>
 <translation id="4197790712631116042">사용 안함</translation>
@@ -555,6 +561,7 @@
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5234764350956374838">닫기</translation>
 <translation id="523505283826916779">접근성 설정</translation>
+<translation id="5253783950165989294">이름이 <ph name="DEVICE_NAME" />인 기기에 연결됨(배터리 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="5260676007519551770">데스크 4</translation>
 <translation id="5283198616748585639">1분 추가</translation>
 <translation id="528468243742722775">종료</translation>
@@ -565,6 +572,7 @@
 <translation id="5308380583665731573">연결</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="5314219114274263156">화면 녹화됨</translation>
+<translation id="5319712128756744240">새 기기와 페어링</translation>
 <translation id="5322611492012084517">휴대전화를 찾을 수 없음</translation>
 <translation id="5329548388331921293">연결 중...</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
@@ -767,6 +775,7 @@
 <translation id="6981982820502123353">접근성</translation>
 <translation id="698231206551913481">이 사용자를 제거하면 해당 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다.</translation>
 <translation id="7007983414944123363">PIN 또는 비밀번호를 확인할 수 없습니다. 다시 시도하세요.</translation>
+<translation id="7014684956566476813">이름이 <ph name="DEVICE_NAME" />인 기기에 연결됨</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="70168403932084660">데스크 6</translation>
 <translation id="7025533177575372252">휴대전화와 <ph name="DEVICE_NAME" /> 연결</translation>
@@ -1000,6 +1009,7 @@
 <translation id="8818320199597151042">프로필을 삭제하는 중입니다. 잠시만 기다려 주세요.</translation>
 <translation id="8825863694328519386">돌아가려면 왼쪽에서 스와이프하세요.</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">현재 연결된 기기</translation>
 <translation id="8841375032071747811">뒤로 버튼</translation>
 <translation id="8843682306134542540">회전 잠금을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1030,6 +1040,7 @@
 <translation id="9024331582947483881">전체화면</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> 설정 열기</translation>
 <translation id="9056839673611986238">기기가 롤백됨</translation>
+<translation id="9059834730836941392">알림 접기</translation>
 <translation id="9063800855227801443">기밀 콘텐츠는 캡처할 수 없음</translation>
 <translation id="9065203028668620118">수정</translation>
 <translation id="9070640332319875144">어시스턴트 설정</translation>

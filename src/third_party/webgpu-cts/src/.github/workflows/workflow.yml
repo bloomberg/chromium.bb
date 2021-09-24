@@ -55,7 +55,7 @@ jobs:
           cat << EOF >> .firebaserc
           {
             "projects": {
-              "default": "gpuweb-prs"
+              "default": "gpuweb-cts"
             }
           }
           EOF
@@ -63,7 +63,7 @@ jobs:
         continue-on-error: true
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CTS }}
           expires: 10d
           channelId: cts-prs-${{ env.PR }}-${{ github.event.workflow_run.head_sha }}
       - uses: peter-evans/create-or-update-comment@v1

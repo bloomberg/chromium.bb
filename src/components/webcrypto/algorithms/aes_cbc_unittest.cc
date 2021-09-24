@@ -93,7 +93,8 @@ TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
   base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_cbc.json", &tests));
 
-  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetList().size();
+       ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
     ASSERT_TRUE(tests.GetDictionary(test_index, &test));
@@ -302,7 +303,7 @@ TEST_F(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsNotSuperset) {
   dict.SetString("kty", "oct");
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
   base::ListValue key_ops;
-  key_ops.AppendString("encrypt");
+  key_ops.Append("encrypt");
   dict.SetKey("key_ops", std::move(key_ops));
 
   EXPECT_EQ(
@@ -367,7 +368,7 @@ TEST_F(WebCryptoAesCbcTest, ImportJwkKeyOpsLacksUsages) {
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg");
 
   base::ListValue key_ops;
-  key_ops.AppendString("foo");
+  key_ops.Append("foo");
   dict.SetKey("key_ops", std::move(key_ops));
   EXPECT_EQ(Status::ErrorJwkKeyopsInconsistent(),
             ImportKeyJwkFromDict(

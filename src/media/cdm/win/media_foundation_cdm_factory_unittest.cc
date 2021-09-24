@@ -44,8 +44,8 @@ class MediaFoundationCdmFactoryTest : public testing::Test {
     auto cdm_helper =
         std::make_unique<StrictMock<MockCdmAuxiliaryHelper>>(nullptr);
     cdm_helper_ = cdm_helper.get();
-    cdm_factory_ = std::make_unique<MediaFoundationCdmFactory>(
-        std::move(cdm_helper), base::FilePath());
+    cdm_factory_ =
+        std::make_unique<MediaFoundationCdmFactory>(std::move(cdm_helper));
   }
 
   ~MediaFoundationCdmFactoryTest() override = default;
@@ -102,9 +102,9 @@ TEST_F(MediaFoundationCdmFactoryTest, Create) {
   COM_EXPECT_CALL(mf_cdm_factory_, CreateContentDecryptionModuleAccess(
                                        NotNull(), NotNull(), _, _))
       .WillOnce(DoAll(SetComPointee<3>(mf_cdm_access_.Get()), Return(S_OK)));
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Create(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Create(), absl::nullopt, base::FilePath())));
   COM_EXPECT_CALL(mf_cdm_access_, CreateContentDecryptionModule(NotNull(), _))
       .WillOnce(DoAll(SetComPointee<1>(mf_cdm_.Get()), Return(S_OK)));
 
@@ -115,9 +115,9 @@ TEST_F(MediaFoundationCdmFactoryTest, Create) {
 TEST_F(MediaFoundationCdmFactoryTest, CreateCdmFactoryFail) {
   SetCreateCdmFactoryCallbackForTesting(/*expect_success=*/false);
 
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Create(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Create(), absl::nullopt, base::FilePath())));
 
   EXPECT_CALL(cdm_created_cb_, Run(IsNull(), _));
   Create();
@@ -128,9 +128,9 @@ TEST_F(MediaFoundationCdmFactoryTest, IsTypeSupportedFail) {
 
   COM_EXPECT_CALL(mf_cdm_factory_, IsTypeSupported(NotNull(), IsNull()))
       .WillOnce(Return(FALSE));
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Create(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Create(), absl::nullopt, base::FilePath())));
 
   EXPECT_CALL(cdm_created_cb_, Run(IsNull(), _));
   Create();
@@ -144,9 +144,9 @@ TEST_F(MediaFoundationCdmFactoryTest, CreateCdmAccessFail) {
   COM_EXPECT_CALL(mf_cdm_factory_, CreateContentDecryptionModuleAccess(
                                        NotNull(), NotNull(), _, _))
       .WillOnce(Return(E_FAIL));
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Create(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Create(), absl::nullopt, base::FilePath())));
 
   EXPECT_CALL(cdm_created_cb_, Run(IsNull(), _));
   Create();
@@ -155,9 +155,9 @@ TEST_F(MediaFoundationCdmFactoryTest, CreateCdmAccessFail) {
 TEST_F(MediaFoundationCdmFactoryTest, NullCdmOriginIdFail) {
   SetCreateCdmFactoryCallbackForTesting(/*expect_success=*/true);
 
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Null(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Null(), absl::nullopt, base::FilePath())));
 
   EXPECT_CALL(cdm_created_cb_, Run(IsNull(), _));
   Create();
@@ -171,9 +171,9 @@ TEST_F(MediaFoundationCdmFactoryTest, CreateCdmFail) {
   COM_EXPECT_CALL(mf_cdm_factory_, CreateContentDecryptionModuleAccess(
                                        NotNull(), NotNull(), _, _))
       .WillOnce(DoAll(SetComPointee<3>(mf_cdm_access_.Get()), Return(S_OK)));
-  EXPECT_CALL(*cdm_helper_, GetCdmPreferenceData(_))
-      .WillOnce(RunOnceCallback<0>(std::make_unique<CdmPreferenceData>(
-          base::UnguessableToken::Create(), absl::nullopt)));
+  EXPECT_CALL(*cdm_helper_, GetMediaFoundationCdmData(_))
+      .WillOnce(RunOnceCallback<0>(std::make_unique<MediaFoundationCdmData>(
+          base::UnguessableToken::Create(), absl::nullopt, base::FilePath())));
   COM_EXPECT_CALL(mf_cdm_access_, CreateContentDecryptionModule(NotNull(), _))
       .WillOnce(DoAll(SetComPointee<1>(mf_cdm_.Get()), Return(E_FAIL)));
 

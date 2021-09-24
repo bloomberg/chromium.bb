@@ -53,11 +53,11 @@ BaseRendezvousMgr::~BaseRendezvousMgr() {
   }
 }
 
-RemoteRendezvous* BaseRendezvousMgr::Find(int64 step_id) {
+RemoteRendezvous* BaseRendezvousMgr::Find(int64_t step_id) {
   return FindOrCreate(step_id);
 }
 
-BaseRemoteRendezvous* BaseRendezvousMgr::FindOrCreate(int64 step_id) {
+BaseRemoteRendezvous* BaseRendezvousMgr::FindOrCreate(int64_t step_id) {
   mutex_lock l(mu_);
   auto iter = table_.find(step_id);
   if (iter == table_.end()) {
@@ -68,7 +68,7 @@ BaseRemoteRendezvous* BaseRendezvousMgr::FindOrCreate(int64 step_id) {
   return iter->second;
 }
 
-void BaseRendezvousMgr::RecvLocalAsync(int64 step_id,
+void BaseRendezvousMgr::RecvLocalAsync(int64_t step_id,
                                        const Rendezvous::ParsedKey& parsed,
                                        Rendezvous::DoneCallback done) {
   auto rendez = FindOrCreate(step_id);
@@ -82,7 +82,7 @@ void BaseRendezvousMgr::RecvLocalAsync(int64 step_id,
   rendez->RecvLocalAsync(parsed, std::move(done_cb));
 }
 
-Status BaseRendezvousMgr::RecvLocal(int64 step_id,
+Status BaseRendezvousMgr::RecvLocal(int64_t step_id,
                                     const Rendezvous::ParsedKey& parsed,
                                     Tensor* val, bool* is_dead) {
   Status ret;
@@ -101,7 +101,7 @@ Status BaseRendezvousMgr::RecvLocal(int64 step_id,
   return ret;
 }
 
-void BaseRendezvousMgr::Cleanup(int64 step_id) {
+void BaseRendezvousMgr::Cleanup(int64_t step_id) {
   Rendezvous* rendez = nullptr;
   {
     mutex_lock l(mu_);
@@ -116,7 +116,8 @@ void BaseRendezvousMgr::Cleanup(int64 step_id) {
   }
 }
 
-BaseRemoteRendezvous::BaseRemoteRendezvous(const WorkerEnv* env, int64 step_id)
+BaseRemoteRendezvous::BaseRemoteRendezvous(const WorkerEnv* env,
+                                           int64_t step_id)
     : env_(env),
       step_id_(step_id),
       local_(NewLocalRendezvous()),
@@ -259,8 +260,9 @@ void BaseRemoteRendezvous::SameWorkerRecvDone(
     return;
   }
 
-  ScopedMemoryDebugAnnotation op_annotation("SameWorkerRecvDone", step_id_,
-                                            "dynamic", in.dtype(), &in.shape());
+  ScopedMemoryDebugAnnotation op_annotation(
+      "SameWorkerRecvDone", step_id_, "dynamic", in.dtype(),
+      [&in]() { return in.shape().DebugString(); });
   AllocatorAttributes attr = recv_args.alloc_attrs;
   attr.set_gpu_compatible(send_args.alloc_attrs.gpu_compatible() ||
                           recv_args.alloc_attrs.gpu_compatible());

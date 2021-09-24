@@ -91,6 +91,10 @@ const base::Feature kAmbientModeDevUseProdFeature{
 const base::Feature kAmbientModePhotoPreviewFeature{
     "ChromeOSAmbientModePhotoPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to fetch ambient mode images using new url format.
+const base::Feature kAmbientModeNewUrl{"ChromeOSAmbientModeNewUrl",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // See https://crbug.com/1204551
 const base::Feature kAppListBubble{"AppListBubble",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
@@ -98,6 +102,10 @@ const base::Feature kAppListBubble{"AppListBubble",
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable support for ARC Input Overlay.
+const base::Feature kArcInputOverlay{"ArcInputOverlay",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable support for ARC ADB sideloading for managed
 // accounts and/or devices.
@@ -180,11 +188,6 @@ const base::Feature kBentoBar{"BentoBar", base::FEATURE_DISABLED_BY_DEFAULT};
 // that filter low energy advertisements in a power-efficient manner.
 const base::Feature kBluetoothAdvertisementMonitoring{
     "BluetoothAdvertisementMonitoring", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables more aggressive filtering out of Bluetooth devices with
-// "appearances" that are less likely to be pairable or useful.
-const base::Feature kBluetoothAggressiveAppearanceFilter{
-    "BluetoothAggressiveAppearanceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
@@ -283,6 +286,10 @@ const base::Feature kContextualNudges{"ContextualNudges",
 // Shell) will run as a tabbed System Web App rather than a normal browser tab.
 const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables upgrading the crostini container to debian bullseye.
+const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Crostini Disk Resizing.
 const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -365,10 +372,6 @@ const base::Feature kDisableQuickAnswersV2Translation{
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables identification overlays on each display.
-const base::Feature kDisplayIdentification{"DisplayIdentification",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -424,6 +427,11 @@ const base::Feature kEnableInputInDiagnosticsApp{
 const base::Feature kEnableInputNoiseCancellationUi{
     "EnableInputNoiseCancellationUi", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Login WebUI was always loaded for legacy reasons even when it was not needed.
+// When enabled, it will make login WebUI loaded only before showing it.
+const base::Feature kEnableLazyLoginWebUILoading{
+    "EnableLazyLoginWebUILoading", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables LocalSearchService to be initialized.
 const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -440,6 +448,10 @@ const base::Feature kEnableOAuthIpp{"EnableOAuthIpp",
 const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Polymer3 for OOBE
+const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables toggling Pciguard settings through Settings UI.
 const base::Feature kEnablePciguardUi{"EnablePciguardUi",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -453,6 +465,10 @@ const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess{
 // limit expires.
 const base::Feature kEnableSamlReauthenticationOnLockscreen{
     "EnableSamlReauthenticationOnLockScreen", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables WireGuard VPN, if running a compatible kernel.
+const base::Feature kEnableWireGuard{"EnableWireGuard",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
@@ -503,16 +519,6 @@ const base::Feature kFilesSinglePartitionFormat{
 // Enable files app trash.
 const base::Feature kFilesTrash{"FilesTrash",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables new ZIP archive handling in Files App.
-// https://crbug.com/912236
-const base::Feature kFilesZipMount{"FilesZipMount",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new ZIP creation system in Files App.
-// https://crbug.com/1200187
-const base::Feature kFilesZipPack{"FilesZipPack",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -596,25 +602,22 @@ const base::Feature kHideArcMediaNotifications{
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables ARC integration with the productivity feature that aims to reduce
-// context switching by enabling users to collect content and transfer or access
-// it later.
-const base::Feature kHoldingSpaceArcIntegration{
-    "HoldingSpaceArcIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables in-progress downloads integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
 // transfer or access it later.
 const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
     "HoldingSpaceInProgressDownloadsIntegration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables incognito profile integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
 // transfer or access it later.
 const base::Feature kHoldingSpaceIncognitoProfileIntegration{
     "HoldingSpaceIncognitoProfileIntegration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the HPS notify prototype is enabled.
+const base::Feature kHpsNotify{"HpsNotify", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable IME decoder via Mojo connection on Chrome OS.
 const base::Feature kImeMojoDecoder{"ImeMojoDecoder",
@@ -640,6 +643,10 @@ const base::Feature kImeSystemEmojiPickerClipboard{
 // Enable or disable a new UI for stylus writing on the virtual keyboard
 const base::Feature kImeStylusHandwriting{"StylusHandwriting",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable the improved screen capture settings.
+const base::Feature kImprovedScreenCaptureSettings{
+    "ImprovedScreenCaptureSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
@@ -714,6 +721,10 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 // Enables the redesigned managed device info UI in the system tray.
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Whether audio files are opened by default in the ChromeOS media app.
+const base::Feature kMediaAppHandlesAudio{"MediaAppHandlesAudio",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether PDF files are opened by default in the ChromeOS media app.
 const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
@@ -806,11 +817,6 @@ const base::Feature kOsFeedback{"OsFeedback",
 // If enabled, a new App Notifications subpage will appear in CrOS Apps section.
 const base::Feature kOsSettingsAppNotificationsPage{
     "OsSettingsAppNotificationsPage", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables a unique URL for each path in CrOS settings.
-// This allows deep linking to individual settings, i.e. in settings search.
-const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOverviewButton{"OverviewButton",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -921,6 +927,11 @@ const base::Feature kReleaseNotesNotificationAllChannels{
 const base::Feature kReleaseNotesSuggestionChip{
     "ReleaseNotesSuggestionChip", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Reven Log Source on Chrome OS. This adds hardware
+// information to Feedback reports and chrome://system on CloudReady systems.
+const base::Feature kRevenLogSource{"RevenLogSource",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, the overivew and desk reverse scrolling behaviors are changed
 // and if the user performs the old gestures, a notification or toast will show
 // up.
@@ -984,6 +995,11 @@ const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Whether to show domain-related questionnaire in feedback report UI
+// (crbug/1241169).
+const base::Feature kShowFeedbackReportQuestionnaire{
+    "FeedbackReportQuestionnaire", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the system tray to show date in sufficiently large screen.
 const base::Feature kShowDateInTrayButton{"ShowDateInTrayButton",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1030,6 +1046,16 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using the system input engine for physical typing in
+// Chinese.
+const base::Feature kSystemChinesePhysicalTyping{
+    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables using the system input engine for physical typing in
+// Korean.
+const base::Feature kSystemKoreanPhysicalTyping{
+    "SystemKoreanPhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables using the system input engine for physical typing in
 // languages based on latin script.
 const base::Feature kSystemLatinPhysicalTyping{
     "SystemLatinPhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1048,6 +1074,14 @@ const base::Feature kTabClusterUI{"TabClusterUI",
 const base::Feature kTelemetryExtension{"TelemetryExtension",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables SSH tabs in the Terminal System App.
+const base::Feature kTerminalSSH{"TerminalSSH",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the Settings UI to show data usage for cellular networks.
+const base::Feature kTrafficCountersSettingsUi{
+    "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables trilinear filtering.
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1058,8 +1092,10 @@ const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
 
 // Uses the same browser sync consent dialog as Windows/Mac/Linux. Allows the
 // user to fully opt-out of browser sync, including marking the IdentityManager
-// primary account as unconsented. Requires SplitSettingsSync.
+// primary account as unconsented. Requires SyncConsentOptional.
 // NOTE: Call UseBrowserSyncConsent() to test the flag, see implementation.
+// TODO(https://crbug.com/1246824) Maybe deprecate the flag in favor of
+// SyncConsentOptional.
 const base::Feature kUseBrowserSyncConsent{"UseBrowserSyncConsent",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1089,11 +1125,11 @@ const base::Feature kUseWallpaperStagingUrl{"UseWallpaperStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables vertical split screen for clamshell mode. This allows users to snap
+// Enables vertical snap state for clamshell mode. This allows users to snap
 // top and bottom when the screen is in portrait orientation, while snap left
 // and right when the screen is in landscape orientation.
-const base::Feature kVerticalSplitScreen{"VerticalSplitScreen",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kVerticalSnapState{"VerticalSnapState",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the Virtual Keyboard API.
 const base::Feature kVirtualKeyboardApi{"VirtualKeyboardApi",
@@ -1124,6 +1160,11 @@ const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable full screen wallpaper preview in new wallpaper experience. Requires
+// |kWallpaperWebUI| to also be enabled.
+const base::Feature kWallpaperFullScreenPreview{
+    "WallpaperFullScreenPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Generates WebAPKs representing installed PWAs and installs them inside ARC.
 const base::Feature kWebApkGenerator{"WebApkGenerator",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1150,6 +1191,11 @@ const base::Feature kWifiSyncAndroid{"WifiSyncAndroid",
 const base::Feature kWifiSyncApplyDeletes{"WifiSyncApplyDeletes",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a window control menu to snap, float and move window to another desk.
+// https://crbug.com/1240411
+const base::Feature kWindowControlMenu{"WindowControlMenu",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Change window creation to be based on cursor position when there are multiple
 // displays.
 const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
@@ -1161,6 +1207,10 @@ bool AreContextualNudgesEnabled() {
   if (!IsHideShelfControlsInTabletModeEnabled())
     return false;
   return base::FeatureList::IsEnabled(kContextualNudges);
+}
+
+bool AreImprovedScreenCaptureSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kImprovedScreenCaptureSettings);
 }
 
 bool DoWindowsFollowCursor() {
@@ -1187,12 +1237,20 @@ bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
 }
 
+bool IsAmbientModeNewUrlEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeNewUrl);
+}
+
 bool IsAppListBubbleEnabled() {
   return base::FeatureList::IsEnabled(kAppListBubble);
 }
 
 bool IsAppNotificationsPageEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppNotificationsPage);
+}
+
+bool IsArcInputOverlayEnabled() {
+  return base::FeatureList::IsEnabled(kArcInputOverlay);
 }
 
 bool IsArcResizeLockEnabled() {
@@ -1263,10 +1321,6 @@ bool IsDarkLightModeEnabled() {
   return base::FeatureList::IsEnabled(kDarkLightMode);
 }
 
-bool IsDeepLinkingEnabled() {
-  return base::FeatureList::IsEnabled(kOsSettingsDeepLinking);
-}
-
 bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
 }
@@ -1277,10 +1331,6 @@ bool IsDiagnosticsAppEnabled() {
 
 bool IsDisplayAlignmentAssistanceEnabled() {
   return base::FeatureList::IsEnabled(kDisplayAlignAssist);
-}
-
-bool IsDisplayIdentificationEnabled() {
-  return base::FeatureList::IsEnabled(kDisplayIdentification);
 }
 
 bool IsDragUnpinnedAppToPinEnabled() {
@@ -1331,10 +1381,6 @@ bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
 }
 
-bool IsHoldingSpaceArcIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(kHoldingSpaceArcIntegration);
-}
-
 bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {
   return base::FeatureList::IsEnabled(
       kHoldingSpaceInProgressDownloadsIntegration);
@@ -1346,6 +1392,10 @@ bool IsHoldingSpaceIncognitoProfileIntegrationEnabled() {
 
 bool IsHostnameSettingEnabled() {
   return base::FeatureList::IsEnabled(kEnableHostnameSetting);
+}
+
+bool IsHpsNotifyEnabled() {
+  return base::FeatureList::IsEnabled(kHpsNotify);
 }
 
 bool IsInputInDiagnosticsAppEnabled() {
@@ -1451,6 +1501,10 @@ bool IsNotificationsRefreshEnabled() {
 
 bool IsOobeChromeVoxHintEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeChromeVoxHint);
+}
+
+bool IsOobePolymer3Enabled() {
+  return base::FeatureList::IsEnabled(kEnableOobePolymer3);
 }
 
 bool IsPciguardUiEnabled() {
@@ -1588,6 +1642,16 @@ bool IsStylusBatteryStatusEnabled() {
   return base::FeatureList::IsEnabled(kStylusBatteryStatus);
 }
 
+bool IsSystemChinesePhysicalTypingEnabled() {
+  return base::FeatureList::IsEnabled(kImeMojoDecoder) &&
+         base::FeatureList::IsEnabled(kSystemChinesePhysicalTyping);
+}
+
+bool IsSystemKoreanPhysicalTypingEnabled() {
+  return base::FeatureList::IsEnabled(kImeMojoDecoder) &&
+         base::FeatureList::IsEnabled(kSystemKoreanPhysicalTyping);
+}
+
 bool IsSystemLatinPhysicalTypingEnabled() {
   return base::FeatureList::IsEnabled(kImeMojoDecoder) &&
          base::FeatureList::IsEnabled(kSystemLatinPhysicalTyping);
@@ -1607,12 +1671,17 @@ bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
 }
 
-bool IsVerticalSplitScreenEnabled() {
-  return base::FeatureList::IsEnabled(kVerticalSplitScreen);
+bool IsVerticalSnapStateEnabled() {
+  return base::FeatureList::IsEnabled(kVerticalSnapState);
 }
 
 bool IsWallpaperWebUIEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperWebUI);
+}
+
+bool IsWallpaperFullScreenPreviewEnabled() {
+  return IsWallpaperWebUIEnabled() &&
+         base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
 }
 
 bool IsWebUITabStripTabDragIntegrationEnabled() {
@@ -1621,6 +1690,10 @@ bool IsWebUITabStripTabDragIntegrationEnabled() {
 
 bool IsWifiSyncAndroidEnabled() {
   return base::FeatureList::IsEnabled(kWifiSyncAndroid);
+}
+
+bool IsWindowControlMenuEnabled() {
+  return base::FeatureList::IsEnabled(kWindowControlMenu);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {
@@ -1634,8 +1707,8 @@ bool ShouldUseAttachApn() {
 }
 
 bool ShouldUseBrowserSyncConsent() {
-  // UseBrowserSyncConsent requires SplitSettingsSync.
-  return base::FeatureList::IsEnabled(kSplitSettingsSync) &&
+  // UseBrowserSyncConsent requires SyncConsentOptional.
+  return base::FeatureList::IsEnabled(kSyncConsentOptional) &&
          base::FeatureList::IsEnabled(kUseBrowserSyncConsent);
 }
 

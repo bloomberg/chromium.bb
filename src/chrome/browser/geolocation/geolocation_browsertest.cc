@@ -284,7 +284,7 @@ void GeolocationBrowserTest::Initialize(InitializationOptions options) {
   }
   ASSERT_TRUE(current_browser_);
   if (options != INITIALIZATION_OFFTHERECORD)
-    ui_test_utils::NavigateToURL(current_browser_, GetTestURL());
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(current_browser_, GetTestURL()));
 
   // By default the main frame is used for JavaScript execution.
   SetFrameForScriptExecution("");
@@ -634,8 +634,8 @@ class GeolocationPrerenderBrowserTest : public GeolocationBrowserTest {
 IN_PROC_BROWSER_TEST_F(GeolocationPrerenderBrowserTest,
                        DeferredBeforePrerenderActivation) {
   // Navigate to an initial page.
-  ui_test_utils::NavigateToURL(current_browser(),
-                               embedded_test_server()->GetURL("/empty.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      current_browser(), embedded_test_server()->GetURL("/empty.html")));
 
   // Start a prerender with the geolocation test URL.
   int host_id = prerender_helper_.AddPrerender(GetTestURL());

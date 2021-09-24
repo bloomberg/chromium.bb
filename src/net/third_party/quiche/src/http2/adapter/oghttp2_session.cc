@@ -10,7 +10,7 @@ namespace adapter {
 
 namespace {
 
-const size_t kMaxMetadataFrameSize = 16384;
+const uint32_t kMaxAllowedMetadataFrameSize = 65536u;
 
 // TODO(birenroy): Consider incorporating spdy::FlagsSerializionVisitor here.
 class FrameAttributeCollector : public spdy::SpdyFrameVisitor {
@@ -128,7 +128,10 @@ void OgHttp2Session::PassthroughHeadersHandler::OnHeaderBlockEnd(
     size_t /* uncompressed_header_bytes */,
     size_t /* compressed_header_bytes */) {
   if (result_ == Http2VisitorInterface::HEADER_OK) {
-    visitor_.OnEndHeadersForStream(stream_id_);
+    const bool result = visitor_.OnEndHeadersForStream(stream_id_);
+    if (!result) {
+      session_.decoder_.StopProcessing();
+    }
   } else {
     session_.OnHeaderStatus(stream_id_, result_);
   }
@@ -217,8 +220,8 @@ int OgHttp2Session::GetHpackDecoderDynamicTableSize() const {
   return decoder == nullptr ? 0 : decoder->GetDynamicTableSize();
 }
 
-ssize_t OgHttp2Session::ProcessBytes(absl::string_view bytes) {
-  ssize_t preface_consumed = 0;
+int64_t OgHttp2Session::ProcessBytes(absl::string_view bytes) {
+  int64_t preface_consumed = 0;
   if (!remaining_preface_.empty()) {
     QUICHE_VLOG(2) << "Preface bytes remaining: " << remaining_preface_.size();
     // decoder_ does not understand the client connection preface.
@@ -240,7 +243,7 @@ ssize_t OgHttp2Session::ProcessBytes(absl::string_view bytes) {
     }
     preface_consumed = min_size;
   }
-  ssize_t result = decoder_.ProcessInput(bytes.data(), bytes.size());
+  int64_t result = decoder_.ProcessInput(bytes.data(), bytes.size());
   return result < 0 ? result : result + preface_consumed;
 }
 
@@ -284,7 +287,7 @@ void OgHttp2Session::EnqueueFrame(std::unique_ptr<spdy::SpdyFrameIR> frame) {
 
 int OgHttp2Session::Send() {
   MaybeSetupPreface();
-  ssize_t result = std::numeric_limits<ssize_t>::max();
+  int64_t result = std::numeric_limits<int64_t>::max();
   // Flush any serialized prefix.
   while (result > 0 && !serialized_prefix_.empty()) {
     result = visitor_.OnReadyToSend(serialized_prefix_);
@@ -322,7 +325,7 @@ bool OgHttp2Session::SendQueuedFrames() {
     visitor_.OnBeforeFrameSent(c.frame_type(), c.stream_id(), c.length(),
                                c.flags());
     spdy::SpdySerializedFrame frame = framer_.SerializeFrame(*frame_ptr);
-    const ssize_t result = visitor_.OnReadyToSend(absl::string_view(frame));
+    const int64_t result = visitor_.OnReadyToSend(absl::string_view(frame));
     if (result < 0) {
       visitor_.OnConnectionError();
       return false;
@@ -377,11 +380,12 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
     return true;
   }
   bool source_can_produce = true;
-  int32_t available_window = std::min(
-      std::min(connection_send_window_, state.send_window), max_frame_payload_);
+  int32_t available_window =
+      std::min({connection_send_window_, state.send_window,
+                static_cast<int32_t>(max_frame_payload_)});
   while (connection_can_write && available_window > 0 &&
          state.outbound_body != nullptr) {
-    ssize_t length;
+    int64_t length;
     bool end_data;
     std::tie(length, end_data) =
         state.outbound_body->SelectPayloadLength(available_window);
@@ -411,9 +415,8 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
       visitor_.OnFrameSent(/* DATA */ 0, stream_id, length, fin ? 0x1 : 0x0, 0);
       connection_send_window_ -= length;
       state.send_window -= length;
-      available_window =
-          std::min(std::min(connection_send_window_, state.send_window),
-                   max_frame_payload_);
+      available_window = std::min({connection_send_window_, state.send_window,
+                                   static_cast<int32_t>(max_frame_payload_)});
     }
     if (end_data) {
       bool sent_trailers = false;
@@ -445,19 +448,21 @@ bool OgHttp2Session::WriteForStream(Http2StreamId stream_id) {
 
 bool OgHttp2Session::SendMetadata(Http2StreamId stream_id,
                                   OgHttp2Session::MetadataSequence& sequence) {
-  auto payload_buffer = absl::make_unique<uint8_t[]>(kMaxMetadataFrameSize);
+  const uint32_t max_payload_size =
+      std::min(kMaxAllowedMetadataFrameSize, max_frame_payload_);
+  auto payload_buffer = absl::make_unique<uint8_t[]>(max_payload_size);
   while (!sequence.empty()) {
     MetadataSource& source = *sequence.front();
 
-    ssize_t written;
+    int64_t written;
     bool end_metadata;
     std::tie(written, end_metadata) =
-        source.Pack(payload_buffer.get(), kMaxMetadataFrameSize);
+        source.Pack(payload_buffer.get(), max_payload_size);
     if (written < 0) {
       // Did not touch the connection, so perhaps writes are still possible.
       return true;
     }
-    QUICHE_DCHECK_LE(static_cast<size_t>(written), kMaxMetadataFrameSize);
+    QUICHE_DCHECK_LE(static_cast<size_t>(written), max_payload_size);
     auto payload = absl::string_view(
         reinterpret_cast<const char*>(payload_buffer.get()), written);
     EnqueueFrame(absl::make_unique<spdy::SpdyUnknownIR>(
@@ -580,19 +585,29 @@ void OgHttp2Session::OnCommonHeader(spdy::SpdyStreamId stream_id,
                                     uint8_t flags) {
   highest_received_stream_id_ = std::max(static_cast<Http2StreamId>(stream_id),
                                          highest_received_stream_id_);
-  visitor_.OnFrameHeader(stream_id, length, type, flags);
+  const bool result = visitor_.OnFrameHeader(stream_id, length, type, flags);
+  if (!result) {
+    decoder_.StopProcessing();
+  }
 }
 
 void OgHttp2Session::OnDataFrameHeader(spdy::SpdyStreamId stream_id,
                                        size_t length, bool /*fin*/) {
-  visitor_.OnBeginDataForStream(stream_id, length);
+  const bool result = visitor_.OnBeginDataForStream(stream_id, length);
+  if (!result) {
+    decoder_.StopProcessing();
+  }
 }
 
 void OgHttp2Session::OnStreamFrameData(spdy::SpdyStreamId stream_id,
                                        const char* data,
                                        size_t len) {
   MarkDataBuffered(stream_id, len);
-  visitor_.OnDataForStream(stream_id, absl::string_view(data, len));
+  const bool result =
+      visitor_.OnDataForStream(stream_id, absl::string_view(data, len));
+  if (!result) {
+    decoder_.StopProcessing();
+  }
 }
 
 void OgHttp2Session::OnStreamEnd(spdy::SpdyStreamId stream_id) {
@@ -653,6 +668,8 @@ void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
   visitor_.OnSetting({id, value});
   if (id == kMetadataExtensionId) {
     peer_supports_metadata_ = (value != 0);
+  } else if (id == MAX_FRAME_SIZE) {
+    max_frame_payload_ = value;
   }
 }
 
@@ -674,8 +691,11 @@ void OgHttp2Session::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
 void OgHttp2Session::OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
                               spdy::SpdyErrorCode error_code) {
   received_goaway_ = true;
-  visitor_.OnGoAway(last_accepted_stream_id, TranslateErrorCode(error_code),
-                    "");
+  const bool result = visitor_.OnGoAway(last_accepted_stream_id,
+                                        TranslateErrorCode(error_code), "");
+  if (!result) {
+    decoder_.StopProcessing();
+  }
 }
 
 bool OgHttp2Session::OnGoAwayFrameData(const char* /*goaway_data*/, size_t
@@ -771,13 +791,17 @@ bool OgHttp2Session::OnFrameHeader(spdy::SpdyStreamId stream_id, size_t length,
 void OgHttp2Session::OnFramePayload(const char* data, size_t len) {
   if (metadata_length_ > 0) {
     QUICHE_DCHECK_LE(len, metadata_length_);
-    visitor_.OnMetadataForStream(metadata_stream_id_,
-                                 absl::string_view(data, len));
-    metadata_length_ -= len;
-    if (metadata_length_ == 0 && end_metadata_) {
-      visitor_.OnMetadataEndForStream(metadata_stream_id_);
-      metadata_stream_id_ = 0;
-      end_metadata_ = false;
+    const bool success = visitor_.OnMetadataForStream(
+        metadata_stream_id_, absl::string_view(data, len));
+    if (success) {
+      metadata_length_ -= len;
+      if (metadata_length_ == 0 && end_metadata_) {
+        visitor_.OnMetadataEndForStream(metadata_stream_id_);
+        metadata_stream_id_ = 0;
+        end_metadata_ = false;
+      }
+    } else {
+      decoder_.StopProcessing();
     }
   } else {
     QUICHE_DLOG(INFO) << "Unexpected metadata payload for stream "

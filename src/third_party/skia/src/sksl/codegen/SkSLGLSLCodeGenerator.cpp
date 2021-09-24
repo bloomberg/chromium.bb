@@ -102,9 +102,7 @@ String GLSLCodeGenerator::getTypeName(const Type& type) {
         }
         case Type::TypeKind::kArray: {
             String baseTypeName = this->getTypeName(type.componentType());
-            return (type.columns() == Type::kUnsizedArray)
-                           ? String::printf("%s[]", baseTypeName.c_str())
-                           : String::printf("%s[%d]", baseTypeName.c_str(), type.columns());
+            return String::printf("%s[%d]", baseTypeName.c_str(), type.columns());
         }
         case Type::TypeKind::kScalar: {
             if (type == *fContext.fTypes.fHalf) {
@@ -784,12 +782,6 @@ void GLSLCodeGenerator::writeVariableReference(const VariableReference& ref) {
         case SK_INSTANCEID_BUILTIN:
             this->write("gl_InstanceID");
             break;
-        case SK_IN_BUILTIN:
-            this->write("gl_in");
-            break;
-        case SK_INVOCATIONID_BUILTIN:
-            this->write("gl_InvocationID");
-            break;
         case SK_LASTFRAGCOLOR_BUILTIN:
             this->write(this->caps().fbFetchColorName());
             break;
@@ -1019,11 +1011,7 @@ void GLSLCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) {
         this->writeType(*type);
         this->write(" " + param->name());
         for (int s : sizes) {
-            if (s == Type::kUnsizedArray) {
-                this->write("[]");
-            } else {
-                this->write("[" + to_string(s) + "]");
-            }
+            this->write("[" + to_string(s) + "]");
         }
     }
     this->write(")");
@@ -1126,8 +1114,6 @@ void GLSLCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
             this->write("[");
             this->write(to_string(intf.arraySize()));
             this->write("]");
-        } else if (intf.arraySize() == Type::kUnsizedArray){
-            this->write("[]");
         }
     }
     this->writeLine(";");
@@ -1181,8 +1167,6 @@ void GLSLCodeGenerator::writeVarDeclaration(const VarDeclaration& var, bool glob
         this->write("[");
         this->write(to_string(var.arraySize()));
         this->write("]");
-    } else if (var.arraySize() == Type::kUnsizedArray){
-        this->write("[]");
     }
     if (var.value()) {
         this->write(" = ");
@@ -1448,12 +1432,6 @@ void GLSLCodeGenerator::writeProgramElement(const ProgramElement& e) {
             break;
         case ProgramElement::Kind::kModifiers: {
             const Modifiers& modifiers = e.as<ModifiersDeclaration>().modifiers();
-            if (!fFoundGSInvocations && modifiers.fLayout.fInvocations >= 0) {
-                if (this->caps().gsInvocationsExtensionString()) {
-                    this->writeExtension(this->caps().gsInvocationsExtensionString());
-                }
-                fFoundGSInvocations = true;
-            }
             this->writeModifiers(modifiers, true);
             this->writeLine(";");
             break;
@@ -1478,10 +1456,6 @@ void GLSLCodeGenerator::writeInputVars() {
 
 bool GLSLCodeGenerator::generateCode() {
     this->writeHeader();
-    if (fProgram.fConfig->fKind == ProgramKind::kGeometry &&
-        this->caps().geometryShaderExtensionString()) {
-        this->writeExtension(this->caps().geometryShaderExtensionString());
-    }
     OutputStream* rawOut = fOut;
     StringStream body;
     fOut = &body;
@@ -1546,7 +1520,7 @@ bool GLSLCodeGenerator::generateCode() {
     }
     write_stringstream(fExtraFunctions, *rawOut);
     write_stringstream(body, *rawOut);
-    return 0 == fErrors.errorCount();
+    return fContext.fErrors->errorCount() == 0;
 }
 
 }  // namespace SkSL

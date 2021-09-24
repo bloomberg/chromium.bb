@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
-#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -92,11 +91,6 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   serializer.Serialize(*value);
   return base::SysUTF8ToNSString(serialized_value);
 }
-
-// ScopedFeatureList used to disable the kEnableCloseAllTabsConfirmation
-// feature. It's kept alive to preserve the state of
-// kEnableCloseAllTabsConfirmation feature during testing.
-base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 }
 
 @implementation ChromeEarlGreyAppInterface
@@ -331,15 +325,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
 
 + (NSUInteger)indexOfActiveNormalTab {
   return chrome_test_util::GetIndexOfActiveNormalTab();
-}
-
-+ (void)resetCloseAllTabsConfirmation {
-  closeAllTabsScopedFeatureList.Reset();
-}
-
-+ (void)disableCloseAllTabsConfirmation {
-  closeAllTabsScopedFeatureList.InitAndDisableFeature(
-      kEnableCloseAllTabsConfirmation);
 }
 
 #pragma mark - Window utilities (EG2)
@@ -1014,10 +999,6 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   return IsCustomWebKitLoadedIfRequested();
 }
 
-+ (BOOL)isCollectionsCardPresentationStyleEnabled {
-  return IsCollectionsCardPresentationStyleEnabled();
-}
-
 + (BOOL)isMobileModeByDefault {
   if (!web::features::UseWebClientDefaultUserAgent())
     return YES;
@@ -1033,8 +1014,8 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   return base::ios::IsMultipleScenesSupported();
 }
 
-+ (BOOL)isCloseAllTabsConfirmationEnabled {
-  return IsCloseAllTabsConfirmationEnabled();
++ (BOOL)isContextMenuActionsRefreshEnabled {
+  return IsContextMenuActionsRefreshEnabled();
 }
 
 #pragma mark - ScopedBlockPopupsPref
@@ -1059,6 +1040,12 @@ base::test::ScopedFeatureList closeAllTabsScopedFeatureList;
   const PrefService::Preference* pref =
       GetApplicationContext()->GetLocalState()->FindPreference(path);
   return SerializedPref(pref);
+}
+
++ (void)setIntegerValue:(int)value forLocalStatePref:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetInteger(path, value);
 }
 
 + (NSString*)userPrefValue:(NSString*)prefName {

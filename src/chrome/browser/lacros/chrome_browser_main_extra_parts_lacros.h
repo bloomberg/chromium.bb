@@ -11,9 +11,12 @@
 
 class AutomationManagerLacros;
 class BrowserServiceLacros;
+class DriveFsCache;
 class DownloadControllerClientLacros;
 class LacrosExtensionAppsController;
 class LacrosExtensionAppsPublisher;
+class KioskSessionServiceLacros;
+class FieldTrialObserver;
 
 namespace crosapi {
 class TaskManagerLacros;
@@ -42,8 +45,15 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Handles task manager crosapi from ash for sending lacros tasks to ash.
   std::unique_ptr<crosapi::TaskManagerLacros> task_manager_provider_;
 
+  // Receiver and cache of drive mount point path updates.
+  std::unique_ptr<DriveFsCache> drivefs_cache_;
+
   // Sends lacros download information to ash.
   std::unique_ptr<DownloadControllerClientLacros> download_controller_client_;
+
+  // Manages the resources used in the web Kiosk session, and sends window
+  // status changes of lacros-chrome to ash when necessary.
+  std::unique_ptr<KioskSessionServiceLacros> kiosk_session_service_;
 
   // Handles tab property requests from ash.
   std::unique_ptr<crosapi::WebPageInfoProviderLacros> web_page_info_provider_;
@@ -53,6 +63,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Sends extension app events to ash.
   std::unique_ptr<LacrosExtensionAppsPublisher> extension_apps_publisher_;
+
+  // Receiver of field trial updates.
+  std::unique_ptr<FieldTrialObserver> field_trial_observer_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3838931309141338733">Скенирај бар-код</translation>
 <translation id="3892148308691398805">Копирај текст</translation>
-<translation id="4000398125663085899">Нове слике и видео снимци ће сада бити сачувани у фолдеру у апликацији Фајлови: Моји фајлови &gt; Камера</translation>
 <translation id="4118525110028899586">Паузирај снимање</translation>
 <translation id="4121305183798804752">Документ је откривен</translation>
 <translation id="4269820728363426813">Копирај адресу линка</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Иди у галерију</translation>
 <translation id="520537883758714667">Сада је доступно скенирање докумената</translation>
 <translation id="5268823927180092501">Омогући режим документа на свим камерама</translation>
-<translation id="5422455049771430511">Слике и видео снимци су сада на новом месту</translation>
 <translation id="5444515100983837161">Поставите све ивице документа у оквир. Скенирање је најуспешније ако су документ и позадина различите боје.</translation>
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="5746169159649715125">Сачувај као PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Режим за стручњаке</translation>
 <translation id="5869546221129391014">Мрежа</translation>
 <translation id="5975083100439434680">Умањивање</translation>
-<translation id="6040143037577758943">Затвори</translation>
 <translation id="6073451960410192870">Заустави снимање</translation>
 <translation id="6197807149213783179">Сачувај метаподатке</translation>
 <translation id="6233780560267770709">3 са 3</translation>
@@ -125,5 +122,6 @@
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="9045010116236796332">Поставите све ивице документа у оквир</translation>
 <translation id="9045155556724273246">10 секунди</translation>
+<translation id="906331135292332864">Слика се обрађује…</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 </translationbundle>

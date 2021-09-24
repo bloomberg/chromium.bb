@@ -9,7 +9,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "components/media_router/browser/media_router_metrics.h"
+#include "components/media_router/common/media_sink.h"
 
 class Profile;
 
@@ -39,10 +41,13 @@ class CastDialogMetrics {
 
   // Records the index of the selected sink in the sink list. Also records how
   // long it took to start casting if no other action (aside from selecting a
-  // sink) was taken prior to that.
+  // sink) was taken prior to that. |has_cast_and_dial| is whether or not both
+  // DIAL and Cast active sinks were available when casting started.
   void OnStartCasting(const base::Time& start_time,
                       int selected_sink_index,
-                      MediaCastMode cast_mode);
+                      MediaCastMode cast_mode,
+                      SinkIconType icon_type,
+                      bool has_cast_and_dial);
 
   void OnStopCasting(bool is_local_route);
 
@@ -53,7 +58,8 @@ class CastDialogMetrics {
   void OnCloseDialog(const base::Time& close_time);
 
   // Records the number of sinks, which may be 0.
-  void OnRecordSinkCount(std::vector<const UIMediaSink*> sinks);
+  void OnRecordSinkCount(
+      const std::vector<CastDialogSinkButton*>& sink_buttons);
 
  private:
   // Records the first user action if it hasn't already been recorded.

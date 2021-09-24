@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -181,7 +182,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
  private:
   void DoOnApps(std::vector<apps::mojom::AppPtr> deltas);
 
-  void OnAppTypeInitialized();
+  // NOINLINE should force this function to appear on the stack in crash dumps.
+  // https://crbug.com/1237267.
+  void NOINLINE OnAppTypeInitialized();
 
   base::ObserverList<Observer> observers_;
 
@@ -217,6 +220,10 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   AccountId account_id_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
+
+  // A sentinel value checking for a UAF in https://crbug.com/1237267. Should be
+  // removed after https://crbug.com/1237267 is fixed.
+  uint32_t uaf_sentinel_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRegistryCache);
 };

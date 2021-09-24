@@ -287,6 +287,8 @@ FeaturePromoControllerViews::GetBaseCreateParams(
         l10n_util::GetStringUTF16(*params.screenreader_string_specifier);
   }
 
+  create_params.body_icon = params.body_icon;
+
   create_params.focus_on_create = params.focus_on_create;
   create_params.persist_on_blur = params.persist_on_blur;
 
@@ -338,6 +340,13 @@ bool FeaturePromoControllerViews::ShowPromoBubbleImpl(
 
     if (views::PlatformStyle::kIsOkButtonLeading)
       std::swap(create_params.buttons[0], create_params.buttons[1]);
+  }
+
+  if (params.show_close_button) {
+    create_params.has_close_button = true;
+    create_params.dismiss_callback = base::BindRepeating(
+        &FeaturePromoControllerViews::OnUserDismiss,
+        weak_ptr_factory_.GetWeakPtr(), *current_iph_feature_);
   }
 
   bubble_id_ = bubble_owner_->ShowBubble(

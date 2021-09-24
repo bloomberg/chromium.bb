@@ -509,16 +509,16 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(class_strings.size(), match.contents_class.size())
         << description;
-    for (size_t i = 0; i < class_strings.size(); ++i) {
+    for (size_t j = 0; j < class_strings.size(); ++j) {
       std::vector<std::string> chunks = base::SplitString(
-          class_strings[i], ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+          class_strings[j], ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2U, chunks.size()) << description;
       size_t offset;
       EXPECT_TRUE(base::StringToSizeT(chunks[0], &offset)) << description;
-      EXPECT_EQ(offset, match.contents_class[i].offset) << description;
+      EXPECT_EQ(offset, match.contents_class[j].offset) << description;
       int style;
       EXPECT_TRUE(base::StringToInt(chunks[1], &style)) << description;
-      EXPECT_EQ(style, match.contents_class[i].style) << description;
+      EXPECT_EQ(style, match.contents_class[j].style) << description;
     }
   }
 }
@@ -532,235 +532,20 @@ TEST_F(BookmarkProviderTest, DoesNotProvideMatchesOnFocus) {
 }
 
 TEST_F(BookmarkProviderTest, ShortBookmarks) {
-  // Test the 2 short bookmark features that determine when short inputs should
-  // be allowed to prefix match. These tests are trying to match the mock
-  // bookmark "testing short bookmarks".
+  // Verify inputs shorter than 3 chars do not prefix match but inputs longer
+  // than 3 chars containing terms shorter than 3 chars do. These tests are
+  // trying to match the mock bookmark "testing short bookmarks".
 
-  auto trigger_feature = OmniboxTriggeredFeatureService::Feature::
-      kShortBookmarkSuggestionsByTotalInputLength;
-
-  {
-    SCOPED_TRACE("Short bookmarks disabled.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        omnibox::kShortBookmarkSuggestionsByTotalInputLength);
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 0);
-  }
-
-  {
-    SCOPED_TRACE("Short bookmarks enabled.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(omnibox::kShortBookmarkSuggestions);
-    TestNumMatchesAndTriggeredFeature("te", 1);
-    TestNumMatchesAndTriggeredFeature("te ", 1);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1);
-  }
-
-  {
-    SCOPED_TRACE("Short bookmarks for long inputs enabled.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        omnibox::kShortBookmarkSuggestionsByTotalInputLength);
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE("Short bookmarks for long inputs enabled with threshold 5.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        {{OmniboxFieldTrial::
-              kShortBookmarkSuggestionsByTotalInputLengthThreshold.name,
-          "5"}});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te   ", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE("Short bookmarks for long inputs counterfactual.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        {{OmniboxFieldTrial::
-              kShortBookmarkSuggestionsByTotalInputLengthCounterfactual.name,
-          "true"}});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 0, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE(
-        "Short bookmarks for long inputs counterfactual with threshold 5.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        {{OmniboxFieldTrial::
-              kShortBookmarkSuggestionsByTotalInputLengthThreshold.name,
-          "5"},
-         {OmniboxFieldTrial::
-              kShortBookmarkSuggestionsByTotalInputLengthCounterfactual.name,
-          "true"}});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te   ", 0, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 0, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE("Shortcut non-prefix rich autocompletion enabled.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kRichAutocompletion,
-          {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar
-                .name,
-            "4"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
-                .name,
-            "5"},
-           {OmniboxFieldTrial::
-                kRichAutocompletionAutocompleteNonPrefixShortcutProvider.name,
-            "true"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te   ", 0);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 0);
-  }
-
-  {
-    SCOPED_TRACE("Non-prefix rich autocompletion enabled with limit 5.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kRichAutocompletion,
-          {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar
-                .name,
-            "4"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
-                .name,
-            "5"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixAll.name,
-            "true"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te   ", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE("Title rich autocompletion enabled with limit 4.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kRichAutocompletion,
-          {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar
-                .name,
-            "4"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
-                .name,
-            "5"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitles.name,
-            "true"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te  ", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1, trigger_feature);
-  }
-
-  {
-    SCOPED_TRACE(
-        "Title and non-prefix rich autocompletion enabled with limits 4 and "
-        "5.");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kRichAutocompletion,
-          {{OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinChar
-                .name,
-            "4"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
-                .name,
-            "5"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinChar
-                .name,
-            "true"},
-           {OmniboxFieldTrial::kRichAutocompletionAutocompleteTitles.name,
-            "true"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("te", 0);
-    TestNumMatchesAndTriggeredFeature("te ", 0);
-    TestNumMatchesAndTriggeredFeature("te  ", 1, trigger_feature);
-    TestNumMatchesAndTriggeredFeature("tes", 1);
-    TestNumMatchesAndTriggeredFeature("te sh bo", 1, trigger_feature);
-  }
+  TestNumMatchesAndTriggeredFeature("te", 0);
+  TestNumMatchesAndTriggeredFeature("te ", 1);
+  TestNumMatchesAndTriggeredFeature("tes", 1);
+  TestNumMatchesAndTriggeredFeature("te sh bo", 1);
 }
 
 TEST_F(BookmarkProviderTest, GetMatchesWithBookmarkPaths) {
-  auto trigger_feature =
-      OmniboxTriggeredFeatureService::Feature::kBookmarkPaths;
+  // Inputs matching only the path should not return bookmarks.
+  TestNumMatchesAndTriggeredFeature("other", 0);
 
-  {
-    // When the feature is off, should not return path matched bookmarks nor
-    // trigger counterfactual logging.
-    SCOPED_TRACE("feature disabled");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {}, {omnibox::kBookmarkPaths,
-             {omnibox::kShortBookmarkSuggestionsByTotalInputLength}});
-    TestNumMatchesAndTriggeredFeature("carefully other", 0);
-  }
-
-  {
-    // When enabled without counterfactual logging, should return path matched
-    // bookmark but not trigger counterfactual logging even it path matched.
-    SCOPED_TRACE("feature enabled without counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {omnibox::kBookmarkPaths},
-        {{omnibox::kShortBookmarkSuggestionsByTotalInputLength}});
-    TestNumMatchesAndTriggeredFeature("carefully other", 1);
-  }
-
-  {
-    // When enabled with "control" counterfactual logging, should not return
-    // path matched bookmarks but trigger counterfactual logging if it path
-    // matched.
-    SCOPED_TRACE("feature enabled with control counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kBookmarkPaths,
-          {{OmniboxFieldTrial::kBookmarkPathsCounterfactual.name, "control"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("carefully", 1);
-    TestNumMatchesAndTriggeredFeature("carefully other", 0, trigger_feature);
-  }
-
-  {
-    // When enabled with "enabled" counterfactual logging, should return path
-    // matched bookmarks and trigger counterfactual logging if it path
-    // matched.
-    SCOPED_TRACE("feature enabled with enabled counterfactual");
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kBookmarkPaths,
-          {{OmniboxFieldTrial::kBookmarkPathsCounterfactual.name, "enabled"}}}},
-        {omnibox::kShortBookmarkSuggestionsByTotalInputLength});
-    TestNumMatchesAndTriggeredFeature("carefully", 1);
-    TestNumMatchesAndTriggeredFeature("carefully other", 1, trigger_feature);
-  }
+  // Inputs matching both the title and path should return bookmarks.
+  TestNumMatchesAndTriggeredFeature("carefully other", 1);
 }

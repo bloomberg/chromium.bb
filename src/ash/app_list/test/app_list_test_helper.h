@@ -15,9 +15,12 @@ namespace ash {
 class AppListBubbleAppsPage;
 class AppListBubbleAssistantPage;
 class AppListBubbleSearchPage;
+class AppListBubbleView;
 class AppListControllerImpl;
+class AppListFolderView;
 class AppListView;
 class ContinueSectionView;
+class PagedAppsGridView;
 class RecentAppsView;
 class ScrollableAppsGridView;
 class SearchBoxView;
@@ -69,11 +72,26 @@ class AppListTestHelper {
   // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();
 
+  // Adds `num_apps` to the app list model.
+  void AddAppItems(int num_apps);
+
+  // Adds a page break item to the app list model.
+  void AddPageBreakItem();
+
+  // Whether the app list is showing a folder.
+  bool IsInFolderView();
+
   // Fullscreen/peeking launcher helpers.
   AppListView* GetAppListView();
+  AppListFolderView* GetFullscreenFolderView();
+
+  // Paged launcher helpers.
+  PagedAppsGridView* GetRootPagedAppsGridView();
 
   // Bubble launcher helpers. The bubble must be open before calling these.
+  AppListBubbleView* GetBubbleView();
   SearchBoxView* GetBubbleSearchBoxView();
+  AppListFolderView* GetBubbleFolderView();
   AppListBubbleAppsPage* GetBubbleAppsPage();
   ContinueSectionView* GetContinueSectionView();
   RecentAppsView* GetBubbleRecentAppsView();

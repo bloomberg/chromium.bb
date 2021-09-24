@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/extend.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -18,16 +19,16 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -72,6 +73,17 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
 
 apps::mojom::InstallSource GetHighestPriorityInstallSource(
     const WebApp* web_app) {
+  // TODO(crbug.com/1189949): Introduce kOem as a new Source::Type value
+  // immediately below web_app::Source::kSystem, so that this custom behavior
+  // isn't needed.
+  if (web_app->chromeos_data().has_value()) {
+    auto& chromeos_data = web_app->chromeos_data().value();
+    if (chromeos_data.oem_installed) {
+      DCHECK(!web_app->IsSystemApp());
+      return apps::mojom::InstallSource::kOem;
+    }
+  }
+
   switch (web_app->GetHighestPrioritySource()) {
     case Source::kSystem:
       return apps::mojom::InstallSource::kSystem;
@@ -115,13 +127,14 @@ void WebAppPublisherHelper::BadgeManagerDelegate::OnAppBadgeUpdated(
 #endif
 
 WebAppPublisherHelper::WebAppPublisherHelper(Profile* profile,
+                                             WebAppProvider* provider,
                                              apps::mojom::AppType app_type,
                                              Delegate* delegate,
                                              bool observe_media_requests)
     : profile_(profile),
+      provider_(provider),
       app_type_(app_type),
-      delegate_(delegate),
-      provider_(WebAppProvider::Get(profile)) {
+      delegate_(delegate) {
   DCHECK(profile_);
   Init(observe_media_requests);
 }
@@ -249,6 +262,10 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
       app_type(), web_app->app_id(), readiness, web_app->name(),
       GetHighestPriorityInstallSource(web_app));
 
+  // For system web apps (only), the install source is |kSystem|.
+  DCHECK_EQ(web_app->IsSystemApp(),
+            app->install_source == apps::mojom::InstallSource::kSystem);
+
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
   app->last_launch_time = web_app->last_launch_time();
@@ -258,17 +275,16 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
   app->publisher_id = web_app->start_url().spec();
 
   auto display_mode = registrar().GetAppUserDisplayMode(web_app->app_id());
-  app->window_mode = ConvertDisplayModeToWindowMode(
-      display_mode,
-      registrar().IsInExperimentalTabbedWindowMode(web_app->app_id()));
+  app->window_mode = ConvertDisplayModeToWindowMode(display_mode);
 
   // app->version is left empty here.
   PopulateWebAppPermissions(web_app, &app->permissions);
 
   SetWebAppShowInFields(app, web_app);
 
-  // Get the intent filters for PWAs.
-  apps_util::PopulateWebAppIntentFilters(*web_app, app->intent_filters);
+  // Add the intent filters for PWAs.
+  base::Extend(app->intent_filters,
+               apps_util::CreateWebAppIntentFilters(*web_app));
 
   app->icon_key = MakeIconKey(web_app);
 
@@ -321,13 +337,12 @@ void WebAppPublisherHelper::UninstallWebApp(
     bool report_abuse) {
   auto origin = url::Origin::Create(web_app->start_url());
 
-  WebAppProvider* provider = WebAppProvider::Get(profile());
-  DCHECK(provider);
+  DCHECK(provider_);
   DCHECK(
-      provider->install_finalizer().CanUserUninstallWebApp(web_app->app_id()));
+      provider_->install_finalizer().CanUserUninstallWebApp(web_app->app_id()));
   webapps::WebappUninstallSource webapp_uninstall_source =
       ConvertUninstallSourceToWebAppUninstallSource(uninstall_source);
-  provider->install_finalizer().UninstallWebApp(
+  provider_->install_finalizer().UninstallWebApp(
       web_app->app_id(), webapp_uninstall_source, base::DoNothing());
   web_app = nullptr;
 
@@ -639,40 +654,33 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
       display_mode = blink::mojom::DisplayMode::kStandalone;
       break;
     case apps::mojom::WindowMode::kTabbedWindow:
-      provider_->registry_controller().SetExperimentalTabbedWindowMode(
-          app_id, /*enabled=*/true, /*is_user_action=*/true);
-      return;
+      display_mode = blink::mojom::DisplayMode::kTabbed;
+      break;
   }
-  provider_->registry_controller().SetExperimentalTabbedWindowMode(
-      app_id, /*enabled=*/false, /*is_user_action=*/true);
-  provider_->registry_controller().SetAppUserDisplayMode(
-      app_id, display_mode, /*is_user_action=*/true);
+  provider_->sync_bridge().SetAppUserDisplayMode(app_id, display_mode,
+                                                 /*is_user_action=*/true);
 }
 
 apps::mojom::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
-    blink::mojom::DisplayMode display_mode,
-    bool in_experimental_tabbed_window) {
-  if (in_experimental_tabbed_window) {
-    return apps::mojom::WindowMode::kTabbedWindow;
-  }
+    blink::mojom::DisplayMode display_mode) {
   switch (display_mode) {
     case blink::mojom::DisplayMode::kUndefined:
       return apps::mojom::WindowMode::kUnknown;
     case blink::mojom::DisplayMode::kBrowser:
       return apps::mojom::WindowMode::kBrowser;
+    case blink::mojom::DisplayMode::kTabbed:
+      return apps::mojom::WindowMode::kTabbedWindow;
     case blink::mojom::DisplayMode::kMinimalUi:
     case blink::mojom::DisplayMode::kStandalone:
     case blink::mojom::DisplayMode::kFullscreen:
     case blink::mojom::DisplayMode::kWindowControlsOverlay:
-    case blink::mojom::DisplayMode::kTabbed:
       return apps::mojom::WindowMode::kWindow;
   }
 }
 
 void WebAppPublisherHelper::PublishWindowModeUpdate(
     const std::string& app_id,
-    blink::mojom::DisplayMode display_mode,
-    bool in_experimental_tabbed_window) {
+    blink::mojom::DisplayMode display_mode) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
     return;
@@ -681,15 +689,23 @@ void WebAppPublisherHelper::PublishWindowModeUpdate(
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = app_type();
   app->app_id = app_id;
-  app->window_mode = ConvertDisplayModeToWindowMode(
-      display_mode, in_experimental_tabbed_window);
+  app->window_mode = ConvertDisplayModeToWindowMode(display_mode);
   delegate_->PublishWebApp(std::move(app));
+}
+
+std::string WebAppPublisherHelper::GenerateShortcutId() {
+  return base::NumberToString(shortcut_id_generator_.GenerateNextId().value());
+}
+
+void WebAppPublisherHelper::StoreShortcutId(
+    const std::string& shortcut_id,
+    const WebApplicationShortcutsMenuItemInfo& menu_item_info) {
+  shortcut_id_map_.emplace(shortcut_id, std::move(menu_item_info));
 }
 
 content::WebContents* WebAppPublisherHelper::ExecuteContextMenuCommand(
     const std::string& app_id,
-    int32_t item_id,
-    apps::mojom::AppLaunchSource app_launch_source,
+    const std::string& shortcut_id,
     int64_t display_id) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app) {
@@ -700,11 +716,12 @@ content::WebContents* WebAppPublisherHelper::ExecuteContextMenuCommand(
 
   apps::AppLaunchParams params(
       app_id, ConvertDisplayModeToAppLaunchContainer(display_mode),
-      WindowOpenDisposition::CURRENT_TAB, app_launch_source, display_id);
+      WindowOpenDisposition::CURRENT_TAB,
+      apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id);
 
-  if (static_cast<size_t>(item_id) <
-      web_app->shortcuts_menu_item_infos().size()) {
-    params.override_url = web_app->shortcuts_menu_item_infos()[item_id].url;
+  auto menu_item = shortcut_id_map_.find(shortcut_id);
+  if (menu_item != shortcut_id_map_.end()) {
+    params.override_url = menu_item->second.url;
   }
 
   return LaunchAppWithParams(std::move(params));
@@ -782,15 +799,7 @@ void WebAppPublisherHelper::OnWebAppLastLaunchTimeChanged(
 void WebAppPublisherHelper::OnWebAppUserDisplayModeChanged(
     const AppId& app_id,
     DisplayMode user_display_mode) {
-  PublishWindowModeUpdate(app_id, user_display_mode,
-                          registrar().IsInExperimentalTabbedWindowMode(app_id));
-}
-
-void WebAppPublisherHelper::OnWebAppExperimentalTabbedWindowModeChanged(
-    const AppId& app_id,
-    bool enabled) {
-  auto display_mode = registrar().GetAppUserDisplayMode(app_id);
-  PublishWindowModeUpdate(app_id, display_mode, enabled);
+  PublishWindowModeUpdate(app_id, user_display_mode);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1067,16 +1076,15 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
   auto system_app_type =
       provider_->system_web_app_manager().GetSystemAppTypeForAppId(app->app_id);
   if (system_app_type.has_value()) {
-    app->show_in_launcher =
-        provider_->system_web_app_manager().ShouldShowInLauncher(
-            system_app_type.value())
-            ? apps::mojom::OptionalBool::kTrue
-            : apps::mojom::OptionalBool::kFalse;
-    app->show_in_search =
-        provider_->system_web_app_manager().ShouldShowInSearch(
-            system_app_type.value())
-            ? apps::mojom::OptionalBool::kTrue
-            : apps::mojom::OptionalBool::kFalse;
+    auto* system_app =
+        provider_->system_web_app_manager().GetSystemApp(*system_app_type);
+    DCHECK(system_app);
+    app->show_in_launcher = system_app->ShouldShowInLauncher()
+                                ? apps::mojom::OptionalBool::kTrue
+                                : apps::mojom::OptionalBool::kFalse;
+    app->show_in_search = system_app->ShouldShowInSearch()
+                              ? apps::mojom::OptionalBool::kTrue
+                              : apps::mojom::OptionalBool::kFalse;
   }
 #endif
 }

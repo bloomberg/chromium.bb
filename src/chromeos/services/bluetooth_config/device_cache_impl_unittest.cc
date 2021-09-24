@@ -23,6 +23,7 @@ namespace bluetooth_config {
 namespace {
 
 using PairedDeviceList = std::vector<mojom::PairedBluetoothDevicePropertiesPtr>;
+using UnpairedDeviceList = std::vector<mojom::BluetoothDevicePropertiesPtr>;
 using NiceMockDevice =
     std::unique_ptr<testing::NiceMock<device::MockBluetoothDevice>>;
 
@@ -34,13 +35,27 @@ class FakeObserver : public DeviceCache::Observer {
   FakeObserver() = default;
   ~FakeObserver() override = default;
 
-  size_t num_calls() const { return num_calls_; }
+  size_t num_paired_list_changed_calls() const {
+    return num_paired_list_changed_calls_;
+  }
+
+  size_t num_unpaired_list_changed_calls() const {
+    return num_unpaired_list_changed_calls_;
+  }
 
  private:
   // DeviceCache::Observer:
-  void OnPairedDevicesListChanged() override { ++num_calls_; }
+  void OnPairedDevicesListChanged() override {
+    ++num_paired_list_changed_calls_;
+  }
 
-  size_t num_calls_ = 0u;
+  void OnUnpairedDevicesListChanged() override {
+    ++num_unpaired_list_changed_calls_;
+  }
+
+  size_t num_paired_list_changed_calls_ = 0u;
+
+  size_t num_unpaired_list_changed_calls_ = 0u;
 };
 
 }  // namespace
@@ -69,7 +84,14 @@ class DeviceCacheImplTest : public testing::Test {
     device_cache_->AddObserver(&fake_observer_);
   }
 
-  void AddDevice(bool paired, bool connected, std::string* id_out) {
+  void SetBluetoothSystemState(mojom::BluetoothSystemState system_state) {
+    fake_adapter_state_controller_.SetSystemState(system_state);
+  }
+
+  void AddDevice(bool paired,
+                 bool connected,
+                 std::string* id_out,
+                 const absl::optional<int8_t> inquiry_rssi = absl::nullopt) {
     // We use the number of devices created in this test as the address.
     std::string address = base::NumberToString(num_devices_created_);
     ++num_devices_created_;
@@ -81,6 +103,9 @@ class DeviceCacheImplTest : public testing::Test {
         std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
             mock_adapter_.get(), kTestBluetoothClass, kTestBluetoothName,
             address, paired, connected);
+    ON_CALL(*mock_device, GetInquiryRSSI())
+        .WillByDefault(testing::Return(inquiry_rssi));
+
     device::BluetoothDevice* device = mock_device.get();
     mock_devices_.push_back(std::move(mock_device));
 
@@ -118,11 +143,32 @@ class DeviceCacheImplTest : public testing::Test {
     device_cache_->DeviceChanged(mock_adapter_.get(), it->get());
   }
 
+  void ChangeInquiryRssi(const std::string& device_id,
+                         const absl::optional<int8_t> inquiry_rssi) {
+    std::vector<NiceMockDevice>::iterator it = FindDevice(device_id);
+    EXPECT_TRUE(it != mock_devices_.end());
+
+    ON_CALL(**it, GetInquiryRSSI())
+        .WillByDefault(testing::Return(inquiry_rssi));
+
+    device_cache_->DeviceChanged(mock_adapter_.get(), it->get());
+  }
+
   PairedDeviceList GetPairedDevices() {
     return device_cache_->GetPairedDevices();
   }
 
-  size_t GetNumObserverEvents() const { return fake_observer_.num_calls(); }
+  UnpairedDeviceList GetUnpairedDevices() {
+    return device_cache_->GetUnpairedDevices();
+  }
+
+  size_t GetNumPairedDeviceListObserverEvents() const {
+    return fake_observer_.num_paired_list_changed_calls();
+  }
+
+  size_t GetNumUnpairedDeviceListObserverEvents() const {
+    return fake_observer_.num_unpaired_list_changed_calls();
+  }
 
  private:
   std::vector<const device::BluetoothDevice*> GenerateDevices() {
@@ -159,7 +205,7 @@ TEST_F(DeviceCacheImplTest, AddAndRemovePairedDevices) {
   // Add device 1 (disconnected).
   std::string paired_device_id1;
   AddDevice(/*paired=*/true, /*connected=*/false, &paired_device_id1);
-  EXPECT_EQ(1u, GetNumObserverEvents());
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
   PairedDeviceList list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id1, list[0]->device_properties->id);
@@ -168,7 +214,7 @@ TEST_F(DeviceCacheImplTest, AddAndRemovePairedDevices) {
   // before disconnected ones.
   std::string paired_device_id2;
   AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id2);
-  EXPECT_EQ(2u, GetNumObserverEvents());
+  EXPECT_EQ(2u, GetNumPairedDeviceListObserverEvents());
   list = GetPairedDevices();
   EXPECT_EQ(2u, list.size());
   EXPECT_EQ(paired_device_id2, list[0]->device_properties->id);
@@ -176,90 +222,169 @@ TEST_F(DeviceCacheImplTest, AddAndRemovePairedDevices) {
 
   // Remove device 2; only device 1 should be returned.
   RemoveDevice(paired_device_id2);
-  EXPECT_EQ(3u, GetNumObserverEvents());
+  EXPECT_EQ(3u, GetNumPairedDeviceListObserverEvents());
   list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id1, list[0]->device_properties->id);
+}
+
+TEST_F(DeviceCacheImplTest, AddAndRemoveUnpairedDevices) {
+  Init();
+  EXPECT_TRUE(GetUnpairedDevices().empty());
+
+  // Add device 1.
+  std::string unpaired_device_id1;
+  AddDevice(/*paired=*/false, /*connected=*/false, &unpaired_device_id1,
+            /*inquiry_rssi=*/1);
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  UnpairedDeviceList list = GetUnpairedDevices();
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ(unpaired_device_id1, list[0]->id);
+
+  // Add device 2 with higher signal strength than device 1. Device 2 should be
+  // returned first.
+  std::string unpaired_device_id2;
+  AddDevice(/*paired=*/false, /*connected=*/false, &unpaired_device_id2,
+            /*inquiry_rssi=*/2);
+  EXPECT_EQ(2u, GetNumUnpairedDeviceListObserverEvents());
+  list = GetUnpairedDevices();
+  EXPECT_EQ(2u, list.size());
+  EXPECT_EQ(unpaired_device_id2, list[0]->id);
+  EXPECT_EQ(unpaired_device_id1, list[1]->id);
+
+  // Remove device 2; only device 1 should be returned.
+  RemoveDevice(unpaired_device_id2);
+  EXPECT_EQ(3u, GetNumUnpairedDeviceListObserverEvents());
+  list = GetUnpairedDevices();
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ(unpaired_device_id1, list[0]->id);
 }
 
 TEST_F(DeviceCacheImplTest, AddBeforeInit) {
-  // Add device 1 before initializing the class.
+  // Add device 1, a paired device, and device 2, an unpaired device before
+  // initializing the class.
   std::string paired_device_id1;
   AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id1);
+  std::string unpaired_device_id2;
+  AddDevice(/*paired=*/false, /*connected=*/true, &unpaired_device_id2);
   Init();
 
-  // Device 1 should be available from the getgo.
-  PairedDeviceList list = GetPairedDevices();
-  EXPECT_EQ(1u, list.size());
-  EXPECT_EQ(paired_device_id1, list[0]->device_properties->id);
+  // Device 1 should be available in the paired device list from the getgo,
+  // device 2 should not be present.
+  PairedDeviceList paired_list = GetPairedDevices();
+  EXPECT_EQ(1u, paired_list.size());
+  EXPECT_EQ(paired_device_id1, paired_list[0]->device_properties->id);
 
-  // Add device 2 and verify that both devices are returned.
-  std::string paired_device_id2;
-  AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id2);
-  EXPECT_EQ(1u, GetNumObserverEvents());
-  list = GetPairedDevices();
-  EXPECT_EQ(2u, list.size());
-  EXPECT_EQ(paired_device_id1, list[0]->device_properties->id);
-  EXPECT_EQ(paired_device_id2, list[1]->device_properties->id);
+  // Device 2 should be available in the unpaired device list from the getgo,
+  // device 1 should not be present.
+  UnpairedDeviceList unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(1u, unpaired_list.size());
+  EXPECT_EQ(unpaired_device_id2, unpaired_list[0]->id);
+
+  // Add paired device 3 and verify that device 1 and device 3 are returned in
+  // the paired device list.
+  std::string paired_device_id3;
+  AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id3);
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
+  paired_list = GetPairedDevices();
+  EXPECT_EQ(2u, paired_list.size());
+  EXPECT_EQ(paired_device_id1, paired_list[0]->device_properties->id);
+  EXPECT_EQ(paired_device_id3, paired_list[1]->device_properties->id);
+
+  // Add unpaired device 4 and verify that device 2 and device 4 are returned in
+  // the unpaired device list.
+  std::string unpaired_device_id4;
+  AddDevice(/*paired=*/false, /*connected=*/true, &unpaired_device_id4);
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(2u, unpaired_list.size());
+  EXPECT_EQ(unpaired_device_id2, unpaired_list[0]->id);
+  EXPECT_EQ(unpaired_device_id4, unpaired_list[1]->id);
 }
 
-TEST_F(DeviceCacheImplTest, UnpairedDeviceNotReturned) {
+TEST_F(DeviceCacheImplTest, AddPairedAndUnpairedDevices) {
   Init();
   EXPECT_TRUE(GetPairedDevices().empty());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
 
   // Add a paired device.
   std::string paired_device_id;
   AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id);
-  EXPECT_EQ(1u, GetNumObserverEvents());
-  PairedDeviceList list = GetPairedDevices();
-  EXPECT_EQ(1u, list.size());
-  EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
+  PairedDeviceList paired_list = GetPairedDevices();
+  EXPECT_EQ(1u, paired_list.size());
+  EXPECT_EQ(paired_device_id, paired_list[0]->device_properties->id);
 
-  // Add an unpaired device; observers should not be notified, and the unpaired
-  // device should not be returned.
+  // Unpaired device observer should not be notified and unpaired device list
+  // should still be empty.
+  EXPECT_EQ(0u, GetNumUnpairedDeviceListObserverEvents());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
+
+  // Add an unpaired device.
   std::string unpaired_device_id;
   AddDevice(/*paired=*/false, /*connected=*/true, &unpaired_device_id);
-  EXPECT_EQ(1u, GetNumObserverEvents());
-  list = GetPairedDevices();
-  EXPECT_EQ(1u, list.size());
-  EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  UnpairedDeviceList unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(1u, unpaired_list.size());
+  EXPECT_EQ(unpaired_device_id, unpaired_list[0]->id);
+
+  // Paired device observer should not be notified and paired device list should
+  // still only have one element.
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
+  EXPECT_EQ(1u, paired_list.size());
+  EXPECT_EQ(paired_device_id, paired_list[0]->device_properties->id);
 }
 
 TEST_F(DeviceCacheImplTest, PairingStateChanges) {
   Init();
   EXPECT_TRUE(GetPairedDevices().empty());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
 
   // Add a paired device.
   std::string paired_device_id;
   AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id);
-  EXPECT_EQ(1u, GetNumObserverEvents());
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
+  EXPECT_EQ(0u, GetNumUnpairedDeviceListObserverEvents());
   PairedDeviceList list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
+  EXPECT_TRUE(GetUnpairedDevices().empty());
 
-  // Unpair; the observer should be notified, and the device should not be
-  // returned.
+  // Unpair; the paired list observer should be notified and the device should
+  // not be returned in the paired list.
   ChangePairingState(paired_device_id, /*is_now_paired=*/false);
-  EXPECT_EQ(2u, GetNumObserverEvents());
+  EXPECT_EQ(2u, GetNumPairedDeviceListObserverEvents());
   EXPECT_TRUE(GetPairedDevices().empty());
 
-  // Re-pair; the observer should be notified, and the device should be
-  // returned.
+  // The unpaired list observer should also be notified and the device should be
+  // returned in the unpaired list.
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  UnpairedDeviceList unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(1u, unpaired_list.size());
+  EXPECT_EQ(paired_device_id, unpaired_list[0]->id);
+
+  // Re-pair; the paired list observer should be notified, and the device should
+  // be returned in the paired list.
   ChangePairingState(paired_device_id, /*is_now_paired=*/true);
-  EXPECT_EQ(3u, GetNumObserverEvents());
+  EXPECT_EQ(3u, GetNumPairedDeviceListObserverEvents());
   list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
+
+  // The unpaired list observer should also be notified and the device should
+  // not be returned in the unpaired list.
+  EXPECT_EQ(2u, GetNumUnpairedDeviceListObserverEvents());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
 }
 
-TEST_F(DeviceCacheImplTest, BluetoothClassChanges) {
+TEST_F(DeviceCacheImplTest, PairedDeviceBluetoothClassChanges) {
   Init();
   EXPECT_TRUE(GetPairedDevices().empty());
 
   // Add a paired device.
   std::string paired_device_id;
   AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id);
-  EXPECT_EQ(1u, GetNumObserverEvents());
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
   PairedDeviceList list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
@@ -268,11 +393,100 @@ TEST_F(DeviceCacheImplTest, BluetoothClassChanges) {
 
   // Change its device type.
   ChangeDeviceType(paired_device_id, device::BluetoothDeviceType::PHONE);
-  EXPECT_EQ(3u, GetNumObserverEvents());
+  EXPECT_EQ(3u, GetNumPairedDeviceListObserverEvents());
   list = GetPairedDevices();
   EXPECT_EQ(1u, list.size());
   EXPECT_EQ(paired_device_id, list[0]->device_properties->id);
   EXPECT_EQ(mojom::DeviceType::kPhone, list[0]->device_properties->device_type);
+}
+
+TEST_F(DeviceCacheImplTest, UnpairedDeviceBluetoothClassChanges) {
+  Init();
+  EXPECT_TRUE(GetUnpairedDevices().empty());
+
+  // Add a unpaired device.
+  std::string unpaired_device_id;
+  AddDevice(/*paired=*/false, /*connected=*/true, &unpaired_device_id);
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  UnpairedDeviceList list = GetUnpairedDevices();
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ(unpaired_device_id, list[0]->id);
+  EXPECT_EQ(mojom::DeviceType::kUnknown, list[0]->device_type);
+
+  // Change its device type.
+  ChangeDeviceType(unpaired_device_id, device::BluetoothDeviceType::PHONE);
+  EXPECT_EQ(3u, GetNumUnpairedDeviceListObserverEvents());
+  list = GetUnpairedDevices();
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ(unpaired_device_id, list[0]->id);
+  EXPECT_EQ(mojom::DeviceType::kPhone, list[0]->device_type);
+}
+
+TEST_F(DeviceCacheImplTest, UnpairedDeviceSignalStrengthChanges) {
+  Init();
+  EXPECT_TRUE(GetUnpairedDevices().empty());
+
+  // Add device 1.
+  std::string unpaired_device_id1;
+  AddDevice(/*paired=*/false, /*connected=*/false, &unpaired_device_id1,
+            /*inquiry_rssi=*/1);
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  UnpairedDeviceList list = GetUnpairedDevices();
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ(unpaired_device_id1, list[0]->id);
+
+  // Add device 2 with higher signal strength than device 1. Device 2 should be
+  // returned first.
+  std::string unpaired_device_id2;
+  AddDevice(/*paired=*/false, /*connected=*/false, &unpaired_device_id2,
+            /*inquiry_rssi=*/2);
+  EXPECT_EQ(2u, GetNumUnpairedDeviceListObserverEvents());
+  list = GetUnpairedDevices();
+  EXPECT_EQ(2u, list.size());
+  EXPECT_EQ(unpaired_device_id2, list[0]->id);
+  EXPECT_EQ(unpaired_device_id1, list[1]->id);
+
+  // Update device 1's signal strength to be greater than device 2. Device 1
+  // should now be returned first.
+  ChangeInquiryRssi(unpaired_device_id1, 3);
+  EXPECT_EQ(4u, GetNumUnpairedDeviceListObserverEvents());
+  list = GetUnpairedDevices();
+  EXPECT_EQ(2u, list.size());
+  EXPECT_EQ(unpaired_device_id1, list[0]->id);
+  EXPECT_EQ(unpaired_device_id2, list[1]->id);
+}
+
+TEST_F(DeviceCacheImplTest, BluetoothTurnsOff) {
+  Init();
+  EXPECT_TRUE(GetPairedDevices().empty());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
+
+  // Add a paired device and an unpaired device.
+  std::string paired_device_id1;
+  AddDevice(/*paired=*/true, /*connected=*/true, &paired_device_id1);
+  std::string unpaired_device_id2;
+  AddDevice(/*paired=*/false, /*connected=*/true, &unpaired_device_id2);
+
+  // Both devices should be present in their respective lists.
+  PairedDeviceList paired_list = GetPairedDevices();
+  EXPECT_EQ(1u, GetNumPairedDeviceListObserverEvents());
+  EXPECT_EQ(1u, paired_list.size());
+  EXPECT_EQ(paired_device_id1, paired_list[0]->device_properties->id);
+  UnpairedDeviceList unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(1u, GetNumUnpairedDeviceListObserverEvents());
+  EXPECT_EQ(1u, unpaired_list.size());
+  EXPECT_EQ(unpaired_device_id2, unpaired_list[0]->id);
+
+  // Turn off Bluetooth.
+  SetBluetoothSystemState(mojom::BluetoothSystemState::kDisabling);
+
+  // Observers for both lists should be notified and empty lists returned.
+  paired_list = GetPairedDevices();
+  EXPECT_EQ(2u, GetNumPairedDeviceListObserverEvents());
+  EXPECT_TRUE(GetPairedDevices().empty());
+  unpaired_list = GetUnpairedDevices();
+  EXPECT_EQ(2u, GetNumUnpairedDeviceListObserverEvents());
+  EXPECT_TRUE(GetUnpairedDevices().empty());
 }
 
 }  // namespace bluetooth_config

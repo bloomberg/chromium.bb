@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -209,6 +209,11 @@ void WebKioskAppData::LoadIcon() {
   icon_fetcher_->Start();
 }
 
+GURL WebKioskAppData::GetLaunchableUrl() const {
+  return status() == WebKioskAppData::Status::kInstalled ? launch_url()
+                                                         : install_url();
+}
+
 void WebKioskAppData::UpdateFromWebAppInfo(
     std::unique_ptr<WebApplicationInfo> app_info) {
   DCHECK(app_info);
@@ -237,10 +242,19 @@ void WebKioskAppData::UpdateFromWebAppInfo(
   SetStatus(Status::kInstalled);
 }
 
-void WebKioskAppData::SetStatus(Status status) {
+void WebKioskAppData::SetOnLoadedCallbackForTesting(
+    base::OnceClosure callback) {
+  on_loaded_closure_for_testing_ = std::move(callback);
+}
+
+void WebKioskAppData::SetStatus(Status status, bool notify) {
   status_ = status;
 
-  if (delegate_)
+  if (status_ == Status::kLoaded && on_loaded_closure_for_testing_) {
+    std::move(on_loaded_closure_for_testing_).Run();
+  }
+
+  if (delegate_ && notify)
     delegate_->OnKioskAppDataChanged(app_id());
 }
 
@@ -275,8 +289,9 @@ void WebKioskAppData::OnDidDownloadIcon(const SkBitmap& icon) {
 
   std::unique_ptr<IconFetcher> fetcher = std::move(icon_fetcher_);
 
-  if (status_ == Status::kInstalled)
+  if (status_ == Status::kInstalled) {
     return;
+  }
 
   base::FilePath cache_dir;
   if (delegate_)
@@ -308,8 +323,7 @@ void WebKioskAppData::OnIconLoadSuccess(const gfx::ImageSkia& icon) {
 void WebKioskAppData::OnIconLoadFailure() {
   kiosk_app_icon_loader_.reset();
   LOG(ERROR) << "Icon Load Failure";
-  SetStatus(Status::kLoaded);
-  // Do nothing
+  SetStatus(Status::kLoaded, /*notify=*/false);
 }
 
 }  // namespace ash

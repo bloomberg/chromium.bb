@@ -8,6 +8,7 @@
 #ifndef SkStringView_DEFINED
 #define SkStringView_DEFINED
 
+#include <algorithm>
 #include <cstring>
 #include <string>
 
@@ -22,6 +23,7 @@ public:
     using iterator = const_pointer;
     using const_iterator = iterator;
     using size_type = size_t;
+    static constexpr size_type npos = size_type(-1);
 
     constexpr string_view()
         : fData(nullptr)
@@ -97,6 +99,37 @@ public:
 
     constexpr bool ends_with(value_type c) const {
         return !this->empty() && this->back() == c;
+    }
+
+    size_type find(string_view needle, size_type pos = 0) const {
+        if (needle.length() == 0) {
+            return 0;
+        }
+        if (this->length() < needle.length()) {
+            return npos;
+        }
+        const char* match = nullptr;
+        const char* start = this->data() + pos;
+        const char* end = start + this->length() - needle.length() + 1;
+        while ((match = (const char*)(memchr(start, needle[0], (size_t)(end - start))))) {
+            if (!memcmp(match, needle.data(), needle.length())) {
+                return (size_type)(match - this->data());
+            } else {
+                start = match + 1;
+            }
+        }
+        return npos;
+    }
+
+    bool contains(string_view needle) const {
+        return this->find(needle) != npos;
+    }
+
+    constexpr string_view substr(size_type pos = 0, size_type count = npos) const {
+        if (pos > fLength) {
+            return {};
+        }
+        return string_view{fData + pos, std::min(count, fLength - pos)};
     }
 
     constexpr void swap(string_view& other) {

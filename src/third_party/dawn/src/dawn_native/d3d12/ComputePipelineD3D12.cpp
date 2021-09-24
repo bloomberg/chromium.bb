@@ -57,6 +57,9 @@ namespace dawn_native { namespace d3d12 {
         DAWN_TRY(CheckHRESULT(
             d3d12Device->CreateComputePipelineState(&d3dDesc, IID_PPV_ARGS(&mPipelineState)),
             "D3D12 creating pipeline state"));
+
+        SetLabelImpl();
+
         return {};
     }
 
@@ -68,15 +71,20 @@ namespace dawn_native { namespace d3d12 {
         return mPipelineState.Get();
     }
 
+    void ComputePipeline::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), GetPipelineState(), "Dawn_ComputePipeline",
+                     GetLabel());
+    }
+
     void ComputePipeline::CreateAsync(Device* device,
-                                      const ComputePipelineDescriptor* descriptor,
+                                      std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
                                       size_t blueprintHash,
                                       WGPUCreateComputePipelineAsyncCallback callback,
                                       void* userdata) {
-        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
+        Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor.get()));
         std::unique_ptr<CreateComputePipelineAsyncTask> asyncTask =
-            std::make_unique<CreateComputePipelineAsyncTask>(pipeline, descriptor, blueprintHash,
-                                                             callback, userdata);
+            std::make_unique<CreateComputePipelineAsyncTask>(pipeline, std::move(descriptor),
+                                                             blueprintHash, callback, userdata);
         CreateComputePipelineAsyncTask::RunAsync(std::move(asyncTask));
     }
 

@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -185,6 +187,7 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "launch_handler": null,
    "launch_query_params": null,
    "manifest_id": null,
+   "manifest_update_time": "1601-01-01 00:00:00.000 UTC",
    "manifest_url": "",
    "note_taking_new_note_url": "",
    "protocol_handlers": [  ],
@@ -213,6 +216,10 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
 }
 
 TEST(WebAppTest, SampleAppAsDebugValue) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  EnableSystemWebAppsInLacrosForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   EXPECT_EQ(base::JSONReader::Read(R"JSON({
    "!app_id": "eajjdjobhihlgobdfaehiiheinneagde",
    "!name": "Name1234",
@@ -258,7 +265,16 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
          "file_extensions": [ ".13087720410a", ".13087720410b" ],
          "mime_type": "application/13087720410+bar"
       } ],
-      "action": "https://example.com/open-13087720410"
+      "action": "https://example.com/open-13087720410",
+      "icons": [ {
+         "purpose": "kAny",
+         "square_size_px": 16,
+         "url": "https://example.com/image.png"
+      }, {
+         "purpose": "kAny",
+         "square_size_px": 48,
+         "url": "https://example.com/image2.png"
+      } ]
    }, {
       "accept": [ {
          "file_extensions": [ ".13087720411a", ".13087720411b" ],
@@ -267,7 +283,16 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
          "file_extensions": [ ".13087720411a", ".13087720411b" ],
          "mime_type": "application/13087720411+bar"
       } ],
-      "action": "https://example.com/open-13087720411"
+      "action": "https://example.com/open-13087720411",
+      "icons": [ {
+         "purpose": "kAny",
+         "square_size_px": 16,
+         "url": "https://example.com/image.png"
+      }, {
+         "purpose": "kAny",
+         "square_size_px": 48,
+         "url": "https://example.com/image2.png"
+      } ]
    }, {
       "accept": [ {
          "file_extensions": [ ".13087720412a", ".13087720412b" ],
@@ -276,7 +301,16 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
          "file_extensions": [ ".13087720412a", ".13087720412b" ],
          "mime_type": "application/13087720412+bar"
       } ],
-      "action": "https://example.com/open-13087720412"
+      "action": "https://example.com/open-13087720412",
+      "icons": [ {
+         "purpose": "kAny",
+         "square_size_px": 16,
+         "url": "https://example.com/image.png"
+      }, {
+         "purpose": "kAny",
+         "square_size_px": 48,
+         "url": "https://example.com/image2.png"
+      } ]
    }, {
       "accept": [ {
          "file_extensions": [ ".13087720413a", ".13087720413b" ],
@@ -285,7 +319,16 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
          "file_extensions": [ ".13087720413a", ".13087720413b" ],
          "mime_type": "application/13087720413+bar"
       } ],
-      "action": "https://example.com/open-13087720413"
+      "action": "https://example.com/open-13087720413",
+      "icons": [ {
+         "purpose": "kAny",
+         "square_size_px": 16,
+         "url": "https://example.com/image.png"
+      }, {
+         "purpose": "kAny",
+         "square_size_px": 48,
+         "url": "https://example.com/image2.png"
+      } ]
    }, {
       "accept": [ {
          "file_extensions": [ ".13087720414a", ".13087720414b" ],
@@ -294,14 +337,23 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
          "file_extensions": [ ".13087720414a", ".13087720414b" ],
          "mime_type": "application/13087720414+bar"
       } ],
-      "action": "https://example.com/open-13087720414"
+      "action": "https://example.com/open-13087720414",
+      "icons": [ {
+         "purpose": "kAny",
+         "square_size_px": 16,
+         "url": "https://example.com/image.png"
+      }, {
+         "purpose": "kAny",
+         "square_size_px": 48,
+         "url": "https://example.com/image2.png"
+      } ]
    } ],
    "icon_infos": [ {
-      "purpose": "ANY",
+      "purpose": "kAny",
       "square_size_px": null,
       "url": "https://example.com/icon1783899413"
    }, {
-      "purpose": "ANY",
+      "purpose": "kAny",
       "square_size_px": null,
       "url": "https://example.com/icon3011162902"
    } ],
@@ -319,6 +371,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
    },
    "launch_query_params": "3248422070",
    "manifest_id": null,
+   "manifest_update_time": "1970-01-21 01:09:01.170 UTC",
    "manifest_url": "https://example.com/manifest1234.json",
    "note_taking_new_note_url": "",
    "protocol_handlers": [ {
@@ -399,11 +452,11 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
    "start_url": "https://example.com/scope1234/start1234",
    "sync_fallback_data": {
       "icon_infos": [ {
-         "purpose": "ANY",
+         "purpose": "kAny",
          "square_size_px": null,
          "url": "https://example.com/icon1783899413"
       }, {
-         "purpose": "ANY",
+         "purpose": "kAny",
          "square_size_px": null,
          "url": "https://example.com/icon3011162902"
       } ],
@@ -429,7 +482,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       "origin": "https://app-9974471692.com",
       "paths": [  ]
    } ],
-   "user_display_mode": "standalone",
+   "user_display_mode": "browser",
    "user_launch_ordinal": "INVALID[]",
    "user_page_ordinal": "INVALID[]",
    "window_controls_overlay_enabled": false

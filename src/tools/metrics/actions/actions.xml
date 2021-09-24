@@ -1210,6 +1210,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accel_Toggle_Floating">
+  <owner>shidi@chromium.org</owner>
+  <owner>afakhry@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the Window Floating feature with a
+    keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Toggle_Fullscreen_Magnifier">
   <owner>afakhry@chromium.org</owner>
   <description>
@@ -7507,6 +7516,14 @@ should be able to be added at any place in this file.
 <action name="FocusToolbar">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="FocusWebContentsPane">
+  <owner>pbos@chromium.org</owner>
+  <description>
+    Called when a keyboard shortcut is used to put keyboard focus directly on
+    browser web contents.
+  </description>
 </action>
 
 <action name="FontName">
@@ -16070,6 +16087,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabGridCloseAllIncognitoTabsConfirmationPresented">
+  <obsolete>Deprecated as of 8/2021</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>
@@ -16088,6 +16106,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabGridCloseAllRegularTabsConfirmationPresented">
+  <obsolete>Deprecated as of 8/2021</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>
@@ -16097,6 +16116,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabGridCloseAllTabsConfirmationCanceled">
+  <obsolete>Deprecated as of 8/2021</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>
@@ -16106,6 +16126,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabGridCloseAllTabsConfirmationConfirmed">
+  <obsolete>Deprecated as of 8/2021</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>
@@ -21502,6 +21523,46 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="QuickActionSearchWidget.LensQuery">
+  <owner>ender@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    The user triggered a Lens query from the Quick Actions Search Widget.
+  </description>
+</action>
+
+<action name="QuickActionSearchWidget.StartDinoGame">
+  <owner>ender@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    User started the Dino Game from the Quick Action Search Widget.
+  </description>
+</action>
+
+<action name="QuickActionSearchWidget.StartIncognito">
+  <owner>ender@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    User opened an incognito tab from the Quick Action Search Widget.
+  </description>
+</action>
+
+<action name="QuickActionSearchWidget.TextQuery">
+  <owner>ender@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    The user triggered a text query from the Quick Actions Search Widget.
+  </description>
+</action>
+
+<action name="QuickActionSearchWidget.VoiceQuery">
+  <owner>ender@google.com</owner>
+  <owner>fgorski@chromium.org</owner>
+  <description>
+    The user triggered a voice query from the Quick Actions Search Widget.
+  </description>
+</action>
+
 <action name="ReadingList.Dialog.AddCurrentPage">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -23114,6 +23175,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingHubAndroid.LinkToTextSelected">
+  <obsolete>
+    Corresponding option was removed from sharing hub in M95. Never launched.
+  </obsolete>
   <owner>gayane@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
@@ -23148,6 +23212,14 @@ should be able to be added at any place in this file.
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
     The &quot;QR Code&quot; option was selected in the sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.SaveImageSelected">
+  <owner>gayane@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Save Image&quot; option was selected in the sharing hub.
   </description>
 </action>
 
@@ -23417,6 +23489,24 @@ should be able to be added at any place in this file.
   <owner>mmourgos@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <description>User sets shelf to right alignment on ChromeOS.</description>
+</action>
+
+<action name="Shelf_BrowserShortcutShelfItem_ShowTabs">
+  <owner>erikchen@chromium.org</owner>
+  <owner>alexbn@chromium.org</owner>
+  <description>
+    User interacts with the browser icon in the shelf on ChromeOS to show a
+    context menu with all the tabs.
+  </description>
+</action>
+
+<action name="Shelf_BrowserShortcutShelfItem_ShowWindows">
+  <owner>erikchen@chromium.org</owner>
+  <owner>alexbn@chromium.org</owner>
+  <description>
+    User interacts with the browser icon in the shelf on ChromeOS to show a
+    context menu with all the windows.
+  </description>
 </action>
 
 <action name="Shelf_ItemPinned">
@@ -23848,8 +23938,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_Impression_FromManageCardsBubble"
     not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the manage cards bubble.
@@ -23898,8 +23987,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Impression_FromSaveCardBubble" not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when showing sign in entry in the save card bubble.
@@ -23986,8 +24074,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromManageCardsBubble"
     not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -24027,8 +24114,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromSaveCardBubble"
     not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with an account in the
@@ -24097,8 +24183,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromManageCardsBubble"
     not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -24139,8 +24224,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromSaveCardBubble"
     not_user_triggered="true">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded when the personalized sign-in promo is shown with no account in the
@@ -24242,6 +24326,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_CancelCancelAdvancedSyncSettings">
+  <obsolete>
+    Deprecated as the advanced settings can no longer be canceled.
+  </obsolete>
   <owner>tangltom@chromium.org</owner>
   <description>
     Recorded when the user clicks the 'Back' button on the 'Cancel sync?' dialog
@@ -24375,8 +24462,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromManageCardsBubble">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -24433,8 +24519,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromSaveCardBubble">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -24638,8 +24723,7 @@ should be able to be added at any place in this file.
 <action name="Signin_SigninNewAccount_FromSaveCardBubble">
   <obsolete>Deprecated 08/2018</obsolete>
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
@@ -24715,8 +24799,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninNewAccountExistingAccount_FromManageCardsBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -24759,8 +24842,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninNewAccountExistingAccount_FromSaveCardBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -24836,8 +24918,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromManageCardsBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -24882,8 +24963,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromSaveCardBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -24964,8 +25044,7 @@ should be able to be added at any place in this file.
 <action name="Signin_SigninNewAccountPreDice_FromManageCardsBubble">
   <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
@@ -25012,8 +25091,7 @@ should be able to be added at any place in this file.
 <action name="Signin_SigninNewAccountPreDice_FromSaveCardBubble">
   <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <description>
@@ -25089,8 +25167,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromManageCardsBubble">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -25132,8 +25209,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninNotDefault_FromSaveCardBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -25217,8 +25293,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromManageCardsBubble">
-  <owner>manasverma@google.com</owner>
-  <owner>jsaul@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
     Recorded on sign in start from access point
@@ -25260,8 +25335,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_SigninWithDefault_FromSaveCardBubble">
   <owner>bsazonov@chromium.org</owner>
-  <owner>jsaul@chromium.org</owner>
-  <owner>manasverma@google.com</owner>
+  <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27397,6 +27471,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabGroups_TabGroupBubble_GroupSaved">
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User saved an existing tab group by switching the toggle to the right next
+    to 'Save group' from the tab group editor bubble.
+  </description>
+</action>
+
+<action name="TabGroups_TabGroupBubble_GroupUnsaved">
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User unsaved an existing tab group by switching the toggle to the left next
+    to 'Save group' from the tab group editor bubble.
+  </description>
+</action>
+
 <action name="TabGroups_TabGroupBubble_NameChanged">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
@@ -28515,6 +28607,14 @@ should be able to be added at any place in this file.
   <description>The user set a web app to open in a browser tab.</description>
 </action>
 
+<action name="WebApp.SetWindowMode.Tabbed">
+  <owner>loubrett@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    The user set a web app to open in a tabbed app window.
+  </description>
+</action>
+
 <action name="WebApp.SetWindowMode.Window">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -29144,6 +29244,8 @@ should be able to be added at any place in this file.
   <suffix name="FeedCardMenu" label="For FeedCardMenu feature."/>
   <suffix name="FeedHeaderMenu" label="For FeedHeaderMenu feature."/>
   <suffix name="GlobalMediaControls" label="For GlobalMediaControls feature."/>
+  <suffix name="GMCCastStartStopFeature"
+      label="For Global Media Controls Cast start and stop feature."/>
   <suffix name="HomePageButton" label="For HomePageButton feature."/>
   <suffix name="HomepageTile" label="For HomepageTile feature."/>
   <suffix name="IdentityDisc" label="For IdentityDisc feature."/>
@@ -29176,6 +29278,10 @@ should be able to be added at any place in this file.
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
+  <suffix name="SharedHighlightingReceiver"
+      label="For SharedHighlightingReceiver feature."/>
+  <suffix name="SharingHubLinkToggle"
+      label="For Sharing Hub link toggle feature."/>
   <suffix name="StartSurfaceTabSwitcherHomeButton"
       label="For StartSurfaceTabSwitcherHomeButton feature."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>

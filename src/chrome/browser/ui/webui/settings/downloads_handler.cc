@@ -42,26 +42,26 @@ DownloadsHandler::~DownloadsHandler() {
 }
 
 void DownloadsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initializeDownloads",
       base::BindRepeating(&DownloadsHandler::HandleInitialize,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "resetAutoOpenFileTypes",
       base::BindRepeating(&DownloadsHandler::HandleResetAutoOpenFileTypes,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "selectDownloadLocation",
       base::BindRepeating(&DownloadsHandler::HandleSelectDownloadLocation,
                           base::Unretained(this)));
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDownloadLocationText",
       base::BindRepeating(&DownloadsHandler::HandleGetDownloadLocationText,
                           base::Unretained(this)));
 #endif
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setDownloadsConnectionAccountLink",
       base::BindRepeating(
           &DownloadsHandler::HandleSetDownloadsConnectionAccountLink,
@@ -145,7 +145,7 @@ void DownloadsHandler::FileSelectionCanceled(void* params) {
 void DownloadsHandler::HandleGetDownloadLocationText(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   std::string callback_id;
   std::string path;
   CHECK(args->GetString(0, &callback_id));
@@ -187,7 +187,7 @@ void DownloadsHandler::SendDownloadsConnectionPolicyToJavascript() {
 void DownloadsHandler::HandleSetDownloadsConnectionAccountLink(
     const base::ListValue* args) {
   DCHECK(IsDownloadsConnectionPolicyEnabled());
-  CHECK_EQ(1U, args->GetSize());
+  CHECK_EQ(1U, args->GetList().size());
   bool enable_link = args->GetList()[0].GetBool();
   ec::SetFileSystemConnectorAccountLinkForSettingsPage(
       enable_link, profile_,

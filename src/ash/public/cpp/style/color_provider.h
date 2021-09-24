@@ -27,11 +27,11 @@ class ASH_PUBLIC_EXPORT ColorProvider {
   };
 
   // Blur sigma for system UI layers.
-  enum class LayerBlurSigma {
-    kBlurDefault = 30,  // Default blur sigma is 30.
-    kBlurSigma20 = 20,
-    kBlurSigma10 = 10,
-  };
+  static constexpr float kBackgroundBlurSigma = 30.f;
+
+  // The default blur quality for background blur. Using a value less than 1
+  // improves performance.
+  static constexpr float kBackgroundBlurQuality = 0.33f;
 
   // Types of Base layer.
   enum class BaseLayerType {
@@ -59,7 +59,7 @@ class ASH_PUBLIC_EXPORT ColorProvider {
   };
 
   enum class ContentLayerType {
-    kLoginScrollBarColor,
+    kScrollBarColor,
     kSeparatorColor,
 
     kTextColorPrimary,
@@ -67,6 +67,7 @@ class ASH_PUBLIC_EXPORT ColorProvider {
     kTextColorAlert,
     kTextColorWarning,
     kTextColorPositive,
+    kTextColorURL,
 
     kIconColorPrimary,
     kIconColorSecondary,
@@ -123,7 +124,10 @@ class ASH_PUBLIC_EXPORT ColorProvider {
 
     // Color for the media controls.
     kProgressBarColorForeground,
-    kProgressBarColorBackground
+    kProgressBarColorBackground,
+
+    // Color used to highlight a hovered view.
+    kHighlightColorHover
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

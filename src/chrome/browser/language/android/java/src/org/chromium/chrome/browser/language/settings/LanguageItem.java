@@ -115,7 +115,7 @@ public class LanguageItem {
      * @return True if this language item represents the system default.
      */
     public boolean isSystemDefault() {
-        return TextUtils.equals(mCode, AppLocaleUtils.SYSTEM_LANGUAGE_VALUE);
+        return AppLocaleUtils.isDefaultSystemLanguage(mCode);
     }
 
     /**
@@ -125,6 +125,14 @@ public class LanguageItem {
     @Override
     public int hashCode() {
         return Objects.hashCode(mCode);
+    }
+
+    /**
+     * return String representation of the BCP-47 code for this language.
+     */
+    @Override
+    public String toString() {
+        return getCode();
     }
 
     /**

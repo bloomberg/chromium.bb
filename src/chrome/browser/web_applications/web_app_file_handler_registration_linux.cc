@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
+#include "chrome/browser/web_applications/web_app_file_handler_registration.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -13,10 +13,10 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_linux.h"
-#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_shortcut.h"
 
 namespace web_app {
 
@@ -141,18 +141,21 @@ bool ShouldRegisterFileHandlersWithOs() {
   return true;
 }
 
+bool FileHandlingIconsSupportedByOs() {
+  // File type icons are not supported on Linux: see https://crbug.com/1218235
+  return false;
+}
+
 void RegisterFileHandlersWithOs(const AppId& app_id,
                                 const std::string& app_name,
                                 Profile* profile,
                                 const apps::FileHandlers& file_handlers) {
-  if (!file_handlers.empty()) {
-    RegisterMimeTypesOnLinuxCallback callback =
-        GetRegisterMimeTypesCallbackForTesting()                   // IN-TEST
-            ? std::move(GetRegisterMimeTypesCallbackForTesting())  // IN-TEST
-            : base::BindOnce(&DoRegisterMimeTypes);
-    RegisterMimeTypesOnLinux(app_id, profile, file_handlers,
-                             std::move(callback));
-  }
+  DCHECK(!file_handlers.empty());
+  RegisterMimeTypesOnLinuxCallback callback =
+      GetRegisterMimeTypesCallbackForTesting()                   // IN-TEST
+          ? std::move(GetRegisterMimeTypesCallbackForTesting())  // IN-TEST
+          : base::BindOnce(&DoRegisterMimeTypes);
+  RegisterMimeTypesOnLinux(app_id, profile, file_handlers, std::move(callback));
 
   UpdateFileHandlerRegistrationInOs(app_id, profile, base::DoNothing());
 }

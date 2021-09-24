@@ -16,10 +16,12 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/llvm_ir/tuple_ops.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "llvm/IR/Instructions.h"
+#include "tensorflow/compiler/xla/service/llvm_ir/llvm_type_conversion_util.h"
 #include "tensorflow/compiler/xla/service/llvm_ir/llvm_util.h"
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/types.h"
@@ -52,7 +54,7 @@ void EmitTupleSelect(const IrArray& select, const IrArray& pred,
 
   llvm::Value* src = b->CreateSelect(pred_cond, on_true, on_false);
   llvm::Value* dst = select.GetBasePointer();
-  int64 table_size = ShapeUtil::ByteSizeOfTupleIndexTable(
+  int64_t table_size = ShapeUtil::ByteSizeOfTupleIndexTable(
       select.GetShape(), module->getDataLayout().getPointerSize());
   b->CreateMemCpy(dst, /*DstAlign=*/llvm::Align(1), src,
                   /*SrcAlign=*/llvm::Align(1), b->getInt64(table_size));
@@ -62,10 +64,11 @@ void EmitTuple(const IrArray& tuple, absl::Span<llvm::Value* const> operands,
                llvm::IRBuilder<>* b) {
   llvm::Module* module = getModuleFromBuilder(b);
   for (size_t i = 0; i < operands.size(); ++i) {
+    auto* cast =
+        b->CreatePointerCast(operands[i], PrimitiveTypeToIrType(TUPLE, module));
     auto* store = b->CreateStore(
-        b->CreatePointerCast(operands[i], PrimitiveTypeToIrType(TUPLE, module)),
-        b->CreateInBoundsGEP(tuple.GetBasePointer(),
-                             {b->getInt64(0), b->getInt64(i)}));
+        cast, b->CreateInBoundsGEP(tuple.GetBasePointer(),
+                                   {b->getInt64(0), b->getInt64(i)}));
     tuple.AnnotateLoadStoreInstructionWithMetadata(store);
   }
 }
@@ -106,7 +109,7 @@ std::vector<llvm::Value*> EmitTupleAllocasAtFunctionEntry(
   return generated_allocas;
 }
 
-llvm::Value* EmitGetTupleElement(const Shape& target_shape, int64 index,
+llvm::Value* EmitGetTupleElement(const Shape& target_shape, int64_t index,
                                  int alignment, llvm::Value* operand,
                                  llvm::IRBuilder<>* b) {
   llvm::Module* module = getModuleFromBuilder(b);

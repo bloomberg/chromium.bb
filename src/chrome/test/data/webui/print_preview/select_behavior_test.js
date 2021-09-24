@@ -5,7 +5,7 @@
 import {SelectBehavior} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {eventToPromise} from 'chrome://test/test_util.js';
 
 window.select_behavior_test = {};
 select_behavior_test.suiteName = 'SelectBehaviorTest';
@@ -53,7 +53,7 @@ suite(select_behavior_test.suiteName, function() {
   test(
       assert(select_behavior_test.TestNames.CallProcessSelectChange),
       function() {
-        const select = testSelect.$$('select');
+        const select = testSelect.shadowRoot.querySelector('select');
         assertEquals('0', testSelect.selectedValue);
         assertEquals('0', select.value);
         let whenProcessSelectCalled =

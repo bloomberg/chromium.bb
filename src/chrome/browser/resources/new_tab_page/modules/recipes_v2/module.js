@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../module_header.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -30,9 +31,8 @@ customElements.define(RecipeModuleElement.is, RecipeModuleElement);
 
 /** @return {!Promise<?HTMLElement>} */
 async function createModule() {
-  const {task} =
-      await TaskModuleHandlerProxy.getInstance().handler.getPrimaryTask(
-          taskModule.mojom.TaskModuleType.kRecipe);
+  const {task} = await TaskModuleHandlerProxy.getHandler().getPrimaryTask(
+      taskModule.mojom.TaskModuleType.kRecipe);
   if (!task) {
     return null;
   }

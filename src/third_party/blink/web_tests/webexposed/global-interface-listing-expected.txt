@@ -238,6 +238,7 @@ interface AppHistory : EventTarget
     getter onnavigate
     getter onnavigateerror
     getter onnavigatesuccess
+    getter transition
     method back
     method constructor
     method entries
@@ -263,13 +264,15 @@ interface AppHistoryEntry : EventTarget
     getter id
     getter index
     getter key
+    getter ondispose
     getter sameDocument
     getter url
     method constructor
     method getState
+    setter ondispose
 interface AppHistoryNavigateEvent : Event
     attribute @@toStringTag
-    getter canRespond
+    getter canTransition
     getter destination
     getter formData
     getter hashChange
@@ -278,7 +281,12 @@ interface AppHistoryNavigateEvent : Event
     getter signal
     getter userInitiated
     method constructor
-    method respondWith
+    method transitionWhile
+interface AppHistoryTransition
+    attribute @@toStringTag
+    getter from
+    getter navigationType
+    method constructor
 interface Attr : Node
     attribute @@toStringTag
     getter localName
@@ -2599,8 +2607,12 @@ interface FeaturePolicy
     method features
     method getAllowlistForFeature
 interface FederatedCredential : Credential
+    static method logout
+    static method revoke
     attribute @@toStringTag
+    getter approvedBy
     getter iconURL
+    getter idToken
     getter name
     getter protocol
     getter provider
@@ -2660,14 +2672,18 @@ interface FileSystemFileHandle : FileSystemHandle
     method constructor
     method createWritable
     method getFile
+    method move
+    method rename
 interface FileSystemHandle
     attribute @@toStringTag
     getter kind
     getter name
     method constructor
     method isSameEntry
+    method move
     method queryPermission
     method remove
+    method rename
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
@@ -2679,6 +2695,10 @@ interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
     method constructor
+interface FocusableMediaStreamTrack : MediaStreamTrack
+    attribute @@toStringTag
+    method constructor
+    method focus
 interface FontFace
     attribute @@toStringTag
     getter ascentOverride
@@ -4127,6 +4147,7 @@ interface HTMLQuoteElement : HTMLElement
     method constructor
     setter cite
 interface HTMLScriptElement : HTMLElement
+    static method supports
     attribute @@toStringTag
     getter async
     getter charset
@@ -5720,6 +5741,7 @@ interface Navigator
     getter geolocation
     getter hardwareConcurrency
     getter hid
+    getter id
     getter ink
     getter keyboard
     getter language
@@ -5766,6 +5788,7 @@ interface Navigator
     method getInstalledRelatedApps
     method getUserMedia
     method javaEnabled
+    method queryHandwritingRecognizer
     method queryHandwritingRecognizerSupport
     method registerProtocolHandler
     method requestMIDIAccess
@@ -6149,9 +6172,6 @@ interface PaymentAddress
     getter sortingCode
     method constructor
     method toJSON
-interface PaymentCredential : PublicKeyCredential
-    attribute @@toStringTag
-    method constructor
 interface PaymentInstruments
     attribute @@toStringTag
     method clear
@@ -6612,10 +6632,7 @@ interface RTCDtlsTransport : EventTarget
     setter onstatechange
 interface RTCEncodedAudioFrame
     attribute @@toStringTag
-    getter additionalData
-    getter contributingSources
     getter data
-    getter synchronizationSource
     getter timestamp
     method constructor
     method getMetadata
@@ -6623,9 +6640,7 @@ interface RTCEncodedAudioFrame
     setter data
 interface RTCEncodedVideoFrame
     attribute @@toStringTag
-    getter additionalData
     getter data
-    getter synchronizationSource
     getter timestamp
     getter type
     method constructor
@@ -10488,6 +10503,12 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
+interface WebId
+    attribute @@toStringTag
+    method constructor
+    method get
+    method logout
+    method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -10598,6 +10619,11 @@ interface WebTransport
     method createBidirectionalStream
     method createUnidirectionalStream
     method setDatagramWritableQueueExpirationDuration
+interface WebTransportError : DOMException
+    attribute @@toStringTag
+    getter applicationProtocolCode
+    getter source
+    method constructor
 interface WheelEvent : MouseEvent
     attribute @@toStringTag
     attribute DOM_DELTA_LINE
@@ -11502,6 +11528,7 @@ namespace CSS
     method prompt
     method queueMicrotask
     method releaseEvents
+    method reportError
     method requestAnimationFrame
     method requestIdleCallback
     method resizeBy

@@ -496,7 +496,7 @@ void RenderViewTest::SetUp() {
 
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
   view_params->opener_frame_token = absl::nullopt;
-  view_params->window_was_created_with_opener = false;
+  view_params->window_was_opened_by_another_window = false;
   view_params->renderer_preferences = blink::RendererPreferences();
   view_params->web_preferences = blink::web_pref::WebPreferences();
   view_params->view_id = render_thread_->GetNextRoutingID();
@@ -679,7 +679,6 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
   std::vector<int> coords;
   for (int i = 0; i < 4; ++i) {
     v8::Local<v8::Number> index = v8::Number::New(isolate, i);
-    v8::Local<v8::Value> value;
     if (!array->Get(isolate->GetCurrentContext(), index).ToLocal(&value) ||
         !value->IsInt32()) {
       return gfx::Rect();

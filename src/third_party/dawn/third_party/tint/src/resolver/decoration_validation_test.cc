@@ -681,7 +681,7 @@ using ArrayDecorationTest = TestWithParams;
 TEST_P(ArrayDecorationTest, IsValid) {
   auto& params = GetParam();
 
-  auto* arr = ty.array(ty.f32(), 0,
+  auto* arr = ty.array(ty.f32(), nullptr,
                        createDecorations(Source{{12, 34}}, *this, params.kind));
   Structure("mystruct",
             {
@@ -776,6 +776,19 @@ TEST_F(VariableDecorationTest, DuplicateDecoration) {
   EXPECT_EQ(r()->error(),
             R"(56:78 error: duplicate binding decoration
 12:34 note: first decoration declared here)");
+}
+
+TEST_F(VariableDecorationTest, LocalVariable) {
+  auto* v = Var("a", ty.f32(),
+                ast::DecorationList{
+                    create<ast::BindingDecoration>(Source{{12, 34}}, 2),
+                });
+
+  WrapInFunction(v);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: decorations are not valid on local variables");
 }
 
 using ConstantDecorationTest = TestWithParams;

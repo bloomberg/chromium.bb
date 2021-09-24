@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
@@ -75,6 +76,7 @@ struct SameSizeAsLayoutInline : public LayoutBoxModelObject {
   ~SameSizeAsLayoutInline() override = default;
   LayoutObjectChildList children_;
   LineBoxList line_boxes_;
+  wtf_size_t first_fragment_item_index_;
 };
 
 ASSERT_SIZE(LayoutInline, SameSizeAsLayoutInline);
@@ -84,15 +86,14 @@ LayoutInline::LayoutInline(Element* element)
   SetChildrenInline(true);
 }
 
-LayoutInline::~LayoutInline() {
-#if DCHECK_IS_ON()
-  if (!IsInLayoutNGInlineFormattingContext())
-    line_boxes_.AssertIsEmpty();
-#endif
+void LayoutInline::Trace(Visitor* visitor) const {
+  visitor->Trace(children_);
+  visitor->Trace(line_boxes_);
+  LayoutBoxModelObject::Trace(visitor);
 }
 
 LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
-  LayoutInline* layout_inline = new LayoutInline(nullptr);
+  LayoutInline* layout_inline = MakeGarbageCollected<LayoutInline>(nullptr);
   layout_inline->SetDocumentForAnonymous(document);
   return layout_inline;
 }
@@ -139,6 +140,11 @@ void LayoutInline::WillBeDestroyed() {
   DeleteLineBoxes();
 
   LayoutBoxModelObject::WillBeDestroyed();
+
+#if DCHECK_IS_ON()
+  if (!IsInLayoutNGInlineFormattingContext())
+    line_boxes_.AssertIsEmpty();
+#endif
 }
 
 void LayoutInline::DeleteLineBoxes() {
@@ -566,7 +572,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 LayoutInline* LayoutInline::Clone() const {
   NOT_DESTROYED();
   DCHECK(!IsAnonymous());
-  LayoutInline* clone_inline = new LayoutInline(GetNode());
+  LayoutInline* clone_inline = MakeGarbageCollected<LayoutInline>(GetNode());
   clone_inline->SetStyle(Style());
   clone_inline->SetIsInsideFlowThread(IsInsideFlowThread());
   return clone_inline;
@@ -602,7 +608,7 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
   // nest to a much greater depth (see bugzilla bug 13430) but for now we have a
   // limit. This *will* result in incorrect rendering, but the alternative is to
   // hang forever.
-  Vector<LayoutInline*> inlines_to_clone;
+  HeapVector<Member<LayoutInline>> inlines_to_clone;
   LayoutInline* top_most_inline = this;
   for (LayoutObject* o = this; o != from_block; o = o->Parent()) {
     if (o->IsLayoutNGInsideListMarker())
@@ -1501,7 +1507,7 @@ PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
   NOT_DESTROYED();
   PhysicalRect overflow_rect = LinesVisualOverflowBoundingBox();
   const ComputedStyle& style = StyleRef();
-  LayoutUnit outline_outset(style.OutlineOutsetExtent());
+  LayoutUnit outline_outset(OutlinePainter::OutlineOutsetExtent(style));
   if (outline_outset) {
     Vector<PhysicalRect> rects;
     if (GetDocument().InNoQuirksMode()) {
@@ -1616,9 +1622,15 @@ void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) &&
       !ForceLegacyLayout()) {
     DCHECK(!child->IsInline());
-    // TODO(crbug.com/716930): Add anonymous blocks as
-    // |AddChildIgnoringContinuation| does.
-    NOTIMPLEMENTED();
+    // Following tests reach here.
+    //  * external/wpt/css/CSS2/positioning/toogle-abspos-on-relpos-inline-child.html
+    //  * fast/block/float/float-originating-line-deleted-crash.html
+    //  * paint/stacking/layer-stacking-change-under-inline.html
+    auto* const anonymous_box =
+        CreateAnonymousContainerForBlockChildren(/* split_flow */ false);
+    LayoutBoxModelObject::AddChild(anonymous_box, child);
+    Children()->RemoveChildNode(this, child);
+    anonymous_box->AddChild(child);
     return;
   }
   // We have to split the parent flow.
@@ -1692,7 +1704,7 @@ void LayoutInline::DirtyLineBoxes(bool full_layout) {
 
 InlineFlowBox* LayoutInline::CreateInlineFlowBox() {
   NOT_DESTROYED();
-  return new InlineFlowBox(LineLayoutItem(this));
+  return MakeGarbageCollected<InlineFlowBox>(LineLayoutItem(this));
 }
 
 InlineFlowBox* LayoutInline::CreateAndAppendInlineFlowBox() {

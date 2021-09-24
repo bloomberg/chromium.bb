@@ -30,6 +30,7 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-decoration-unstable-v1-server-protocol.h>
+#include <xdg-output-unstable-v1-server-protocol.h>
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
@@ -83,11 +84,17 @@
 #include "components/exo/wayland/zwp_relative_pointer_manager.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wayland/zxdg_decoration_manager.h"
+#include "components/exo/wayland/zxdg_output_manager.h"
 #include "components/exo/wayland/zxdg_shell.h"
 
 #if BUILDFLAG(ENABLE_WESTON_TEST)
 #include <weston-test-server-protocol.h>
 #include "components/exo/wayland/weston_test.h"
+#endif
+
+#if BUILDFLAG(ENABLE_COLOR_MANAGER)
+#include <color-management-unstable-v1-server-protocol.h>
+#include "components/exo/wayland/zwp_color_manager.h"
 #endif
 #endif
 
@@ -123,7 +130,7 @@ const char kWaylandSocketGroup[] = "wayland";
 bool IsDrmAtomicAvailable() {
 #if defined(USE_OZONE)
   auto& host_properties =
-      ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
+      ui::OzonePlatform::GetInstance()->GetPlatformRuntimeProperties();
   return host_properties.supports_overlays;
 #else
   LOG(WARNING) << "Ozone disabled, cannot determine whether DrmAtomic is "
@@ -226,12 +233,18 @@ Server::Server(Display* display) : display_(display) {
   wl_global_create(wl_display_.get(),
                    &zwp_relative_pointer_manager_v1_interface, 1, display_,
                    bind_relative_pointer_manager);
+#if BUILDFLAG(ENABLE_COLOR_MANAGER)
+  wl_global_create(wl_display_.get(), &zwp_color_manager_v1_interface, 1,
+                   display_, bind_zwp_color_manager);
+#endif
   wl_global_create(wl_display_.get(), &zcr_color_space_v1_interface, 1,
                    display_, bind_color_space);
   wl_global_create(wl_display_.get(), &zxdg_decoration_manager_v1_interface, 1,
                    display_, bind_zxdg_decoration_manager);
   wl_global_create(wl_display_.get(), &zcr_extended_drag_v1_interface, 1,
                    display_, bind_extended_drag);
+  wl_global_create(wl_display_.get(), &zxdg_output_manager_v1_interface, 3,
+                   display_, bind_zxdg_output_manager);
 
 #if BUILDFLAG(ENABLE_WESTON_TEST)
   weston_test_data_ = std::make_unique<WestonTestState>();

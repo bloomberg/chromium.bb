@@ -93,7 +93,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AbiMigration.Event" enum="ArcCorePriAbiMigEvent"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>vraheja@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -102,7 +102,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.AbiMigration.FailedAttempts" units="units"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>vraheja@chromium.org</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -164,7 +164,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2021-12-19">
+<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2022-02-20">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>The time elapsed for booting up the ARC instance.</summary>
@@ -189,7 +189,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
-<histogram name="Arc.AppCount" units="units" expires_after="2021-12-19">
+<histogram name="Arc.AppCount" units="units" expires_after="2022-02-20">
   <owner>elijahtaylor@google.com</owner>
   <owner>shihuis@google.com</owner>
   <summary>
@@ -476,7 +476,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Code installation result for ARC boot continue.</summary>
 </histogram>
 
-<histogram name="Arc.ChromeOsImeLatency" units="ms" expires_after="2021-10-01">
+<histogram name="Arc.ChromeOsImeLatency" units="ms" expires_after="2022-04-01">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -581,7 +581,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.ContainerRestartAfterCrashCount" units="units"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -671,7 +671,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.ArcTotal" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -708,7 +708,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Total" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-02-20">
   <owner>maajid@google.com</owner>
   <owner>shaochuan@google.com</owner>
   <owner>shihuis@google.com</owner>
@@ -740,6 +740,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     When a user clicks a toggle switch in &quot;External storage
     preferences&quot; screen, where the new value is ENABLED or not.
+  </summary>
+</histogram>
+
+<histogram name="Arc.FileSystemWatcher.Created" enum="BooleanEnabled"
+    expires_after="2022-08-26">
+  <owner>risan@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    How many times ArcFileSystemWatcher is created. Used as baseline for
+    Arc.FileSystemWatcher.ExceedLimit.
+  </summary>
+</histogram>
+
+<histogram name="Arc.FileSystemWatcher.ExceedLimit"
+    enum="ArcFileSystemWatcherExceedLimitState" expires_after="2022-08-26">
+  <owner>risan@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    How many times inotify in ArcFileSystemWatcher exceeds its limit.
+    ArcFileSystemWatcher watches file system events on files shared with ARC by
+    using inotify, and requests MediaFileProvider in ARC to index media files
+    when needed. But the FilePathWatcher imposes a limit for the number of
+    watches that can be used by ArcFileSystemWatcher. Therefore, it is probable
+    that some media files are left unindexed.
   </summary>
 </histogram>
 
@@ -864,7 +890,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Arc.ImeCount" units="units" expires_after="2021-10-01">
+<histogram name="Arc.ImeCount" units="units" expires_after="2022-04-01">
   <owner>yhanada@chromium.org</owner>
   <owner>tetsui@chromium.org</owner>
   <summary>
@@ -899,10 +925,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     expires_after="2021-12-31">
   <owner>sstan@chromium.org</owner>
   <owner>nancylingwang@chromium.org</owner>
-  <summary>
-    The number of ARC apps launched with ghost window. Recorded when ARC apps
-    are restored by full restore component.
-  </summary>
+  <summary>The number of ARC apps launched with ghost window.</summary>
 </histogram>
 
 <histogram name="Arc.LowLatencyStylusLibrary.PredictionTarget" units="ms"
@@ -1130,7 +1153,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2022-01-02">
+    expires_after="2022-03-06">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -1185,7 +1208,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents"
-    expires_after="2021-10-04">
+    expires_after="2022-04-04">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -1498,7 +1521,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>niwa@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>

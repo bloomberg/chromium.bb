@@ -40,7 +40,7 @@ def _eager_reshape(tensor, shape, ctx):
   """Eager-only version of Reshape op; requires tensor is an eager Tensor."""
   attr_t = tensor._datatype_enum()  # pylint: disable=protected-access
   attr_tshape, (shape,) = execute.args_to_matching_eager(
-      [shape], ctx, dtypes.int32)
+      [shape], ctx, [dtypes.int32, dtypes.int64], dtypes.int32)
   inputs_flat = [tensor, shape]
   attrs = ("T", attr_t, "Tshape", attr_tshape)
   result, = execute.execute(
@@ -64,6 +64,14 @@ def _eager_identity(tensor, ctx):
   attrs = ("T", tensor.dtype.as_datatype_enum)
   result, = execute.execute(
       b"Identity", 1, inputs=[tensor], attrs=attrs, ctx=ctx)
+  return result
+
+
+def _eager_const(tensor, ctx):
+  """Copy a constant to the current device."""
+  attrs = ("T", tensor.dtype.as_datatype_enum)
+  result, = execute.execute(
+      b"_EagerConst", 1, inputs=[tensor], attrs=attrs, ctx=ctx)
   return result
 
 
@@ -169,11 +177,10 @@ def constant(value, dtype=None, shape=None, name="Const"):
 
   Note: All eager `tf.Tensor` values are immutable (in contrast to
   `tf.Variable`). There is nothing especially _constant_ about the value
-  returned from `tf.constant`. This function it is not fundamentally different
-  from `tf.convert_to_tensor`. The name `tf.constant` comes from the symbolic
-  APIs (like `tf.data` or keras functional models) where the `value` is embeded
-  in a `Const` node in the `tf.Graph`. `tf.constant` is useful for asserting
-  that the value can be embedded that way.
+  returned from `tf.constant`. This function is not fundamentally different from
+  `tf.convert_to_tensor`. The name `tf.constant` comes from the `value` being
+  embedded in a `Const` node in the `tf.Graph`. `tf.constant` is useful
+  for asserting that the value can be embedded that way.
 
   If the argument `dtype` is not specified, then the type is inferred from
   the type of `value`.
@@ -189,7 +196,7 @@ def constant(value, dtype=None, shape=None, name="Const"):
     array([[1, 2, 3],
            [4, 5, 6]])>
 
-  If `dtype` is specified the resulting tensor values are cast to the requested
+  If `dtype` is specified, the resulting tensor values are cast to the requested
   `dtype`.
 
   >>> tf.constant([1, 2, 3, 4, 5, 6], dtype=tf.float64)
@@ -220,15 +227,15 @@ def constant(value, dtype=None, shape=None, name="Const"):
   But, since `tf.constant` embeds the value in the `tf.Graph` this fails for
   symbolic tensors:
 
-  >>> i = tf.keras.layers.Input(shape=[None, None])
-  >>> t = tf.constant(i)
+  >>> with tf.compat.v1.Graph().as_default():
+  ...   i = tf.compat.v1.placeholder(shape=[None, None], dtype=tf.float32)
+  ...   t = tf.constant(i)
   Traceback (most recent call last):
   ...
-  NotImplementedError: ...
+  TypeError: ...
 
-  `tf.constant` will _always_ create CPU (host) tensors. In order to create
-  tensors on other devices, use `tf.identity`. (If the `value` is an eager
-  Tensor, however, the tensor will be returned unmodified as mentioned above.)
+  `tf.constant` will create tensors on the current device. Inputs which are
+  already tensors maintain their placements unchanged.
 
   Related Ops:
 
@@ -236,8 +243,9 @@ def constant(value, dtype=None, shape=None, name="Const"):
     * It has no `shape` argument.
     * Symbolic tensors are allowed to pass through.
 
-      >>> i = tf.keras.layers.Input(shape=[None, None])
-      >>> t = tf.convert_to_tensor(i)
+    >>> with tf.compat.v1.Graph().as_default():
+    ...   i = tf.compat.v1.placeholder(shape=[None, None], dtype=tf.float32)
+    ...   t = tf.convert_to_tensor(i)
 
   * `tf.fill`: differs in a few ways:
     *   `tf.constant` supports arbitrary constants, not just uniform scalar
@@ -296,7 +304,7 @@ def _constant_impl(
 
 
 def _constant_eager_impl(ctx, value, dtype, shape, verify_shape):
-  """Implementation of eager constant."""
+  """Creates a constant on the current device."""
   t = convert_to_eager_tensor(value, ctx, dtype)
   if shape is None:
     return t

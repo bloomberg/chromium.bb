@@ -92,10 +92,6 @@ component("cpp") {
     "assistant/controller/assistant_suggestions_controller.h",
     "assistant/controller/assistant_ui_controller.cc",
     "assistant/controller/assistant_ui_controller.h",
-    "assistant/conversation_starter.cc",
-    "assistant/conversation_starter.h",
-    "assistant/conversation_starters_client.cc",
-    "assistant/conversation_starters_client.h",
     "back_gesture_contextual_nudge_controller.h",
     "back_gesture_contextual_nudge_delegate.h",
     "bluetooth_config_service.cc",
@@ -110,8 +106,6 @@ component("cpp") {
     "clipboard_image_model_factory.h",
     "desk_template.cc",
     "desk_template.h",
-    "desks_helper.cc",
-    "desks_helper.h",
     "esim_manager.cc",
     "esim_manager.h",
     "file_icon_util.cc",
@@ -197,8 +191,6 @@ component("cpp") {
     "metrics_util.h",
     "microphone_mute_notification_delegate.cc",
     "microphone_mute_notification_delegate.h",
-    "move_to_desks_menu_delegate.cc",
-    "move_to_desks_menu_delegate.h",
     "nearby_share_controller.h",
     "nearby_share_delegate.h",
     "network_config_service.cc",
@@ -282,6 +274,8 @@ component("cpp") {
     "shell_window_ids.h",
     "shutdown_controller.cc",
     "shutdown_controller.h",
+    "smartlock_state.cc",
+    "smartlock_state.h",
     "style/color_mode_observer.h",
     "style/color_provider.cc",
     "style/color_provider.h",
@@ -291,6 +285,8 @@ component("cpp") {
     "system_tray.h",
     "system_tray_client.h",
     "system_tray_observer.h",
+    "tab_cluster/clusterer.cc",
+    "tab_cluster/clusterer.h",
     "tab_cluster/correlation_clusterer.cc",
     "tab_cluster/correlation_clusterer.h",
     "tab_cluster/tab_cluster_ui_controller.cc",
@@ -344,10 +340,10 @@ component("cpp") {
   ]
 
   deps = [
+    "//ash/components/quick_answers/public/cpp:prefs",
     "//ash/constants",
     "//ash/public/cpp/ambient/proto",
     "//base",
-    "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/bluetooth_config:in_process_bluetooth_config",
@@ -411,6 +407,7 @@ source_set("unit_tests") {
     "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",
     "shelf_model_unittest.cc",
+    "tab_cluster/clusterer_unittest.cc",
     "tab_cluster/correlation_clusterer_unittest.cc",
     "tab_cluster/undirected_graph_unittest.cc",
     "view_shadow_unittest.cc",
@@ -418,6 +415,7 @@ source_set("unit_tests") {
 
   deps = [
     ":cpp",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//chromeos/ui/vector_icons",
@@ -434,6 +432,8 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/mock_projector_controller.cc",
+    "test/mock_projector_controller.h",
     "test/test_app_list_color_provider.cc",
     "test/test_app_list_color_provider.h",
     "test/test_image_downloader.cc",
@@ -444,6 +444,8 @@ source_set("test_support") {
     "test/test_nearby_share_delegate.h",
     "test/test_new_window_delegate.cc",
     "test/test_new_window_delegate.h",
+    "test/test_shelf_item_delegate.cc",
+    "test/test_shelf_item_delegate.h",
     "test/test_system_tray_client.cc",
     "test/test_system_tray_client.h",
   ]
@@ -453,6 +455,7 @@ source_set("test_support") {
     "//base",
     "//services/device/public/cpp:test_support",
     "//services/network/public/cpp:cpp",
+    "//testing/gmock",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/gfx",

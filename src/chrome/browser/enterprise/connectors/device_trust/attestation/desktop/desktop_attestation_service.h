@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_ENTERPRISE_CONNECTORS_DEVICE_TRUST_ATTESTATION_DESKTOP_DESKTOP_ATTESTATION_SERVICE_H_
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_DEVICE_TRUST_ATTESTATION_DESKTOP_DESKTOP_ATTESTATION_SERVICE_H_
 
+#include <memory>
+#include <string>
+
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/google_keys.h"
-#include "crypto/unexportable_key.h"
 
 namespace enterprise_connectors {
 
+class DeviceTrustSignals;
 class SigningKeyPair;
 
 // This class is in charge of handling the key pair used for attestation. Also
@@ -18,27 +22,25 @@ class SigningKeyPair;
 // Verified Access.
 class DesktopAttestationService : public AttestationService {
  public:
-  DesktopAttestationService();
+  explicit DesktopAttestationService(std::unique_ptr<SigningKeyPair> key_pair);
   ~DesktopAttestationService() override;
 
   // Export the public key of `key_pair_` in SubjectPublicKeyInfo format.
   std::string ExportPublicKey();
 
-  // Builds a challenge response for the given challenge |request| and wraps it
-  // into the |result|.
+  // Builds a challenge response for the given challenge `request` and
+  // `signals`, and wraps it into the `result`.
   void SignEnterpriseChallenge(const SignEnterpriseChallengeRequest& request,
+                               std::unique_ptr<DeviceTrustSignals> signals,
                                SignEnterpriseChallengeReply* result);
-
-  // Set a signing key for testing so that it does not need to be read from
-  // platform specific storage.
-  void SetKeyPairForTesting(
-      std::unique_ptr<crypto::UnexportableSigningKey> key_pair);
 
   // AttestationService:
   void BuildChallengeResponseForVAChallenge(
       const std::string& challenge,
+      std::unique_ptr<DeviceTrustSignals> signals,
       AttestationCallback callback) override;
   void StampReport(DeviceTrustReportEvent& report) override;
+  bool RotateSigningKey() override;
 
  private:
   // Verify challenge comes from Verify Access.
@@ -49,7 +51,8 @@ class DesktopAttestationService : public AttestationService {
   // Returns the challenge response proto.
   std::string VerifyChallengeAndMaybeCreateChallengeResponse(
       const std::string& serialized_signed_data,
-      const std::string& public_key_modulus_hex);
+      const std::string& public_key_modulus_hex,
+      std::unique_ptr<DeviceTrustSignals> signals);
 
   // The KeyInfo message encrypted using a public encryption key, with
   // the following parameters:
@@ -60,12 +63,6 @@ class DesktopAttestationService : public AttestationService {
                                 const KeyInfo& key_info,
                                 EncryptedData* encrypted_data);
 
-  // Sign the challenge and return the challenge response in
-  // `result.challenge_response`.
-  void SignEnterpriseChallengeTask(
-      const SignEnterpriseChallengeRequest& request,
-      SignEnterpriseChallengeReply* result);
-
   // Sign `data` using `key_pair_` and store that value in `signature`.
   bool SignChallengeData(const std::string& data, std::string* response);
 
@@ -74,17 +71,7 @@ class DesktopAttestationService : public AttestationService {
       AttestationCallback callback,
       const std::string& challenge_response_proto);
 
-  // Get customer id from policy fetch if CloudPolicyStore is loaded.
-  // If the CloudPolicyStore is not ready to retrieve the value, do nothing.
-  void MayGetCustomerId();
-
-  // Fill out `public_key_`, `customer_id` and `device_id_`.
-  void FillValuesForCBCM();
-
   GoogleKeys google_keys_;
-  std::string public_key_;
-  std::string customer_id_;
-  std::string device_id_;
   std::unique_ptr<enterprise_connectors::SigningKeyPair> key_pair_;
 
   base::WeakPtrFactory<DesktopAttestationService> weak_factory_{this};

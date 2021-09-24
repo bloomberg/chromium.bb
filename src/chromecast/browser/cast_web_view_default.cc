@@ -90,9 +90,7 @@ CastWebViewDefault::CastWebViewDefault(
                                                     web_service_)),
       site_instance_(Prelaunch(renderer_prelauncher_.get())),
       web_contents_(CreateWebContents(browser_context, site_instance_)),
-      cast_web_contents_(web_contents_.get(),
-                         create_params.web_contents_delegate,
-                         params_->Clone()),
+      cast_web_contents_(web_contents_.get(), params_->Clone()),
       window_(cast_content_window
                   ? std::move(cast_content_window)
                   : web_service->CreateWindow(create_params.window_delegate,
@@ -103,14 +101,6 @@ CastWebViewDefault::CastWebViewDefault(
   web_contents_->SetDelegate(this);
 #if defined(USE_AURA)
   web_contents_->GetNativeView()->SetName(params_->activity_id);
-#endif
-
-#if BUILDFLAG(IS_ANDROID_APPLIANCE)
-  // Configure the ducking multiplier for AThings-like speakers. We don't want
-  // the Chromium MediaSession to duck since we are doing our own ducking.
-  constexpr double kDuckingMultiplier = 1.0;
-  content::MediaSession::Get(web_contents_.get())
-      ->SetDuckingVolumeMultiplier(kDuckingMultiplier);
 #endif
 }
 

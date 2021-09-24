@@ -262,9 +262,12 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     return;
   }
 
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    // When the split settings sync flag is on, the user must have opted into
-    // OS-level sync as a whole and wallpaper sync must be enabled.
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+    // When the sync settings categorization is on, the wallpaper sync status is
+    // stored in the kSyncOsWallpaper pref. The pref value essentially means
+    // "themes sync is on" && "apps sync is on".
+    // TODO(https://crbug.com/1243218): Figure out if we need to check
+    // IsOsSyncFeatureEnabled here.
     bool os_wallpaper_sync_enabled =
         sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
         profile->GetPrefs()->GetBoolean(
@@ -282,8 +285,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   }
 
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
-    // When sync split is disabled, wallpaper is synced as a group with
-    // browser themes.
+    // When sync settings categorization is disabled, wallpaper is synced as a
+    // group with browser themes.
     dict->SetBoolean(kSyncThemes,
                      sync_service->GetUserSettings()->GetSelectedTypes().Has(
                          syncer::UserSelectableType::kThemes));
@@ -314,7 +317,7 @@ ExtensionFunction::ResponseAction
 WallpaperPrivateSetWallpaperIfExistsFunction::Run() {
   std::unique_ptr<
       extensions::api::wallpaper_private::SetWallpaperIfExists::Params>
-      params = set_wallpaper_if_exists::Params::Create(*args_);
+      params = set_wallpaper_if_exists::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Convert |asset_id| from string to optional uint64_t. Empty string results
@@ -351,7 +354,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
     auto args = std::make_unique<base::ListValue>();
     // TODO(crbug.com/830212): Do not send arguments when the function fails.
     // Call sites should inspect chrome.runtime.lastError instead.
-    args->AppendBoolean(false);
+    args->Append(false);
     Respond(ErrorWithArguments(
         std::move(args), "The wallpaper doesn't exist in local file system."));
   }
@@ -365,7 +368,7 @@ WallpaperPrivateSetWallpaperFunction::~WallpaperPrivateSetWallpaperFunction() {
 
 ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
   std::unique_ptr<extensions::api::wallpaper_private::SetWallpaper::Params>
-      params = set_wallpaper::Params::Create(*args_);
+      params = set_wallpaper::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // |from_user| is false as this method is called after
@@ -420,7 +423,7 @@ WallpaperPrivateSetCustomWallpaperFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateSetCustomWallpaperFunction::Run() {
-  params = set_custom_wallpaper::Params::Create(*args_);
+  params = set_custom_wallpaper::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Gets account id from the caller, ensuring multiprofile compatibility.
@@ -463,7 +466,7 @@ WallpaperPrivateSetCustomWallpaperLayoutFunction::
 ExtensionFunction::ResponseAction
 WallpaperPrivateSetCustomWallpaperLayoutFunction::Run() {
   std::unique_ptr<set_custom_wallpaper_layout::Params> params(
-      set_custom_wallpaper_layout::Params::Create(*args_));
+      set_custom_wallpaper_layout::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
@@ -513,7 +516,7 @@ WallpaperPrivateGetThumbnailFunction::~WallpaperPrivateGetThumbnailFunction() {
 
 ExtensionFunction::ResponseAction WallpaperPrivateGetThumbnailFunction::Run() {
   std::unique_ptr<get_thumbnail::Params> params(
-      get_thumbnail::Params::Create(*args_));
+      get_thumbnail::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   base::FilePath thumbnail_path;
@@ -589,7 +592,7 @@ WallpaperPrivateSaveThumbnailFunction::
 
 ExtensionFunction::ResponseAction WallpaperPrivateSaveThumbnailFunction::Run() {
   std::unique_ptr<save_thumbnail::Params> params(
-      save_thumbnail::Params::Create(*args_));
+      save_thumbnail::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   WallpaperFunctionBase::GetNonBlockingTaskRunner()->PostTask(
@@ -657,7 +660,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::
 ExtensionFunction::ResponseAction
 WallpaperPrivateRecordWallpaperUMAFunction::Run() {
   std::unique_ptr<record_wallpaper_uma::Params> params(
-      record_wallpaper_uma::Params::Create(*args_));
+      record_wallpaper_uma::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   ash::WallpaperType source = GetWallpaperType(params->source);
@@ -710,7 +713,7 @@ WallpaperPrivateGetImagesInfoFunction::
 
 ExtensionFunction::ResponseAction WallpaperPrivateGetImagesInfoFunction::Run() {
   std::unique_ptr<get_images_info::Params> params(
-      get_images_info::Params::Create(*args_));
+      get_images_info::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   image_info_fetcher_ =
@@ -773,7 +776,7 @@ WallpaperPrivateGetLocalImageDataFunction::
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetLocalImageDataFunction::Run() {
   std::unique_ptr<get_local_image_data::Params> params(
-      get_local_image_data::Params::Create(*args_));
+      get_local_image_data::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(crbug.com/811564): Create file backed blob instead.
@@ -835,7 +838,7 @@ WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetCurrentWallpaperThumbnailFunction::Run() {
   std::unique_ptr<get_current_wallpaper_thumbnail::Params> params(
-      get_current_wallpaper_thumbnail::Params::Create(*args_));
+      get_current_wallpaper_thumbnail::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto image = WallpaperControllerClientImpl::Get()->GetWallpaperImage();
@@ -858,7 +861,7 @@ WallpaperPrivateGetSurpriseMeImageFunction::
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSurpriseMeImageFunction::Run() {
   std::unique_ptr<get_surprise_me_image::Params> params(
-      get_surprise_me_image::Params::Create(*args_));
+      get_surprise_me_image::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   surprise_me_image_fetcher_ =

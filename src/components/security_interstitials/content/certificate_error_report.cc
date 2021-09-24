@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/network_time/network_time_tracker.h"
@@ -108,22 +109,22 @@ void AddVerifyFlagsToReport(
 void AddMacTrustFlagsToReport(
     int mac_trust_flags,
     ::google::protobuf::RepeatedField<int>* report_flags) {
-#define COPY_TRUST_FLAGS(flag)                            \
-  if (mac_trust_flags & net::TrustStoreMac::TRUST_##flag) \
-    report_flags->Add(                                    \
-        chrome_browser_ssl::TrialVerificationInfo::MAC_TRUST_##flag);
+#define COPY_TRUST_FLAGS(flag)                    \
+  if (mac_trust_flags & net::TrustStoreMac::flag) \
+    report_flags->Add(chrome_browser_ssl::TrialVerificationInfo::MAC_##flag);
 
-  COPY_TRUST_FLAGS(SETTINGS_ARRAY_EMPTY);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_EMPTY);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_UNKNOWN_KEY);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_POLICY);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_INVALID_POLICY_TYPE);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_APPLICATION);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_POLICY_STRING);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_KEY_USAGE);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_RESULT);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_INVALID_RESULT_TYPE);
-  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_ALLOWED_ERROR);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_ARRAY_EMPTY);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_EMPTY);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_UNKNOWN_KEY);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_POLICY);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_INVALID_POLICY_TYPE);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_APPLICATION);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_POLICY_STRING);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_KEY_USAGE);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_RESULT);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_INVALID_RESULT_TYPE);
+  COPY_TRUST_FLAGS(TRUST_SETTINGS_DICT_CONTAINS_ALLOWED_ERROR);
+  COPY_TRUST_FLAGS(COPY_TRUST_SETTINGS_ERROR);
 
 #undef COPY_TRUST_FLAGS
 }
@@ -441,4 +442,13 @@ CertificateErrorReport::CertificateErrorReport(
   features_info->set_android_aia_fetching_status(
       chrome_browser_ssl::CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
 #endif
+
+  cert_report_->set_chrome_version(version_info::GetVersionNumber());
+  cert_report_->set_os_type(version_info::GetOSType());
+  cert_report_->set_os_version(base::SysInfo::OperatingSystemVersion());
+  cert_report_->set_hardware_model_name(base::SysInfo::HardwareModelName());
+  cert_report_->set_os_architecture(
+      base::SysInfo::OperatingSystemArchitecture());
+  cert_report_->set_process_architecture(
+      base::SysInfo::ProcessCPUArchitecture());
 }

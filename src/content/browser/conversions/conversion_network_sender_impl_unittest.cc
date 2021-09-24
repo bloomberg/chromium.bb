@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -47,8 +48,8 @@ ConversionReport GetReport(int64_t conversion_id) {
       ImpressionBuilder(base::Time()).SetData(conversion_id).Build(),
       /*conversion_data=*/conversion_id,
       /*conversion_time=*/base::Time(),
-      /*report_time=*/base::Time(),
-      /*conversion_id=*/conversion_id);
+      /*report_time=*/base::Time(), /*priority=*/0,
+      ConversionReport::Id(conversion_id));
 }
 
 }  // namespace
@@ -83,7 +84,9 @@ class ConversionNetworkSenderTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  void OnReportSent(SentReportInfo info) { sent_reports_.push_back(info); }
+  void OnReportSent(SentReportInfo info) {
+    sent_reports_.push_back(std::move(info));
+  }
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 };
@@ -106,25 +109,62 @@ TEST_F(ConversionNetworkSenderTest, LoadFlags) {
   EXPECT_TRUE(load_flags & net::LOAD_DISABLE_CACHE);
 }
 
-TEST_F(ConversionNetworkSenderTest, ReportSent_QueryParamsSetCorrectly) {
-  auto impression =
-      ImpressionBuilder(base::Time())
-          .SetData(100)
-          .SetReportingOrigin(url::Origin::Create(GURL("https://a.com")))
-          .Build();
-  ConversionReport report(impression,
-                          /*conversion_data=*/5,
-                          /*conversion_time=*/base::Time(),
-                          /*report_time=*/base::Time(),
-                          /*conversion_id=*/1);
-  network_sender_->SendReport(report, base::DoNothing());
+TEST_F(ConversionNetworkSenderTest, Isolation) {
+  network_sender_->SendReport(GetReport(/*conversion_id=*/1),
+                              GetSentCallback());
+  network_sender_->SendReport(GetReport(/*conversion_id=*/1),
+                              GetSentCallback());
 
-  const network::ResourceRequest* pending_request;
-  EXPECT_TRUE(test_url_loader_factory_.IsPending(
-      "https://a.com/.well-known/attribution-reporting/report-attribution",
-      &pending_request));
-  EXPECT_EQ(R"({"source_event_id":"100","trigger_data":"5"})",
-            network::GetUploadData(*pending_request));
+  const network::ResourceRequest& request1 =
+      test_url_loader_factory_.GetPendingRequest(0)->request;
+  const network::ResourceRequest& request2 =
+      test_url_loader_factory_.GetPendingRequest(1)->request;
+
+  EXPECT_EQ(net::IsolationInfo::RequestType::kOther,
+            request1.trusted_params->isolation_info.request_type());
+  EXPECT_EQ(net::IsolationInfo::RequestType::kOther,
+            request2.trusted_params->isolation_info.request_type());
+
+  EXPECT_TRUE(request1.trusted_params->isolation_info.network_isolation_key()
+                  .IsTransient());
+  EXPECT_TRUE(request2.trusted_params->isolation_info.network_isolation_key()
+                  .IsTransient());
+
+  EXPECT_NE(request1.trusted_params->isolation_info.network_isolation_key(),
+            request2.trusted_params->isolation_info.network_isolation_key());
+}
+
+TEST_F(ConversionNetworkSenderTest, ReportSent_ReportBodySetCorrectly) {
+  const struct {
+    StorableImpression::SourceType source_type;
+    const char* expected_report;
+  } kTestCases[] = {
+      {StorableImpression::SourceType::kNavigation,
+       R"({"source_event_id":"100","source_type":"navigation","trigger_data":"5"})"},
+      {StorableImpression::SourceType::kEvent,
+       R"({"source_event_id":"100","source_type":"event","trigger_data":"5"})"},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    auto impression = ImpressionBuilder(base::Time())
+                          .SetData(100)
+                          .SetSourceType(test_case.source_type)
+                          .Build();
+    ConversionReport report(impression,
+                            /*conversion_data=*/5,
+                            /*conversion_time=*/base::Time(),
+                            /*report_time=*/base::Time(),
+                            /*priority=*/0, ConversionReport::Id(1));
+    network_sender_->SendReport(report, base::DoNothing());
+
+    const network::ResourceRequest* pending_request;
+    EXPECT_TRUE(
+        test_url_loader_factory_.IsPending(kReportUrl, &pending_request));
+    EXPECT_EQ(test_case.expected_report,
+              network::GetUploadData(*pending_request));
+    EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+        kReportUrl, ""));
+  }
 }
 
 TEST_F(ConversionNetworkSenderTest, ReportSent_RequestAttributesSet) {
@@ -138,7 +178,7 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_RequestAttributesSet) {
                           /*conversion_data=*/1,
                           /*conversion_time=*/base::Time(),
                           /*report_time=*/base::Time(),
-                          /*conversion_id=*/1);
+                          /*priority=*/0, ConversionReport::Id(1));
   network_sender_->SendReport(report, base::DoNothing());
 
   const network::ResourceRequest* pending_request;
@@ -162,12 +202,10 @@ TEST_F(ConversionNetworkSenderTest, ReportSent_CallbackFired) {
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       kReportUrl, ""));
-  EXPECT_THAT(
-      sent_reports_,
-      ElementsAre(SentReportInfo(
-          *report.conversion_id, report.original_report_time, GURL(kReportUrl),
-          R"({"source_event_id":"1","trigger_data":"1"})",
-          /*http_response_code=*/200, /*should_retry=*/false)));
+  EXPECT_THAT(sent_reports_,
+              ElementsAre(SentReportInfo(std::move(report),
+                                         SentReportInfo::Status::kSent,
+                                         /*http_response_code=*/200)));
 }
 
 TEST_F(ConversionNetworkSenderTest, SenderDeletedDuringRequest_NoCrash) {
@@ -193,27 +231,25 @@ TEST_F(ConversionNetworkSenderTest, ReportRequestHangs_TimesOut) {
   // Also verify that the sent callback runs if the request times out.
   // TODO(apaseltiner): Should we propagate the timeout via the SentReportInfo
   // instead of just setting |http_response_code = 0|?
-  EXPECT_THAT(
-      sent_reports_,
-      ElementsAre(SentReportInfo(
-          *report.conversion_id, report.original_report_time, GURL(kReportUrl),
-          R"({"source_event_id":"1","trigger_data":"1"})",
-          /*http_response_code=*/0, /*should_retry=*/true)));
+  EXPECT_THAT(sent_reports_,
+              ElementsAre(SentReportInfo(std::move(report),
+                                         SentReportInfo::Status::kShouldRetry,
+                                         /*http_response_code=*/0)));
 }
 
 TEST_F(ConversionNetworkSenderTest,
        ReportRequestFailsWithTargetedError_ShouldRetrySet) {
   struct {
     int net_error;
-    bool should_retry;
+    SentReportInfo::Status expected_status;
   } kTestCases[] = {
-      {.net_error = net::ERR_INTERNET_DISCONNECTED, .should_retry = true},
-      {.net_error = net::ERR_TIMED_OUT, .should_retry = true},
-      {.net_error = net::ERR_CONNECTION_ABORTED, .should_retry = true},
-      {.net_error = net::ERR_CONNECTION_TIMED_OUT, .should_retry = true},
-      {.net_error = net::ERR_CONNECTION_REFUSED, .should_retry = false},
-      {.net_error = net::ERR_CERT_DATE_INVALID, .should_retry = false},
-      {.net_error = net::OK, .should_retry = false},
+      {net::ERR_INTERNET_DISCONNECTED, SentReportInfo::Status::kShouldRetry},
+      {net::ERR_TIMED_OUT, SentReportInfo::Status::kShouldRetry},
+      {net::ERR_CONNECTION_ABORTED, SentReportInfo::Status::kShouldRetry},
+      {net::ERR_CONNECTION_TIMED_OUT, SentReportInfo::Status::kShouldRetry},
+      {net::ERR_CONNECTION_REFUSED, SentReportInfo::Status::kSent},
+      {net::ERR_CERT_DATE_INVALID, SentReportInfo::Status::kSent},
+      {net::OK, SentReportInfo::Status::kSent},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -227,7 +263,7 @@ TEST_F(ConversionNetworkSenderTest,
         network::URLLoaderCompletionStatus(test_case.net_error),
         network::mojom::URLResponseHead::New(), std::string());
 
-    EXPECT_EQ(test_case.should_retry, sent_reports_.back().should_retry);
+    EXPECT_EQ(test_case.expected_status, sent_reports_.back().status);
   }
 }
 
@@ -251,7 +287,7 @@ TEST_F(ConversionNetworkSenderTest, ReportRequestFailsWithHeaders_NotRetried) {
   EXPECT_EQ(0, test_url_loader_factory_.NumPending());
 
   EXPECT_EQ(1u, num_reports_sent());
-  EXPECT_EQ(false, sent_reports_.back().should_retry);
+  EXPECT_EQ(SentReportInfo::Status::kSent, sent_reports_.back().status);
 }
 
 TEST_F(ConversionNetworkSenderTest,
@@ -264,7 +300,7 @@ TEST_F(ConversionNetworkSenderTest,
       kReportUrl, "", net::HttpStatusCode::HTTP_BAD_REQUEST));
 
   EXPECT_EQ(1u, num_reports_sent());
-  EXPECT_EQ(false, sent_reports_[0].should_retry);
+  EXPECT_EQ(SentReportInfo::Status::kSent, sent_reports_[0].status);
 }
 
 TEST_F(ConversionNetworkSenderTest,
@@ -335,10 +371,8 @@ TEST_F(ConversionNetworkSenderTest, ReportResultsInHttpError_SentCallbackRuns) {
   EXPECT_THAT(
       sent_reports_,
       ElementsAre(SentReportInfo(
-          *report.conversion_id, report.original_report_time, GURL(kReportUrl),
-          R"({"source_event_id":"1","trigger_data":"1"})",
-          /*http_response_code=*/net::HttpStatusCode::HTTP_BAD_REQUEST,
-          /*should_retry=*/false)));
+          std::move(report), SentReportInfo::Status::kSent,
+          /*http_response_code=*/net::HttpStatusCode::HTTP_BAD_REQUEST)));
 }
 
 TEST_F(ConversionNetworkSenderTest, ManyReports_AllSentSuccessfully) {

@@ -207,12 +207,12 @@ class AlertGroupWorkflow(object):
     query = alert_group.AlertGroup.query(
         alert_group.AlertGroup.active == True,
         alert_group.AlertGroup.canonical_group == self._group.key)
-    return query.fetch() or []
+    return query.fetch()
 
   def _FindRelatedAnomalies(self, groups):
     query = anomaly.Anomaly.query(
         anomaly.Anomaly.groups.IN([g.key for g in groups]))
-    return query.fetch() or []
+    return query.fetch()
 
   def _PrepareGroupUpdate(self):
     """Prepares default input for the workflow Process
@@ -258,6 +258,13 @@ class AlertGroupWorkflow(object):
     logging.info('Processing workflow for group %s', self._group.key)
     update = update or self._PrepareGroupUpdate()
     logging.info('%d anomalies', len(update.anomalies))
+
+    # TODO(crbug.com/1240370): understand why Datastore query may return empty
+    # anomalies list.
+    if (not update.anomalies and self._group.anomalies
+        and self._group.group_type != alert_group.AlertGroup.Type.reserved):
+      logging.error('No anomailes detected. Skipping this run.')
+      return self._group.key
 
     # Process input before we start processing the group.
     for a in update.anomalies:

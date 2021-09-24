@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/queue.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
@@ -98,6 +99,8 @@ class PlayerCompositorDelegate {
   // compositor service and client under critical pressure.
   virtual void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  gfx::Point GetRootFrameOffsets() const { return root_frame_offsets_; }
 
   // Test methods:
 
@@ -192,6 +195,7 @@ class PlayerCompositorDelegate {
   int32_t next_request_id_{0};
   base::queue<int32_t> bitmap_request_queue_;
   std::map<int32_t, BitmapRequest> pending_bitmap_requests_;
+  gfx::Point root_frame_offsets_;
 
   base::WeakPtrFactory<PlayerCompositorDelegate> weak_factory_{this};
 };

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
+#include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,7 +133,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetDriveThumbnailFunction::Run() {
   using extensions::api::file_manager_private_internal::GetDriveThumbnail::
       Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -198,7 +199,7 @@ FileManagerPrivateInternalGetPdfThumbnailFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetPdfThumbnailFunction::Run() {
   using extensions::api::file_manager_private_internal::GetPdfThumbnail::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -288,7 +289,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::Run() {
   using extensions::api::file_manager_private_internal::
       GetArcDocumentsProviderThumbnail::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   scoped_refptr<storage::FileSystemContext> file_system_context =

@@ -78,13 +78,14 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 // bfcache yet.
 //
 // Tracking bug for enabling bfcache on desktop: https://crbug.com/1171298.
+const base::Feature kBackForwardCache {
+  "BackForwardCache",
 #if defined(OS_ANDROID)
-const base::Feature kBackForwardCache{"BackForwardCache",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kBackForwardCache{"BackForwardCache",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // Enable same-site back-forward cache for trybots. This is here because of
 // https://crbug.com/1211818 and should only used for trybots. For normal use
@@ -102,13 +103,15 @@ const base::Feature kBackForwardCacheSameSiteForBots{
 
 // BackForwardCacheMemoryControls is enabled only on Android to disable
 // BackForwardCache for lower memory devices due to memory limiations.
+const base::Feature kBackForwardCacheMemoryControls{
+  "BackForwardCacheMemoryControls",
+
 #if defined(OS_ANDROID)
-const base::Feature kBackForwardCacheMemoryControls{
-    "BackForwardCacheMemoryControls", base::FEATURE_ENABLED_BY_DEFAULT};
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kBackForwardCacheMemoryControls{
-    "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // Block subresource requests whose URLs contain embedded credentials (e.g.
 // `https://user:pass@example.com/resource`).
@@ -121,6 +124,7 @@ const base::Feature kBlockCredentialedSubresources{
 // See also:
 //  - https://wicg.github.io/private-network-access/#integration-fetch
 //  - kBlockInsecurePrivateNetworkRequestsFromPrivate
+//  - kBlockInsecurePrivateNetworkRequestsFromUnknown
 //  - kBlockInsecurePrivateNetworkRequestsForNavigations
 const base::Feature kBlockInsecurePrivateNetworkRequests{
     "BlockInsecurePrivateNetworkRequests", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -133,6 +137,15 @@ const base::Feature kBlockInsecurePrivateNetworkRequests{
 //  - kBlockInsecurePrivateNetworkRequests
 const base::Feature kBlockInsecurePrivateNetworkRequestsFromPrivate{
     "BlockInsecurePrivateNetworkRequestsFromPrivate",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When this feature is enabled, requests to localhost initiated from non-secure
+// contexts in the `unknown` IP address space are blocked.
+//
+// See also:
+//  - kBlockInsecurePrivateNetworkRequests
+const base::Feature kBlockInsecurePrivateNetworkRequestsFromUnknown{
+    "BlockInsecurePrivateNetworkRequestsFromUnknown",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables use of the PrivateNetworkAccessNonSecureContextsAllowed deprecation
@@ -152,13 +165,15 @@ const base::Feature kBlockInsecurePrivateNetworkRequestsForNavigations{
 };
 
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
+const base::Feature kBrowserUseDisplayThreadPriority{
+  "BrowserUseDisplayThreadPriority",
+
 #if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kBrowserUseDisplayThreadPriority{
-    "BrowserUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kBrowserUseDisplayThreadPriority{
-    "BrowserUseDisplayThreadPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // When enabled, keyboard user activation will be verified by the browser side.
 const base::Feature kBrowserVerifiedUserActivationKeyboard{
@@ -219,6 +234,11 @@ const base::Feature kCrashReporting{"CrashReporting",
 // https://github.com/WICG/client-hints-infrastructure/blob/master/reliability.md#critical-ch
 const base::Feature kCriticalClientHint{"CriticalClientHint",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable cross-origin sharing of WebAssembly modules.
+const base::Feature kCrossOriginWebAssemblyModuleSharingEnabled{
+    "CrossOriginWebAssemblyModuleSharingEnabled",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Puts save-data header in the holdback mode. This disables sending of
 // save-data header to origins, and to the renderer processes within Chrome.
@@ -304,11 +324,6 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
 // Controls whether Client Hints are guarded by Permissions Policy.
 const base::Feature kFeaturePolicyForClientHints{
     "FeaturePolicyForClientHints", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the AccessHandle surface for File System Access API's Origin Private
-// File System. Tracking bug: https://crbug.com/1218431.
-const base::Feature kFileSystemAccessAccessHandle{
-    "FileSystemAccessAccessHandle", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -541,7 +556,7 @@ const base::Feature kPepperCrossOriginRedirectRestriction{
 // All ProcessHost objects live on UI thread.
 // https://crbug.com/904556
 const base::Feature kProcessHostOnUI{"ProcessHostOnUI",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable in-browser script loading for a brand new service worker.
 const base::Feature kPlzServiceWorker{"PlzServiceWorker",
@@ -640,18 +655,18 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Browser-side feature flag for SecurePaymentConfirmation, which can be used to
-// disable the feature. Enabling the browser-side feature by itself does not
-// actually enable the feature by default. The feature is also controlled by the
-// Blink runtime feature "SecurePaymentConfirmation". Both have to be enabled
-// for SecurePaymentConfirmation to be available.
-const base::Feature kSecurePaymentConfirmation{
-    "SecurePaymentConfirmationBrowser", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Used to enable API changes for Secure Payment Confirmation.
-// TODO(crbug.com/1228924): Enable by default in M94.
-const base::Feature kSecurePaymentConfirmationAPIV3{
-    "SecurePaymentConfirmationAPIV3", base::FEATURE_ENABLED_BY_DEFAULT};
+// Browser-side feature flag for Secure Payment Confirmation (SPC) that also
+// controls the render side feature state. SPC initial launch is intended
+// only for Mac devices with Touch ID and and Windows devices with
+// Windows Hello authentication available and setup.
+const base::Feature kSecurePaymentConfirmation {
+  "SecurePaymentConfirmationBrowser",
+#if defined(OS_MAC) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
@@ -736,6 +751,11 @@ const base::FeatureParam<SubframeShutdownDelayType>
                                     SubframeShutdownDelayType::kConstant,
                                     &delay_types};
 
+// If enabled, GetUserMedia API will only work when the concerned tab is in
+// focus
+const base::Feature kUserMediaCaptureOnFocus{"UserMediaCaptureOnFocus",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This is intended as a kill switch for the WebOTP Service feature. To enable
 // this feature, the experimental web platform features flag should be set.
 const base::Feature kWebOTP{"WebOTP", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -757,9 +777,16 @@ const base::Feature kServiceWorkerSubresourceFilter{
 // Cross-Origin-Opener-Policy header.  Note that this is only intended to be
 // used on Android, which does not use strict site isolation. See
 // https://crbug.com/1018656.
-const base::Feature kSiteIsolationForCrossOriginOpenerPolicy{
-    "SiteIsolationForCrossOriginOpenerPolicy",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSiteIsolationForCrossOriginOpenerPolicy {
+  "SiteIsolationForCrossOriginOpenerPolicy",
+// Enabled by default on Android only; see https://crbug.com/1206770.
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // This feature param (true by default) controls whether sites are persisted
 // across restarts.
 const base::FeatureParam<bool>
@@ -782,6 +809,13 @@ const base::FeatureParam<base::TimeDelta>
 // unrelated tabs.
 const base::Feature kDisableProcessReuse{"DisableProcessReuse",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Controls whether Android tries to always have a warm spare renderer process
+// around for the most recently requested BrowserContext.
+const base::Feature kSpareRenderer{"SpareRenderer",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
@@ -909,20 +943,25 @@ const base::Feature kWebAssemblyTiering{"WebAssemblyTiering",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly trap handler.
+const base::Feature kWebAssemblyTrapHandler {
+  "WebAssemblyTrapHandler",
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
      defined(OS_MAC)) &&                                             \
     defined(ARCH_CPU_X86_64)
-const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
+};
 
 // Controls whether the WebAuthentication API is enabled:
 // https://w3c.github.io/webauthn
 const base::Feature kWebAuth{"WebAuthentication",
                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether WebAuthn assertion transport is enabled.
+const base::Feature kWebAuthAssertionTransport{
+    "WebAuthenticationAssertionTransport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
 // using pairingless BLE protocol.

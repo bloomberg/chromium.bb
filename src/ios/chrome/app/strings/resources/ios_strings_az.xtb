@@ -28,7 +28,6 @@ Axtarış mexanizminiz: <ph name="DSE_NAME" />. Axtarış tarixçənizi silmək 
 <translation id="1165039591588034296">Xəta</translation>
 <translation id="1172898394251786223">Növbəti sahə</translation>
 <translation id="1176932207622159128">Təsvir Saxlanıla Bilmir</translation>
-<translation id="1180526666083833456">Cihazlarda sinxronizasiya edin və fərdiləşdirin.</translation>
 <translation id="1181037720776840403">Silin</translation>
 <translation id="1207113853726624428">Yeni Axtarış</translation>
 <translation id="1209206284964581585">Hələlik gizlədin</translation>
@@ -117,6 +116,7 @@ Axtarış mexanizminiz: <ph name="DSE_NAME" />. Axtarış tarixçənizi silmək 
 <translation id="2073572773299281212"><ph name="DAYS" /> Gün Əvvəl Aktiv Olub</translation>
 <translation id="2074131957428911366">Sinxronizasiya seçimlərini <ph name="BEGIN_LINK" />ayarlarda<ph name="END_LINK" /> edə bilərsiniz.</translation>
 <translation id="2079545284768500474">Geri qaytarın</translation>
+<translation id="2080769225927880590">Etibarlı Hesabla daxil olun</translation>
 <translation id="209018056901015185">Masaüstü Versiyası Sorğusu</translation>
 <translation id="2103075008456228677">history.google.com linkində açın</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> element köçürüldü</translation>
@@ -135,7 +135,6 @@ Axtarış mexanizminiz: <ph name="DSE_NAME" />. Axtarış tarixçənizi silmək 
 <translation id="2302742851632557585">Vebsaytda parolu dəyişin</translation>
 <translation id="2316709634732130529">Təklif Edilmiş Paroldan İstifadə Edin</translation>
 <translation id="2320166752086256636">Klaviaturanı gizlədin.</translation>
-<translation id="2339560363438331454">Sinxronizasiya və Google Xidmətləri</translation>
 <translation id="2351097562818989364">Tərcümə ayarlarınız sıfırlanmışdır.</translation>
 <translation id="235789365079050412">Google Məxfilik Siyasəti</translation>
 <translation id="2359043044084662842">Tərcümə edin</translation>
@@ -185,7 +184,6 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukiləri
 <translation id="2820289420301699633">Administrator Chrome'a nəzarət edir və oradakı dataya girişi var</translation>
 <translation id="2830972654601096923">Ünvanları İdarə Edin...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">İlkin Sinxronizasiyanın ayarlanması tamamlanmadı</translation>
 <translation id="2843803966603263712">Tərcümə Ayarlarını Sıfırlayın</translation>
 <translation id="2848086008667475748">Ayarlarda Defolt edin…</translation>
 <translation id="2858204748079866344">Chrome məxfiliyi qorumaq üçün parolu bu sahədə avtomatik doldurmayacaq.</translation>
@@ -224,7 +222,6 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="3153862085237805241">Kartı Yadda saxlayın</translation>
 <translation id="3157387275655328056">Oxu Siyahısına əlavə edin</translation>
 <translation id="3157684681743766797">Hamısını Qeyd Edin…</translation>
-<translation id="3161291298470460782">Bunun nəticəsində çıxacaqsınız, sinxronizasiya deaktiv ediləcək və bu cihazdakı bütün Chrome datası silinəcək. Sinxronlaşdırılmış data Google Hesabınızda qalacaq.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">Veb Xidmətlər</translation>
 <translation id="3178650076442119961">Bu Gün Aktiv Olub</translation>
@@ -233,6 +230,7 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="3184767182050912705"><ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> ilə kiliddən çıxarın</translation>
 <translation id="3207960819495026254">Əlfəcinlənib</translation>
 <translation id="3224641773458703735">Parolları eksport etmək üçün əvvəlcə cihazınızda parol kod ayarlamalısınız.</translation>
+<translation id="3230318355092723906">Sinxronizasiya deaktiv olduqda, hələ də bu cihazda əlfəcin, tarixçə, parol və digər ayarları görə bilərsiniz. Dəyişiklik etsəniz, onlar hesabınızla sinxronizasiya edilməyəcək.</translation>
 <translation id="3240426699337459095">Link kopyalandı</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> təklifdən <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
@@ -267,7 +265,6 @@ Axtarış tarixçənizi silmək üçün axtarış mexanizminizin təlimatlarına
 <translation id="3494788280727468875">Brauzer Data Silinməsini Təsdiq Edin</translation>
 <translation id="35083190962747987">${url} keçidini açın</translation>
 <translation id="3519193562722059437">Vebdə baxmaq üçün panel açın.</translation>
-<translation id="3523473570015918798">Çıxsanız, əlfəcin, tarixçə, parol və digər Chrome datası artıq Google Hesabınıza sinxronizasiya edilməyəcək.</translation>
 <translation id="3527085408025491307">Qovluq</translation>
 <translation id="3529024052484145543">Təhlükəsiz deyil</translation>
 <translation id="3533202363250687977">Bütün Gizli Tabları bağlayın</translation>
@@ -360,6 +357,7 @@ Aşağıdakı addımları izləyin:</translation>
 <translation id="4619564267100705184">Kimliyinizi doğrulayın</translation>
 <translation id="4619615317237390068">Digər cihazlardan tablar</translation>
 <translation id="4620246317052452550">Oxuduğunuz Səhifələr</translation>
+<translation id="4620888520263267479">Keçid Önizləmələrini göstərin</translation>
 <translation id="4630540211544979320">Səhifələri Tərcümə Edin</translation>
 <translation id="4634124774493850572">Parol istifadə edin</translation>
 <translation id="4636930964841734540">İnfo</translation>
@@ -447,7 +445,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5457226814769348910">Oflayn versiyanı açın</translation>
 <translation id="5489208564673669003">Bütün saytlar üçün kukiləri idarə etmək üçün <ph name="BEGIN_LINK" />Kuki Ayarlarına<ph name="END_LINK" /> baxın.</translation>
 <translation id="5490005495580364134">Bütün kukiləri bloklayın (Tövsiyə edilmir)</translation>
-<translation id="5508435575041083207">Çıxış edin və bu cihazdakı datanı silin</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> s əvvəl</translation>
 <translation id="5525269841082836315">Parol söz yaradın</translation>
 <translation id="5532698011560297095">Daxil olmaq mümkün deyil</translation>
@@ -458,6 +455,7 @@ Handoff Ayarların Ümumi bölməsindən də aktiv edilə bilər və cihazların
 <translation id="5556459405103347317">Yenidən yükləyin</translation>
 <translation id="5580834567471114021">Daha sonra üçün Oxu Siyahısına əlavə edilsin?</translation>
 <translation id="5592679540098330836"><ph name="NAME" /> üçün sinxronizasiyanı aktiv edin</translation>
+<translation id="560322036295180549">Təşkilatınız tərəfindən deaktiv edilib</translation>
 <translation id="5614553682702429503">Parol yadda saxlanılsın?</translation>
 <translation id="5626245204502895507">Faylı endirmək bu dəfə mümkün olmadı.</translation>
 <translation id="5631164295104953411">Ödəniş Üsulu əlavə edin</translation>
@@ -473,6 +471,8 @@ Handoff Ayarların Ümumi bölməsindən də aktiv edilə bilər və cihazların
 <translation id="5737974891429562743">Hesaba avtomatik giriş detallarının vaxtı keçib. Sinxronizasiyanı başlamaq üçün yeniləyin.</translation>
 <translation id="5738887413654608789">Ətrafınızda uyğun veb səhifələri kəşf etməyə imkan verir.</translation>
 <translation id="5758631781033351321">Oxu siyahısını burada tapa bilərsiniz</translation>
+<translation id="575902488528307720">Şəkil üzrə axtarın</translation>
+<translation id="5781453543752460388">Fotolara əlavə edin</translation>
 <translation id="5782227691023083829">Tərcümə edilir...</translation>
 <translation id="5803566855766646066">Bu yeni kartı silmək istədiyinizə əminsiniz?</translation>
 <translation id="5812974770859303494">Buraya əlavə edin:</translation>
@@ -510,6 +510,7 @@ Handoff Ayarların Ümumi bölməsindən də aktiv edilə bilər və cihazların
 <translation id="6042308850641462728">Daha çox</translation>
 <translation id="605721222689873409">İİ</translation>
 <translation id="6059830886158432458">Hekayələrinizi və fəaliyyətlərinizi burada idarə edin</translation>
+<translation id="6064824697233747382">Təşkilatınız sinxronizasiyanı deaktiv etməyi tələb edir.</translation>
 <translation id="6066301408025741299">Ləğv etmək üçün tıklayın.</translation>
 <translation id="60829778314739003">Qəbul edin və Davam edin</translation>
 <translation id="6084848228346514841">Tablar seçin</translation>
@@ -585,7 +586,6 @@ Hər sayt üçün unikal parol istifadə edin.</translation>
 <translation id="6628106477656132239">Yanlış bitmə tarixi</translation>
 <translation id="6634432609054530164">Təşkilatınız Anonim rejimi deaktiv edib</translation>
 <translation id="6638511529934826365">Mətni Böyüdün…</translation>
-<translation id="6639730758971422557">Təhlükəsiz Baxışı aktiv etmək üçün <ph name="BEGIN_LINK" />Sinxronlaşdırma and Google Xidmətləri<ph name="END_LINK" /> bölməsini açın və Təhlükəsiz Baxış seçiminə toxunun.</translation>
 <translation id="6642362222295953972">Mövcud taba keçin</translation>
 <translation id="6643016212128521049">Silin</translation>
 <translation id="6645899968535965230">QR Kodu: <ph name="PAGE_TITLE" /></translation>
@@ -610,6 +610,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="6801927553864092214">Məxfi axtarış etmək üçün Anonim tab açın</translation>
 <translation id="6807889908376551050">Hamısını göstərin...</translation>
 <translation id="681368974849482173">Element yaradılmışdır</translation>
+<translation id="681450999322335505">Təşkilatınız sinxronizasiyanı deaktiv etdi.</translation>
 <translation id="6830804042318138535">Ətraflı Oxuyun</translation>
 <translation id="6831043979455480757">Tərcümə et</translation>
 <translation id="6842136130964845393">Həmişə yadda saxlanmış parollarınıza girişinizin olduğuna əmin olmaq üçün kimliyinizi doğrulayın</translation>
@@ -635,7 +636,6 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="7004499039102548441">Son Tablar</translation>
 <translation id="7006788746334555276">Məzmun Ayarları</translation>
-<translation id="7015203776128479407">İlkin sinxronizasiya ayarlaması tamamlanmadı. Sinxronizasiya deaktivdir.</translation>
 <translation id="7029809446516969842">Parollar</translation>
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7062545763355031412">Qəbul edin və hesablar arasında keçid edin</translation>
@@ -658,12 +658,12 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="7265758999917665941">Bu sayt üçün heç vaxt yadda saxlamayın</translation>
 <translation id="7272437679830969316">Kimliyinizi doğrulamaq mümkün deyil. Parol kopyalanmayıb.</translation>
 <translation id="7291368939935408496">Parollar Hazırlanır...</translation>
-<translation id="7293171162284876153">Sinxronizasiyanı başlatmaq üçün "Chrome datasını sinxronizasiya edin" seçimini aktiv edin.</translation>
 <translation id="7313347584264171202">Anonim tabları burada tapa bilərsiniz</translation>
 <translation id="7319242366286515846">Davam etməklə, <ph name="BEGIN_LINK" /> Xidmət Şərtləri<ph name="END_LINK" /> ilə razılaşırsınız</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> faiz endirilib</translation>
 <translation id="7340958967809483333">"Kəşf edin" üçün seçimlər</translation>
 <translation id="7346909386216857016">Ok, anladım</translation>
+<translation id="7347393021726115275">Yalnız administratorunuz tərəfindən təsdiqlənmiş hesablarla daxil ola bilərsiniz. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="734758817008927353">Kartı Yadda Saxlamaq seçimləri</translation>
 <translation id="7348502496356775519">Əlfəcin</translation>
 <translation id="7353432112255316844">Kimliyinizi doğrulayın</translation>
@@ -702,9 +702,6 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="7701040980221191251">Heç bir</translation>
 <translation id="7741325291586284254">Yeni Anonim Tab Səhifəsi</translation>
 <translation id="7765158879357617694">Daşıyın</translation>
-<translation id="7771470029643830783">Çıxsanız, əlfəcin, tarixçə, parol və digər Chrome datası artıq Google Hesabınıza sinxronizasiya edilməyəcək.
-
-Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə, çıxış etdikdə Chrome datanız bu cihazdan silinəcək. Sinxronlaşdırılmış data Google Hesabınızda qalacaq.</translation>
 <translation id="7772032839648071052">Parolu təsdiq edin</translation>
 <translation id="7778472311864276518">Hesabı bu Cihazdan silin</translation>
 <translation id="7781011649027948662">Səhifə tərcümə edilsin?</translation>
@@ -717,6 +714,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="7856733331829174190">Yüklənmədi</translation>
 <translation id="7859704718976024901">Brauzer Tarixçəsi</translation>
 <translation id="7887198238286927132">Chrome məxfiliyi qorumaq üçün bu sahəni avtomatik doldurmayacaq.</translation>
+<translation id="7911190106180361398">Təşkilatınız hər şeyi sinxronizasiya etməyinizə icazə vermir.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Parolları Eksport Edin...</translation>
 <translation id="794799177247607889">Qeydiyyatı Dayandırın</translation>
@@ -744,12 +742,13 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8080028325999236607">Bütün Panelləri Qapadın</translation>
 <translation id="8105368624971345109">Deaktiv Edin</translation>
 <translation id="8114753159095730575">Fayl endirilməsi əlçatandır. Seçimlər ekranın aşağısında əlçatandır.</translation>
-<translation id="8131740175452115882">Təsdiq edin</translation>
 <translation id="8156478151976189188">Parol Sinxronizasiyası İşləmir</translation>
+<translation id="8193953846147532858"><ph name="BEGIN_LINK" />Cihazlarınız<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">Səhifəni tərcümə edin</translation>
 <translation id="8205564605687841303">Ləğv edin</translation>
 <translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
 <translation id="8225985093977202398">Keşlənmiş Şəkillər və Fayllar</translation>
+<translation id="8228176677386827255">Cihazınız idarə olunur. Yalnız təşkilatınızın hesabı ilə daxil ola bilərsiniz.</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8271720166617117963">Qəbul edin və daxil olun</translation>
 <translation id="8281781826761538115">Defolt - <ph name="DEFAULT_LOCALE" /></translation>
@@ -774,7 +773,6 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8495097701594799854">Təşkilatınız tərəfindən deaktiv edilib.</translation>
 <translation id="8503813439785031346">İstifadəçi adı</translation>
 <translation id="850600235656508448">Gizli rejimdə açın</translation>
-<translation id="8510057420705599706">Bunun nəticəsində çıxacaqsınız və sinxronizasiya deaktiv ediləcək, lakin əlfəcinlər, tarixçə, parollar və digər Chrome datası bu cihazda qalacaq.</translation>
 <translation id="8517375800490286174">Açıq mənbə lisenziyaları</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> paneldən <ph name="LAST_VISIBLE_TAB" /> üzrə <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> panel</translation>
 <translation id="8529767659511976195">Yeni</translation>

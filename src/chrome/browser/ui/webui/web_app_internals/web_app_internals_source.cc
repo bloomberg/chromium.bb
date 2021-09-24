@@ -19,7 +19,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(OS_MAC)
-#include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
+#include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #endif
 
 namespace {
@@ -204,7 +204,7 @@ base::Value BuildAppShimRegistryLocalStorageJson() {
 #endif
 
 base::Value BuildWebAppInternalsJson(Profile* profile) {
-  auto* provider = web_app::WebAppProvider::Get(profile);
+  auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return base::Value("Web app system not enabled for profile.");
 

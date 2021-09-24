@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -93,7 +94,7 @@ HRESULT CreateActivationFactory(wchar_t const (&class_name)[size],
 }
 
 void ForwardNotificationOperationOnUiThread(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     NotificationHandler::Type notification_type,
     const GURL& origin,
     const std::string& notification_id,
@@ -114,7 +115,8 @@ void ForwardNotificationOperationOnUiThread(
   DCHECK(!profile_id.empty());
 
   g_browser_process->profile_manager()->LoadProfile(
-      profile_id, incognito,
+      NotificationPlatformBridge::GetProfileBaseNameFromProfileId(profile_id),
+      incognito,
       base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
                      operation, notification_type, origin, notification_id,
                      action_index, reply, by_user));
@@ -618,7 +620,7 @@ class NotificationPlatformBridgeWinImpl
     for (const auto& notification : displayed_notifications_) {
       if (!displayed_notifications.count(notification.first)) {
         HandleEvent(/*launch_id=*/notification.second,
-                    NotificationCommon::OPERATION_CLOSE,
+                    NotificationOperation::kClose,
                     /*action_index=*/absl::nullopt, /*by_user=*/true);
         key_to_remove.push_back(notification.first);
       }
@@ -723,12 +725,13 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void HandleEvent(NotificationLaunchId launch_id,
-                   NotificationCommon::Operation operation,
+                   NotificationOperation operation,
                    const absl::optional<int>& action_index,
                    const absl::optional<bool>& by_user) {
     if (!launch_id.is_valid()) {
       LogHandleEventStatus(HandleEventStatus::kHandleEventLaunchIdInvalid);
-      DLOG(ERROR) << "Failed to decode launch ID for operation " << operation;
+      DLOG(ERROR) << "Failed to decode launch ID for operation "
+                  << static_cast<int>(operation);
       return;
     }
 
@@ -757,7 +760,7 @@ class NotificationPlatformBridgeWinImpl
   }
 
   void ForwardHandleEventForTesting(
-      NotificationCommon::Operation operation,
+      NotificationOperation operation,
       winui::Notifications::IToastNotification* notification,
       winui::Notifications::IToastActivatedEventArgs* args,
       const absl::optional<bool>& by_user) {
@@ -989,13 +992,13 @@ bool NotificationPlatformBridgeWin::HandleActivation(
   if (!inline_reply.empty())
     reply = base::AsString16(inline_reply);
 
-  NotificationCommon::Operation operation;
+  NotificationOperation operation;
   if (launch_id.is_for_dismiss_button())
-    operation = NotificationCommon::OPERATION_CLOSE;
+    operation = NotificationOperation::kClose;
   else if (launch_id.is_for_context_menu())
-    operation = NotificationCommon::OPERATION_SETTINGS;
+    operation = NotificationOperation::kSettings;
   else
-    operation = NotificationCommon::OPERATION_CLICK;
+    operation = NotificationOperation::kClick;
 
   absl::optional<int> action_index;
   if (launch_id.button_index() != -1)
@@ -1025,7 +1028,7 @@ bool NotificationPlatformBridgeWin::SystemNotificationEnabled() {
 }
 
 void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
-    NotificationCommon::Operation operation,
+    NotificationOperation operation,
     winui::Notifications::IToastNotification* notification,
     winui::Notifications::IToastActivatedEventArgs* args,
     const absl::optional<bool>& by_user) {

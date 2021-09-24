@@ -74,7 +74,7 @@ namespace {
 
 password_manager::PasswordStoreInterface* GetProfilePasswordStore(
     content::WebContents* web_contents) {
-  return PasswordStoreFactory::GetForProfile(
+  return PasswordStoreFactory::GetInterfaceForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -82,7 +82,7 @@ password_manager::PasswordStoreInterface* GetProfilePasswordStore(
 
 password_manager::PasswordStoreInterface* GetAccountPasswordStore(
     content::WebContents* web_contents) {
-  return AccountPasswordStoreFactory::GetForProfile(
+  return AccountPasswordStoreFactory::GetInterfaceForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -129,11 +129,6 @@ ManagePasswordsUIController::~ManagePasswordsUIController() = default;
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
-  // If the save bubble is already shown (possibly manual fallback for saving)
-  // then ignore the changes because the user may interact with it right now.
-  if (bubble_status_ == BubbleStatus::SHOWN &&
-      GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
-    return;
   bool show_bubble = !form_manager->IsBlocklisted();
   DestroyAccountChooser();
   save_fallback_timer_.Stop();

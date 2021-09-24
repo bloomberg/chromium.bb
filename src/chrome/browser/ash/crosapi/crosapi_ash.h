@@ -13,6 +13,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
@@ -20,7 +21,9 @@ namespace crosapi {
 
 class AutomationAsh;
 class BrowserServiceHostAsh;
+class BrowserVersionServiceAsh;
 class CertDatabaseAsh;
+class ChromeAppWindowTrackerAsh;
 class ClipboardAsh;
 class ClipboardHistoryAsh;
 class ContentProtectionAsh;
@@ -28,7 +31,9 @@ class DeviceAttributesAsh;
 class DownloadControllerAsh;
 class DriveIntegrationServiceAsh;
 class FeedbackAsh;
+class FieldTrialServiceAsh;
 class FileManagerAsh;
+class GeolocationServiceAsh;
 class IdleServiceAsh;
 class ImageWriterAsh;
 class KeystoreServiceAsh;
@@ -75,10 +80,15 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::AppServiceProxy> receiver) override;
   void BindBrowserServiceHost(
       mojo::PendingReceiver<mojom::BrowserServiceHost> receiver) override;
+  void BindBrowserCdmFactory(mojo::GenericPendingReceiver receiver) override;
+  void BindBrowserVersionService(
+      mojo::PendingReceiver<mojom::BrowserVersionService> receiver) override;
   void BindCertDatabase(
       mojo::PendingReceiver<mojom::CertDatabase> receiver) override;
   void BindChromeAppPublisher(
       mojo::PendingReceiver<mojom::AppPublisher> receiver) override;
+  void BindChromeAppWindowTracker(
+      mojo::PendingReceiver<mojom::AppWindowTracker> receiver) override;
   void BindClipboard(mojo::PendingReceiver<mojom::Clipboard> receiver) override;
   void BindClipboardHistory(
       mojo::PendingReceiver<mojom::ClipboardHistory> receiver) override;
@@ -92,8 +102,12 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::DownloadController> receiver) override;
   void BindDriveIntegrationService(
       mojo::PendingReceiver<mojom::DriveIntegrationService> receiver) override;
+  void BindFieldTrialService(
+      mojo::PendingReceiver<mojom::FieldTrialService> receiver) override;
   void BindFileManager(
       mojo::PendingReceiver<mojom::FileManager> receiver) override;
+  void BindGeolocationService(
+      mojo::PendingReceiver<mojom::GeolocationService> receiver) override;
   void BindIdleService(
       mojo::PendingReceiver<mojom::IdleService> receiver) override;
   void BindImageWriter(
@@ -192,7 +206,9 @@ class CrosapiAsh : public mojom::Crosapi {
 
   std::unique_ptr<AutomationAsh> automation_ash_;
   std::unique_ptr<BrowserServiceHostAsh> browser_service_host_ash_;
+  std::unique_ptr<BrowserVersionServiceAsh> browser_version_service_ash_;
   std::unique_ptr<CertDatabaseAsh> cert_database_ash_;
+  std::unique_ptr<ChromeAppWindowTrackerAsh> chrome_app_window_tracker_ash_;
   std::unique_ptr<ClipboardAsh> clipboard_ash_;
   std::unique_ptr<ClipboardHistoryAsh> clipboard_history_ash_;
   std::unique_ptr<ContentProtectionAsh> content_protection_ash_;
@@ -200,7 +216,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<DownloadControllerAsh> download_controller_ash_;
   std::unique_ptr<DriveIntegrationServiceAsh> drive_integration_service_ash_;
   std::unique_ptr<FeedbackAsh> feedback_ash_;
+  std::unique_ptr<FieldTrialServiceAsh> field_trial_service_ash_;
   std::unique_ptr<FileManagerAsh> file_manager_ash_;
+  std::unique_ptr<GeolocationServiceAsh> geolocation_service_ash_;
   std::unique_ptr<IdleServiceAsh> idle_service_ash_;
   std::unique_ptr<ImageWriterAsh> image_writer_ash_;
   std::unique_ptr<KeystoreServiceAsh> keystore_service_ash_;

@@ -1068,44 +1068,6 @@ TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
   }
 }
 
-TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
-  Vector<String> tasks;
-  PostTestTasksToQueuesWithTrait(&tasks, "L1 T1 D1 P1 U1");
-
-  page_scheduler_->SetKeepActive(true);  // say we have a Service Worker
-  page_scheduler_->SetPageVisible(false);
-  page_scheduler_->SetPageFrozen(true);
-
-  EXPECT_THAT(tasks, UnorderedElementsAre());
-  base::RunLoop().RunUntilIdle();
-  // Everything runs except throttleable tasks (timers)
-  EXPECT_THAT(tasks, UnorderedElementsAre("L1", "D1", "P1", "U1"));
-
-  tasks.clear();
-  PostTestTasksToQueuesWithTrait(&tasks, "L1");
-
-  EXPECT_THAT(tasks, UnorderedElementsAre());
-  base::RunLoop().RunUntilIdle();
-  // loading task runs
-  EXPECT_THAT(tasks, UnorderedElementsAre("L1"));
-
-  tasks.clear();
-  PostTestTasksToQueuesWithTrait(&tasks, "L1");
-
-  // KeepActive is false when Service Worker stops.
-  page_scheduler_->SetKeepActive(false);
-  EXPECT_THAT(tasks, UnorderedElementsAre());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(tasks, UnorderedElementsAre());  // loading task does not run
-
-  tasks.clear();
-  page_scheduler_->SetKeepActive(true);
-  EXPECT_THAT(tasks, UnorderedElementsAre());
-  base::RunLoop().RunUntilIdle();
-  // loading task runs
-  EXPECT_THAT(tasks, UnorderedElementsAre("L1"));
-}
-
 class FrameSchedulerImplTestWithUnfreezableLoading
     : public FrameSchedulerImplTest {
  public:
@@ -1442,10 +1404,19 @@ TEST_F(FrameSchedulerImplTest,
       testing::UnorderedElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
 }
 
+class InputHighPriorityFrameSchedulerImplTest : public FrameSchedulerImplTest {
+ public:
+  InputHighPriorityFrameSchedulerImplTest()
+      : FrameSchedulerImplTest(
+            {},
+            {::blink::features::kInputTargetClientHighPriority}) {}
+};
+
 // TODO(farahcharab) Move priority testing to MainThreadTaskQueueTest after
 // landing the change that moves priority computation to MainThreadTaskQueue.
 
-TEST_F(FrameSchedulerImplTest, NormalPriorityInputBlockingTaskQueue) {
+TEST_F(InputHighPriorityFrameSchedulerImplTest,
+       NormalPriorityInputBlockingTaskQueue) {
   page_scheduler_->SetPageVisible(false);
   EXPECT_EQ(InputBlockingTaskQueue()->GetTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -1454,16 +1425,7 @@ TEST_F(FrameSchedulerImplTest, NormalPriorityInputBlockingTaskQueue) {
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-class InputHighPriorityFrameSchedulerImplTest : public FrameSchedulerImplTest {
- public:
-  InputHighPriorityFrameSchedulerImplTest()
-      : FrameSchedulerImplTest(
-            {::blink::features::kInputTargetClientHighPriority},
-            {}) {}
-};
-
-TEST_F(InputHighPriorityFrameSchedulerImplTest,
-       HighestPriorityInputBlockingTaskQueue) {
+TEST_F(FrameSchedulerImplTest, HighestPriorityInputBlockingTaskQueue) {
   page_scheduler_->SetPageVisible(false);
   EXPECT_EQ(InputBlockingTaskQueue()->GetTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kHighestPriority);

@@ -30,6 +30,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -78,29 +79,13 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
         true /* isServiceProject */);
     this.eventListeners = [
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapWillAttach,
-          event => {
-            this.sourceMapWillAttach(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapWillAttach, this.sourceMapWillAttach, this),
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapFailedToAttach,
-          event => {
-            this.sourceMapFailedToAttach(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapFailedToAttach, this.sourceMapFailedToAttach, this),
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapAttached,
-          event => {
-            this.sourceMapAttached(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
       this.sourceMapManager.addEventListener(
-          SDK.SourceMapManager.Events.SourceMapDetached,
-          event => {
-            this.sourceMapDetached(event);
-          },
-          this),
+          SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this),
       this.workspace.addEventListener(
           Workspace.Workspace.Events.UISourceCodeAdded,
           event => {
@@ -110,8 +95,8 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     ];
   }
 
-  private onUiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = event.data as Workspace.UISourceCode.UISourceCode;
+  private onUiSourceCodeAdded(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     if (uiSourceCode.contentType().isDocument()) {
       for (const script of this.debuggerModel.scriptsForSourceURL(uiSourceCode.url())) {
         this.debuggerWorkspaceBinding.updateLocations(script);
@@ -217,21 +202,25 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     return locations;
   }
 
-  private async sourceMapWillAttach(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const script = (event.data as SDK.Script.Script);
+  private async sourceMapWillAttach(event: Common.EventTarget.EventTargetEvent<{client: SDK.Script.Script}>):
+      Promise<void> {
+    const script = event.data.client;
     // Create stub UISourceCode for the time source mapping is being loaded.
     this.addStubUISourceCode(script);
     await this.debuggerWorkspaceBinding.updateLocations(script);
   }
 
-  private async sourceMapFailedToAttach(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const script = (event.data as SDK.Script.Script);
+  private async sourceMapFailedToAttach(event: Common.EventTarget.EventTargetEvent<{client: SDK.Script.Script}>):
+      Promise<void> {
+    const script = event.data.client;
     await this.removeStubUISourceCode(script);
   }
 
-  private async sourceMapAttached(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const script = (event.data.client as SDK.Script.Script);
-    const sourceMap = (event.data.sourceMap as SDK.SourceMap.SourceMap);
+  private async sourceMapAttached(
+      event: Common.EventTarget.EventTargetEvent<{client: SDK.Script.Script, sourceMap: SDK.SourceMap.SourceMap}>):
+      Promise<void> {
+    const script = event.data.client;
+    const sourceMap = event.data.sourceMap;
     await this.removeStubUISourceCode(script);
 
     if (IgnoreListManager.instance().isIgnoreListedURL(script.sourceURL, script.isContentScript())) {
@@ -243,9 +232,11 @@ export class CompilerScriptMapping implements DebuggerSourceMapping {
     this.sourceMapAttachedForTest(sourceMap);
   }
 
-  private async sourceMapDetached(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const script = (event.data.client as SDK.Script.Script);
-    const sourceMap = (event.data.sourceMap as SDK.SourceMap.SourceMap);
+  private async sourceMapDetached(
+      event: Common.EventTarget.EventTargetEvent<{client: SDK.Script.Script, sourceMap: SDK.SourceMap.SourceMap}>):
+      Promise<void> {
+    const script = event.data.client;
+    const sourceMap = event.data.sourceMap;
     const bindings = script.isContentScript() ? this.contentScriptsBindings : this.regularBindings;
     for (const sourceURL of sourceMap.sourceURLs()) {
       const binding = bindings.get(sourceURL);
@@ -331,7 +322,7 @@ class Binding {
     this.uiSourceCode = null;
   }
 
-  private recreateUISourceCodeIfNeeded(frameId: string): void {
+  private recreateUISourceCodeIfNeeded(frameId: Protocol.Page.FrameId): void {
     const sourceMap = this.referringSourceMaps[this.referringSourceMaps.length - 1];
 
     const newUISourceCode =
@@ -355,7 +346,7 @@ class Binding {
     this.project.addUISourceCodeWithProvider(this.uiSourceCode, contentProvider, metadata, mimeType);
   }
 
-  addSourceMap(sourceMap: SDK.SourceMap.SourceMap, frameId: string): void {
+  addSourceMap(sourceMap: SDK.SourceMap.SourceMap, frameId: Protocol.Page.FrameId): void {
     if (this.uiSourceCode) {
       NetworkProject.addFrameAttribution(this.uiSourceCode, frameId);
     }
@@ -363,7 +354,7 @@ class Binding {
     this.recreateUISourceCodeIfNeeded(frameId);
   }
 
-  removeSourceMap(sourceMap: SDK.SourceMap.SourceMap, frameId: string): void {
+  removeSourceMap(sourceMap: SDK.SourceMap.SourceMap, frameId: Protocol.Page.FrameId): void {
     const uiSourceCode = (this.uiSourceCode as Workspace.UISourceCode.UISourceCode);
     NetworkProject.removeFrameAttribution(uiSourceCode, frameId);
     const lastIndex = this.referringSourceMaps.lastIndexOf(sourceMap);

@@ -69,12 +69,12 @@ bool IsLastTab(const Profile* profile) {
 std::unique_ptr<base::Value> RuleSetToDict(
     const browser_switcher::RuleSet& ruleset) {
   auto sitelist = std::make_unique<base::ListValue>();
-  for (const std::string& rule : ruleset.sitelist)
-    sitelist->Append(rule);
+  for (const auto& rule : ruleset.sitelist)
+    sitelist->Append(rule->ToString());
 
   auto greylist = std::make_unique<base::ListValue>();
-  for (const std::string& rule : ruleset.greylist)
-    greylist->Append(rule);
+  for (const auto& rule : ruleset.greylist)
+    greylist->Append(rule->ToString());
 
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("sitelist", std::move(sitelist));
@@ -249,32 +249,32 @@ BrowserSwitchHandler::BrowserSwitchHandler() {}
 BrowserSwitchHandler::~BrowserSwitchHandler() = default;
 
 void BrowserSwitchHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "launchAlternativeBrowserAndCloseTab",
       base::BindRepeating(
           &BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "gotoNewTabPage",
       base::BindRepeating(&BrowserSwitchHandler::HandleGotoNewTabPage,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getAllRulesets",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetAllRulesets,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getDecision",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetDecision,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getTimestamps",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetTimestamps,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getRulesetSources",
       base::BindRepeating(&BrowserSwitchHandler::HandleGetRulesetSources,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "refreshXml", base::BindRepeating(&BrowserSwitchHandler::HandleRefreshXml,
                                         base::Unretained(this)));
 }
@@ -421,9 +421,9 @@ void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
   }
   retval.Set("reason", std::make_unique<base::Value>(reason_name));
 
-  if (!decision.matching_rule.empty()) {
-    retval.Set("matching_rule",
-               std::make_unique<base::Value>(decision.matching_rule));
+  if (decision.matching_rule) {
+    retval.Set("matching_rule", std::make_unique<base::Value>(
+                                    decision.matching_rule->ToString()));
   }
 
   ResolveJavascriptCallback(args->GetList()[0], retval);

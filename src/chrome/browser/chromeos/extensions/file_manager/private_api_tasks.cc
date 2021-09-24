@@ -21,8 +21,8 @@
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
@@ -84,7 +84,7 @@ FileManagerPrivateInternalExecuteTaskFunction::Run() {
   using extensions::api::file_manager_private_internal::ExecuteTask::Params;
   using extensions::api::file_manager_private_internal::ExecuteTask::Results::
       Create;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   file_manager::file_tasks::TaskType task_type =
@@ -147,7 +147,7 @@ FileManagerPrivateInternalGetFileTasksFunction::
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetFileTasksFunction::Run() {
   using extensions::api::file_manager_private_internal::GetFileTasks::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->urls.empty())
@@ -239,7 +239,7 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed(
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalSetDefaultTaskFunction::Run() {
   using extensions::api::file_manager_private_internal::SetDefaultTask::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());

@@ -139,7 +139,7 @@ Status ScrollElementRegionIntoViewHelper(
   WebPoint tmp_location = *location;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendBoolean(center);
+  args.Append(center);
   args.Append(CreateValueFrom(region));
   std::unique_ptr<base::Value> result;
   status = web_view->CallFunction(
@@ -200,7 +200,7 @@ Status GetElementEffectiveStyle(
     return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendString(property);
+  args.Append(property);
   std::unique_ptr<base::Value> result;
   status = web_view->CallFunction(
       frame, webdriver::atoms::asString(webdriver::atoms::GET_EFFECTIVE_STYLE),
@@ -264,7 +264,7 @@ Status GetElementLocationInViewCenterHelper(const std::string& frame,
     return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendBoolean(center);
+  args.Append(center);
   std::unique_ptr<base::Value> result;
   status =
       web_view->CallFunction(frame, kGetElementLocationScript, args, &result);
@@ -379,10 +379,9 @@ Status FindElement(int interval_ms,
         *value = std::move(temp);
         return Status(kOk);
       }
-      base::ListValue* result;
-      if (!temp->GetAsList(&result))
+      if (!temp->is_list())
         return Status(kUnknownError, "script returns unexpected result");
-      if (result->GetSize() > 0U) {
+      if (temp->GetList().size() > 0U) {
         *value = std::move(temp);
         return Status(kOk);
       }
@@ -478,7 +477,7 @@ Status GetElementAttribute(Session* session,
     return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendString(attribute_name);
+  args.Append(attribute_name);
   return CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::GET_ATTRIBUTE,
       args, value);
@@ -553,8 +552,8 @@ Status GetElementClickableLocation(
   bool is_displayed = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
-    Status status = IsElementDisplayed(
-      session, web_view, target_element_id, true, &is_displayed);
+    status = IsElementDisplayed(session, web_view, target_element_id, true,
+                                &is_displayed);
     if (status.IsError())
       return status;
     if (is_displayed)
@@ -671,7 +670,7 @@ Status IsElementDisplayed(
     return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendBoolean(ignore_opacity);
+  args.Append(ignore_opacity);
   std::unique_ptr<base::Value> result;
   status = CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_DISPLAYED,
@@ -761,7 +760,7 @@ Status SetOptionElementSelected(
   // TODO(171034): need to fix throwing error if an alert is triggered.
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendBoolean(selected);
+  args.Append(selected);
   std::unique_ptr<base::Value> result;
   return CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::CLICK,
@@ -838,9 +837,8 @@ Status ScrollElementRegionIntoView(
   for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
        ++rit) {
     base::ListValue args;
-    args.AppendString(
-        base::StringPrintf("//*[@cd_frame_id_ = '%s']",
-                           rit->chromedriver_frame_id.c_str()));
+    args.Append(base::StringPrintf("//*[@cd_frame_id_ = '%s']",
+                                   rit->chromedriver_frame_id.c_str()));
     std::unique_ptr<base::Value> result;
     status = web_view->CallFunction(
         rit->parent_frame_id, kFindSubFrameScript, args, &result);
@@ -893,8 +891,8 @@ Status GetElementLocationInViewCenter(Session* session,
   for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
        ++rit) {
     base::ListValue args;
-    args.AppendString(base::StringPrintf("//*[@cd_frame_id_ = '%s']",
-                                         rit->chromedriver_frame_id.c_str()));
+    args.Append(base::StringPrintf("//*[@cd_frame_id_ = '%s']",
+                                   rit->chromedriver_frame_id.c_str()));
     std::unique_ptr<base::Value> result;
     status = web_view->CallFunction(rit->parent_frame_id, kFindSubFrameScript,
                                     args, &result);

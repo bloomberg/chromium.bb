@@ -61,8 +61,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
   bool HandleAccelerator(LoginAcceleratorAction action) final;
-  SigninUI* GetSigninUI() final;
-  void ShowOsInstallScreen() final;
+  void AddWizardCreatedObserverForTests(
+      base::RepeatingClosure on_created) final;
 
   // SigninUI:
   void SetAuthSessionForOnboarding(const UserContext& user_context) final;
@@ -76,6 +76,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
       EncryptionMigrationMode migration_mode,
       base::OnceCallback<void(const UserContext&)> on_skip_migration) final;
   void ShowSigninError(SigninError error, const std::string& details) final;
+  WizardContext* GetWizardContextForTesting() final;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -105,6 +106,11 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // Common code for ShowGaiaDialog() call above.
   void ShowGaiaDialogCommon(const AccountId& prefilled_account);
+
+  WizardContext* wizard_context() { return wizard_context_.get(); }
+
+  // Triggers |on_wizard_controller_created_for_tests_| callback.
+  void NotifyWizardCreated();
 
   // Kiosk launch controller.
   std::unique_ptr<KioskLaunchController> kiosk_launch_controller_;
@@ -136,6 +142,11 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   KioskAppMenuController kiosk_app_menu_controller_;
 
   std::unique_ptr<LoginFeedback> login_feedback_;
+
+  std::unique_ptr<WizardContext> wizard_context_;
+
+  // Callback to be executed when WebUI is started.
+  base::RepeatingClosure on_wizard_controller_created_for_tests_;
 
   base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_{this};
 

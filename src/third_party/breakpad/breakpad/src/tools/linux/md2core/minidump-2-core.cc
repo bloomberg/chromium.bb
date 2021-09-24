@@ -154,11 +154,9 @@ SetupOptions(int argc, const char* argv[], Options* options) {
       case 'h':
         Usage(argc, argv);
         exit(0);
-        break;
       case '?':
         Usage(argc, argv);
         exit(1);
-        break;
 
       case 'f':
         options->use_filename = true;

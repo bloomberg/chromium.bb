@@ -332,8 +332,7 @@ class UserAddingScreenIndicator : public views::View {
     label_->SetText(message);
 
     SetPaintToLayer();
-    layer()->SetBackgroundBlur(
-        static_cast<float>(AshColorProvider::LayerBlurSigma::kBlurDefault));
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetFillsBoundsOpaquely(false);
   }
 
@@ -556,6 +555,13 @@ bool LockContentsView::TestApi::IsOobeDialogVisible() const {
   return view_->oobe_dialog_visible_;
 }
 
+FingerprintState LockContentsView::TestApi::GetFingerPrintState(
+    const AccountId& account_id) const {
+  UserState* user_state = view_->FindStateForUser(account_id);
+  DCHECK(user_state);
+  return user_state->fingerprint_state;
+}
+
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
@@ -595,6 +601,7 @@ LockContentsView::LockContentsView(
   // switch to the system tray. LockContentsView should otherwise not be
   // focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  set_suppress_default_focus_handling();
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -1161,6 +1168,11 @@ void LockContentsView::OnForceOnlineSignInForUser(const AccountId& user) {
 void LockContentsView::OnShowEasyUnlockIcon(
     const AccountId& user,
     const EasyUnlockIconInfo& icon_info) {
+  // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
+  // it will be removed post launch.
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
+
   UserState* state = FindStateForUser(user);
   if (!state)
     return;
@@ -2069,6 +2081,11 @@ void LockContentsView::OnBigUserChanged() {
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
+  // Do not update EasyUnlockIconState if the Smart Lock revamp is enabled since
+  // it will be removed post launch.
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp))
+    return;
+
   // Try to find an big view for |user|. If there is none, there is no state to
   // update.
   LoginBigUserView* big_view =
@@ -2346,8 +2363,15 @@ bool LockContentsView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void LockContentsView::RegisterAccelerators() {
   for (size_t i = 0; i < kLoginAcceleratorDataLength; ++i) {
-    if (!kLoginAcceleratorData[i].global)
+    // We need to register global accelerators and a few additional ones that
+    // are handled by the WebUI (and normally registered by the WebUI).
+    // When WebUI is loaded on demand, we would need to start WebUI after
+    // accelerator is pressed. So we register WebUI acceleratos here
+    // and then start WebUI when needed and pass the accelerator.
+    if (!kLoginAcceleratorData[i].global &&
+        MapToWebUIAccelerator(kLoginAcceleratorData[i].action).empty()) {
       continue;
+    }
     if ((screen_type_ == LockScreen::ScreenType::kLogin) &&
         !(kLoginAcceleratorData[i].scope & kScopeLogin)) {
       continue;

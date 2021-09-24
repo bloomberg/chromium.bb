@@ -28,7 +28,7 @@ BluetoothHandler::BluetoothHandler() {
 BluetoothHandler::~BluetoothHandler() {}
 
 void BluetoothHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kIsDeviceBlockedByPolicy,
       base::BindRepeating(&BluetoothHandler::HandleIsDeviceBlockedByPolicy,
                           base::Unretained(this)));
@@ -49,7 +49,7 @@ void BluetoothHandler::HandleIsDeviceBlockedByPolicy(
   AllowJavascript();
   std::string callback_id;
   std::string address;
-  CHECK_EQ(2U, args->GetSize());
+  CHECK_EQ(2U, args->GetList().size());
   CHECK(args->GetString(0, &callback_id));
   CHECK(args->GetString(1, &address));
 

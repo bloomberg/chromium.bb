@@ -362,12 +362,9 @@ g.test('pipeline_output_targets,blend')
       fragmentShaderCode: t.getFragmentShaderCode(sampleType, componentCount),
     });
 
-    const blendingReadSrcAlpha =
-      colorSrcFactor.includes('src-alpha') ||
-      colorDstFactor.includes('src-alpha') ||
-      alphaSrcFactor !== 'zero' ||
-      alphaDstFactor.includes('src');
-    const meetsExtraBlendingRequirement = !blendingReadSrcAlpha || componentCount === 4;
+    const colorBlendReadsSrcAlpha =
+      colorSrcFactor.includes('src-alpha') || colorDstFactor.includes('src-alpha');
+    const meetsExtraBlendingRequirement = !colorBlendReadsSrcAlpha || componentCount === 4;
     const _success =
       info.sampleType === sampleType &&
       componentCount >= kTexelRepresentationInfo[format].componentOrder.length &&

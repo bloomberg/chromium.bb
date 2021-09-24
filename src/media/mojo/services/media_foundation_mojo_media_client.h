@@ -17,20 +17,20 @@ namespace media {
 // process hosting MediaFoundationRenderer and MediaFoundationCdm.
 class MediaFoundationMojoMediaClient final : public MojoMediaClient {
  public:
-  explicit MediaFoundationMojoMediaClient(const base::FilePath& user_data_dir);
+  MediaFoundationMojoMediaClient();
   ~MediaFoundationMojoMediaClient() override;
 
   // MojoMediaClient implementation.
   std::unique_ptr<Renderer> CreateMediaFoundationRenderer(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       mojom::FrameInterfaceFactory* frame_interfaces,
+      mojo::PendingRemote<mojom::MediaLog> media_log_remote,
       mojo::PendingReceiver<mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver) override;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       mojom::FrameInterfaceFactory* frame_interfaces) override;
 
  private:
-  base::FilePath user_data_dir_;
   DISALLOW_COPY_AND_ASSIGN(MediaFoundationMojoMediaClient);
 };
 

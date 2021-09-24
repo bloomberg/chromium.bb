@@ -112,11 +112,11 @@ class ChromeBrowsingDataRemoverDelegate
     kNetworkErrorLogging = 21,
     kFlashDeauthorization = 22,
     kOfflinePages = 23,
-    kPrecache = 24,
+    kPrecache = 24,  // deprecated
     kExploreSites = 25,
     kLegacyStrikes = 26,
     kWebrtcEventLogs = 27,
-    kDrmLicenses = 28,
+    kCdmLicenses = 28,
     kHostCache = 29,
     kTpmAttestationKeys = 30,
     kStrikes = 31,

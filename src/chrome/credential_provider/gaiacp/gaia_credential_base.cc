@@ -319,10 +319,10 @@ HRESULT GetUserAndDomainInfo(
                           &username, &serial_number);
 
       // Only collect those user names that exist on the windows device.
-      std::wstring existing_sid;
+      std::wstring ignore;
       HRESULT hr = os_user_manager->GetUserSID(
           OSUserManager::GetLocalDomain().c_str(),
-          base::UTF8ToWide(username).c_str(), &existing_sid);
+          base::UTF8ToWide(username).c_str(), &ignore);
       if (FAILED(hr))
         continue;
 
@@ -801,8 +801,8 @@ HRESULT CreateNewUser(OSUserManager* manager,
       LOGFN(VERBOSE) << "Username '" << new_username
                      << "' already exists. Trying '" << next_username << "'";
 
-      errno_t err = wcscpy_s(new_username, base::size(new_username),
-                             next_username.c_str());
+      err = wcscpy_s(new_username, base::size(new_username),
+                     next_username.c_str());
       if (err != 0) {
         LOGFN(ERROR) << "wcscpy_s errno=" << err;
         return E_FAIL;
@@ -894,8 +894,8 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
   if (SUCCEEDED(hr)) {
     LOGFN(VERBOSE) << "Expecting gaia user '" << gaia_username << "' to exist.";
     wchar_t password[32];
-    HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
-                                             base::size(password));
+    hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
+                                     base::size(password));
     if (SUCCEEDED(hr)) {
       std::wstring local_domain = OSUserManager::GetLocalDomain();
       base::win::ScopedHandle token;
@@ -926,15 +926,14 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
 
     // Generate a random password for the new gaia account.
     wchar_t password[32];
-    HRESULT hr =
-        manager->GenerateRandomPassword(password, base::size(password));
+    hr = manager->GenerateRandomPassword(password, base::size(password));
     if (FAILED(hr)) {
       LOGFN(ERROR) << "GenerateRandomPassword hr=" << putHR(hr);
       return hr;
     }
 
     CComBSTR sid_string;
-    CComBSTR gaia_username;
+    CComBSTR gaia_username_bstr;
     // Keep trying to create the special Gaia account used to run the UI until
     // an unused username can be found or kMaxUsernameAttempts has been reached.
     hr =
@@ -942,7 +941,7 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
                       GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME_BASE).c_str(),
                       GetStringResource(IDS_GAIA_ACCOUNT_COMMENT_BASE).c_str(),
                       /*add_to_users_group=*/false, kMaxUsernameAttempts,
-                      &gaia_username, &sid_string);
+                      &gaia_username_bstr, &sid_string);
 
     if (FAILED(hr)) {
       LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr);
@@ -964,7 +963,7 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
     }
 
     // Save the gaia username in a machine secret area.
-    hr = policy->StorePrivateData(kLsaKeyGaiaUsername, gaia_username);
+    hr = policy->StorePrivateData(kLsaKeyGaiaUsername, gaia_username_bstr);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "Failed to store gaia user name in LSA hr=" << putHR(hr);
       return hr;
@@ -1791,7 +1790,7 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
     LOGFN(VERBOSE) << "Started wait thread id=" << wait_thread_id;
     ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
   } else {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "Unable to start wait thread hr=" << putHR(hr);
     ::TerminateProcess(puiprocinfo->procinfo.process_handle(), kUiecKilled);
     delete puiprocinfo;
@@ -1909,7 +1908,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   // Environment is fully set up for UI, so let it go.
   if (::ResumeThread(uiprocinfo->procinfo.thread_handle()) ==
       static_cast<DWORD>(-1)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "ResumeThread hr=" << putHR(hr);
     ::TerminateProcess(uiprocinfo->procinfo.process_handle(), kUiecKilled);
     return hr;

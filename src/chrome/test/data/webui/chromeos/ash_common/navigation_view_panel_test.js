@@ -6,7 +6,7 @@ import {SelectorItem} from 'chrome://resources/ash/common/navigation_selector.js
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
 export function navigationViewPanelTestSuite() {
   /** @type {?NavigationViewPanelElement} */
@@ -66,12 +66,22 @@ export function navigationViewPanelTestSuite() {
    * @param {string} pageType
    * @param {string} icon
    * @param {?string} id
-   * @param {!Array<SelectorItem>} subItems
+   * @param {?Object} initialData
    * @return {!Promise}
    */
   function addNavigationSection(
-      name, pageType, icon = '', id = null, subItems = []) {
-    viewElement.addSelector(name, pageType, icon, id, subItems);
+      name, pageType, icon = '', id = null, initialData = null) {
+    viewElement.addSelector(name, pageType, icon, id, initialData);
+    return flushTasks();
+  }
+
+  /**
+   * Adds sections to the navigation element.
+   * @param {!Array<!SelectorItem>} sections
+   * @return {!Promise}
+   */
+  function addNavigationSections(sections) {
+    viewElement.addSelectors(sections);
     return flushTasks();
   }
 
@@ -81,8 +91,8 @@ export function navigationViewPanelTestSuite() {
     await addNavigationSection('dummyPage1', dummyPage1);
     await addNavigationSection('dummyPage2', dummyPage2);
 
-    // Click the first menu item. Expect that the dummyPage1 to be created and
-    // not hidden.
+    // Click the first selector item. Expect that the dummyPage1 to be created
+    // and not hidden.
     const navElements = getNavElements();
     navElements[0].click();
     await flushTasks();
@@ -91,8 +101,8 @@ export function navigationViewPanelTestSuite() {
     assertFalse(dummyElement1.hidden);
     dummyElement1['onNavigationPageChanged'] = onNavigationPageChanged;
 
-    // Click the second menu item. Expect that the dummyPage2 to be created and
-    // not hidden. dummyPage1 should be hidden now.
+    // Click the second selector item. Expect that the dummyPage2 to be created
+    // and not hidden. dummyPage1 should be hidden now.
     navElements[1].click();
     await flushTasks();
     const dummyElement2 =
@@ -104,7 +114,7 @@ export function navigationViewPanelTestSuite() {
     // navigation click, expect only one client to be notified.
     assertEquals(1, numPageChangedCount);
 
-    // Click the first menu item. Expect that dummyPage2 is now hidden and
+    // Click the first selector item. Expect that dummyPage2 is now hidden and
     // dummyPage1 is not hidden.
     navElements[0].click();
     await flushTasks();
@@ -140,11 +150,29 @@ export function navigationViewPanelTestSuite() {
     const dummyPage1 = 'dummy-page1';
     const dummyPage2 = 'dummy-page2';
 
-    await addNavigationSection('dummyPage1', dummyPage1);
-    await addNavigationSection('dummyPage2', dummyPage2);
+    await addNavigationSections([
+      viewElement.createSelectorItem('dummyPage1', dummyPage1),
+      viewElement.createSelectorItem('dummyPage2', dummyPage2),
+    ]);
 
     assertFalse(viewElement.shadowRoot.querySelector(`#${dummyPage1}`).hidden);
     assertFalse(!!viewElement.shadowRoot.querySelector(`#${dummyPage2}`));
+  });
+
+  test('defaultPageSetUsingQueryParam', async () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('page2', '');
+    // Replace current querystring with the new one.
+    window.history.replaceState(null, '', '?' + queryParams.toString());
+
+    await addNavigationSections([
+      viewElement.createSelectorItem('dummyPage1', 'dummy-page1', '', 'page1'),
+      viewElement.createSelectorItem('dummyPage1', 'dummy-page2', '', 'page2')
+    ]);
+
+
+    assertFalse(viewElement.shadowRoot.querySelector('#page2').hidden);
+    assertFalse(!!viewElement.shadowRoot.querySelector('#page1'));
   });
 
   test('samePageTypeDifferentId', async () => {
@@ -153,8 +181,10 @@ export function navigationViewPanelTestSuite() {
     const id2 = 'id2';
 
     // Add two pages of the the same type with different ids.
-    await addNavigationSection('Page 1', pageType, /*icon=*/ '', 'id1');
-    await addNavigationSection('Page 2', pageType, /*icon=*/ '', 'id2');
+    await addNavigationSections([
+      viewElement.createSelectorItem('Page 1', pageType, /*icon=*/ '', 'id1'),
+      viewElement.createSelectorItem('Page 2', pageType, /*icon=*/ '', 'id2'),
+    ]);
 
     // First page should be created by default.
     assertTrue(!!viewElement.shadowRoot.querySelector(`#${id1}`));
@@ -172,22 +202,20 @@ export function navigationViewPanelTestSuite() {
     assertFalse(viewElement.shadowRoot.querySelector(`#${id2}`).hidden);
   });
 
-  test('defaultCollapsiblePage', async () => {
+  test('toolBarVisible', async () => {
     const dummyPage1 = 'dummy-page1';
-    const dummyPage2 = 'dummy-page2';
-    const subPage = 'sub-page1';
-    const subid = 'subid1';
-    const id1 = 'id1';
+    const expectedTitle = 'title';
+    viewElement.title = expectedTitle;
+    viewElement.showToolBar = true;
 
-    let subItem =
-        /** @type {SelectorItem} */ (
-            {'name': 'subItem', 'pageIs': subPage, 'id': subid});
+    await addNavigationSections([
+      viewElement.createSelectorItem('dummyPage1', dummyPage1),
+    ]);
 
-    await addNavigationSection('dummyPage1', dummyPage1, '', id1, [subItem]);
-    await addNavigationSection('dummyPage2', dummyPage2);
-
-    // The pages are not created yet.
-    assertFalse(!!viewElement.shadowRoot.querySelector(`#${id1}`));
-    assertFalse(!!viewElement.shadowRoot.querySelector(`#${dummyPage2}`));
+    assertFalse(viewElement.shadowRoot.querySelector(`#${dummyPage1}`).hidden);
+    // The title is only visible if the toolbar is stamped.
+    const pageToolbar = viewElement.shadowRoot.querySelector('page-toolbar');
+    const toolbarTitle = pageToolbar.$.title.textContent.trim();
+    assertEquals(expectedTitle, toolbarTitle);
   });
 }

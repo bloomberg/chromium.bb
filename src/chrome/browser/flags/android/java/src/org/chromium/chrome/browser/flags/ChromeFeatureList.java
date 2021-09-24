@@ -49,24 +49,6 @@ public abstract class ChromeFeatureList {
     }
 
     /**
-     * @see FeatureList#setTestFeatures
-     * Sets the feature flags to use in JUnit tests, since native calls are not available there.
-     * Do not use directly, prefer using the {@link Features} annotation.
-     *
-     * @see Features
-     * @see Features.Processor
-     *
-     * @deprecated
-     * https://crbug.com/1058993
-     */
-    // TODO(crbug.com/1060097): Migrate callers to the FeatureList equivalent function.
-    @VisibleForTesting
-    @Deprecated
-    public static void setTestFeatures(Map<String, Boolean> features) {
-        FeatureList.setTestFeatures(features);
-    }
-
-    /**
      * @return Whether the native FeatureList has been initialized. If this method returns false,
      *         none of the methods in this class that require native access should be called (except
      *         in tests if test features have been set).
@@ -99,7 +81,7 @@ public abstract class ChromeFeatureList {
      *
      * Should be called only after native is loaded. If {@link #isInitialized()} return true, this
      * method is safe to call.  In tests, this will return any values set through
-     * {@link #setTestFeatures(Map)}, even before native is loaded.
+     * {@link FeatureList#setTestFeatures(Map)}, even before native is loaded.
      *
      * @param featureName The name of the feature to query.
      * @return Whether the feature is enabled or not.
@@ -216,8 +198,6 @@ public abstract class ChromeFeatureList {
             "AdaptiveButtonInTopToolbarCustomizationV2";
     public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
-    public static final String ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS =
-            "AllowRemoteContextForNotifications";
     public static final String AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT =
             "AutofillAddressProfileSavePromptNicknameSupport";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
@@ -238,8 +218,6 @@ public abstract class ChromeFeatureList {
             "AutofillEnableSupportForMoreStructureInNames";
     public static final String ANDROID_LAYOUT_CHANGE_TAB_REPARENT =
             "AndroidLayoutChangeTabReparenting";
-    public static final String ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE =
-            "AndroidPartnerCustomizationPhenotype";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
@@ -288,7 +266,6 @@ public abstract class ChromeFeatureList {
             "ClipboardSuggestionContentHidden";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
-    public static final String CHROME_SHARE_HIGHLIGHTS_ANDROID = "ChromeShareHighlightsAndroid";
     public static final String CHROME_SHARE_LONG_SCREENSHOT = "ChromeShareLongScreenshot";
     public static final String CHROME_SHARE_SCREENSHOT = "ChromeShareScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
@@ -320,6 +297,7 @@ public abstract class ChromeFeatureList {
             "ContextualSearchLiteralSearchTap";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
+    public static final String CONTEXTUAL_SEARCH_NEW_SETTINGS = "ContextualSearchNewSettings";
     public static final String CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE =
             "ContextualSearchLongpressResolve";
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
@@ -357,6 +335,7 @@ public abstract class ChromeFeatureList {
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String FEED_IMAGE_MEMORY_CACHE_SIZE_PERCENTAGE =
             "FeedImageMemoryCacheSizePercentage";
+    public static final String FEED_BACK_TO_TOP = "FeedBackToTop";
     public static final String FEED_INTERACTIVE_REFRESH = "FeedInteractiveRefresh";
     public static final String FEED_RELIABILITY_LOGGING = "FeedReliabilityLogging";
     public static final String FILLING_PASSWORDS_FROM_ANY_ORIGIN = "FillingPasswordsFromAnyOrigin";
@@ -371,8 +350,9 @@ public abstract class ChromeFeatureList {
     public static final String HTTPS_FIRST_MODE = "HttpsOnlyMode";
     public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";
-    public static final String INCOGNITO_NTP_REAL_BOX = "IncognitoNtpRealBox";
     public static final String INCOGNITO_NTP_REVAMP = "IncognitoNtpRevamp";
+    public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
+            "IncognitoReauthenticationForAndroid";
     public static final String INCOGNITO_SCREENSHOT = "IncognitoScreenshot";
     public static final String INLINE_UPDATE_FLOW = "InlineUpdateFlow";
     public static final String INSTALLABLE_AMBIENT_BADGE_INFOBAR = "InstallableAmbientBadgeInfoBar";
@@ -389,6 +369,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String INTEREST_FEED_V2_AUTOPLAY = "InterestFeedV2Autoplay";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
+    public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
     public static final String LINK_DOCTOR_DEPRECATION_ANDROID = "LinkDoctorDeprecationAndroid";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
@@ -400,14 +381,12 @@ public abstract class ChromeFeatureList {
     public static final String MESSAGES_FOR_ANDROID_READER_MODE = "MessagesForAndroidReaderMode";
     public static final String MESSAGES_FOR_ANDROID_REDUCE_LAYOUT_CHANGES =
             "MessagesForAndroidReduceLayoutChanges";
-    public static final String MOBILE_IDENTITY_CONSISTENCY_M2 = "MobileIdentityConsistencyFRE";
+    public static final String MESSAGES_FOR_ANDROID_SYNC_ERROR = "MessagesForAndroidSyncError";
     public static final String MOBILE_IDENTITY_CONSISTENCY_PROMOS =
             "MobileIdentityConsistencyPromos";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
-    public static final String MINOR_MODE_SUPPORT = "MinorModeSupport";
     public static final String NEW_WINDOW_APP_MENU = "NewWindowAppMenu";
-    public static final String NOTIFICATION_SUSPENDER = "NotificationSuspender";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_V2 = "OfflineIndicatorV2";
     public static final String OFFLINE_MEASUREMENTS_BACKGROUND_TASK =
@@ -438,6 +417,7 @@ public abstract class ChromeFeatureList {
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PORTALS = "Portals";
     public static final String PORTALS_CROSS_ORIGIN = "PortalsCrossOrigin";
+    public static final String BOOKMARKS_REFRESH = "BookmarksRefresh";
     public static final String PREEMPTIVE_LINK_TO_TEXT_GENERATION =
             "PreemptiveLinkToTextGeneration";
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
@@ -450,6 +430,8 @@ public abstract class ChromeFeatureList {
     public static final String PRIVACY_SANDBOX_SETTINGS = "PrivacySandboxSettings";
     public static final String PRIVACY_SANDBOX_SETTINGS_2 = "PrivacySandboxSettings2";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
+    public static final String PUSH_MESSAGING_DISALLOW_SENDER_IDS =
+            "PushMessagingDisallowSenderIDs";
     public static final String PWA_INSTALL_USE_BOTTOMSHEET = "PwaInstallUseBottomSheet";
     public static final String PWA_UPDATE_DIALOG_FOR_NAME_AND_ICON =
             "PwaUpdateDialogForNameAndIcon";
@@ -482,8 +464,10 @@ public abstract class ChromeFeatureList {
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
     public static final String SEARCH_HISTORY_LINK = "SearchHistoryLink";
-    public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
+    public static final String SEND_TAB_TO_SELF_MANAGE_DEVICES_LINK =
+            "SendTabToSelfManageDevicesLink";
+    public static final String SEND_TAB_TO_SELF_WHEN_SIGNED_IN = "SendTabToSelfWhenSignedIn";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
@@ -494,6 +478,7 @@ public abstract class ChromeFeatureList {
     public static final String SHARED_HIGHLIGHTING_V2 = "SharedHighlightingV2";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
     public static final String SHARING_HUB_LINK_TOGGLE = "SharingHubLinkToggle";
+    public static final String SHOPPING_LIST = "ShoppingList";
     public static final String SINGLE_TOUCH_SELECT = "SingleTouchSelect";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
@@ -546,7 +531,6 @@ public abstract class ChromeFeatureList {
     public static final String UPDATE_HISTORY_ENTRY_POINTS_IN_INCOGNITO =
             "UpdateHistoryEntryPointsInIncognito";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
-    public static final String USE_NOTIFICATION_COMPAT_BUILDER = "UseNotificationCompatBuilder";
     public static final String VOICE_SEARCH_AUDIO_CAPTURE_POLICY = "VoiceSearchAudioCapturePolicy";
     public static final String VOICE_BUTTON_IN_TOP_TOOLBAR = "VoiceButtonInTopToolbar";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";

@@ -109,6 +109,8 @@ enum AppType {
 };
 
 // Whether an app is ready to launch, i.e. installed.
+// Note the enumeration is used in UMA histogram so entries should not be
+// re-ordered or removed. New entries should be added at the bottom.
 enum Readiness {
   kUnknown = 0,
   kReady,                // Installed and launchable.
@@ -300,11 +302,12 @@ enum MenuType {
 
 // The intent filter matching condition types.
 enum ConditionType {
-  kScheme,    // Matches the URL scheme (e.g. https, tel).
-  kHost,      // Matches the URL host (e.g. www.google.com).
-  kPattern,   // Matches the URL pattern (e.g. /abc/*).
-  kAction,    // Matches the action type (e.g. view, send).
-  kMimeType,  // Matches the data mime type (e.g. image/jpeg).
+  kScheme,         // Matches the URL scheme (e.g. https, tel).
+  kHost,           // Matches the URL host (e.g. www.google.com).
+  kPattern,        // Matches the URL pattern (e.g. /abc/*).
+  kAction,         // Matches the action type (e.g. view, send).
+  kMimeType,       // Matches the data mime type (e.g. image/jpeg).
+  kFileExtension,  // Matches the file extension of all files.
 };
 
 // The pattern match type for intent filter pattern condition.
@@ -314,6 +317,7 @@ enum PatternMatchType {
   kPrefix,
   kGlob,
   kMimeType,
+  kFileExtension,
 };
 
 // For pattern type of condition, the value match will be based on the pattern
@@ -339,7 +343,7 @@ struct IntentFilter {
   array<Condition> conditions;
 
   // Activity which registered this filter. We only fill this field for ARC
-  // share intent filters.
+  // share intent filters and Web App file_handlers.
   string? activity_name;
 
   // The label shown to the user for this activity.
@@ -367,7 +371,7 @@ struct IntentFile {
 // be kept in sync with ConvertIntentToValue and ConvertValueToIntent in
 // components/services/app_service/public/cpp/intent_util.*
 struct Intent {
-  string? action; // Intent action. e.g. view, send.
+  string action; // Intent action. e.g. view, send.
   url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
   string? mime_type; // MIME type. e.g. text/plain, image/*.
   array<IntentFile>? files; // The files to share.

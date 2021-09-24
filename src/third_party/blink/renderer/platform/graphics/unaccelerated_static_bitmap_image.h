@@ -35,15 +35,15 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
             const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
-            const ImageDrawOptions& draw_options,
-            ImageClampingMode,
-            ImageDecodingMode) override;
+            const ImageDrawOptions&) override;
 
   PaintImage PaintImageForCurrentFrame() override;
 
   void Transfer() final;
 
   bool CopyToResourceProvider(CanvasResourceProvider*) override;
+
+  SkColorType GetSkColorType() const override;
 
  private:
   UnacceleratedStaticBitmapImage(sk_sp<SkImage>, ImageOrientation);

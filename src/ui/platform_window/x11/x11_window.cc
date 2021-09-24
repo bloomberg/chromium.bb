@@ -614,13 +614,9 @@ void X11Window::ToggleFullscreen() {
   // See https://crbug.com/361408
   gfx::Rect new_bounds_px = GetBounds();
   if (fullscreen) {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display = screen->GetDisplayMatching(new_bounds_px);
     SetRestoredBoundsInPixels(new_bounds_px);
-    new_bounds_px =
-        gfx::Rect(gfx::ScaleToFlooredPoint(display.bounds().origin(),
-                                           display.device_scale_factor()),
-                  display.GetSizeInPixel());
+    if (x11_extension_delegate_)
+      new_bounds_px = x11_extension_delegate_->GetGuessedFullScreenSizeInPx();
   } else {
     // Exiting "browser fullscreen mode", but the X11 window is not necessarily
     // in fullscreen state (e.g: a WM keybinding might have been used to toggle
@@ -632,10 +628,23 @@ void X11Window::ToggleFullscreen() {
     else
       SetRestoredBoundsInPixels({});
   }
+
   // Do not go through SetBounds as long as it adjusts bounds and sets them to X
   // Server. Instead, we just store the bounds and notify the client that the
   // window occupies the entire screen.
   bounds_in_pixels_ = new_bounds_px;
+
+  // If there is a restore in flight, then set a flag to ignore the single
+  // configure event (hopefully) coming from that restore.  This prevents any
+  // in-flight restore requests from changing the bounds in a way that conflicts
+  // with the `bounds_in_pixels_` setting above.  This is not perfect, and if
+  // there is some other in-flight bounds change for some reason, or if the
+  // ordering of events from the WM behaves differently, this will not prevent
+  // the issue.  See: http://crbug.com/1227451
+  ignore_next_configure_ = restore_in_flight_;
+
+  // This must be the final call in this function, as `this` may be deleted
+  // during the observation of this event.
   platform_window_delegate_->OnBoundsChanged(new_bounds_px);
 }
 
@@ -679,6 +688,7 @@ void X11Window::Minimize() {
 
 void X11Window::Restore() {
   should_maximize_after_map_ = false;
+  restore_in_flight_ = true;
   SetWMSpecState(false, x11::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  x11::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
   SetWMSpecState(false, x11::GetAtom("_NET_WM_STATE_HIDDEN"), x11::Atom::None);
@@ -724,9 +734,7 @@ void X11Window::Activate() {
     RaiseWindow(xwindow_);
     // Directly ask the X server to give focus to the window. Note that the call
     // would have raised an X error if the window is not mapped.
-    connection_
-        ->SetInputFocus({x11::InputFocus::Parent, xwindow_,
-                         static_cast<x11::Time>(timestamp)})
+    connection_->SetInputFocus({x11::InputFocus::Parent, xwindow_, timestamp})
         .IgnoreError();
     // At this point, we know we will receive focus, and some webdriver tests
     // depend on a window being IsActive() immediately after an Activate(), so
@@ -1129,8 +1137,11 @@ void X11Window::SetOverrideRedirect(bool override_redirect) {
   });
   if (remap) {
     Map();
+    // We cannot regrab the pointer now since unmapping/mapping
+    // happens asynchronously.  We must wait until the window is
+    // mapped to issue a grab request.
     if (has_pointer_grab_)
-      ChangeActivePointerGrabCursor(nullptr);
+      should_grab_pointer_after_map_ = true;
   }
 }
 
@@ -1235,9 +1246,9 @@ void X11Window::DispatchUiEvent(ui::Event* event, const x11::Event& xev) {
         (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
       // Another X11Window has installed itself as capture. Translate the
       // event's location and dispatch to the other.
-      ConvertEventLocationToTargetLocation(located_events_grabber->GetBounds(),
-                                           GetBounds(),
-                                           event->AsLocatedEvent());
+      ConvertEventLocationToTargetWindowLocation(
+          located_events_grabber->GetBounds().origin(), GetBounds().origin(),
+          event->AsLocatedEvent());
     }
     return located_events_grabber->DispatchUiEvent(event, xev);
   }
@@ -1275,6 +1286,10 @@ void X11Window::OnXWindowStateChanged() {
     new_state = PlatformWindowState::kFullScreen;
   else if (IsMaximized())
     new_state = PlatformWindowState::kMaximized;
+
+  if (restore_in_flight_ && !IsMaximized()) {
+    restore_in_flight_ = false;
+  }
 
   // fullscreen state is set syschronously at ToggleFullscreen() and must be
   // kept and propagated to the client only when explicitly requested by upper
@@ -1391,7 +1406,8 @@ void X11Window::EndMoveLoop() {
 }
 
 bool X11Window::StartDrag(const OSExchangeData& data,
-                          int operation,
+                          int operations,
+                          mojom::DragEventSource source,
                           gfx::NativeCursor cursor,
                           bool can_grab_pointer,
                           WmDragHandler::Delegate* delegate) {
@@ -1399,7 +1415,7 @@ bool X11Window::StartDrag(const OSExchangeData& data,
   DCHECK(!drag_handler_delegate_);
 
   drag_handler_delegate_ = delegate;
-  drag_drop_client_->InitDrag(operation, &data);
+  drag_drop_client_->InitDrag(operations, &data);
   allowed_drag_operations_ = 0;
   notified_enter_ = false;
 
@@ -1565,24 +1581,6 @@ gfx::Size X11Window::AdjustSizeForDisplay(
   size_in_pixels.SetToMax(gfx::Size(1, 1));
   return size_in_pixels;
 #endif
-}
-
-void X11Window::ConvertEventLocationToTargetLocation(
-    const gfx::Rect& target_window_bounds,
-    const gfx::Rect& current_window_bounds,
-    LocatedEvent* located_event) {
-  // TODO(msisov): for ozone, we need to access PlatformScreen instead and get
-  // the displays.
-  auto* display = display::Screen::GetScreen();
-  DCHECK(display);
-  auto display_window_target =
-      display->GetDisplayMatching(target_window_bounds);
-  auto display_window_current =
-      display->GetDisplayMatching(current_window_bounds);
-
-  ConvertEventLocationToTargetWindowLocation(target_window_bounds.origin(),
-                                             current_window_bounds.origin(),
-                                             located_event);
 }
 
 void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
@@ -1886,6 +1884,20 @@ void X11Window::AfterActivationStateChanged() {
     OnXWindowIsActiveChanged(is_active);
 }
 
+void X11Window::MaybeUpdateOcclusionState() {
+  PlatformWindowOcclusionState occlusion_state =
+      is_occluded_ ? PlatformWindowOcclusionState::kOccluded
+                   : PlatformWindowOcclusionState::kVisible;
+
+  if (!window_mapped_in_client_ || IsMinimized())
+    occlusion_state = PlatformWindowOcclusionState::kHidden;
+
+  if (occlusion_state != occlusion_state_) {
+    occlusion_state_ = occlusion_state;
+    platform_window_delegate_->OnOcclusionStateChanged(occlusion_state);
+  }
+}
+
 void X11Window::OnCrossingEvent(bool enter,
                                 bool focus_in_window_or_ancestor,
                                 x11::NotifyMode mode,
@@ -2104,6 +2116,9 @@ void X11Window::HandleEvent(const x11::Event& xev) {
       OnWorkspaceUpdated();
   } else if (auto* selection = xev.As<x11::SelectionNotifyEvent>()) {
     OnXWindowSelectionEvent(*selection);
+  } else if (auto* visibility = xev.As<x11::VisibilityNotifyEvent>()) {
+    is_occluded_ = visibility->state == x11::Visibility::FullyObscured;
+    MaybeUpdateOcclusionState();
   }
 }
 
@@ -2129,6 +2144,11 @@ void X11Window::OnWindowMapped() {
     Maximize();
     should_maximize_after_map_ = false;
   }
+  if (should_grab_pointer_after_map_) {
+    has_pointer_grab_ |=
+        (ui::GrabPointer(xwindow_, true, nullptr) == x11::GrabStatus::Success);
+    should_grab_pointer_after_map_ = false;
+  }
 }
 
 void X11Window::OnConfigureEvent(const x11::ConfigureNotifyEvent& configure) {
@@ -2141,6 +2161,15 @@ void X11Window::OnConfigureEvent(const x11::ConfigureNotifyEvent& configure) {
     configure_counter_value_is_extended_ = pending_counter_value_is_extended_;
     pending_counter_value_is_extended_ = false;
     pending_counter_value_ = 0;
+  }
+
+  // During a Restore() -> ToggleFullscreen() sequence, ignore the configure
+  // event from the restore if we're waiting on fullscreen.  After
+  // OnXWindowStateChanged unsets this flag, there will be a configuration event
+  // that will set the bounds to the final fullscreen bounds.
+  if (ignore_next_configure_) {
+    ignore_next_configure_ = false;
+    return;
   }
 
   // It's possible that the X window may be resized by some other means than
@@ -2204,8 +2233,6 @@ void X11Window::OnWMStateUpdated() {
 
 void X11Window::UpdateWindowProperties(
     const base::flat_set<x11::Atom>& new_window_properties) {
-  was_minimized_ = IsMinimized();
-
   window_properties_ = new_window_properties;
 
   // Ignore requests by the window manager to enter or exit fullscreen (e.g. as
@@ -2216,6 +2243,7 @@ void X11Window::UpdateWindowProperties(
   is_always_on_top_ = HasWMSpecProperty(window_properties_,
                                         x11::GetAtom("_NET_WM_STATE_ABOVE"));
   OnXWindowStateChanged();
+  MaybeUpdateOcclusionState();
   ResetWindowRegion();
 }
 

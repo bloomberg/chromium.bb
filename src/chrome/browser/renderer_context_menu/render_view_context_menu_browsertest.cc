@@ -39,11 +39,11 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/pref_names.h"
@@ -218,7 +218,9 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     web_app_info->scope = start_url;
     web_app_info->title = u"Test app 🐐";
     web_app_info->description = u"Test description 🐐";
-    web_app_info->open_as_window = open_as_window;
+    web_app_info->user_display_mode =
+        open_as_window ? blink::mojom::DisplayMode::kStandalone
+                       : blink::mojom::DisplayMode::kBrowser;
 
     return web_app::test::InstallWebApp(browser()->profile(),
                                         std::move(web_app_info));
@@ -232,7 +234,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     GURL image_url(embedded_test_server()->GetURL(image_path));
     GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
-    ui_test_utils::NavigateToURL(browser(), page);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
 
     // Open and close a context menu.
     ContextMenuWaiter waiter;
@@ -328,7 +330,7 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     GURL page_url = ui_test_utils::GetTestUrl(
         base::FilePath(FILE_PATH_LITERAL("pdf")),
         base::FilePath(FILE_PATH_LITERAL("test.pdf")));
-    ui_test_utils::NavigateToURL(browser(), page_url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
 
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -359,7 +361,7 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     // Load a page with pdf file inside.
     GURL page_url = ui_test_utils::GetTestUrl(
         base::FilePath(FILE_PATH_LITERAL("pdf")), base::FilePath(file_name));
-    ui_test_utils::NavigateToURL(browser(), page_url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
 
     WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -566,7 +568,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
 
   {
-    WebAppProvider* const provider = WebAppProvider::Get(browser()->profile());
+    WebAppProvider* const provider =
+        WebAppProvider::GetForTest(browser()->profile());
     base::RunLoop run_loop;
 
     ASSERT_TRUE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
@@ -806,8 +809,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
   ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
   // Go to a page with a link
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("data:text/html,<a href='about:blank'>link</a>"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html,<a href='about:blank'>link</a>")));
 
   // Open a context menu.
   blink::WebMouseEvent mouse_event(
@@ -844,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenAboutBlankInNewTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL page(embedded_test_server()->GetURL("/title1.html"));
 
-  ui_test_utils::NavigateToURL(browser(), page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
 
   // Set up menu with link URL.
   content::ContextMenuParams context_menu_params;
@@ -873,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenDataURLInNewTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL page(embedded_test_server()->GetURL("/title1.html"));
 
-  ui_test_utils::NavigateToURL(browser(), page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
 
   // Set up menu with link URL.
   content::ContextMenuParams context_menu_params;
@@ -903,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
 
   // Go to a |page| with a link to echoheader URL.
   GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
-  ui_test_utils::NavigateToURL(browser(), page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
 
   // Set up referrer URL with fragment.
   const GURL kReferrerWithFragment("http://foo.com/test#fragment");
@@ -951,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 
   // Go to a |page| with a link to echoheader URL.
   GURL page("data:text/html,<a href='" + echoheader.spec() + "'>link</a>");
-  ui_test_utils::NavigateToURL(browser(), page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
 
   // Set up referrer URL with fragment.
   const GURL kReferrerWithFragment("http://foo.com/test#fragment");
@@ -1041,7 +1044,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
 
   // Go to a page with a link having download attribute.
   const std::string kSuggestedFilename("test_filename.png");
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Open a context menu.
   blink::WebMouseEvent mouse_event(
@@ -1072,7 +1075,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        MenuContentsVerification_MainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Open a context menu.
   ContextMenuWaiter menu_observer;
@@ -1116,7 +1119,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        MenuContentsVerification_Subframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -1173,7 +1176,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   GURL image_url(
       "data:text/html,<html><img src=\"http://example.test/cat.jpg\" "
       "width=\"200\" height=\"10000\" tabindex=\"-1\" /></html>");
-  ui_test_utils::NavigateToURL(browser(), image_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), image_url));
 
   // Open and close a context menu.
   ContextMenuWaiter menu_observer;
@@ -1213,8 +1216,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   const char kAnchorHtml[] =
       "<div contenteditable='true'>Some text and "
       "<a href='https://test.com' id='anchor1'>link</a></div> ";
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(std::string(kDataURIPrefix) + kAnchorHtml));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kAnchorHtml)));
 
   // Open and close a context menu.
   ContextMenuWaiter menu_observer;
@@ -1265,7 +1268,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileNameCrossOrigin) {
       embedded_test_server()->GetURL("/download-anchor-cross-origin.html"));
 
   // Go to a page with a link having download attribute.
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Open a context menu.
   blink::WebMouseEvent mouse_event(
@@ -1392,6 +1395,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
   profiles_signin_required.push_back(3);
   profiles_signin_required.push_back(6);
 
+  // Avoid showing What's New.
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetInteger(prefs::kLastWhatsNewVersion, CHROME_VERSION_MAJOR);
+
   // Create the profiles.
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -1463,7 +1470,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
     // with the right MIME type, so use a data URL to make a page containing it.
     GURL image_url(embedded_test_server()->GetURL(image_path));
     GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
-    ui_test_utils::NavigateToURL(browser(), page);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
   }
 
   void AttemptImageSearch() {
@@ -1670,7 +1677,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 
     // Go to a page with an image in it
     GURL page_url(embedded_test_server()->GetURL(page_path));
-    ui_test_utils::NavigateToURL(browser(), page_url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
   }
 
   // Some platforms are flaky due to slower loading interacting with deferred
@@ -1731,6 +1738,23 @@ IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImageWithMap) {
   SetupAndLoadImagePage("/load_image/image_with_map.html",
                         "/load_image/image.png");
   AttemptLoadImage();
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForVideo) {
+  std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.example.com/"), GURL("http://www.example.com/foo.mp4"),
+      u"", blink::mojom::ContextMenuDataMediaType::kVideo,
+      ui::MENU_SOURCE_MOUSE);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYAVLOCATION));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForVideoWithBlobLink) {
+  std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
+      GURL("http://www.example.com/"),
+      GURL("blob:http://example.com/00000000-0000-0000-0000-000000000000"), u"",
+      blink::mojom::ContextMenuDataMediaType::kVideo, ui::MENU_SOURCE_MOUSE);
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYAVLOCATION));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,

@@ -13,12 +13,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     web_application_info->start_url = start_url;
     web_application_info->scope = start_url.GetWithoutFilename();
     web_application_info->title = u"App Name";
-    web_application_info->open_as_window = true;
+    web_application_info->user_display_mode = DisplayMode::kStandalone;
 
     {
       SkBitmap bitmap;
@@ -86,11 +86,12 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     }
 
     WebAppInstallManager& install_manager =
-        WebAppProvider::Get(browser()->profile())->install_manager();
+        WebAppProvider::GetForTest(browser()->profile())->install_manager();
 
     base::RunLoop run_loop;
     install_manager.InstallWebAppFromInfo(
-        std::move(web_application_info), ForInstallableSite::kYes,
+        std::move(web_application_info),
+        /*overwrite_existing_manifest_fields=*/false, ForInstallableSite::kYes,
         webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&app_id, &run_loop](const AppId& installed_app_id,

@@ -27,7 +27,7 @@ String RTCEncodedVideoFrame::type() const {
   return delegate_->Type();
 }
 
-uint64_t RTCEncodedVideoFrame::timestamp() const {
+uint32_t RTCEncodedVideoFrame::timestamp() const {
   return delegate_->Timestamp();
 }
 
@@ -56,17 +56,10 @@ RTCEncodedVideoFrameMetadata* RTCEncodedVideoFrame::getMetadata() const {
   metadata->setHeight(webrtc_metadata->GetHeight());
   metadata->setSpatialIndex(webrtc_metadata->GetSpatialIndex());
   metadata->setTemporalIndex(webrtc_metadata->GetTemporalIndex());
+  if (delegate_->PayloadType() != 255) {
+    metadata->setPayloadType(delegate_->PayloadType());
+  }
   return metadata;
-}
-
-DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {
-  if (!additional_data_)
-    additional_data_ = delegate_->CreateAdditionalDataBuffer();
-  return additional_data_;
-}
-
-uint32_t RTCEncodedVideoFrame::synchronizationSource() const {
-  return delegate_->Ssrc();
 }
 
 void RTCEncodedVideoFrame::setData(DOMArrayBuffer* data) {
@@ -78,9 +71,9 @@ String RTCEncodedVideoFrame::toString() const {
     return "empty";
 
   StringBuilder sb;
-  sb.Append("RTCEncodedVideoFrame{timestamp: ");
+  sb.Append("RTCEncodedVideoFrame{rtpTimestamp: ");
   sb.AppendNumber(timestamp());
-  sb.Append("us, size: ");
+  sb.Append(", size: ");
   sb.AppendNumber(data()->ByteLength());
   sb.Append(" bytes, type: ");
   sb.Append(type());
@@ -107,7 +100,6 @@ RTCEncodedVideoFrame::PassWebRtcFrame() {
 void RTCEncodedVideoFrame::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   visitor->Trace(frame_data_);
-  visitor->Trace(additional_data_);
 }
 
 }  // namespace blink

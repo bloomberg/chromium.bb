@@ -24,6 +24,7 @@
 <translation id="1119348796022671382">Рэжым колеру "З тэмай" бярэ колеры са шпалер і злёгку расфарбоўвае імі інтэрфейс.</translation>
 <translation id="112308213915226829">Аўтаматычна хаваць паліцу</translation>
 <translation id="1148499908455722006">Адкрыць дыялогавае акно інфармацыі аб уліковым запісе "<ph name="USER_NAME" />"</translation>
+<translation id="1150989369772528668">Каляндар</translation>
 <translation id="1153356358378277386">Спалучаныя прылады</translation>
 <translation id="1165712434476988950">Каб прымяніць абнаўленне, трэба перазапусціць прыладу.</translation>
 <translation id="1175572348579024023">Прагартаць</translation>
@@ -92,6 +93,7 @@
 <translation id="1611993646327628135">Уключана</translation>
 <translation id="1615402009686901181">Палітыка, зададзеная адміністратарам, адключае здыманне экрана, калі на ім паказваецца прыватнае змесціва</translation>
 <translation id="1632985212731562677">Доступ праз пераключальнікі можна выключыць у раздзеле "Налады &gt; Спецыяльныя магчымасці".</translation>
+<translation id="1637505162081889933">Прылад: <ph name="NUM_DEVICES" /></translation>
 <translation id="1654477262762802994">Пачаць галасавы запыт</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />. Каб пабачыць вынік у Памочніку, націсніце "Пошук" і клавішу прабелу.</translation>
 <translation id="1667964833127753507">У рэжыме нейтральнага колеру атрыманыя са шпалер колеры не выкарыстоўваюцца – замест іх прымяняецца набор нейтральных светлых або цёмных адценняў.</translation>
@@ -192,6 +194,7 @@
 <translation id="2427507373259914951">Націсканне левай кнопкай мышы</translation>
 <translation id="2429753432712299108">Прылада Bluetooth "<ph name="DEVICE_NAME" />" запытвае дазволу на спалучэнне. Перш чым пагадзіцца, упэўніцеся, што на прыладзе паказаны гэты ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Паказаць пароль</translation>
+<translation id="24452542372838207">Разгарнуць апавяшчэнне</translation>
 <translation id="2450205753526923158">Рэжым здымка экрана</translation>
 <translation id="2473177541599297363">Пацвердзіце раздзяляльнасць</translation>
 <translation id="2475982808118771221">Адбылася памылка</translation>
@@ -320,6 +323,7 @@
 <translation id="3486220673238053218">азначэнне</translation>
 <translation id="3510164367642747937">Вылучаць курсор мышы</translation>
 <translation id="3513798432020909783">Уліковы запіс пад кіраваннем <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Устаноўлена падключэнне да некалькіх (<ph name="NUM_DEVICES" />) прылад</translation>
 <translation id="3552189655002856821">Wi-Fi выключаны</translation>
 <translation id="3560866052109807830">Інструменты для рысавання маркерам</translation>
 <translation id="3563775809269155755">Уключыць хот-спот</translation>
@@ -348,6 +352,7 @@
 <translation id="3702846122927433391">Насельніцтва Нігерыі</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="370665806235115550">Загрузка…</translation>
+<translation id="3708186454126126312">Падключаныя раней прылады</translation>
 <translation id="371370241367527062">Пярэдні мікрафон</translation>
 <translation id="3713734891607377840">Адкрыць пасля завяршэння</translation>
 <translation id="3742055079367172538">Здымак экрана зроблены</translation>
@@ -403,6 +408,7 @@
 <translation id="4129129681837227511">Каб бачыць апавяшчэнні на экране блакіроўкі, разблакіруйце прыладу і змяніце адпаведную наладу</translation>
 <translation id="4146833061457621061">Уключыць музыку</translation>
 <translation id="4157822100366708405">Налады цёмнай тэмы</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Мовы</translation>
 <translation id="4195877955194704651">Кнопка "Аўтаматычныя націсканні мышшу"</translation>
 <translation id="4197790712631116042">Выключана</translation>
@@ -555,6 +561,7 @@
 <translation id="5222676887888702881">Выйсці</translation>
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="523505283826916779">Налады спецыяльных магчымасцей</translation>
+<translation id="5253783950165989294">Устаноўлена падключэнне да прылады "<ph name="DEVICE_NAME" />", <ph name="BATTERY_PERCENTAGE" />% зараду акумулятара</translation>
 <translation id="5260676007519551770">Стол 4</translation>
 <translation id="5283198616748585639">Дадаць 1 хвіліну</translation>
 <translation id="528468243742722775">Канец</translation>
@@ -565,6 +572,7 @@
 <translation id="5308380583665731573">Падключыцца</translation>
 <translation id="5313326810920013265">Налады Bluetooth</translation>
 <translation id="5314219114274263156">Запіс экрана зроблены</translation>
+<translation id="5319712128756744240">Спалучыць новую прыладу</translation>
 <translation id="5322611492012084517">Не ўдалося знайсці тэлефон</translation>
 <translation id="5329548388331921293">Ідзе падключэнне...</translation>
 <translation id="5331975486040154427">Прылада USB-C (задні порт злева)</translation>
@@ -767,6 +775,7 @@
 <translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="698231206551913481">Пры выдаленні карыстальніка будуць выдалены ўсе звязаныя з ім файлы і лакальныя даныя.</translation>
 <translation id="7007983414944123363">Пароль або PIN-код спраўдзіць не ўдалося. Паўтарыце спробу.</translation>
+<translation id="7014684956566476813">Устаноўлена падключэнне да прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7015766095477679451">Можна будзе прадоўжыць у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Працоўны стол 6</translation>
 <translation id="7025533177575372252">Падключыце прыладу "<ph name="DEVICE_NAME" />" да тэлефона</translation>
@@ -1000,6 +1009,7 @@
 <translation id="8818320199597151042">Ідзе выдаленне профілю. Пачакайце некалькі хвілін.</translation>
 <translation id="8825863694328519386">Каб вярнуцца назад, правядзіце пальцам з левага краю</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Падключаныя цяпер прылады</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8843682306134542540">Уключыць або выключыць блакіроўку павароту. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Клавіша пошуку + Esc</translation>
@@ -1030,6 +1040,7 @@
 <translation id="9024331582947483881">увесь экран</translation>
 <translation id="9047624247355796468">Адкрыць налады для сеткі <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Версія АС прылады будзе адкочана</translation>
+<translation id="9059834730836941392">Згарнуць апавяшчэнне</translation>
 <translation id="9063800855227801443">Здыманне немагчымае з-за наяўнасці на экране прыватнага змесціва</translation>
 <translation id="9065203028668620118">Змяніць</translation>
 <translation id="9070640332319875144">Налады Памочніка</translation>

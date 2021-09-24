@@ -465,7 +465,7 @@ void SVGUseElement::AttachShadowTree(SVGElement& target) {
     }
     // Setup the mapping from the corresponding (original) element back to the
     // instance.
-    corresponding_element->MapInstanceToElement(&instance);
+    corresponding_element->AddInstance(&instance);
   }
 }
 
@@ -477,7 +477,7 @@ void SVGUseElement::DetachShadowTree() {
 
 LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout) {
-  return new LayoutSVGTransformableContainer(this);
+  return MakeGarbageCollected<LayoutSVGTransformableContainer>(this);
 }
 
 static bool IsDirectReference(const SVGElement& element) {

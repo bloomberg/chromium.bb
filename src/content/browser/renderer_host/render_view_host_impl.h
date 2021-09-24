@@ -128,7 +128,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderWidgetHostImpl* GetWidget() override;
   RenderProcessHost* GetProcess() override;
   int GetRoutingID() override;
-  RenderFrameHost* GetMainFrame() override;
   void EnablePreferredSizeMode() override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
@@ -152,14 +151,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   // TestRenderViewHost.
   // |opener_route_id| parameter indicates which RenderView created this
   //   (MSG_ROUTING_NONE if none).
-  // |window_was_created_with_opener| is true if this top-level frame was
-  //   created with an opener. (The opener may have been closed since.)
+  // |window_was_opened_by_another_window| is true if this top-level frame was
+  // created by another window, as opposed to independently created (through
+  // the browser UI, etc). This is true even when the window is opened with
+  // "noopener", and even if the opener has been closed since.
   // |proxy_route_id| is only used when creating a RenderView in an inactive
   //   state.
   virtual bool CreateRenderView(
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int proxy_route_id,
-      bool window_was_created_with_opener);
+      bool window_was_opened_by_another_window);
 
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending unload or unloaded), according to its main frame
@@ -175,6 +176,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // which point IsRenderViewLive() becomes true, and the mojo connections to
   // the renderer process for this view now exist.
   void RenderViewCreated(RenderFrameHostImpl* local_main_frame);
+
+  // Returns the main RenderFrameHostImpl associated with this RenderViewHost or
+  // null if it doesn't exist. It's null if the main frame is represented in
+  // this RenderViewHost by RenderFrameProxyHost (from Blink perspective,
+  // blink::Page's main blink::Frame is remote).
+  RenderFrameHostImpl* GetMainRenderFrameHost();
 
   // Returns the `AgentSchedulingGroupHost` this view is associated with (via
   // the widget).
@@ -292,6 +299,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // class to FrameTree/FrameTreeNode.
   FrameTree* frame_tree() const { return frame_tree_; }
   void SetFrameTree(FrameTree& frame_tree);
+
+  // Write a representation of this object into a trace.
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::RenderViewHost> proto);
 
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless

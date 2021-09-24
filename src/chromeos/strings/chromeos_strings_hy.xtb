@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Հայտնաբերվել է հրապատ</translation>
 <translation id="1075811647922107217">Էջի չափսը</translation>
+<translation id="1119447706177454957">Ներքին սխալ</translation>
 <translation id="1124772482545689468">Օգտատեր</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Այս <ph name="DEVICE_TYPE" /> սարքը կառավարվում է <ph name="MANAGER" /> տիրույթի կողմից։</translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Մուտքի էջ</translation>
 <translation id="2006864819935886708">Կապ</translation>
 <translation id="2008685064673031089">Prime որոնում</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Այլ կարգավորումներ</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, տարբերակ <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="TOTAL_MEMORY" /> ԳԲ-ից հասանելի է <ph name="AVAILABLE_MEMORY" /> ԳԲ</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">ՀԵՐԹԱԳՐՎԱԾ Է</translation>
 <translation id="2161394479394250669">Չեղարկել տպման առաջադրանքը</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Մոտակա սարքերը գտնելու համար միացրեք Bluetooth-ը</translation>
 <translation id="2364498172489649528">Անցել է ստուգում</translation>
+<translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Ուղարկել կարծիքների վերաբերյալ հաշվետվություն</translation>
+<translation id="2407209115954268704">SIM քարտի կողպման կարգավիճակը</translation>
 <translation id="2418150275289244458">Բացել կարգավորումներում</translation>
 <translation id="2446553403094072641">Լողացող կետի ճշգրտությունը</translation>
 <translation id="2448312741937722512">Տեսակ</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Հիշապահեստ</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="315116470104423982">Բջջային կապի տվյալներ</translation>
+<translation id="3156846309055100599">Սկանավորվում է էջ <ph name="PAGE_NUMBER" />-ը...</translation>
 <translation id="315738237743207937">Հայտնաբերվել է մուտքի էջ</translation>
 <translation id="3188257591659621405">Իմ ֆայլերը</translation>
 <translation id="3199982728237701504">Փաստաթղթերի մատակարար (երկկողմանի)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567">Տպման առաջադրանքները, որոնք <ph name="NUMBER_OF_DAYS" /> օրից հին են, կհեռացվեն</translation>
 <translation id="4003384961948020559">Չհաջողվեց տպել – Ելքը լցված է</translation>
 <translation id="4034824040120875894">Տպիչ</translation>
+<translation id="409427325554347132">Պահել թեստի մանրամասները</translation>
 <translation id="4131410914670010031">Սև ու սպիտակ</translation>
 <translation id="4145784616224233563">HTTP հրապատ</translation>
 <translation id="4155551848414053977">Համոզվեք, որ սկաներն աշխատում է և հասանելի է ցանցի կամ ուղիղ կապի միջոցով</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">Գաղտնաբառի գործողության ժամկետը <ph name="TIME" />ից կսպառվի</translation>
 <translation id="4238516577297848345">Տպելու ընթացիկ առաջադրանքներ չկան</translation>
 <translation id="4244962993387259361">Հիշողության ստուգումը գործարկելու համար ձեզ անհրաժեշտ է նվազագույնը 500 ՄԲ ազատ տարածք։ Տարածք ազատելու համար անցեք Կարգավորումներ &gt; Հիշողության կառավարում։</translation>
+<translation id="4258281355379922695">HTTP-ի հապաղում</translation>
+<translation id="4271957103967917607">Լիաէկրան ռեժիմ</translation>
 <translation id="4289540628985791613">Համատեսք</translation>
 <translation id="4297501883039923494">Դադարեցվել է – Անհայտ սխալ</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> պատկեր</translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">IP-ի կազմաձևում</translation>
 <translation id="4548483925627140043">Ազդանշան չի գտնվել</translation>
 <translation id="455835558791489930">Մարտկոց՝ <ph name="CHARGE_VALUE" />mAh</translation>
+<translation id="4561801978359312462">SIM քարտն ապակողպված է</translation>
 <translation id="4562494484721939086">Ցանցը չի գտնվել</translation>
 <translation id="458794348635939462">Չհաջողվեց կապ հաստատել բոլոր խնամորդների հետ</translation>
 <translation id="4593212453765072419">Պահանջվում է միջնորդ սերվերի նույնականացում</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />։ Հպեք Enter՝ տպումը չեղարկելու համար։</translation>
+<translation id="463791356324567266">Սկանավորումը չեղարկվում է...</translation>
 <translation id="4646949265910132906">Ապահով Wi-Fi կապ</translation>
-<translation id="4652335678334611408">Պահել աշխատաշրջանի տվյալները</translation>
 <translation id="4654549501020883054">Փոխել ամեն օր</translation>
 <translation id="4665014895760275686">Արտադրող</translation>
 <translation id="467510802200863975">Գաղտնաբառերը չեն համընկնում</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Թաքցնել հաշվետվությունը</translation>
 <translation id="500920857929044050">Դադարեցնել փորձարկումը</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM քարտը կողպված է (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Խմբի անունը</translation>
 <translation id="5088172560898466307">Սերվերի խնամորդի անուն</translation>
 <translation id="5089810972385038852">Նահանգ</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Ցույց տալ պանակում</translation>
 <translation id="5212543919916444558">Չհաջողվեց գտնել քարտեր էկրանին:
 Փորձեք օգտագործել խոսափողը` առաջադրանքներ տալու համար:</translation>
+<translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Դուրս գրվել</translation>
 <translation id="5234764350956374838">Փակել</translation>
 <translation id="5252456968953390977">Ռոումինգ</translation>
@@ -248,6 +260,7 @@
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Մնացած փորձերի քանակը՝ {0}}one{Մնացած փորձերի քանակը՝ {0}}other{Մնացած փորձերի քանակը՝ {0}}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />՝ <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Չհաջողվեց ավարտել սկանավորումը</translation>
+<translation id="5502931783115429516">Android-ը չի աշխատում</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Ակտիվացում</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@
 <translation id="5701381305118179107">Կենտրոնաբերել</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Պորտալի վիճակը</translation>
+<translation id="5784136236926853061">HTTP-ի բարձր հապաղում</translation>
 <translation id="5832805196449965646">Ավելացնել անձ</translation>
 <translation id="583281660410589416">Անհայտ</translation>
 <translation id="5849570051105887917">Տան ծառայությունների մատակարարի կոդը</translation>
+<translation id="5860033963881614850">Անջատ.</translation>
 <translation id="5866840822086176774">Շատ ուժեղ</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5916084858004523819">Արգելված է</translation>
@@ -281,6 +296,7 @@
 <translation id="6146993107019042706">Ավարտելու համար մուտքագրեք ձեր նոր գաղտնաբառը</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Օգտագործման ընթացքում մարտկոցի հզորությունը նվազում է</translation>
 <translation id="6191293864534840972">Սխալ DNS սերվերներ</translation>
 <translation id="6223752125779001553">Հասանելի սկաներներ չկան</translation>
@@ -302,6 +318,7 @@
 <translation id="6527081081771465939">Wi-Fi-ի անվտանգության անհայտ հաղորդակարգ</translation>
 <translation id="65587193855025101">Պլանշետային</translation>
 <translation id="6564646048574748301">Չհաջողվեց տպել – Տպիչն անհասանելի է</translation>
+<translation id="6566314079205407217">Սկանավորել մի քանի էջ</translation>
 <translation id="6574762126505704998">Լցում</translation>
 <translation id="6575134580692778371">Կազմաձևված չէ</translation>
 <translation id="6596816719288285829">IP հասցե</translation>
@@ -341,9 +358,11 @@
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Պաստառների հավաքածուներ</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Ցանցային սարքեր</translation>
 <translation id="7359657277149375382">Ֆայլի տեսակ</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">HTTP-ի շատ բարձր հապաղում</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Սկանավորումն ավարտվել է։ Սկանավորվել է 1 էջ։}one{Սկանավորումն ավարտվել է։ Սկանավորվել է {NUMBER_OF_PAGES} էջ։}other{Սկանավորումն ավարտվել է։ Սկանավորվել է {NUMBER_OF_PAGES} էջ։}}</translation>
 <translation id="7469648432129124067">Հայտնաբերվել է ցանցային պորտալ</translation>
@@ -351,9 +370,11 @@
 <translation id="7490813197707563893">MAC հասցե</translation>
 <translation id="7497215489070763236">Սերվերի CA հավաստագիր</translation>
 <translation id="7502658306369382406">IPv6 հասցե</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Դիագնոստիկայի ծրագրեր</translation>
 <translation id="7561454561030345039">Այս գործողությունը կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">ARC փինգ</translation>
 <translation id="7595982850646262331">Մնացել է <ph name="TIME_VALUE" /></translation>
 <translation id="7620771111601174153">Մանրամասն Օգնության կենտրոնի մասին</translation>
 <translation id="763165478673169849">Վերջին զրոյացման ժամանակը</translation>

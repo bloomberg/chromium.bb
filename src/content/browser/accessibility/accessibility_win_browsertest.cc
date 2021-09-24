@@ -1939,8 +1939,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Now that input is completely empty, the position of the caret should be
   // returned for character 0. The x,y position and height should be the same as
   // it was as when there was single character, but the width should now be 1.
-  LONG x, y, width, height;
   for (int offset = IA2_TEXT_OFFSET_CARET; offset <= 0; ++offset) {
+    LONG x, y, width, height;
     EXPECT_HRESULT_SUCCEEDED(input_text->get_characterExtents(
         offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
     EXPECT_EQ(prev_x, x);
@@ -3107,12 +3107,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(
       list_item_win->QueryInterface(IID_PPV_ARGS(&list_item_text)));
 
-  // The hypertext expose by "list_item_text" includes an embedded object
-  // character for the list bullet and the joined word "Bananafruit.". The word
-  // "Banana" is exposed as text because its container paragraph is ignored.
+  // The hypertext expose by "list_item_text" includes a bullet character
+  // (U+2022) followed by a space for the list bullet and the joined word
+  // "Bananafruit.". The word "Banana" is exposed as text because its container
+  // paragraph is ignored.
   LONG n_characters;
   ASSERT_HRESULT_SUCCEEDED(list_item_text->get_nCharacters(&n_characters));
-  ASSERT_EQ(13, n_characters);
+  ASSERT_EQ(14, n_characters);
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -3132,7 +3133,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Select only the list bullet.
   start_offset = 0;
-  end_offset = 1;
+  end_offset = 2;
   EXPECT_HRESULT_SUCCEEDED(
       list_item_text->setSelection(0, start_offset, end_offset));
   waiter.WaitForNotification();
@@ -3140,23 +3141,23 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   hr = list_item_text->get_selection(0, &start_offset, &end_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
-  EXPECT_EQ(1, end_offset);
+  EXPECT_EQ(2, end_offset);
 
   // Select the word "Banana" in the ignored paragraph.
-  start_offset = 1;
-  end_offset = 7;
+  start_offset = 2;
+  end_offset = 8;
   EXPECT_HRESULT_SUCCEEDED(
       list_item_text->setSelection(0, start_offset, end_offset));
   waiter.WaitForNotification();
 
   hr = list_item_text->get_selection(0, &start_offset, &end_offset);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(1, start_offset);
-  EXPECT_EQ(7, end_offset);
+  EXPECT_EQ(2, start_offset);
+  EXPECT_EQ(8, end_offset);
 
   // Select both the list bullet and the word "Banana" in the ignored paragraph.
   start_offset = 0;
-  end_offset = 7;
+  end_offset = 8;
   EXPECT_HRESULT_SUCCEEDED(
       list_item_text->setSelection(0, start_offset, end_offset));
   waiter.WaitForNotification();
@@ -3164,11 +3165,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   hr = list_item_text->get_selection(0, &start_offset, &end_offset);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(0, start_offset);
-  EXPECT_EQ(7, end_offset);
+  EXPECT_EQ(8, end_offset);
 
   // Select the joined word "Bananafruit." both in the ignored paragraph and in
   // the unignored span.
-  start_offset = 1;
+  start_offset = 2;
   end_offset = n_characters;
   EXPECT_HRESULT_SUCCEEDED(
       list_item_text->setSelection(0, start_offset, end_offset));
@@ -3176,7 +3177,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   hr = list_item_text->get_selection(0, &start_offset, &end_offset);
   EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, start_offset);
   EXPECT_EQ(n_characters, end_offset);
 }
 
@@ -5307,12 +5308,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestOffsetsOfSelectionAll) {
 
   auto* node = static_cast<ui::AXPlatformNodeWin*>(
       ui::AXPlatformNode::FromNativeViewAccessible(document.Get()));
-  LONG start_offset = 0;
-  LONG end_offset = 0;
-  HRESULT hr = node->get_selection(0, &start_offset, &end_offset);
-  EXPECT_EQ(S_OK, hr);
-  EXPECT_EQ(0, start_offset);
-  EXPECT_EQ(3, end_offset);
+  {
+    LONG start_offset = 0;
+    LONG end_offset = 0;
+    HRESULT hr = node->get_selection(0, &start_offset, &end_offset);
+    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(3, end_offset);
+  }
 
   std::vector<int> expected = {12, 18, 14};  // text length of each child
   std::vector<base::win::ScopedVariant> children =

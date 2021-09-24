@@ -288,8 +288,10 @@ class PersonalDataManager : public KeyedService,
   // Returns autofill offer data, including card-linked and promo code offers.
   virtual std::vector<AutofillOfferData*> GetAutofillOffers() const;
 
-  // Returns autofill offer data, but only for promo code offers.
-  std::vector<const AutofillOfferData*> GetAutofillPromoCodeOffers() const;
+  // Returns autofill offer data, but only promo code offers that are not
+  // expired and that are for the given |origin|.
+  std::vector<const AutofillOfferData*>
+  GetActiveAutofillPromoCodeOffersForOrigin(GURL origin) const;
 
   // Returns the customized credit card art image for the |card_art_url|.
   virtual gfx::Image* GetCreditCardArtImageForUrl(
@@ -471,6 +473,15 @@ class PersonalDataManager : public KeyedService,
   // Removes potential strikes to block a profile identified by its `guid` for
   // updates. Does nothing if the strike database is not available.
   void RemoveStrikesToBlockProfileUpdate(const std::string& guid);
+
+  // Used to automatically import addresses without a prompt. Should only be
+  // set to true in tests.
+  void set_auto_accept_address_imports_for_testing(bool auto_accept) {
+    auto_accept_address_imports_for_testing_ = auto_accept;
+  }
+  bool auto_accept_address_imports_for_testing() {
+    return auto_accept_address_imports_for_testing_;
+  }
 
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
@@ -815,6 +826,10 @@ class PersonalDataManager : public KeyedService,
   // Stores the country code that was provided from the variations service
   // during construction.
   std::string variations_country_code_;
+
+  // If true, new addresses imports are automatically accepted without a prompt.
+  // Only to be used for testing.
+  bool auto_accept_address_imports_for_testing_ = false;
 
   // The default country code for new addresses.
   mutable std::string default_country_code_;

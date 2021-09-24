@@ -205,6 +205,14 @@ class WebTransport::DatagramUnderlyingSource final
   // Implementation of UnderlyingSourceBase.
   ScriptPromise pull(ScriptState* script_state) override {
     DVLOG(1) << "DatagramUnderlyingSource::pull()";
+
+    if (waiting_for_datagrams_) {
+      // This can happen if a second read is issued while a read is already
+      // pending.
+      DCHECK(queue_.empty());
+      return ScriptPromise::CastUndefined(script_state);
+    }
+
     // If high water mark is reset to 0 and then read() is called, it should
     // block waiting for a new datagram. So we may need to discard datagrams
     // here.
@@ -218,7 +226,6 @@ class WebTransport::DatagramUnderlyingSource final
         return ScriptPromise::CastUndefined(script_state);
       }
 
-      DCHECK(!waiting_for_datagrams_);
       waiting_for_datagrams_ = true;
       return ScriptPromise::CastUndefined(script_state);
     }
@@ -784,9 +791,12 @@ void WebTransport::close(const WebTransportCloseInfo* close_info) {
 }
 
 void WebTransport::setDatagramWritableQueueExpirationDuration(double duration) {
-  // TODO(ricea): Will this crash if we are not connected yet?
-  transport_remote_->SetOutgoingDatagramExpirationDuration(
-      base::TimeDelta::FromMillisecondsD(duration));
+  outgoing_datagram_expiration_duration_ =
+      base::TimeDelta::FromMillisecondsD(duration);
+  if (transport_remote_.is_bound()) {
+    transport_remote_->SetOutgoingDatagramExpirationDuration(
+        outgoing_datagram_expiration_duration_);
+  }
 }
 
 void WebTransport::OnConnectionEstablished(
@@ -809,6 +819,11 @@ void WebTransport::OnConnectionEstablished(
 
   DCHECK(!transport_remote_.is_bound());
   transport_remote_.Bind(std::move(web_transport), task_runner);
+
+  if (outgoing_datagram_expiration_duration_ != base::TimeDelta()) {
+    transport_remote_->SetOutgoingDatagramExpirationDuration(
+        outgoing_datagram_expiration_duration_);
+  }
 
   received_streams_underlying_source_->NotifyOpened();
   received_bidirectional_streams_underlying_source_->NotifyOpened();
@@ -958,6 +973,8 @@ void WebTransport::Init(const String& url,
       fingerprints;
   if (options.hasServerCertificateFingerprints()) {
     for (const auto& fingerprint : options.serverCertificateFingerprints()) {
+      if (!fingerprint->hasAlgorithm() || !fingerprint->hasValue())
+        continue;
       fingerprints.push_back(
           network::mojom::blink::WebTransportCertificateFingerprint::New(
               fingerprint->algorithm(), fingerprint->value()));

@@ -9,6 +9,8 @@ mojom("mojom") {
     "clipboard.mojom",
     "remote_support.mojom",
     "remote_url_opener.mojom",
+    "testing.mojom",
+    "url_forwarder_configurator.mojom",
   ]
 
   deps = [

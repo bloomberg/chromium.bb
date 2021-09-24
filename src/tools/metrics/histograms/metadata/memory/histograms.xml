@@ -457,7 +457,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.FreeListReleaseTime" units="microseconds"
-    expires_after="2021-08-01">
+    expires_after="2022-02-06">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -470,7 +470,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.FreelistSize.Dirty" units="KiB"
-    expires_after="2021-12-04">
+    expires_after="2022-02-06">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -490,7 +490,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.LargeAllocationFromFreelist"
-    enum="BooleanLargeAllocationFromFreelist" expires_after="2021-09-12">
+    enum="BooleanLargeAllocationFromFreelist" expires_after="2022-02-06">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -500,7 +500,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.Discardable.LockingSuccess"
-    enum="BooleanLockingSuccess" expires_after="2022-01-16">
+    enum="BooleanLockingSuccess" expires_after="2022-02-06">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -530,7 +530,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.DiscardableAllocationSize" units="KB"
-    expires_after="2021-10-10">
+    expires_after="2022-02-06">
   <owner>reveman@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1267,7 +1267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.RendererPrivateMemoryFootprintBefore"
-    units="MB" expires_after="2021-12-26">
+    units="MB" expires_after="2022-02-27">
   <owner>keishi@chromium.org</owner>
   <owner>tasak@chromium.org</owner>
   <summary>
@@ -1640,7 +1640,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Memory.NativeLibrary.MappedAndResidentMemoryFootprintCollectionStatus"
-    enum="MappedAndResidentPagesDumpState" expires_after="2021-08-22">
+    enum="MappedAndResidentPagesDumpState" expires_after="2022-01-30">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1656,8 +1656,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint"
-    units="KB" expires_after="2021-08-01">
+    units="KB" expires_after="2022-01-30">
   <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The size of the native library code which was ordered, yet is not resident
     in memory, across all processes. This metric is computed by parsing
@@ -1670,8 +1671,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint"
-    units="KB" expires_after="2019-12-01">
+    units="KB" expires_after="2022-01-30">
   <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
   <summary>
     The size of the native library code which is outside the ordered section,
     yet is resident in memory, across all processes. This metric is computed by
@@ -1886,10 +1888,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateMemoryFootprint"
-    units="MB" expires_after="2021-10-17">
+    units="MB" expires_after="2021-12-17">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of the paint preview
     compositor process.
@@ -1907,10 +1909,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateSwapFootprint" units="MB"
-    expires_after="2021-10-17">
+    expires_after="2021-12-17">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <summary>
     An amount of private memory of the paint preview compositor process placed
     in swap (VmSwap).
@@ -1921,10 +1923,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.ResidentSet" units="MiB"
-    expires_after="2021-10-17">
+    expires_after="2021-12-17">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <summary>
     The size of the resident memory in a paint preview compositor process. This
     is influenced by factors we control (e.g. memory that is not accessed can be
@@ -1945,10 +1947,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.SharedMemoryFootprint"
-    units="MB" expires_after="2021-10-17">
+    units="MB" expires_after="2021-12-17">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
   <summary>
     A rough estimate of the shared memory footprint of the paint preview
     compositor process.
@@ -1971,7 +1973,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.OnDiskSize.5min" units="KiB"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1981,7 +1983,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.Latency" units="microseconds"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1994,7 +1996,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.Size" units="KiB"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2004,7 +2006,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.Throughput" units="MiBps"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2014,7 +2016,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.TotalReadTime.5min" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2034,7 +2036,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.TotalWriteTime.5min" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2044,7 +2046,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.UnparkedSize.5min" units="KiB"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2054,7 +2056,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Write.Latency" units="microseconds"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2067,7 +2069,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Write.Size" units="KiB"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2077,7 +2079,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Write.Throughput" units="MiBps"
-    expires_after="2021-12-12">
+    expires_after="2022-02-13">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2134,7 +2136,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableString.Decompression.Latency"
-    units="microseconds" expires_after="M82">
+    units="microseconds" expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time to decompress a ParkableString, in us. Note: This metric drops reports
@@ -2145,7 +2147,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableString.Decompression.SizeKb" units="KB"
-    expires_after="M82">
+    expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Original size of a compressed ParkableString, recorded at decompression
@@ -2154,7 +2156,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableString.Decompression.ThroughputMBps"
-    units="MBps" expires_after="M82">
+    units="MBps" expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Original size of a compressed ParkableString, recorded at decompression
@@ -2254,7 +2256,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.ParkableString.Read.Latency" units="microseconds"
-    expires_after="M87">
+    expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2265,15 +2267,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Memory.ParkableString.Read.SinceLastDiskWrite" units="ms"
+    expires_after="M98">
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    When reading a parked string from disk, time since it was last parked.
+  </summary>
+</histogram>
+
 <histogram name="Memory.ParkableString.Read.SizeKb" units="KB"
-    expires_after="M87">
+    expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>Size read from disk for a ParkableString.</summary>
 </histogram>
 
 <histogram name="Memory.ParkableString.Read.ThroughputMBps" units="MBps"
-    expires_after="M87">
+    expires_after="M98">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>Read throughput from disk for a ParkableString.</summary>
@@ -2337,7 +2348,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PartitionAlloc.ThreadCache.BatchFillRate{ThreadType}"
-    units="%" expires_after="M92">
+    units="%" expires_after="M97">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2353,7 +2364,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.PartitionAlloc.ThreadCache.HitRate{ThreadType}"
-    units="%" expires_after="M92">
+    units="%" expires_after="M97">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2553,7 +2564,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.InitializedAndNotDead"
-    units="processes" expires_after="2021-12-26">
+    units="processes" expires_after="2022-02-27">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>

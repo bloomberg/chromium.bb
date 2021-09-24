@@ -102,9 +102,8 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
       return true;
     }
   }
-#endif
-
   return false;
+#endif
 }
 
 // Records the total number of deleted notifications after all storage
@@ -240,7 +239,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   // Posted tasks can request notifications to be added, which would cause a
   // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
   // see the notification anyway, since we are shutting down.
-  // TODO(knollr): IsShuttingDown check should not be required anymore, but some
+  // Note that the IsShuttingDown() check should not be required here, but some
   // tests try to display a notification during shutdown.
   if (g_browser_process->IsShuttingDown() || !profile_)
     return;
@@ -535,7 +534,7 @@ PlatformNotificationServiceImpl::FindWebAppIconAndTitle(
     const GURL& web_app_hint_url) const {
 #if !defined(OS_ANDROID)
   web_app::WebAppProvider* web_app_provider =
-      web_app::WebAppProvider::Get(profile_);
+      web_app::WebAppProvider::GetDeprecated(profile_);
   if (web_app_provider) {
     const absl::optional<web_app::AppId> app_id =
         web_app_provider->registrar().FindAppWithUrlInScope(web_app_hint_url);

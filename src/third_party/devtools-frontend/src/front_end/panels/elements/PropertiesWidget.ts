@@ -31,8 +31,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
+import propertiesWidgetStyles from './propertiesWidget.css.js';
 import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -44,32 +43,31 @@ const OBJECT_GROUP_NAME = 'properties-sidebar-pane';
 let propertiesWidgetInstance: PropertiesWidget;
 
 export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
-  _node: SDK.DOMModel.DOMNode|null;
-  _treeOutline: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline;
-  _expandController: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController;
-  _lastRequestedNode?: SDK.DOMModel.DOMNode;
+  private node: SDK.DOMModel.DOMNode|null;
+  private readonly treeOutline: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline;
+  private readonly expandController: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController;
+  private lastRequestedNode?: SDK.DOMModel.DOMNode;
   constructor() {
     super(true /* isWebComponent */);
-    this.registerRequiredCSS('panels/elements/propertiesWidget.css');
 
     SDK.TargetManager.TargetManager.instance().addModelListener(
-        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this._onNodeChange, this);
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.onNodeChange, this);
     SDK.TargetManager.TargetManager.instance().addModelListener(
-        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
     SDK.TargetManager.TargetManager.instance().addModelListener(
-        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);
     SDK.TargetManager.TargetManager.instance().addModelListener(
-        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
-    UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._setNode, this);
-    this._node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+        SDK.DOMModel.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.setNode, this);
+    this.node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
 
-    this._treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({readOnly: true});
-    this._treeOutline.setShowSelectionOnKeyboardFocus(/* show */ true, /* preventTabOrder */ false);
-    this._expandController =
-        new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this._treeOutline);
-    this.contentElement.appendChild(this._treeOutline.element);
+    this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({readOnly: true});
+    this.treeOutline.setShowSelectionOnKeyboardFocus(/* show */ true, /* preventTabOrder */ false);
+    this.expandController =
+        new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this.treeOutline);
+    this.contentElement.appendChild(this.treeOutline.element);
 
-    this._treeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, () => {
+    this.treeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, () => {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.DOMPropertiesExpanded);
     });
 
@@ -86,103 +84,48 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     return propertiesWidgetInstance;
   }
 
-  _setNode(event: Common.EventTarget.EventTargetEvent): void {
-    this._node = (event.data as SDK.DOMModel.DOMNode | null);
+  private setNode(event: Common.EventTarget.EventTargetEvent): void {
+    this.node = (event.data as SDK.DOMModel.DOMNode | null);
     this.update();
   }
 
   async doUpdate(): Promise<void> {
-    if (this._lastRequestedNode) {
-      this._lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
-      delete this._lastRequestedNode;
+    if (this.lastRequestedNode) {
+      this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
+      delete this.lastRequestedNode;
     }
 
-    if (!this._node) {
-      this._treeOutline.removeChildren();
+    if (!this.node) {
+      this.treeOutline.removeChildren();
       return;
     }
 
-    this._lastRequestedNode = this._node;
-    const object = await this._node.resolveToObject(OBJECT_GROUP_NAME);
+    this.lastRequestedNode = this.node;
+    const object = await this.node.resolveToObject(OBJECT_GROUP_NAME);
     if (!object) {
       return;
     }
 
-    const result = await object.callFunction(protoList);
-
-    if (!result.object || result.wasThrown) {
-      return;
-    }
-
-    const propertiesResult = await result.object.getOwnProperties(false /* generatePreview */);
-    result.object.release();
-
-    if (!propertiesResult || !propertiesResult.properties) {
-      return;
-    }
-
-    const properties = propertiesResult.properties;
-    this._treeOutline.removeChildren();
-
-    let selected = false;
-    // Get array of property user-friendly names.
-    for (const {name, value} of properties) {
-      if (isNaN(parseInt(name, 10))) {
-        continue;
-      }
-      if (!value) {
-        continue;
-      }
-      let title = value.description;
-      if (!title) {
-        continue;
-      }
-      title = title.replace(/Prototype$/, '');
-
-      const section = this._createSectionTreeElement(value, title, object);
-      this._treeOutline.appendChild(section);
-      if (!selected) {
-        section.select(/* omitFocus= */ true, /* selectedByUser= */ false);
-        selected = true;
-      }
-    }
-
-    function protoList(this: object): object[] {
-      const result: object[] = [];
-      for (let object = this; object !== null; object = Object.getPrototypeOf(object)) {
-        result.push(object);
-      }
-      return result;
-    }
+    await ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populate(
+        this.treeOutline.rootElement(), object, true, true, undefined, undefined,
+        ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All);
   }
 
-  _createSectionTreeElement(
-      property: SDK.RemoteObject.RemoteObject, title: string,
-      object: SDK.RemoteObject.RemoteObject): ObjectUI.ObjectPropertiesSection.RootElement {
-    const titleElement = document.createElement('span');
-    titleElement.classList.add('tree-element-title');
-    titleElement.textContent = title;
-
-    const section = new ObjectUI.ObjectPropertiesSection.RootElement(
-        property, undefined, undefined, ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OwnOnly, undefined,
-        object);
-    section.title = titleElement;
-    this._expandController.watchSection(title, section);
-
-    return section;
-  }
-
-  _onNodeChange(event: Common.EventTarget
-                    .EventTargetEvent<{node: SDK.DOMModel.DOMNode, name: string}|SDK.DOMModel.DOMNode>): void {
-    if (!this._node) {
+  private onNodeChange(event: Common.EventTarget
+                           .EventTargetEvent<{node: SDK.DOMModel.DOMNode, name: string}|SDK.DOMModel.DOMNode>): void {
+    if (!this.node) {
       return;
     }
     const data = event.data;
     const node = (data instanceof SDK.DOMModel.DOMNode ? data : data.node as SDK.DOMModel.DOMNode);
-    if (this._node !== node) {
+    if (this.node !== node) {
       return;
     }
     this.update();
+  }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([propertiesWidgetStyles]);
   }
 }
 

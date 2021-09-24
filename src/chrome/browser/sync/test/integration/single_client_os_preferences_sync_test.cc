@@ -32,7 +32,7 @@ class SingleClientOsPreferencesSyncTest
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientOsPreferencesSyncTest, Sanity) {
-  ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
+  ASSERT_TRUE(chromeos::features::IsSyncSettingsCategorizationEnabled());
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Shelf alignment is a Chrome OS only preference.
@@ -53,7 +53,7 @@ class SingleClientOsPreferencesOptionalConsentSyncTest
 
 IN_PROC_BROWSER_TEST_F(SingleClientOsPreferencesOptionalConsentSyncTest,
                        DisablingOsSyncFeatureDisablesDataType) {
-  ASSERT_TRUE(chromeos::features::IsSplitSettingsSyncEnabled());
+  ASSERT_TRUE(chromeos::features::IsSyncConsentOptionalEnabled());
   ASSERT_TRUE(SetupSync());
   syncer::SyncService* service = GetSyncService(0);
   syncer::SyncUserSettings* settings = service->GetUserSettings();

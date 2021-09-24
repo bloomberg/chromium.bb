@@ -272,7 +272,10 @@ class GerritApi(recipe_api.RecipeApi):
       * submit: Should land this CL instantly.
 
     Returns:
-      Integer change number.
+      A ChangeInfo dictionary as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#create-change
+          Or if the change is submitted, here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#submit-change
     """
     assert len(new_contents_by_file_path
                ) > 0, 'The dict of file paths should not be empty.'
@@ -329,11 +332,14 @@ class GerritApi(recipe_api.RecipeApi):
           '--change',
           change,
       ])
-      self('submit change %d' % change, [
+      submit_cmd = [
           'submitchange',
           '--host',
           host,
           '--change',
           change,
-      ])
-    return change
+          '--json_file',
+          self.m.json.output(),
+      ]
+      step_result = self('submit change %d' % change, submit_cmd)
+    return step_result.json.output

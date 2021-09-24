@@ -29,34 +29,37 @@ export function defaultRenderer(node: TreeNode<string>): LitHtml.TemplateResult 
 }
 
 export class ItemSelectedEvent<TreeNodeDataType> extends Event {
+  static readonly eventName = 'itemselected';
   data: {
     node: TreeNode<TreeNodeDataType>,
   };
 
   constructor(node: TreeNode<TreeNodeDataType>) {
-    super('itemselected', {bubbles: true, composed: true});
+    super(ItemSelectedEvent.eventName, {bubbles: true, composed: true});
     this.data = {node};
   }
 }
 
 export class ItemMouseOverEvent<TreeNodeDataType> extends Event {
+  static readonly eventName = 'itemmouseover';
   data: {
     node: TreeNode<TreeNodeDataType>,
   };
 
   constructor(node: TreeNode<TreeNodeDataType>) {
-    super('itemmouseover', {bubbles: true, composed: true});
+    super(ItemMouseOverEvent.eventName, {bubbles: true, composed: true});
     this.data = {node};
   }
 }
 
 export class ItemMouseOutEvent<TreeNodeDataType> extends Event {
+  static readonly eventName = 'itemmouseout';
   data: {
     node: TreeNode<TreeNodeDataType>,
   };
 
   constructor(node: TreeNode<TreeNodeDataType>) {
-    super('itemmouseout', {bubbles: true, composed: true});
+    super(ItemMouseOutEvent.eventName, {bubbles: true, composed: true});
     this.data = {node};
   }
 }
@@ -65,7 +68,7 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-tree-outline`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private treeData: readonly TreeNode<TreeNodeDataType>[] = [];
-  private nodeExpandedMap: WeakMap<TreeNode<TreeNodeDataType>, boolean> = new WeakMap();
+  private nodeExpandedMap: Map<string, boolean> = new Map();
   private domNodeToTreeNodeMap: WeakMap<HTMLLIElement, TreeNode<TreeNodeDataType>> = new WeakMap();
   private hasRenderedAtLeastOnce = false;
   /**
@@ -207,11 +210,11 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
   }
 
   private setNodeExpandedState(node: TreeNode<TreeNodeDataType>, newExpandedState: boolean): void {
-    this.nodeExpandedMap.set(node, newExpandedState);
+    this.nodeExpandedMap.set(node.id, newExpandedState);
   }
 
   private nodeIsExpanded(node: TreeNode<TreeNodeDataType>): boolean {
-    return this.nodeExpandedMap.get(node) || false;
+    return this.nodeExpandedMap.get(node.id) || false;
   }
 
   private async expandAndRecurse(node: TreeNode<TreeNodeDataType>, currentDepth: number, maxDepth: number):
@@ -299,7 +302,7 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
       direction: key,
       setNodeExpandedState: (node, expanded) => this.setNodeExpandedState(node, expanded),
     });
-    this.focusTreeNode(domNode);
+    await this.focusTreeNode(domNode);
   }
 
   private processEnterOrSpaceNavigation(currentDOMNode: HTMLLIElement): void {
@@ -337,13 +340,10 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
   }
 
   private isSelectedNode(node: TreeNode<TreeNodeDataType>): boolean {
-    if (node.id) {
-      if (this.selectedTreeNode && this.selectedTreeNode.id) {
-        return node.id === this.selectedTreeNode.id;
-      }
+    if (this.selectedTreeNode) {
+      return node.id === this.selectedTreeNode.id;
     }
-
-    return node === this.selectedTreeNode;
+    return false;
   }
 
   private renderNode(node: TreeNode<TreeNodeDataType>, {depth, setSize, positionInSet}: {
@@ -409,11 +409,7 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
             return;
           }
 
-          // If an id key was supplied for the node, match on that.
-          // Otherwise default to object equality.
-          if (node.id && this.nodePendingFocus && this.nodePendingFocus.id && node.id === this.nodePendingFocus.id) {
-            this.focusPendingNode(domNode);
-          } else if (node === this.nodePendingFocus) {
+          if (this.nodePendingFocus && node.id === this.nodePendingFocus.id) {
             this.focusPendingNode(domNode);
           }
         })}

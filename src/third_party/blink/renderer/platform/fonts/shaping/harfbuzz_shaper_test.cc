@@ -99,13 +99,15 @@ class HarfBuzzShaperTest : public testing::Test {
   void SelectDevanagariFont() {
     FontFamily devanagari_family;
     // Windows 10
-    devanagari_family.SetFamily("Nirmala UI");
+    devanagari_family.SetFamily("Nirmala UI", FontFamily::Type::kFamilyName);
     // Windows 7
-    devanagari_family.AppendFamily("Mangal");
+    devanagari_family.AppendFamily("Mangal", FontFamily::Type::kFamilyName);
     // Linux
-    devanagari_family.AppendFamily("Lohit Devanagari");
+    devanagari_family.AppendFamily("Lohit Devanagari",
+                                   FontFamily::Type::kFamilyName);
     // Mac
-    devanagari_family.AppendFamily("ITF Devanagari");
+    devanagari_family.AppendFamily("ITF Devanagari",
+                                   FontFamily::Type::kFamilyName);
 
     font_description.SetFamily(devanagari_family);
     font = Font(font_description);
@@ -1653,10 +1655,10 @@ TEST_P(ShapeParameterTest, CopyRangeNoRuns) {
   result->CopyRanges(ranges.data(), ranges.size());
   for (unsigned i = 0; i < ranges.size(); i++) {
     const ShapeResult::ShapeRange& range = ranges[i];
-    const ShapeResult& result = *range_results[i];
-    EXPECT_EQ(result.StartIndex(), range.start);
-    EXPECT_EQ(result.EndIndex(), range.end);
-    EXPECT_EQ(result.NumCharacters(), range.end - range.start);
+    const ShapeResult& range_result = *range_results[i];
+    EXPECT_EQ(range_result.StartIndex(), range.start);
+    EXPECT_EQ(range_result.EndIndex(), range.end);
+    EXPECT_EQ(range_result.NumCharacters(), range.end - range.start);
   }
 }
 
@@ -1782,8 +1784,15 @@ TEST_F(HarfBuzzShaperTest,
   }
 }
 
+#if defined(OS_ANDROID)
+#define MAYBE_ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded \
+  DISABLED_ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded
+#else
+#define MAYBE_ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded \
+  ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded
+#endif
 TEST_F(HarfBuzzShaperTest,
-       ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded) {
+       MAYBE_ShapeHorizontalWithSubpixelPositionWithKerningIsNotRounded) {
   ScopedSubpixelOverride subpixel_override(true);
 
   String string(u"AVOID");

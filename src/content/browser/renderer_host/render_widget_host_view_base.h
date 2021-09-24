@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -422,9 +423,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // The following pure virtual methods are implemented by derived classes.
 
   // Perform all the initialization steps necessary for this object to represent
-  // a popup (such as a <select> dropdown), then shows the popup at |pos|.
+  // a popup (such as a <select> dropdown), then shows the popup at |pos| using
+  // |anchor_rect|. See OwnedWindowAnchor in //ui/base/ui_base_types.h for more
+  // details.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
-                           const gfx::Rect& bounds) = 0;
+                           const gfx::Rect& bounds,
+                           const gfx::Rect& anchor_rect) = 0;
 
   // Sets the cursor for this view to the one associated with the specified
   // cursor_type.
@@ -465,6 +469,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // should appear to be anchored.
   virtual void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
                                          const gfx::Rect& bounds) {}
+
+  // Hides tooltips that are still visible and were triggered from a keypress.
+  // Doesn't impact tooltips that were triggered from the cursor.
+  virtual void ClearKeyboardTriggeredTooltip() {}
 
   // Transforms |point| to be in the coordinate space of browser compositor's
   // surface. This is in DIP.

@@ -38,12 +38,18 @@ constexpr struct {
     {0x045e, 0x082a},  // Microsoft Pro IntelliMouse
     {0x045e, 0x082f},  // Microsoft Bluetooth Mouse
     {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
+    {0x046d, 0x4026},  // Logitech T400
+    {0x046d, 0x405e},  // Logitech M720 Triathlon (Unifying)
     {0x046d, 0x4069},  // Logitech MX Master 2S (Unifying) // nocheck
+    {0x046d, 0x406b},  // Logitech M585 (Unifying)
     {0x046d, 0x4072},  // Logitech MX Anywhere 2 (Unifying)
+    {0x046d, 0x4080},  // Logitech Pebble M350
     {0x046d, 0xb00d},  // Logitech T630 Ultrathin
     {0x046d, 0xb011},  // Logitech M558
+    {0x046d, 0xb015},  // Logitech M720 Triathlon (Bluetooth)
     {0x046d, 0xb016},  // Logitech M535
     {0x046d, 0xb019},  // Logitech MX Master 2S (Bluetooth) // nocheck
+    {0x046d, 0xb01b},  // Logitech M585 (Bluetooth)
     {0x046d, 0xb01f},  // Logitech MX Anywhere 2 (Bluetooth)
     {0x046d, 0xb503},  // Logitech Spotlight Presentation Remote (Bluetooth)
     {0x046d, 0xc093},  // Logitech M500s
@@ -54,6 +60,7 @@ constexpr struct {
     {0x05e0, 0x1200},  // Zebra LS2208 barcode scanner
     {0x0c45, 0x7403},  // RDing FootSwitch1F1
     {0x1038, 0x1369},  // SteelSeries Sensei RAW Frost Blue
+    {0x1038, 0x1824},  // SteelSeries Rival 3 Wired
     {0x1038, 0x1830},  // SteelSeries Rival 3 Wireless (USB dongle)
     {0x1050, 0x0010},  // Yubico.com Yubikey
     {0x1050, 0x0407},  // Yubico.com Yubikey 4 OTP+U2F+CCID

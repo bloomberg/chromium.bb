@@ -570,9 +570,9 @@ ci.android_builder(
     execution_timeout = 7 * time.hour,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    # TODO(crbug.com/1143122): remove this after migration.
     experiments = {
-        # TODO(crbug.com/1143122): remove this.
-        "chromium.chromium_tests.use_rbe_cas": 50,
+        "chromium.chromium_tests.use_isolate": 50,
     },
 )
 
@@ -904,7 +904,8 @@ ci.android_builder(
         short_name = "M",
     ),
     cq_mirrors_console_view = "mirrors",
-    execution_timeout = 3 * time.hour if settings.is_main else 4 * time.hour,
+    execution_timeout = 4 * time.hour,
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
     os = os.LINUX_BIONIC_REMOVE,
@@ -1285,50 +1286,6 @@ ci.angle_thin_tester(
         short_name = "x64",
     ),
     triggered_by = ["linux-angle-chromium-builder"],
-)
-
-ci.angle_mac_builder(
-    name = "mac-angle-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Builder|ANGLE",
-        short_name = "x64",
-    ),
-)
-
-ci.angle_thin_tester(
-    name = "mac-angle-amd",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|AMD|ANGLE",
-        short_name = "x64",
-    ),
-    triggered_by = ["mac-angle-builder"],
-)
-
-ci.angle_thin_tester(
-    name = "mac-angle-amd-exp",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|AMD|ANGLE",
-        short_name = "exp",
-    ),
-    triggered_by = ["mac-angle-builder"],
-)
-
-ci.angle_thin_tester(
-    name = "mac-angle-intel",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Intel|ANGLE",
-        short_name = "x64",
-    ),
-    triggered_by = ["mac-angle-builder"],
-)
-
-ci.angle_thin_tester(
-    name = "mac-angle-nvidia",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|NVIDIA|ANGLE",
-        short_name = "x64",
-    ),
-    triggered_by = ["mac-angle-builder"],
 )
 
 ci.angle_mac_builder(
@@ -1726,8 +1683,10 @@ ci.chromiumos_builder(
     ),
     tree_closing = False,
     main_console_view = "main",
+    notifies = ["chrome-lacros-engprod-alerts"],
     triggered_by = [],
     schedule = "triggered",
+    sheriff_rotations = None,
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -2019,7 +1978,9 @@ ci.cipd_builder(
         short_name = "avd",
     ),
     executable = "recipe:android/avd_packager",
-    schedule = "0 7 * * 0 *",
+    # Triggered manually through the scheduler UI
+    # https://luci-scheduler.appspot.com/jobs/chromium/android-avd-packager
+    schedule = "triggered",
     triggered_by = [],
     os = os.LINUX_BIONIC_REMOVE,
     properties = {
@@ -3888,7 +3849,7 @@ ci.fyi_builder(
     goma_jobs = 250,
     executable = "recipe:reclient_goma_comparison",
     execution_timeout = 6 * time.hour,
-    reclient_rewrapper_env = {"RBE_cache_silo": "Comparison Linux - cache siloed"},
+    reclient_cache_silo = "Comparison Linux - cache siloed",
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
     configure_kitchen = True,
@@ -3927,22 +3888,6 @@ ci.fyi_builder(
     cores = 32,
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = 500,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    schedule = "triggered",
-)
-
-ci.fyi_builder(
-    name = "Linux Builder (core-32) (runsc) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "c32rg",
-    ),
-    cores = 32,
-    goma_backend = None,
-    reclient_instance = rbe_instance.GVISOR_SHADOW,
     reclient_jobs = 500,
     configure_kitchen = True,
     kitchen_emulate_gce = True,
@@ -4146,22 +4091,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = "TSAN Release (runsc-exp) (reclient)",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux tsan",
-        short_name = "rre",
-    ),
-    triggering_policy = scheduler.greedy_batching(
-        max_concurrent_invocations = 1,
-    ),
-    goma_backend = None,
-    reclient_instance = rbe_instance.GVISOR_SHADOW,
-    configure_kitchen = True,
-    kitchen_emulate_gce = True,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.fyi_builder(
     name = "ASAN Debug (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux asan",
@@ -4240,6 +4169,20 @@ ci.fyi_windows_builder(
     os = os.WINDOWS_DEFAULT,
 )
 
+ci.fyi_mac_builder(
+    name = "Mac Builder (reclient)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+        short_name = "re",
+    ),
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    configure_kitchen = True,
+    kitchen_emulate_gce = True,
+    description_html = "experiment reclient on mac. removed after the migration. crbug.com/1244441",
+)
+
 ci.fyi_builder(
     name = "chromeos-amd64-generic-rel (goma cache silo)",
     console_view_entry = consoles.console_view_entry(
@@ -4275,6 +4218,7 @@ ci.fyi_builder(
     kitchen_emulate_gce = True,
     os = os.LINUX_BIONIC_REMOVE,
     reclient_rewrapper_env = {"RBE_compare": "true"},
+    reclient_ensure_verified = True,
     description_html = "verify artifacts. removed after the migration. crbug.com/1235218",
 )
 
@@ -4891,6 +4835,9 @@ ci.gpu_fyi_linux_builder(
 
 ci.gpu_fyi_linux_builder(
     name = "ChromeOS FYI Release (amd64-generic)",
+    # Runs a lot of tests + VMs are slower than real hardware, so increase the
+    # timeout.
+    execution_timeout = 8 * time.hour,
     console_view_entry = consoles.console_view_entry(
         category = "ChromeOS|amd64|generic",
         short_name = "x64",
@@ -5473,7 +5420,7 @@ ci.linux_builder(
     ),
     cores = 32,
     executable = "recipe:swarming/deterministic_build",
-    execution_timeout = 6 * time.hour,
+    execution_timeout = 7 * time.hour,
     main_console_view = "main",
 )
 
@@ -5537,10 +5484,6 @@ ci.linux_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
-    experiments = {
-        # TODO(crbug.com/1143122): remove this.
-        "chromium.chromium_tests.use_rbe_cas": 20,
-    },
 )
 
 ci.linux_builder(
@@ -5831,28 +5774,10 @@ ci.linux_builder(
 )
 
 ci.infra_builder(
-    name = "linux-component-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "link experiments",
-        short_name = "comp",
-    ),
-    builderless = False,
-)
-
-ci.infra_builder(
-    name = "linux-control-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "link experiments",
-        short_name = "cntrl",
-    ),
-    builderless = False,
-)
-
-ci.infra_builder(
     name = "linux-bootstrap",
     bootstrap = True,
     console_view_entry = consoles.console_view_entry(
-        category = "bootstrap",
+        category = "bootstrap|linux",
         short_name = "bld",
     ),
     triggered_by = [],
@@ -5863,37 +5788,33 @@ ci.infra_builder(
     name = "linux-bootstrap-tests",
     bootstrap = True,
     console_view_entry = consoles.console_view_entry(
-        category = "bootstrap",
+        category = "bootstrap|linux",
         short_name = "tst",
     ),
     triggered_by = ["ci/linux-bootstrap"],
 )
 
 ci.infra_builder(
-    name = "linux-local-ssd-nvme-rel",
+    name = "win-bootstrap",
+    bootstrap = True,
+    builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "link experiments|disk|ssd|local",
-        short_name = "nvme",
+        category = "bootstrap|win",
+        short_name = "bld",
     ),
-    builderless = False,
+    os = os.WINDOWS_10,
+    triggered_by = [],
+    schedule = "triggered",
 )
 
 ci.infra_builder(
-    name = "linux-local-ssd-scsi-rel",
+    name = "win-bootstrap-tests",
+    bootstrap = True,
     console_view_entry = consoles.console_view_entry(
-        category = "link experiments|disk|ssd|local",
-        short_name = "scsi",
+        category = "bootstrap|win",
+        short_name = "tst",
     ),
-    builderless = False,
-)
-
-ci.infra_builder(
-    name = "linux-pd-ssd-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "link experiments|disk|ssd",
-        short_name = "pd",
-    ),
-    builderless = False,
+    triggered_by = ["ci/win-bootstrap"],
 )
 
 ci.mac_builder(
@@ -6197,6 +6118,7 @@ ci.memory_builder(
         short_name = "bld",
     ),
     main_console_view = "main",
+    execution_timeout = 4 * time.hour,
 )
 
 ci.memory_builder(
@@ -6205,6 +6127,7 @@ ci.memory_builder(
         category = "cros|msan",
         short_name = "tst",
     ),
+    execution_timeout = 4 * time.hour,
     triggered_by = ["Linux ChromiumOS MSan Builder"],
     main_console_view = "main",
 )
@@ -6638,7 +6561,7 @@ ci.cipd_builder(
         luci.notifier(
             name = "rts-model-packager-notifier",
             on_occurrence = ["FAILURE", "INFRA_FAILURE"],
-            notify_emails = ["guterman@google.com", "nodir@google.com"],
+            notify_emails = ["guterman@google.com"],
         ),
     ],
 )

@@ -112,8 +112,6 @@ constexpr uint32_t kAttributeOffsetMaxBits = 15;
 
 namespace vk
 {
-struct Format;
-
 // A packed attachment index interface with vulkan API
 class PackedAttachmentIndex final
 {
@@ -939,7 +937,7 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance);
 
 #endif  // !defined(ANGLE_SHARED_LIBVULKAN)
 
-GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, const vk::Format &format);
+GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, angle::FormatID formatID);
 size_t PackSampleCount(GLint sampleCount);
 
 namespace gl_vk

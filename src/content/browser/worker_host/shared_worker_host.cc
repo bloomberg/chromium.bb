@@ -96,12 +96,12 @@ class SharedWorkerHost::ScopedProcessHostRef {
  public:
   explicit ScopedProcessHostRef(RenderProcessHost* render_process_host)
       : render_process_host_(render_process_host) {
-    render_process_host_->IncrementKeepAliveRefCount();
+    render_process_host_->IncrementWorkerRefCount();
   }
 
   ~ScopedProcessHostRef() {
-    if (!render_process_host_->IsKeepAliveRefCountDisabled())
-      render_process_host_->DecrementKeepAliveRefCount();
+    if (!render_process_host_->AreRefCountsDisabled())
+      render_process_host_->DecrementWorkerRefCount();
   }
 
   ScopedProcessHostRef(const ScopedProcessHostRef& other) = delete;
@@ -161,6 +161,15 @@ SharedWorkerHost::~SharedWorkerHost() {
     // Tell clients that this worker failed to start.
     for (const ClientInfo& info : clients_)
       info.client->OnScriptLoadFailed(/*error_message=*/"");
+  }
+
+  // Send any final reports and allow the reporting configuration to be
+  // removed.
+  if (site_instance_->HasProcess()) {
+    GetProcessHost()
+        ->GetStoragePartition()
+        ->GetNetworkContext()
+        ->SendReportsAndRemoveSource(reporting_source_);
   }
 
   // Notify the service that each client still connected will be removed and
@@ -280,6 +289,7 @@ void SharedWorkerHost::Start(
   factory_->CreateSharedWorker(
       std::move(info), token_, instance_.storage_key().origin(),
       GetContentClient()->browser()->GetUserAgent(),
+      GetContentClient()->browser()->GetReducedUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
       std::move(renderer_preferences), std::move(preference_watcher_receiver),
@@ -367,8 +377,15 @@ SharedWorkerHost::CreateNetworkFactoryParamsForSubresources() {
       URLLoaderFactoryParamsHelper::CreateForWorker(
           GetProcessHost(), origin,
           net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
+                                     // TODO(https://crbug.com/1147281): We
+                                     // should pass the top_level_site from
+                                     // `GetStorageKey()` instead.
                                      origin, origin,
-                                     net::SiteForCookies::FromOrigin(origin)),
+                                     net::SiteForCookies::FromOrigin(origin),
+                                     /*party_context=*/absl::nullopt,
+                                     GetStorageKey().nonce().has_value()
+                                         ? &GetStorageKey().nonce().value()
+                                         : nullptr),
           std::move(coep_reporter),
           /*url_loader_network_observer=*/mojo::NullRemote(),
           /*devtools_observer=*/mojo::NullRemote(),

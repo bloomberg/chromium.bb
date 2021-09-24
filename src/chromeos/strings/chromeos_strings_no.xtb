@@ -7,6 +7,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Oppdaget en brannmur</translation>
 <translation id="1075811647922107217">Sidestørrelse</translation>
+<translation id="1119447706177454957">Intern feil</translation>
 <translation id="1124772482545689468">Bruker</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1175697296044146566">Denne <ph name="DEVICE_TYPE" />-enheten administreres av <ph name="MANAGER" />.</translation>
@@ -57,9 +58,11 @@
 <translation id="1999615961760456652">Obligatorisk side</translation>
 <translation id="2006864819935886708">Tilkobling</translation>
 <translation id="2008685064673031089">Primtallsøk</translation>
+<translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Flere innstillinger</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versjon <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB av <ph name="TOTAL_MEMORY" /> GB er tilgjengelig</translation>
+<translation id="2129264932216073062">ARC HTTP</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
 <translation id="2157959690810728433">I KØ</translation>
 <translation id="2161394479394250669">Avbryt utskriftsjobben</translation>
@@ -71,7 +74,9 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
 <translation id="2364498172489649528">Bestått</translation>
+<translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Send tilbakemeldingsrapport</translation>
+<translation id="2407209115954268704">Status for SIM-låsing</translation>
 <translation id="2418150275289244458">Åpne i innstillingene</translation>
 <translation id="2446553403094072641">Nøyaktighet av flytende desimalpunkt</translation>
 <translation id="2448312741937722512">Type</translation>
@@ -100,6 +105,7 @@
 <translation id="3102119246920354026">Buffer</translation>
 <translation id="3122464029669770682">Prosessor</translation>
 <translation id="315116470104423982">Mobildata</translation>
+<translation id="3156846309055100599">Skanner side <ph name="PAGE_NUMBER" /> …</translation>
 <translation id="315738237743207937">Oppdaget en obligatorisk side</translation>
 <translation id="3188257591659621405">Mine filer</translation>
 <translation id="3199982728237701504">Dokumentmater (tosidig)</translation>
@@ -146,6 +152,7 @@
 <translation id="39823212440917567">Utskriftsjobber som er eldre enn <ph name="NUMBER_OF_DAYS" /> dager, blir fjernet</translation>
 <translation id="4003384961948020559">Mislykket – utskriftsmottaket er fullt</translation>
 <translation id="4034824040120875894">Skriver</translation>
+<translation id="409427325554347132">Lagre testdetaljer</translation>
 <translation id="4131410914670010031">Svarthvitt</translation>
 <translation id="4145784616224233563">HTTP-brannmur</translation>
 <translation id="4155551848414053977">Sørg for at skanneren er påslått og tilgjengelig via nettverket eller en direktetilkobling</translation>
@@ -154,6 +161,8 @@
 <translation id="4227825898293920515">Passordet utløper om <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Ingen utskriftsjobber pågår</translation>
 <translation id="4244962993387259361">Du må ha minst 500 MB ledig for å kjøre en minnetest. For å frigjøre plass, gå til Innstillinger &gt; Lagringsbehandling.</translation>
+<translation id="4258281355379922695">HTTP-tidsforsinkelse</translation>
+<translation id="4271957103967917607">Vis i fullskjerm</translation>
 <translation id="4289540628985791613">Oversikt</translation>
 <translation id="4297501883039923494">Stoppet – ukjent feil</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> bilder</translation>
@@ -174,12 +183,13 @@
 <translation id="4536864596629708641">IP-konfigurasjon</translation>
 <translation id="4548483925627140043">Fant ikke noe signal</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh-batteri</translation>
+<translation id="4561801978359312462">SIM-kortet er låst opp</translation>
 <translation id="4562494484721939086">Ingen tjeneste</translation>
 <translation id="458794348635939462">Kunne ikke finne tilknytning til alle vertene</translation>
 <translation id="4593212453765072419">Godkjenning av mellomtjener kreves</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> av <ph name="TOTAL_PAGE_NUMBER" />. Trykk på Enter for å avbryte utskriftsjobben.</translation>
+<translation id="463791356324567266">Avbryter skanningen …</translation>
 <translation id="4646949265910132906">Sikker Wi-Fi-tilkobling</translation>
-<translation id="4652335678334611408">Lagre øktlogg</translation>
 <translation id="4654549501020883054">Endre daglig</translation>
 <translation id="4665014895760275686">Produsent</translation>
 <translation id="467510802200863975">Passordene er ikke like</translation>
@@ -213,6 +223,7 @@
 <translation id="4999333166442584738">Skjul rapporten</translation>
 <translation id="500920857929044050">Stans testen</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5049856988445523908">SIM-kortet er låst (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Gruppenavn</translation>
 <translation id="5088172560898466307">Vertsnavn for tjener</translation>
 <translation id="5089810972385038852">Fylke/delstat</translation>
@@ -222,6 +233,7 @@
 <translation id="5170568018924773124">Vis i mappen</translation>
 <translation id="5212543919916444558">Jeg finner ikke noe på skjermen jeg kan hjelpe deg med. 
 Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
+<translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5234764350956374838">Lukk</translation>
 <translation id="5252456968953390977">Datastreifing</translation>
@@ -248,6 +260,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} forsøk igjen}other{{0} forsøk igjen}}</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Kunne ikke fullføre skanningen</translation>
+<translation id="5502931783115429516">Android kjører ikke</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5670702108860320605">BSSID</translation>
@@ -255,9 +268,11 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5701381305118179107">Midtstill</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> av <ph name="TOTAL_PAGES" /></translation>
 <translation id="5760715441271661976">Portaltilstand</translation>
+<translation id="5784136236926853061">Høy HTTP-tidsforsinkelse</translation>
 <translation id="5832805196449965646">Legg til person</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5849570051105887917">Kode for leverandøren for hjemmeenheten</translation>
+<translation id="5860033963881614850">Av</translation>
 <translation id="5866840822086176774">Veldig sterk</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5916084858004523819">Forbudt</translation>
@@ -281,6 +296,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6146993107019042706">For å fullføre passordendringen, skriv inn det nye passordet</translation>
 <translation id="6147514244879357420">PNG</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
+<translation id="6184793017104303157">B4</translation>
 <translation id="6189418609903030344">Batterikapasiteten avtar med bruken</translation>
 <translation id="6191293864534840972">Navnetjenerne inneholder feil</translation>
 <translation id="6223752125779001553">Ingen skannere er tilgjengelige</translation>
@@ -302,6 +318,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6527081081771465939">Ukjent Wi-Fi-sikkerhetsprotokoll</translation>
 <translation id="65587193855025101">Planskanner</translation>
 <translation id="6564646048574748301">Mislykket – skriveren kan ikke nås</translation>
+<translation id="6566314079205407217">Skanning av flere sider</translation>
 <translation id="6574762126505704998">Fyll</translation>
 <translation id="6575134580692778371">Ikke konfigurert</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
@@ -341,9 +358,11 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7287310195820267359">Samlinger av bakgrunnsbilder</translation>
 <translation id="7302860742311162920">ICCID</translation>
+<translation id="7319430975418800333">A3</translation>
 <translation id="7343649194310845056">Nettverksenheter</translation>
 <translation id="7359657277149375382">Filtype</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7415801143053185905">Svært høy HTTP-tidsforsinkelse</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Skanningen er fullført. 1 side er skannet}other{Skanningen er fullført. {NUMBER_OF_PAGES} sider er skannet}}</translation>
 <translation id="7469648432129124067">Oppdaget en portal</translation>
@@ -351,9 +370,11 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7490813197707563893">MAC-adresse</translation>
 <translation id="7497215489070763236">Tjenerens CA-sertifikat</translation>
 <translation id="7502658306369382406">IPv6-adresse</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7550715992156305117">Diagnostikkrutiner</translation>
 <translation id="7561454561030345039">Denne handlingen administreres av administratoren</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
+<translation id="7574732568136198983">ARC-ping</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> igjen</translation>
 <translation id="7620771111601174153">Finn ut mer i Brukerstøtte</translation>
 <translation id="763165478673169849">Forrige tidspunkt for tilbakestilling</translation>

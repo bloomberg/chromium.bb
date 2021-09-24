@@ -1,0 +1,14 @@
+<style>
+  #container {
+    height: 358px;
+  }
+</style>
+<div id="container">
+  <iron-pages
+      attr-for-selected="id"
+      selected="[[selectedPageId_]]">
+    <bluetooth-pairing-device-selection-page id="deviceSelectionPage">
+    </bluetooth-pairing-device-selection-page>
+    <!-- TODO(crbug.com/1010321): Add other bluetooth pairing subpage UI elements. -->
+  </iron-pages>
+</div>

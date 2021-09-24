@@ -427,27 +427,32 @@ Expect<bool> ParserImpl::expect_global_decl() {
     return Failure::kNoMatch;
   });
 
-  if (decl.errored)
+  if (decl.errored) {
     errored = true;
-  if (decl.matched)
-    return true;
+  }
+  if (decl.matched) {
+    return expect_decorations_consumed(decos.value);
+  }
 
   auto func = function_decl(decos.value);
-  if (func.errored)
+  if (func.errored) {
     errored = true;
+  }
   if (func.matched) {
     builder_.AST().AddFunction(func.value);
     return true;
   }
 
-  if (errored)
+  if (errored) {
     return Failure::kErrored;
+  }
 
   // Invalid syntax found - try and determine the best error message
 
   // We have decorations parsed, but nothing to consume them?
-  if (decos.value.size() > 0)
+  if (decos.value.size() > 0) {
     return add_error(next(), "expected declaration after decorations");
+  }
 
   // We have a statement outside of a function?
   auto t = peek();
@@ -1182,7 +1187,7 @@ Expect<ast::Type*> ParserImpl::expect_type_decl_array(
     ast::DecorationList decos) {
   const char* use = "array declaration";
 
-  uint32_t size = 0;
+  ast::Expression* size = nullptr;
 
   auto subtype = expect_lt_gt_block(use, [&]() -> Expect<ast::Type*> {
     auto type = expect_type(use);
@@ -1190,10 +1195,14 @@ Expect<ast::Type*> ParserImpl::expect_type_decl_array(
       return Failure::kErrored;
 
     if (match(Token::Type::kComma)) {
-      auto val = expect_nonzero_positive_sint("array size");
-      if (val.errored)
+      auto expr = primary_expression();
+      if (expr.errored) {
         return Failure::kErrored;
-      size = val.value;
+      } else if (!expr.matched) {
+        return add_error(peek(), "expected array size expression");
+      }
+
+      size = std::move(expr.value);
     }
 
     return type.value;

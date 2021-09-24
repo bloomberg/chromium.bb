@@ -25,7 +25,8 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/ranking/category_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/category_item_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/category_usage_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
 #include "chrome/browser/ui/app_list/search/ranking/score_normalizing_ranker.h"
@@ -92,8 +93,10 @@ SearchControllerImplNew::SearchControllerImplNew(
 SearchControllerImplNew::~SearchControllerImplNew() {}
 
 void SearchControllerImplNew::InitializeRankers() {
+  // TODO(crbug.com/1199206): Add an extra state to the chrome flag that allows
+  // toggling between the CategoryItemRanker and CategoryUsageRanker.
   ranker_->AddRanker(std::make_unique<ScoreNormalizingRanker>(profile_));
-  ranker_->AddRanker(std::make_unique<CategoryRanker>(profile_));
+  ranker_->AddRanker(std::make_unique<CategoryUsageRanker>(profile_));
   ranker_->AddRanker(std::make_unique<TopMatchRanker>());
   ranker_->AddRanker(std::make_unique<FilteringRanker>());
 }
@@ -198,26 +201,23 @@ void SearchControllerImplNew::SetResults(
         result->SetDisplayType(ash::SearchResultDisplayType::kList);
       }
 
+      double score = result->scoring().FinalScore();
+
       // Filter out results with negative relevance, which is the rankers'
       // signal that a result should not be displayed at all.
-      if (result->relevance() > 0.0) {
-        all_results.push_back(result.get());
-      }
+      if (score < 0.0)
+        continue;
+
+      // The display score is the result's final score before display. It is
+      // used for sorting below, and may be used directly in ash.
+      result->SetDisplayScore(score);
+      all_results.push_back(result.get());
     }
   }
   std::sort(all_results.begin(), all_results.end(),
             [](const ChromeSearchResult* a, const ChromeSearchResult* b) {
-              return a->relevance() > b->relevance();
+              return a->display_score() > b->display_score();
             });
-
-  // TODO(crbug.com/1199206): Remove this debug output once we no longer need to
-  // inspect launcher scores so closely, and before the categorical search flag
-  // is enabled for any users.
-  LOG(ERROR) << "(categorical search) updating results to:";
-  for (const auto* result : all_results) {
-    LOG(ERROR) << "(categorical search) - " << result->relevance() << "  "
-               << result->id();
-  }
 
   if (!observer_list_.empty()) {
     std::vector<const ChromeSearchResult*> observer_results;

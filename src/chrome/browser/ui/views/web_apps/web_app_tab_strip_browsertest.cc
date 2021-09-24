@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
-#include "build/chromeos_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -15,12 +15,12 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
@@ -67,8 +67,7 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
     web_app_info->background_color = kAppBackgroundColor;
-    web_app_info->open_as_window = true;
-    web_app_info->enable_experimental_tabbed_window = true;
+    web_app_info->user_display_mode = DisplayMode::kTabbed;
     AppId app_id = test::InstallWebApp(profile, std::move(web_app_info));
 
     Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
@@ -83,7 +82,7 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
   }
 
   WebAppRegistrar& registrar() {
-    return WebAppProvider::Get(browser()->profile())->registrar();
+    return WebAppProvider::GetForTest(browser()->profile())->registrar();
   }
 
  private:
@@ -130,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
 }
 
 // TODO(crbug.com/897314) Enabled tab strip for web apps on non-Chrome OS.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
                        ActiveTabColorIsBackgroundColor) {
@@ -184,6 +183,6 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   }
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace web_app

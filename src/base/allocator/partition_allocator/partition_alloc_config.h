@@ -61,10 +61,23 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_HAS_LINUX_KERNEL
 #endif
 
-// SpinningMutex uses either futex(2) on Linux, or a fast userspace "try"
-// operation, which is available on Windows.
-#if defined(PA_HAS_LINUX_KERNEL) || defined(OS_WIN)
-#define PA_HAS_SPINNING_MUTEX
+// On some platforms, we implement locking by spinning in userspace, then going
+// into the kernel only if there is contention. This requires platform support,
+// namely:
+// - On Linux, futex(2)
+// - On Windows, a fast userspace "try" operation which is available
+//   with SRWLock
+// - On macOS 10.14+, pthread.
+//
+// On macOS, pthread_mutex_trylock() is fast by default starting with macOS
+// 10.14. Chromium targets an earlier version, so it cannot be known at
+// compile-time. However, ARM64 macOS devices shipped *after* this release, so
+// they necessarily have a fast implementation.
+//
+// Otherwise, a userspace spinlock implementation is used.
+#if defined(PA_HAS_LINUX_KERNEL) || defined(OS_WIN) || \
+    (defined(OS_MAC) && defined(ARCH_CPU_ARM64)) || defined(OS_FUCHSIA)
+#define PA_HAS_FAST_MUTEX
 #endif
 
 // If set to 1, enables zeroing memory on Free() with roughly 1% probability.
@@ -76,7 +89,7 @@ static_assert(sizeof(void*) != 8, "");
 #endif
 
 // Need TLS support.
-#if defined(OS_POSIX) || defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_WIN) || defined(OS_FUCHSIA)
 #define PA_THREAD_CACHE_SUPPORTED
 #endif
 
@@ -93,14 +106,15 @@ static_assert(sizeof(void*) != 8, "");
 
 // Enable free list hardening as much as possible.
 //
-// Disabled on ARM64 Macs, as this crashes very early (crbug.com/1172236).
-// TODO(lizeb): Enable in as many configurations as possible.
-//
 // Disabled when putting refcount in the previous slot, which is what
 // PUT_REF_COUNT_IN_PREVIOUS_SLOT does. In this case the refcount overlaps with
 // the next pointer shadow for the smallest bucket.
-#if !(defined(OS_MAC) && defined(ARCH_CPU_ARM64)) && \
-    !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+//
+// Only for Little endian CPUs, as the freelist encoding used on big endian
+// platforms complicates things. Note that Chromium is not officially supported
+// on any big endian architecture as well.
+#if !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && \
+    defined(ARCH_CPU_LITTLE_ENDIAN)
 #define PA_HAS_FREELIST_HARDENING
 #endif
 

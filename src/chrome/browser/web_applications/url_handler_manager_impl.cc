@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/url_handler_manager_impl.h"
+#include "chrome/browser/web_applications/url_handler_manager_impl.h"
 
 #include <utility>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/url_handler_prefs.h"
-#include "chrome/browser/web_applications/components/web_app_origin_association_manager.h"
+#include "chrome/browser/web_applications/url_handler_prefs.h"
+#include "chrome/browser/web_applications/web_app_origin_association_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"

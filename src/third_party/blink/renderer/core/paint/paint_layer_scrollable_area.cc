@@ -120,6 +120,10 @@ static const int kDefaultMinimumHeightForResizing = 15;
 
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
 
+void PaintLayerScrollableAreaRareData::Trace(Visitor* visitor) const {
+  visitor->Trace(sticky_constraints_map_);
+}
+
 const int kResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
@@ -143,6 +147,9 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       had_vertical_scrollbar_before_relayout_(false),
       had_resizer_before_relayout_(false),
       scroll_origin_changed_(false),
+      is_scrollbar_freeze_root_(false),
+      is_horizontal_scrollbar_frozen_(false),
+      is_vertical_scrollbar_frozen_(false),
       scrollbar_manager_(*this),
       has_last_committed_scroll_offset_(false),
       scroll_corner_(nullptr),
@@ -188,7 +195,7 @@ void PaintLayerScrollableArea::DidCompositorScroll(const FloatPoint& position) {
 }
 
 void PaintLayerScrollableArea::DisposeImpl() {
-  rare_data_.reset();
+  rare_data_.Clear();
 
   GetLayoutBox()->GetDocument().GetSnapCoordinator().RemoveSnapContainer(
       *GetLayoutBox());
@@ -272,9 +279,13 @@ void PaintLayerScrollableArea::SetTickmarksOverride(Vector<IntRect> tickmarks) {
 
 void PaintLayerScrollableArea::Trace(Visitor* visitor) const {
   visitor->Trace(scrollbar_manager_);
+  visitor->Trace(scroll_corner_);
+  visitor->Trace(resizer_);
   visitor->Trace(scroll_anchor_);
   visitor->Trace(scrolling_background_display_item_client_);
   visitor->Trace(scroll_corner_display_item_client_);
+  visitor->Trace(layer_);
+  visitor->Trace(rare_data_);
   ScrollableArea::Trace(visitor);
 }
 
@@ -644,9 +655,9 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   if (!box->BackgroundNeedsFullPaintInvalidation()) {
     auto background_paint_location = box->GetBackgroundPaintLocation();
     bool background_paint_in_graphics_layer =
-        background_paint_location & kBackgroundPaintInGraphicsLayer;
+        background_paint_location & kBackgroundPaintInBorderBoxSpace;
     bool background_paint_in_scrolling_contents =
-        background_paint_location & kBackgroundPaintInScrollingContents;
+        background_paint_location & kBackgroundPaintInContentsSpace;
 
     // Invalidate background on scroll if needed.
     // Fixed attachment background has been dealt with in
@@ -1028,9 +1039,14 @@ void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
 }
 
 void PaintLayerScrollableArea::UpdateAfterLayout() {
-  bool scrollbars_are_frozen =
-      (in_overflow_relayout_ && !allow_second_overflow_relayout_) ||
-      FreezeScrollbarsScope::ScrollbarsAreFrozen();
+  bool is_horizontal_scrollbar_frozen;
+  bool is_vertical_scrollbar_frozen;
+  if (in_overflow_relayout_ && !allow_second_overflow_relayout_) {
+    is_horizontal_scrollbar_frozen = is_vertical_scrollbar_frozen = true;
+  } else {
+    is_horizontal_scrollbar_frozen = IsHorizontalScrollbarFrozen();
+    is_vertical_scrollbar_frozen = IsVerticalScrollbarFrozen();
+  }
   allow_second_overflow_relayout_ = false;
 
   if (NeedsScrollbarReconstruction()) {
@@ -1058,7 +1074,8 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   // size depends on the scrollbar size (e.g., sized with percentages). Removing
   // scrollbars can require two additional layout passes so this is only done on
   // the first layout (!in_overflow_layout).
-  if (!in_overflow_relayout_ && !scrollbars_are_frozen &&
+  if (!in_overflow_relayout_ && !is_horizontal_scrollbar_frozen &&
+      !is_vertical_scrollbar_frozen &&
       TryRemovingAutoScrollbars(needs_horizontal_scrollbar,
                                 needs_vertical_scrollbar)) {
     needs_horizontal_scrollbar = needs_vertical_scrollbar = false;
@@ -1071,8 +1088,8 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
       needs_vertical_scrollbar != had_vertical_scrollbar;
 
   bool scrollbars_will_change =
-      !scrollbars_are_frozen &&
-      (horizontal_scrollbar_should_change || vertical_scrollbar_should_change);
+      (horizontal_scrollbar_should_change && !is_horizontal_scrollbar_frozen) ||
+      (vertical_scrollbar_should_change && !is_vertical_scrollbar_frozen);
   if (scrollbars_will_change) {
     SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
     SetHasVerticalScrollbar(needs_vertical_scrollbar);
@@ -1159,9 +1176,8 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   ClampScrollOffsetAfterOverflowChange();
 
-  if (!scrollbars_are_frozen) {
+  if (!is_horizontal_scrollbar_frozen || !is_vertical_scrollbar_frozen)
     UpdateScrollableAreaSet();
-  }
 
   PositionOverflowControls();
 }
@@ -1738,7 +1754,7 @@ void PaintLayerScrollableArea::RemoveScrollbarsForReconstruction() {
 }
 
 bool PaintLayerScrollableArea::SetHasHorizontalScrollbar(bool has_scrollbar) {
-  if (FreezeScrollbarsScope::ScrollbarsAreFrozen())
+  if (IsHorizontalScrollbarFrozen())
     return false;
 
   if (has_scrollbar == HasHorizontalScrollbar())
@@ -1770,7 +1786,7 @@ bool PaintLayerScrollableArea::SetHasHorizontalScrollbar(bool has_scrollbar) {
 }
 
 bool PaintLayerScrollableArea::SetHasVerticalScrollbar(bool has_scrollbar) {
-  if (FreezeScrollbarsScope::ScrollbarsAreFrozen())
+  if (IsVerticalScrollbarFrozen())
     return false;
 
   if (GetLayoutBox()->GetDocument().IsVerticalScrollEnforced()) {
@@ -2178,12 +2194,12 @@ PaintLayerScrollableArea::GetStickyConstraints(PaintLayer* layer) {
   auto it = EnsureRareData().sticky_constraints_map_.find(layer);
   if (it == EnsureRareData().sticky_constraints_map_.end())
     return nullptr;
-  return &it->value;
+  return it->value;
 }
 
 void PaintLayerScrollableArea::AddStickyConstraints(
     PaintLayer* layer,
-    StickyPositionScrollingConstraints constraints) {
+    StickyPositionScrollingConstraints* constraints) {
   UseCounter::Count(GetLayoutBox()->GetDocument(), WebFeature::kPositionSticky);
   EnsureRareData().sticky_constraints_map_.Set(layer, constraints);
 }
@@ -2594,32 +2610,16 @@ static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
 
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     bool force_prefer_compositing_to_lcd_text) {
-#if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    DCHECK_EQ(DocumentLifecycle::kInPrePaint,
-              GetDocument()->Lifecycle().GetState());
-  } else {
-    DCHECK(GetDocument()->Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingInputsUpdate ||
-           GetDocument()->Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingAssignmentsUpdate)
-        << " " << GetDocument()->Lifecycle().ToString();
-  }
-#endif
-
   const auto* box = GetLayoutBox();
-  auto old_background_paint_location = box->GetBackgroundPaintLocation();
   non_composited_main_thread_scrolling_reasons_ = 0;
   auto new_background_paint_location =
       box->ComputeBackgroundPaintLocationIfComposited();
   bool needs_composited_scrolling = ComputeNeedsCompositedScrollingInternal(
       new_background_paint_location, force_prefer_compositing_to_lcd_text);
   if (!needs_composited_scrolling)
-    new_background_paint_location = kBackgroundPaintInGraphicsLayer;
-  if (new_background_paint_location != old_background_paint_location) {
-    box->GetMutableForPainting().SetBackgroundPaintLocation(
-        new_background_paint_location);
-  }
+    new_background_paint_location = kBackgroundPaintInBorderBoxSpace;
+  box->GetMutableForPainting().SetBackgroundPaintLocation(
+      new_background_paint_location);
 
   return needs_composited_scrolling;
 }
@@ -2672,7 +2672,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
       needs_composited_scrolling = false;
     }
     if (!(background_paint_location_if_composited &
-          kBackgroundPaintInScrollingContents) &&
+          kBackgroundPaintInContentsSpace) &&
         box->StyleRef().HasBackground()) {
       non_composited_main_thread_scrolling_reasons_ |= cc::
           MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
@@ -2693,6 +2693,19 @@ bool PaintLayerScrollableArea::UsesCompositedScrolling() const {
 
 void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
     bool force_prefer_compositing_to_lcd_text) {
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    DCHECK_EQ(DocumentLifecycle::kInPrePaint,
+              GetDocument()->Lifecycle().GetState());
+  } else {
+    DCHECK(GetDocument()->Lifecycle().GetState() ==
+               DocumentLifecycle::kInCompositingInputsUpdate ||
+           GetDocument()->Lifecycle().GetState() ==
+               DocumentLifecycle::kInCompositingAssignmentsUpdate)
+        << " " << GetDocument()->Lifecycle().ToString();
+  }
+#endif
+
   bool new_needs_composited_scrolling =
       ComputeNeedsCompositedScrolling(force_prefer_compositing_to_lcd_text);
   if (new_needs_composited_scrolling == needs_composited_scrolling_)
@@ -2944,6 +2957,25 @@ PaintLayerScrollableArea::PreventRelayoutScope::NeedsRelayoutList() {
 
 int PaintLayerScrollableArea::FreezeScrollbarsScope::count_ = 0;
 
+PaintLayerScrollableArea::FreezeScrollbarsRootScope::FreezeScrollbarsRootScope(
+    const LayoutBox& box,
+    bool freeze_horizontal,
+    bool freeze_vertical)
+    : scrollable_area_(box.GetScrollableArea()) {
+  if (scrollable_area_ && !FreezeScrollbarsScope::ScrollbarsAreFrozen() &&
+      (freeze_horizontal || freeze_vertical)) {
+    scrollable_area_->EstablishScrollbarRoot(freeze_horizontal,
+                                             freeze_vertical);
+    freezer_.emplace();
+  }
+}
+
+PaintLayerScrollableArea::FreezeScrollbarsRootScope::
+    ~FreezeScrollbarsRootScope() {
+  if (scrollable_area_)
+    scrollable_area_->ClearScrollbarRoot();
+}
+
 int PaintLayerScrollableArea::DelayScrollOffsetClampScope::count_ = 0;
 
 PaintLayerScrollableArea::DelayScrollOffsetClampScope::
@@ -3051,6 +3083,20 @@ bool PaintLayerScrollableArea::ShouldDirectlyCompositeScrollbar(
     return false;
 
   return NeedsCompositedScrolling();
+}
+
+void PaintLayerScrollableArea::EstablishScrollbarRoot(bool freeze_horizontal,
+                                                      bool freeze_vertical) {
+  DCHECK(!FreezeScrollbarsScope::ScrollbarsAreFrozen());
+  is_scrollbar_freeze_root_ = true;
+  is_horizontal_scrollbar_frozen_ = freeze_horizontal;
+  is_vertical_scrollbar_frozen_ = freeze_vertical;
+}
+
+void PaintLayerScrollableArea::ClearScrollbarRoot() {
+  is_scrollbar_freeze_root_ = false;
+  is_horizontal_scrollbar_frozen_ = false;
+  is_vertical_scrollbar_frozen_ = false;
 }
 
 void PaintLayerScrollableArea::InvalidatePaintOfScrollbarIfNeeded(

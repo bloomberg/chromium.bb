@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -159,6 +160,10 @@ void ApplyDisableDownloadProvider(StartParams* params) {
   params->disable_download_provider =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcDisableDownloadProvider);
+}
+
+void ApplyDisableUreadahed(StartParams* params) {
+  params->disable_ureadahead = IsUreadaheadDisabled();
 }
 
 // Real Delegate implementation to connect Mojo.
@@ -459,6 +464,8 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
           arc::kKeyboardShortcutHelperIntegrationFeature);
   params.lcd_density = lcd_density_;
   params.num_cores_disabled = num_cores_disabled;
+  params.enable_notifications_refresh =
+      ash::features::IsNotificationsRefreshEnabled();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcPlayStoreAutoUpdate)) {
@@ -502,6 +509,7 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
   ApplyDalvikMemoryProfile(system_memory_info_callback_, &params);
   ApplyUsapProfile(system_memory_info_callback_, &params);
   ApplyDisableDownloadProvider(&params);
+  ApplyDisableUreadahed(&params);
 
   client_->StartMiniArc(std::move(params),
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,

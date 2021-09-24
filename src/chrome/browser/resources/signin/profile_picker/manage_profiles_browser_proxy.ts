@@ -47,6 +47,18 @@ export type UserThemeChoice = {
   color?: number,
 };
 
+// <if expr="lacros">
+/**
+ * This is a data structure sent from C++ to JS, representing accounts present
+ * in the ChromeOS system, but not in any Lacros profile.
+ */
+export type UnassignedAccount = {
+  gaiaId: string,
+  name: string,
+  email: string,
+};
+// </if>
+
 export interface ManageProfilesBrowserProxy {
   /**
    * Initializes profile picker main view.
@@ -100,9 +112,10 @@ export interface ManageProfilesBrowserProxy {
 
   /**
    * Loads Google sign in page (and silently creates a profile with the
-   * specified color, if specified).
+   * specified color and account, if specified).
    */
-  loadSignInProfileCreationFlow(profileColor: number|null): void;
+  loadSignInProfileCreationFlow(profileColor: number|null, gaiaId: string):
+      void;
 
   /**
    * Retrieves custom avatar list for the select avatar dialog.
@@ -139,6 +152,11 @@ export interface ManageProfilesBrowserProxy {
    * flow.
    */
   cancelProfileSwitch(): void;
+
+  // <if expr="lacros">
+  /** Gets the unassigned accounts, through WebUIListener. */
+  getUnassignedAccounts(): void;
+  // </if>
 }
 
 /** @implements {ManageProfilesBrowserProxy} */
@@ -179,8 +197,8 @@ export class ManageProfilesBrowserProxyImpl {
     chrome.send('getProfileStatistics', [profilePath]);
   }
 
-  loadSignInProfileCreationFlow(profileColor: number|null) {
-    chrome.send('loadSignInProfileCreationFlow', [profileColor]);
+  loadSignInProfileCreationFlow(profileColor: number|null, gaiaId: string) {
+    chrome.send('loadSignInProfileCreationFlow', [profileColor, gaiaId]);
   }
 
   getAvailableIcons() {
@@ -214,6 +232,12 @@ export class ManageProfilesBrowserProxyImpl {
   cancelProfileSwitch() {
     chrome.send('cancelProfileSwitch');
   }
+
+  // <if expr="lacros">
+  getUnassignedAccounts() {
+    chrome.send('getUnassignedAccounts');
+  }
+  // </if>
 
   static getInstance(): ManageProfilesBrowserProxy {
     return instance || (instance = new ManageProfilesBrowserProxyImpl());

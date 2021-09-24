@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_update_scope.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
@@ -614,6 +615,41 @@ class Document::NetworkStateObserver final
   std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
       online_observer_handle_;
 };
+
+void Document::UnassociatedListedElementsList::MarkDirty() {
+  dirty_ = true;
+  list_.clear();
+}
+
+void Document::UnassociatedListedElementsList::Trace(Visitor* visitor) const {
+  visitor->Trace(list_);
+}
+
+const ListedElement::List& Document::UnassociatedListedElementsList::Get(
+    const Document& owner) {
+  if (dirty_) {
+    const Node& root = owner.GetTreeScope().RootNode();
+    DCHECK(list_.IsEmpty());
+
+    // TODO(crbug.com/1243730): We do not consider shadow trees for now.
+    for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
+      ListedElement* listed_element = ListedElement::From(element);
+      if (listed_element && !listed_element->Form()) {
+        list_.push_back(listed_element);
+      }
+    }
+    dirty_ = false;
+  }
+  return list_;
+}
+
+const ListedElement::List& Document::UnassociatedListedElements() const {
+  return const_cast<Document*>(this)->unassociated_listed_elements_.Get(*this);
+}
+
+void Document::MarkUnassociatedListedElementsDirty() {
+  unassociated_listed_elements_.MarkDirty();
+}
 
 ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
     Element* element) {
@@ -1949,6 +1985,8 @@ static void AssertNodeClean(const Node& node) {
   DCHECK(!node.NeedsStyleInvalidation());
   DCHECK(!node.ChildNeedsStyleInvalidation());
   DCHECK(!node.GetForceReattachLayoutTree());
+  DCHECK(!node.GetLayoutObject() ||
+         !node.GetLayoutObject()->WhitespaceChildrenMayChange());
 }
 
 static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
@@ -1961,12 +1999,17 @@ static void AssertLayoutTreeUpdatedForPseudoElements(const Element& element) {
   }
 }
 
-static void AssertLayoutTreeUpdated(Node& root) {
+static void AssertLayoutTreeUpdated(Node& root,
+                                    bool allow_dirty_container_subtrees) {
   Node* node = &root;
   while (node) {
     if (auto* element = DynamicTo<Element>(node)) {
-      if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled() &&
-          element->ChildStyleRecalcBlockedByDisplayLock()) {
+      if ((RuntimeEnabledFeatures::CSSContentVisibilityEnabled() &&
+           element->ChildStyleRecalcBlockedByDisplayLock()) ||
+          (allow_dirty_container_subtrees && element->GetLayoutObject() &&
+           element->GetLayoutObject()
+               ->StyleRef()
+               .IsContainerForContainerQueries())) {
         node = FlatTreeTraversal::NextSkippingChildren(*node);
         continue;
       }
@@ -1985,6 +2028,13 @@ static void AssertLayoutTreeUpdated(Node& root) {
 
     node = FlatTreeTraversal::Next(*node);
   }
+}
+
+#endif
+
+#if EXPENSIVE_DCHECKS_ARE_ON()
+void Document::AssertLayoutTreeUpdatedAfterLayout() {
+  AssertLayoutTreeUpdated(*this, false /* allow_dirty_container_subtrees */);
 }
 #endif
 
@@ -2008,6 +2058,8 @@ void Document::UpdateStyleAndLayoutTree() {
     }
   }
 
+  CSSAnimationUpdateScope animation_update_scope(*this);
+
   UpdateStyleAndLayoutTreeForThisDocument();
 
   if (GetStyleEngine().UsesContainerQueries()) {
@@ -2030,7 +2082,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
                 .GetSlotAssignmentEngine()
                 .HasPendingSlotAssignmentRecalc());
     DCHECK(!owner->GetDocument().NeedsLayoutTreeUpdate());
-    AssertLayoutTreeUpdated(owner->GetDocument());
+    AssertLayoutTreeUpdated(owner->GetDocument(),
+                            false /* allow_dirty_container_subtrees */);
   }
 #endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
@@ -2129,7 +2182,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
                    "elementCount", element_count);
 
 #if DCHECK_IS_ON()
-  AssertLayoutTreeUpdated(*this);
+  AssertLayoutTreeUpdated(*this, true /* allow_dirty_container_subtrees */);
 #endif
 }
 
@@ -2140,26 +2193,10 @@ void Document::InvalidateStyleAndLayoutForFontUpdates() {
 }
 
 void Document::UpdateStyle() {
-  UpdateStyleInternal();
-  DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kStyleClean);
-
-  if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
-    GetDocumentAnimations().ApplyPendingElementUpdates();
-    if (lifecycle_.GetState() < DocumentLifecycle::kStyleClean) {
-      DocumentAnimations::AllowAnimationUpdatesScope allow_updates(
-          GetDocumentAnimations(), false);
-      UpdateStyleInternal();
-    }
-  }
-}
-
-void Document::UpdateStyleInternal() {
   DCHECK(!View()->ShouldThrottleRendering());
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
-  DocumentAnimations::AllowAnimationUpdatesScope allow_updates(
-      GetDocumentAnimations(), true);
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
@@ -2676,7 +2713,7 @@ void Document::Initialize() {
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
   UpdateForcedColors();
-  layout_view_ = new LayoutView(this);
+  layout_view_ = MakeGarbageCollected<LayoutView>(this);
   SetLayoutObject(layout_view_);
 
   layout_view_->SetStyle(GetStyleResolver().StyleForViewport());
@@ -6272,6 +6309,9 @@ KURL Document::CompleteURLWithOverride(const String& url,
   // Always return a null URL when passed a null string.
   // FIXME: Should we change the KURL constructor to have this behavior?
   // See also [CSS]StyleSheet::completeURL(const String&)
+  // TODO(crbug.com/1244483): Make sure that LinkWebBundle::CompleteURL
+  // implementation stays in line with this one (disregarding the encoding
+  // part).
   if (url.IsNull())
     return KURL();
   if (!Encoding().IsValid())
@@ -7836,6 +7876,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(did_associate_form_controls_timer_);
   visitor->Trace(user_action_elements_);
   visitor->Trace(svg_extensions_);
+  visitor->Trace(layout_view_);
   visitor->Trace(document_animations_);
   visitor->Trace(timeline_);
   visitor->Trace(pending_animations_);
@@ -7861,6 +7902,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(find_in_page_active_match_node_);
   visitor->Trace(data_);
   visitor->Trace(meta_theme_color_elements_);
+  visitor->Trace(unassociated_listed_elements_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7979,6 +8021,7 @@ bool Document::ChildrenCanHaveStyle() const {
 
 ComputedAccessibleNode* Document::GetOrCreateComputedAccessibleNode(
     AXID ax_id) {
+  DCHECK(ax_id) << "Invalid ax_id";
   if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
     auto* node = MakeGarbageCollected<ComputedAccessibleNode>(ax_id, this);
     computed_node_mapping_.insert(ax_id, node);

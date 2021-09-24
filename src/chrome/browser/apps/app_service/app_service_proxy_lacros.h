@@ -30,15 +30,12 @@
 class Profile;
 
 namespace web_app {
-class WebApps;
 class WebAppsPublisherHost;
 }  // namespace web_app
 
 namespace apps {
 
-class AppServiceImpl;
-class ExtensionApps;
-class FakeLacrosWebAppsHost;
+class BrowserAppInstanceTracker;
 
 struct IntentLaunchInfo {
   std::string app_id;
@@ -59,7 +56,6 @@ struct IntentLaunchInfo {
 // See components/services/app_service/README.md.
 class AppServiceProxyLacros : public KeyedService,
                               public apps::IconLoader,
-                              public apps::mojom::Subscriber,
                               public apps::AppRegistryCache::Observer,
                               public crosapi::mojom::AppServiceSubscriber {
  public:
@@ -70,13 +66,14 @@ class AppServiceProxyLacros : public KeyedService,
 
   void ReInitializeForTesting(Profile* profile);
 
-  mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
   apps::AppCapabilityAccessCache& AppCapabilityAccessCache();
 
   apps::BrowserAppLauncher* BrowserAppLauncher();
 
   apps::PreferredAppsList& PreferredApps();
+
+  apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
 
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
@@ -293,28 +290,13 @@ class AppServiceProxyLacros : public KeyedService,
 
   void AddAppIconSource(Profile* profile);
 
-  // Returns true if the app cannot be launched and a launch prevention dialog
-  // is shown to the user (e.g. the app is paused or blocked). Returns false
-  // otherwise (and the app can be launched).
-  bool MaybeShowLaunchPreventionDialog(const apps::AppUpdate& update);
-
   // KeyedService overrides:
   void Shutdown() override;
 
-  // apps::mojom::Subscriber overrides.
+  // crosapi::mojom::AppServiceSubscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas,
               apps::mojom::AppType app_type,
               bool should_notify_initialized) override;
-  void OnCapabilityAccesses(
-      std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
-  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
-  void OnPreferredAppSet(const std::string& app_id,
-                         apps::mojom::IntentFilterPtr intent_filter) override;
-  void OnPreferredAppRemoved(
-      const std::string& app_id,
-      apps::mojom::IntentFilterPtr intent_filter) override;
-  void InitializePreferredApps(
-      PreferredAppsList::PreferredApps preferred_apps) override;
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -324,20 +306,8 @@ class AppServiceProxyLacros : public KeyedService,
   apps::mojom::IntentFilterPtr FindBestMatchingFilter(
       const apps::mojom::IntentPtr& intent);
 
-  virtual void RecordAppPlatformMetrics(Profile* profile,
-                                        const apps::AppUpdate& update,
-                                        apps::mojom::LaunchSource launch_source,
-                                        apps::mojom::LaunchContainer container);
-
-  // This proxy privately owns its instance of the App Service. This should not
-  // be exposed except through the Mojo interface connected to |app_service_|.
-  std::unique_ptr<apps::AppServiceImpl> app_service_impl_;
-
-  mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache app_registry_cache_;
   apps::AppCapabilityAccessCache app_capability_access_cache_;
-
-  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the
@@ -357,15 +327,15 @@ class AppServiceProxyLacros : public KeyedService,
   // on Chrome.
   std::unique_ptr<apps::BrowserAppLauncher> browser_app_launcher_;
 
+  std::unique_ptr<apps::BrowserAppInstanceTracker>
+      browser_app_instance_tracker_;
+
   bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;
 
-  std::unique_ptr<web_app::WebApps> web_apps_;
-  std::unique_ptr<ExtensionApps> extension_apps_;
-
-  std::unique_ptr<FakeLacrosWebAppsHost> fake_lacros_web_apps_host_;
   std::unique_ptr<web_app::WebAppsPublisherHost> web_apps_publisher_host_;
   mojo::Receiver<crosapi::mojom::AppServiceSubscriber> crosapi_receiver_{this};
+  int crosapi_app_service_proxy_version_ = 0;
 
   base::WeakPtrFactory<AppServiceProxyLacros> weak_ptr_factory_{this};
 };

@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
@@ -28,11 +29,10 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/synced_bookmarks_bridge.h"
-#import "ios/chrome/browser/ui/signin/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -266,7 +266,7 @@ const int kMaxBookmarksSearchResults = 50;
     TableViewTextItem* item =
         [[TableViewTextItem alloc] initWithType:BookmarkHomeItemTypeMessage];
     item.textAlignment = NSTextAlignmentLeft;
-    item.textColor = UIColor.cr_labelColor;
+    item.textColor = [UIColor colorNamed:kTextPrimaryColor];
     item.text = noResults;
     [self.sharedState.tableViewModel
                         addItem:item

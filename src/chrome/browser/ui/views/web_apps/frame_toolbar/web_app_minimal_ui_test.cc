@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
@@ -21,7 +21,7 @@ class WebAppMinimalUITest : public WebAppControllerBrowserTest {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = GURL("https://example.org");
     web_app_info->display_mode = display_mode;
-    web_app_info->open_as_window = true;
+    web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* browser = LaunchWebAppBrowser(app_id);
     return BrowserView::GetBrowserViewForBrowser(browser);

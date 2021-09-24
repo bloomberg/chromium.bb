@@ -12,6 +12,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "components/component_updater/component_installer.h"
 
@@ -41,7 +43,15 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   static void ReconfigureAfterNetworkRestart(
       const base::RepeatingCallback<void(const std::string&)>&);
 
+  // Resets static state. Should only be used to clear state during testing.
+  static void ResetForTesting();
+
   static const char kDogfoodInstallerAttributeName[];
+
+  // Seeds a component at `install_dir` with the given `contents`. Only to be
+  // used in testing.
+  static void WriteComponentForTesting(const base::FilePath& install_dir,
+                                       base::StringPiece contents);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
@@ -68,6 +78,10 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   void OnCustomUninstall() override;
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
+  // After the first call, ComponentReady will be no-op for new versions
+  // delivered from Component Updater, i.e. new components will be installed
+  // (kept on-disk) but not propagated to the NetworkService until next
+  // browser startup.
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       std::unique_ptr<base::DictionaryValue> manifest) override;
@@ -79,13 +93,6 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 
   base::RepeatingCallback<void(const std::string&)> on_sets_ready_;
-
-  // `component_installed_` indicates whether ComponentReady has been called
-  // once after registration. After the first call, ComponentReady will be no-op
-  // for new versions delivered from Component Updater, i.e. new components will
-  // be installed (kept on-disk) but not propagated to the NetworkService until
-  // next browser startup.
-  bool component_installed_ = false;
 };
 
 // Call once during startup to make the component update service aware of

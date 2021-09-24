@@ -245,11 +245,6 @@ base::Value AccessibilityTreeFormatterBlink::BuildTree(
   RecursiveBuildTree(*root_internal, &dict);
   return dict;
 }
-base::Value AccessibilityTreeFormatterBlink::BuildTreeForWindow(
-    gfx::AcceleratedWidget widget) const {
-  NOTREACHED();
-  return base::Value(base::Value::Type::DICTIONARY);
-}
 
 base::Value AccessibilityTreeFormatterBlink::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
@@ -417,11 +412,11 @@ void AccessibilityTreeFormatterBlink::AddProperties(
         if (ui::IsNodeIdIntListAttribute(attr)) {
           BrowserAccessibility* target = node.manager()->GetFromID(values[i]);
           if (target)
-            value_list.AppendString(ui::ToString(target->GetData().role));
+            value_list.Append(ui::ToString(target->GetData().role));
           else
-            value_list.AppendString("null");
+            value_list.Append("null");
         } else {
-          value_list.AppendInteger(values[i]);
+          value_list.Append(values[i]);
         }
       }
       dict->SetKey(ui::ToString(attr), std::move(value_list));
@@ -567,11 +562,11 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                                    ->GetNodeFromTree(tree_id, node.id());
 
           if (target)
-            value_list.AppendString(ui::ToString(target->data().role));
+            value_list.Append(ui::ToString(target->data().role));
           else
-            value_list.AppendString("null");
+            value_list.Append("null");
         } else {
-          value_list.AppendInteger(value);
+          value_list.Append(value);
         }
       }
       dict->SetKey(ui::ToString(attr), std::move(value_list));
@@ -635,13 +630,9 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   }
 
   // Offscreen and Focused states are not in the state list.
-  bool offscreen = false;
-  dict.GetBoolean(STATE_OFFSCREEN, &offscreen);
-  if (offscreen)
+  if (dict.FindBoolPath(STATE_OFFSCREEN).value_or(false))
     WriteAttribute(false, STATE_OFFSCREEN, &line);
-  bool focused = false;
-  dict.GetBoolean(STATE_FOCUSED, &focused);
-  if (focused)
+  if (dict.FindBoolPath(STATE_FOCUSED).value_or(false))
     WriteAttribute(false, STATE_FOCUSED, &line);
 
   if (dict.FindKey("boundsX") && dict.FindKey("boundsY")) {
@@ -656,9 +647,7 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
         &line);
   }
 
-  bool ignored = false;
-  dict.GetBoolean("ignored", &ignored);
-  if (!ignored) {
+  if (!dict.FindBoolPath("ignored").value_or(false)) {
     if (dict.FindKey("pageBoundsX") && dict.FindKey("pageBoundsY")) {
       WriteAttribute(
           false,
@@ -687,8 +676,7 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
     }
   }
 
-  bool transform;
-  if (dict.GetBoolean("transform", &transform) && transform)
+  if (dict.FindBoolPath("transform").value_or(false))
     WriteAttribute(false, "transform", &line);
 
   for (int attr_index = static_cast<int32_t>(ax::mojom::StringAttribute::kNone);
@@ -722,12 +710,12 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
        attr_index <= static_cast<int32_t>(ax::mojom::BoolAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::BoolAttribute>(attr_index);
-    bool bool_value;
-    if (!dict.GetBoolean(ui::ToString(attr), &bool_value))
+    absl::optional<bool> bool_value = dict.FindBoolPath(ui::ToString(attr));
+    if (!bool_value)
       continue;
     WriteAttribute(false,
                    base::StringPrintf("%s=%s", ui::ToString(attr),
-                                      bool_value ? "true" : "false"),
+                                      *bool_value ? "true" : "false"),
                    &line);
   }
 
@@ -783,8 +771,9 @@ std::string AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
 
     switch (value->type()) {
       case base::Value::Type::STRING: {
-        std::string string_value;
-        value->GetAsString(&string_value);
+        const std::string* string_value_ptr = value->GetIfString();
+        const std::string string_value =
+            string_value_ptr ? *string_value_ptr : std::string();
         WriteAttribute(
             false,
             base::StringPrintf("%s=%s", attribute_name, string_value.c_str()),

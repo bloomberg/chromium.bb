@@ -5,10 +5,9 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_VIEW_CONTROLLER_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_VIEW_CONTROLLER_H_
 
-#include "base/scoped_observation.h"
-#include "ui/message_center/message_center.h"
+#include <string>
+
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/message_center_observer.h"
 
 namespace message_center {
 
@@ -16,29 +15,28 @@ class MessageView;
 
 // A controller class to manage adding, removing and updating group
 // notifications.
-class MESSAGE_CENTER_EXPORT NotificationViewController
-    : public MessageCenterObserver {
+class MESSAGE_CENTER_EXPORT NotificationViewController {
  public:
-  NotificationViewController();
-  NotificationViewController(const NotificationViewController& other) = delete;
-  NotificationViewController& operator=(
-      const NotificationViewController& other) = delete;
-  ~NotificationViewController() override;
-
+  // Returns the `MessageView` associated with `notification_id`
   virtual MessageView* GetMessageViewForNotificationId(
       const std::string& notification_id) = 0;
 
-  // MessageCenterObserver:
-  void OnNotificationAdded(const std::string& notification_id) override;
-  void OnNotificationRemoved(const std::string& notification_id,
-                             bool by_user) override;
+  // Updates the notification id associated with a `MessageCenterView` and
+  // popup if required. We do this to covert an existing message view into
+  // a message view that acts as a container for grouped notifications.
+  // Creating a new view for this would make the code simpler but we need
+  // to do it in place to make it easier to animate the conversion between
+  // grouped and non-grouped notifications.
+  virtual void ConvertNotificationViewToGroupedNotificationView(
+      const std::string& ungrouped_notification_id,
+      const std::string& new_grouped_notification_id) = 0;
 
- private:
-  // Map for looking up the parent notification_id for any given notification
-  // id.
-  std::map<std::string, std::string> child_parent_map_;
-
-  base::ScopedObservation<MessageCenter, MessageCenterObserver> observer_{this};
+  // Updates the notification id associated with a `MessageCenterView` and
+  // popup if needed. This is done to convert an existing grouped notification
+  // view back into a single notification view.
+  virtual void ConvertGroupedNotificationViewToNotificationView(
+      const std::string& grouped_notification_id,
+      const std::string& new_single_notification_id) = 0;
 };
 
 }  // namespace message_center

@@ -24,6 +24,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1119348796022671382">De kleurenmodus 'Met een thema' stelt de kleuren van de interface af op de kleuren van je achtergrond.</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
 <translation id="1148499908455722006">Dialoogvenster met informatie openen voor <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
 <translation id="1165712434476988950">Start het apparaat opnieuw op om de update toe te passen.</translation>
 <translation id="1175572348579024023">Scrollen</translation>
@@ -92,6 +93,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1611993646327628135">Aan</translation>
 <translation id="1615402009686901181">Op basis van het beheerdersbeleid worden schermopnamen uitgezet als er vertrouwelijke content zichtbaar is</translation>
 <translation id="1632985212731562677">Je kunt Toegang via schakelaar uitzetten via Instellingen &gt; Toegankelijkheid.</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> apparaten</translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; druk op de knop Zoeken en de spatiebalk om het resultaat te bekijken via de Assistent.</translation>
 <translation id="1667964833127753507">De neutrale kleurenmodus vervangt de kleuren van de achtergrond door neutrale lichte of donkere tinten.</translation>
@@ -192,6 +194,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2427507373259914951">Klik met linkermuisknop</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil rechten om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt getoond: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Wachtwoord tonen</translation>
+<translation id="24452542372838207">Melding uitvouwen</translation>
 <translation id="2450205753526923158">Screenshotmodus</translation>
 <translation id="2473177541599297363">Resolutie bevestigen</translation>
 <translation id="2475982808118771221">Er is een fout opgetreden</translation>
@@ -320,6 +323,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3486220673238053218">definitie</translation>
 <translation id="3510164367642747937">Muisaanwijzer markeren</translation>
 <translation id="3513798432020909783">Account wordt beheerd door <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Verbonden met <ph name="NUM_DEVICES" /> apparaten</translation>
 <translation id="3552189655002856821">Wifi staat uit</translation>
 <translation id="3560866052109807830">Markeringstools</translation>
 <translation id="3563775809269155755">Hotspot aanzetten</translation>
@@ -348,6 +352,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="3702846122927433391">Bevolking van Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Bezig met laden...</translation>
+<translation id="3708186454126126312">Eerder verbonden</translation>
 <translation id="371370241367527062">Microfoon aan voorzijde</translation>
 <translation id="3713734891607377840">Openen na afronding</translation>
 <translation id="3742055079367172538">Screenshot gemaakt</translation>
@@ -403,6 +408,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="4129129681837227511">Als je meldingen op je vergrendelscherm wilt zien, ontgrendel je het scherm om de instellingen te wijzigen</translation>
 <translation id="4146833061457621061">Speel muziek</translation>
 <translation id="4157822100366708405">Instellingen voor donker thema</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> - <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Talen</translation>
 <translation id="4195877955194704651">Knop 'Automatische klikken'</translation>
 <translation id="4197790712631116042">Uit</translation>
@@ -555,6 +561,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5234764350956374838">Sluiten</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
+<translation id="5253783950165989294">Verbonden met een apparaat met de naam <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" />% batterijlading</translation>
 <translation id="5260676007519551770">Bureau 4</translation>
 <translation id="5283198616748585639">1 min toevoegen</translation>
 <translation id="528468243742722775">Beëindigen</translation>
@@ -565,6 +572,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5313326810920013265">Bluetooth-instellingen</translation>
 <translation id="5314219114274263156">Schermopname gemaakt</translation>
+<translation id="5319712128756744240">Nieuw apparaat koppelen</translation>
 <translation id="5322611492012084517">Kan je telefoon niet vinden</translation>
 <translation id="5329548388331921293">Verbinden...</translation>
 <translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -767,6 +775,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="698231206551913481">Alle bestanden en lokale gegevens die zijn gekoppeld aan deze gebruiker, worden definitief verwijderd zodra deze gebruiker is verwijderd.</translation>
 <translation id="7007983414944123363">Je pincode of wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
+<translation id="7014684956566476813">Verbonden met een apparaat met de naam <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Kom terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Bureau 6</translation>
 <translation id="7025533177575372252">Koppel je <ph name="DEVICE_NAME" /> aan je telefoon</translation>
@@ -1000,6 +1009,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="8818320199597151042">Profiel verwijderen. Wacht een paar minuten.</translation>
 <translation id="8825863694328519386">Swipe vanaf de linkerkant om terug te gaan</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Momenteel verbonden</translation>
 <translation id="8841375032071747811">Knop Terug</translation>
 <translation id="8843682306134542540">Draaivergrendeling aan- of uitzetten. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Zoeken+Esc</translation>
@@ -1030,6 +1040,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="9024331582947483881">volledig scherm</translation>
 <translation id="9047624247355796468">Instellingen openen voor <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Apparaat wordt teruggezet naar oudere versie</translation>
+<translation id="9059834730836941392">Melding samenvouwen</translation>
 <translation id="9063800855227801443">Kan geen opname van vertrouwelijke content maken</translation>
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9070640332319875144">Instellingen voor Assistent</translation>

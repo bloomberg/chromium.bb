@@ -844,15 +844,14 @@ void AuthenticatorCommon::MakeCredential(
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
+  WebAuthRequestSecurityChecker::RequestType request_type =
+      options->is_payment_credential_creation
+          ? WebAuthRequestSecurityChecker::RequestType::kMakePaymentCredential
+          : WebAuthRequestSecurityChecker::RequestType::kMakeCredential;
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
-      security_checker_->ValidateAncestorOrigins(
-          caller_origin,
-          options->is_payment_credential_creation
-              ? WebAuthRequestSecurityChecker::RequestType::
-                    kMakePaymentCredential
-              : WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
-          &is_cross_origin);
+      security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
+                                                 &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteMakeCredentialRequest(status);
     return;
@@ -873,8 +872,8 @@ void AuthenticatorCommon::MakeCredential(
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
     rp_id = std::move(options->relying_party.id);
-    status = security_checker_->ValidateDomainAndRelyingPartyID(caller_origin,
-                                                                *rp_id);
+    status = security_checker_->ValidateDomainAndRelyingPartyID(
+        caller_origin, *rp_id, request_type);
     if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
       CompleteMakeCredentialRequest(status);
       return;
@@ -1012,16 +1011,11 @@ void AuthenticatorCommon::MakeCredential(
       FROM_HERE, AdjustTimeout(options->timeout, GetRenderFrameHost()),
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
-  // Cryptotoken requests, making payment credentials, and Touch-to-Autofill
-  // should be proxied without UI.
+  // Cryptotoken requests and Touch-to-Autofill should be proxied without UI.
   const bool origin_is_crypto_token_extension =
       WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
           caller_origin);
-  if (origin_is_crypto_token_extension ||
-      (!base::FeatureList::IsEnabled(
-           features::kSecurePaymentConfirmationAPIV3) &&
-       options->is_payment_credential_creation) ||
-      disable_ui_) {
+  if (origin_is_crypto_token_extension || disable_ui_) {
     request_delegate_->DisableUI();
   }
 
@@ -1120,12 +1114,21 @@ void AuthenticatorCommon::GetAssertion(
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
 
+  WebAuthRequestSecurityChecker::RequestType request_type =
+      payment.is_null()
+          ? WebAuthRequestSecurityChecker::RequestType::kGetAssertion
+          : WebAuthRequestSecurityChecker::RequestType::
+                kGetPaymentCredentialAssertion;
+  if (!payment.is_null() && options->allow_credentials.empty()) {
+    CompleteGetAssertionRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    NOTREACHED();
+    return;
+  }
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
-      security_checker_->ValidateAncestorOrigins(
-          caller_origin,
-          WebAuthRequestSecurityChecker::RequestType::kGetAssertion,
-          &is_cross_origin);
+      security_checker_->ValidateAncestorOrigins(caller_origin, request_type,
+                                                 &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteGetAssertionRequest(status);
     return;
@@ -1146,7 +1149,7 @@ void AuthenticatorCommon::GetAssertion(
     // If the delegate didn't override RP ID selection then apply standard
     // rules.
     status = security_checker_->ValidateDomainAndRelyingPartyID(
-        caller_origin, options->relying_party_id);
+        caller_origin, options->relying_party_id, request_type);
     if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
       CompleteGetAssertionRequest(status);
       return;
@@ -1321,6 +1324,12 @@ void AuthenticatorCommon::GetAssertion(
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
+  WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
+  if (proxy) {
+    proxy->SignalIsUvpaaRequest(std::move(callback));
+    return;
+  }
+
   // Check for a delegate override. Chrome overrides IsUVPAA() in Guest mode
   // and, on Windows only, in Incognito.
   absl::optional<bool> is_uvpaa_override =
@@ -1861,6 +1870,13 @@ void AuthenticatorCommon::InitDiscoveryFactory(bool is_u2f_api_request) {
   discovery_factory_testing_override_ =
       AuthenticatorEnvironmentImpl::GetInstance()
           ->MaybeGetDiscoveryFactoryTestOverride();
+}
+
+WebAuthenticationRequestProxy*
+AuthenticatorCommon::GetWebAuthnRequestProxyIfActive() {
+  WebAuthenticationRequestProxy* proxy =
+      GetWebAuthenticationDelegate()->MaybeGetRequestProxy(GetBrowserContext());
+  return proxy && proxy->IsActive() ? proxy : nullptr;
 }
 
 }  // namespace content

@@ -93,6 +93,11 @@ const char kIosSettingsPromoAlreadySeen[] = "ios.settings.promo_already_seen";
 const char kIosSettingsSigninPromoDisplayedCount[] =
     "ios.settings.signin_promo_displayed_count";
 
+// Preference that holds a boolean indicating whether the link previews are
+// enabled. Link previews display a live preview of the selected link after a
+// long press.
+const char kLinkPreviewEnabled[] = "ios.link_preview_enabled";
+
 // Preference that holds a boolean indicating whether the suggestions on the NTP
 // are enabled.
 const char kNTPContentSuggestionsEnabled[] =
@@ -145,5 +150,9 @@ const char kPrintingEnabled[] = "printing.enabled";
 // Bool used for the incognito biometric authentication setting.
 const char kIncognitoAuthenticationSetting[] =
     "ios.settings.incognito_authentication_enabled";
+
+// Integer that represents the value of BrowserSigninPolicy. Values are defined
+// in ios/chrome/browser/policy/policy_util.h.
+const char kBrowserSigninPolicy[] = "signin.browser_signin_policy";
 
 }  // namespace prefs

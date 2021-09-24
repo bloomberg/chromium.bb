@@ -61,16 +61,16 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/tests/diff_deps.py\", line 33, in RunSteps",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/tests/diff_deps.py\", line 35, in RunSteps",
       "    affected_files = api.gclient.diff_deps(api.path['cache'])",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/api.py\", line 428, in diff_deps",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/api.py\", line 429, in diff_deps",
       "    raise self.DepsDiffException(msg)",
       "DepsDiffException: Unexpected result: autoroll diff found 0 files changed"
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: DepsDiffException('Unexpected result: autoroll diff found 0 files changed',)"
+      "humanReason": "Uncaught Exception: DepsDiffException('Unexpected result: autoroll diff found 0 files changed')"
     },
     "name": "$result"
   }

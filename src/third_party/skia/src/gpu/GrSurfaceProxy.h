@@ -17,7 +17,6 @@
 
 class GrCaps;
 class GrContext_Base;
-class GrOpsTask;
 class GrRecordingContext;
 class GrRenderTargetProxy;
 class GrRenderTask;
@@ -71,6 +70,7 @@ public:
         GrMipmapped fMipmapped;
         int fSampleCnt;
         const GrBackendFormat& fFormat;
+        GrTextureType fTextureType;
         GrProtected fProtected;
         SkBudgeted fBudgeted;
     };

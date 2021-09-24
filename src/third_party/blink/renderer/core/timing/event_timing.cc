@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 
 #include "base/time/tick_clock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -42,6 +43,10 @@ bool ShouldReportForEventTiming(WindowPerformance* performance) {
 }
 
 }  // namespace
+
+// Record FID even when there's no event listener.
+const base::Feature kFirstInputDelayWithoutEventListener{
+    "FirstInputDelayWithoutEventListener", base::FEATURE_DISABLED_BY_DEFAULT};
 
 EventTiming::EventTiming(base::TimeTicks processing_start,
                          WindowPerformance* performance,
@@ -112,6 +117,9 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
   if (!should_report_for_event_timing && !should_log_event)
     return nullptr;
 
+  if (base::FeatureList::IsEnabled(kFirstInputDelayWithoutEventListener))
+    HandleInputDelay(window, event);
+
   base::TimeTicks processing_start = Now();
   return should_report_for_event_timing
              ? std::make_unique<EventTiming>(processing_start, performance,
@@ -125,11 +133,11 @@ void EventTiming::SetTickClockForTesting(const base::TickClock* clock) {
 }
 
 EventTiming::~EventTiming() {
-  absl::optional<int> key_code = absl::nullopt;
+  absl::optional<int> key_code;
   if (event_->IsKeyboardEvent())
     key_code = DynamicTo<KeyboardEvent>(event_.Get())->keyCode();
 
-  absl::optional<PointerId> pointer_id = absl::nullopt;
+  absl::optional<PointerId> pointer_id;
   const PointerEvent* pointer_event = DynamicTo<PointerEvent>(event_.Get());
   if (pointer_event)
     pointer_id = pointer_event->pointerId();

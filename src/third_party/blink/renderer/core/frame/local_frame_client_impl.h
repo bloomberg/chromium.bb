@@ -105,7 +105,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       const blink::ParsedPermissionsPolicy& permissions_policy_header,
       const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void DispatchDidFailLoad(const ResourceError&, WebHistoryCommitType) override;
-  void DispatchDidFinishDocumentLoad() override;
+  void DispatchDidDispatchDOMContentLoadedEvent() override;
   void DispatchDidFinishLoad() override;
 
   void BeginNavigation(
@@ -171,6 +171,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       DocumentLoader* document_loader,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   WTF::String UserAgent() override;
+  WTF::String ReducedUserAgent() override;
   absl::optional<blink::UserAgentMetadata> UserAgentMetadata() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;
@@ -182,7 +183,10 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) override;
   RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
 
-  RemoteFrame* CreateFencedFrame(HTMLFencedFrameElement*) override;
+  RemoteFrame* CreateFencedFrame(
+      HTMLFencedFrameElement*,
+      mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>)
+      override;
 
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
@@ -297,6 +301,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
+  String reduced_user_agent_;
 };
 
 template <>

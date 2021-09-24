@@ -39,6 +39,8 @@ class Crosapi;
 class BrowserLoader;
 class TestMojoConnectionManager;
 
+using browser_util::LacrosSelection;
+
 // Manages the lifetime of lacros-chrome, and its loading status. This class is
 // a part of ash-chrome.
 class BrowserManager : public session_manager::SessionManagerObserver,
@@ -94,9 +96,27 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // so should be avoided.
   void NewWindow(bool incognito);
 
+  // Returns true if crosapi interface supports NewFullscreenWindow API.
+  bool NewFullscreenWindowSupported() const;
+
+  using NewFullscreenWindowCallback =
+      base::OnceCallback<void(crosapi::mojom::CreationResult)>;
+  // Open a fullscreen browser window in lacros-chrome. The only tab will be
+  // navigated to the given `url` once the window is launched.
+  // NOTE: This method is used by Chrome OS web Kiosk session only. The behavior
+  // may change and it shouldn't be used by anybody else.
+  // Virtual for testing.
+  virtual void NewFullscreenWindow(const GURL& url,
+                                   NewFullscreenWindowCallback callback);
+
   // Similar to NewWindow(), but opens a tab, instead.
   // See crosapi::mojom::BrowserService::NewTab for more details
   void NewTab();
+
+  // Opens the specified URL in lacros-chrome. If it is not running,
+  // it launches lacros-chrome with the given URL.
+  // See crosapi::mojom::BrowserService::OpenUrl for more details.
+  void OpenUrl(const GURL& url);
 
   // Similar to NewWindow(), but restores a tab recently closed.
   // See crosapi::mojom::BrowserService::RestoreTab for more details
@@ -191,7 +211,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Posts CreateLogFile() and StartWithLogFile() to the thread pool.
   // Virtual for tests.
-  virtual void Start(mojom::InitialBrowserAction initial_browser_action);
+  virtual void Start(browser_util::InitialBrowserAction initial_browser_action);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest, LacrosKeepAlive);
@@ -255,12 +275,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Otherwise, i.e., lacros is already running, kRunning is returned.
   // |extra_args| will be passed to the argument to launch lacros.
   MaybeStartResult MaybeStart(
-      mojom::InitialBrowserAction initial_browser_action);
+      browser_util::InitialBrowserAction initial_browser_action);
 
   // Starts the lacros-chrome process and redirects stdout/err to file pointed
   // by logfd.
-  void StartWithLogFile(mojom::InitialBrowserAction initial_browser_action,
-                        LaunchParamsFromBackground params);
+  void StartWithLogFile(
+      browser_util::InitialBrowserAction initial_browser_action,
+      LaunchParamsFromBackground params);
 
   // BrowserServiceHostObserver:
   void OnBrowserServiceConnected(CrosapiId id,
@@ -294,7 +315,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OnStoreDestruction(policy::CloudPolicyStore* store) override;
 
   // Called on load completion.
-  void OnLoadComplete(const base::FilePath& path);
+  void OnLoadComplete(const base::FilePath& path, LacrosSelection selection);
 
   // Methods for features to register and de-register for needing to keep Lacros
   // alive.
@@ -318,6 +339,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Path to the lacros-chrome disk image directory.
   base::FilePath lacros_path_;
+
+  // Whether we are starting "rootfs" or "stateful" lacros.
+  absl::optional<LacrosSelection> lacros_selection_ = absl::nullopt;
 
   // Version of the browser (e.g. lacros-chrome) displayed to user in feedback
   // report, etc. It includes both browser version and channel in the format of:

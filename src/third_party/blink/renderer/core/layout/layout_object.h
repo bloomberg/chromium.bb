@@ -31,6 +31,7 @@
 
 #include "base/auto_reset.h"
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "cc/base/features.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -76,7 +77,6 @@ class AffineTransform;
 class HitTestLocation;
 class HitTestRequest;
 class InlineBox;
-class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutBlockFlow;
 class LayoutFlowThread;
@@ -115,10 +115,15 @@ enum MarkingBehavior {
 enum ScheduleRelayoutBehavior { kScheduleRelayout, kDontScheduleRelayout };
 
 enum {
-  kBackgroundPaintInGraphicsLayer = 1 << 0,
-  kBackgroundPaintInScrollingContents = 1 << 1
+  // Backgrounds paint under FragmentData::LocalBorderBoxProperties().
+  kBackgroundPaintInBorderBoxSpace = 1 << 0,
+  // Backgrounds paint under FragmentData::ContentsProperties().
+  kBackgroundPaintInContentsSpace = 1 << 1,
+  // Paint backgrounds twice.
+  kBackgroundPaintInBothSpaces =
+      kBackgroundPaintInBorderBoxSpace | kBackgroundPaintInContentsSpace,
 };
-using BackgroundPaintLocation = uint8_t;
+using BackgroundPaintLocation = unsigned;
 
 struct AnnotatedRegionValue {
   DISALLOW_NEW();
@@ -133,7 +138,7 @@ struct AnnotatedRegionValue {
 // The axes which overflows should be clipped. This is not just because of
 // overflow clip, but other types of clip as well, such as control clips or
 // contain: paint.
-using OverflowClipAxes = uint8_t;
+using OverflowClipAxes = unsigned;
 
 enum {
   kNoOverflowClip = 0,
@@ -270,7 +275,8 @@ struct RecalcLayoutOverflowResult {
 // IntrinsicLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
-class CORE_EXPORT LayoutObject : public ImageResourceObserver,
+class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
+                                 public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
@@ -289,16 +295,31 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   FRIEND_TEST_ALL_PREFIXES(
       LayoutObjectTest,
       ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, VisualRect);
 
   friend class VisualRectMappingTest;
 
  public:
+#if !BUILDFLAG(USE_V8_OILPAN)
+  // Use a type specific arena for LayoutObject
+  template <typename T>
+  static void* AllocateObject(size_t size) {
+    ThreadState* state =
+        ThreadStateFor<ThreadingTrait<LayoutObject>::kAffinity>::GetState();
+    const char* type_name = "blink::LayoutObject";
+    return state->Heap().AllocateOnArenaIndex(
+        state, size, BlinkGC::kLayoutObjectArenaIndex,
+        GCInfoTrait<GCInfoFoldedType<LayoutObject>>::Index(), type_name);
+  }
+#endif  // !BUILDFLAG(USE_V8_OILPAN)
+
   // Anonymous objects should pass the document as their node, and they will
   // then automatically be marked as anonymous in the constructor.
   explicit LayoutObject(Node*);
   LayoutObject(const LayoutObject&) = delete;
   LayoutObject& operator=(const LayoutObject&) = delete;
   ~LayoutObject() override;
+  virtual void Trace(Visitor*) const;
 
 // Should be added at the beginning of every method to ensure we are not
 // accessing a LayoutObject after the Desroy() call.
@@ -331,7 +352,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  protected:
   void EnsureIdForTesting() {
     NOT_DESTROYED();
-    fragment_.EnsureId();
+    fragment_->EnsureId();
   }
 
  private:
@@ -585,7 +606,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   UniqueObjectId UniqueId() const {
     NOT_DESTROYED();
-    return fragment_.UniqueId();
+    return fragment_->UniqueId();
   }
 
   inline bool IsEligibleForPaintOrLayoutContainment() const {
@@ -770,10 +791,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static LayoutObject* CreateObject(Element*,
                                     const ComputedStyle&,
                                     LegacyLayout);
-
-  // LayoutObjects are allocated out of the rendering partition.
-  void* operator new(size_t);
-  void operator delete(void*);
 
   bool IsPseudoElement() const {
     NOT_DESTROYED();
@@ -1275,6 +1292,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return !IsSVG() || IsSVGShape() || IsSVGImage() || IsSVGText() ||
            IsSVGInline() || IsSVGRoot() || IsSVGForeignObject() ||
+           IsNGSVGText() ||
            // Blending does not apply to non-renderable elements such as
            // patterns (see: https://github.com/w3c/fxtf-drafts/issues/309).
            (IsSVGContainer() && !IsSVGHiddenContainer());
@@ -1368,6 +1386,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     return GetNode() ? GetNode()->GetLayoutObject() : this;
   }
+  LayoutObject* ContinuationRoot() {
+    NOT_DESTROYED();
+    return GetNode() ? GetNode()->GetLayoutObject() : this;
+  }
   bool IsElementContinuation() const {
     NOT_DESTROYED();
     return GetNode() && GetNode()->GetLayoutObject() != this;
@@ -1456,6 +1478,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsAtomicInlineLevel() const {
     NOT_DESTROYED();
     return bitfields_.IsAtomicInlineLevel();
+  }
+  bool IsBlockInInline() const {
+    return IsAnonymous() && !IsInline() && !IsFloatingOrOutOfFlowPositioned() &&
+           Parent() && Parent()->IsLayoutInline();
   }
   bool IsHorizontalWritingMode() const {
     NOT_DESTROYED();
@@ -1767,6 +1793,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns true if this object represents ::marker for the first SUMMARY
   // child of a DETAILS, and list-style-type is disclosure-*.
   bool IsListMarkerForSummary() const;
+
+  // Returns true if this object is a proper descendant of any list marker.
+  bool IsInListMarker() const;
 
   // The pseudo element style can be cached or uncached. Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
@@ -2128,6 +2157,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetIsHTMLLegendElement() {
     NOT_DESTROYED();
     bitfields_.SetIsHTMLLegendElement(true);
+  }
+  void SetWhitespaceChildrenMayChange(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetWhitespaceChildrenMayChange(b);
+  }
+  bool WhitespaceChildrenMayChange() const {
+    NOT_DESTROYED();
+    return bitfields_.WhitespaceChildrenMayChange();
   }
 
   virtual void Paint(const PaintInfo&) const;
@@ -3019,7 +3056,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // See ../paint/README.md for more on fragments.
   const FragmentData& FirstFragment() const {
     NOT_DESTROYED();
-    return fragment_;
+    return *fragment_;
   }
 
   // Attempt to return the top/left fragment, to be used in block-fragmentation-
@@ -3044,8 +3081,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     NOT_DESTROYED();
     DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     if (LIKELY(!HasFlippedBlocksWritingMode() || !IsLayoutNGObject()))
-      return fragment_;
-    return fragment_.LastFragment();
+      return *fragment_;
+    return fragment_->LastFragment();
   }
 
   enum OverflowRecalcType {
@@ -3217,9 +3254,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           .SetShouldAssumePaintOffsetTranslationForLayoutShiftTracking(b);
     }
 
-    FragmentData& FirstFragment() { return layout_object_.fragment_; }
+    FragmentData& FirstFragment() { return *layout_object_.fragment_; }
 
-    void EnsureId() { layout_object_.fragment_.EnsureId(); }
+    void EnsureId() { layout_object_.fragment_->EnsureId(); }
 
    protected:
     friend class LayoutBoxModelObject;
@@ -3383,6 +3420,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetIsTableColumnsConstraintsDirty(b);
   }
 
+  bool IsGridPlacementDirty() const {
+    NOT_DESTROYED();
+    return bitfields_.IsGridPlacementDirty();
+  }
+
+  void SetGridPlacementDirty(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetIsGridPlacementDirty(b);
+  }
+
   DisplayLockContext* GetDisplayLockContext() const {
     NOT_DESTROYED();
     if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
@@ -3534,16 +3581,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return false;
   }
 
-  // While the |DeleteThis()| method is virtual, this should only be overridden
-  // in very rare circumstances.
-  // You want to override |WillBeDestroyed()| instead unless you explicitly need
-  // to stop this object from being destroyed (for example,
-  // |LayoutEmbeddedContent| overrides |DeleteThis()| for this purpose).
-  virtual void DeleteThis();
-
-  void SetBeingDestroyedForTesting() {
+  void SetDestroyedForTesting() {
     NOT_DESTROYED();
     bitfields_.SetBeingDestroyed(true);
+#if DCHECK_IS_ON()
+    is_destroyed_ = true;
+#endif
   }
 
   const ComputedStyle& SlowEffectiveStyle(NGStyleVariant style_variant) const;
@@ -3886,6 +3929,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           being_destroyed_(false),
           is_layout_ng_object_for_list_marker_image_(false),
           is_table_column_constraints_dirty_(false),
+          is_grid_placement_dirty_(false),
           transform_affects_vector_effect_(false),
           is_layout_ng_object_for_canvas_formatted_text(false),
           should_skip_next_layout_shift_tracking_(true),
@@ -3893,11 +3937,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
               false),
           might_traverse_physical_fragments_(false),
           is_anonymous_ng_multicol_inline_wrapper_(false),
+          whitespace_children_may_change_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
-          background_paint_location_(kBackgroundPaintInGraphicsLayer),
+          background_paint_location_(kBackgroundPaintInBorderBoxSpace),
           overflow_clip_axes_(kNoOverflowClip) {}
 
     // Self needs layout for style means that this layout object is marked for a
@@ -4187,6 +4232,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          HasNonCollapsedBorderDecoration);
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
+    // TODO(yukiy): Remove this bitfield
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);
 
     // From LayoutListMarkerImage
@@ -4197,6 +4243,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // When this flag is set, any cached constraints are invalid.
     ADD_BOOLEAN_BITFIELD(is_table_column_constraints_dirty_,
                          IsTableColumnsConstraintsDirty);
+
+    // Grid item placement is cached on LayoutNGGrid.
+    // When this flag is set, any cached item placements are invalid.
+    ADD_BOOLEAN_BITFIELD(is_grid_placement_dirty_, IsGridPlacementDirty);
 
     // For transformable SVG child objects, indicates if this object or any
     // descendant has special vector effect that is affected by transform on
@@ -4232,6 +4282,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(is_anonymous_ng_multicol_inline_wrapper_,
                          IsAnonymousNGMulticolInlineWrapper);
 
+    // True if children that may affect whitespace have been removed. If true
+    // during style recalc, mark ancestors for layout tree rebuild to cause a
+    // re-evaluation of whitespace children.
+    ADD_BOOLEAN_BITFIELD(whitespace_children_may_change_,
+                         WhitespaceChildrenMayChange);
+
    private:
     // This is the cached 'position' value of this object
     // (see ComputedStyle::position).
@@ -4242,8 +4298,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     unsigned subtree_paint_property_update_reasons_
         : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
 
-    // Updated during CompositingUpdate in pre-CompositeAfterPaint, or PrePaint
-    // in CompositeAfterPaint.
+    // For LayoutBox. Updated during CompositingUpdate in
+    // pre-CompositeAfterPaint, or PrePaint in CompositeAfterPaint.
     unsigned background_paint_location_ : 2;  // BackgroundPaintLocation.
 
     unsigned overflow_clip_axes_ : 2;
@@ -4357,20 +4413,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
  private:
   friend class LineLayoutItem;
+  friend class LocalFrameView;
 
   scoped_refptr<const ComputedStyle> style_;
 
-  // Oilpan: This untraced pointer to the owning Node is considered safe.
-  UntracedMember<Node> node_;
+  Member<Node> node_;
 
-  LayoutObject* parent_;
-  LayoutObject* previous_;
-  LayoutObject* next_;
+  Member<LayoutObject> parent_;
+  Member<LayoutObject> previous_;
+  Member<LayoutObject> next_;
+  Member<FragmentData> fragment_;
 
   // Store state between styleWillChange and styleDidChange
   static bool affects_parent_block_;
-
-  FragmentData fragment_;
 
 #if DCHECK_IS_ON()
   bool is_destroyed_ = false;

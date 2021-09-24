@@ -4,13 +4,13 @@
 
 import 'chrome://diagnostics/input_list.js';
 
-import {ConnectionType, KeyboardInfo, MechanicalLayout, PhysicalLayout, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/diagnostics_types.js';
+import {ConnectionType, KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TouchDeviceInfo, TouchDeviceType} from 'chrome://diagnostics/diagnostics_types.js';
 import {fakeKeyboards, fakeTouchDevices} from 'chrome://diagnostics/fake_data.js';
 import {FakeInputDataProvider} from 'chrome://diagnostics/fake_input_data_provider.js';
 import {setInputDataProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
 import {assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks} from '../../test_util.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 
@@ -69,6 +69,7 @@ export function inputListTestSuite() {
       physicalLayout: PhysicalLayout.kUnknown,
       mechanicalLayout: MechanicalLayout.kUnknown,
       hasAssistantKey: false,
+      numberPadPresent: NumberPadPresence.kUnknown,
     };
     return initializeInputList()
         .then(() => {

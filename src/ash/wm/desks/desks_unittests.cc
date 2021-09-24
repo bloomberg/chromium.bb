@@ -21,9 +21,9 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -114,17 +114,6 @@
 namespace ash {
 
 namespace {
-
-class TestShelfItemDelegate : public ShelfItemDelegate {
- public:
-  explicit TestShelfItemDelegate(const ShelfID& shelf_id)
-      : ShelfItemDelegate(shelf_id) {}
-  void ExecuteCommand(bool from_context_menu,
-                      int64_t command_id,
-                      int32_t event_flags,
-                      int64_t display_id) override {}
-  void Close() override {}
-};
 
 void NewDesk() {
   // Create a desk through keyboard. Do not use |kButton| to avoid empty name.
@@ -861,8 +850,10 @@ TEST_F(DesksTest, WindowStackingAfterWindowMoveToAnotherDesk) {
 
   // Moving |win2| should be enough to get its transient parent |win1| moved as
   // well.
-  desk_2->MoveWindowToDesk(win2.get(), desk_1, win1->GetRootWindow());
-  desk_2->MoveWindowToDesk(win3.get(), desk_1, win1->GetRootWindow());
+  desk_2->MoveWindowToDesk(win2.get(), desk_1, win1->GetRootWindow(),
+                           /*unminimize=*/true);
+  desk_2->MoveWindowToDesk(win3.get(), desk_1, win1->GetRootWindow(),
+                           /*unminimize=*/true);
   EXPECT_TRUE(IsStackedBelow(win1.get(), win2.get()));
   EXPECT_TRUE(IsStackedBelow(win2.get(), win0.get()));
   EXPECT_TRUE(IsStackedBelow(win0.get(), win3.get()));
@@ -1872,7 +1863,7 @@ class DesksWithMultiDisplayOverview : public AshTestBase {
     AshTestBase::SetUp();
 
     // Start the test with two displays and two desks.
-    UpdateDisplay("600x600,400x500");
+    UpdateDisplay("700x600,400x500");
     NewDesk();
   }
 };
@@ -1939,17 +1930,30 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
   EXPECT_EQ(grid1, overview_item->overview_grid());
   EXPECT_EQ(0u, grid2->size());
 
-  // Drag the item and drop it on the mini view of the second desk on the second
-  // display. The window should change desks as well as displays.
   const auto* desks_bar_view = grid2->desks_bar_view();
-  ASSERT_TRUE(desks_bar_view);
-  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
-  auto* event_generator = GetEventGenerator();
-  DragItemToPoint(overview_item,
-                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  event_generator,
-                  /*by_touch_gestures=*/false);
+  gfx::Point desk_2_mini_view_center =
+      desk_2_mini_view->GetBoundsInScreen().CenterPoint();
+  // When |features::kVerticalSnapState| is enabled, one of two drag indicators
+  // show up on the top instead of the left side of the display. Such top
+  // indicator pushes the desks bar down, so we need to drag the item to the
+  // area that triggers drag indicators without dropping first to get the
+  // updated position of the mini view before dropping the window on it.
+  DragItemToPoint(overview_item, desk_2_mini_view_center, GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/false);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  // Validate that before dropping, the SplitView indicators and the drop target
+  // widget are created.
+  EXPECT_EQ(
+      SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+      grid2->split_view_drag_indicators()->current_window_dragging_state());
+  desk_2_mini_view_center = desk_2_mini_view->GetBoundsInScreen().CenterPoint();
+  // Now drop the window to desk 2 mini view in the second display.
+  DragItemToPoint(overview_item, desk_2_mini_view_center, GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/true);
+
   // The item should no longer be in any grid, since it moved to an inactive
   // desk.
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -1977,7 +1981,7 @@ void VerifyDesksRestoreData(PrefService* user_prefs,
                             const std::vector<std::string>& desks_names) {
   const base::ListValue* desks_restore_names =
       user_prefs->GetList(prefs::kDesksNamesList);
-  ASSERT_EQ(desks_names.size(), desks_restore_names->GetSize());
+  ASSERT_EQ(desks_names.size(), desks_restore_names->GetList().size());
 
   size_t index = 0;
   for (const auto& value : desks_restore_names->GetList())
@@ -4176,7 +4180,7 @@ TEST_F(DesksTest, NameNudges) {
 // resides on the same DesksBarView as the clicked button should be focused.
 // See crbug.com/1206013.
 TEST_F(DesksTest, NameNudgesMultiDisplay) {
-  UpdateDisplay("800x800,800x800");
+  UpdateDisplay("800x700,800x700");
 
   // Start overview.
   EnterOverview();

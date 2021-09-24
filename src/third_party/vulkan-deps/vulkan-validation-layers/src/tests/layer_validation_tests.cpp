@@ -1567,7 +1567,7 @@ void OneOffDescriptorSet::WriteDescriptorBufferInfo(int binding, VkBuffer buffer
     descriptor_writes.emplace_back(descriptor_write);
 }
 
-void OneOffDescriptorSet::WriteDescriptorBufferView(int binding, VkBufferView &buffer_view, VkDescriptorType descriptorType,
+void OneOffDescriptorSet::WriteDescriptorBufferView(int binding, VkBufferView buffer_view, VkDescriptorType descriptorType,
                                                     uint32_t arrayElement, uint32_t count) {
     const auto index = buffer_views.size();
 
@@ -2236,8 +2236,14 @@ BarrierQueueFamilyBase::QueueFamilyObjs *BarrierQueueFamilyBase::GetQueueFamilyI
 void BarrierQueueFamilyTestHelper::operator()(std::string img_err, std::string buf_err, uint32_t src, uint32_t dst, bool positive,
                                               uint32_t queue_family_index, Modifier mod) {
     auto &monitor = context_->layer_test->Monitor();
-    if (img_err.length()) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, img_err);
-    if (buf_err.length()) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, buf_err);
+    const bool has_img_err = img_err.size() > 0;
+    const bool has_buf_err = buf_err.size() > 0;
+    if (has_img_err) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, img_err);
+    if (has_buf_err) monitor.SetDesiredFailureMsg(kErrorBit | kWarningBit, buf_err);
+    if (!(has_img_err || has_buf_err)) {
+        monitor.ExpectSuccess();
+        positive = true;
+    }
 
     image_barrier_.srcQueueFamilyIndex = src;
     image_barrier_.dstQueueFamilyIndex = dst;
@@ -3444,6 +3450,32 @@ void VkLayerTest::OOBRayTracingShadersTestBody(bool gpu_assisted) {
         }
         vk::DestroyPipeline(m_device->handle(), pipeline, nullptr);
     }
+}
+
+bool VkLayerTest::AddYCbCrDeviceExtensions() {
+    const bool supported = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME) &&
+                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME) &&
+                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME) &&
+                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+    if (supported) {
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
+    }
+    return supported;
+}
+
+bool VkLayerTest::AddImageDrmFormatModifierDeviceExtensions() {
+    const bool supported = AddYCbCrDeviceExtensions() &&
+                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME) &&
+                           DeviceExtensionSupported(gpu(), nullptr, VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
+    if (supported) {
+        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
+    }
+    return supported;
 }
 
 void VkSyncValTest::InitSyncValFramework() {

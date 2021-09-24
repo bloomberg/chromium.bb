@@ -13,10 +13,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/web_app_chromeos_data.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -162,13 +162,13 @@ void WebApp::SetDisplayMode(DisplayMode display_mode) {
 void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
   switch (user_display_mode) {
     case DisplayMode::kBrowser:
-      user_display_mode_ = DisplayMode::kBrowser;
+    case DisplayMode::kTabbed:
+      user_display_mode_ = user_display_mode;
       break;
     case DisplayMode::kUndefined:
     case DisplayMode::kMinimalUi:
     case DisplayMode::kFullscreen:
     case DisplayMode::kWindowControlsOverlay:
-    case DisplayMode::kTabbed:
       NOTREACHED();
       FALLTHROUGH;
     case DisplayMode::kStandalone:
@@ -209,7 +209,7 @@ void WebApp::SetIsUninstalling(bool is_uninstalling) {
   is_uninstalling_ = is_uninstalling;
 }
 
-void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
+void WebApp::SetIconInfos(std::vector<apps::IconInfo> icon_infos) {
   icon_infos_ = std::move(icon_infos);
 }
 
@@ -287,6 +287,10 @@ void WebApp::SetInstallTime(const base::Time& time) {
   install_time_ = time;
 }
 
+void WebApp::SetManifestUpdateTime(const base::Time& time) {
+  manifest_update_time_ = time;
+}
+
 void WebApp::SetRunOnOsLoginMode(RunOnOsLoginMode mode) {
   run_on_os_login_mode_ = mode;
 }
@@ -359,7 +363,7 @@ base::Value WebApp::SyncFallbackData::AsDebugValue() const {
   root.SetStringKey("scope", scope.spec());
   base::Value& icon_infos_json =
       *root.SetKey("icon_infos", base::Value(base::Value::Type::LIST));
-  for (const WebApplicationIconInfo& icon_info : icon_infos)
+  for (const apps::IconInfo& icon_info : icon_infos)
     icon_infos_json.Append(icon_info.AsDebugValue());
   return root;
 }
@@ -405,6 +409,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.last_badging_time_,
         app.last_launch_time_,
         app.install_time_,
+        app.manifest_update_time_,
         app.run_on_os_login_mode_,
         app.sync_fallback_data_,
         app.capture_links_,
@@ -543,6 +548,9 @@ base::Value WebApp::AsDebugValue() const {
   root.SetKey("launch_query_params", ConvertOptional(launch_query_params_));
 
   root.SetKey("manifest_id", ConvertOptional(manifest_id_));
+
+  root.SetStringKey("manifest_update_time",
+                    ConvertToString(manifest_update_time_));
 
   root.SetStringKey("manifest_url", ConvertToString(manifest_url_));
 

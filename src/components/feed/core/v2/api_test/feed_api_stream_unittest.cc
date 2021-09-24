@@ -401,24 +401,20 @@ TEST_F(FeedApiTest, BackgroundRefreshDiscoFeedEnabled) {
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
 }
 
-TEST_F(FeedApiTest, ForceRefreshForDebugging) {
+TEST_P(FeedStreamTestForAllStreamTypes, ForceRefreshForDebugging) {
   // WebFeed stream is only fetched when there's a subscription.
   network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
 
-  // Force a refresh that results in a successful load of both feed types.
-  response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  stream_->ForceRefreshForDebugging();
+  stream_->ForceRefreshForDebugging(GetStreamType());
 
   WaitForIdleTaskQueue();
 
   is_offline_ = true;
 
-  TestForYouSurface surface(stream_.get());
-  TestWebFeedSurface web_feed_surface(stream_.get());
+  TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
   EXPECT_EQ("2 slices", surface.DescribeState());
-  EXPECT_EQ("2 slices", web_feed_surface.DescribeState());
 }
 
 TEST_F(FeedApiTest, RefreshScheduleFlow) {
@@ -2540,18 +2536,6 @@ TEST_F(FeedApiTest, ManualRefreshFailesWhenLoadingInProgress) {
   EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
 }
 
-TEST_F(FeedApiTest, ForYouContentOrderUnset) {
-  response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestForYouSurface surface(stream_.get());
-  WaitForIdleTaskQueue();
-
-  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
-  EXPECT_EQ(
-      feedwire::FeedQuery::ContentOrder::
-          FeedQuery_ContentOrder_CONTENT_ORDER_UNSPECIFIED,
-      network_.query_request_sent->feed_request().feed_query().order_by());
-}
-
 TEST_F(FeedApiTest, StartSurface) {
   CreateStream(/*wait_for_initialization=*/true, /*start_surface=*/true);
   TestForYouSurface surface(stream_.get());
@@ -2584,7 +2568,19 @@ TEST_F(FeedApiTest, NoStartSurface) {
                    .start_surface());
 }
 
-TEST_F(FeedStreamTestForAllStreamTypes, ContentOrderIsGroupedByDefault) {
+TEST_F(FeedApiTest, ForYouContentOrderUnset) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  EXPECT_EQ(
+      feedwire::FeedQuery::ContentOrder::
+          FeedQuery_ContentOrder_CONTENT_ORDER_UNSPECIFIED,
+      network_.query_request_sent->feed_request().feed_query().order_by());
+}
+
+TEST_F(FeedApiTest, ContentOrderIsGroupedByDefault) {
   network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestWebFeedSurface surface(stream_.get());
@@ -2611,6 +2607,8 @@ TEST_F(FeedApiTest, SetContentOrderReloadsContent) {
   EXPECT_EQ(
       feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_RECENT,
       network_.query_request_sent->feed_request().feed_query().order_by());
+  EXPECT_EQ(ContentOrder::kReverseChron,
+            stream_->GetContentOrder(kWebFeedStream));
 }
 
 TEST_F(FeedApiTest, SetContentOrderIsSavedeNotRefreshedIfUnchanged) {
@@ -2629,6 +2627,7 @@ TEST_F(FeedApiTest, SetContentOrderIsSavedeNotRefreshedIfUnchanged) {
   // "Raw prefs" order value should have been updated.
   EXPECT_EQ(ContentOrder::kGrouped,
             feed::prefs::GetWebFeedContentOrder(profile_prefs_));
+  EXPECT_EQ(ContentOrder::kGrouped, stream_->GetContentOrder(kWebFeedStream));
 }
 
 TEST_F(FeedApiTest, ContentOrderIsFinchControllable) {
@@ -2647,6 +2646,8 @@ TEST_F(FeedApiTest, ContentOrderIsFinchControllable) {
   EXPECT_EQ(
       feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_RECENT,
       network_.query_request_sent->feed_request().feed_query().order_by());
+  EXPECT_EQ(ContentOrder::kReverseChron,
+            stream_->GetContentOrder(kWebFeedStream));
 }
 
 TEST_F(FeedApiTest, ContentOrderPrefOverridesFinch) {
@@ -2667,6 +2668,7 @@ TEST_F(FeedApiTest, ContentOrderPrefOverridesFinch) {
   EXPECT_EQ(
       feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_GROUPED,
       network_.query_request_sent->feed_request().feed_query().order_by());
+  EXPECT_EQ(ContentOrder::kGrouped, stream_->GetContentOrder(kWebFeedStream));
 }
 
 // Keep instantiations at the bottom.

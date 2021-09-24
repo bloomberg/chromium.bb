@@ -21,6 +21,10 @@
 #include "ios/web/public/test/element_selector.h"
 #include "net/base/mac/url_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
@@ -71,10 +75,6 @@ UIWindow* GetAnyKeyWindow() {
 #endif
 }
 }  // namespace chrome_test_util
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
@@ -685,8 +685,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
-  [ChromeEarlGreyAppInterface disableCloseAllTabsConfirmation];
-
   [ChromeEarlGrey showTabSwitcher];
   GREYWaitForAppToIdle(@"App failed to idle");
   [ChromeEarlGrey
@@ -696,8 +694,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGrey waitForAndTapButton:chrome_test_util::TabGridDoneButton()];
   [self waitForRestoreSessionToFinish];
   [self waitForPageToFinishLoading];
-
-  [ChromeEarlGreyAppInterface resetCloseAllTabsConfirmation];
 }
 
 - (BOOL)webStateWebViewUsesContentInset {
@@ -1219,8 +1215,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface areMultipleWindowsSupported];
 }
 
-- (BOOL)isCloseAllTabsConfirmationEnabled {
-  return [ChromeEarlGreyAppInterface isCloseAllTabsConfirmationEnabled];
+- (BOOL)isContextMenuActionsRefreshEnabled {
+  return [ChromeEarlGreyAppInterface isContextMenuActionsRefreshEnabled];
 }
 
 #pragma mark - ScopedBlockPopupsPref
@@ -1274,6 +1270,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   BOOL success = value && value->is_string();
   EG_TEST_HELPER_ASSERT_TRUE(success, @"Expected string");
   return success ? value->GetString() : "";
+}
+
+- (void)setIntegerValue:(int)value
+      forLocalStatePref:(const std::string&)prefName {
+  [ChromeEarlGreyAppInterface
+        setIntegerValue:value
+      forLocalStatePref:base::SysUTF8ToNSString(prefName)];
 }
 
 // Returns a base::Value representation of the requested pref.

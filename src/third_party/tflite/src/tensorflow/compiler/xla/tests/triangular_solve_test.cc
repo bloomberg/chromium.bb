@@ -17,6 +17,8 @@ limitations under the License.
 #include <numeric>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "tensorflow/compiler/xla/array.h"
 #include "tensorflow/compiler/xla/array2d.h"
 #include "tensorflow/compiler/xla/client/lib/math.h"
 #include "tensorflow/compiler/xla/client/lib/matrix.h"
@@ -28,6 +30,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/tests/literal_test_util.h"
 #include "tensorflow/compiler/xla/tests/test_macros.h"
 #include "tensorflow/compiler/xla/types.h"
+#include "tensorflow/compiler/xla/xla_data.pb.h"
 #include "tensorflow/core/lib/core/status_test_util.h"
 
 namespace xla {
@@ -419,7 +422,7 @@ XLA_TEST_F(TriangularSolveTest, BatchedLeftUpper) {
 
   // Set avals to the upper triangle of bvals.
   Array3D<float> avals = bvals;
-  avals.Each([](absl::Span<const int64> indices, float* value) {
+  avals.Each([](absl::Span<const int64_t> indices, float* value) {
     if (indices[1] > indices[2]) {
       *value = 0;
     }
@@ -440,7 +443,7 @@ XLA_TEST_F(TriangularSolveTest, BatchedLeftUpper) {
 }
 
 struct TriangularSolveTestSpec {
-  int m, n;  // A is mxm, B is mxn
+  std::vector<int64_t> dims;  // [..., m, n] A is mxm, B is mxn
   bool left_side;
   bool lower;
   TriangularSolveOptions::Transpose transpose_a;
@@ -455,45 +458,59 @@ XLA_TEST_P(TriangularSolveParametricTest, Random) {
 
   XlaBuilder builder(TestName());
 
-  Array2D<float> avals(spec.m, spec.m);
+  CHECK_GE(spec.dims.size(), 2);
+  std::vector<int64_t> a_dims = spec.dims;
+  a_dims.back() = a_dims.at(a_dims.size() - 2);
+  Array<float> avals(a_dims);
   avals.FillRandom(1.0);
-  for (int i = 0; i < spec.m; ++i) {
-    avals(i, i) += 30;
-  }
+  avals.Each([](absl::Span<const int64_t> dims, float* v) {
+    if (dims.back() == dims.at(dims.size() - 2)) {
+      *v += 30;
+    }
+  });
 
-  std::pair<int, int> bdims = spec.left_side ? std::make_pair(spec.m, spec.n)
-                                             : std::make_pair(spec.n, spec.m);
-  Array2D<float> bvals(bdims.first, bdims.second);
+  std::vector<int64_t> b_dims = spec.dims;
+  if (!spec.left_side) {
+    std::swap(b_dims.back(), b_dims.at(b_dims.size() - 2));
+  }
+  Array<float> bvals(b_dims);
   bvals.FillRandom(1.0);
 
   XlaOp a, b;
-  auto a_data = CreateR2Parameter<float>(avals, 0, "a", &builder, &a);
-  auto b_data = CreateR2Parameter<float>(bvals, 1, "b", &builder, &b);
+  auto a_data = CreateParameter<float>(avals, 0, "a", &builder, &a);
+  auto b_data = CreateParameter<float>(bvals, 1, "b", &builder, &b);
   auto x = TriangularSolve(a, b, spec.left_side, spec.lower,
                            /*unit_diagonal=*/false, spec.transpose_a);
   auto a_tri = Triangle(a, spec.lower);
   a_tri = MaybeTransposeInMinorDims(
       a_tri, spec.transpose_a != TriangularSolveOptions::NO_TRANSPOSE);
   if (spec.left_side) {
-    BatchDot(a_tri, x);
+    BatchDot(a_tri, x, xla::PrecisionConfig::HIGHEST);
   } else {
-    BatchDot(x, a_tri);
+    BatchDot(x, a_tri, xla::PrecisionConfig::HIGHEST);
   }
 
-  ComputeAndCompareR2<float>(&builder, bvals, {a_data.get(), b_data.get()},
-                             ErrorSpec(3e-2, 3e-2));
+  ComputeAndCompare<float>(&builder, bvals, {a_data.get(), b_data.get()},
+                           ErrorSpec(3e-2, 3e-2));
 }
 
 std::vector<TriangularSolveTestSpec> TriangularSolveTests() {
   std::vector<TriangularSolveTestSpec> specs;
-  for (int m : {5, 10, 150}) {
-    for (int n : {5, 10, 150}) {
-      for (bool left_side : {false, true}) {
-        for (bool lower : {false, true}) {
-          for (TriangularSolveOptions::Transpose transpose_a :
-               {TriangularSolveOptions::NO_TRANSPOSE,
-                TriangularSolveOptions::TRANSPOSE}) {
-            specs.push_back({m, n, left_side, lower, transpose_a});
+  for (auto batch : {std::vector<int64_t>{}, std::vector<int64_t>{1},
+                     std::vector<int64_t>{5}, std::vector<int64_t>{65},
+                     std::vector<int64_t>{129}}) {
+    for (int m : {5, 10, 150}) {
+      for (int n : {5, 150}) {
+        for (bool left_side : {false, true}) {
+          for (bool lower : {false, true}) {
+            for (TriangularSolveOptions::Transpose transpose_a :
+                 {TriangularSolveOptions::NO_TRANSPOSE,
+                  TriangularSolveOptions::TRANSPOSE}) {
+              std::vector<int64_t> dims(batch.begin(), batch.end());
+              dims.push_back(m);
+              dims.push_back(n);
+              specs.push_back({dims, left_side, lower, transpose_a});
+            }
           }
         }
       }
@@ -502,9 +519,18 @@ std::vector<TriangularSolveTestSpec> TriangularSolveTests() {
   return specs;
 }
 
-INSTANTIATE_TEST_SUITE_P(TriangularSolveParametricTestInstantiation,
-                         TriangularSolveParametricTest,
-                         ::testing::ValuesIn(TriangularSolveTests()));
+INSTANTIATE_TEST_SUITE_P(
+    TriangularSolveParametricTestInstantiation, TriangularSolveParametricTest,
+    ::testing::ValuesIn(TriangularSolveTests()),
+    [](const ::testing::TestParamInfo<TriangularSolveTestSpec>& info) {
+      const TriangularSolveTestSpec& spec = info.param;
+      std::string name = absl::StrCat(
+          absl::StrJoin(spec.dims, "_"), "_", spec.left_side ? "left" : "right",
+          "_", spec.lower ? "lower" : "upper", "_",
+          absl::AsciiStrToLower(
+              TriangularSolveOptions_Transpose_Name(spec.transpose_a)));
+      return name;
+    });
 
 }  // namespace
 }  // namespace xla

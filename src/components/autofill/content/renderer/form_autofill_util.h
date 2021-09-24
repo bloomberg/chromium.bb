@@ -32,6 +32,7 @@ class WebDocument;
 class WebElement;
 class WebFormControlElement;
 class WebFormElement;
+class WebFrame;
 class WebInputElement;
 class WebLocalFrame;
 class WebNode;
@@ -142,7 +143,6 @@ bool AreFormContentsVisible(const blink::WebFormElement& form);
 // origin. The action will proplerly take into account <BASE>, and both will
 // strip unnecessary data (e.g. query params and HTTP credentials).
 GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
-GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
 GURL GetDocumentUrlWithoutAuth(const blink::WebDocument& document);
 
 // Returns true if |element| is a month input element.
@@ -173,13 +173,20 @@ bool IsAutofillableElement(const blink::WebFormControlElement& element);
 // descendant has a non-empty bounding bounding client rect.
 bool IsWebElementVisible(const blink::WebElement& element);
 
+// The number of edges from |frame| to its main frame.
+size_t GetFrameDepth(const blink::WebFrame* frame);
+
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
 std::u16string GetFormIdentifier(const blink::WebFormElement& form);
 
-// Returns the |unique_renderer_id| of a given |WebFormElement|. If
-// |WebFormElement::IsNull()|, returns a null renderer ID.
+// Returns the FormRendererId of a given WebFormElement. If
+// WebFormElement::IsNull(), returns a null form renderer id, which is the
+// renderer id of the unowned form.
 FormRendererId GetFormRendererId(const blink::WebFormElement& form);
+
+// Returns the FieldRendererId of a given WebFormControlElement.
+FieldRendererId GetFieldRendererId(const blink::WebFormControlElement& field);
 
 // Returns text alignment for |element|.
 base::i18n::TextDirection GetTextDirectionForElement(
@@ -354,26 +361,26 @@ blink::WebFormControlElement FindFormControlElementByUniqueRendererId(
 // Alternative solutions have been discussed on https://crrev.com/c/1108201.
 
 // Returns form control elements identified by the given unique renderer IDs.
-// The result has the same number of elements as |form_control_renderer_ids| and
+// The result has the same number of elements as |queried_form_controls| and
 // the i-th element of the result corresponds to the i-th element of
-// |form_control_renderer_ids|. The call of this function might be time
+// |queried_form_controls|. The call of this function might be time
 // expensive, because it retrieves all DOM elements.
 std::vector<blink::WebFormControlElement>
 FindFormControlElementsByUniqueRendererId(
     blink::WebDocument doc,
-    const std::vector<FieldRendererId>& form_control_renderer_ids);
+    const std::vector<FieldRendererId>& queried_form_controls);
 
 // Returns form control elements by unique renderer id from the form with
 // |form_renderer_id|. The result has the same number elements as
-// |form_control_renderer_ids| and the i-th element of the result corresponds to
-// the i-th element of |form_control_renderer_ids|. This function is faster than
+// |queried_form_controls| and the i-th element of the result corresponds to
+// the i-th element of |queried_form_controls|. This function is faster than
 // the previous one, because it only retrieves form control elements from a
 // single form.
 std::vector<blink::WebFormControlElement>
 FindFormControlElementsByUniqueRendererId(
     blink::WebDocument doc,
     FormRendererId form_renderer_id,
-    const std::vector<FieldRendererId>& form_control_renderer_ids);
+    const std::vector<FieldRendererId>& queried_form_controls);
 
 // Returns the ARIA label text of the elements denoted by the aria-labelledby
 // attribute of |element| or the value of the aria-label attribute of

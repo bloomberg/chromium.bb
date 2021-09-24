@@ -23,6 +23,8 @@ extern const base::Feature kCupsIppPrintingBackend;
 
 #if defined(OS_WIN)
 COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::Feature kPrintWithPostScriptType42Fonts;
+COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kPrintWithReducedRasterization;
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kUseXpsForPrinting;
@@ -43,6 +45,8 @@ bool ShouldPrintUsingXps(bool source_is_pdf);
     defined(OS_CHROMEOS)
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kEnableOopPrintDrivers;
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::FeatureParam<bool> kEnableOopPrintDriversJobPrint;
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

@@ -469,7 +469,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
   EXPECT_FALSE(url_loader_interceptor.did_bypass_cache(icon_url));
   url_loader_interceptor.Reset();
 
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
   // A normal visit should fetch the favicon from either the favicon database or
   // the HTTP cache.
@@ -478,6 +479,17 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url, WindowOpenDisposition::CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_NONE);
+    waiter.Wait();
+  }
+  EXPECT_FALSE(url_loader_interceptor.did_bypass_cache(icon_url));
+  ASSERT_EQ(network::mojom::RequestDestination::kImage,
+            url_loader_interceptor.destination(icon_url));
+  url_loader_interceptor.Reset();
+
+  // A regular reload should not refetch the favicon from the website.
+  {
+    PendingTaskWaiter waiter(web_contents());
+    chrome::ExecuteCommand(browser(), IDC_RELOAD);
     waiter.Wait();
   }
   EXPECT_FALSE(url_loader_interceptor.did_bypass_cache(icon_url));
@@ -937,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
   TestURLLoaderInterceptor url_interceptor;
 
   PendingTaskWaiter waiter(web_contents());
-  ui_test_utils::NavigateToURL(browser(), favicon_page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), favicon_page));
   console_observer.Wait();
   waiter.Wait();
 
@@ -965,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
   TestURLLoaderInterceptor url_interceptor;
 
   PendingTaskWaiter waiter(web_contents());
-  ui_test_utils::NavigateToURL(browser(), favicon_page);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), favicon_page));
   waiter.Wait();
 
   EXPECT_TRUE(url_interceptor.was_loaded(favicon_url));
@@ -979,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, SVGFavicon) {
       embedded_test_server()->GetURL("/favicon/page_with_svg_favicon.html");
 
   PendingTaskWaiter waiter(web_contents());
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   waiter.Wait();
 
   auto result = GetFaviconForPageURL(url, favicon_base::IconType::kFavicon, 16);
@@ -1006,7 +1018,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
   }
   ASSERT_TRUE(url_loader_interceptor.was_loaded(icon_url));
   url_loader_interceptor.Reset();
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
   // A normal visit should fetch the favicon from the favicon database.
   {
@@ -1018,7 +1031,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
   }
   ASSERT_FALSE(url_loader_interceptor.was_loaded(icon_url));
   url_loader_interceptor.Reset();
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
   // Clear cache.
   {
@@ -1063,7 +1077,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
   }
   ASSERT_TRUE(url_loader_interceptor.was_loaded(icon_url));
   url_loader_interceptor.Reset();
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
   // Visiting the site in incognito mode should always load the favicon.
   Browser* incognito = Browser::Create(Browser::CreateParams(

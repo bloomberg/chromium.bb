@@ -311,6 +311,14 @@ namespace dawn_native {
                 "disabled on Metal.");
         }
 
+        if (device->IsToggleEnabled(Toggle::DisableR8RG8Mipmaps) && descriptor->mipLevelCount > 1 &&
+            (descriptor->format == wgpu::TextureFormat::R8Unorm ||
+             descriptor->format == wgpu::TextureFormat::RG8Unorm)) {
+            return DAWN_VALIDATION_ERROR(
+                "https://crbug.com/dawn/1071: r8unorm and rg8unorm textures with more than one mip "
+                "level are disabled on Metal.");
+        }
+
         return {};
     }
 
@@ -433,7 +441,7 @@ namespace dawn_native {
     TextureBase::TextureBase(DeviceBase* device,
                              const TextureDescriptor* descriptor,
                              TextureState state)
-        : ObjectBase(device),
+        : ObjectBase(device, descriptor->label),
           mDimension(descriptor->dimension),
           mFormat(device->GetValidInternalFormat(descriptor->format)),
           mSize(descriptor->size),
@@ -678,7 +686,7 @@ namespace dawn_native {
     // TextureViewBase
 
     TextureViewBase::TextureViewBase(TextureBase* texture, const TextureViewDescriptor* descriptor)
-        : ObjectBase(texture->GetDevice()),
+        : ObjectBase(texture->GetDevice(), kLabelNotImplemented),
           mTexture(texture),
           mFormat(GetDevice()->GetValidInternalFormat(descriptor->format)),
           mDimension(descriptor->dimension),

@@ -812,7 +812,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kVisible ||
              value_id == CSSValueID::kHidden ||
              value_id == CSSValueID::kCollapse;
-    case CSSPropertyID::kWebkitAppRegion:
+    case CSSPropertyID::kAppRegion:
       return (value_id >= CSSValueID::kDrag &&
               value_id <= CSSValueID::kNoDrag) ||
              value_id == CSSValueID::kNone;
@@ -916,6 +916,12 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kNone;
     case CSSPropertyID::kFontOpticalSizing:
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
+    case CSSPropertyID::kFontSynthesisWeight:
+      DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
+    case CSSPropertyID::kFontSynthesisStyle:
+      DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
     case CSSPropertyID::kWebkitFontSmoothing:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
@@ -1076,7 +1082,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kUnicodeBidi:
     case CSSPropertyID::kVectorEffect:
     case CSSPropertyID::kVisibility:
-    case CSSPropertyID::kWebkitAppRegion:
+    case CSSPropertyID::kAppRegion:
     case CSSPropertyID::kBackfaceVisibility:
     case CSSPropertyID::kBorderBlockEndStyle:
     case CSSPropertyID::kBorderBlockStartStyle:
@@ -1093,6 +1099,8 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kFlexWrap:
     case CSSPropertyID::kFontKerning:
     case CSSPropertyID::kFontOpticalSizing:
+    case CSSPropertyID::kFontSynthesisWeight:
+    case CSSPropertyID::kFontSynthesisStyle:
     case CSSPropertyID::kWebkitFontSmoothing:
     case CSSPropertyID::kLineBreak:
     case CSSPropertyID::kWebkitLineBreak:

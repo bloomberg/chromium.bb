@@ -238,7 +238,7 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
       return [];
     }
 
-    const listeners = await this.agent.invoke_getEventListeners({objectId: (remoteObject.objectId as string)});
+    const listeners = await this.agent.invoke_getEventListeners({objectId: remoteObject.objectId});
     const eventListeners = [];
     for (const payload of listeners.listeners || []) {
       const location = this.runtimeModelInternal.debuggerModel().createRawLocationByScriptId(
@@ -382,7 +382,7 @@ export class DOMDebuggerModel extends SDKModel<EventTypes> {
           type: Protocol.DOMDebugger.DOMBreakpointType,
           enabled: boolean,
         },
-        nodeId: number|null): void {
+        nodeId: Protocol.DOM.NodeId|null): void {
       const node = nodeId ? this.domModel.nodeForId(nodeId) : null;
       if (!node) {
         return;

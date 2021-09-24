@@ -16,7 +16,7 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/tessellate/GrTessellationPathRenderer.h"
+#include "src/gpu/ops/TessellationPathRenderer.h"
 
 static constexpr float kStrokeWidth = 100;
 static constexpr int kTestWidth = 120 * 4;
@@ -125,13 +125,13 @@ class WideButtCaps_tess_segs_5 : public skiagm::GM {
         }
 
         if (!dContext->priv().caps()->shaderCaps()->tessellationSupport() ||
-            !GrTessellationPathRenderer::IsSupported(*dContext->priv().caps())) {
+            !skgpu::v1::TessellationPathRenderer::IsSupported(*dContext->priv().caps())) {
             errorMsg->set("Tessellation not supported.");
             return DrawResult::kSkip;
         }
         auto opts = dContext->priv().drawingManager()->testingOnly_getOptionsForPathRendererChain();
         if (!(opts.fGpuPathRenderers & GpuPathRenderers::kTessellation)) {
-            errorMsg->set("GrTessellationPathRenderer disabled.");
+            errorMsg->set("TessellationPathRenderer disabled.");
             return DrawResult::kSkip;
         }
         if (dContext->priv().caps()->shaderCaps()->maxTessellationSegments() !=

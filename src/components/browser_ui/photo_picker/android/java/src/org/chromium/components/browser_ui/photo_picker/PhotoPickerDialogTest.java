@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.view.View;
@@ -35,6 +34,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.components.browser_ui.test.DummyUiComponentsActivityTestCase;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
@@ -46,7 +46,6 @@ import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.RenderTestRule;
 
 import java.io.File;
@@ -59,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class PhotoPickerDialogTest extends DummyUiActivityTestCase
+public class PhotoPickerDialogTest extends DummyUiComponentsActivityTestCase
         implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                    DecoderServiceHost.DecoderStatusCallback,
                    PickerVideoPlayer.VideoPlaybackStatusCallback, AnimationListener {
@@ -617,12 +616,12 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
 
     @Test
     @LargeTest
-    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q,
-            supported_abis_includes = "x86", message = "https://crbug.com/1205234")
     public void testOrientationChanges() throws Throwable {
         setupTestFiles();
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         Assert.assertTrue(mDialog.isShowing());
+
+        int callCount = mOnDecoderReadyCallback.getCallCount();
 
         // Simulate an early configuration change for the photo grid.
         Configuration configuration = getActivity().getResources().getConfiguration();
@@ -630,7 +629,8 @@ public class PhotoPickerDialogTest extends DummyUiActivityTestCase
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { categoryView.onConfigurationChanged(configuration); });
 
-        waitForDecoder();
+        mOnDecoderReadyCallback.waitForCallback(
+                callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // Simulate an early configuration change for the video player (before showing).
         TestThreadUtils.runOnUiThreadBlocking(() -> {

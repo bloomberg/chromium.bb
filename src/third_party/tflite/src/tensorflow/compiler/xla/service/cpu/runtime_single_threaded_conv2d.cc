@@ -19,18 +19,17 @@ limitations under the License.
 #include "tensorflow/core/platform/dynamic_annotations.h"
 #include "tensorflow/core/platform/types.h"
 
-using tensorflow::int64;
-
 TF_ATTRIBUTE_NO_SANITIZE_MEMORY void
 __xla_cpu_runtime_EigenSingleThreadedConvF16(
     const void* run_options_ptr, Eigen::half* out, Eigen::half* lhs,
-    Eigen::half* rhs, int64 input_batch, int64 input_rows, int64 input_cols,
-    int64 input_channels, int64 kernel_rows, int64 kernel_cols,
-    int64 kernel_channels, int64 kernel_filters, int64 output_rows,
-    int64 output_cols, int64 row_stride, int64 col_stride, int64 padding_top,
-    int64 padding_bottom, int64 padding_left, int64 padding_right,
-    int64 lhs_row_dilation, int64 lhs_col_dilation, int64 rhs_row_dilation,
-    int64 rhs_col_dilation) {
+    Eigen::half* rhs, int64_t input_batch, int64_t input_rows,
+    int64_t input_cols, int64_t input_channels, int64_t kernel_rows,
+    int64_t kernel_cols, int64_t kernel_channels, int64_t kernel_filters,
+    int64_t output_rows, int64_t output_cols, int64_t row_stride,
+    int64_t col_stride, int64_t padding_top, int64_t padding_bottom,
+    int64_t padding_left, int64_t padding_right, int64_t lhs_row_dilation,
+    int64_t lhs_col_dilation, int64_t rhs_row_dilation,
+    int64_t rhs_col_dilation) {
   tensorflow::xla::EigenConvImpl(
       Eigen::DefaultDevice(), out, lhs, rhs, input_batch, input_rows,
       input_cols, input_channels, kernel_rows, kernel_cols, kernel_channels,
@@ -42,12 +41,13 @@ __xla_cpu_runtime_EigenSingleThreadedConvF16(
 TF_ATTRIBUTE_NO_SANITIZE_MEMORY void
 __xla_cpu_runtime_EigenSingleThreadedConvF32(
     const void* run_options_ptr, float* out, float* lhs, float* rhs,
-    int64 input_batch, int64 input_rows, int64 input_cols, int64 input_channels,
-    int64 kernel_rows, int64 kernel_cols, int64 kernel_channels,
-    int64 kernel_filters, int64 output_rows, int64 output_cols,
-    int64 row_stride, int64 col_stride, int64 padding_top, int64 padding_bottom,
-    int64 padding_left, int64 padding_right, int64 lhs_row_dilation,
-    int64 lhs_col_dilation, int64 rhs_row_dilation, int64 rhs_col_dilation) {
+    int64_t input_batch, int64_t input_rows, int64_t input_cols,
+    int64_t input_channels, int64_t kernel_rows, int64_t kernel_cols,
+    int64_t kernel_channels, int64_t kernel_filters, int64_t output_rows,
+    int64_t output_cols, int64_t row_stride, int64_t col_stride,
+    int64_t padding_top, int64_t padding_bottom, int64_t padding_left,
+    int64_t padding_right, int64_t lhs_row_dilation, int64_t lhs_col_dilation,
+    int64_t rhs_row_dilation, int64_t rhs_col_dilation) {
   tensorflow::xla::EigenConvImpl(
       Eigen::DefaultDevice(), out, lhs, rhs, input_batch, input_rows,
       input_cols, input_channels, kernel_rows, kernel_cols, kernel_channels,

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.content_creation.notes.top_bar.TopBarCoordina
 import org.chromium.chrome.browser.content_creation.notes.top_bar.TopBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.ChromeShareExtras.DetailedContentType;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
@@ -158,10 +159,12 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
                                     .build();
 
                     long shareStartTime = System.currentTimeMillis();
-                    ChromeShareExtras extras = new ChromeShareExtras.Builder()
-                                                       .setSkipPageSharingActions(true)
-                                                       .setContentUrl(new GURL(mShareUrl))
-                                                       .build();
+                    ChromeShareExtras extras =
+                            new ChromeShareExtras.Builder()
+                                    .setSkipPageSharingActions(true)
+                                    .setContentUrl(new GURL(mShareUrl))
+                                    .setDetailedContentType(DetailedContentType.WEB_NOTES)
+                                    .build();
 
                     // Dismiss current dialog before showing the share sheet.
                     this.dismiss();
@@ -229,7 +232,8 @@ public class NoteCreationCoordinatorImpl implements NoteCreationCoordinator, Top
         long shareStartTime = System.currentTimeMillis();
         ChromeShareExtras extras = new ChromeShareExtras.Builder()
                                            .setSkipPageSharingActions(true)
-                                           .setContentUrl(new GURL(mShareUrl))
+                                           .setContentUrl(new GURL(noteUrl))
+                                           .setDetailedContentType(DetailedContentType.WEB_NOTES)
                                            .build();
 
         // Dismiss current dialog before showing the share sheet.

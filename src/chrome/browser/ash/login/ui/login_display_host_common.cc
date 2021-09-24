@@ -5,7 +5,9 @@
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -21,7 +23,6 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/login_feedback.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
-#include "chrome/browser/ash/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -169,7 +170,8 @@ bool IsAuthError(SigninError error) {
 
 LoginDisplayHostCommon::LoginDisplayHostCommon()
     : keep_alive_(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
-                  KeepAliveRestartOption::DISABLED) {
+                  KeepAliveRestartOption::DISABLED),
+      wizard_context_(std::make_unique<WizardContext>()) {
   // Close the login screen on NOTIFICATION_APP_TERMINATING (for the case where
   // shutdown occurs before login completes).
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
@@ -369,7 +371,6 @@ void LoginDisplayHostCommon::ResyncUserData() {
 }
 
 bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
-  DCHECK(GetOobeUI());
   if (action == LoginAcceleratorAction::kShowFeedback) {
     login_feedback_ = std::make_unique<LoginFeedback>(
         ProfileHelper::Get()->GetSigninProfile());
@@ -391,20 +392,24 @@ bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
     return true;
   }
 
-  if (GetWizardController() && GetWizardController()->is_initialized()) {
-    if (GetWizardController()->HandleAccelerator(action))
-      return true;
+  // This path should only handle screen-specific acceletators, so we do not
+  // need to create WebUI here.
+  if (IsWizardControllerCreated() &&
+      GetWizardController()->HandleAccelerator(action)) {
+    return true;
   }
-  // TODO(crbug.com/1102393): Remove once all accelerators handling is migrated
-  // to browser side.
-  GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  // There are currently no global accelerators for the lock screen that
+  // require WebUI. So we do not need to specifically load it when user is
+  // logged in.
+  if (GetOobeUI() || (!MapToWebUIAccelerator(action).empty() &&
+                      !user_manager::UserManager::Get()->IsUserLoggedIn())) {
+    // Ensure WebUI is loaded.
+    GetWizardController();
+    // TODO(crbug.com/1102393): Remove once all accelerators handling is
+    // migrated to browser side.
+    GetOobeUI()->ForwardAccelerator(MapToWebUIAccelerator(action));
+  }
   return true;
-}
-
-SigninUI* LoginDisplayHostCommon::GetSigninUI() {
-  if (!GetWizardController())
-    return nullptr;
-  return this;
 }
 
 void LoginDisplayHostCommon::StartUserOnboarding() {
@@ -428,14 +433,13 @@ void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
   if (PinSetupScreen::ShouldSkipBecauseOfPolicy())
     return;
-  // WizardController may not be initialized in the WebUI login display host.
-  if (GetWizardController())
-    GetWizardController()->SetAuthSessionForOnboarding(user_context);
+
+  wizard_context_->extra_factors_auth_session =
+      std::make_unique<UserContext>(user_context);
 }
 
 void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
-  if (GetWizardController())
-    GetWizardController()->ClearOnboardingAuthSession();
+  wizard_context_->extra_factors_auth_session.reset();
 }
 
 void LoginDisplayHostCommon::StartEncryptionMigration(
@@ -499,6 +503,10 @@ void LoginDisplayHostCommon::ShowSigninError(SigninError error,
   StartWizard(SignInFatalErrorView::kScreenId);
 }
 
+WizardContext* LoginDisplayHostCommon::GetWizardContextForTesting() {
+  return wizard_context();
+}
+
 void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {
   VLOG(4) << "OnBrowserAdded " << session_starting_;
   // Browsers created before session start (windows opened by extensions, for
@@ -549,8 +557,6 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     LoadSigninWallpaper();
   }
 
-  DCHECK(GetWizardController());
-
   SetGaiaInputMethods(prefilled_account);
 
   if (!prefilled_account.is_valid()) {
@@ -562,8 +568,15 @@ void LoginDisplayHostCommon::ShowGaiaDialogCommon(
   }
 }
 
-void LoginDisplayHostCommon::ShowOsInstallScreen() {
-  StartWizard(OsInstallScreenView::kScreenId);
+void LoginDisplayHostCommon::AddWizardCreatedObserverForTests(
+    base::RepeatingClosure on_created) {
+  DCHECK(!on_wizard_controller_created_for_tests_);
+  on_wizard_controller_created_for_tests_ = std::move(on_created);
+}
+
+void LoginDisplayHostCommon::NotifyWizardCreated() {
+  if (on_wizard_controller_created_for_tests_)
+    on_wizard_controller_created_for_tests_.Run();
 }
 
 void LoginDisplayHostCommon::Cleanup() {

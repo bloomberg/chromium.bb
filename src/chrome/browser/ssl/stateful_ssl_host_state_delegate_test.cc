@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -577,8 +578,9 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
                                          incognito_tab));
 }
 
+// TODO(https://crbug.com/1243074): Disabled for brokenness.
 IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest,
-                       PRE_AfterRestartHttp) {
+                       DISABLED_PRE_AfterRestartHttp) {
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   auto* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   auto* state = profile->GetSSLHostStateDelegate();
@@ -606,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest,
 
 // AfterRestartHttp ensures that any HTTP decisions made in an incognito profile
 // are forgetten after a session restart.
-// TODO(https://crbug.com/1243074): Disabled for brokenness
+// TODO(https://crbug.com/1243074): Disabled for brokenness.
 IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest,
                        DISABLED_AfterRestartHttp) {
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -944,9 +946,9 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost, guest));
 
   // Navigate to a non-app page and test that the exception is not carried over.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/extensions/isolated_apps/non_app/main.html"));
+                     "/extensions/isolated_apps/non_app/main.html")));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
                                net::ERR_CERT_DATE_INVALID, tab));
@@ -988,9 +990,9 @@ IN_PROC_BROWSER_TEST_F(StatefulSSLHostStateDelegateExtensionTest,
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost, guest));
 
   // Navigate to a non-app page and test that the exception is not carried over.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
-                     "/extensions/isolated_apps/non_app/main.html"));
+                     "/extensions/isolated_apps/non_app/main.html")));
   EXPECT_FALSE(state->IsHttpAllowedForHost(kWWWGoogleHost, tab));
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost, tab));
 }

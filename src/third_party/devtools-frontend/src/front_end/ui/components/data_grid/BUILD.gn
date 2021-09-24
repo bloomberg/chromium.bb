@@ -31,6 +31,7 @@ devtools_module("data_grid") {
     "../../../core/platform:bundle",
     "../../../models/text_utils:bundle",
     "../../../ui/components/helpers:bundle",
+    "../../../ui/components/icon_button:bundle",
     "../../../ui/components/render_coordinator:bundle",
     "../../../ui/legacy:bundle",
     "../../../ui/lit-html:bundle",
@@ -45,6 +46,7 @@ devtools_entrypoint("bundle") {
   deps = [
     ":css_files",
     ":data_grid",
+    "../../../ui/legacy:css_files",
   ]
 
   visibility = default_components_visibility

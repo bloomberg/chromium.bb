@@ -50,7 +50,7 @@ export class ReadLaterAppElement extends PolymerElement {
       /** @private {!readLater.mojom.CurrentPageActionButtonState} */
       currentPageActionButtonState_: {
         type: Number,
-        value: readLater.mojom.CurrentPageActionButtonState.kAdd,
+        value: readLater.mojom.CurrentPageActionButtonState.kDisabled,
       },
 
       /** @type {boolean} */
@@ -95,6 +95,7 @@ export class ReadLaterAppElement extends PolymerElement {
     // If added in a visible state update current read later items.
     if (document.visibilityState === 'visible') {
       this.updateReadLaterEntries_();
+      this.apiProxy_.updateCurrentPageActionButtonState();
     }
   }
 

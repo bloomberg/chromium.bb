@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -21,10 +22,12 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/updater/constants.h"
@@ -132,6 +135,28 @@ void RunWake(UpdaterScope scope, int expected_exit_code) {
   EXPECT_EQ(exit_code, expected_exit_code);
 }
 
+void Update(const std::string& app_id) {
+  // CreateUpdateService implicitly relies on GetUpdaterScope.
+  scoped_refptr<UpdateService> update_service = CreateUpdateService();
+  base::RunLoop loop;
+  update_service->Update(
+      app_id, UpdateService::Priority::kForeground, base::DoNothing(),
+      base::BindOnce(base::BindLambdaForTesting(
+          [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
+  loop.Run();
+}
+
+void UpdateAll() {
+  // CreateUpdateService implicitly relies on GetUpdaterScope.
+  scoped_refptr<UpdateService> update_service = CreateUpdateService();
+  base::RunLoop loop;
+  update_service->UpdateAll(
+      base::DoNothing(),
+      base::BindOnce(base::BindLambdaForTesting(
+          [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
+  loop.Run();
+}
+
 void SetupFakeUpdaterPrefs(const base::Version& version) {
   scoped_refptr<GlobalPrefs> global_prefs =
       CreateGlobalPrefs(GetUpdaterScope());
@@ -201,6 +226,14 @@ void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {
             persisted_data->GetExistenceCheckerPath(app_id).value());
 }
 
+void ExpectAppVersion(UpdaterScope scope,
+                      const std::string& app_id,
+                      const base::Version& version) {
+  EXPECT_EQ(version, base::MakeRefCounted<PersistedData>(
+                         CreateGlobalPrefs(scope)->GetPrefService())
+                         ->GetProductVersion(app_id));
+}
+
 bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
   command_line.AppendSwitch(kEnableLoggingSwitch);
@@ -229,6 +262,17 @@ void SleepFor(int seconds) {
       base::TimeDelta::FromSeconds(seconds));
   sleep.Wait();
   VLOG(2) << "Sleep complete.";
+}
+
+bool WaitFor(base::RepeatingCallback<bool()> predicate) {
+  base::TimeTicks deadline =
+      base::TimeTicks::Now() + TestTimeouts::action_max_timeout();
+  while (base::TimeTicks::Now() < deadline) {
+    if (predicate.Run())
+      return true;
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
+  }
+  return false;
 }
 
 }  // namespace test

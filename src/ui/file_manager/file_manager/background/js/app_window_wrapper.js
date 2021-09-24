@@ -6,8 +6,10 @@ import './app_windows.js';
 
 import {assertInstanceof} from 'chrome://resources/js/assert.m.js';
 
+import {openWindow} from '../../common/js/api.js';
 import {appUtil} from '../../common/js/app_util.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
+import {FilesAppState} from '../../common/js/files_app_state.js';
 import {xfm} from '../../common/js/xfm.js';
 
 /**
@@ -35,6 +37,7 @@ export class AppWindowWrapper {
     this.options_ = /** @type {!chrome.app.window.CreateWindowOptions} */ (
         JSON.parse(JSON.stringify(options)));
     this.window_ = null;
+    /** @private {?FilesAppState} */
     this.appState_ = null;
     this.openingOrOpened_ = false;
 
@@ -116,8 +119,9 @@ export class AppWindowWrapper {
 
   /**
    * @return {!Promise<?chrome.app.window.AppWindow>}
+   * @private
    */
-  async createWindow_(reopen) {
+  async createWindowLegacy_(reopen) {
     return await new Promise((resolve, reject) => {
       // Create a window.
       chrome.app.window.create(this.url_, this.options_, appWindow => {
@@ -184,7 +188,7 @@ export class AppWindowWrapper {
   /**
    * Opens the window.
    *
-   * @param {Object} appState App state.
+   * @param {!FilesAppState} appState App state.
    * @param {boolean} reopen True if the launching is triggered automatically.
    *     False otherwise.
    * @return {Promise} Resolved when the window is launched.
@@ -199,6 +203,10 @@ export class AppWindowWrapper {
 
     // Save application state.
     this.appState_ = appState;
+
+    if (window.isSWA) {
+      return this.launchSWA_();
+    }
 
     // Get similar windows, it means with the same initial url, eg. different
     // main windows of the Files app.
@@ -220,7 +228,7 @@ export class AppWindowWrapper {
       }
 
       // Closure creating the window, once all preprocessing tasks are finished.
-      const appWindow = await this.createWindow_(reopen);
+      const appWindow = await this.createWindowLegacy_(reopen);
 
       // Exit full screen state if it's created as a full screen window.
       if (appWindow.isFullscreen()) {
@@ -243,6 +251,39 @@ export class AppWindowWrapper {
       console.error(error);
     } finally {
       unlock();
+    }
+  }
+
+  /**
+   * Opens a new window for the SWA.
+   *
+   * @return {Promise} Resolved when the window is launched.
+   * @private
+   */
+  async launchSWA_() {
+    const unlock = await this.getLaunchLock();
+    try {
+      await this.createWindowSWA_();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      unlock();
+    }
+  }
+
+  /**
+   * @return {Promise} Resolved when the new window is opened.
+   * @private
+   */
+  async createWindowSWA_() {
+    const url = this.appState_.currentDirectoryURL || '';
+    const result = await openWindow({
+      currentDirectoryURL: url,
+      selectionURL: this.appState_.selectionURL,
+    });
+
+    if (!result) {
+      throw new Error(`Failed to create window for ${url}`);
     }
   }
 
@@ -336,7 +377,7 @@ export class SingletonAppWindowWrapper extends AppWindowWrapper {
    *
    * Activates an existing window or creates a new one.
    *
-   * @param {Object} appState App state.
+   * @param {!FilesAppState} appState App state.
    * @param {boolean} reopen True if the launching is triggered automatically.
    *     False otherwise.
    * @return {Promise} Resolved when the window is launched.

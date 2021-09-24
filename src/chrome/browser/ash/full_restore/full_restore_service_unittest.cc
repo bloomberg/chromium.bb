@@ -62,7 +62,7 @@ syncer::SyncData CreatePrefSyncData(const std::string& name,
   json.Serialize(value);
   sync_pb::EntitySpecifics specifics;
   sync_pb::PreferenceSpecifics* pref =
-      features::IsSplitSettingsSyncEnabled()
+      features::IsSyncSettingsCategorizationEnabled()
           ? specifics.mutable_os_preference()->mutable_preference()
           : specifics.mutable_preference();
   pref->set_name(name);
@@ -89,13 +89,13 @@ class FullRestoreServiceTest : public testing::Test {
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
-    profile_builder.SetProfileName("user.test@gmail.com");
+    profile_builder.SetProfileName("user@gmail.com");
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_ = profile_builder.Build();
     profile_->GetPrefs()->ClearPref(kRestoreAppsAndPagesPrefName);
 
-    account_id_ =
-        AccountId::FromUserEmailGaiaId("usertest@gmail.com", "1234567890");
+    account_id_ = AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(),
+                                                 "1234567890");
     const auto* user = GetFakeUserManager()->AddUser(account_id_);
     GetFakeUserManager()->LoginUser(account_id_);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
@@ -163,9 +163,9 @@ class FullRestoreServiceTest : public testing::Test {
   // Simulates the initial sync of preferences.
   syncer::SyncableService* SyncPreferences(
       const syncer::SyncDataList& sync_data_list) {
-    syncer::ModelType model_type = features::IsSplitSettingsSyncEnabled()
-                                       ? syncer::OS_PREFERENCES
-                                       : syncer::PREFERENCES;
+    syncer::ModelType model_type =
+        features::IsSyncSettingsCategorizationEnabled() ? syncer::OS_PREFERENCES
+                                                        : syncer::PREFERENCES;
     syncer::SyncableService* sync =
         profile()->GetTestingPrefService()->GetSyncableService(model_type);
     sync->MergeDataAndStartSyncing(
@@ -900,7 +900,7 @@ TEST_F(FullRestoreServiceMultipleUsersTest, TwoUsersLoginOneByOne) {
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOptionForProfile2());
   VerifyRestoreInitSettingHistogram(RestoreOption::kAskEveryTime, 2);
 
-  // The notification for the second user should be displayed.
+  // The notification for the second user should not be displayed.
   VerifyNotificationForProfile2(false /* has_crash_notification */,
                                 true /* has_restore_notification */);
 

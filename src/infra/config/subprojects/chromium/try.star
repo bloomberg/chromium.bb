@@ -239,6 +239,10 @@ try_.blink_mac_builder(
     builderless = False,
 )
 
+try_.blink_mac_builder(
+    name = "mac11.0.arm64-blink-rel",
+)
+
 try_.chromium_builder(
     name = "android-official",
     branch_selector = branches.STANDARD_MILESTONE,
@@ -390,6 +394,10 @@ try_.chromium_android_builder(
     tryjob = try_.job(),
     # TODO(crbug/1202741)
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_isolate": 50,
+    },
 )
 
 try_.chromium_android_builder(
@@ -402,6 +410,10 @@ try_.chromium_android_builder(
     tryjob = try_.job(),
     # TODO(crbug/1202741)
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_isolate": 50,
+    },
 )
 
 try_.chromium_android_builder(
@@ -718,20 +730,6 @@ try_.chromium_angle_builder(
 )
 
 try_.chromium_angle_builder(
-    name = "mac-angle-try",
-    cores = None,
-    os = os.MAC_ANY,
-    executable = "recipe:angle_chromium_trybot",
-)
-
-try_.chromium_angle_pinned_builder(
-    name = "angle-try-mac-amd-exp",
-    cores = None,
-    os = os.MAC_ANY,
-    pool = "luci.chromium.gpu.mac.retina.amd.try",
-)
-
-try_.chromium_angle_builder(
     name = "win-angle-chromium-x64-try",
     os = os.WINDOWS_ANY,
     executable = "recipe:angle_chromium_trybot",
@@ -847,7 +845,8 @@ try_.chromium_chromiumos_builder(
     name = "linux-chromeos-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
     builderless = not settings.is_main,
-    goma_jobs = goma.jobs.J150,
+    cores = None,
+    goma_jobs = goma.jobs.J300,
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -870,6 +869,19 @@ try_.chromium_chromiumos_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.chromium_chromiumos_builder(
+    name = "linux-lacros-rel-rts",
+    builderless = False,
+    cores = 16,
+    ssd = True,
+    goma_jobs = goma.jobs.J300,
+    main_list_view = "try",
+    os = os.LINUX_BIONIC_REMOVE,
+    tryjob = try_.job(
+        experiment_percentage = 1,
+    ),
 )
 
 try_.chromium_chromiumos_builder(
@@ -1016,6 +1028,10 @@ try_.chromium_linux_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_isolate": 50,
+    },
 )
 
 try_.chromium_linux_builder(
@@ -1240,10 +1256,6 @@ try_.chromium_linux_builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    # TODO(crbug.com/1143122): remove this after migration.
-    experiments = {
-        "chromium.chromium_tests.use_rbe_cas": 50,
-    },
 )
 
 try_.chromium_linux_builder(
@@ -1278,14 +1290,14 @@ try_.chromium_linux_builder(
     executable = "recipe:chromium/orchestrator",
     main_list_view = "try",
     use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     properties = {
         "compilator": "linux-rel-compilator",
     },
     service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-    # TODO (kimstephanie): Turn back on when Aug 9 pending tasks go back down
-    #tryjob = try_.job(
-    #    experiment_percentage = 100,
-    #),
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
 )
 
 try_.chromium_linux_builder(
@@ -1296,6 +1308,7 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     properties = {
         "orchestrator": {
             "builder_name": "linux-rel-orchestrator",
@@ -1368,13 +1381,15 @@ try_.chromium_linux_builder(
     tryjob = try_.job(),
     # TODO(crbug.com/1143122): remove this after migration.
     experiments = {
-        "chromium.chromium_tests.use_rbe_cas": 50,
+        "chromium.chromium_tests.use_isolate": 50,
     },
 )
 
 try_.chromium_linux_builder(
     name = "linux_chromium_cfi_rel_ng",
     cores = 32,
+    # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
+    execution_timeout = 5 * time.hour,
 )
 
 try_.chromium_linux_builder(
@@ -1452,6 +1467,10 @@ try_.chromium_linux_builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+    # TODO(crbug.com/1143122): remove this after migration.
+    experiments = {
+        "chromium.chromium_tests.use_isolate": 50,
+    },
 )
 
 try_.chromium_linux_builder(
@@ -1861,9 +1880,8 @@ try_.chromium_win_builder(
     cores = 2,
     os = os.LINUX_BIONIC,
     executable = "recipe:chromium/orchestrator",
-    # TODO (kimstephanie): turn coverage back on when crbug.com/1233609 is done
-    # use_clang_coverage = True,
-    # coverage_test_types = ["unit", "overall"],
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     properties = {
         "compilator": "win10-rel-compilator",
     },
@@ -1881,6 +1899,8 @@ try_.chromium_win_builder(
     ssd = True,
     goma_jobs = goma.jobs.J300,
     executable = "recipe:chromium/compilator",
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     properties = {
         "orchestrator": {
             "builder_name": "win10-rel-orchestrator",
@@ -2147,6 +2167,13 @@ try_.infra_builder(
     bootstrap = True,
 )
 
+try_.infra_builder(
+    name = "win-bootstrap",
+    bootstrap = True,
+    builderless = True,
+    os = os.WINDOWS_10,
+)
+
 # Errors that this builder would catch would go unnoticed until a project is set
 # up on a branch day or even worse when a branch was turned into an LTS branch,
 # long after the change has been made, so make it a presubmit builder to ensure
@@ -2215,6 +2242,14 @@ def chrome_internal_verifier(
     )
 
 chrome_internal_verifier(
+    builder = "android-internal-binary-size",
+)
+
+chrome_internal_verifier(
+    builder = "android-internal-rel",
+)
+
+chrome_internal_verifier(
     builder = "chromeos-betty-chrome",
 )
 
@@ -2248,6 +2283,10 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "lacros-amd64-generic-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "lacros-amd64-generic-chrome-skylab",
 )
 
 chrome_internal_verifier(

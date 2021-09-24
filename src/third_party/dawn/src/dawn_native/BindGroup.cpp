@@ -150,15 +150,7 @@ namespace dawn_native {
                     }
 
                     if ((supportedTypes & requiredType) == 0) {
-                        if (IsSubset(SampleTypeBit::Depth, supportedTypes) != 0 &&
-                            IsSubset(requiredType,
-                                     SampleTypeBit::Float | SampleTypeBit::UnfilterableFloat)) {
-                            device->EmitDeprecationWarning(
-                                "Using depth textures with 'float' or 'unfilterable-float' texture "
-                                "bindings is deprecated. Use 'depth' instead.");
-                        } else {
-                            return DAWN_VALIDATION_ERROR("Texture component type usage mismatch");
-                        }
+                        return DAWN_VALIDATION_ERROR("Texture component type usage mismatch");
                     }
 
                     if (entry.textureView->GetDimension() != bindingInfo.texture.viewDimension) {
@@ -317,7 +309,7 @@ namespace dawn_native {
     BindGroupBase::BindGroupBase(DeviceBase* device,
                                  const BindGroupDescriptor* descriptor,
                                  void* bindingDataStart)
-        : ObjectBase(device),
+        : ObjectBase(device, kLabelNotImplemented),
           mLayout(descriptor->layout),
           mBindingData(mLayout->ComputeBindingDataPointers(bindingDataStart)) {
         for (BindingIndex i{0}; i < mLayout->GetBindingCount(); ++i) {

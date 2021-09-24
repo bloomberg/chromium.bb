@@ -2554,12 +2554,13 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   params.was_activated = blink::mojom::WasActivatedOption::kUnknown;
   /* params.reload_type: skip */
   params.impression = impression;
+  params.download_policy = std::move(download_policy);
 
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
           false /* has_user_gesture */, std::move(source_location),
-          download_policy, ReloadType::NONE, entry.get(), frame_entry.get());
+          ReloadType::NONE, entry.get(), frame_entry.get());
 
   if (!request)
     return;
@@ -3233,8 +3234,7 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
           params.has_user_gesture, network::mojom::SourceLocation::New(),
-          blink::NavigationDownloadPolicy(), reload_type, pending_entry_,
-          pending_entry_->GetFrameEntry(node));
+          reload_type, pending_entry_, pending_entry_->GetFrameEntry(node));
 
   // If the navigation couldn't start, return immediately and discard the
   // pending NavigationEntry.
@@ -3389,7 +3389,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     bool should_replace_current_entry,
     bool has_user_gesture,
     network::mojom::SourceLocationPtr source_location,
-    blink::NavigationDownloadPolicy download_policy,
     ReloadType reload_type,
     NavigationEntryImpl* entry,
     FrameNavigationEntry* frame_entry) {
@@ -3491,6 +3490,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   bool is_view_source_mode = entry->IsViewSourceMode();
   DCHECK_EQ(is_view_source_mode, virtual_url.SchemeIs(kViewSourceScheme));
 
+  blink::NavigationDownloadPolicy download_policy = params.download_policy;
   // Update |download_policy| if the virtual URL is view-source.
   if (is_view_source_mode)
     download_policy.SetDisallowed(blink::NavigationDownloadType::kViewSource);
@@ -3582,7 +3582,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.initiator_process_id, extra_headers_crlf, frame_entry, entry,
       request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr,
-      params.impression);
+      params.impression, params.is_pdf);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
   return navigation_request;
@@ -3704,7 +3704,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
       nullptr /* initiator_frame_token */,
       ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
       entry->extra_headers(), frame_entry, entry, request_body,
-      nullptr /* navigation_ui_data */, absl::nullopt /* impression */);
+      nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+      false /* is_pdf */);
 }
 
 void NavigationControllerImpl::NotifyNavigationEntryCommitted(
@@ -3810,7 +3811,8 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
           ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
           "" /* extra_headers */, nullptr /* frame_entry */,
           nullptr /* entry */, nullptr /* post_body */,
-          nullptr /* navigation_ui_data */, absl::nullopt /* impression */);
+          nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+          false /* is_pdf */);
   navigation_request->set_post_commit_error_page_html(error_page_html);
   navigation_request->set_net_error(error);
   node->CreatedNavigationRequest(std::move(navigation_request));

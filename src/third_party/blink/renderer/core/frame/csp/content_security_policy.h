@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/gtest_prod_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -241,9 +242,11 @@ class CORE_EXPORT ContentSecurityPolicy final
       CheckHeaderType = CheckHeaderType::kCheckAll);
   bool AllowWorkerContextFromSource(const KURL&);
 
-  bool AllowTrustedTypePolicy(const String& policy_name,
-                              bool is_duplicate,
-                              AllowTrustedTypePolicyDetails& violation_details);
+  bool AllowTrustedTypePolicy(
+      const String& policy_name,
+      bool is_duplicate,
+      AllowTrustedTypePolicyDetails& violation_details,
+      absl::optional<base::UnguessableToken> issue_id = absl::nullopt);
 
   // Passing 'String()' into the |nonce| arguments in the following methods
   // represents an unnonced resource load.
@@ -374,16 +377,14 @@ class CORE_EXPORT ContentSecurityPolicy final
   // isolated world should use the isolated world CSP instead of bypassing the
   // main world CSP. See
   // ExecutionContext::GetContentSecurityPolicyForCurrentWorld.
-  // TODO(karandeepb): Rename to ShouldBypassMainWorldDeprecated.
-  static bool ShouldBypassMainWorld(const ExecutionContext*);
+  static bool ShouldBypassMainWorldDeprecated(const ExecutionContext*);
 
   // Whether the main world's CSP should be bypassed for operations in the given
   // |world|.
   // Note: This is deprecated. New usages should not be added. Operations in an
   // isolated world should use the isolated world CSP instead of bypassing the
   // main world CSP. See ExecutionContext::GetContentSecurityPolicyForWorld.
-  // TODO(karandeepb): Rename to ShouldBypassMainWorldDeprecated.
-  static bool ShouldBypassMainWorld(const DOMWrapperWorld* world);
+  static bool ShouldBypassMainWorldDeprecated(const DOMWrapperWorld* world);
 
   static bool IsNonceableElement(const Element*);
 

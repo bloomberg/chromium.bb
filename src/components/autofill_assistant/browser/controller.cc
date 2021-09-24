@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/controller_observer.h"
+#include "components/autofill_assistant/browser/display_strings_util.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
@@ -48,13 +49,20 @@ static constexpr int kAutostartInitialProgress = 5;
 // Experiment for toggling the new progress bar.
 const char kProgressBarExperiment[] = "4400697";
 
+// Experiment for non-sticky TTSButtonState. The TTSButtonState is reset to
+// DEFAULT whenever tts/status message changes even when the button was
+// DISABLED by the user tap.
+const char kNonStickyTtsButtonStateExperiment[] = "4624822";
+
 }  // namespace
 
-Controller::Controller(content::WebContents* web_contents,
-                       Client* client,
-                       const base::TickClock* tick_clock,
-                       base::WeakPtr<RuntimeManagerImpl> runtime_manager,
-                       std::unique_ptr<Service> service)
+Controller::Controller(
+    content::WebContents* web_contents,
+    Client* client,
+    const base::TickClock* tick_clock,
+    base::WeakPtr<RuntimeManagerImpl> runtime_manager,
+    std::unique_ptr<Service> service,
+    std::unique_ptr<AutofillAssistantTtsController> tts_controller)
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
@@ -63,8 +71,10 @@ Controller::Controller(content::WebContents* web_contents,
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
       user_data_(std::make_unique<UserData>()),
-      navigating_to_new_document_(web_contents->IsWaitingForResponse()) {
+      navigating_to_new_document_(web_contents->IsWaitingForResponse()),
+      tts_controller_(std::move(tts_controller)) {
   user_model_.AddObserver(this);
+  tts_controller_->SetTtsEventDelegate(this);
 }
 
 Controller::~Controller() {
@@ -152,6 +162,14 @@ std::string Controller::GetLocale() {
   return client_->GetLocale();
 }
 
+std::string Controller::GetDisplayStringsLocale() {
+  if (GetSettings().display_strings_locale.empty()) {
+    // Fallback locale
+    return GetLocale();
+  }
+  return GetSettings().display_strings_locale;
+}
+
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area()->SetFromProto(area);
 }
@@ -161,6 +179,9 @@ void Controller::SetStatusMessage(const std::string& message) {
   for (ControllerObserver& observer : observers_) {
     observer.OnStatusMessageChanged(message);
   }
+
+  // Override tts_message every time status_message changes.
+  SetTtsMessage(message);
 }
 
 std::string Controller::GetStatusMessage() const {
@@ -176,6 +197,38 @@ void Controller::SetBubbleMessage(const std::string& message) {
 
 std::string Controller::GetBubbleMessage() const {
   return bubble_message_;
+}
+
+void Controller::SetTtsMessage(const std::string& message) {
+  tts_message_ = message;
+
+  // Stop any ongoing TTS and reset button state.
+  if (tts_button_state_ == TtsButtonState::PLAYING) {
+    // Will not cause any TTS event.
+    tts_controller_->Stop();
+    SetTtsButtonState(TtsButtonState::DEFAULT);
+  }
+
+  // Re-enable TTS button if "Non sticky Tts Button State" experiment is
+  // enabled.
+  if (tts_button_state_ == TtsButtonState::DISABLED &&
+      trigger_context_ != nullptr &&
+      trigger_context_->HasExperimentId(kNonStickyTtsButtonStateExperiment)) {
+    SetTtsButtonState(TtsButtonState::DEFAULT);
+  }
+}
+
+std::string Controller::GetTtsMessage() const {
+  return tts_message_;
+}
+
+void Controller::MaybePlayTtsMessage() {
+  if (!tts_enabled_) {
+    return;
+  }
+
+  // Will fire a TTS_START event.
+  tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
 }
 
 void Controller::SetDetails(std::unique_ptr<Details> details,
@@ -347,6 +400,14 @@ void Controller::SetProgressVisible(bool visible) {
 
 bool Controller::GetProgressVisible() const {
   return progress_visible_;
+}
+
+bool Controller::GetTtsButtonVisible() const {
+  return tts_enabled_;
+}
+
+TtsButtonState Controller::GetTtsButtonState() const {
+  return tts_button_state_;
 }
 
 void Controller::SetStepProgressBarConfiguration(
@@ -593,6 +654,13 @@ const FormProto::Result* Controller::GetFormResult() const {
   return form_result_.get();
 }
 
+void Controller::SetClientSettings(const ClientSettingsProto& client_settings) {
+  settings_.UpdateFromProto(client_settings);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnClientSettingsChanged(settings_);
+  }
+}
+
 bool Controller::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -642,8 +710,8 @@ bool Controller::SetForm(
       case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
         VLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
         return false;
-        // Intentionally no default case to make compilation fail if a new value
-        // was added to the enum but not to this list.
+        // Intentionally no default case to make compilation fail if a new
+        // value was added to the enum but not to this list.
     }
   }
 
@@ -816,7 +884,7 @@ void Controller::EnterStoppedState(bool show_feedback_chip) {
     Chip feedback_chip;
     feedback_chip.type = FEEDBACK_ACTION;
     feedback_chip.text =
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_SEND_FEEDBACK);
+        GetDisplayStringUTF8(ClientSettingsProto::SEND_FEEDBACK, GetSettings());
     feedback_action.SetCallback(base::BindOnce(&Controller::ShutdownIfNecessary,
                                                weak_ptr_factory_.GetWeakPtr()));
     feedback_action.chip() = feedback_chip;
@@ -991,9 +1059,10 @@ void Controller::OnGetScripts(const GURL& url,
     VLOG(1) << "Failed to get assistant scripts for " << script_url_.host()
             << ", http-status=" << http_status;
 #endif
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 /*show_feedback_chip=*/true,
-                 Metrics::DropOutReason::GET_SCRIPTS_FAILED);
+    OnFatalError(
+        GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR, GetSettings()),
+        /*show_feedback_chip=*/true,
+        Metrics::DropOutReason::GET_SCRIPTS_FAILED);
     return;
   }
 
@@ -1005,16 +1074,14 @@ void Controller::OnGetScripts(const GURL& url,
     VLOG(2) << __func__ << " from " << script_url_.host() << " returned "
             << "unparseable response";
 #endif
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 /*show_feedback_chip=*/true,
-                 Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
+    OnFatalError(
+        GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR, GetSettings()),
+        /*show_feedback_chip=*/true,
+        Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
     return;
   }
   if (response_proto.has_client_settings()) {
-    settings_.UpdateFromProto(response_proto.client_settings());
-    for (ControllerObserver& observer : observers_) {
-      observer.OnClientSettingsChanged(settings_);
-    }
+    SetClientSettings(response_proto.client_settings());
   }
   if (response_proto.has_script_store_config()) {
     GetService()->SetScriptStoreConfig(response_proto.script_store_config());
@@ -1056,9 +1123,10 @@ void Controller::OnGetScripts(const GURL& url,
     script_tracker()->SetScripts({});
 
     if (state_ == AutofillAssistantState::TRACKING) {
-      OnFatalError(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-          /*show_feedback_chip=*/false, Metrics::DropOutReason::NO_SCRIPTS);
+      OnFatalError(GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                                        GetSettings()),
+                   /*show_feedback_chip=*/false,
+                   Metrics::DropOutReason::NO_SCRIPTS);
       return;
     }
     OnNoRunnableScriptsForPage();
@@ -1108,7 +1176,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 #endif
 
     OnScriptError(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+        GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR, GetSettings()),
         Metrics::DropOutReason::SCRIPT_FAILED);
     return;
   }
@@ -1232,6 +1300,16 @@ void Controller::InitFromParameters() {
     ShowProgressBarProto::StepProgressBarConfiguration mock_configuration;
     mock_configuration.set_use_step_progress_bar(true);
     SetStepProgressBarConfiguration(mock_configuration);
+  }
+
+  const absl::optional<bool> enable_tts =
+      trigger_context_->GetScriptParameters().GetEnableTts();
+  if (enable_tts && enable_tts.value() &&
+      !client_->IsSpokenFeedbackAccessibilityServiceEnabled()) {
+    tts_enabled_ = true;
+    for (ControllerObserver& observer : observers_) {
+      observer.OnTtsButtonVisibilityChanged(/* visible= */ true);
+    }
   }
 
   user_model_.SetCurrentURL(GetCurrentURL());
@@ -1396,6 +1474,71 @@ void Controller::OnFormActionLinkClicked(int link) {
     form_result_->set_link(link);
     form_changed_callback_.Run(form_result_.get());
     std::move(form_cancel_callback_).Run(ClientStatus(ACTION_APPLIED));
+  }
+}
+
+void Controller::OnTtsButtonClicked() {
+  switch (tts_button_state_) {
+    case TtsButtonState::DEFAULT:
+      // Will fire a TTS_START event.
+      tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
+      Metrics::RecordTtsButtonAction(Metrics::TtsButtonAction::PLAY_TTS);
+      break;
+    case TtsButtonState::PLAYING:
+      // Will not cause any TTS event.
+      tts_controller_->Stop();
+      SetTtsButtonState(TtsButtonState::DISABLED);
+      Metrics::RecordTtsButtonAction(Metrics::TtsButtonAction::DISABLE_BUTTON);
+      break;
+    case TtsButtonState::DISABLED:
+      SetTtsButtonState(TtsButtonState::DEFAULT);
+      // Will fire a TTS_START event.
+      tts_controller_->Speak(tts_message_, GetDisplayStringsLocale());
+      Metrics::RecordTtsButtonAction(
+          Metrics::TtsButtonAction::ENABLE_BUTTON_AND_PLAY_TTS);
+      break;
+  }
+}
+
+void Controller::OnTtsEvent(
+    AutofillAssistantTtsController::TtsEventType event) {
+  switch (event) {
+    case AutofillAssistantTtsController::TTS_START:
+      SetTtsButtonState(TtsButtonState::PLAYING);
+      break;
+    case AutofillAssistantTtsController::TTS_END:
+    case AutofillAssistantTtsController::TTS_ERROR:
+      SetTtsButtonState(TtsButtonState::DEFAULT);
+      break;
+  }
+}
+
+void Controller::SetTtsButtonState(TtsButtonState state) {
+  tts_button_state_ = state;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnTtsButtonStateChanged(tts_button_state_);
+  }
+}
+
+void Controller::OnSpokenFeedbackAccessibilityServiceChanged(bool enabled) {
+  if (!enabled) {
+    // Nothing to do when the a11y service is disabled.
+    return;
+  }
+
+  if (!tts_enabled_) {
+    return;
+  }
+  // Disable TTS and hide TTS button.
+  tts_enabled_ = false;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnTtsButtonVisibilityChanged(/* visible= */ false);
+  }
+  // Stop any ongoing TTS and reset button state.
+  if (tts_button_state_ == TtsButtonState::PLAYING) {
+    // Will not cause any TTS event.
+    tts_controller_->Stop();
+    SetTtsButtonState(TtsButtonState::DEFAULT);
   }
 }
 
@@ -1781,9 +1924,9 @@ void Controller::OnNoRunnableScriptsForPage() {
       // We're still waiting for the set of initial scripts, but either didn't
       // get any scripts or didn't get scripts that could possibly become
       // runnable with a DOM change.
-      OnScriptError(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-          Metrics::DropOutReason::NO_INITIAL_SCRIPTS);
+      OnScriptError(GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                                         GetSettings()),
+                    Metrics::DropOutReason::NO_INITIAL_SCRIPTS);
       break;
 
     case AutofillAssistantState::PROMPT:
@@ -1791,8 +1934,9 @@ void Controller::OnNoRunnableScriptsForPage() {
       // The user has navigated to a page that has no scripts or the scripts
       // have reached a state from which they cannot recover through a DOM
       // change.
-      OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-                    Metrics::DropOutReason::NO_SCRIPTS);
+      OnScriptError(
+          GetDisplayStringUTF8(ClientSettingsProto::GIVE_UP, GetSettings()),
+          Metrics::DropOutReason::NO_SCRIPTS);
       break;
 
     default:
@@ -1885,8 +2029,9 @@ void Controller::OnNavigationShutdownOrError(const GURL& url,
           google_util::DISALLOW_NON_STANDARD_PORTS)) {
     client_->Shutdown(reason);
   } else {
-    OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-                  reason);
+    OnScriptError(
+        GetDisplayStringUTF8(ClientSettingsProto::GIVE_UP, GetSettings()),
+        reason);
   }
 }
 

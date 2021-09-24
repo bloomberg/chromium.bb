@@ -41,7 +41,8 @@ function queryIFrame() {
 
 // Tests that chrome://eche-app goes somewhere instead of
 // 404ing or crashing.
-TEST_F('EcheAppUIBrowserTest', 'HasChromeSchemeURL', () => {
+// Disabled because crbug.com/1248004.
+TEST_F('EcheAppUIBrowserTest', 'DISABLED_HasChromeSchemeURL', () => {
   assertEquals(document.title, 'Eche');
   assertEquals(document.location.origin, HOST_ORIGIN);
   testDone();
@@ -55,6 +56,7 @@ TEST_F('EcheAppUIBrowserTest', 'HasChromeSchemeURL', () => {
 // terminated, e.g., due to webui performing bad IPC such as network requests
 // (failure detected in content/public/test/no_renderer_crashes_assertion.cc).
 // Flaky. See crbug.com/1242355,
+// Disabled because crbug.com/1248004.
 TEST_F('EcheAppUIBrowserTest', 'DISABLED_GuestCanLoad', async () => {
   const guest = queryIFrame();
 

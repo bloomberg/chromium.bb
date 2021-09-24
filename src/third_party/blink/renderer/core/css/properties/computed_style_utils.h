@@ -24,7 +24,9 @@ class CSSNumericLiteralValue;
 class CSSStyleValue;
 class CSSValue;
 class ComputedStyle;
+class FontFamily;
 class StyleColor;
+class StyleIntrinsicLength;
 class StylePropertyShorthand;
 
 enum class CSSValuePhase { kComputedValue, kUsedValue };
@@ -106,6 +108,7 @@ class CORE_EXPORT ComputedStyleUtils {
       const StyleContentAlignmentData&);
   static CSSValue* ValueForLineHeight(const ComputedStyle&);
   static CSSValue* ComputedValueForLineHeight(const ComputedStyle&);
+  static CSSValueList* ValueForFontFamily(const FontFamily&);
   static CSSValueList* ValueForFontFamily(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontSize(const ComputedStyle&);
   static CSSPrimitiveValue* ValueForFontStretch(const ComputedStyle&);
@@ -256,6 +259,9 @@ class CORE_EXPORT ComputedStyleUtils {
   static const CSSValue* ValueForStyleAutoColor(const ComputedStyle&,
                                                 const StyleAutoColor&,
                                                 CSSValuePhase);
+  static CSSValue* ValueForIntrinsicLength(
+      const ComputedStyle&,
+      const absl::optional<StyleIntrinsicLength>&);
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 

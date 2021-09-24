@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -83,21 +84,30 @@ class NetErrorTabHelperWithPrerenderingTest : public InProcessBrowserTest {
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-IN_PROC_BROWSER_TEST_F(NetErrorTabHelperWithPrerenderingTest,
-                       ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses) {
+// TODO(crbug.com/1241506): Enable this test on macOS after the issue is fixed.
+#if defined(OS_MAC)
+#define MAYBE_ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses \
+  DISABLED_ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses
+#else
+#define MAYBE_ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses \
+  ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses
+#endif
+IN_PROC_BROWSER_TEST_F(
+    NetErrorTabHelperWithPrerenderingTest,
+    MAYBE_ErrorPagesDoNotPrerenderOrTriggerDnsProbeStatuses) {
   GURL initial_url = embedded_test_server()->GetURL("/title2.html");
-  ui_test_utils::NavigateToURL(browser(), initial_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
   EXPECT_FALSE(pending_probe_status_count());
 
   content::test::PrerenderHostRegistryObserver registry_observer(
       *GetWebContents());
   GURL error_page_url =
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
-  ui_test_utils::NavigateToURL(browser(), error_page_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), error_page_url));
   EXPECT_TRUE(pending_probe_status_count());
 
   ClearProbeStatusQueue();
-  ui_test_utils::NavigateToURL(browser(), initial_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
   EXPECT_FALSE(pending_probe_status_count());
 
   GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
@@ -116,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(NetErrorTabHelperWithPrerenderingTest,
                        ShowErrorPagesInPrerender) {
   GURL initial_url =
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
-  ui_test_utils::NavigateToURL(browser(), initial_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
 
   // Overrides the last committed origin to treat the network error as the same
   // url with the non-opaque origins.

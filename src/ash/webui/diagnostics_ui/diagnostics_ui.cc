@@ -57,6 +57,8 @@ std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate() {
 
 void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"arcHttpRoutineText", IDS_NETWORK_DIAGNOSTICS_ARC_HTTP},
+      {"arcPingRoutineText", IDS_NETWORK_DIAGNOSTICS_ARC_PING},
       {"batteryCalculatingText", IDS_DIAGNOSTICS_BATTERY_CALCULATING_TEXT},
       {"batteryChargeRoutineText", IDS_DIAGNOSTICS_BATTERY_CHARGE_ROUTINE_TEXT},
       {"batteryDischargeRoutineText",
@@ -134,16 +136,34 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"networkDefaultConnectionLabel",
        IDS_NETWORK_DIAGNOSTICS_DEFAULT_CONNECTION},
       {"networkDnsNotConfigured", IDS_NETWORK_DIAGNOSTICS_DNS_NOT_CONFIGURED},
+      {"networkEidLabel", IDS_DIAGNOSTICS_EID_LABEL},
+      {"networkIccidLabel", IDS_ONC_CELLULAR_ICCID},
       {"networkIpAddressLabel", IDS_NETWORK_DIAGNOSTICS_IP_ADDRESS},
       {"networkLinkSpeedLabel", IDS_NETWORK_DIAGNOSTICS_LINK_SPEED},
+      {"networkRoamingOff", IDS_DIAGNOSTICS_ROAMING_OFF},
+      {"networkRoamingStateHome", IDS_ONC_CELLULAR_ROAMING_STATE_HOME},
+      {"networkRoamingStateLabel", IDS_ONC_CELLULAR_ROAMING_STATE},
+      {"networkRoamingStateRoaming", IDS_ONC_CELLULAR_ROAMING_STATE_ROAMING},
       {"networkSignalStrengthLabel", IDS_ONC_WIFI_SIGNAL_STRENGTH},
+      {"networkSimLockStatusLabel",
+       IDS_DIAGNOSTICS_NETWORK_SIM_LOCK_STATUS_LABEL},
+      {"networkSimLockedText", IDS_DIAGNOSTICS_NETWORK_SIM_LOCKED},
+      {"networkSimUnlockedText", IDS_DIAGNOSTICS_NETWORK_SIM_UNLOCKED},
       {"networkSsidLabel", IDS_ONC_WIFI_SSID},
       {"networkStateConnectedText", IDS_NETWORK_HEALTH_STATE_CONNECTED},
       {"networkStateConnectingText", IDS_NETWORK_HEALTH_STATE_CONNECTING},
+      {"networkStateDisabledText", IDS_NETWORK_HEALTH_STATE_DISABLED},
       {"networkStateNotConnectedText", IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED},
       {"networkStateOnlineText", IDS_NETWORK_HEALTH_STATE_ONLINE},
       {"networkStatePortalText", IDS_NETWORK_HEALTH_STATE_PORTAL},
       {"networkSecurityLabel", IDS_NETWORK_DIAGNOSTICS_SECURITY},
+      {"networkSecurityNoneLabel", IDS_ONC_WIFI_SECURITY_NONE},
+      // 8021x uses EAP label in network element localization function.
+      {"networkSecurityWep8021xLabel", IDS_ONC_WIFI_SECURITY_EAP},
+      {"networkSecurityWepPskLabel", IDS_ONC_WIFI_SECURITY_WEP},
+      {"networkSecurityWpaEapLabel", IDS_ONC_WIFI_SECURITY_EAP},
+      {"networkSecurityWpaPskLabel", IDS_ONC_WIFI_SECURITY_PSK},
+      {"networkTechnologyLabel", IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY},
       {"notEnoughAvailableMemoryMessage",
        IDS_DIAGNOSTICS_NOT_ENOUGH_AVAILABLE_MEMORY},
       {"overviewText", IDS_DIAGNOSTICS_OVERVIEW},
@@ -182,8 +202,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"troubleConnecting", IDS_DIAGNOSTICS_TROUBLE_CONNECTING},
       {"troubleshootingText", IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT},
       {"versionInfo", IDS_DIAGNOSTICS_VERSION_INFO_TEXT},
-      {"wifiLabel", IDS_NETWORK_TYPE_WIFI},
-  };
+      {"wifiLabel", IDS_NETWORK_TYPE_WIFI}};
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddLocalizedStrings(*GetDataSourceUpdate());
   html_source->UseStringsJs();

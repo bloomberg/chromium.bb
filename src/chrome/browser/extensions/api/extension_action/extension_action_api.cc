@@ -283,18 +283,19 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
   // The tabId might appear in details (if it exists), as the first
   // argument besides the action type (depends on the function), or be omitted
   // entirely.
-  base::Value* first_arg = NULL;
-  if (!args_->Get(0, &first_arg))
+  if (args().empty())
     return true;
 
-  switch (first_arg->type()) {
+  base::Value& first_arg = mutable_args()[0];
+
+  switch (first_arg.type()) {
     case base::Value::Type::INTEGER:
-      tab_id_ = first_arg->GetInt();
+      tab_id_ = first_arg.GetInt();
       break;
 
     case base::Value::Type::DICTIONARY: {
       // Found the details argument.
-      details_ = static_cast<base::DictionaryValue*>(first_arg);
+      details_ = static_cast<base::DictionaryValue*>(&first_arg);
       // Still need to check for the tabId within details.
       base::Value* tab_id_value = NULL;
       if (details_->Get("tabId", &tab_id_value)) {
@@ -540,10 +541,10 @@ ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
-  list->AppendInteger(static_cast<int>(SkColorGetR(color)));
-  list->AppendInteger(static_cast<int>(SkColorGetG(color)));
-  list->AppendInteger(static_cast<int>(SkColorGetB(color)));
-  list->AppendInteger(static_cast<int>(SkColorGetA(color)));
+  list->Append(static_cast<int>(SkColorGetR(color)));
+  list->Append(static_cast<int>(SkColorGetG(color)));
+  list->Append(static_cast<int>(SkColorGetB(color)));
+  list->Append(static_cast<int>(SkColorGetA(color)));
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
 }

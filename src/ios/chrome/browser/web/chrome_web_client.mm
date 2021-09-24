@@ -56,12 +56,8 @@
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
-#include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/font_size_java_script_feature.h"
-#include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
@@ -203,24 +199,7 @@ std::unique_ptr<web::WebMainParts> ChromeWebClient::CreateWebMainParts() {
       *base::CommandLine::ForCurrentProcess());
 }
 
-void ChromeWebClient::PreWebViewCreation() const {
-  // TODO(crbug.com/1082371): Confirm that this code is no longer needed and
-  // remove it entirely. Until then, prevent this from running on iOS 13.4+, as
-  // it occasionally triggers a permissions prompt.
-  if (!base::ios::IsRunningOnOrLater(13, 4, 0)) {
-    // Initialize the audio session to allow a web page's audio to continue
-    // playing after the app is backgrounded.
-    VoiceSearchProvider* voice_provider =
-        ios::GetChromeBrowserProvider().GetVoiceSearchProvider();
-    if (voice_provider) {
-      AudioSessionController* audio_controller =
-          voice_provider->GetAudioSessionController();
-      if (audio_controller) {
-        audio_controller->InitializeSessionIfNecessary();
-      }
-    }
-  }
-}
+void ChromeWebClient::PreWebViewCreation() const {}
 
 void ChromeWebClient::AddAdditionalSchemes(Schemes* schemes) const {
   schemes->standard_schemes.push_back(kChromeUIScheme);
@@ -286,10 +265,7 @@ void ChromeWebClient::GetAdditionalWebUISchemes(
 void ChromeWebClient::PostBrowserURLRewriterCreation(
     web::BrowserURLRewriter* rewriter) {
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
-  BrowserURLRewriterProvider* provider =
-      ios::GetChromeBrowserProvider().GetBrowserURLRewriterProvider();
-  if (provider)
-    provider->AddProviderRewriters(rewriter);
+  ios::provider::AddURLRewriters(rewriter);
 }
 
 std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(

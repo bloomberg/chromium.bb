@@ -25,7 +25,7 @@ String RTCEncodedVideoFrameDelegate::Type() const {
   return webrtc_frame_->IsKeyFrame() ? "key" : "delta";
 }
 
-uint64_t RTCEncodedVideoFrameDelegate::Timestamp() const {
+uint32_t RTCEncodedVideoFrameDelegate::Timestamp() const {
   MutexLocker lock(mutex_);
   return webrtc_frame_ ? webrtc_frame_->GetTimestamp() : 0;
 }
@@ -78,6 +78,12 @@ DOMArrayBuffer* RTCEncodedVideoFrameDelegate::CreateAdditionalDataBuffer()
 uint32_t RTCEncodedVideoFrameDelegate::Ssrc() const {
   MutexLocker lock(mutex_);
   return webrtc_frame_ ? webrtc_frame_->GetSsrc() : 0;
+}
+
+uint8_t RTCEncodedVideoFrameDelegate::PayloadType() const {
+  MutexLocker lock(mutex_);
+  // 255 is outside the range [0..127] of valid payload types.
+  return webrtc_frame_ ? webrtc_frame_->GetPayloadType() : 255;
 }
 
 const webrtc::VideoFrameMetadata* RTCEncodedVideoFrameDelegate::GetMetadata()

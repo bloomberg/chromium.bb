@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -129,8 +130,6 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs, CanvasRenderingAPI::k2D),
       should_prune_local_font_cache_(false),
-      random_generator_((uint32_t)base::RandUint64()),
-      bernoulli_distribution_(kRasterMetricProbability),
       color_params_(attrs.color_space, attrs.pixel_format, attrs.alpha) {
   identifiability_study_helper_.SetExecutionContext(
       canvas->GetTopExecutionContext());
@@ -206,6 +205,9 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ != kNotLostContext)
     return;
   context_lost_mode_ = lost_mode;
+  PostDeferrableAction(WTF::Bind(
+      [](BaseRenderingContext2D* context) { context->ResetInternal(); },
+      WrapPersistent(this)));
   if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
@@ -226,7 +228,8 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
   DCHECK(context_lost_mode_ != kNotLostContext && !IsPaintable());
 
   if (CanCreateCanvas2dResourceProvider()) {
-    if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled()) {
+    if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+            canvas()->GetTopExecutionContext())) {
       dispatch_context_restored_event_timer_.StartOneShot(base::TimeDelta(),
                                                           FROM_HERE);
     } else {
@@ -305,7 +308,7 @@ void CanvasRenderingContext2D::WillOverwriteCanvas() {
 
 void CanvasRenderingContext2D::Reset() {
   // This is a multiple inheritance bootstrap
-  BaseRenderingContext2D::reset();
+  BaseRenderingContext2D::ResetInternal();
 }
 
 void CanvasRenderingContext2D::RestoreCanvasMatrixClipStack(
@@ -443,6 +446,13 @@ cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvasForDraw(
                !canvas()->GetCanvas2DLayerBridge()->ResourceProvider()))
     return nullptr;
   CanvasRenderingContext::DidDraw(dirty_rect, draw_type);
+  if (!layer_count_) {
+    // TODO(crbug.com/1246486): Make auto-flushing layer friendly.
+    canvas()
+        ->GetCanvas2DLayerBridge()
+        ->ResourceProvider()
+        ->FlushIfRecordingLimitExceeded();
+  }
   return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
 }
 
@@ -462,25 +472,11 @@ String CanvasRenderingContext2D::font() const {
     serialized_font.Append("small-caps ");
 
   serialized_font.AppendNumber(font_description.ComputedSize());
-  serialized_font.Append("px");
+  serialized_font.Append("px ");
 
-  const FontFamily& first_font_family = font_description.Family();
-  for (const FontFamily* font_family = &first_font_family; font_family;
-       font_family = font_family->Next()) {
-    if (font_family != &first_font_family)
-      serialized_font.Append(',');
-
-    // FIXME: We should append family directly to serializedFont rather than
-    // building a temporary string.
-    String family = font_family->Family();
-    if (family.StartsWith("-webkit-"))
-      family = family.Substring(8);
-    if (family.Contains(' '))
-      family = "\"" + family + "\"";
-
-    serialized_font.Append(' ');
-    serialized_font.Append(family);
-  }
+  serialized_font.Append(
+      ComputedStyleUtils::ValueForFontFamily(font_description.Family())
+          ->CssText());
 
   return serialized_font.ToString();
 }
@@ -495,7 +491,6 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
         CanvasOps::kSetFont, IdentifiabilityBenignStringToken(new_font));
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   // The following early exit is dependent on the cache not being empty
@@ -571,10 +566,6 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   String new_font_safe_copy(new_font);  // Create a string copy since newFont
                                         // can be deleted inside realizeSaves.
   GetState().SetUnparsedFont(new_font_safe_copy);
-  if (bernoulli_distribution_(random_generator_)) {
-    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimes("Canvas.TextMetrics.SetFont2", elapsed);
-  }
 }
 
 void CanvasRenderingContext2D::DidProcessTask(
@@ -778,6 +769,8 @@ void CanvasRenderingContext2D::setDirection(const String& direction_string) {
 }
 
 void CanvasRenderingContext2D::setLetterSpacing(const double letter_spacing) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DLetterSpacing);
   if (UNLIKELY(!std::isfinite(letter_spacing)))
     return;
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
@@ -791,6 +784,8 @@ void CanvasRenderingContext2D::setLetterSpacing(const double letter_spacing) {
 }
 
 void CanvasRenderingContext2D::setWordSpacing(const double word_spacing) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DWordSpacing);
   if (UNLIKELY(!std::isfinite(word_spacing)))
     return;
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
@@ -805,6 +800,8 @@ void CanvasRenderingContext2D::setWordSpacing(const double word_spacing) {
 
 void CanvasRenderingContext2D::setTextRendering(
     const String& text_rendering_string) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DTextRendering);
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
@@ -832,6 +829,8 @@ void CanvasRenderingContext2D::setTextRendering(
 
 void CanvasRenderingContext2D::setFontKerning(
     const String& font_kerning_string) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DFontKerning);
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
@@ -854,6 +853,8 @@ void CanvasRenderingContext2D::setFontKerning(
 }
 
 void CanvasRenderingContext2D::setFontStretch(const String& font_stretch) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DFontStretch);
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
@@ -890,6 +891,8 @@ void CanvasRenderingContext2D::setFontStretch(const String& font_stretch) {
 
 void CanvasRenderingContext2D::setFontVariantCaps(
     const String& font_variant_caps_string) {
+  UseCounter::Count(canvas()->GetTopExecutionContext(),
+                    WebFeature::kCanvasRenderingContext2DFontVariantCaps);
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
@@ -1139,7 +1142,8 @@ CanvasRenderingContext2D::getContextAttributes() const {
   if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled())
     settings->setPixelFormat(GetCanvas2DColorParams().GetPixelFormatAsString());
   settings->setDesynchronized(Host()->LowLatencyEnabled());
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled())
+  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
+          canvas()->GetTopExecutionContext()))
     settings->setWillReadFrequently(CreationAttributes().will_read_frequently);
   return settings;
 }

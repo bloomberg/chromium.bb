@@ -98,6 +98,7 @@ crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-001a.ht
 crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-001b.html [ Failure ]
 crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
 crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
+crbug.com/470421 external/wpt/css/css-flexbox/fixed-table-layout-with-percentage-width-in-flex-item.html [ Failure ]
 
 ### external/wpt/css/css-fonts/
 crbug.com/591099 external/wpt/css/css-fonts/font-features-across-space-1.html [ Failure ]
@@ -171,14 +172,6 @@ crbug.com/1045599 external/wpt/css/css-sizing/contain-intrinsic-size/contain-int
 crbug.com/1045599 fast/css-grid-layout/grid-item-spanning-and-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/grid-track-sizing-with-orthogonal-flows.html [ Failure ]
 crbug.com/1045599 fast/css-grid-layout/maximize-tracks-definite-indefinite-height.html [ Failure ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/grid-abspos-staticpos-align-self-safe-001.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-4.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-6.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-item-no-aspect-ratio-stretch-7.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-row-axis-self-baseline-synthesized-004.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-self-baseline-not-applied-if-sizing-cyclic-dependency-003.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-004.html [ Pass ]
-crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-005.html [ Pass ]
 crbug.com/1045599 http/tests/devtools/elements/highlight/highlight-css-grid-area.js [ Failure ]
 crbug.com/1045599 http/tests/devtools/elements/highlight/highlight-css-grid-direction.js [ Failure ]
 crbug.com/1045599 http/tests/devtools/elements/highlight/highlight-css-grid-huge.js [ Failure ]
@@ -247,9 +240,12 @@ crbug.com/1108830 external/wpt/css/css-pseudo/marker-text-transform-uppercase.ht
 crbug.com/1108830 external/wpt/css/css-pseudo/marker-word-break.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-default.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-normal.html [ Failure ]
+crbug.com/1147859 external/wpt/css/css-pseudo/selection-decoration-p3.html [ Failure ]
 
 ### external/wpt/css/css-ruby/
 crbug.com/591099 external/wpt/css/css-ruby/ruby-line-breaking-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-ruby/ruby-with-floats-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-ruby/ruby-with-floats-003.html [ Failure ]
 
 ### external/wpt/css/css-shapes/shape-outside/shape-box/
 crbug.com/591099 external/wpt/css/css-shapes/shape-outside/shape-box/shape-outside-border-box-border-radius-003.html [ Failure ]
@@ -653,14 +649,8 @@ crbug.com/591099 virtual/gpu-rasterization/images/favicon-as-image.html [ Failur
 ### virtual/layout_ng_block_frag/
 virtual/layout_ng_block_frag/* [ Skip ]
 
-### virtual/layout-ng-grid/
-virtual/layout-ng-grid/* [ Skip ]
-
-### virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/
-crbug.com/591099 virtual/layout-ng-grid/external/wpt/css/css-grid/abspos/orthogonal-positioned-grid-descendants-001.html [ Failure ]
-
-### virtual/layout_ng_svg_text/
-virtual/layout_ng_svg_text/* [ Skip ]
+### virtual/layout_ng_flex_frag/
+virtual/layout_ng_flex_frag/* [ Skip ]
 
 ### virtual/layout_ng_printing/
 virtual/layout_ng_printing/* [ Skip ]
@@ -709,6 +699,8 @@ crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Fail
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-038.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-039.html [ Failure ]
 
 # White space, absolute position and paint timing failures from June 5, 2020
 crbug.com/591099 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-visibility.html [ Failure ]
@@ -1251,6 +1243,9 @@ crbug.com/591099 external/wpt/webcodecs/video-decoder.crossOriginIsolated.https.
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_annexb [ Failure Timeout ]
 crbug.com/591099 external/wpt/webcodecs/videoDecoder-codec-specific.https.any.worker.html?h264_avc [ Failure Timeout ]
 
+# Flaky only in legacy layout
+crbug.com/1231658 transforms/transformed-caret.html [ Failure Pass ]
+
 crbug.com/591099 fast/forms/time/time-appearance-basic.html [ Failure ]
 crbug.com/591099 virtual/prerender/wpt_internal/prerender/restriction-encrypted-media.https.html [ Failure ]
 crbug.com/591099 virtual/prerender/wpt_internal/prerender/restriction-media-auto-play-attribute.html [ Failure ]
@@ -1263,3 +1258,64 @@ crbug.com/591099 external/wpt/css/css-lists/list-style-type-decimal-vertical-rl.
 # unblock wpt-importer
 crbug.com/591099 external/wpt/css/css-lists/list-style-image-gradients.html [ Failure ]
 crbug.com/591099 external/wpt/editing/other/insert-text-in-void-element.tentative.html [ Failure ]
+
+# unblock wpt-importer
+crbug.com/591099 external/wpt/css/css-content/attr-case-sensitivity-003.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-027.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-028.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-029.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-030.html [ Failure ]
+crbug.com/591099 http/tests/devtools/webaudio/graphview-test.js [ Failure ]
+crbug.com/591099 virtual/shared_array_buffer_on_desktop/http/tests/devtools/webaudio/graphview-test.js [ Failure ]
+
+#unblock wpt-importer
+crbug.com/591099 external/wpt/css/css-overflow/scrollable-overflow-input-001.html [ Failure ]
+
+# Backgrounds and border tests fail only with legacy layout.
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-042.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-045.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-046.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-049.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-054.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-057.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-066.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-067.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-069.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-072.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-079.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-084.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-089.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-091.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-099.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-102.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-105.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-108.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-113.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-115.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-123.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-126.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-129.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-132.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-159.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-162.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-165.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-168.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-176.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-178.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-183.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-186.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-189.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-192.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-200.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-202.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-attachment-004.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-attachment-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-position-applies-to-005.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-position-applies-to-006.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/backgrounds/background-root-020.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-left-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-left-color-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-left-width-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-right-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-right-color-applies-to-014.xht [ Failure ]
+crbug.com/626703 external/wpt/css/CSS2/borders/border-right-width-applies-to-014.xht [ Failure ]

@@ -11,6 +11,7 @@
 #include "chromeos/components/eche_app_ui/eche_feature_status_provider.h"
 #include "chromeos/components/eche_app_ui/eche_notification_click_handler.h"
 #include "chromeos/components/eche_app_ui/eche_recent_app_click_handler.h"
+#include "chromeos/components/eche_app_ui/launch_app_helper.h"
 #include "chromeos/components/eche_app_ui/mojom/eche_app.mojom.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,6 +39,7 @@ class SystemInfo;
 class EcheSignaler;
 class SystemInfoProvider;
 class EcheUidProvider;
+class EcheNotificationGenerator;
 
 // Implements the core logic of the EcheApp and exposes interfaces via its
 // public API. Implemented as a KeyedService since it depends on other
@@ -50,9 +52,9 @@ class EcheAppManager : public KeyedService {
                  device_sync::DeviceSyncClient*,
                  multidevice_setup::MultiDeviceSetupClient*,
                  secure_channel::SecureChannelClient*,
-                 EcheNotificationClickHandler::LaunchEcheAppFunction,
-                 EcheNotificationClickHandler::CloseEcheAppFunction,
-                 EcheRecentAppClickHandler::LaunchEcheAppFunction);
+                 LaunchAppHelper::LaunchEcheAppFunction,
+                 LaunchAppHelper::CloseEcheAppFunction,
+                 LaunchAppHelper::LaunchNotificationFunction);
   ~EcheAppManager() override;
 
   EcheAppManager(const EcheAppManager&) = delete;
@@ -60,11 +62,15 @@ class EcheAppManager : public KeyedService {
 
   void BindSignalingMessageExchangerInterface(
       mojo::PendingReceiver<mojom::SignalingMessageExchanger> receiver);
+
   void BindUidGeneratorInterface(
       mojo::PendingReceiver<mojom::UidGenerator> receiver);
 
   void BindSystemInfoProviderInterface(
       mojo::PendingReceiver<mojom::SystemInfoProvider> receiver);
+
+  void BindNotificationGeneratorInterface(
+      mojo::PendingReceiver<mojom::NotificationGenerator> receiver);
 
   // KeyedService:
   void Shutdown() override;
@@ -72,6 +78,7 @@ class EcheAppManager : public KeyedService {
  private:
   std::unique_ptr<secure_channel::ConnectionManager> connection_manager_;
   std::unique_ptr<EcheFeatureStatusProvider> feature_status_provider_;
+  std::unique_ptr<LaunchAppHelper> launch_app_helper_;
   std::unique_ptr<EcheNotificationClickHandler>
       eche_notification_click_handler_;
   std::unique_ptr<EcheConnector> eche_connector_;
@@ -79,6 +86,7 @@ class EcheAppManager : public KeyedService {
   std::unique_ptr<SystemInfoProvider> system_info_provider_;
   std::unique_ptr<EcheUidProvider> uid_;
   std::unique_ptr<EcheRecentAppClickHandler> eche_recent_app_click_handler_;
+  std::unique_ptr<EcheNotificationGenerator> notification_generator_;
 };
 
 }  // namespace eche_app

@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
+#include "ui/base/interaction/element_tracker_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -292,9 +293,16 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   ui::MenuModel* model =
       [WeakPtrToMenuModelAsNSObject getFrom:[sender representedObject]];
   DCHECK(model);
-  if (model)
+  if (model) {
+    const ui::ElementIdentifier identifier =
+        model->GetElementIdentifierAt(modelIndex);
+    if (identifier) {
+      ui::ElementTrackerMac::GetInstance()->NotifyMenuItemActivated(
+          [sender menu], identifier);
+    }
     model->ActivatedAt(modelIndex,
                        ui::EventFlagsFromNative([NSApp currentEvent]));
+  }
   // Note: |self| may be destroyed by the call to ActivatedAt().
 }
 
@@ -302,6 +310,14 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
   if (!_menu && _model) {
     _menu.reset([[self menuFromModel:_model.get()] retain]);
     [_menu setDelegate:self];
+
+    // TODO(dfried): Ideally we'd do this after each submenu is created.
+    // However, the way we currently hook menu events only supports the root
+    // menu. Therefore we call this method here and submenus are not supported
+    // for auto-highlighting or ElementTracker events.
+    if (_delegate)
+      [_delegate controllerWillAddMenu:_menu fromModel:_model.get()];
+
     // If this is to be used with a NSPopUpButtonCell, add an item at the 0th
     // position that's empty. Doing it after the menu has been constructed won't
     // complicate creation logic, and since the tags are model indexes, they
@@ -334,4 +350,3 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 }
 
 @end
-

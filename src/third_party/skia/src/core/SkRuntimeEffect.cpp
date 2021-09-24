@@ -317,8 +317,14 @@ SkRuntimeEffect::Result SkRuntimeEffect::MakeInternal(std::unique_ptr<SkSL::Prog
                 c.type  = child_type(varType);
                 c.index = children.size();
                 children.push_back(c);
-                sampleUsages.push_back(SkSL::Analysis::GetSampleUsage(
-                        *program, var, sampleCoordsUsage.fWrite != 0, &elidedSampleCoords));
+                auto usage = SkSL::Analysis::GetSampleUsage(
+                        *program, var, sampleCoordsUsage.fWrite != 0, &elidedSampleCoords);
+                // If the child is never sampled, we pretend that it's actually in PassThrough mode.
+                // Otherwise, the GP code for collecting transforms and emitting transform code gets
+                // very confused, leading to asserts and bad (backend) shaders. There's an implicit
+                // assumption that every FP is used by its parent. (skbug.com/12429)
+                sampleUsages.push_back(usage.isSampled() ? usage
+                                                         : SkSL::SampleUsage::PassThrough());
             }
             // 'uniform' variables
             else if (var.modifiers().fFlags & SkSL::Modifiers::kUniform_Flag) {
@@ -465,27 +471,28 @@ sk_sp<SkRuntimeEffect> SkMakeCachedRuntimeEffect(SkRuntimeEffect::Result (*make)
     return effect;
 }
 
+static size_t uniform_element_size(SkRuntimeEffect::Uniform::Type type) {
+    switch (type) {
+        case SkRuntimeEffect::Uniform::Type::kFloat:  return sizeof(float);
+        case SkRuntimeEffect::Uniform::Type::kFloat2: return sizeof(float) * 2;
+        case SkRuntimeEffect::Uniform::Type::kFloat3: return sizeof(float) * 3;
+        case SkRuntimeEffect::Uniform::Type::kFloat4: return sizeof(float) * 4;
+
+        case SkRuntimeEffect::Uniform::Type::kFloat2x2: return sizeof(float) * 4;
+        case SkRuntimeEffect::Uniform::Type::kFloat3x3: return sizeof(float) * 9;
+        case SkRuntimeEffect::Uniform::Type::kFloat4x4: return sizeof(float) * 16;
+
+        case SkRuntimeEffect::Uniform::Type::kInt:  return sizeof(int);
+        case SkRuntimeEffect::Uniform::Type::kInt2: return sizeof(int) * 2;
+        case SkRuntimeEffect::Uniform::Type::kInt3: return sizeof(int) * 3;
+        case SkRuntimeEffect::Uniform::Type::kInt4: return sizeof(int) * 4;
+        default: SkUNREACHABLE;
+    }
+}
+
 size_t SkRuntimeEffect::Uniform::sizeInBytes() const {
     static_assert(sizeof(int) == sizeof(float));
-    auto element_size = [](Type type) -> size_t {
-        switch (type) {
-            case Type::kFloat:  return sizeof(float);
-            case Type::kFloat2: return sizeof(float) * 2;
-            case Type::kFloat3: return sizeof(float) * 3;
-            case Type::kFloat4: return sizeof(float) * 4;
-
-            case Type::kFloat2x2: return sizeof(float) * 4;
-            case Type::kFloat3x3: return sizeof(float) * 9;
-            case Type::kFloat4x4: return sizeof(float) * 16;
-
-            case Type::kInt:  return sizeof(int);
-            case Type::kInt2: return sizeof(int) * 2;
-            case Type::kInt3: return sizeof(int) * 3;
-            case Type::kInt4: return sizeof(int) * 4;
-            default: SkUNREACHABLE;
-        }
-    };
-    return element_size(this->type) * this->count;
+    return uniform_element_size(this->type) * this->count;
 }
 
 SkRuntimeEffect::SkRuntimeEffect(std::unique_ptr<SkSL::Program> baseProgram,
@@ -556,18 +563,9 @@ std::unique_ptr<SkFilterColorProgram> SkFilterColorProgram::Make(const SkRuntime
         return nullptr;
     }
 
-    // We allocate a uniform color for the input color, and one for each call to sample(). When we
-    // encounter a sample call, we record the index of the child being sampled, as well as the color
-    // being passed. In most cases, we can record enough information to perfectly re-create that
-    // call when we're later running the program. (We support calls that pass the original input
-    // color, an immediate color, or the results of a previous sample call). If the color is none
-    // of those, we are unable to use this per-effect program, and callers will need to fall back
-    // to another (slower) implementation.
-
-    // We also require that any children are *also* color filters (not shaders or blenders). In
-    // theory we could detect the coords being passed to shader children, and replicate those calls,
-    // but that's very complicated, and has diminishing returns. (eg, for table lookup color
-    // filters).
+    // We require that any children are color filters (not shaders or blenders). In theory, we could
+    // detect the coords being passed to shader children, and replicate those calls, but that's very
+    // complicated, and has diminishing returns. (eg, for table lookup color filters).
     if (!std::all_of(effect->fChildren.begin(),
                      effect->fChildren.end(),
                      [](const SkRuntimeEffect::Child& c) {
@@ -604,10 +602,13 @@ std::unique_ptr<SkFilterColorProgram> SkFilterColorProgram::Make(const SkRuntime
                ua.offset == ur.offset + 12;
     };
 
-    // We reserve a uniform color for each call to sample(). While processing the SkSL, we record
-    // the index of the child being sampled, and the color being filtered (in a SampleCall struct).
+    // We reserve a uniform color for each child invocation. While processing the SkSL, we record
+    // the index of the child, and the color being filtered (in a SampleCall struct).
     // When we run this program later, we use the SampleCall to evaluate the correct child, and
     // populate these uniform values. These Uniform ids are loads from the *second* arg ptr.
+    // If the color being passed is too complex for us to describe and re-create using SampleCall,
+    // we are unable to use this per-effect program, and callers will need to fall back to another
+    // (slower) implementation.
     skvm::Uniforms childColorUniforms{p.uniform(), 0};
     skvm::Color inputColor = p.uniformColor(/*placeholder*/ SkColors::kWhite, &childColorUniforms);
     std::vector<SkFilterColorProgram::SampleCall> sampleCalls;

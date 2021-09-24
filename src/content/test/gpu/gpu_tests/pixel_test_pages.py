@@ -131,6 +131,7 @@ class PixelTestPages(object):
     webgpu_args = [
         cba.ENABLE_UNSAFE_WEBGPU, cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES
     ]
+    webgpu_args_compiler = webgpu_args + ['--disable-metal-shader-cache']
 
     # The optimizer script spat out pretty similar values for most MP4 tests, so
     # combine into a single set of parameters.
@@ -365,6 +366,15 @@ class PixelTestPages(object):
                       base_name + '_WebGPUCanvas2DDrawImage',
                       test_rect=[0, 0, 400, 200],
                       browser_args=webgpu_args),
+        PixelTestPage('pixel_webgpu_copy_image.html',
+                      base_name + '_WebGPUToDataURL',
+                      test_rect=[0, 0, 400, 300],
+                      browser_args=webgpu_args_compiler),
+        PixelTestPage('pixel_webgpu_cached_swap_buffer_invalidated.html',
+                      base_name +
+                      '_WebGPUCachedSwapBufferInvalidatedShouldBeBlank',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=webgpu_args),
     ]
 
   # Pages that should be run with GPU rasterization enabled.
@@ -546,8 +556,7 @@ class PixelTestPages(object):
                       test_rect=[0, 0, 200, 100]),
         PixelTestPage('pixel_canvas_low_latency_webgl_rounded_corners.html',
                       base_name + '_CanvasLowLatencyWebGLRoundedCorners',
-                      test_rect=[0, 0, 100, 100],
-                      other_args={'no_overlay': True}),
+                      test_rect=[0, 0, 100, 100]),
         PixelTestPage('pixel_canvas_low_latency_webgl_occluded.html',
                       base_name + '_CanvasLowLatencyWebGLOccluded',
                       test_rect=[0, 0, 100, 100],
@@ -897,7 +906,8 @@ class PixelTestPages(object):
                       base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
-                      other_args={'no_overlay': True}),
+                      other_args={'zero_copy': False},
+                      matching_algorithm=permissive_dc_sobel_algorithm),
         PixelTestPage('pixel_video_backdrop_filter.html',
                       base_name + '_DirectComposition_Video_BackdropFilter',
                       test_rect=[0, 0, 240, 135],

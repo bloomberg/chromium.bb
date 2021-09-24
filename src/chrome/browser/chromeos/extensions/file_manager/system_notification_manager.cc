@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/arc_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -69,14 +71,23 @@ SystemNotificationManager::CreateNotification(
     const std::string& notification_id,
     const std::u16string& title,
     const std::u16string& message,
-    const base::RepeatingClosure& click_callback) {
+    const scoped_refptr<message_center::NotificationDelegate>& delegate) {
   return ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
       std::u16string(), GURL(), message_center::NotifierId(),
-      message_center::RichNotificationData(),
-      new message_center::HandleNotificationClickDelegate(click_callback),
-      kNotificationGoogleIcon,
+      message_center::RichNotificationData(), delegate, kNotificationGoogleIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
+}
+
+std::unique_ptr<message_center::Notification>
+SystemNotificationManager::CreateNotification(
+    const std::string& notification_id,
+    const std::u16string& title,
+    const std::u16string& message,
+    const base::RepeatingClosure& click_callback) {
+  return CreateNotification(
+      notification_id, title, message,
+      new message_center::HandleNotificationClickDelegate(click_callback));
 }
 
 std::unique_ptr<message_center::Notification>
@@ -108,11 +119,7 @@ SystemNotificationManager::CreateNotification(
     const scoped_refptr<message_center::NotificationDelegate>& delegate) {
   std::u16string title = l10n_util::GetStringUTF16(title_id);
   std::u16string message = l10n_util::GetStringUTF16(message_id);
-  return ash::CreateSystemNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
-      std::u16string(), GURL(), message_center::NotifierId(),
-      message_center::RichNotificationData(), delegate, kNotificationGoogleIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+  return CreateNotification(notification_id, title, message, delegate);
 }
 
 void SystemNotificationManager::HandleProgressClick(
@@ -157,6 +164,8 @@ void SystemNotificationManager::Dismiss(const std::string& notification_id) {
                                          notification_id);
 }
 
+constexpr char kDeviceFailNotificationId[] = "swa-device-fail-id";
+
 void SystemNotificationManager::HandleDeviceEvent(
     const file_manager_private::DeviceEvent& event) {
   if (!swa_enabled_) {
@@ -164,6 +173,8 @@ void SystemNotificationManager::HandleDeviceEvent(
   }
   std::unique_ptr<message_center::Notification> notification;
 
+  std::u16string title;
+  std::u16string message;
   const char* id = file_manager_private::ToString(event.type);
   switch (event.type) {
     case file_manager_private::DEVICE_EVENT_TYPE_DISABLED:
@@ -172,46 +183,56 @@ void SystemNotificationManager::HandleDeviceEvent(
                              IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE);
       break;
     case file_manager_private::DEVICE_EVENT_TYPE_REMOVED:
-      // TODO(b/188487301) Hide device fail & storage disabled notifications.
+      // Hide device fail & storage disabled notifications.
+      GetNotificationDisplayService()->Close(
+          NotificationHandler::Type::TRANSIENT, kDeviceFailNotificationId);
+      GetNotificationDisplayService()->Close(
+          NotificationHandler::Type::TRANSIENT,
+          file_manager_private::ToString(
+              file_manager_private::DEVICE_EVENT_TYPE_DISABLED));
       break;
     case file_manager_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED:
       notification = CreateNotification(id, IDS_DEVICE_HARD_UNPLUGGED_TITLE,
                                         IDS_DEVICE_HARD_UNPLUGGED_MESSAGE);
       break;
     case file_manager_private::DEVICE_EVENT_TYPE_FORMAT_START:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE);
+      title = l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
+                                         base::UTF8ToUTF16(event.device_label));
+      message =
+          l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE,
+                                     base::UTF8ToUTF16(event.device_label));
+      notification = CreateNotification(id, title, message);
       break;
     case file_manager_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_SUCCESS_MESSAGE);
-      break;
     case file_manager_private::DEVICE_EVENT_TYPE_FORMAT_FAIL:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE);
+    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_FAIL:
+      // Hide the formatting notification.
+      GetNotificationDisplayService()->Close(
+          NotificationHandler::Type::TRANSIENT,
+          file_manager_private::ToString(
+              file_manager_private::DEVICE_EVENT_TYPE_FORMAT_START));
+      title = l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
+                                         base::UTF8ToUTF16(event.device_label));
+      if (event.type ==
+          file_manager_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS) {
+        message =
+            l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_FORMAT_SUCCESS_MESSAGE,
+                                       base::UTF8ToUTF16(event.device_label));
+      } else {
+        message =
+            l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE,
+                                       base::UTF8ToUTF16(event.device_label));
+      }
+      notification = CreateNotification(id, title, message);
+      break;
+    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_START:
+    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_SUCCESS:
+      // No-op.
       break;
     case file_manager_private::DEVICE_EVENT_TYPE_RENAME_FAIL:
       notification =
           CreateNotification(id, IDS_RENAMING_OF_DEVICE_FAILED_TITLE,
                              IDS_RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE);
-      break;
-    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_START:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_PROGRESS_MESSAGE);
-      break;
-    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_SUCCESS:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_SUCCESS_MESSAGE);
-      break;
-    case file_manager_private::DEVICE_EVENT_TYPE_PARTITION_FAIL:
-      notification =
-          CreateNotification(id, IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE,
-                             IDS_FILE_BROWSER_FORMAT_FAILURE_MESSAGE);
       break;
     default:
       DLOG(WARNING) << "Unable to generate notification for " << id;
@@ -442,7 +463,7 @@ void SystemNotificationManager::HandleCopyEvent(
   }
 }
 
-const char* kRemovableNotificationId = "swa-removable-device-id";
+constexpr char kRemovableNotificationId[] = "swa-removable-device-id";
 
 void SystemNotificationManager::HandleRemovableNotificationClick(
     const std::string& path,
@@ -470,49 +491,170 @@ SystemNotificationManager::MakeMountErrorNotification(
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &SystemNotificationManager::HandleRemovableNotificationClick,
           weak_ptr_factory_.GetWeakPtr(), volume.mount_path().value()));
-  switch (event.status) {
-    case file_manager_private::
-        MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM:
-      notification = CreateNotification(
-          kRemovableNotificationId, IDS_REMOVABLE_DEVICE_DETECTION_TITLE,
-          IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE, delegate);
-      break;
-    default:
-      DLOG(WARNING) << "Unhandled mount error for " << event.status;
-      break;
+  auto device_mount_status =
+      mount_status_.find(volume.storage_device_path().value());
+  if (device_mount_status != mount_status_.end()) {
+    std::u16string title =
+        l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE);
+    std::u16string message;
+    switch (device_mount_status->second) {
+      case MOUNT_STATUS_ONLY_PARENT_ERROR:
+      case MOUNT_STATUS_CHILD_ERROR:
+        if (event.status ==
+            file_manager_private::
+                MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM) {
+          if (volume.drive_label().empty()) {
+            message = l10n_util::GetStringUTF16(
+                IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE);
+          } else {
+            message = l10n_util::GetStringFUTF16(
+                IDS_DEVICE_UNSUPPORTED_MESSAGE,
+                base::UTF8ToUTF16(volume.drive_label()));
+          }
+        } else {
+          if (volume.drive_label().empty()) {
+            message =
+                l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE);
+          } else {
+            message = l10n_util::GetStringFUTF16(
+                IDS_DEVICE_UNKNOWN_MESSAGE,
+                base::UTF8ToUTF16(volume.drive_label()));
+          }
+        }
+        break;
+      case MOUNT_STATUS_MULTIPART_ERROR:
+        if (volume.drive_label().empty()) {
+          message = l10n_util::GetStringUTF16(
+              IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE);
+        } else {
+          message = l10n_util::GetStringFUTF16(
+              IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
+              base::UTF8ToUTF16(volume.drive_label()));
+        }
+        break;
+      default:
+        DLOG(WARNING) << "Unhandled mount status for "
+                      << device_mount_status->second;
+        return notification;
+    }
+    notification =
+        CreateNotification(kDeviceFailNotificationId, title, message, delegate);
   }
   return notification;
+}
+
+enum SystemNotificationManagerMountStatus
+SystemNotificationManager::UpdateDeviceMountStatus(
+    file_manager_private::MountCompletedEvent& event,
+    const Volume& volume) {
+  enum SystemNotificationManagerMountStatus status = MOUNT_STATUS_NO_RESULT;
+  const std::string& device_path = volume.storage_device_path().value();
+  auto device_mount_status = mount_status_.find(device_path);
+  if (device_mount_status == mount_status_.end()) {
+    status = MOUNT_STATUS_NO_RESULT;
+  } else {
+    status = device_mount_status->second;
+  }
+  switch (status) {
+    case MOUNT_STATUS_MULTIPART_ERROR:
+      // Do nothing, status has already been detected.
+      break;
+    case MOUNT_STATUS_ONLY_PARENT_ERROR:
+      if (!volume.is_parent()) {
+        // Hide Device Fail notification.
+        GetNotificationDisplayService()->Close(
+            NotificationHandler::Type::TRANSIENT, kDeviceFailNotificationId);
+      }
+      FALLTHROUGH;
+    case MOUNT_STATUS_NO_RESULT:
+      if (event.status ==
+          file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+        status = MOUNT_STATUS_SUCCESS;
+      } else if (event.volume_metadata.is_parent_device) {
+        status = MOUNT_STATUS_ONLY_PARENT_ERROR;
+      } else {
+        status = MOUNT_STATUS_CHILD_ERROR;
+      }
+      break;
+    case MOUNT_STATUS_SUCCESS:
+    case MOUNT_STATUS_CHILD_ERROR:
+      if (status == MOUNT_STATUS_SUCCESS &&
+          event.status ==
+              file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+        status = MOUNT_STATUS_SUCCESS;
+      } else {
+        // Multi partition device with at least one partition in error.
+        status = MOUNT_STATUS_MULTIPART_ERROR;
+      }
+      break;
+  }
+  mount_status_[device_path] = status;
+
+  return status;
 }
 
 std::unique_ptr<message_center::Notification>
 SystemNotificationManager::MakeRemovableNotification(
     file_manager_private::MountCompletedEvent& event,
     const Volume& volume) {
-  if (event.status != file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
-    return MakeMountErrorNotification(event, volume);
-  }
-  int message_id;
-  if (volume.is_read_only() && !volume.is_read_only_removable_device()) {
-    message_id = IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY;
-  } else {
-    message_id = IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE;
-  }
-  scoped_refptr<message_center::NotificationDelegate> delegate =
-      new message_center::HandleNotificationClickDelegate(base::BindRepeating(
-          &SystemNotificationManager::HandleRemovableNotificationClick,
-          weak_ptr_factory_.GetWeakPtr(), volume.mount_path().value()));
-  std::unique_ptr<message_center::Notification> notification =
-      CreateNotification(kRemovableNotificationId,
-                         IDS_REMOVABLE_DEVICE_DETECTION_TITLE, message_id,
-                         delegate);
+  std::unique_ptr<message_center::Notification> notification;
+  if (event.status == file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+    bool show_settings_button = false;
+    std::u16string title =
+        l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE);
+    std::u16string message;
+    if (volume.is_read_only() && !volume.is_read_only_removable_device()) {
+      message = l10n_util::GetStringUTF16(
+          IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY);
+    } else {
+      const PrefService* const service = profile_->GetPrefs();
+      DCHECK(service);
+      bool arc_enabled = service->GetBoolean(arc::prefs::kArcEnabled);
+      bool arc_removable_media_access_enabled =
+          service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
+      if (!arc_enabled) {
+        message =
+            l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE);
+      } else if (arc_removable_media_access_enabled) {
+        message = base::StrCat(
+            {l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE),
+             u" ",
+             l10n_util::GetStringUTF16(
+                 IDS_REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE)});
+        show_settings_button = true;
+      } else {
+        message = base::StrCat(
+            {l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE),
+             u" ",
+             l10n_util::GetStringUTF16(
+                 IDS_REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE)});
+        show_settings_button = true;
+      }
+    }
+    scoped_refptr<message_center::NotificationDelegate> delegate =
+        new message_center::HandleNotificationClickDelegate(base::BindRepeating(
+            &SystemNotificationManager::HandleRemovableNotificationClick,
+            weak_ptr_factory_.GetWeakPtr(), volume.mount_path().value()));
+    notification =
+        CreateNotification(kRemovableNotificationId, title, message, delegate);
 
-  std::vector<message_center::ButtonInfo> notification_buttons;
-  notification_buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL)));
-  notification_buttons.push_back(
-      message_center::ButtonInfo(l10n_util::GetStringUTF16(
-          IDS_REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL)));
-  notification->set_buttons(notification_buttons);
+    std::vector<message_center::ButtonInfo> notification_buttons;
+    notification_buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringUTF16(
+            IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL)));
+    if (show_settings_button) {
+      notification_buttons.push_back(
+          message_center::ButtonInfo(l10n_util::GetStringUTF16(
+              IDS_REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL)));
+    }
+    notification->set_buttons(notification_buttons);
+  }
+  if (volume.device_type() != chromeos::DEVICE_TYPE_UNKNOWN &&
+      !volume.storage_device_path().empty()) {
+    if (UpdateDeviceMountStatus(event, volume) != MOUNT_STATUS_SUCCESS) {
+      notification = MakeMountErrorNotification(event, volume);
+    }
+  }
 
   return notification;
 }
@@ -529,6 +671,15 @@ void SystemNotificationManager::HandleMountCompletedEvent(
     case file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT:
       if (event.should_notify) {
         notification = MakeRemovableNotification(event, volume);
+      }
+      break;
+    case file_manager_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT:
+      GetNotificationDisplayService()->Close(
+          NotificationHandler::Type::TRANSIENT, kRemovableNotificationId);
+
+      if (volume.device_type() != chromeos::DEVICE_TYPE_UNKNOWN &&
+          !volume.storage_device_path().empty()) {
+        UpdateDeviceMountStatus(event, volume);
       }
       break;
     default:

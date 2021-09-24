@@ -110,6 +110,10 @@ const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
 // default apps in order to be able to install them via adb.
 const char kArcDisableSystemDefaultApps[] = "arc-disable-system-default-apps";
 
+// Flag that disables ureadahead completely, including host and guest parts.
+// See also |kArcVmUreadaheadMode|.
+const char kArcDisableUreadahead[] = "arc-disable-ureadahead";
+
 // Flag to enables an experiment to allow users to turn on 64-bit support in
 // native bridge on systems that have such support available but not yet enabled
 // by default.
@@ -160,6 +164,8 @@ const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
 // generate - used during Android PFQ data collector to pre-generate pack file
 //            and upload to Google Cloud as build artifact for CrOS build image.
 // disabled - used for test purpose to disable ureadahead during ARCVM boot.
+//            note, |kArcDisableUreadahead| also disables both, guest and host
+//            parts of ureadahead.
 const char kArcVmUreadaheadMode[] = "arcvm-ureadahead-mode";
 
 // Madvises the kernel to use Huge Pages for guest memory.
@@ -401,6 +407,12 @@ const char kEnableHoudini[] = "enable-houdini";
 // Enables the use of 64-bit Houdini library for ARM binary translation.
 const char kEnableHoudini64[] = "enable-houdini64";
 
+// Enables the use of Houdini DLC library for ARM binary translation. This is
+// independent of choosing between the 32-bit vs 64-bit Houdini library. Houdini
+// DLC library will be downloaded and installed at run-time instead of at build
+// time.
+const char kEnableHoudiniDlc[] = "enable-houdini-dlc";
+
 // Enables the use of 32-bit NDK translation library for ARM binary translation.
 const char kEnableNdkTranslation[] = "enable-ndk-translation";
 
@@ -447,12 +459,10 @@ const char kEnterpriseEnableForcedReEnrollment[] =
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
 
-// Whether to enable PSM (private set membership) queries.
-const char kEnterpriseEnablePsm[] = "enterprise-enable-psm";
-
-// Whether to use fake PSM RLWE client for testing purposes.
-const char kEnterpriseUseFakePsmRlweClient[] =
-    "enterprise-use-fake-psm-rlwe-client";
+// Whether to use fake PSM (private set membership) RLWE client for testing
+// purposes.
+const char kEnterpriseUseFakePsmRlweClientForTesting[] =
+    "enterprise-use-fake-psm-rlwe-client-for-testing";
 
 // Enables the zero-touch enterprise enrollment flow.
 const char kEnterpriseEnableZeroTouchEnrollment[] =
@@ -547,6 +557,11 @@ const char kFormFactor[] = "form-factor";
 // Sets the throttle fps for compositor frame submission.
 const char kFrameThrottleFps[] = "frame-throttle-fps";
 
+// A reauth request token that will be passed in the Gaia embedded sign-in URL.
+// The token will be obtained by a client-server request in the future, but in
+// this temporary prototype we're configuring it manually.
+const char kGaiaReauthRequestToken[] = "gaia-reauth-request-token";
+
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[] = "bwsi";
@@ -569,6 +584,10 @@ const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
+// If set, the system is a Chromebook with a number pad as part of its internal
+// keyboard.
+const char kHasNumberPad[] = "has-number-pad";
+
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";
 
@@ -587,6 +606,10 @@ const char kIgnoreUserProfileMappingForTests[] =
 // Decreases delay in uploading installation event logs for integration test.
 const char kInstallLogFastUploadForTests[] =
     "install-log-fast-upload-for-tests";
+
+// When specified, Chrome OS will install a System Extension from the specified
+// directory. For now, only one extension can be specified.
+const char kInstallSystemExtension[] = "install-system-extension";
 
 // If set, the Chrome settings will not expose the option to enable crostini
 // unless the enable-experimental-kernel-vm-support flag is set in

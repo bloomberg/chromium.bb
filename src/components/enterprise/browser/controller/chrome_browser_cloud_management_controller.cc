@@ -22,6 +22,7 @@
 #include "components/enterprise/browser/enterprise_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
+#include "components/policy/core/common/cloud/client_data_delegate.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/dm_token.h"
@@ -29,8 +30,6 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/features.h"
-#include "components/policy/core/common/policy_types.h"
-#include "components/policy/policy_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(OS_ANDROID)
@@ -48,24 +47,6 @@ void RecordEnrollmentResult(
       "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result", result);
 }
 
-// Read the kCloudPolicyOverridesPlatformPolicy from platform provider directly
-// because the local_state is not ready when the
-// MachineLevelUserCloudPolicyManager is created.
-bool DoesCloudPolicyHasPriority(
-    ConfigurationPolicyProvider* platform_provider) {
-  if (!platform_provider)
-    return false;
-  const auto* entry =
-      platform_provider->policies()
-          .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-          .Get(key::kCloudPolicyOverridesPlatformPolicy);
-  if (!entry || entry->scope == POLICY_SCOPE_USER ||
-      entry->level == POLICY_LEVEL_RECOMMENDED)
-    return false;
-
-  return entry->value()->is_bool() && entry->value()->GetBool();
-}
-
 }  // namespace
 
 const base::FilePath::CharType
@@ -79,7 +60,8 @@ void ChromeBrowserCloudManagementController::Delegate::DeferInitialization(
 
 ChromeBrowserCloudManagementController::ChromeBrowserCloudManagementController(
     std::unique_ptr<ChromeBrowserCloudManagementController::Delegate> delegate)
-    : delegate_(std::move(delegate)) {
+    : delegate_(std::move(delegate)),
+      client_data_delegate_(delegate_->CreateClientDataDelegate()) {
   delegate_->SetDMTokenStorageDelegate();
 }
 
@@ -135,13 +117,6 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
 
   DVLOG(1) << "Creating machine level user cloud policy manager";
 
-  bool cloud_policy_has_priority =
-      DoesCloudPolicyHasPriority(platform_provider);
-  if (cloud_policy_has_priority) {
-    DVLOG(1) << "Cloud policies are now overriding platform policies with "
-                "machine scope.";
-  }
-
   base::FilePath policy_dir =
       user_data_dir.Append(ChromeBrowserCloudManagementController::kPolicyDir);
 
@@ -150,7 +125,6 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
           dm_token, client_id, external_policy_path, policy_dir,
-          cloud_policy_has_priority,
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                // Block shutdown to make sure the policy cache update is always
@@ -261,7 +235,7 @@ void ChromeBrowserCloudManagementController::Init(
 
     // Not registered already, so do it now.
     cloud_management_registrar_->RegisterForCloudManagementWithEnrollmentToken(
-        enrollment_token, client_id,
+        enrollment_token, client_id, *client_data_delegate_,
         base::BindOnce(
             &ChromeBrowserCloudManagementController::
                 RegisterForCloudManagementWithEnrollmentTokenCallback,

@@ -5644,7 +5644,7 @@ class CopyingPacketWriter : public PacketDroppingTestWriter {
   std::vector<std::unique_ptr<QuicEncryptedPacket>> packets_;
 };
 
-TEST_P(EndToEndTest, ChaosProtection) {
+TEST_P(EndToEndTest, ChaosProtectionDisabled) {
   if (!version_.UsesCryptoFrames()) {
     ASSERT_TRUE(Initialize());
     return;
@@ -5653,8 +5653,8 @@ TEST_P(EndToEndTest, ChaosProtection) {
   auto copying_writer = new CopyingPacketWriter(1);
   delete client_writer_;
   client_writer_ = copying_writer;
-  // Enable chaos protection and perform an HTTP request.
-  client_config_.SetClientConnectionOptions(QuicTagVector{kCHSP});
+  // Disable chaos protection and perform an HTTP request.
+  client_config_.SetClientConnectionOptions(QuicTagVector{kNCHP});
   ASSERT_TRUE(Initialize());
   SendSynchronousFooRequestAndCheckResponse();
   // Parse the saved packet to make sure it's valid.
@@ -5667,31 +5667,15 @@ TEST_P(EndToEndTest, ChaosProtection) {
   // can inspect the contents of this packet.
 }
 
-TEST_P(EndToEndTest, ChaosProtectionWithMultiPacketChlo) {
-  if (!version_.UsesCryptoFrames()) {
-    ASSERT_TRUE(Initialize());
-    return;
-  }
-  // Enable chaos protection.
-  client_config_.SetClientConnectionOptions(QuicTagVector{kCHSP});
-  // Add a transport parameter to make the client hello span multiple packets.
-  constexpr auto kCustomParameter =
-      static_cast<TransportParameters::TransportParameterId>(0xff34);
-  client_config_.custom_transport_parameters_to_send()[kCustomParameter] =
-      std::string(2000, '?');
-  ASSERT_TRUE(Initialize());
-  SendSynchronousFooRequestAndCheckResponse();
-}
-
-TEST_P(EndToEndTest, PermuteTlsExtensions) {
+TEST_P(EndToEndTest, DisablePermuteTlsExtensions) {
   if (!version_.UsesTls()) {
     ASSERT_TRUE(Initialize());
     return;
   }
-  // Enable TLS extension permutation and perform an HTTP request.
-  client_config_.SetClientConnectionOptions(QuicTagVector{kBPTE});
+  // Disable TLS extension permutation and perform an HTTP request.
+  client_config_.SetClientConnectionOptions(QuicTagVector{kNBPE});
   ASSERT_TRUE(Initialize());
-  EXPECT_TRUE(GetClientSession()->permutes_tls_extensions());
+  EXPECT_FALSE(GetClientSession()->permutes_tls_extensions());
   SendSynchronousFooRequestAndCheckResponse();
 }
 
@@ -5884,7 +5868,7 @@ TEST_P(EndToEndTest, KeyUpdateInitiatedByBoth) {
 }
 
 TEST_P(EndToEndTest, KeyUpdateInitiatedByConfidentialityLimit) {
-  SetQuicFlag(FLAGS_quic_key_update_confidentiality_limit, 4U);
+  SetQuicFlag(FLAGS_quic_key_update_confidentiality_limit, 16U);
 
   if (!version_.UsesTls()) {
     // Key Update is only supported in TLS handshake.
@@ -5910,9 +5894,11 @@ TEST_P(EndToEndTest, KeyUpdateInitiatedByConfidentialityLimit) {
       },
       QuicTime::Delta::FromSeconds(5));
 
-  SendSynchronousFooRequestAndCheckResponse();
-  SendSynchronousFooRequestAndCheckResponse();
-  SendSynchronousFooRequestAndCheckResponse();
+  for (uint64_t i = 0;
+       i < GetQuicFlag(FLAGS_quic_key_update_confidentiality_limit); ++i) {
+    SendSynchronousFooRequestAndCheckResponse();
+  }
+
   // Don't know exactly how many packets will be sent in each request/response,
   // so just test that at least one key update occurred.
   EXPECT_LE(1u, client_connection->GetStats().key_update_count);

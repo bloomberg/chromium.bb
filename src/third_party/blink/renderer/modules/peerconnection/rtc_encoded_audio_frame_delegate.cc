@@ -18,7 +18,7 @@ RTCEncodedAudioFrameDelegate::RTCEncodedAudioFrameDelegate(
     : webrtc_frame_(std::move(webrtc_frame)),
       contributing_sources_(std::move(contributing_sources)) {}
 
-uint64_t RTCEncodedAudioFrameDelegate::Timestamp() const {
+uint32_t RTCEncodedAudioFrameDelegate::Timestamp() const {
   MutexLocker lock(mutex_);
   return webrtc_frame_ ? webrtc_frame_->GetTimestamp() : 0;
 }
@@ -52,6 +52,12 @@ void RTCEncodedAudioFrameDelegate::SetData(const DOMArrayBuffer* data) {
 uint32_t RTCEncodedAudioFrameDelegate::Ssrc() const {
   MutexLocker lock(mutex_);
   return webrtc_frame_ ? webrtc_frame_->GetSsrc() : 0;
+}
+
+uint8_t RTCEncodedAudioFrameDelegate::PayloadType() const {
+  MutexLocker lock(mutex_);
+  // 255 is outside the range [0..127] of valid payload types.
+  return webrtc_frame_ ? webrtc_frame_->GetPayloadType() : 255;
 }
 
 Vector<uint32_t> RTCEncodedAudioFrameDelegate::ContributingSources() const {

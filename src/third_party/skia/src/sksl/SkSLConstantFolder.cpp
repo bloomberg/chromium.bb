@@ -9,8 +9,8 @@
 
 #include <limits>
 
+#include "include/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLContext.h"
-#include "src/sksl/SkSLErrorReporter.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLConstructor.h"
@@ -63,6 +63,28 @@ static std::unique_ptr<Expression> short_circuit_boolean(const Expression& left,
     return eliminate_no_op_boolean(right, op, left);
 }
 
+static std::unique_ptr<Expression> simplify_vector_equality(const Context& context,
+                                                            const Expression& left,
+                                                            Operator op,
+                                                            const Expression& right) {
+    if (op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ) {
+        bool equality = (op.kind() == Token::Kind::TK_EQEQ);
+
+        switch (left.compareConstant(right)) {
+            case Expression::ComparisonResult::kNotEqual:
+                equality = !equality;
+                [[fallthrough]];
+
+            case Expression::ComparisonResult::kEqual:
+                return BoolLiteral::Make(context, left.fOffset, equality);
+
+            case Expression::ComparisonResult::kUnknown:
+                break;
+        }
+    }
+    return nullptr;
+}
+
 // 'T' is the actual stored type of the literal data (SKSL_FLOAT or SKSL_INT).
 // 'U' is an unsigned version of that, used to perform addition, subtraction, and multiplication,
 // to avoid signed-integer overflow errors. This mimics the use of URESULT vs. RESULT when doing
@@ -76,21 +98,9 @@ static std::unique_ptr<Expression> simplify_vector(const Context& context,
     SkASSERT(left.type() == right.type());
     const Type& type = left.type();
 
-    // Handle boolean operations: == !=
-    if (op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ) {
-        bool equality = (op.kind() == Token::Kind::TK_EQEQ);
-
-        switch (left.compareConstant(right)) {
-            case Expression::ComparisonResult::kNotEqual:
-                equality = !equality;
-                [[fallthrough]];
-
-            case Expression::ComparisonResult::kEqual:
-                return BoolLiteral::Make(context, left.fOffset, equality);
-
-            case Expression::ComparisonResult::kUnknown:
-                return nullptr;
-        }
+    // Handle equality operations: == !=
+    if (std::unique_ptr<Expression> result = simplify_vector_equality(context, left, op, right)) {
+        return result;
     }
 
     // Handle floating-point arithmetic: + - * /
@@ -160,30 +170,25 @@ static bool is_constant_scalar_value(const Expression& inExpr, float match) {
 }
 
 static bool contains_constant_zero(const Expression& expr) {
-    if (expr.isAnyConstructor()) {
-        for (const auto& arg : expr.asAnyConstructor().argumentSpan()) {
-            if (contains_constant_zero(*arg)) {
-                return true;
-            }
+    int numSlots = expr.type().slotCount();
+    for (int index = 0; index < numSlots; ++index) {
+        const Expression* subexpr = expr.getConstantSubexpression(index);
+        if (subexpr && is_constant_scalar_value(*subexpr, 0.0f)) {
+            return true;
         }
-        return false;
     }
-    return is_constant_scalar_value(expr, 0.0);
+    return false;
 }
 
 static bool is_constant_value(const Expression& expr, float value) {
-    // This check only supports scalars and vectors (and in particular, not matrices).
-    SkASSERT(expr.type().isScalar() || expr.type().isVector());
-
-    if (expr.isAnyConstructor()) {
-        for (const auto& arg : expr.asAnyConstructor().argumentSpan()) {
-            if (!is_constant_value(*arg, value)) {
-                return false;
-            }
+    int numSlots = expr.type().slotCount();
+    for (int index = 0; index < numSlots; ++index) {
+        const Expression* subexpr = expr.getConstantSubexpression(index);
+        if (!subexpr || !is_constant_scalar_value(*subexpr, value)) {
+            return false;
         }
-        return true;
     }
-    return is_constant_scalar_value(expr, value);
+    return true;
 }
 
 bool ConstantFolder::ErrorOnDivideByZero(const Context& context, int offset, Operator op,
@@ -194,7 +199,7 @@ bool ConstantFolder::ErrorOnDivideByZero(const Context& context, int offset, Ope
         case Token::Kind::TK_PERCENT:
         case Token::Kind::TK_PERCENTEQ:
             if (contains_constant_zero(right)) {
-                context.errors().error(offset, "division by zero");
+                context.fErrors->error(offset, "division by zero");
                 return true;
             }
             return false;
@@ -218,15 +223,11 @@ const Expression* ConstantFolder::GetConstantValueForVariable(const Expression& 
         }
         expr = var.initialValue();
         if (!expr) {
-            SkDEBUGFAILF("found a const variable without an initial value (%s)",
-                         var.description().c_str());
+            // Function parameters can be const but won't have an initial value.
             break;
         }
         if (expr->isCompileTimeConstant()) {
             return expr;
-        }
-        if (!expr->is<VariableReference>()) {
-            break;
         }
     }
     // We didn't find a compile-time constant at the end. Return the expression as-is.
@@ -286,18 +287,13 @@ static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& cont
             if (is_constant_value(right, 1.0)) {  // x / 1
                 return cast_expression(context, left, resultType);
             }
-            if (is_constant_value(left, 0.0) &&
-                !is_constant_value(right, 0.0) &&
-                !right.hasSideEffects()) {        // 0 / x (where x is not 0)
-                return cast_expression(context, left, resultType);
-            }
             break;
 
         case Token::Kind::TK_PLUSEQ:
         case Token::Kind::TK_MINUSEQ:
             if (is_constant_value(right, 0.0)) {  // x += 0, x -= 0
                 std::unique_ptr<Expression> result = cast_expression(context, left, resultType);
-                Analysis::UpdateRefKind(result.get(), VariableRefKind::kRead);
+                Analysis::UpdateVariableRefKind(result.get(), VariableRefKind::kRead);
                 return result;
             }
             break;
@@ -306,7 +302,7 @@ static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& cont
         case Token::Kind::TK_SLASHEQ:
             if (is_constant_value(right, 1.0)) {  // x *= 1, x /= 1
                 std::unique_ptr<Expression> result = cast_expression(context, left, resultType);
-                Analysis::UpdateRefKind(result.get(), VariableRefKind::kRead);
+                Analysis::UpdateVariableRefKind(result.get(), VariableRefKind::kRead);
                 return result;
             }
             break;
@@ -460,13 +456,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
             case Token::Kind::TK_STAR:       return URESULT(*);
             case Token::Kind::TK_SLASH:
                 if (leftVal == std::numeric_limits<SKSL_INT>::min() && rightVal == -1) {
-                    context.errors().error(offset, "arithmetic overflow");
+                    context.fErrors->error(offset, "arithmetic overflow");
                     return nullptr;
                 }
                 return RESULT(/);
             case Token::Kind::TK_PERCENT:
                 if (leftVal == std::numeric_limits<SKSL_INT>::min() && rightVal == -1) {
-                    context.errors().error(offset, "arithmetic overflow");
+                    context.fErrors->error(offset, "arithmetic overflow");
                     return nullptr;
                 }
                 return RESULT(%);
@@ -485,13 +481,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
                     // in C++, but not GLSL. Do the shift on unsigned values, to avoid UBSAN.
                     return URESULT(<<);
                 }
-                context.errors().error(offset, "shift value out of range");
+                context.fErrors->error(offset, "shift value out of range");
                 return nullptr;
             case Token::Kind::TK_SHR:
                 if (rightVal >= 0 && rightVal <= 31) {
                     return RESULT(>>);
                 }
-                context.errors().error(offset, "shift value out of range");
+                context.fErrors->error(offset, "shift value out of range");
                 return nullptr;
 
             default:
@@ -531,6 +527,9 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
         if (leftType.componentType().isInteger()) {
             return simplify_vector<SKSL_INT, SKSL_UINT>(context, *left, op, *right);
         }
+        if (leftType.componentType().isBoolean()) {
+            return simplify_vector_equality(context, *left, op, *right);
+        }
         return nullptr;
     }
 
@@ -544,6 +543,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
             return simplify_vector<SKSL_INT, SKSL_UINT>(context, *left, op,
                                                         splat_scalar(*right, left->type()));
         }
+        if (rightType.isBoolean()) {
+            return simplify_vector_equality(context, *left, op,
+                                            splat_scalar(*right, left->type()));
+        }
         return nullptr;
     }
 
@@ -556,6 +559,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
         if (leftType.isInteger()) {
             return simplify_vector<SKSL_INT, SKSL_UINT>(context, splat_scalar(*left, right->type()),
                                                         op, *right);
+        }
+        if (leftType.isBoolean()) {
+            return simplify_vector_equality(context, splat_scalar(*left, right->type()),
+                                            op, *right);
         }
         return nullptr;
     }

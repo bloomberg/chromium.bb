@@ -24,12 +24,12 @@ DisplayHandler::~DisplayHandler() {
 }
 
 void DisplayHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "highlightDisplay",
       base::BindRepeating(&DisplayHandler::HandleHighlightDisplay,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "dragDisplayDelta",
       base::BindRepeating(&DisplayHandler::HandleDragDisplayDelta,
                           base::Unretained(this)));
@@ -51,7 +51,7 @@ void DisplayHandler::HandleHighlightDisplay(const base::ListValue* args) {
 }
 
 void DisplayHandler::HandleDragDisplayDelta(const base::ListValue* args) {
-  DCHECK_EQ(3U, args->GetSize());
+  DCHECK_EQ(3U, args->GetList().size());
   AllowJavascript();
 
   const auto& args_list = args->GetList();

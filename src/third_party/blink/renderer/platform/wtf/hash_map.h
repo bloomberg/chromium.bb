@@ -156,11 +156,8 @@ class HashMap {
   iterator find(KeyPeekInType);
   const_iterator find(KeyPeekInType) const;
   bool Contains(KeyPeekInType) const;
+  // Returns a reference to the mapped value. Crashes if no mapped value exists.
   MappedPeekType at(KeyPeekInType) const;
-  // Deprecated variant of at(). Created for refactor described in
-  // https://crbug.com/1058527. Returns a reference to the mapped value or the
-  // empty value if no mapped value exists.
-  MappedPeekType DeprecatedAtOrEmptyValue(KeyPeekInType) const;
 
   // replaces value but not key if key is already present return value is a
   // pair of the iterator to the key location, and a boolean that's true if a
@@ -590,20 +587,9 @@ template <typename T,
           typename Y>
 typename HashMap<T, U, V, W, X, Y>::MappedPeekType
 HashMap<T, U, V, W, X, Y>::at(KeyPeekInType key) const {
-  return DeprecatedAtOrEmptyValue(key);
-}
-
-template <typename T,
-          typename U,
-          typename V,
-          typename W,
-          typename X,
-          typename Y>
-typename HashMap<T, U, V, W, X, Y>::MappedPeekType
-HashMap<T, U, V, W, X, Y>::DeprecatedAtOrEmptyValue(KeyPeekInType key) const {
   const ValueType* entry = impl_.Lookup(key);
-  if (!entry)
-    return MappedTraits::Peek(MappedTraits::EmptyValue());
+  CHECK(entry) << "HashMap::at found no value for the given key. See "
+                  "https://crbug.com/1058527.";
   return MappedTraits::Peek(entry->value);
 }
 

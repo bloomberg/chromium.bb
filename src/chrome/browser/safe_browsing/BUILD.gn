@@ -1,6 +1,5 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
 
 import("//components/safe_browsing/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -9,8 +8,8 @@ static_library("safe_browsing") {
   sources = [
     "chrome_controller_client.cc",
     "chrome_controller_client.h",
-    "safe_browsing_tab_observer.cc",
-    "safe_browsing_tab_observer.h",
+    "chrome_safe_browsing_tab_observer_delegate.cc",
+    "chrome_safe_browsing_tab_observer_delegate.h",
     "url_checker_delegate_impl.cc",
     "url_checker_delegate_impl.h",
   ]
@@ -98,6 +97,10 @@ static_library("safe_browsing") {
       "certificate_reporting_service.h",
       "certificate_reporting_service_factory.cc",
       "certificate_reporting_service_factory.h",
+      "chrome_client_side_detection_host_delegate.cc",
+      "chrome_client_side_detection_host_delegate.h",
+      "chrome_client_side_detection_service_delegate.cc",
+      "chrome_client_side_detection_service_delegate.h",
       "chrome_password_protection_service.cc",
       "chrome_password_protection_service.h",
       "chrome_password_protection_service_factory.cc",
@@ -106,10 +109,8 @@ static_library("safe_browsing") {
       "chrome_safe_browsing_blocking_page_factory.h",
       "chrome_ui_manager_delegate.cc",
       "chrome_ui_manager_delegate.h",
-      "client_side_detection_host_delegate.cc",
-      "client_side_detection_host_delegate.h",
-      "client_side_detection_service_delegate.cc",
-      "client_side_detection_service_delegate.h",
+      "chrome_user_population_helper.cc",
+      "chrome_user_population_helper.h",
       "client_side_detection_service_factory.cc",
       "client_side_detection_service_factory.h",
       "delayed_warning_navigation_throttle.cc",
@@ -134,8 +135,6 @@ static_library("safe_browsing") {
       "url_lookup_service_factory.h",
       "user_interaction_observer.cc",
       "user_interaction_observer.h",
-      "user_population.cc",
-      "user_population.h",
     ]
     deps += [
       ":advanced_protection",
@@ -295,6 +294,13 @@ static_library("safe_browsing") {
           "incident_reporting/platform_state_store_win.cc",
         ]
       }
+
+      if (is_linux || is_win) {
+        sources += [
+          "download_protection/document_analysis_service.cc",
+          "download_protection/document_analysis_service.h",
+        ]
+      }
       deps += [
         ":advanced_protection",
         ":verdict_cache_manager_factory",
@@ -333,6 +339,12 @@ static_library("safe_browsing") {
         deps += [
           "//chrome/browser/safe_browsing/incident_reporting:state_store_data_proto",
           "//chrome/common:version_header",
+        ]
+      }
+      if (is_linux || is_win) {
+        deps += [
+          "//chrome/common/safe_browsing:document_analyzer_results",
+          "//chrome/services/file_util/public/mojom",
         ]
       }
     } else if (safe_browsing_mode == 2) {

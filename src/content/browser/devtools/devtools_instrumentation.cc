@@ -43,6 +43,7 @@
 #include "net/quic/web_transport_error.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/devtools_observer_util.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -169,9 +170,8 @@ void OnResetNavigationRequest(NavigationRequest* navigation_request) {
   }
 }
 
-void OnNavigationResponseReceived(
-    const NavigationRequest& nav_request,
-    const network::mojom::URLResponseHead& response) {
+void OnNavigationResponseReceived(const NavigationRequest& nav_request,
+                                  const network::mojom::URLResponseHead& head) {
   // This response is artificial (see CachedNavigationURLLoader), so we don't
   // want to report it.
   if (nav_request.IsPageActivation())
@@ -181,9 +181,12 @@ void OnNavigationResponseReceived(
   std::string id = nav_request.devtools_navigation_token().ToString();
   std::string frame_id = ftn->devtools_frame_token().ToString();
   GURL url = nav_request.common_params().url;
+
+  network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
+      network::ExtractDevToolsInfo(head);
   DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
-                   url, protocol::Network::ResourceTypeEnum::Document, response,
-                   frame_id);
+                   url, protocol::Network::ResourceTypeEnum::Document,
+                   *head_info, frame_id);
 }
 
 void BackForwardCacheNotUsed(
@@ -345,15 +348,12 @@ void OnSignedExchangeCertificateRequestSent(
     const GURL& signed_exchange_url) {
   // Make sure both back-ends yield the same timestamp.
   auto timestamp = base::TimeTicks::Now();
-  network::mojom::URLRequestDevToolsInfo request_info(
-      request.method, request.url, request.priority, request.referrer_policy,
-      request.trust_token_params ? request.trust_token_params->Clone()
-                                 : nullptr,
-      request.has_user_gesture);
+  network::mojom::URLRequestDevToolsInfoPtr request_info =
+      network::ExtractDevToolsInfo(request);
   DispatchToAgents(
       frame_tree_node, &protocol::NetworkHandler::RequestSent,
       request_id.ToString(), loader_id.ToString(), request.headers,
-      request_info, protocol::Network::Initiator::TypeEnum::SignedExchange,
+      *request_info, protocol::Network::Initiator::TypeEnum::SignedExchange,
       signed_exchange_url, /*initiator_devtools_request_id=*/"", timestamp);
 
   auto value = std::make_unique<base::trace_event::TracedValue>();
@@ -370,9 +370,11 @@ void OnSignedExchangeCertificateResponseReceived(
     const base::UnguessableToken& loader_id,
     const GURL& url,
     const network::mojom::URLResponseHead& head) {
+  network::mojom::URLResponseHeadDevToolsInfoPtr head_info =
+      network::ExtractDevToolsInfo(head);
   DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::ResponseReceived,
                    request_id.ToString(), loader_id.ToString(), url,
-                   protocol::Network::ResourceTypeEnum::Other, head,
+                   protocol::Network::ResourceTypeEnum::Other, *head_info,
                    protocol::Maybe<std::string>());
 }
 
@@ -383,19 +385,6 @@ void OnSignedExchangeCertificateRequestCompleted(
   DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::LoadingComplete,
                    request_id.ToString(),
                    protocol::Network::ResourceTypeEnum::Other, status);
-}
-
-void CreateThrottlesForAgentHost(
-    DevToolsAgentHostImpl* agent_host,
-    NavigationHandle* navigation_handle,
-    std::vector<std::unique_ptr<NavigationThrottle>>* result) {
-  for (auto* target_handler :
-       protocol::TargetHandler::ForAgentHost(agent_host)) {
-    std::unique_ptr<NavigationThrottle> throttle =
-        target_handler->CreateThrottleForNavigation(navigation_handle);
-    if (throttle)
-      result->push_back(std::move(throttle));
-  }
 }
 
 void ThrottleForServiceWorkerAgentHost(
@@ -426,14 +415,15 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
 
   std::vector<std::unique_ptr<NavigationThrottle>> result;
   if (parent) {
-    DevToolsAgentHostImpl* agent_host =
-        RenderFrameDevToolsAgentHost::GetFor(parent);
-    if (agent_host)
-      CreateThrottlesForAgentHost(agent_host, navigation_handle, &result);
+    if (auto* agent_host = RenderFrameDevToolsAgentHost::GetFor(parent)) {
+      agent_host->auto_attacher()->AppendNavigationThrottles(navigation_handle,
+                                                             &result);
+    }
   } else {
-    for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances())
-      CreateThrottlesForAgentHost(browser_agent_host, navigation_handle,
-                                  &result);
+    for (DevToolsAgentHostImpl* host : BrowserDevToolsAgentHost::Instances()) {
+      host->auto_attacher()->AppendNavigationThrottles(navigation_handle,
+                                                       &result);
+    }
   }
 
   return result;
@@ -1051,6 +1041,57 @@ void ReportSameSiteCookieIssue(
           .Build();
 
   ReportBrowserInitiatedIssue(render_frame_host_impl, issue.get());
+}
+
+namespace {
+
+protocol::Audits::AttributionReportingIssueType
+BuildAttributionReportingIssueType(AttributionReportingIssueType issue_type) {
+  switch (issue_type) {
+    case AttributionReportingIssueType::kAttributionTriggerDataTooLarge:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          AttributionTriggerDataTooLarge;
+    case AttributionReportingIssueType::
+        kAttributionEventSourceTriggerDataTooLarge:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          AttributionEventSourceTriggerDataTooLarge;
+  }
+}
+
+}  // namespace
+
+void ReportAttributionReportingIssue(
+    RenderFrameHost* render_frame_host,
+    AttributionReportingIssueType issue_type,
+    const absl::optional<std::string>& request_id,
+    const absl::optional<std::string>& invalid_parameter) {
+  auto ar_details =
+      protocol::Audits::AttributionReportingIssueDetails::Create()
+          .SetViolationType(BuildAttributionReportingIssueType(issue_type))
+          .Build();
+
+  if (request_id) {
+    ar_details->SetRequest(protocol::Audits::AffectedRequest::Create()
+                               .SetRequestId(*request_id)
+                               .Build());
+  }
+
+  if (invalid_parameter) {
+    ar_details->SetInvalidParameter(*invalid_parameter);
+  }
+
+  auto details = protocol::Audits::InspectorIssueDetails::Create()
+                     .SetAttributionReportingIssueDetails(std::move(ar_details))
+                     .Build();
+
+  auto issue = protocol::Audits::InspectorIssue::Create()
+                   .SetCode(protocol::Audits::InspectorIssueCodeEnum::
+                                AttributionReportingIssue)
+                   .SetDetails(std::move(details))
+                   .Build();
+
+  ReportBrowserInitiatedIssue(
+      static_cast<RenderFrameHostImpl*>(render_frame_host), issue.get());
 }
 
 namespace {

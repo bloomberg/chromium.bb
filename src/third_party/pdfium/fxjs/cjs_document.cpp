@@ -20,6 +20,7 @@
 #include "core/fpdfdoc/cpdf_nametree.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "fpdfsdk/cpdfsdk_annotiteration.h"
+#include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fxjs/cjs_annot.h"
@@ -445,8 +446,7 @@ CJS_Result CJS_Document::print(
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CJS_EventRecorder* pHandler =
-      pRuntime->GetCurrentEventContext()->GetEventRecorder();
+  CJS_EventContext* pHandler = pRuntime->GetCurrentEventContext();
   if (!pHandler->IsUserGesture())
     return CJS_Result::Failure(JSMessage::kUserGestureRequiredError);
 
@@ -574,8 +574,7 @@ CJS_Result CJS_Document::submitForm(
   if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  CJS_EventRecorder* pHandler =
-      pRuntime->GetCurrentEventContext()->GetEventRecorder();
+  CJS_EventContext* pHandler = pRuntime->GetCurrentEventContext();
   if (!pHandler->IsUserGesture())
     return CJS_Result::Failure(JSMessage::kUserGestureRequiredError);
 

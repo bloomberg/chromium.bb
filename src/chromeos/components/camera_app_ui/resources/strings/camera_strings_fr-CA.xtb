@@ -51,7 +51,6 @@
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3838931309141338733">Numériser le code-barres</translation>
 <translation id="3892148308691398805">Copier le texte</translation>
-<translation id="4000398125663085899">Les nouvelles photos et vidéos seront maintenant enregistrées dans un dossier de l'application Fichiers : Mes fichiers &gt; Caméra</translation>
 <translation id="4118525110028899586">Interrompre l'enregistrement</translation>
 <translation id="4121305183798804752">Document détecté</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
@@ -70,7 +69,6 @@
 <translation id="5152121255775685072">Accéder à la galerie</translation>
 <translation id="520537883758714667">Numérisation de documents désormais disponible</translation>
 <translation id="5268823927180092501">Activer le mode document sur tous les appareils photo</translation>
-<translation id="5422455049771430511">Nouveau répertoire pour les photos et les vidéos</translation>
 <translation id="5444515100983837161">Placez l'intégralité du document dans le cadre. La numérisation sera de meilleure qualité si les couleurs du document et de l'arrière-plan sont différentes.</translation>
 <translation id="5671277269877808209">Carré</translation>
 <translation id="5746169159649715125">Enregistrer au format PDF</translation>
@@ -79,7 +77,6 @@
 <translation id="5775960006311140197">Mode Expert</translation>
 <translation id="5869546221129391014">Grille</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
-<translation id="6040143037577758943">Fermer</translation>
 <translation id="6073451960410192870">Arrêter l'enregistrement</translation>
 <translation id="6197807149213783179">Enregistrer les métadonnées</translation>
 <translation id="6233780560267770709">3 par 3</translation>
@@ -125,5 +122,6 @@ Si vos commentaires portaient sur la qualité de l'image ou de la vidéo, veuill
 <translation id="8903921497873541725">Zoom avant</translation>
 <translation id="9045010116236796332">Placez l'intégralité du document dans le cadre</translation>
 <translation id="9045155556724273246">10 secondes</translation>
+<translation id="906331135292332864">Traitement de l'image en cours…</translation>
 <translation id="945522503751344254">Envoyer un commentaire à Google</translation>
 </translationbundle>

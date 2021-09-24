@@ -64,8 +64,8 @@ namespace {
     for (int y = 0; y < bitmap.height(); ++y)                 \
       for (int x = 0; x < bitmap.width(); ++x) {              \
         int alpha = *bitmap.getAddr32(x, y) >> 24;            \
-        bool opaque = opaqueRect.Contains(x, y);              \
-        EXPECT_EQ(opaque, alpha == 255);                      \
+        bool is_opaque = opaqueRect.Contains(x, y);           \
+        EXPECT_EQ(is_opaque, alpha == 255);                   \
       }                                                       \
   }
 
@@ -103,7 +103,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   SkiaPaintCanvas canvas(bitmap);
 
   Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
-  Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
+  Color transparent(0.0f, 0.0f, 0.0f, 0.0f);
   FloatRect bounds(0, 0, 100, 100);
 
   auto paint_controller = std::make_unique<PaintController>();
@@ -137,7 +137,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   path.MoveTo(FloatPoint(10, 10));
   path.AddLineTo(FloatPoint(40, 40));
   PaintFlags flags;
-  flags.setColor(alpha.Rgb());
+  flags.setColor(transparent.Rgb());
   flags.setBlendMode(SkBlendMode::kSrcOut);
   context.DrawPath(path.GetSkPath(), flags);
 

@@ -191,7 +191,7 @@ export class StackTrace extends HTMLElement {
         LitHtml.html`
           <span>${i18nString(UIStrings.cannotRenderStackTrace)}</span>
         `,
-        this.shadow);
+        this.shadow, {host: this});
       return;
     }
     const expandableRows = this.createRowTemplates();
@@ -202,13 +202,11 @@ export class StackTrace extends HTMLElement {
         } as ExpandableList.ExpandableList.ExpandableListData}>
         </${ExpandableList.ExpandableList.ExpandableList.litTagName}>
       `,
-      this.shadow);
+      this.shadow, {host: this});
     // clang-format on
   }
 }
 
-// TODO(jacktfranklin): re-enable once https://crbug.com/1226741 is resolved.
-// eslint-disable-next-line rulesdir/check_component_naming
 ComponentHelpers.CustomElements.defineComponent('devtools-stack-trace-row', StackTraceRow);
 ComponentHelpers.CustomElements.defineComponent('devtools-stack-trace-link-button', StackTraceLinkButton);
 ComponentHelpers.CustomElements.defineComponent('devtools-resources-stack-trace', StackTrace);

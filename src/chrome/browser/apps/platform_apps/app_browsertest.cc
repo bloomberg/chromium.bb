@@ -540,8 +540,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
       << message_;
 }
 
+// Flaky on Windows. https://crbug.com/1246088
+#if defined(OS_WIN)
+#define MAYBE_Isolation DISABLED_Isolation
+#else
+#define MAYBE_Isolation Isolation
+#endif
 // Tests that platform apps have isolated storage by default.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Isolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Load a (non-app) page under the "localhost" origin that sets a cookie.
@@ -551,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   replace_host.SetHostStr("localhost");
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
-  ui_test_utils::NavigateToURL(browser(), set_cookie_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), set_cookie_url));
 
   // Make sure the cookie is set.
   int cookie_size;
@@ -611,12 +617,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
 // ChromeOS does not support passing arguments on the command line, so the tests
 // that rely on this functionality are disabled.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Tests that launch data is sent through if the file extension matches.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchFilesWithFileExtension) {
   RunPlatformAppTestWithFiles("platform_apps/launch_file_by_extension",
                               kTestFilePath);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
@@ -703,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
       "platform_apps/launch_file_with_any_extension", test_file))
       << message_;
 }
-#endif
+#endif  //  !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests that launch data is sent through for a file with no extension if a
 // handler accepts *.

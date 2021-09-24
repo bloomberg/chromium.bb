@@ -33,12 +33,20 @@
 #endif
 
 using chrome_test_util::IdentityCellMatcherForEmail;
-using chrome_test_util::SyncSettingsConfirmButton;
+using chrome_test_util::AdvancedSyncSettingsDoneButtonMatcher;
 
 namespace {
 
 NSString* const kScrollViewIdentifier =
     @"kFirstRunScrollViewAccessibilityIdentifier";
+
+NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
+    @"kMetricsConsentCheckboxAccessibilityIdentifier";
+
+// Returns a matcher for the welcome screen UMA checkbox button.
+id<GREYMatcher> GetUMACheckboxButton() {
+  return grey_accessibilityID(kMetricsConsentCheckboxAccessibilityIdentifier);
+}
 
 // Returns a matcher for the welcome screen accept button.
 id<GREYMatcher> GetAcceptButton() {
@@ -521,8 +529,7 @@ GREYLayoutConstraint* BelowConstraint() {
   [SigninEarlGrey verifySyncUIEnabled:NO];
 }
 
-// Checks that the FRE is dismissed when the user taps on the advanced sync
-// settings button and that sync is turned on after the user chose to turn on
+// Checks that sync is turned on after the user chose to turn on
 // sync in the advanced sync settings screen.
 - (void)testCustomSyncOn {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
@@ -546,71 +553,92 @@ GREYLayoutConstraint* BelowConstraint() {
                      grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
-  [self verifyFREIsDismissed];
-
   // Check that Sync hasn't started yet, allowing the user to change some
   // settings.
   GREYAssertFalse([FirstRunAppInterface isSyncFirstSetupComplete],
                   @"Sync shouldn't have finished its original setup yet");
 
-  [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
+  [[EarlGrey selectElementWithMatcher:AdvancedSyncSettingsDoneButtonMatcher()]
       performAction:grey_tap()];
 
+  // Check sync did not start yet.
+  GREYAssertFalse([FirstRunAppInterface isSyncFirstSetupComplete],
+                  @"Sync shouldn't start when discarding advanced settings.");
+
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_text(l10n_util::GetNSString(
+                                IDS_IOS_FIRST_RUN_SYNC_SCREEN_PRIMARY_ACTION)),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Check sync did start.
   GREYAssertTrue([FirstRunAppInterface isSyncFirstSetupComplete],
-                 @"Sync should have finished its original setup");
+                 @"Sync should start when turning on sync in FRE.");
 
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGrey verifySyncUIEnabled:YES];
 }
 
-// Checks that the user is signed in and sync is turned off after the user chose
-// to cancel sync in the advanced sync setting screen.
-- (void)testCustomSyncOff {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+// Tests that metrics collection is enabled when the checkmark is checked on
+// the Welcome screen.
+- (void)testMetricsEnabled {
+  // Verify the metrics collection pref is disabled prior to going through the
+  // Welcome screen.
+  GREYAssertFalse(
+      [FirstRunAppInterface isUMACollectionEnabled],
+      @"kMetricsReportingEnabled pref was unexpectedly true by default.");
 
-  [self verifyWelcomeScreenIsDisplayed];
+  // Verify the metrics checkbox is checked by default.
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      assertWithMatcher:grey_selected()];
+
+  // Verify the metrics checkbox is checked after tapping it twice.
+  [self scrollToElementAndAssertVisibility:GetUMACheckboxButton()];
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      assertWithMatcher:grey_selected()];
+
+  // Verify the metrics collection pref is enabled after going through the
+  // Welcome screen with the UMA checkbox checked.
   [self scrollToElementAndAssertVisibility:GetAcceptButton()];
   [[EarlGrey selectElementWithMatcher:GetAcceptButton()]
       performAction:grey_tap()];
+  GREYAssertTrue([FirstRunAppInterface isUMACollectionEnabled],
+                 @"kMetricsReportingEnabled pref was unexpectedly false after "
+                 @"checking the UMA checkbox.");
+}
 
-  [self verifySignInScreenIsDisplayed];
-  [[EarlGrey
-      selectElementWithMatcher:GetContinueButtonWithIdentity(fakeIdentity)]
+// Tests that metrics collection is disabled when the checkmark is unchecked on
+// the Welcome screen.
+- (void)testMetricsDisabled {
+  // Verify the metrics collection pref is disabled prior to going through the
+  // Welcome screen.
+  GREYAssertFalse(
+      [FirstRunAppInterface isUMACollectionEnabled],
+      @"kMetricsReportingEnabled pref was unexpectedly true by default.");
+
+  // Verify the metrics checkbox is checked by default.
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      assertWithMatcher:grey_selected()];
+
+  // Verify the metrics checkbox is unchecked after tapping it.
+  [self scrollToElementAndAssertVisibility:GetUMACheckboxButton()];
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
       performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:GetUMACheckboxButton()]
+      assertWithMatcher:grey_not(grey_selected())];
 
-  [self verifySyncScreenIsDisplayed];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_text(l10n_util::GetNSString(
-                         IDS_IOS_FIRST_RUN_SYNC_SCREEN_ADVANCE_SETTINGS)),
-                     grey_sufficientlyVisible(), nil)]
+  // Verify the metrics collection pref is disabled after going through the
+  // Welcome screen with the checkmark unchecked.
+  [self scrollToElementAndAssertVisibility:GetAcceptButton()];
+  [[EarlGrey selectElementWithMatcher:GetAcceptButton()]
       performAction:grey_tap()];
-
-  [self verifyFREIsDismissed];
-
-  // Check that Sync hasn't started yet, allowing the user to change some
-  // settings.
-  GREYAssertFalse([FirstRunAppInterface isSyncFirstSetupComplete],
-                  @"Sync shouldn't have finished its original setup yet");
-
-  // Cancel sync.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarCancelButton()]
-      performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              grey_text(l10n_util::GetNSString(
-                  IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_CANCEL_SYNC_BUTTON)),
-              grey_sufficientlyVisible(), nil)] performAction:grey_tap()];
-
-  // Check that the user is signed in.
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
-
-  [ChromeEarlGreyUI openSettingsMenu];
-  [SigninEarlGrey verifySyncUIEnabled:NO];
+  GREYAssertFalse([FirstRunAppInterface isUMACollectionEnabled],
+                  @"kMetricsReportingEnabled pref was unexpectedly true after "
+                  @"leaving the UMA checkbox unchecked.");
 }
 
 @end

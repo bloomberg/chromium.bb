@@ -1986,16 +1986,6 @@ TEST_F(HistoryBackendDBTest, MigrateVisitsWithoutPubliclyRoutableColumn) {
   // The version should have been updated.
   ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 44);
 
-  // Confirm that publicly_routable column has a default value "false".
-  {
-    sql::Statement s(
-        db.GetUniqueStatement("SELECT publicly_routable FROM visits"));
-    ASSERT_TRUE(s.Step());
-
-    EXPECT_FALSE(s.ColumnBool(0));
-    EXPECT_FALSE(s.Step());
-  }
-
   // content_annotations should exist.
   EXPECT_TRUE(db.DoesTableExist("content_annotations"));
 
@@ -2103,7 +2093,7 @@ TEST_F(HistoryBackendDBTest, MigrateFlocAllowedToAnnotationsTable) {
   // Check the entries in the content_annotations table.
   {
     sql::Statement s(db.GetUniqueStatement(
-        "SELECT visit_id,floc_protected_score,"
+        "SELECT visit_id,visibility_score,"
         "categories,page_topics_model_version,annotation_flags "
         "FROM content_annotations "
         "ORDER BY visit_id"));
@@ -2118,7 +2108,7 @@ TEST_F(HistoryBackendDBTest, MigrateFlocAllowedToAnnotationsTable) {
 
     EXPECT_TRUE(s.Step());
     EXPECT_EQ(visit_id2, s.ColumnInt64(0));
-    EXPECT_EQ(0.5, s.ColumnDouble(1));
+    EXPECT_EQ(-1, s.ColumnDouble(1));
     EXPECT_EQ("1:1", s.ColumnString(2));
     EXPECT_EQ(123, s.ColumnInt64(3));
     EXPECT_EQ(VisitContentAnnotationFlag::kNone,
@@ -2425,6 +2415,43 @@ TEST_F(HistoryBackendDBTest,
     VisitContentAnnotations visit_content_annotations;
     db_->GetContentAnnotationsForVisit(visit_id1, &visit_content_annotations);
     EXPECT_TRUE(visit_content_annotations.related_searches.empty());
+  }
+}
+
+TEST_F(HistoryBackendDBTest,
+       MigrateVisitsWithoutOpenerVisitColumnAndDropPubliclyRoutableColumn) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(47));
+
+  const VisitID visit_id1 = 1;
+
+  // Open the db for manual manipulation.
+  sql::Database db;
+  ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+  const char kInsertVisitStatement[] =
+      "INSERT INTO visits "
+      "(id, url, visit_time) VALUES (?, ?, ?)";
+
+  // Add a row to `visits` table.
+  {
+    sql::Statement s(db.GetUniqueStatement(kInsertVisitStatement));
+    s.BindInt64(0, 1);
+    s.BindInt64(1, 1);
+    s.BindTime(2, base::Time::Now());
+    ASSERT_TRUE(s.Run());
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 48);
+
+  // After the migration, the opener visit should be 0.
+  {
+    VisitRow visit;
+    db_->GetRowForVisit(visit_id1, &visit);
+    EXPECT_EQ(visit.opener_visit, 0);
   }
 }
 

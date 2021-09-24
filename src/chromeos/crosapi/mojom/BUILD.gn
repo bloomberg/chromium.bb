@@ -9,8 +9,10 @@ mojom("mojom") {
     "account_manager.mojom",
     "app_service.mojom",
     "app_service_types.mojom",
+    "app_window_tracker.mojom",
     "automation.mojom",
     "bitmap.mojom",
+    "browser_version.mojom",
     "cert_database.mojom",
     "clipboard.mojom",
     "clipboard_history.mojom",
@@ -20,7 +22,9 @@ mojom("mojom") {
     "download_controller.mojom",
     "drive_integration_service.mojom",
     "feedback.mojom",
+    "field_trial.mojom",
     "file_manager.mojom",
+    "geolocation.mojom",
     "holding_space_service.mojom",
     "idle_service.mojom",
     "image_writer.mojom",
@@ -108,6 +112,20 @@ mojom("mojom") {
         {
           mojom = "crosapi.mojom.AppType"
           cpp = "::apps::mojom::AppType"
+        },
+        {
+          mojom = "crosapi.mojom.Intent"
+          cpp = "::apps::mojom::IntentPtr"
+          move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.IntentFile"
+          cpp = "::apps::mojom::IntentFilePtr"
+          move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.LaunchSource"
+          cpp = "::apps::mojom::LaunchSource"
         },
       ]
       traits_headers = [

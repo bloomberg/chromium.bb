@@ -87,29 +87,36 @@ bool SortNetworks(const Network* a, const Network* b) {
 }
 
 uint16_t ComputeNetworkCostByType(int type,
-                                  bool use_differentiated_cellular_costs) {
+                                  bool is_vpn,
+                                  bool use_differentiated_cellular_costs,
+                                  bool add_network_cost_to_vpn) {
   // TODO(jonaso) : Rollout support for cellular network cost using A/B
   // experiment to make sure it does not introduce regressions.
+  int vpnCost = (is_vpn && add_network_cost_to_vpn) ? kNetworkCostVpn : 0;
   switch (type) {
     case rtc::ADAPTER_TYPE_ETHERNET:
     case rtc::ADAPTER_TYPE_LOOPBACK:
-      return kNetworkCostMin;
+      return kNetworkCostMin + vpnCost;
     case rtc::ADAPTER_TYPE_WIFI:
-      return kNetworkCostLow;
+      return kNetworkCostLow + vpnCost;
     case rtc::ADAPTER_TYPE_CELLULAR:
-      return kNetworkCostCellular;
+      return kNetworkCostCellular + vpnCost;
     case rtc::ADAPTER_TYPE_CELLULAR_2G:
-      return use_differentiated_cellular_costs ? kNetworkCostCellular2G
-                                               : kNetworkCostCellular;
+      return (use_differentiated_cellular_costs ? kNetworkCostCellular2G
+                                                : kNetworkCostCellular) +
+             vpnCost;
     case rtc::ADAPTER_TYPE_CELLULAR_3G:
-      return use_differentiated_cellular_costs ? kNetworkCostCellular3G
-                                               : kNetworkCostCellular;
+      return (use_differentiated_cellular_costs ? kNetworkCostCellular3G
+                                                : kNetworkCostCellular) +
+             vpnCost;
     case rtc::ADAPTER_TYPE_CELLULAR_4G:
-      return use_differentiated_cellular_costs ? kNetworkCostCellular4G
-                                               : kNetworkCostCellular;
+      return (use_differentiated_cellular_costs ? kNetworkCostCellular4G
+                                                : kNetworkCostCellular) +
+             vpnCost;
     case rtc::ADAPTER_TYPE_CELLULAR_5G:
-      return use_differentiated_cellular_costs ? kNetworkCostCellular5G
-                                               : kNetworkCostCellular;
+      return (use_differentiated_cellular_costs ? kNetworkCostCellular5G
+                                                : kNetworkCostCellular) +
+             vpnCost;
     case rtc::ADAPTER_TYPE_ANY:
       // Candidates gathered from the any-address/wildcard ports, as backups,
       // are given the maximum cost so that if there are other candidates with
@@ -120,13 +127,13 @@ uint16_t ComputeNetworkCostByType(int type,
       // ADAPTER_TYPE_CELLULAR would then have a higher cost. See
       // P2PTransportChannel::SortConnectionsAndUpdateState for how we rank and
       // select candidate pairs, where the network cost is among the criteria.
-      return kNetworkCostMax;
+      return kNetworkCostMax + vpnCost;
     case rtc::ADAPTER_TYPE_VPN:
       // The cost of a VPN should be computed using its underlying network type.
       RTC_NOTREACHED();
       return kNetworkCostUnknown;
     default:
-      return kNetworkCostUnknown;
+      return kNetworkCostUnknown + vpnCost;
   }
 }
 
@@ -534,6 +541,7 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
       continue;
     }
     // Convert to InterfaceAddress.
+    // TODO(webrtc:13114): Convert ConvertIfAddrs to use rtc::Netmask.
     if (!ifaddrs_converter->ConvertIfAddrsToIPAddress(cursor, &ip, &mask)) {
       continue;
     }
@@ -569,8 +577,16 @@ void BasicNetworkManager::ConvertIfAddrs(struct ifaddrs* interfaces,
       vpn_underlying_adapter_type =
           network_monitor_->GetVpnUnderlyingAdapterType(cursor->ifa_name);
     }
+
     int prefix_length = CountIPMaskBits(mask);
     prefix = TruncateIP(ip, prefix_length);
+
+    if (adapter_type != ADAPTER_TYPE_VPN &&
+        IsConfiguredVpn(prefix, prefix_length)) {
+      vpn_underlying_adapter_type = adapter_type;
+      adapter_type = ADAPTER_TYPE_VPN;
+    }
+
     std::string key =
         MakeNetworkKey(std::string(cursor->ifa_name), prefix, prefix_length);
     auto iter = current_networks.find(key);
@@ -759,8 +775,15 @@ bool BasicNetworkManager::CreateNetworks(bool include_ignored,
               adapter_type = ADAPTER_TYPE_UNKNOWN;
               break;
           }
+          auto vpn_underlying_adapter_type = ADAPTER_TYPE_UNKNOWN;
+          if (adapter_type != ADAPTER_TYPE_VPN &&
+              IsConfiguredVpn(prefix, prefix_length)) {
+            vpn_underlying_adapter_type = adapter_type;
+            adapter_type = ADAPTER_TYPE_VPN;
+          }
           std::unique_ptr<Network> network(new Network(
               name, description, prefix, prefix_length, adapter_type));
+          network->set_underlying_type_for_vpn(vpn_underlying_adapter_type);
           network->set_default_local_address_provider(this);
           network->set_mdns_responder_provider(this);
           network->set_scope_id(scope_id);
@@ -912,8 +935,8 @@ IPAddress BasicNetworkManager::QueryDefaultLocalAddress(int family) const {
   RTC_DCHECK(thread_->socketserver() != nullptr);
   RTC_DCHECK(family == AF_INET || family == AF_INET6);
 
-  std::unique_ptr<AsyncSocket> socket(
-      thread_->socketserver()->CreateAsyncSocket(family, SOCK_DGRAM));
+  std::unique_ptr<Socket> socket(
+      thread_->socketserver()->CreateSocket(family, SOCK_DGRAM));
   if (!socket) {
     RTC_LOG_ERR(LERROR) << "Socket creation failed";
     return IPAddress();
@@ -999,7 +1022,9 @@ Network::Network(const std::string& name,
       type_(ADAPTER_TYPE_UNKNOWN),
       preference_(0),
       use_differentiated_cellular_costs_(webrtc::field_trial::IsEnabled(
-          "WebRTC-UseDifferentiatedCellularCosts")) {}
+          "WebRTC-UseDifferentiatedCellularCosts")),
+      add_network_cost_to_vpn_(
+          webrtc::field_trial::IsEnabled("WebRTC-AddNetworkCostToVpn")) {}
 
 Network::Network(const std::string& name,
                  const std::string& desc,
@@ -1016,7 +1041,9 @@ Network::Network(const std::string& name,
       type_(type),
       preference_(0),
       use_differentiated_cellular_costs_(webrtc::field_trial::IsEnabled(
-          "WebRTC-UseDifferentiatedCellularCosts")) {}
+          "WebRTC-UseDifferentiatedCellularCosts")),
+      add_network_cost_to_vpn_(
+          webrtc::field_trial::IsEnabled("WebRTC-AddNetworkCostToVpn")) {}
 
 Network::Network(const Network&) = default;
 
@@ -1088,7 +1115,9 @@ webrtc::MdnsResponderInterface* Network::GetMdnsResponder() const {
 
 uint16_t Network::GetCost() const {
   AdapterType type = IsVpn() ? underlying_type_for_vpn_ : type_;
-  return ComputeNetworkCostByType(type, use_differentiated_cellular_costs_);
+  return ComputeNetworkCostByType(type, IsVpn(),
+                                  use_differentiated_cellular_costs_,
+                                  add_network_cost_to_vpn_);
 }
 
 std::string Network::ToString() const {
@@ -1103,6 +1132,28 @@ std::string Network::ToString() const {
   }
   ss << ":id=" << id_ << "]";
   return ss.Release();
+}
+
+void BasicNetworkManager::set_vpn_list(const std::vector<NetworkMask>& vpn) {
+  if (thread_ == nullptr) {
+    vpn_ = vpn;
+  } else {
+    thread_->Invoke<void>(RTC_FROM_HERE, [this, vpn] { vpn_ = vpn; });
+  }
+}
+
+bool BasicNetworkManager::IsConfiguredVpn(IPAddress prefix,
+                                          int prefix_length) const {
+  RTC_DCHECK_RUN_ON(thread_);
+  for (const auto& vpn : vpn_) {
+    if (prefix_length >= vpn.prefix_length()) {
+      auto copy = TruncateIP(prefix, vpn.prefix_length());
+      if (copy == vpn.address()) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace rtc

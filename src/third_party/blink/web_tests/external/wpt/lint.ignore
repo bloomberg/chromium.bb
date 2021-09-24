@@ -1,4 +1,4 @@
-# File containing whiteslist for lint errors
+# File containing allowlist for lint errors
 # Format is:
 # ERROR TYPE:file/name/pattern[:line number]
 # e.g.
@@ -142,7 +142,6 @@ SET TIMEOUT: cookies/resources/testharness-helpers.js
 SET TIMEOUT: common/reftest-wait.js
 SET TIMEOUT: conformance-checkers/*
 SET TIMEOUT: content-security-policy/*
-SET TIMEOUT: css/css-animations/non-invertible-transform-animation.html
 SET TIMEOUT: css/css-display/display-contents-shadow-dom-1.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-001.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-002.html
@@ -192,6 +191,8 @@ SET TIMEOUT: portals/resources/portals-adopt-predecessor-portal.html
 SET TIMEOUT: preload/single-download-preload.html
 SET TIMEOUT: resize-observer/resources/iframe.html
 SET TIMEOUT: resource-timing/resources/nested-contexts.js
+SET TIMEOUT: reporting/resources/first-csp-report.https.sub.html
+SET TIMEOUT: reporting/resources/second-csp-report.https.sub.html
 SET TIMEOUT: secure-contexts/basic-popup-and-iframe-tests.https.js
 SET TIMEOUT: service-workers/cache-storage/script-tests/cache-abort.js
 SET TIMEOUT: service-workers/service-worker/activation.https.html

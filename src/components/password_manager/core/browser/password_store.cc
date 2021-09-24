@@ -20,8 +20,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -111,6 +113,16 @@ class OperationHandler {
 
   int operations_ = 0;
 };
+
+LoginsResult RecordDurationMetrics(base::Time start,
+                                   const char* function_name,
+                                   LoginsResult result) {
+  base::TimeDelta duration = base::Time::Now() - start;
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      base::StrCat({"PasswordManager.PasswordStore.", function_name}),
+      duration);
+  return result;
+}
 
 }  // namespace
 
@@ -286,8 +298,11 @@ void PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
   backend_->GetAllLoginsAsync(
-      base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
-                     consumer->GetWeakPtr(), base::RetainedRef(this)));
+      base::BindOnce(&RecordDurationMetrics, base::Time::Now(),
+                     "GetAllLoginsAsync")
+          .Then(base::BindOnce(
+              &PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
+              consumer->GetWeakPtr(), base::RetainedRef(this))));
 }
 
 void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
@@ -302,7 +317,10 @@ void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
       base::BindOnce(&PasswordStore::InjectAffiliationAndBrandingInformation,
                      this, std::move(consumer_reply));
 
-  backend_->GetAllLoginsAsync(std::move(affiliation_injection));
+  backend_->GetAllLoginsAsync(base::BindOnce(&RecordDurationMetrics,
+                                             base::Time::Now(),
+                                             "GetAllLoginsAsync")
+                                  .Then(std::move(affiliation_injection)));
 }
 
 SmartBubbleStatsStore* PasswordStore::GetSmartBubbleStatsStore() {
@@ -311,21 +329,6 @@ SmartBubbleStatsStore* PasswordStore::GetSmartBubbleStatsStore() {
 
 FieldInfoStore* PasswordStore::GetFieldInfoStore() {
   return backend_->GetFieldInfoStore();
-}
-
-void PasswordStore::ReportMetrics(const std::string& sync_username,
-                                  bool custom_passphrase_sync_enabled,
-                                  bool is_under_advanced_protection) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  if (background_task_runner_) {
-    base::OnceClosure task = base::BindOnce(
-        &PasswordStore::ReportMetricsImpl, this, sync_username,
-        custom_passphrase_sync_enabled,
-        BulkCheckDone(prefs_ && prefs_->HasPrefPath(
-                                    prefs::kLastTimePasswordCheckCompleted)));
-    background_task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
-                                             base::TimeDelta::FromSeconds(30));
-  }
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -369,13 +372,6 @@ scoped_refptr<base::SequencedTaskRunner>
 PasswordStore::CreateBackgroundTaskRunner() const {
   return base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-}
-
-void PasswordStore::ReportMetricsImpl(const std::string& sync_username,
-                                      bool custom_passphrase_sync_enabled,
-                                      BulkCheckDone bulk_check_done) {
-  // TODO(crbug.com/1217070): Move as implementation detail into backend.
-  LOG(ERROR) << "Called function without implementation: " << __func__;
 }
 
 void PasswordStore::OnInitCompleted(bool success) {
@@ -439,7 +435,7 @@ void PasswordStore::InjectAffiliationAndBrandingInformation(
     LoginsResult forms) {
   if (affiliated_match_helper_ && !forms.empty()) {
     affiliated_match_helper_->InjectAffiliationAndBrandingInformation(
-        std::move(forms), AndroidAffiliationService::StrategyOnCacheMiss::FAIL,
+        std::move(forms), AffiliationService::StrategyOnCacheMiss::FAIL,
         std::move(callback));
   } else {
     std::move(callback).Run(std::move(forms));

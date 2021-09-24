@@ -170,7 +170,7 @@
                     ]
                 },
                 {
-                    "label": "Shader Printf",
+                    "label": "Debug Printf",
                     "description": "Debug shader code by \"printing\" any values of interest to the debug callback or stdout.",
                     "platforms": [ "WINDOWS", "LINUX" ],
                     "status": "STABLE",
@@ -420,7 +420,7 @@
                             "settings": [
                                 {
                                     "key": "printf_to_stdout",
-                                    "label": "Printf to stdout",
+                                    "label": "Redirect Printf messages to stdout",
                                     "description": "To redirect Debug Printf messages from the debug callback to stdout",
                                     "type": "BOOL",
                                     "default": true,
@@ -537,6 +537,12 @@
                             "label": "ARM-specific best practices",
                             "description": "Activating this feature enables the output of warnings related to ARM-specific misuse of the API, but which are not explicitly prohibited by the specification.",
                             "platforms": [ "WINDOWS", "LINUX", "MACOS", "ANDROID" ]
+                        },
+                        {
+                            "key": "VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD",
+                            "label": "AMD-specific best practices",
+                            "description": "Adds check for spec-conforming but non-ideal code one AMD GPUs",
+                            "platforms": [ "WINDOWS", "LINUX", "MACOS"]
                         }
                     ],
                     "default": []

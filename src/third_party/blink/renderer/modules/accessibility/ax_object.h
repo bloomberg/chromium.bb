@@ -466,10 +466,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool AccessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
   virtual AXObjectInclusion DefaultObjectInclusion(
       IgnoredReasons* = nullptr) const;
-  bool IsInertOrAriaHidden() const;
+  bool IsInert() const;
   bool IsAriaHidden() const;
+  bool CachedIsAriaHidden() { return cached_is_aria_hidden_; }
   const AXObject* AriaHiddenRoot() const;
-  bool ComputeIsInertOrAriaHidden(IgnoredReasons* = nullptr) const;
+  bool ComputeIsInert(IgnoredReasons* = nullptr) const;
+  bool ComputeIsAriaHidden(IgnoredReasons* = nullptr) const;
   bool IsBlockedByAriaModalDialog(IgnoredReasons* = nullptr) const;
   bool IsDescendantOfDisabledNode() const;
   bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
@@ -794,6 +796,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual int SetSize() const { return 0; }
   bool SupportsARIASetSizeAndPosInSet() const;
 
+  // Returns true if the attribute is prohibited (e.g. by ARIA), and we plan
+  // to enforce that prohibition. An example of something prohibited that we
+  // do not enforce is aria-label/aria-labelledby on certain text containers.
+  bool IsProhibited(ax::mojom::blink::StringAttribute attribute) const;
+  bool IsProhibited(ax::mojom::blink::IntAttribute attribute) const;
+
   // ARIA live-region features.
   bool IsLiveRegionRoot() const;  // Any live region, including polite="off".
   bool IsActiveLiveRegionRoot() const;  // Live region that is not polite="off".
@@ -1084,6 +1092,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   AXObject* ContainerWidget() const;
   bool IsContainerWidget() const;
+
+  AXObject* ContainerListMarkerIncludingIgnored() const;
 
   // There are two types of traversal for obtaining children:
   // 1. LayoutTreeBuilderTraversal. Despite the name, this traverses a flattened
@@ -1382,7 +1392,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // AXObjectCacheImpl::ModificationCount().
   mutable bool cached_is_ignored_ : 1;
   mutable bool cached_is_ignored_but_included_in_tree_ : 1;
-  mutable bool cached_is_inert_or_aria_hidden_ : 1;
+  mutable bool cached_is_inert_ : 1;
+  mutable bool cached_is_aria_hidden_ : 1;
   mutable bool cached_is_hidden_via_style : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;
   mutable Member<AXObject> cached_live_region_root_;

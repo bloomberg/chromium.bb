@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {
+  ScreenState,
+} from '/chromeos/components/camera_app_ui/camera_app_helper.mojom-webui.js';
+
 import * as animate from '../animation.js';
 import {
   assert,
@@ -94,10 +98,11 @@ export class Camera extends View {
    * @param {!VideoConstraintsPreferrer} videoPreferrer
    * @param {!Mode} defaultMode
    * @param {!PerfLogger} perfLogger
+   * @param {?Facing} facing
    */
   constructor(
       resultSaver, infoUpdater, photoPreferrer, videoPreferrer, defaultMode,
-      perfLogger) {
+      perfLogger, facing) {
     super(ViewName.CAMERA);
 
     /**
@@ -154,7 +159,7 @@ export class Camera extends View {
      * @private
      */
     this.scanOptions_ = new ScanOptions({
-      doReconfigure: this.start.bind(this),
+      doReconfigure: () => this.start(),
       doSwitchDevice: (deviceId) => this.options_.switchDevice(deviceId),
       infoUpdater: this.infoUpdater_,
     });
@@ -164,14 +169,14 @@ export class Camera extends View {
      * @type {!Preview}
      * @private
      */
-    this.preview_ = new Preview(this.start.bind(this));
+    this.preview_ = new Preview(() => this.start());
 
     /**
      * Options for the camera.
      * @type {!Options}
      * @private
      */
-    this.options_ = new Options(infoUpdater, this.start.bind(this));
+    this.options_ = new Options(infoUpdater, () => this.start());
 
     /**
      * @type {!VideoEncoderOptions}
@@ -216,14 +221,14 @@ export class Camera extends View {
      * @private
      */
     this.modes_ = new Modes(
-        this.defaultMode_, photoPreferrer, videoPreferrer,
-        this.start.bind(this), this, this, this);
+        this.defaultMode_, photoPreferrer, videoPreferrer, () => this.start(),
+        this, this, this);
 
     /**
      * @type {!Facing}
      * @protected
      */
-    this.facingMode_ = Facing.UNKNOWN;
+    this.facingMode_ = facing ?? Facing.NOT_SET;
 
     /**
      * @type {!metrics.ShutterType}
@@ -259,12 +264,6 @@ export class Camera extends View {
      * @protected
      */
     this.take_ = null;
-
-    /**
-     * @type {!HTMLElement}
-     * @private
-     */
-    this.banner_ = dom.get('#banner', HTMLElement);
 
     /**
      * @type {!HTMLButtonElement}
@@ -344,11 +343,6 @@ export class Camera extends View {
       offLabel: I18nString.RECORD_VIDEO_PAUSE_BUTTON,
     });
 
-    dom.get('#banner-close', HTMLButtonElement)
-        .addEventListener('click', () => {
-          animate.cancel(this.banner_);
-        });
-
     this.initOpenPTZPanel_();
 
     // Monitor the states to stop camera when locked/minimized.
@@ -385,7 +379,7 @@ export class Camera extends View {
     setTablet(isTablet);
 
     const setScreenOffAuto = (s) => {
-      const offAuto = s === chromeosCamera.mojom.ScreenState.OFF_AUTO;
+      const offAuto = s === ScreenState.OFF_AUTO;
       state.set(state.State.SCREEN_OFF_AUTO, offAuto);
     };
     const screenState = await helper.initScreenStateMonitor(setScreenOffAuto);
@@ -605,13 +599,7 @@ export class Camera extends View {
    */
   focus() {
     (async () => {
-      const shown = localStorage.getBool('isFolderChangeMsgShown');
       await this.configuring_;
-      if (!shown) {
-        localStorage.set('isFolderChangeMsgShown', true);
-        await animate.play(this.banner_);
-        return;
-      }
 
       // Check the view is still on the top after await.
       if (!nav.isTopMostView(ViewName.CAMERA)) {
@@ -1032,7 +1020,7 @@ export class Camera extends View {
     try {
       await this.infoUpdater_.lockDeviceInfo(async () => {
         if (!this.isSuspended()) {
-          for (const id of this.options_.videoDeviceIds()) {
+          for (const id of this.options_.videoDeviceIds(this.facingMode_)) {
             if (await this.startWithDevice_(id)) {
               // Make the different active camera announced by screen reader.
               const currentId = this.options_.currentDeviceId;

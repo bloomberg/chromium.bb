@@ -319,8 +319,8 @@ rtc_library("video_coding_utility") {
     "utility/decoded_frames_history.h",
     "utility/frame_dropper.cc",
     "utility/frame_dropper.h",
-    "utility/framerate_controller.cc",
-    "utility/framerate_controller.h",
+    "utility/framerate_controller_deprecated.cc",
+    "utility/framerate_controller_deprecated.h",
     "utility/ivf_file_reader.cc",
     "utility/ivf_file_reader.h",
     "utility/ivf_file_writer.cc",
@@ -335,12 +335,14 @@ rtc_library("video_coding_utility") {
     "utility/simulcast_utility.h",
     "utility/vp8_header_parser.cc",
     "utility/vp8_header_parser.h",
+    "utility/vp9_constants.h",
     "utility/vp9_uncompressed_header_parser.cc",
     "utility/vp9_uncompressed_header_parser.h",
   ]
 
   deps = [
     ":video_codec_interface",
+    "../../api:array_view",
     "../../api:scoped_refptr",
     "../../api:sequence_checker",
     "../../api/video:encoded_frame",
@@ -353,6 +355,7 @@ rtc_library("video_coding_utility") {
     "../../api/video_codecs:video_codecs_api",
     "../../common_video",
     "../../modules/rtp_rtcp",
+    "../../rtc_base:bitstream_reader",
     "../../rtc_base:checks",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_numerics",
@@ -372,6 +375,7 @@ rtc_library("video_coding_utility") {
     "../rtp_rtcp:rtp_rtcp_format",
   ]
   absl_deps = [
+    "//third_party/abseil-cpp/absl/numeric:bits",
     "//third_party/abseil-cpp/absl/strings:strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
@@ -399,7 +403,6 @@ rtc_library("webrtc_h264") {
     "../../api/video:video_rtp_headers",
     "../../api/video_codecs:video_codecs_api",
     "../../common_video",
-    "../../media:rtc_h264_profile_id",
     "../../media:rtc_media_base",
     "../../rtc_base",
     "../../rtc_base:checks",
@@ -979,7 +982,7 @@ if (rtc_include_tests) {
       "unique_timestamp_counter_unittest.cc",
       "utility/decoded_frames_history_unittest.cc",
       "utility/frame_dropper_unittest.cc",
-      "utility/framerate_controller_unittest.cc",
+      "utility/framerate_controller_deprecated_unittest.cc",
       "utility/ivf_file_reader_unittest.cc",
       "utility/ivf_file_writer_unittest.cc",
       "utility/qp_parser_unittest.cc",

@@ -31,6 +31,7 @@ __all__ = ["LinearOperatorComposition"]
 
 
 @tf_export("linalg.LinearOperatorComposition")
+@linear_operator.make_composite_tensor
 class LinearOperatorComposition(linear_operator.LinearOperator):
   """Composes one or more `LinearOperators`.
 
@@ -143,6 +144,14 @@ class LinearOperatorComposition(linear_operator.LinearOperator):
       TypeError:  If all operators do not have the same `dtype`.
       ValueError:  If `operators` is empty.
     """
+    parameters = dict(
+        operators=operators,
+        is_non_singular=is_non_singular,
+        is_self_adjoint=is_self_adjoint,
+        is_positive_definite=is_positive_definite,
+        is_square=is_square,
+        name=name)
+
     # Validate operators.
     check_ops.assert_proper_iterable(operators)
     operators = list(operators)
@@ -177,11 +186,11 @@ class LinearOperatorComposition(linear_operator.LinearOperator):
     with ops.name_scope(name, values=graph_parents):
       super(LinearOperatorComposition, self).__init__(
           dtype=dtype,
-          graph_parents=None,
           is_non_singular=is_non_singular,
           is_self_adjoint=is_self_adjoint,
           is_positive_definite=is_positive_definite,
           is_square=is_square,
+          parameters=parameters,
           name=name)
     # TODO(b/143910018) Remove graph_parents in V3.
     self._set_graph_parents(graph_parents)
@@ -277,3 +286,7 @@ class LinearOperatorComposition(linear_operator.LinearOperator):
     for operator in solve_order_list[1:]:
       solution = operator.solve(solution, adjoint=adjoint)
     return solution
+
+  @property
+  def _composite_tensor_fields(self):
+    return ("operators",)

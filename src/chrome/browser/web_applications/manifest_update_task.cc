@@ -13,17 +13,19 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "third_party/blink/public/common/features.h"
@@ -125,13 +127,15 @@ ManifestUpdateTask::ManifestUpdateTask(
     const WebAppIconManager& icon_manager,
     WebAppUiManager* ui_manager,
     WebAppInstallManager* install_manager,
-    OsIntegrationManager& os_integration_manager)
+    OsIntegrationManager& os_integration_manager,
+    WebAppSyncBridge* sync_bridge)
     : content::WebContentsObserver(web_contents),
       registrar_(registrar),
       icon_manager_(icon_manager),
       ui_manager_(*ui_manager),
       install_manager_(*install_manager),
       os_integration_manager_(os_integration_manager),
+      sync_bridge_(sync_bridge),
       url_(url),
       app_id_(app_id),
       stopped_callback_(std::move(stopped_callback)),
@@ -361,8 +365,7 @@ void ManifestUpdateTask::OnAllIconsRead(IconsMap downloaded_icons_map,
   stage_ = Stage::kPendingAppIdentityCheck;
   Observe(nullptr);
 
-  PopulateShortcutItemIcons(&web_application_info_.value(),
-                            downloaded_icons_map);
+  PopulateOtherIcons(&web_application_info_.value(), downloaded_icons_map);
 
   if (!AllowUnpromptedNameUpdate(app_id_, registrar_) &&
       !AllowUnpromptedIconUpdate(app_id_, registrar_) &&
@@ -539,22 +542,9 @@ void ManifestUpdateTask::OnAllAppWindowsClosed() {
         base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_));
   }
 
-  // Preserve the user's choice of opening in browser tab or standalone window.
-  switch (registrar_.GetAppUserDisplayMode(app_id_)) {
-    case DisplayMode::kBrowser:
-      web_application_info_->open_as_window = false;
-      break;
-    case DisplayMode::kStandalone:
-      web_application_info_->open_as_window = true;
-      break;
-    case DisplayMode::kUndefined:
-    case DisplayMode::kMinimalUi:
-    case DisplayMode::kFullscreen:
-    case DisplayMode::kWindowControlsOverlay:
-    case DisplayMode::kTabbed:
-      NOTREACHED();
-      break;
-  }
+  // Preserve the user's choice of form factor to open the app with.
+  web_application_info_->user_display_mode =
+      registrar_.GetAppUserDisplayMode(app_id_);
 
   stage_ = Stage::kPendingMaybeReadExistingIcons;
   // If icon updating is disabled, then read the existing icons so they can be
@@ -596,6 +586,8 @@ void ManifestUpdateTask::OnInstallationComplete(
   DCHECK_EQ(app_id_, app_id);
   DCHECK(!IsUpdateNeededForManifest());
   DCHECK_EQ(code, InstallResultCode::kSuccessAlreadyInstalled);
+
+  sync_bridge_->SetAppManifestUpdateTime(app_id, base::Time::Now());
 
   DestroySelf(ManifestUpdateResult::kAppUpdated);
 }

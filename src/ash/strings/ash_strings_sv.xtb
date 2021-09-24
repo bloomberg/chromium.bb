@@ -24,6 +24,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1119348796022671382">I färgläget med tema används färger från bakgrunden till att lätt färgsätta gränssnittet.</translation>
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="1148499908455722006">Öppna dialogrutan med information om <ph name="USER_NAME" /></translation>
+<translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Kopplade enheter</translation>
 <translation id="1165712434476988950">Enheten måste startas om för att uppdateringen ska tillämpas.</translation>
 <translation id="1175572348579024023">Rulla</translation>
@@ -92,6 +93,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1611993646327628135">På</translation>
 <translation id="1615402009686901181">Skärmbilder inaktiveras av en administratörspolicy när konfidentiellt innehåll är synligt</translation>
 <translation id="1632985212731562677">Brytarstyrning kan inaktiveras under Inställningar &gt; Tillgänglighet</translation>
+<translation id="1637505162081889933"><ph name="NUM_DEVICES" /> enheter</translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1655967159878494613"><ph name="QUERY_TEXT" />: <ph name="RESULT_TEXT" />. Om du trycker på Sök och blanksteg visas resultatet med assistenten.</translation>
 <translation id="1667964833127753507">I det neutrala färgläget ersätts färger från bakgrunden med en uppsättning ljusa eller mörka nyanser i neutrala toner.</translation>
@@ -192,6 +194,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2427507373259914951">Vänsterklicka</translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
+<translation id="24452542372838207">Utöka avisering</translation>
 <translation id="2450205753526923158">Skärmbildsläge</translation>
 <translation id="2473177541599297363">Bekräfta upplösningen</translation>
 <translation id="2475982808118771221">Det uppstod ett fel</translation>
@@ -320,6 +323,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3510164367642747937">Markera muspekaren</translation>
 <translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
+<translation id="353086728817903341">Ansluten till <ph name="NUM_DEVICES" /> enheter</translation>
 <translation id="3552189655002856821">wifi är inaktiverat</translation>
 <translation id="3560866052109807830">Ritverktyg för markeringar</translation>
 <translation id="3563775809269155755">Aktivera surfzon</translation>
@@ -348,6 +352,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="3702846122927433391">Befolkning i Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Läser in...</translation>
+<translation id="3708186454126126312">Tidigare anslutna enheter</translation>
 <translation id="371370241367527062">Mikrofonen på framsidan</translation>
 <translation id="3713734891607377840">Öppna när nedladdningen är klar</translation>
 <translation id="3742055079367172538">Skärmbilden har tagits</translation>
@@ -403,6 +408,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="4129129681837227511">Lås upp enheten för att ändra inställningen för aviseringar på låsskärmen</translation>
 <translation id="4146833061457621061">Spela upp musik</translation>
 <translation id="4157822100366708405">Inställningar för mörkt tema</translation>
+<translation id="4170634509222878053"><ph name="TITLE" /> – <ph name="DETAILS" /></translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195877955194704651">Knapp för Automatiska klick</translation>
 <translation id="4197790712631116042">Av</translation>
@@ -555,6 +561,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5234764350956374838">Stäng</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
+<translation id="5253783950165989294">Ansluten till enheten <ph name="DEVICE_NAME" />, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="5260676007519551770">Skrivbord 4</translation>
 <translation id="5283198616748585639">Lägg till en min</translation>
 <translation id="528468243742722775">Avsluta</translation>
@@ -565,6 +572,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5308380583665731573">Anslut</translation>
 <translation id="5313326810920013265">Bluetooth-inställningar</translation>
 <translation id="5314219114274263156">En skärminspelning har tagits</translation>
+<translation id="5319712128756744240">Koppla en ny enhet</translation>
 <translation id="5322611492012084517">Det gick inte att hitta telefonen</translation>
 <translation id="5329548388331921293">Ansluter …</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
@@ -767,6 +775,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
 <translation id="7007983414944123363">Det gick inte att verifiera pinkoden eller lösenordet. Försök igen.</translation>
+<translation id="7014684956566476813">Ansluten till enheten <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Skrivbord 7</translation>
 <translation id="7025533177575372252">Anslut <ph name="DEVICE_NAME" /> med mobilen</translation>
@@ -1000,6 +1009,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="8818320199597151042">Tar bort profilen. Vänta några minuter.</translation>
 <translation id="8825863694328519386">Återgå genom att svepa från vänster</translation>
 <translation id="8828714802988429505">90°</translation>
+<translation id="8834539327799336565">Anslutna just nu</translation>
 <translation id="8841375032071747811">Bakåtknapp</translation>
 <translation id="8843682306134542540">Aktivera och inaktivera rotationslås. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
@@ -1030,6 +1040,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="9024331582947483881">helskärm</translation>
 <translation id="9047624247355796468">Öppnar inställningarna för <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Enheten återställs</translation>
+<translation id="9059834730836941392">Komprimera avisering</translation>
 <translation id="9063800855227801443">Det går inte att ta bilder på konfidentiellt innehåll</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9070640332319875144">Inställningar för Google-assistenten</translation>

@@ -21,6 +21,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="Compositing.Browser.GPUMemoryForTilingsInKb" units="Kb"
+    expires_after="M99">
+  <owner>pdr@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    Warning: this histogram was expired from ~9/2020 to ~8/2021.
+
+    The GPU memory allocated for tilings (in a browser process), summed over all
+    picture layers. Emitted once per drawing. Nothing is recorded if there are
+    no picture layers.
+
+    Tilings are used for decomposition of the layer's entire contents at a
+    picture screenspace resolution to do threaded rasterization.
+  </summary>
+</histogram>
+
 <histogram name="Compositing.Browser.HitTestTimeToFindClosestLayer"
     units="microseconds" expires_after="2020-12-01">
   <obsolete>
@@ -41,7 +58,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.Browser.LayersUpdateTime" units="microseconds"
-    expires_after="2022-01-02">
+    expires_after="2022-03-06">
   <owner>schenney@chromium.org</owner>
   <owner>animations-dev@chromium.org</owner>
   <summary>
@@ -57,7 +74,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.Browser.LayerTreeImpl.CalculateDrawPropertiesUs"
-    units="microseconds" expires_after="2022-01-02">
+    units="microseconds" expires_after="2022-03-06">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -139,7 +156,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.GL.DrawFrameUs"
-    units="microseconds" expires_after="2021-12-19">
+    units="microseconds" expires_after="2022-02-20">
   <owner>weiliangc@chromium.org</owner>
   <summary>
     Time spent drawing of composited layers by GLRenderer, in microseconds. This
@@ -154,7 +171,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.OverlayProcessingUs"
-    units="microseconds" expires_after="2021-10-01">
+    units="microseconds" expires_after="2022-02-26">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -446,8 +463,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Compositing.Renderer.LayerSkippedForDrawPropertiesDueToBackface"
-    units="boolean" expires_after="M94">
+    units="boolean" expires_after="2021-10-25">
   <owner>chrishtr@chromium.org</owner>
+  <owner>dbaron@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Records whether layer draw properties updates were skipped due to the layer
@@ -491,6 +509,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Compositing.Renderer.LayerUpdateSkippedDueToBackface"
     units="boolean" expires_after="2021-10-25">
   <owner>chrishtr@chromium.org</owner>
+  <owner>dbaron@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Records whether a layer update was skipped due to the layer being
@@ -544,7 +563,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumRenderSurfaces" units="surfaces"
-    expires_after="2021-12-12">
+    expires_after="2022-02-20">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -610,8 +629,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.AggregateUs"
-    units="microseconds" expires_after="2022-01-09">
+    units="microseconds" expires_after="2022-08-19">
   <owner>weiliangc@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
   <summary>
     Time spent aggregating compositor frames from different surfaces in
     microseconds. This is logged once per frame.
@@ -625,7 +645,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.CopiedSurfaceCount"
-    units="surfaces" expires_after="2021-09-05">
+    units="surfaces" expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -635,7 +655,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.CopyUs" units="microseconds"
-    expires_after="2021-09-05">
+    expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -649,7 +669,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.DeclareResourceCount"
-    units="resources" expires_after="2021-09-05">
+    units="resources" expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -659,7 +679,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.DeclareResourcesUs"
-    units="microseconds" expires_after="2021-09-05">
+    units="microseconds" expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -684,7 +704,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkedSurfaceCount"
-    units="surfaces" expires_after="2021-09-05">
+    units="surfaces" expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -694,7 +714,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkUs" units="microseconds"
-    expires_after="2021-09-05">
+    expires_after="2022-01-09">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>

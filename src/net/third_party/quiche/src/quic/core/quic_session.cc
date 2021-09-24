@@ -41,6 +41,12 @@ class ClosedStreamsCleanUpDelegate : public QuicAlarm::Delegate {
   ClosedStreamsCleanUpDelegate& operator=(const ClosedStreamsCleanUpDelegate&) =
       delete;
 
+  QuicConnectionContext* GetConnectionContext() override {
+    return (session_->connection() == nullptr)
+               ? nullptr
+               : session_->connection()->context();
+  }
+
   void OnAlarm() override { session_->CleanUpClosedStreams(); }
 
  private:
@@ -141,8 +147,8 @@ void QuicSession::Initialize() {
       connection_->set_can_receive_ack_frequency_frame();
       config_.SetMinAckDelayMs(kDefaultMinAckDelayTimeMs);
     }
-    if (config_.HasClientRequestedIndependentOption(kBPTE, perspective_)) {
-      permutes_tls_extensions_ = true;
+    if (config_.HasClientRequestedIndependentOption(kNBPE, perspective_)) {
+      permutes_tls_extensions_ = false;
     }
   }
 
@@ -444,7 +450,7 @@ void QuicSession::OnConnectionClosed(const QuicConnectionCloseFrame& frame,
   closed_streams_clean_up_alarm_->Cancel();
 
   if (visitor_) {
-    visitor_->OnConnectionClosed(connection_->connection_id(),
+    visitor_->OnConnectionClosed(connection_->GetOneActiveServerConnectionId(),
                                  frame.quic_error_code, frame.error_details,
                                  source);
   }
@@ -2089,7 +2095,7 @@ void QuicSession::SendRetireConnectionId(uint64_t sequence_number) {
 
 void QuicSession::OnServerConnectionIdIssued(
     const QuicConnectionId& server_connection_id) {
-  visitor_->OnNewConnectionIdSent(connection_->connection_id(),
+  visitor_->OnNewConnectionIdSent(connection_->GetOneActiveServerConnectionId(),
                                   server_connection_id);
 }
 

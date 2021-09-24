@@ -70,31 +70,12 @@ fail (hb_bool_t suggest_help, const char *format, ...)
   exit (1);
 }
 
-static inline char *
-locale_to_utf8 (char *s)
-{
-  char *t;
-  GError *error = nullptr;
-
-  t = g_locale_to_utf8 (s, -1, nullptr, nullptr, &error);
-  if (!t)
-  {
-     fail (true, "Failed converting text to UTF-8");
-  }
-
-  return t;
-}
-
-
 struct option_parser_t
 {
-  option_parser_t (const char *usage)
-  : usage_str (usage),
-    context (g_option_context_new (usage)),
+  option_parser_t (const char *parameter_string = nullptr)
+  : context (g_option_context_new (parameter_string)),
     to_free (g_ptr_array_new ())
-  {
-    add_main_options ();
-  }
+  {}
 
   static void _g_free_g_func (void *p, void * G_GNUC_UNUSED) { g_free (p); }
 
@@ -105,7 +86,7 @@ struct option_parser_t
     g_ptr_array_free (to_free, TRUE);
   }
 
-  void add_main_options ();
+  void add_options ();
 
   static void
   post_parse_ (void *thiz, GError **error) {}
@@ -138,20 +119,35 @@ struct option_parser_t
     g_option_context_add_group (context, group);
   }
 
+  template <typename Type>
+  void add_main_group (GOptionEntry   *entries,
+		       Type           *closure)
+  {
+    GOptionGroup *group = g_option_group_new (nullptr, nullptr, nullptr,
+					      static_cast<gpointer>(closure), nullptr);
+    g_option_group_add_entries (group, entries);
+    /* https://gitlab.gnome.org/GNOME/glib/-/issues/2460 */
+    //g_option_group_set_parse_hooks (group, nullptr, post_parse<Type>);
+    g_option_context_set_main_group (context, group);
+  }
+
+  void set_summary (const char *summary)
+  {
+    g_option_context_set_summary (context, summary);
+  }
+  void set_description (const char *description)
+  {
+    g_option_context_set_description (context, description);
+  }
+
   void free_later (char *p) {
     g_ptr_array_add (to_free, p);
   }
 
-  void parse (int *argc, char ***argv);
+  bool parse (int *argc, char ***argv, bool ignore_error = false);
 
-  G_GNUC_NORETURN void usage () {
-    g_printerr ("Usage: %s [OPTION...] %s\n", g_get_prgname (), usage_str);
-    exit (1);
-  }
-
-  private:
-  const char *usage_str;
   GOptionContext *context;
+  protected:
   GPtrArray *to_free;
 };
 
@@ -189,7 +185,7 @@ show_version (const char *name G_GNUC_UNUSED,
 }
 
 inline void
-option_parser_t::add_main_options ()
+option_parser_t::add_options ()
 {
   GOptionEntry entries[] =
   {
@@ -200,8 +196,8 @@ option_parser_t::add_main_options ()
   g_option_context_add_main_entries (context, entries, nullptr);
 }
 
-inline void
-option_parser_t::parse (int *argc, char ***argv)
+inline bool
+option_parser_t::parse (int *argc, char ***argv, bool ignore_error)
 {
   setlocale (LC_ALL, "");
 
@@ -210,12 +206,18 @@ option_parser_t::parse (int *argc, char ***argv)
   {
     if (parse_error)
     {
-      fail (true, "%s", parse_error->message);
-      //g_error_free (parse_error);
+      if (!ignore_error)
+	fail (true, "%s", parse_error->message);
+      g_error_free (parse_error);
     }
     else
-      fail (true, "Option parse error");
+    {
+      if (!ignore_error)
+	fail (true, "Option parse error");
+    }
+    return false;
   }
+  return true;
 }
 
 

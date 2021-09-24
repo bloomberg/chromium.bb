@@ -26,6 +26,8 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/credentials_cleaner_runner_factory.h"
+#include "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
+#include "ios/chrome/browser/passwords/ios_password_store_utils.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -64,24 +66,11 @@ IOSChromePasswordStoreFactory* IOSChromePasswordStoreFactory::GetInstance() {
   return instance.get();
 }
 
-// static
-void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
-    ChromeBrowserState* browser_state) {
-  scoped_refptr<password_manager::PasswordStore> password_store =
-      GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  syncer::SyncService* sync_service =
-      SyncServiceFactory::GetForBrowserStateIfExists(browser_state);
-  password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-      password_store.get(), sync_service,
-      browser_state->GetSharedURLLoaderFactory(),
-      GetApplicationContext()->GetNetworkConnectionTracker(),
-      browser_state->GetStatePath());
-}
-
 IOSChromePasswordStoreFactory::IOSChromePasswordStoreFactory()
     : RefcountedBrowserStateKeyedServiceFactory(
           "PasswordStore",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(IOSChromeAffiliationServiceFactory::GetInstance());
   DependsOn(ios::WebDataServiceFactory::GetInstance());
 }
 
@@ -121,16 +110,13 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kFillingAcrossAffiliatedWebsites)) {
-    // Try to create affiliation service without awaiting synced state changes.
-    // TODO(crbug.com/1202699): Remove sync service completely after
-    // launching HashAffiliationLookup.
-    password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-        store.get(), /*sync_service=*/nullptr,
-        context->GetSharedURLLoaderFactory(),
-        GetApplicationContext()->GetNetworkConnectionTracker(),
-        context->GetStatePath());
+    password_manager::AffiliationService* affiliation_service =
+        IOSChromeAffiliationServiceFactory::GetForBrowserState(context);
+    password_manager::EnableAffiliationBasedMatching(store.get(),
+                                                     affiliation_service);
   }
-
+  DelayReportingPasswordStoreMetrics(
+      ChromeBrowserState::FromBrowserState(context));
   return store;
 }
 

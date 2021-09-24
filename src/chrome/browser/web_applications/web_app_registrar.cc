@@ -17,13 +17,14 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/install_bounce_metric.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
 
@@ -31,13 +32,16 @@ namespace web_app {
 
 namespace {
 
-// With Lacros, web apps are not loaded using the Ash browser.
-bool Accepts(const WebApp& web_app) {
+// With Lacros, only system web apps are exposed using the Ash browser.
+bool WebAppExposed(const WebApp& web_app) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi) &&
       !web_app.IsSystemApp()) {
     return false;
   }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (web_app.IsSystemApp() && !AreSystemWebAppsSupported())
+    return false;
 #endif
   return true;
 }
@@ -122,6 +126,13 @@ void WebAppRegistrar::NotifyWebAppsDisabledModeChanged() {
     observer.OnWebAppsDisabledModeChanged();
 }
 
+void WebAppRegistrar::NotifyWebAppLastBadgingTimeChanged(
+    const AppId& app_id,
+    const base::Time& time) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppLastBadgingTimeChanged(app_id, time);
+}
+
 void WebAppRegistrar::NotifyWebAppLastLaunchTimeChanged(
     const AppId& app_id,
     const base::Time& time) {
@@ -150,13 +161,6 @@ void WebAppRegistrar::NotifyWebAppUserDisplayModeChanged(
     DisplayMode user_display_mode) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUserDisplayModeChanged(app_id, user_display_mode);
-}
-
-void WebAppRegistrar::NotifyWebAppExperimentalTabbedWindowModeChanged(
-    const AppId& app_id,
-    bool enabled) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppExperimentalTabbedWindowModeChanged(app_id, enabled);
 }
 
 void WebAppRegistrar::NotifyAppRegistrarShutdown() {
@@ -365,22 +369,10 @@ DisplayMode WebAppRegistrar::GetEffectiveDisplayModeFromManifest(
   return GetAppDisplayMode(app_id);
 }
 
-bool WebAppRegistrar::IsInExperimentalTabbedWindowMode(
-    const AppId& app_id) const {
-  return base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
-         base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings) &&
-         GetBoolWebAppPref(profile()->GetPrefs(), app_id,
-                           kExperimentalTabbedWindowMode);
-}
-
 bool WebAppRegistrar::IsTabbedWindowModeEnabled(const AppId& app_id) const {
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip))
     return false;
-
-  DisplayMode display = GetAppEffectiveDisplayMode(app_id);
-
-  return IsInExperimentalTabbedWindowMode(app_id) ||
-         display == DisplayMode::kTabbed;
+  return GetAppEffectiveDisplayMode(app_id) == DisplayMode::kTabbed;
 }
 
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
@@ -388,8 +380,9 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
     return nullptr;
 
   auto it = registry_.find(app_id);
-  if (it != registry_.end() && Accepts(*it->second))
+  if (it != registry_.end() && WebAppExposed(*it->second))
     return it->second.get();
+
   return nullptr;
 }
 
@@ -398,7 +391,7 @@ const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
     return nullptr;
 
   for (auto const& it : registry_) {
-    if (Accepts(*it.second) && it.second->start_url() == start_url)
+    if (WebAppExposed(*it.second) && it.second->start_url() == start_url)
       return it.second.get();
   }
   return nullptr;
@@ -607,11 +600,10 @@ base::Time WebAppRegistrar::GetAppInstallTime(const AppId& app_id) const {
   return web_app ? web_app->install_time() : base::Time();
 }
 
-std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
+std::vector<apps::IconInfo> WebAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->icon_infos()
-                 : std::vector<WebApplicationIconInfo>();
+  return web_app ? web_app->icon_infos() : std::vector<apps::IconInfo>();
 }
 
 SortedSizesPx WebAppRegistrar::GetAppDownloadedIconSizesAny(
@@ -714,7 +706,8 @@ const WebAppRegistrar::AppSet WebAppRegistrar::GetAppsIncludingStubs() const {
 
 const WebAppRegistrar::AppSet WebAppRegistrar::GetApps() const {
   return AppSet(this, [](const WebApp& web_app) {
-    return Accepts(web_app) && !web_app.is_from_sync_and_pending_installation();
+    return WebAppExposed(web_app) &&
+           !web_app.is_from_sync_and_pending_installation();
   });
 }
 
@@ -757,7 +750,8 @@ WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsIncludingStubsMutable() {
 
 WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsMutable() {
   return AppSet(this, [](const WebApp& web_app) {
-    return Accepts(web_app) && !web_app.is_from_sync_and_pending_installation();
+    return WebAppExposed(web_app) &&
+           !web_app.is_from_sync_and_pending_installation();
   });
 }
 

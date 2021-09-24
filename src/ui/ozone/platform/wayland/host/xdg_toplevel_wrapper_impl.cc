@@ -10,10 +10,12 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/hit_test.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_serial_tracker.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
@@ -43,6 +45,13 @@ uint32_t ToInt32(XDGToplevelWrapperImpl::DecorationMode mode) {
       NOTREACHED();
       return ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
   }
+}
+
+absl::optional<wl::Serial> GetSerialForMoveResize(
+    WaylandConnection* connection) {
+  return connection->serial_tracker().GetSerial({wl::SerialType::kTouchPress,
+                                                 wl::SerialType::kMousePress,
+                                                 wl::SerialType::kKeyPress});
 }
 
 }  // namespace
@@ -115,21 +124,36 @@ void XDGToplevelWrapperImpl::SetMinimized() {
 
 void XDGToplevelWrapperImpl::SurfaceMove(WaylandConnection* connection) {
   DCHECK(xdg_toplevel_);
-  xdg_toplevel_move(xdg_toplevel_.get(), connection->seat(),
-                    connection->serial());
+  if (auto serial = GetSerialForMoveResize(connection))
+    xdg_toplevel_move(xdg_toplevel_.get(), connection->seat(), serial->value);
 }
 
 void XDGToplevelWrapperImpl::SurfaceResize(WaylandConnection* connection,
                                            uint32_t hittest) {
   DCHECK(xdg_toplevel_);
-  xdg_toplevel_resize(xdg_toplevel_.get(), connection->seat(),
-                      connection->serial(),
-                      wl::IdentifyDirection(*connection, hittest));
+  if (auto serial = GetSerialForMoveResize(connection)) {
+    xdg_toplevel_resize(xdg_toplevel_.get(), connection->seat(), serial->value,
+                        wl::IdentifyDirection(*connection, hittest));
+  }
 }
 
 void XDGToplevelWrapperImpl::SetTitle(const std::u16string& title) {
   DCHECK(xdg_toplevel_);
-  xdg_toplevel_set_title(xdg_toplevel_.get(), base::UTF16ToUTF8(title).c_str());
+
+  // TODO(crbug.com/1241097): find a better way to handle long titles, or change
+  // this logic completely (and at the platform-agnostic level) because a title
+  // that long does not make any sense.
+  //
+  // A long title may exceed the maximum size of the Wayland event sent below
+  // upon calling xdg_toplevel_set_title(), which results in a fatal Wayland
+  // communication error and termination of the process.  4096 bytes is the
+  // limit for the size of the entire message; here we set 4000 as the maximum
+  // length of the string so it would fit the message with some margin.
+  const size_t kMaxLengh = 4000;
+  auto short_title = base::UTF16ToUTF8(title);
+  if (short_title.size() > kMaxLengh)
+    short_title.resize(kMaxLengh);
+  xdg_toplevel_set_title(xdg_toplevel_.get(), short_title.c_str());
 }
 
 void XDGToplevelWrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {

@@ -28,6 +28,7 @@ from tensorflow.python import tf2
 from tensorflow.python.eager import context
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_combinations
+from tensorflow.python.util.tf_export import tf_export
 
 
 class EagerGraphCombination(test_combinations.TestCombination):
@@ -47,7 +48,8 @@ class EagerGraphCombination(test_combinations.TestCombination):
       return [ops.Graph().as_default(), context.graph_mode()]
     else:
       raise ValueError(
-          "'mode' has to be either 'eager' or 'graph' and not {}".format(mode))
+          "Argument 'mode' must be either 'eager' or 'graph'. "
+          f"Received: {mode}.")
 
   def parameter_modifiers(self):
     return [test_combinations.OptionalParameter("mode")]
@@ -81,3 +83,5 @@ generate = functools.partial(
 combine = test_combinations.combine
 times = test_combinations.times
 NamedObject = test_combinations.NamedObject
+
+tf_export("__internal__.test.combinations.generate", v1=[])(generate)

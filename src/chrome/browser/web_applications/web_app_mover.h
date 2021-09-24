@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -29,7 +29,7 @@ class WebContents;
 namespace web_app {
 
 class WebAppRegistrar;
-class AppRegistryController;
+class WebAppSyncBridge;
 class WebAppInstallFinalizer;
 
 // WebAppMover is designed to facilitate a one-off migration for a webapp, from
@@ -42,7 +42,7 @@ class WebAppMover final : public syncer::SyncServiceObserver {
       WebAppRegistrar* registrar,
       WebAppInstallFinalizer* install_finalizer,
       WebAppInstallManager* install_manager,
-      AppRegistryController* controller);
+      WebAppSyncBridge* sync_bridge);
 
   static void DisableForTesting();
   static void SkipWaitForSyncForTesting();
@@ -52,7 +52,7 @@ class WebAppMover final : public syncer::SyncServiceObserver {
               WebAppRegistrar* registrar,
               WebAppInstallFinalizer* install_finalizer,
               WebAppInstallManager* install_manager,
-              AppRegistryController* controller,
+              WebAppSyncBridge* sync_bridge,
               UninstallMode mode,
               std::string uninstall_url_prefix_or_pattern,
               const GURL& install_url);
@@ -105,7 +105,7 @@ class WebAppMover final : public syncer::SyncServiceObserver {
   WebAppRegistrar* registrar_;
   WebAppInstallFinalizer* install_finalizer_;
   WebAppInstallManager* install_manager_;
-  AppRegistryController* controller_;
+  WebAppSyncBridge* sync_bridge_;
 
   UninstallMode uninstall_mode_;
   std::string uninstall_url_prefix_or_pattern_;

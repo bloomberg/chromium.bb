@@ -63,6 +63,7 @@ WebView::ScopedWebContentsCreatorForTesting::
 // WebView, public:
 
 WebView::WebView(content::BrowserContext* browser_context) {
+  set_suppress_default_focus_handling();
   ui::AXPlatformNode::AddAXModeObserver(this);
   SetBrowserContext(browser_context);
 }
@@ -346,6 +347,10 @@ void WebView::OnWebContentsFocused(
 
 void WebView::AXTreeIDForMainFrameHasChanged() {
   NotifyAccessibilityWebContentsChanged();
+}
+
+void WebView::WebContentsDestroyed() {
+  SetWebContents(nullptr);
 }
 
 void WebView::ResizeDueToAutoResize(content::WebContents* source,

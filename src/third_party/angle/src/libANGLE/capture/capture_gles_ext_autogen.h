@@ -869,6 +869,18 @@ angle::CallCapture CaptureLoseContextCHROMIUM(const State &glState,
 
 // GL_EXT_EGL_image_array
 
+// GL_EXT_EGL_image_storage
+angle::CallCapture CaptureEGLImageTargetTexStorageEXT(const State &glState,
+                                                      bool isCallValid,
+                                                      GLenum target,
+                                                      GLeglImageOES image,
+                                                      const GLint *attrib_list);
+angle::CallCapture CaptureEGLImageTargetTextureStorageEXT(const State &glState,
+                                                          bool isCallValid,
+                                                          GLuint texture,
+                                                          GLeglImageOES image,
+                                                          const GLint *attrib_list);
+
 // GL_EXT_YUV_target
 
 // GL_EXT_blend_func_extended
@@ -1274,6 +1286,8 @@ angle::CallCapture CapturePrimitiveBoundingBoxEXT(const State &glState,
                                                   GLfloat maxW);
 
 // GL_EXT_protected_textures
+
+// GL_EXT_pvrtc_sRGB
 
 // GL_EXT_read_format_bgra
 
@@ -1729,6 +1743,10 @@ angle::CallCapture CaptureTexStorage3DEXT(const State &glState,
                                           GLsizei height,
                                           GLsizei depth);
 
+// GL_IMG_texture_compression_pvrtc
+
+// GL_IMG_texture_compression_pvrtc2
+
 // GL_KHR_blend_equation_advanced
 angle::CallCapture CaptureBlendBarrierKHR(const State &glState, bool isCallValid);
 
@@ -1804,6 +1822,12 @@ angle::CallCapture CapturePushDebugGroupKHR(const State &glState,
 angle::CallCapture CaptureMaxShaderCompilerThreadsKHR(const State &glState,
                                                       bool isCallValid,
                                                       GLuint count);
+
+// GL_KHR_texture_compression_astc_hdr
+
+// GL_KHR_texture_compression_astc_ldr
+
+// GL_KHR_texture_compression_astc_sliced_3d
 
 // GL_NV_fence
 angle::CallCapture CaptureDeleteFencesNV(const State &glState,
@@ -3638,6 +3662,18 @@ void CaptureBindUniformLocationCHROMIUM_name(const State &glState,
                                              UniformLocation locationPacked,
                                              const GLchar *name,
                                              angle::ParamCapture *paramCapture);
+void CaptureEGLImageTargetTexStorageEXT_attrib_list(const State &glState,
+                                                    bool isCallValid,
+                                                    GLenum target,
+                                                    GLeglImageOES image,
+                                                    const GLint *attrib_list,
+                                                    angle::ParamCapture *paramCapture);
+void CaptureEGLImageTargetTextureStorageEXT_attrib_list(const State &glState,
+                                                        bool isCallValid,
+                                                        GLuint texture,
+                                                        GLeglImageOES image,
+                                                        const GLint *attrib_list,
+                                                        angle::ParamCapture *paramCapture);
 void CaptureBindFragDataLocationEXT_name(const State &glState,
                                          bool isCallValid,
                                          ShaderProgramID programPacked,

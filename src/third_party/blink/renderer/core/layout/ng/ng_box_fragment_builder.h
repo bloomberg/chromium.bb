@@ -218,8 +218,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Manually add a break token to the builder. Note that we're assuming that
   // this break token is for content in the same flow as this parent.
-  void AddBreakToken(scoped_refptr<const NGBreakToken>,
-                     bool is_in_parallel_flow = false);
+  void AddBreakToken(const NGBreakToken*, bool is_in_parallel_flow = false);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,
@@ -256,13 +255,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // During regular layout a break token is created at the end of layout, if
   // required. When re-using a previous fragment and its children, though, we
   // may want to just re-use the break token as well.
-  void PresetNextBreakToken(scoped_refptr<const NGBreakToken> break_token) {
+  void PresetNextBreakToken(const NGBreakToken* break_token) {
     // We should either do block fragmentation as part of normal layout, or
     // pre-set a break token.
     DCHECK(!did_break_self_);
     DCHECK(child_break_tokens_.IsEmpty());
 
-    break_token_ = std::move(break_token);
+    break_token_ = break_token;
   }
 
   // Return true if we broke inside this node on our own initiative (typically
@@ -271,12 +270,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetDidBreakSelf() { did_break_self_ = true; }
 
   // Store the previous break token, if one exists.
-  void SetPreviousBreakToken(
-      scoped_refptr<const NGBlockBreakToken> break_token) {
-    previous_break_token_ = std::move(break_token);
+  void SetPreviousBreakToken(const NGBlockBreakToken* break_token) {
+    previous_break_token_ = break_token;
   }
   const NGBlockBreakToken* PreviousBreakToken() const {
-    return previous_break_token_.get();
+    return previous_break_token_;
   }
 
   // Return true if we need to break before or inside any child, doesn't matter
@@ -289,7 +287,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       return true;
     // Inline nodes produce a "finished" trailing break token even if we don't
     // need to block-fragment.
-    return last_inline_break_token_.get();
+    return last_inline_break_token_;
   }
 
   // Return true if we need to break before or inside any in-flow child that
@@ -353,13 +351,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     previous_break_after_ = break_after;
   }
 
-  // Set when this subtree has modified the incoming margin-strut, such that it
-  // may change our final position.
-  void SetSubtreeModifiedMarginStrut() {
-    DCHECK(!BfcBlockOffset());
-    subtree_modified_margin_strut_ = true;
-  }
-
   // Join/"collapse" the previous (stored) break-after value with the next
   // break-before value, to determine how to deal with breaking between two
   // in-flow siblings.
@@ -394,30 +385,20 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     may_have_descendant_above_block_start_ = b;
   }
 
-  void SetLinesUntilClamp(const absl::optional<int>& value) {
-    lines_until_clamp_ = value;
-  }
-
-  void SetEarlyBreak(scoped_refptr<const NGEarlyBreak> breakpoint,
-                     NGBreakAppeal appeal) {
+  void SetEarlyBreak(const NGEarlyBreak* breakpoint) {
     early_break_ = breakpoint;
-    break_appeal_ = appeal;
   }
-  bool HasEarlyBreak() const { return early_break_.get(); }
+  bool HasEarlyBreak() const { return early_break_; }
   const NGEarlyBreak& EarlyBreak() const {
-    DCHECK(early_break_.get());
-    return *early_break_.get();
+    DCHECK(early_break_);
+    return *early_break_;
   }
 
-  // Set the highest break appeal found so far. This is either:
-  // 1: The highest appeal of a breakpoint found by our container
-  // 2: The appeal of a possible early break inside
-  // 3: The appeal of an actual break inside (to be stored in a break token)
-  void SetBreakAppeal(NGBreakAppeal appeal) { break_appeal_ = appeal; }
-  NGBreakAppeal BreakAppeal() const { return break_appeal_; }
-
-  // Offsets are not supposed to be set during fragment construction, so we
-  // do not provide a setter here.
+  // Downgrade the break appeal if the specified break appeal is lower than any
+  // found so far.
+  void ClampBreakAppeal(NGBreakAppeal appeal) {
+    break_appeal_ = std::min(break_appeal_, appeal);
+  }
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGLayoutResult> ToBoxFragment() {
@@ -628,12 +609,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool has_float_break_inside_ = false;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
-  bool subtree_modified_margin_strut_ = false;
   bool has_seen_all_children_ = false;
   bool is_math_fraction_ = false;
   bool is_math_operator_ = false;
   bool is_at_block_end_ = false;
-  bool has_violating_break_ = false;
   LayoutUnit consumed_block_size_;
   LayoutUnit consumed_block_size_legacy_adjustment_;
   LayoutUnit block_offset_for_additional_columns_;
@@ -648,6 +627,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // The break-after value of the previous in-flow sibling.
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
+
+  // The appeal of breaking inside this container.
+  NGBreakAppeal break_appeal_ = kBreakAppealPerfect;
 
   absl::optional<LayoutUnit> baseline_;
   absl::optional<LayoutUnit> last_baseline_;
@@ -670,12 +652,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   LogicalBoxSides sides_to_include_;
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
-  absl::optional<int> lines_until_clamp_;
 
   std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info_;
   absl::optional<NGLayoutResult::MathData> math_data_;
 
-  scoped_refptr<const NGBlockBreakToken> previous_break_token_;
+  const NGBlockBreakToken* previous_break_token_ = nullptr;
 
 #if DCHECK_IS_ON()
   // Describes what size_.block_size represents; either the size of a single

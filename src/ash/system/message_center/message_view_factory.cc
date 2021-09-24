@@ -4,12 +4,16 @@
 
 #include "ash/system/message_center/message_view_factory.h"
 
+#include <memory>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "ash/system/message_center/ash_notification_view.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/message_center/public/cpp/notification_types.h"
-#include "ui/message_center/views/notification_view_md.h"
+#include "ui/message_center/views/notification_view.h"
 
 namespace ash {
 
@@ -32,9 +36,9 @@ std::unique_ptr<message_center::MessageView> GetCustomNotificationView(
 }  // namespace
 
 // static
-message_center::MessageView* MessageViewFactory::Create(
-    const message_center::Notification& notification) {
-  message_center::MessageView* notification_view = nullptr;
+std::unique_ptr<message_center::MessageView> MessageViewFactory::Create(
+    const message_center::Notification& notification,
+    bool shown_in_popup) {
   switch (notification.type()) {
     case message_center::NOTIFICATION_TYPE_BASE_FORMAT:
     case message_center::NOTIFICATION_TYPE_IMAGE:
@@ -44,8 +48,7 @@ message_center::MessageView* MessageViewFactory::Create(
       // Rely on default construction after the switch.
       break;
     case message_center::NOTIFICATION_TYPE_CUSTOM:
-      notification_view = GetCustomNotificationView(notification).release();
-      break;
+      return GetCustomNotificationView(notification);
     default:
       // If the caller asks for an unrecognized kind of view (entirely possible
       // if an application is running on an older version of this code that
@@ -57,11 +60,9 @@ message_center::MessageView* MessageViewFactory::Create(
                    << ". Falling back to simple notification type.";
       break;
   }
-
-  if (!notification_view)
-    notification_view = new message_center::NotificationViewMD(notification);
-
-  return notification_view;
+  if (ash::features::IsNotificationsRefreshEnabled())
+    return std::make_unique<AshNotificationView>(notification, shown_in_popup);
+  return std::make_unique<message_center::NotificationView>(notification);
 }
 
 // static

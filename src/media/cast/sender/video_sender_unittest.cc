@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -414,7 +415,7 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
 
   // Send 3 more frames and record the number of packets sent.
   for (int i = 0; i < 3; ++i) {
-    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
@@ -423,7 +424,7 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   // Send 3 more frames - they should not be encoded, as we have not received
   // any acks.
   for (int i = 0; i < 3; ++i) {
-    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
@@ -460,7 +461,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
 
   // Send 3 more frames but don't ACK.
   for (int i = 0; i < 3; ++i) {
-    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
@@ -503,7 +504,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
 
   // Send 2 more frames but don't ACK.
   for (int i = 0; i < 2; ++i) {
-    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+    video_frame = GetNewVideoFrame();
     video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }

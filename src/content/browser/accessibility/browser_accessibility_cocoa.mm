@@ -77,6 +77,7 @@ NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
 NSString* const NSAccessibilityAutocompleteValueAttribute =
     @"AXAutocompleteValue";
 NSString* const NSAccessibilityBlockQuoteLevelAttribute = @"AXBlockQuoteLevel";
+NSString* const NSAccessibilityDetailsElementsAttribute = @"AXDetailsElements";
 NSString* const NSAccessibilityDOMClassList = @"AXDOMClassList";
 NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
@@ -826,6 +827,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
       {NSAccessibilityColumnIndexRangeAttribute, @"columnIndexRange"},
       {NSAccessibilityContentsAttribute, @"contents"},
       {NSAccessibilityDescriptionAttribute, @"descriptionForAccessibility"},
+      {NSAccessibilityDetailsElementsAttribute, @"detailsElements"},
       {NSAccessibilityDisclosingAttribute, @"disclosing"},
       {NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow"},
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
@@ -916,8 +918,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   dict = nil;
 }
 
-- (instancetype)initWithObject:(BrowserAccessibility*)accessibility {
-  if ((self = [super init])) {
+- (instancetype)initWithObject:(BrowserAccessibility*)accessibility
+              withPlatformNode:(ui::AXPlatformNodeMac*)platform_node {
+  if ((self = [super initWithNode:platform_node])) {
     _owner = accessibility;
     _needsToUpdateChildren = true;
     _gettingChildren = false;
@@ -928,9 +931,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (void)detach {
   if (!_owner)
     return;
-  NSAccessibilityPostNotification(
-      self, NSAccessibilityUIElementDestroyedNotification);
+
   _owner = nullptr;
+  [super detach];
 }
 
 - (NSString*)accessKey {
@@ -1075,6 +1078,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return @(level);
 }
 
+- (NSArray*)AXChildren {
+  return [self children];
+}
+
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
 // accessibility children of this object.
 - (NSArray*)children {
@@ -1195,6 +1202,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return table;
 }
 
+- (NSString*)AXDescription {
+  return [self descriptionForAccessibility];
+}
+
 - (NSString*)descriptionForAccessibility {
   if (![self instanceActive])
     return nil;
@@ -1274,6 +1285,25 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   }
 
   return @"";
+}
+
+- (NSArray*)detailsElements {
+  if (![self instanceActive])
+    return nil;
+
+  NSMutableArray* elements = [[[NSMutableArray alloc] init] autorelease];
+  const std::vector<int32_t>& detailsIds =
+      _owner->GetIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds);
+  for (size_t i = 0; i < detailsIds.size(); ++i) {
+    if (BrowserAccessibility* element =
+            _owner->manager()->GetFromID(detailsIds[i])) {
+      id cocoa_element = ToBrowserAccessibilityCocoa(element);
+      if ([cocoa_element instanceActive])
+        [elements addObject:cocoa_element];
+    }
+  }
+
+  return [elements count] ? elements : nil;
 }
 
 - (NSNumber*)disclosing {
@@ -1590,6 +1620,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return false;
 }
 
+- (NSNumber*)AXInsertionPointLineNumber {
+  return [self insertionPointLineNumber];
+}
+
 - (NSNumber*)insertionPointLineNumber {
   if (![self instanceActive])
     return nil;
@@ -1621,6 +1655,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 - (BOOL)isIgnored {
   if (![self instanceActive])
     return YES;
+
   return [[self role] isEqualToString:NSAccessibilityUnknownRole] ||
          _owner->IsInvisibleOrIgnored();
 }
@@ -1657,6 +1692,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
   return @(GetState(_owner, ax::mojom::State::kMultiselectable));
+}
+
+- (NSString*)AXPlaceholderValue {
+  return [self placeholderValue];
 }
 
 - (NSString*)placeholderValue {
@@ -1785,6 +1824,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   [ret addObject:ToBrowserAccessibilityCocoa(container)];
   return ret;
+}
+
+- (NSNumber*)AXNumberOfCharacters {
+  return [self numberOfCharacters];
 }
 
 - (NSNumber*)numberOfCharacters {
@@ -1977,10 +2020,6 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
                              CreateTextMarker(_owner->CreateTextPositionAt(i)));
 }
 
-- (BOOL)instanceActive {
-  return _owner != nullptr;
-}
-
 // internal
 - (NSRect)rectInScreen:(gfx::Rect)rect {
   if (![self instanceActive])
@@ -1999,6 +2038,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 }
 
 // Returns a string indicating the NSAccessibility role of this object.
+- (NSString*)AXRole {
+  return [self role];
+}
 - (NSString*)role {
   content::BrowserAccessibilityStateImpl::GetInstance()
       ->OnAccessibilityApiUsage();
@@ -2031,6 +2073,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   TRACE_EVENT1("accessibility", "BrowserAccessibilityCocoa::role",
                "role=", base::SysNSStringToUTF8(cocoa_role));
   return cocoa_role;
+}
+
+- (NSString*)AXRoleDescription {
+  return [self roleDescription];
 }
 
 // Returns a string indicating the role description of this object.
@@ -2300,6 +2346,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return ret;
 }
 
+- (NSString*)AXSelectedText {
+  return [self selectedText];
+}
+
 - (NSString*)selectedText {
   if (![self instanceActive])
     return nil;
@@ -2310,6 +2360,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (range.IsNull())
     return nil;
   return base::SysUTF16ToNSString(range.GetText());
+}
+
+- (NSValue*)AXSelectedTextRange {
+  return [self selectedTextRange];
 }
 
 // Returns range of text under the current object that is selected.
@@ -2393,6 +2447,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return CreateTextMarker(position->CreatePositionAtStartOfContent());
 }
 
+- (NSString*)AXSubrole {
+  return [self subrole];
+}
+
 // Returns a subrole based upon the role.
 - (NSString*)subrole {
   if (![self instanceActive])
@@ -2432,6 +2490,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return tabSubtree;
 }
 
+- (NSString*)AXTitle {
+  return [self title];
+}
 - (NSString*)title {
   if (![self instanceActive])
     return nil;
@@ -2508,6 +2569,9 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return [NSURL URLWithString:(base::SysUTF8ToNSString(url))];
 }
 
+- (id)AXValue {
+  return [self value];
+}
 - (id)value {
   if (![self instanceActive])
     return nil;
@@ -2614,6 +2678,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   // i.e., progress bars, sliders and steppers.
   return base::SysUTF8ToNSString(
       _owner->GetStringAttribute(ax::mojom::StringAttribute::kValue));
+}
+
+- (NSValue*)AXVisibleCharacterRange {
+  return [self visibleCharacterRange];
 }
 
 - (NSValue*)visibleCharacterRange {
@@ -2760,6 +2828,43 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return nil;
 }
 
+- (id)AXStringForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  return [self valueForRange:[(NSValue*)parameter rangeValue]];
+}
+
+- (id)AXAttributedStringForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  return [self attributedValueForRange:[(NSValue*)parameter rangeValue]];
+}
+
+- (id)AXLineForIndex:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  int lineIndex = [(NSNumber*)parameter intValue];
+  const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
+  auto iterator =
+      std::upper_bound(lineBreaks.begin(), lineBreaks.end(), lineIndex);
+  return @(std::distance(lineBreaks.begin(), iterator));
+}
+
+- (id)AXRangeForLine:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  if (!_owner->IsTextField())
+    return nil;
+
+  int lineIndex = [(NSNumber*)parameter intValue];
+  const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
+  std::u16string value = _owner->GetValueForControl();
+  int valueLength = static_cast<int>(value.size());
+
+  int lineCount = static_cast<int>(lineBreaks.size()) + 1;
+  if (lineIndex < 0 || lineIndex >= lineCount)
+    return nil;
+  int start = (lineIndex > 0) ? lineBreaks[lineIndex - 1] : 0;
+  int end = (lineIndex < (lineCount - 1)) ? lineBreaks[lineIndex] : valueLength;
+  return [NSValue valueWithRange:NSMakeRange(start, end - start)];
+}
+
 // Returns the accessibility value for the given attribute and parameter. If the
 // value isn't supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute
@@ -2784,41 +2889,23 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
   if ([attribute isEqualToString:
                      NSAccessibilityStringForRangeParameterizedAttribute]) {
-    return [self valueForRange:[(NSValue*)parameter rangeValue]];
+    return [self AXStringForRange:parameter];
   }
 
   if ([attribute
           isEqualToString:
               NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
-    return [self attributedValueForRange:[(NSValue*)parameter rangeValue]];
+    return [self AXAttributedStringForRange:parameter];
   }
 
   if ([attribute
           isEqualToString:NSAccessibilityLineForIndexParameterizedAttribute]) {
-    int lineIndex = [(NSNumber*)parameter intValue];
-    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
-    auto iterator =
-        std::upper_bound(lineBreaks.begin(), lineBreaks.end(), lineIndex);
-    return @(std::distance(lineBreaks.begin(), iterator));
+    return [self AXLineForIndex:parameter];
   }
 
   if ([attribute
           isEqualToString:NSAccessibilityRangeForLineParameterizedAttribute]) {
-    if (!_owner->IsTextField())
-      return nil;
-
-    int lineIndex = [(NSNumber*)parameter intValue];
-    const std::vector<int> lineBreaks = _owner->GetLineStartOffsets();
-    std::u16string value = _owner->GetValueForControl();
-    int valueLength = static_cast<int>(value.size());
-
-    int lineCount = static_cast<int>(lineBreaks.size()) + 1;
-    if (lineIndex < 0 || lineIndex >= lineCount)
-      return nil;
-    int start = (lineIndex > 0) ? lineBreaks[lineIndex - 1] : 0;
-    int end =
-        (lineIndex < (lineCount - 1)) ? lineBreaks[lineIndex] : valueLength;
-    return [NSValue valueWithRange:NSMakeRange(start, end - start)];
+    return [self AXRangeForLine:parameter];
   }
 
   if ([attribute
@@ -3664,6 +3751,10 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     [ret addObject:NSAccessibilityTitleUIElementAttribute];
   }
 
+  if (!_owner->GetIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds)
+           .empty()) {
+    [ret addObject:NSAccessibilityDetailsElementsAttribute];
+  }
   if (_owner->HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete))
     [ret addObject:NSAccessibilityAutocompleteValueAttribute];
 
@@ -3734,10 +3825,36 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   TRACE_EVENT1("accessibility",
                "BrowserAccessibilityCocoa::accessibilityIsIgnored",
                "role=", ui::ToString([self internalRole]));
-  if (![self instanceActive])
-    return YES;
-
   return [self isIgnored];
+}
+
+- (BOOL)isAccessibilityElement {
+  TRACE_EVENT1("accessibility",
+               "BrowserAccessibilityCocoa::isAccessibilityElement",
+               "role=", ui::ToString([self internalRole]));
+  if (![self instanceActive])
+    return NO;
+
+  // Unlike accessibilityIsIgnored do not return false for invisible elements,
+  // otherwise it fails to fire events for menus.
+  return ![[self role] isEqualToString:NSAccessibilityUnknownRole] &&
+         !_owner->IsIgnored();
+}
+
+- (BOOL)isAccessibilityEnabled {
+  if (![self instanceActive])
+    return NO;
+
+  return _owner->GetData().GetRestriction() !=
+         ax::mojom::Restriction::kDisabled;
+}
+
+- (NSRect)accessibilityFrame {
+  if (![self instanceActive])
+    return NSZeroRect;
+
+  return gfx::ScreenRectToNSRect(_owner->GetBoundsRect(
+      ui::AXCoordinateSystem::kScreenDIPs, ui::AXClippingBehavior::kClipped));
 }
 
 - (BOOL)isCheckable {

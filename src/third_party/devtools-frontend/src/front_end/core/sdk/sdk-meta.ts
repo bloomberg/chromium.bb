@@ -313,6 +313,19 @@ const UIStrings = {
    * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   disableCache: 'Disable cache (while DevTools is open)',
+  /**
+  * @description The name of a checkbox setting in the Rendering tool. This setting
+  * emulates that the webpage is in auto dark mode.
+  */
+  emulateAutoDarkMode: 'Emulate auto dark mode',
+  /**
+  *@description Title of a setting for emulating enabled auto dark mode.
+  */
+  enabledDarkMode: 'Enable',
+  /**
+   * @description Title of a setting for emulating disabled auto dark mode.
+   */
+  disabledDarkMode: 'Disable',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/sdk-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -750,6 +763,39 @@ Common.Settings.registerSettingExtension({
 });
 
 Common.Settings.registerSettingExtension({
+  settingName: 'emulatedCSSMediaFeaturePrefersContrast',
+  settingType: Common.Settings.SettingType.ENUM,
+  storageType: Common.Settings.SettingStorageType.Session,
+  defaultValue: '',
+  options: [
+    {
+      title: i18nLazyString(UIStrings.doNotEmulateCss, {PH1: 'prefers-contrast'}),
+      text: i18nLazyString(UIStrings.noEmulation),
+      value: '',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: more'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: more'),
+      value: 'more',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: less'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: less'),
+      value: 'less',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateCss, {PH1: 'prefers-contrast: custom'}),
+      text: i18n.i18n.lockedLazyString('prefers-contrast: custom'),
+      value: 'custom',
+    },
+  ],
+  tags: [
+    i18nLazyString(UIStrings.query),
+  ],
+  title: i18nLazyString(UIStrings.emulateCssMediaFeature, {PH1: 'prefers-contrast'}),
+});
+
+Common.Settings.registerSettingExtension({
   settingName: 'emulatedCSSMediaFeaturePrefersReducedData',
   settingType: Common.Settings.SettingType.ENUM,
   storageType: Common.Settings.SettingStorageType.Session,
@@ -958,6 +1004,32 @@ Common.Settings.registerSettingExtension({
     {
       value: false,
       title: i18nLazyString(UIStrings.enableCache),
+    },
+  ],
+});
+
+Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.RENDERING,
+  title: i18nLazyString(UIStrings.emulateAutoDarkMode),
+  settingName: 'emulateAutoDarkMode',
+  settingType: Common.Settings.SettingType.ENUM,
+  storageType: Common.Settings.SettingStorageType.Session,
+  defaultValue: 'default',
+  options: [
+    {
+      title: i18nLazyString(UIStrings.emulateAutoDarkMode),
+      text: i18nLazyString(UIStrings.noEmulation),
+      value: 'default',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateAutoDarkMode),
+      text: i18nLazyString(UIStrings.enabledDarkMode),
+      value: 'enabled',
+    },
+    {
+      title: i18nLazyString(UIStrings.emulateAutoDarkMode),
+      text: i18nLazyString(UIStrings.disabledDarkMode),
+      value: 'disabled',
     },
   ],
 });

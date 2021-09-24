@@ -565,8 +565,6 @@ public:
         return fFunctionName.c_str();
     }
 
-    void emitChildFunctions(EmitArgs& parentArgs);
-
     // Invoke the child with the default input and destination colors (solid white)
     inline SkString invokeChild(int childIndex,
                                 EmitArgs& parentArgs,
@@ -613,10 +611,9 @@ public:
      *  to the child's helper function). It is legal to pass nullptr as inputColor, since all
      *  fragment processors are required to work without an input color.
      *
-     *  When skslCoords is empty, invokeChild corresponds to a call to "sample(child, color)"
-     *  in SkSL. When skslCoords is not empty, invokeChild corresponds to a call to
-     *  "sample(child, color, float2)", where skslCoords is an SkSL expression that evaluates to a
-     *  float2 and is passed in as the 3rd argument.
+     *  When skslCoords is empty, the child is invoked at the sample coordinates from parentArgs.
+     *  When skslCoords is not empty, is must be an SkSL expression that evaluates to a float2.
+     *  That expression is passed to the child's processor function as the "_coords" argument.
      */
     SkString invokeChild(int childIndex,
                          const char* inputColor,

@@ -79,6 +79,8 @@ class Dictation : public SpeechRecognizerDelegate,
   // Commits the current composition text.
   void CommitCurrentText();
 
+  // Whether Dictation is toggled on or off.
+  bool is_started_ = false;
   SpeechRecognizerStatus current_state_;
   bool has_committed_text_ = false;
 

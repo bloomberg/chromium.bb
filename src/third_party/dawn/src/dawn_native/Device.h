@@ -46,6 +46,7 @@ namespace dawn_native {
     class PersistentCache;
     class StagingBufferBase;
     struct CallbackTask;
+    struct FlatComputePipelineDescriptor;
     struct InternalPipelineStore;
     struct ShaderModuleParseResult;
 
@@ -113,7 +114,8 @@ namespace dawn_native {
         // instead of a backend Foo object. If the blueprint doesn't match an object in the
         // cache, then the descriptor is used to make a new object.
         ResultOrError<Ref<BindGroupLayoutBase>> GetOrCreateBindGroupLayout(
-            const BindGroupLayoutDescriptor* descriptor);
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken = PipelineCompatibilityToken(0));
         void UncacheBindGroupLayout(BindGroupLayoutBase* obj);
 
         BindGroupLayoutBase* GetEmptyBindGroupLayout();
@@ -124,8 +126,6 @@ namespace dawn_native {
             const PipelineLayoutDescriptor* descriptor);
         void UncachePipelineLayout(PipelineLayoutBase* obj);
 
-        ResultOrError<Ref<RenderPipelineBase>> GetOrCreateRenderPipeline(
-            const RenderPipelineDescriptor* descriptor);
         void UncacheRenderPipeline(RenderPipelineBase* obj);
 
         ResultOrError<Ref<SamplerBase>> GetOrCreateSampler(const SamplerDescriptor* descriptor);
@@ -165,6 +165,9 @@ namespace dawn_native {
             const RenderBundleEncoderDescriptor* descriptor);
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipeline(
             const RenderPipelineDescriptor* descriptor);
+        MaybeError CreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
+                                             WGPUCreateRenderPipelineAsyncCallback callback,
+                                             void* userdata);
         ResultOrError<Ref<SamplerBase>> CreateSampler(const SamplerDescriptor* descriptor);
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModule(
             const ShaderModuleDescriptor* descriptor,
@@ -297,6 +300,8 @@ namespace dawn_native {
                                                  void* userdata,
                                                  size_t blueprintHash);
 
+        PipelineCompatibilityToken GetNextPipelineCompatibilityToken();
+
       protected:
         void SetToggle(Toggle toggle, bool isEnabled);
         void ForceSetToggle(Toggle toggle, bool isEnabled);
@@ -311,7 +316,8 @@ namespace dawn_native {
         virtual ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) = 0;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) = 0;
         virtual ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
@@ -345,17 +351,24 @@ namespace dawn_native {
 
         ResultOrError<Ref<BindGroupLayoutBase>> CreateEmptyBindGroupLayout();
 
-        ResultOrError<Ref<PipelineLayoutBase>> ValidateAndGetComputePipelineDescriptorWithDefaults(
-            const ComputePipelineDescriptor& descriptor,
-            ComputePipelineDescriptor* outDescriptor);
         std::pair<Ref<ComputePipelineBase>, size_t> GetCachedComputePipeline(
             const ComputePipelineDescriptor* descriptor);
-        Ref<ComputePipelineBase> AddOrGetCachedPipeline(Ref<ComputePipelineBase> computePipeline,
-                                                        size_t blueprintHash);
-        virtual void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                                    size_t blueprintHash,
-                                                    WGPUCreateComputePipelineAsyncCallback callback,
-                                                    void* userdata);
+        std::pair<Ref<RenderPipelineBase>, size_t> GetCachedRenderPipeline(
+            const RenderPipelineDescriptor* descriptor);
+        Ref<ComputePipelineBase> AddOrGetCachedComputePipeline(
+            Ref<ComputePipelineBase> computePipeline,
+            size_t blueprintHash);
+        Ref<RenderPipelineBase> AddOrGetCachedRenderPipeline(Ref<RenderPipelineBase> renderPipeline,
+                                                             size_t blueprintHash);
+        virtual void CreateComputePipelineAsyncImpl(
+            std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
+            size_t blueprintHash,
+            WGPUCreateComputePipelineAsyncCallback callback,
+            void* userdata);
+        virtual void CreateRenderPipelineAsyncImpl(const RenderPipelineDescriptor* descriptor,
+                                                   size_t blueprintHash,
+                                                   WGPUCreateRenderPipelineAsyncCallback callback,
+                                                   void* userdata);
 
         void ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor);
         void ApplyExtensions(const DeviceDescriptor* deviceDescriptor);
@@ -434,6 +447,7 @@ namespace dawn_native {
         TogglesSet mEnabledToggles;
         TogglesSet mOverridenToggles;
         size_t mLazyClearCountForTesting = 0;
+        std::atomic_uint64_t mNextPipelineCompatibilityToken;
 
         ExtensionsSet mEnabledExtensions;
 

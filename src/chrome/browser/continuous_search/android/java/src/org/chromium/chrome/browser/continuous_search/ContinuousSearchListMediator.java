@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
@@ -67,6 +68,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     @VisibleForTesting
     boolean mScrolled;
     private boolean mProviderButtonClicked;
+    private boolean mItemClickedAtLeastOnce;
 
     @IntDef({TriggerMode.ALWAYS, TriggerMode.AFTER_SECOND_SRP, TriggerMode.ON_REVERSE_SCROLL})
     @Retention(RetentionPolicy.SOURCE)
@@ -102,11 +104,13 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     }
 
     private void dismissOnUserRequest() {
+        TraceEvent.begin("ContinuousSearchListMediator#dismissOnUserRequest");
         // To avoid showing for duration of the current SRP session don't delete the data, instead
         // hide the UI permamently. Data will be deleted as soon as the SRP session is over.
         mDismissed = true;
         ContinuousSearchConfiguration.recordDismissed();
         setVisibility(false, null);
+        TraceEvent.end("ContinuousSearchListMediator#dismissOnUserRequest");
     }
 
     private void reset() {
@@ -118,6 +122,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         mUiShown = false;
         mScrolled = false;
         mProviderButtonClicked = false;
+        mItemClickedAtLeastOnce = false;
         mSrpVisits = 0;
     }
 
@@ -130,6 +135,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
      */
     @Override
     public void onResult(Tab tab) {
+        TraceEvent.begin("ContinuousSearchListMediator#onResult");
         if (mCurrentUserData != null) {
             mCurrentUserData.removeObserver(this);
             mCurrentUserData = null;
@@ -142,13 +148,17 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         setVisibility(false, null);
         reset();
         mCurrentTab = tab;
-        if (mCurrentTab == null) return;
+        if (mCurrentTab == null) {
+            TraceEvent.end("ContinuousSearchListMediator#onResult");
+            return;
+        }
 
         if (mScrollObserver != null) {
             mBrowserControlsStateProvider.addObserver(mScrollObserver);
         }
         mCurrentUserData = ContinuousNavigationUserDataImpl.getOrCreateForTab(mCurrentTab);
         mCurrentUserData.addObserver(this);
+        TraceEvent.end("ContinuousSearchListMediator#onResult");
     }
 
     @Override
@@ -158,6 +168,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
 
     @Override
     public void onUpdate(ContinuousNavigationMetadata metadata) {
+        TraceEvent.begin("ContinuousSearchListMediator#onUpdate");
         reset();
 
         ContinuousNavigationMetadata.Provider provider = metadata.getProvider();
@@ -183,10 +194,12 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                         generateListItem(result.getTitle(), result.getUrl(), resultCount++)));
             }
         }
+        TraceEvent.end("ContinuousSearchListMediator#onUpdate");
     }
 
     @Override
     public void onUrlChanged(GURL currentUrl, boolean onSrp) {
+        TraceEvent.begin("ContinuousSearchListMediator#onUrlChanged");
         mOnSrp = onSrp;
         if (mOnSrp) mSrpVisits++;
 
@@ -222,6 +235,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                             finalSelectedItemPosition);
         }
         setVisibility(shouldBeVisible, onFinishShowRunnable);
+        TraceEvent.end("ContinuousSearchListMediator#onUrlChanged");
     }
 
     private @TriggerMode int getTriggerMode() {
@@ -248,8 +262,8 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                         -> handleItemClick(/*url=*/null, /*resultPosition=*/0,
                                 /*isProviderLabel=*/true));
         mRootViewModel.set(ContinuousSearchListProperties.PROVIDER_TEXT_STYLE,
-                useDarkColors ? R.style.TextAppearance_TextMedium_Primary_Dark
-                              : R.style.TextAppearance_TextMedium_Primary_Light);
+                useDarkColors ? R.style.TextAppearance_TextMedium_Primary_Baseline_Dark
+                              : R.style.TextAppearance_TextMedium_Primary_Baseline_Light);
         if (label != null) {
             mRootViewModel.set(ContinuousSearchListProperties.PROVIDER_LABEL,
                     mContext.getString(R.string.csn_provider_label, label));
@@ -290,6 +304,7 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
     }
 
     private void handleItemClick(@Nullable GURL url, int resultPosition, boolean isProviderLabel) {
+        TraceEvent.begin("ContinuousSearchListMediator#handleItemClick");
         // When the provider label is clicked, we should go back to the page where CSN started on.
         if (isProviderLabel) {
             if (mStartNavigationIndex >= 0 && mCurrentTab != null
@@ -308,17 +323,21 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
                     new Referrer("https://www.google.com", ReferrerPolicy.STRICT_ORIGIN));
             mCurrentTab.loadUrl(params);
 
+            mItemClickedAtLeastOnce = true;
             RecordHistogram.recordCount100Histogram(
                     "Browser.ContinuousSearch.UI.ClickedItemPosition"
                             + SearchUrlHelper.getHistogramSuffixForPageCategory(mPageCategory),
                     resultPosition);
         }
+        TraceEvent.end("ContinuousSearchListMediator#handleItemClick");
     }
 
     private void setVisibility(boolean visibility, Runnable onFinished) {
+        TraceEvent.begin("ContinuousSearchListMediator#setVisibility");
         mVisible = visibility;
         if (mVisible) mUiShown = true;
         mSetLayoutVisibility.onResult(new VisibilitySettings(mVisible, onFinished));
+        TraceEvent.end("ContinuousSearchListMediator#setVisibility");
     }
 
     void onScrolled() {
@@ -333,6 +352,9 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         RecordHistogram.recordBooleanHistogram(
                 "Browser.ContinuousSearch.UI.ProviderButtonClicked" + histogramSuffix,
                 mProviderButtonClicked);
+        RecordHistogram.recordBooleanHistogram(
+                "Browser.ContinuousSearch.UI.ItemClickedAtLeastOnce" + histogramSuffix,
+                mItemClickedAtLeastOnce);
         RecordHistogram.recordBooleanHistogram(
                 "Browser.ContinuousSearch.UI.DismissButtonClicked" + histogramSuffix, mDismissed);
     }
@@ -369,8 +391,8 @@ class ContinuousSearchListMediator implements ContinuousNavigationUserDataObserv
         int itemBgColor = getBackgroundColorForParentBackgroundColor(color);
         boolean useDarkColors = shouldUseDarkElementColors(itemBgColor);
         mRootViewModel.set(ContinuousSearchListProperties.PROVIDER_TEXT_STYLE,
-                useDarkColors ? R.style.TextAppearance_TextMedium_Primary_Dark
-                              : R.style.TextAppearance_TextMedium_Primary_Light);
+                useDarkColors ? R.style.TextAppearance_TextMedium_Primary_Baseline_Dark
+                              : R.style.TextAppearance_TextMedium_Primary_Baseline_Light);
         for (ListItem listItem : mModelList) {
             listItem.model.set(ListItemProperties.BACKGROUND_COLOR, itemBgColor);
             listItem.model.set(ListItemProperties.PRIMARY_TEXT_STYLE,

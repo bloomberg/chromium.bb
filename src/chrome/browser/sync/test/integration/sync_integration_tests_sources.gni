@@ -62,7 +62,17 @@ if (!is_android) {
     "../browser/sync/test/integration/two_client_user_events_sync_test.cc",
     "../browser/sync/test/integration/two_client_wallet_sync_test.cc",
     "../browser/sync/test/integration/two_client_web_apps_bmo_sync_test.cc",
-    "../browser/sync/test/integration/two_client_web_apps_integration_sync_test.cc",
+    "../browser/sync/test/integration/two_client_web_apps_integration_test.cc",
+    "../browser/sync/test/integration/two_client_web_apps_integration_test_base.cc",
+    "../browser/sync/test/integration/two_client_web_apps_integration_test_base.h",
     "../browser/sync/test/integration/two_client_web_apps_sync_test.cc",
   ]
+}
+
+if (is_win || is_mac || is_linux) {
+  sync_integration_tests_sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_test_mac_win_linux.cc" ]
+}
+
+if (is_chromeos) {
+  sync_integration_tests_sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_test_cros.cc" ]
 }

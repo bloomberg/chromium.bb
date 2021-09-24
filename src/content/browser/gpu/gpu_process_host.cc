@@ -254,6 +254,7 @@ static const char* const kSwitchNames[] = {
     switches::kEnableLogging,
     switches::kEnableDeJelly,
     switches::kDeJellyScreenWidth,
+    switches::kDocumentTransitionSlowdownFactor,
     switches::kDoubleBufferCompositing,
     switches::kHeadless,
     switches::kLoggingLevel,
@@ -1112,7 +1113,7 @@ void GpuProcessHost::DumpProcessStack() {
 #endif
 }
 
-void GpuProcessHost::RunService(mojo::GenericPendingReceiver receiver) {
+void GpuProcessHost::RunServiceImpl(mojo::GenericPendingReceiver receiver) {
   process_->child_process()->BindServiceInterface(std::move(receiver));
 }
 

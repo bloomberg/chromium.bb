@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
+#include "chrome/browser/chromeos/eche_app/eche_app_notification_controller.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/secure_channel/nearby_connector_factory.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chromeos/components/eche_app_ui/eche_app_manager.h"
 #include "chromeos/components/eche_app_ui/eche_uid_provider.h"
 #include "chromeos/components/eche_app_ui/system_info.h"
@@ -44,11 +46,12 @@ void CloseEcheApp(Profile* profile) {
   for (auto* browser : *(BrowserList::GetInstance())) {
     if (browser->profile() != profile)
       continue;
-    if (!browser->app_controller())
+    if (!browser->app_controller() ||
+        !browser->app_controller()->system_app() ||
+        browser->app_controller()->system_app()->GetType() !=
+            web_app::SystemAppType::ECHE) {
       continue;
-    if (browser->app_controller()->system_app_type() !=
-        web_app::SystemAppType::ECHE)
-      continue;
+    }
     browser->window()->Close();
     return;
   }
@@ -64,8 +67,8 @@ enum class NotificationInteraction {
 };
 
 void LaunchSystemWebApp(Profile* profile,
-                        std::string package_name,
-                        absl::optional<int64_t> notification_id) {
+                        const std::string& package_name,
+                        const absl::optional<int64_t>& notification_id) {
   std::string url;
   // Use hash mark(#) to send params to webui so we don't need to reload the
   // whole eche window.
@@ -89,16 +92,11 @@ void LaunchSystemWebApp(Profile* profile,
 }
 
 void LaunchEcheApp(Profile* profile,
-                   int64_t notification_id,
+                   const absl::optional<int64_t>& notification_id,
                    const std::string& package_name) {
   LaunchSystemWebApp(profile, package_name, notification_id);
   base::UmaHistogramEnumeration("Eche.NotificationClicked",
                                 NotificationInteraction::kOpenAppStreaming);
-}
-
-void LaunchEcheAppWithPackageName(Profile* profile,
-                                  const std::string& package_name) {
-  LaunchSystemWebApp(profile, package_name, /*notification_id=*/absl::nullopt);
 }
 
 }  // namespace
@@ -113,6 +111,32 @@ EcheAppManager* EcheAppManagerFactory::GetForProfile(Profile* profile) {
 // static
 EcheAppManagerFactory* EcheAppManagerFactory::GetInstance() {
   return base::Singleton<EcheAppManagerFactory>::get();
+}
+
+// static
+void EcheAppManagerFactory::ShowNotification(
+    base::WeakPtr<EcheAppManagerFactory> weak_ptr,
+    Profile* profile,
+    const absl::optional<std::u16string>& title,
+    const absl::optional<std::u16string>& message,
+    std::unique_ptr<LaunchAppHelper::NotificationInfo> info) {
+  if (!weak_ptr->notification_controller_) {
+    weak_ptr->notification_controller_ =
+        std::make_unique<EcheAppNotificationController>(profile);
+  }
+
+  if (info->category() ==
+      LaunchAppHelper::NotificationInfo::Category::kNative) {
+    if (absl::get<LaunchAppHelper::NotificationInfo::NotificationType>(
+            info->type()) ==
+        LaunchAppHelper::NotificationInfo::NotificationType::kScreenLock) {
+      weak_ptr->notification_controller_->ShowScreenLockNotification();
+    }
+  } else if (info->category() ==
+             LaunchAppHelper::NotificationInfo::Category::kWebUI) {
+    weak_ptr->notification_controller_->ShowNotificationFromWebUI(
+        title, message, info->type());
+  }
 }
 
 EcheAppManagerFactory::EcheAppManagerFactory()
@@ -163,7 +187,8 @@ KeyedService* EcheAppManagerFactory::BuildServiceInstanceFor(
       device_sync_client, multidevice_setup_client, secure_channel_client,
       base::BindRepeating(&LaunchEcheApp, profile),
       base::BindRepeating(&CloseEcheApp, profile),
-      base::BindRepeating(&LaunchEcheAppWithPackageName, profile));
+      base::BindRepeating(&EcheAppManagerFactory::ShowNotification,
+                          weak_ptr_factory_.GetWeakPtr(), profile));
 }
 
 std::unique_ptr<SystemInfo> EcheAppManagerFactory::GetSystemInfo(

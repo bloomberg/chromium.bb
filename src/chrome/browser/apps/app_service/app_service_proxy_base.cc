@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/extend.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_impl.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -122,9 +122,8 @@ void AppServiceProxyBase::Initialize() {
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 
-  app_service_impl_ = std::make_unique<apps::AppServiceImpl>(
-      profile_->GetPath(),
-      base::FeatureList::IsEnabled(features::kIntentHandlingSharing));
+  app_service_impl_ =
+      std::make_unique<apps::AppServiceImpl>(profile_->GetPath());
   app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
 
   if (app_service_.is_connected()) {
@@ -392,8 +391,11 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
                                     &exclude_browsers,
                                     &exclude_browser_tab_apps](
                                        const apps::AppUpdate& update) {
+      // TODO(1240906): Find a way to properly filter in/out apps that should
+      // participate in intent handling.
       if (!apps_util::IsInstalled(update.Readiness()) ||
-          update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue) {
+          (update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue &&
+           !web_app::IsSystemAppIdWithFileHandlers(update.AppId()))) {
         return;
       }
       if (exclude_browser_tab_apps &&
@@ -421,6 +423,8 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
           existing_activities.insert(activity_label);
           entry.activity_label = activity_label;
           entry.activity_name = filter->activity_name.value_or("");
+          entry.is_file_extension_match =
+              apps_util::FilterIsForFileExtensions(filter);
           intent_launch_info.push_back(entry);
         }
       }
@@ -433,7 +437,8 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types) {
   return GetAppsForIntent(
-      apps_util::CreateShareIntentFromFiles(filesystem_urls, mime_types));
+      apps_util::CreateViewIntentFromFiles(filesystem_urls, mime_types), false,
+      false);
 }
 
 void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
@@ -571,5 +576,9 @@ void AppServiceProxyBase::PerformPostUninstallTasks(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {}
+
+IntentLaunchInfo::IntentLaunchInfo() = default;
+IntentLaunchInfo::~IntentLaunchInfo() = default;
+IntentLaunchInfo::IntentLaunchInfo(const IntentLaunchInfo& other) = default;
 
 }  // namespace apps

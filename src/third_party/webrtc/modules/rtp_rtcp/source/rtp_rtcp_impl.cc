@@ -53,8 +53,7 @@ ModuleRtpRtcpImpl::RtpSenderContext::RtpSenderContext(
       packet_generator(
           config,
           &packet_history,
-          config.paced_sender ? config.paced_sender : &non_paced_sender,
-          /*packet_sequencer=*/nullptr) {}
+          config.paced_sender ? config.paced_sender : &non_paced_sender) {}
 
 std::unique_ptr<RtpRtcp> RtpRtcp::DEPRECATED_Create(
     const Configuration& configuration) {
@@ -490,6 +489,8 @@ size_t ModuleRtpRtcpImpl::ExpectedPerPacketOverhead() const {
   return rtp_sender_->packet_generator.ExpectedPerPacketOverhead();
 }
 
+void ModuleRtpRtcpImpl::OnPacketSendingThreadSwitched() {}
+
 size_t ModuleRtpRtcpImpl::MaxRtpPacketSize() const {
   RTC_DCHECK(rtp_sender_);
   return rtp_sender_->packet_generator.MaxRtpPacketSize();
@@ -599,6 +600,12 @@ ModuleRtpRtcpImpl::GetSenderReportStats() const {
                                      arrival_timestamp_frac);
     return stats;
   }
+  return absl::nullopt;
+}
+
+absl::optional<RtpRtcpInterface::NonSenderRttStats>
+ModuleRtpRtcpImpl::GetNonSenderRttStats() const {
+  // This is not implemented for this legacy class.
   return absl::nullopt;
 }
 

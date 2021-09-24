@@ -180,18 +180,15 @@ ProcessLock ProcessLock::CreateAllowAnySite(
       SiteInfo(GURL(), GURL(), false, storage_partition_config,
                web_exposed_isolation_info, /* is_guest */ false,
                /* does_site_request_dedicated_process_for_coop */ false,
-               /* is_jit_disabled */ false));
+               /* is_jit_disabled */ false, /* is_pdf */ false));
 }
 
 // static
-ProcessLock ProcessLock::Create(
-    const IsolationContext& isolation_context,
-    const UrlInfo& url_info,
-    const WebExposedIsolationInfo& web_exposed_isolation_info) {
+ProcessLock ProcessLock::Create(const IsolationContext& isolation_context,
+                                const UrlInfo& url_info) {
   DCHECK(url_info.storage_partition_config.has_value());
   if (BrowserThread::CurrentlyOn(BrowserThread::UI))
-    return ProcessLock(SiteInfo::Create(isolation_context, url_info,
-                                        web_exposed_isolation_info));
+    return ProcessLock(SiteInfo::Create(isolation_context, url_info));
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -199,8 +196,7 @@ ProcessLock ProcessLock::Create(
   // we cannot properly compute some SiteInfo fields on that thread.
   // ProcessLocks must always match no matter which thread they were created on,
   // but the SiteInfo objects used to create them may not always match.
-  return ProcessLock(SiteInfo::CreateOnIOThread(isolation_context, url_info,
-                                                web_exposed_isolation_info));
+  return ProcessLock(SiteInfo::CreateOnIOThread(isolation_context, url_info));
 }
 
 ProcessLock::ProcessLock(const SiteInfo& site_info) : site_info_(site_info) {}
@@ -246,6 +242,7 @@ bool ProcessLock::operator==(const ProcessLock& rhs) const {
     is_equal =
         site_info_->process_lock_url() == rhs.site_info_->process_lock_url() &&
         site_info_->is_origin_keyed() == rhs.site_info_->is_origin_keyed() &&
+        site_info_->is_pdf() == rhs.site_info_->is_pdf() &&
         (site_info_->web_exposed_isolation_info() ==
          rhs.site_info_->web_exposed_isolation_info());
   }
@@ -259,12 +256,14 @@ bool ProcessLock::operator!=(const ProcessLock& rhs) const {
 
 bool ProcessLock::operator<(const ProcessLock& rhs) const {
   const auto this_is_origin_keyed = is_origin_keyed();
+  const auto this_is_pdf = is_pdf();
   const auto this_web_exposed_isolation_info = web_exposed_isolation_info();
   const auto rhs_is_origin_keyed = is_origin_keyed();
+  const auto rhs_is_pdf = rhs.is_pdf();
   const auto rhs_web_exposed_isolation_info = web_exposed_isolation_info();
-  return std::tie(lock_url(), this_is_origin_keyed,
+  return std::tie(lock_url(), this_is_origin_keyed, this_is_pdf,
                   this_web_exposed_isolation_info) <
-         std::tie(rhs.lock_url(), rhs_is_origin_keyed,
+         std::tie(rhs.lock_url(), rhs_is_origin_keyed, rhs_is_pdf,
                   rhs_web_exposed_isolation_info);
 }
 
@@ -276,6 +275,9 @@ std::string ProcessLock::ToString() const {
 
     if (is_origin_keyed())
       ret += " origin-keyed";
+
+    if (is_pdf())
+      ret += " pdf";
 
     if (web_exposed_isolation_info().is_isolated()) {
       ret += " cross-origin-isolated";
@@ -1545,16 +1547,15 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     int child_id,
     const IsolationContext& isolation_context,
-    const url::Origin& origin,
-    const UrlInfo& url_info,
-    const WebExposedIsolationInfo& web_exposed_isolation_info) {
-  const url::Origin url_origin = url::Origin::Resolve(url_info.url, origin);
+    const UrlInfo& url_info) {
+  const url::Origin url_origin =
+      url::Origin::Resolve(url_info.url, url_info.origin);
   if (!CanAccessDataForOrigin(child_id, url_origin)) {
     // Check for special cases, like blob:null/ and data: URLs, where the
     // origin does not contain information to match against the process lock,
     // but using the whole URL can result in a process lock match.
-    const auto expected_process_lock = ProcessLock::Create(
-        isolation_context, url_info, web_exposed_isolation_info);
+    const auto expected_process_lock =
+        ProcessLock::Create(isolation_context, url_info);
     const ProcessLock& actual_process_lock = GetProcessLock(child_id);
     if (actual_process_lock == expected_process_lock)
       return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
@@ -1562,7 +1563,7 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     return CanCommitStatus::CANNOT_COMMIT_URL;
   }
 
-  if (!CanAccessDataForOrigin(child_id, origin))
+  if (!CanAccessDataForOrigin(child_id, url_info.origin))
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
   // Ensure that the origin derived from |url| is consistent with |origin|.
@@ -1571,7 +1572,7 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
   const auto url_tuple_or_precursor_tuple =
       url_origin.GetTupleOrPrecursorTupleIfOpaque();
   const auto origin_tuple_or_precursor_tuple =
-      origin.GetTupleOrPrecursorTupleIfOpaque();
+      url_info.origin.GetTupleOrPrecursorTupleIfOpaque();
 
   if (url_tuple_or_precursor_tuple.IsValid() &&
       origin_tuple_or_precursor_tuple.IsValid() &&
@@ -1710,9 +1711,12 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
         // |actual_process_lock|.
         expected_process_lock = ProcessLock::Create(
             isolation_context,
-            UrlInfo(UrlInfoInit(url).WithStoragePartitionConfig(
-                actual_process_lock.storage_partition_config())),
-            actual_process_lock.web_exposed_isolation_info());
+            UrlInfo(UrlInfoInit(url)
+                        .WithStoragePartitionConfig(
+                            actual_process_lock.storage_partition_config())
+                        .WithWebExposedIsolationInfo(
+                            actual_process_lock.web_exposed_isolation_info())
+                        .WithIsPdf(actual_process_lock.is_pdf())));
 
         if (actual_process_lock.is_locked_to_site()) {
           // Jail-style enforcement - a process with a lock can only access
@@ -1795,8 +1799,9 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
           // See the ProcessLock::Create() call above regarding why we pass
           // kNone for |origin_isolation_request| below.
           SiteInfo site_info = SiteInfo::Create(
-              isolation_context, UrlInfo(UrlInfoInit(url)),
-              actual_process_lock.web_exposed_isolation_info());
+              isolation_context,
+              UrlInfo(UrlInfoInit(url).WithWebExposedIsolationInfo(
+                  actual_process_lock.web_exposed_isolation_info())));
 
           // A process that's not locked to any site can only access data from
           // origins that do not require a locked process.

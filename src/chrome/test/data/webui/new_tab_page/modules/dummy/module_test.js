@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 import {dummyDescriptor, FooProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {installMock} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
-import {isVisible} from 'chrome://test/test_util.m.js';
+import {isVisible} from 'chrome://test/test_util.js';
 
 suite('NewTabPageModulesDummyModuleTest', () => {
-  let testProxy;
+  /** @type {!TestBrowserProxy} */
+  let handler;
 
   setup(() => {
     PolymerTest.clearBody();
 
-    testProxy = FooProxy.getInstance();
-    testProxy.handler = TestBrowserProxy.fromClass(foo.mojom.FooHandlerRemote);
-    testProxy.handler.setResultFor('getData', Promise.resolve({data: []}));
+    handler = installMock(foo.mojom.FooHandlerRemote, FooProxy.setHandler);
+    handler.setResultFor('getData', Promise.resolve({data: []}));
   });
 
   test('creates module with data', async () => {
@@ -36,7 +37,7 @@ suite('NewTabPageModulesDummyModuleTest', () => {
         imageUrl: 'baz.com',
       },
     ];
-    testProxy.handler.setResultFor('getData', Promise.resolve({data}));
+    handler.setResultFor('getData', Promise.resolve({data}));
     const module = await dummyDescriptor.initialize();
     document.body.append(module);
     module.$.tileList.render();

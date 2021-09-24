@@ -9,15 +9,13 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/sent_report_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/schemeful_site.h"
@@ -29,7 +27,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-#include "url/url_canon.h"
 
 namespace content {
 
@@ -69,33 +66,6 @@ void LogMetricsOnReportSend(const ConversionReport& report) {
                             time_from_conversion_to_report_send.InHours());
 }
 
-GURL GetReportUrl(const content::ConversionReport& report) {
-  url::Replacements<char> replacements;
-  static constexpr char kEndpointPath[] =
-      "/.well-known/attribution-reporting/report-attribution";
-  replacements.SetPath(kEndpointPath, url::Component(0, strlen(kEndpointPath)));
-  return report.impression.reporting_origin().GetURL().ReplaceComponents(
-      replacements);
-}
-
-std::string GetReportPostBody(const content::ConversionReport& report) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-
-  // The API denotes these values as strings; a `uint64_t` cannot be put in
-  // a dict as an integer in order to be opaque to various API configurations.
-  dict.SetStringKey("source_event_id",
-                    base::NumberToString(report.impression.impression_data()));
-
-  dict.SetStringKey("trigger_data",
-                    base::NumberToString(report.conversion_data));
-
-  // Write the dict to json;
-  std::string output_json;
-  bool success = base::JSONWriter::Write(dict, &output_json);
-  DCHECK(success);
-  return output_json;
-}
-
 }  // namespace
 
 ConversionNetworkSenderImpl::ConversionNetworkSenderImpl(
@@ -104,7 +74,7 @@ ConversionNetworkSenderImpl::ConversionNetworkSenderImpl(
 
 ConversionNetworkSenderImpl::~ConversionNetworkSenderImpl() = default;
 
-void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
+void ConversionNetworkSenderImpl::SendReport(ConversionReport report,
                                              ReportSentCallback sent_callback) {
   // The browser process URLLoaderFactory is not created by default, so don't
   // create it until it is directly needed.
@@ -113,16 +83,17 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
         storage_partition_->GetURLLoaderFactoryForBrowserProcess();
   }
 
-  GURL report_url = GetReportUrl(report);
-
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = report_url;
+  resource_request->url = report.ReportURL();
   resource_request->referrer =
       GURL(report.impression.ConversionDestination().Serialize());
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->load_flags =
       net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->isolation_info =
+      net::IsolationInfo::CreateTransient();
 
   // TODO(https://crbug.com/1058018): Update the "policy" field in the traffic
   // annotation when a setting to disable the API is properly
@@ -140,9 +111,8 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
             "When a registered conversion has become eligible for reporting."
           data:
             "A high-entropy identifier declared by the site in which the user "
-            "clicked on an impression. A noisy low entropy data value declared "
-            "on the conversion site. A browser generated value that denotes "
-            "if this was the last impression clicked prior to conversion."
+            "clicked on an impression. A noisy low-entropy data value declared "
+            "on the conversion site."
           destination:OTHER
         }
         policy {
@@ -160,7 +130,7 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
                                         std::move(simple_url_loader));
   simple_url_loader_ptr->SetTimeoutDuration(base::TimeDelta::FromSeconds(30));
 
-  std::string report_body = GetReportPostBody(report);
+  std::string report_body = report.ReportBody();
   simple_url_loader_ptr->AttachStringForUpload(report_body, "application/json");
 
   // Retry once on network change. A network change during DNS resolution
@@ -172,18 +142,15 @@ void ConversionNetworkSenderImpl::SendReport(const ConversionReport& report,
                    network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED;
   simple_url_loader_ptr->SetRetryOptions(/*max_retries=*/1, retry_mode);
 
-  DCHECK(report.conversion_id);
+  LogMetricsOnReportSend(report);
 
   // Unretained is safe because the URLLoader is owned by |this| and will be
   // deleted before |this|.
   simple_url_loader_ptr->DownloadHeadersOnly(
       url_loader_factory_.get(),
       base::BindOnce(&ConversionNetworkSenderImpl::OnReportSent,
-                     base::Unretained(this), std::move(it),
-                     std::move(report_url), std::move(report_body),
-                     std::move(sent_callback), *report.conversion_id,
-                     report.original_report_time));
-  LogMetricsOnReportSend(report);
+                     base::Unretained(this), std::move(it), std::move(report),
+                     std::move(sent_callback)));
 }
 
 void ConversionNetworkSenderImpl::SetURLLoaderFactoryForTesting(
@@ -193,11 +160,8 @@ void ConversionNetworkSenderImpl::SetURLLoaderFactoryForTesting(
 
 void ConversionNetworkSenderImpl::OnReportSent(
     UrlLoaderList::iterator it,
-    GURL report_url,
-    std::string report_body,
+    ConversionReport report,
     ReportSentCallback sent_callback,
-    int64_t conversion_id,
-    base::Time original_report_time,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   network::SimpleURLLoader* loader = it->get();
 
@@ -239,10 +203,10 @@ void ConversionNetworkSenderImpl::OnReportSent(
                    net_error == net::ERR_CONNECTION_RESET);
 
   std::move(sent_callback)
-      .Run(SentReportInfo(conversion_id, original_report_time,
-                          std::move(report_url), std::move(report_body),
-                          headers ? headers->response_code() : 0,
-                          should_retry));
+      .Run(SentReportInfo(std::move(report),
+                          should_retry ? SentReportInfo::Status::kShouldRetry
+                                       : SentReportInfo::Status::kSent,
+                          headers ? headers->response_code() : 0));
 }
 
 }  // namespace content

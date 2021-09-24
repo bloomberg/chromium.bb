@@ -14,11 +14,14 @@ extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableThirdPartyKeyboardWorkaround[];
 
 extern const char kEnableEnterprisePolicy[];
+// TODO(crbug.com/1237468): Remove this switch once the associated policy is
+// released.
+extern const char kEnableForcedSignInPolicy[];
 extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableSpotlightActions[];
 extern const char kEnableThirdPartyKeyboardWorkaround[];
 extern const char kEnableDiscoverFeed[];
-extern const char kEnableSigninRecallPromo[];
+extern const char kEnableUpgradeSigninPromo[];
 extern const char kInstallURLBlocklistHandlers[];
 
 extern const char kUserAgent[];

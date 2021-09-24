@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
-
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
@@ -18,6 +17,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
@@ -28,7 +28,9 @@
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/tabs/color_picker_view.h"
+#include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -38,21 +40,57 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/dialog_model_field.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/types/event_type.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_types.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+
+namespace {
+
+std::unique_ptr<views::LabelButton> CreateMenuItem(
+    int button_id,
+    const std::u16string& name,
+    views::Button::PressedCallback callback,
+    const gfx::VectorIcon* icon = nullptr) {
+  const auto* layout_provider = ChromeLayoutProvider::Get();
+  const int horizontal_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const int vertical_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL);
+
+  const gfx::Insets control_insets =
+      ui::TouchUiController::Get()->touch_ui()
+          ? gfx::Insets(5 * vertical_spacing / 4, horizontal_spacing)
+          : gfx::Insets(vertical_spacing, horizontal_spacing);
+
+  auto button = CreateBubbleMenuItem(button_id, name, callback, icon);
+  button->SetBorder(views::CreateEmptyBorder(control_insets));
+
+  return button;
+}
+
+}  // namespace
 
 // static
 views::Widget* TabGroupEditorBubbleView::Show(
@@ -93,6 +131,16 @@ gfx::Rect TabGroupEditorBubbleView::GetAnchorRect() const {
   return BubbleDialogDelegateView::GetAnchorRect();
 }
 
+void TabGroupEditorBubbleView::AddedToWidget() {
+  if (!move_menu_item_->GetEnabled()) {
+    const SkColor disabled_color = move_menu_item_->GetCurrentTextColor();
+    move_menu_item_->SetImageModel(
+        views::Button::STATE_DISABLED,
+        ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon,
+                                       disabled_color));
+  }
+}
+
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     const Browser* browser,
     const tab_groups::TabGroupId& group,
@@ -125,133 +173,138 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   SetCloseCallback(base::BindOnce(&TabGroupEditorBubbleView::OnBubbleClose,
                                   base::Unretained(this)));
 
-  const auto* layout_provider = ChromeLayoutProvider::Get();
-  const int horizontal_spacing = layout_provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  const int vertical_spacing = layout_provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  // Create view hierarchy.
 
-  // The padding of the editing controls is adaptive, to improve the hit target
-  // size and screen real estate usage on touch devices.
-  const int group_modifier_vertical_spacing =
-      ui::TouchUiController::Get()->touch_ui() ? vertical_spacing / 2
-                                               : vertical_spacing;
-  const gfx::Insets control_insets =
-      ui::TouchUiController::Get()->touch_ui()
-          ? gfx::Insets(5 * vertical_spacing / 4, horizontal_spacing)
-          : gfx::Insets(vertical_spacing, horizontal_spacing);
-
-  views::View* group_modifier_container =
-      AddChildView(std::make_unique<views::View>());
-  group_modifier_container->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(group_modifier_vertical_spacing, 0)));
-
-  views::FlexLayout* group_modifier_container_layout =
-      group_modifier_container->SetLayoutManager(
-          std::make_unique<views::FlexLayout>());
-  group_modifier_container_layout
-      ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetIgnoreDefaultMainAxisMargins(true);
-
-  // Add the text field for editing the title.
-  views::View* title_field_container =
-      group_modifier_container->AddChildView(std::make_unique<views::View>());
-  title_field_container->SetBorder(views::CreateEmptyBorder(
-      control_insets.top(), control_insets.left(),
-      group_modifier_vertical_spacing, control_insets.right()));
-
-  title_field_ = title_field_container->AddChildView(
-      std::make_unique<TitleField>(stop_context_menu_propagation));
+  title_field_ =
+      AddChildView(std::make_unique<TitleField>(stop_context_menu_propagation));
   title_field_->SetText(title);
   title_field_->SetAccessibleName(u"Group title");
   title_field_->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_BUBBLE_TITLE_PLACEHOLDER));
   title_field_->set_controller(&title_field_controller_);
 
-  views::FlexLayout* title_field_container_layout =
-      title_field_container->SetLayoutManager(
-          std::make_unique<views::FlexLayout>());
-  title_field_container_layout
-      ->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetIgnoreDefaultMainAxisMargins(true);
-
   const tab_groups::TabGroupColorId initial_color_id = InitColorSet();
-  color_selector_ =
-      group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          this, colors_, initial_color_id,
-          base::BindRepeating(&TabGroupEditorBubbleView::UpdateGroup,
-                              base::Unretained(this))));
-  color_selector_->SetProperty(
-      views::kMarginsKey,
-      gfx::Insets(0, control_insets.left(), 0, control_insets.right()));
+  color_selector_ = AddChildView(std::make_unique<ColorPickerView>(
+      this, colors_, initial_color_id,
+      base::BindRepeating(&TabGroupEditorBubbleView::UpdateGroup,
+                          base::Unretained(this))));
 
-  AddChildView(std::make_unique<views::Separator>());
+  auto* const separator = AddChildView(std::make_unique<views::Separator>());
 
-  views::View* menu_items_container =
-      AddChildView(std::make_unique<views::View>());
-  menu_items_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(control_insets.top(), 0)));
-  views::FlexLayout* layout_manager_ = menu_items_container->SetLayoutManager(
-      std::make_unique<views::FlexLayout>());
-  layout_manager_->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetIgnoreDefaultMainAxisMargins(true);
+  views::ImageView* save_group_icon = nullptr;
+  views::View* save_group_line_container = nullptr;
+  views::Label* save_group_label = nullptr;
 
-  std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateBubbleMenuItem(
+  if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
+    save_group_line_container = AddChildView(std::make_unique<views::View>());
+
+    // The save_group_icon is put in differently than the rest because it
+    // utilizes a different view (view::Label) that does not have an option to
+    // take in an image like the other line items do.
+    save_group_icon = save_group_line_container->AddChildView(
+        std::make_unique<views::ImageView>(
+            ui::ImageModel::FromVectorIcon(kSaveGroupIcon)));
+
+    save_group_label =
+        save_group_line_container->AddChildView(std::make_unique<views::Label>(
+            l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP)));
+    save_group_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    save_group_toggle_ = save_group_line_container->AddChildView(
+        std::make_unique<views::ToggleButton>(
+            base::BindRepeating(&TabGroupEditorBubbleView::OnSaveTogglePressed,
+                                base::Unretained(this))));
+
+    bool is_saved =
+        tab_strip_model->group_model()->GetTabGroup(group_)->IsSaved();
+    save_group_toggle_->SetIsOn(is_saved);
+  }
+
+  auto* const new_tab_menu_item = AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP),
       base::BindRepeating(&TabGroupEditorBubbleView::NewTabInGroupPressed,
-                          base::Unretained(this)));
-  new_tab_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
-  menu_items_container->AddChildView(std::move(new_tab_menu_item));
+                          base::Unretained(this)),
+      &kNewTabInGroupIcon));
 
-  std::unique_ptr<views::LabelButton> ungroup_menu_item = CreateBubbleMenuItem(
+  AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_UNGROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP),
       base::BindRepeating(&TabGroupEditorBubbleView::UngroupPressed,
-                          base::Unretained(this), header_view));
-  ungroup_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
-  menu_items_container->AddChildView(std::move(ungroup_menu_item));
+                          base::Unretained(this), header_view),
+      &kUngroupIcon));
 
-  std::unique_ptr<views::LabelButton> close_menu_item = CreateBubbleMenuItem(
+  AddChildView(CreateMenuItem(
       TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP),
       base::BindRepeating(&TabGroupEditorBubbleView::CloseGroupPressed,
-                          base::Unretained(this)));
-  close_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
-  menu_items_container->AddChildView(std::move(close_menu_item));
+                          base::Unretained(this)),
+      &kCloseGroupIcon));
 
-  std::unique_ptr<views::LabelButton> move_to_new_window_menu_item =
-      CreateBubbleMenuItem(
-          TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW,
-          l10n_util::GetStringUTF16(
-              IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW),
-          base::BindRepeating(
-              &TabGroupEditorBubbleView::MoveGroupToNewWindowPressed,
-              base::Unretained(this)));
-  move_to_new_window_menu_item->SetBorder(
-      views::CreateEmptyBorder(control_insets));
-  // Disable the option if we'd leave the window empty.
-  if (tab_strip_model->count() ==
-      tab_strip_model->group_model()->GetTabGroup(group_)->tab_count()) {
-    move_to_new_window_menu_item->SetEnabled(false);
-  }
-  menu_items_container->AddChildView(std::move(move_to_new_window_menu_item));
+  move_menu_item_ = AddChildView(
+      CreateMenuItem(TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW,
+                     l10n_util::GetStringUTF16(
+                         IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW),
+                     base::BindRepeating(
+                         &TabGroupEditorBubbleView::MoveGroupToNewWindowPressed,
+                         base::Unretained(this)),
+                     &kMoveGroupToNewWindowIcon));
+  move_menu_item_->SetEnabled(
+      tab_strip_model->count() !=
+      tab_strip_model->group_model()->GetTabGroup(group_)->tab_count());
 
   if (base::FeatureList::IsEnabled(features::kTabGroupsFeedback)) {
-    std::unique_ptr<views::LabelButton> feedback_menu_item =
-        CreateBubbleMenuItem(
-            TAB_GROUP_HEADER_CXMENU_FEEDBACK,
-            l10n_util::GetStringUTF16(
-                IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
-            base::BindRepeating(&TabGroupEditorBubbleView::SendFeedbackPressed,
-                                base::Unretained(this)));
-    feedback_menu_item->SetBorder(views::CreateEmptyBorder(control_insets));
-    menu_items_container->AddChildView(std::move(feedback_menu_item));
+    AddChildView(CreateMenuItem(
+        TAB_GROUP_HEADER_CXMENU_FEEDBACK,
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
+        base::BindRepeating(&TabGroupEditorBubbleView::SendFeedbackPressed,
+                            base::Unretained(this))));
   }
 
-  views::FlexLayout* menu_layout_manager_ =
-      SetLayoutManager(std::make_unique<views::FlexLayout>());
-  menu_layout_manager_->SetOrientation(views::LayoutOrientation::kVertical);
+  // Setting up the layout.
+
+  const gfx::Insets control_insets = new_tab_menu_item->GetInsets();
+  const int vertical_spacing = control_insets.top();
+  const int horizontal_spacing = control_insets.left();
+
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical)
+      .SetInteriorMargin(gfx::Insets(vertical_spacing, 0));
+
+  title_field_->SetProperty(views::kMarginsKey,
+                            gfx::Insets(vertical_spacing, horizontal_spacing));
+
+  color_selector_->SetProperty(views::kMarginsKey,
+                               gfx::Insets(0, horizontal_spacing));
+
+  separator->SetProperty(views::kMarginsKey, gfx::Insets(vertical_spacing, 0));
+
+  // The save_group_line_container is only created if the
+  // feature::kTabGroupsSave is enabled.
+  if (save_group_line_container) {
+    gfx::Insets save_group_margins = control_insets;
+    const int label_height = new_tab_menu_item->GetPreferredSize().height();
+    const int control_height =
+        std::max(save_group_label->GetPreferredSize().height(),
+                 save_group_toggle_->GetPreferredSize().height());
+    save_group_margins.set_top((label_height - control_height) / 2);
+    save_group_margins.set_bottom(save_group_margins.top());
+
+    save_group_icon->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(0, 0, 0, new_tab_menu_item->GetImageLabelSpacing()));
+
+    save_group_line_container
+        ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+        ->SetOrientation(views::LayoutOrientation::kHorizontal)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+        .SetInteriorMargin(save_group_margins);
+
+    save_group_label->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kUnbounded));
+  }
 }
 
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
@@ -290,6 +343,20 @@ void TabGroupEditorBubbleView::UpdateGroup() {
                                           updated_color,
                                           current_visual_data->is_collapsed());
   tab_group->SetVisualData(new_data, true);
+}
+
+void TabGroupEditorBubbleView::OnSaveTogglePressed() {
+  auto* group = browser_->tab_strip_model()->group_model()->GetTabGroup(group_);
+
+  if (save_group_toggle_->GetIsOn()) {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_TabGroupBubble_GroupSaved"));
+    group->SaveGroup();
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_TabGroupBubble_GroupUnsaved"));
+    group->UnsaveGroup();
+  }
 }
 
 void TabGroupEditorBubbleView::NewTabInGroupPressed() {

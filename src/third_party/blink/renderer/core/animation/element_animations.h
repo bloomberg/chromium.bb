@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATIONS_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/effect_stack.h"
@@ -72,12 +73,11 @@ class CORE_EXPORT ElementAnimations final
 
   bool IsEmpty() const {
     return effect_stack_.IsEmpty() && css_animations_.IsEmpty() &&
-           animations_.IsEmpty();
+           animations_.IsEmpty() && worklet_animations_.IsEmpty();
   }
 
   void RestartAnimationOnCompositor();
 
-  void UpdateAnimationFlags(ComputedStyle&);
   void SetAnimationStyleChange(bool animation_style_change) {
     animation_style_change_ = animation_style_change;
   }

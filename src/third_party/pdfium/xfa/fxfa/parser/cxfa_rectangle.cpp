@@ -21,9 +21,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kRectanglePropertyData[] = {
-    {XFA_Element::Edge, 4, 0},
-    {XFA_Element::Corner, 4, 0},
-    {XFA_Element::Fill, 1, 0},
+    {XFA_Element::Edge, 4, {}},
+    {XFA_Element::Corner, 4, {}},
+    {XFA_Element::Fill, 1, {}},
 };
 
 const CXFA_Node::AttributeData kRectangleAttributeData[] = {
@@ -39,7 +39,7 @@ const CXFA_Node::AttributeData kRectangleAttributeData[] = {
 CXFA_Rectangle::CXFA_Rectangle(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Box(doc,
                packet,
-               (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+               {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                XFA_ObjectType::Node,
                XFA_Element::Rectangle,
                kRectanglePropertyData,
@@ -50,7 +50,7 @@ CXFA_Rectangle::CXFA_Rectangle(CXFA_Document* doc, XFA_PacketType packet)
 
 CXFA_Rectangle::CXFA_Rectangle(CXFA_Document* pDoc,
                                XFA_PacketType ePacket,
-                               uint32_t validPackets,
+                               Mask<XFA_XDPPACKET> validPackets,
                                XFA_ObjectType oType,
                                XFA_Element eType,
                                pdfium::span<const PropertyData> properties,
@@ -74,7 +74,7 @@ void CXFA_Rectangle::GetFillPath(const std::vector<CXFA_Stroke*>& strokes,
   CXFA_Stroke* stroke1 = strokes[0];
   for (int32_t i = 1; i < 8; i++) {
     CXFA_Stroke* stroke2 = strokes[i];
-    if (!stroke1->SameStyles(stroke2, 0)) {
+    if (!stroke1->SameStyles(stroke2, {})) {
       bSameStyles = false;
       break;
     }
@@ -85,8 +85,9 @@ void CXFA_Rectangle::GetFillPath(const std::vector<CXFA_Stroke*>& strokes,
     stroke1 = strokes[0];
     for (int32_t i = 2; i < 8; i += 2) {
       CXFA_Stroke* stroke2 = strokes[i];
-      if (!stroke1->SameStyles(stroke2, XFA_STROKE_SAMESTYLE_NoPresence |
-                                            XFA_STROKE_SAMESTYLE_Corner)) {
+      if (!stroke1->SameStyles(stroke2,
+                               {CXFA_Stroke::SameStyleOption::kNoPresence,
+                                CXFA_Stroke::SameStyleOption::kCorner})) {
         bSameStyles = false;
         break;
       }
@@ -306,7 +307,7 @@ void CXFA_Rectangle::Stroke(const std::vector<CXFA_Stroke*>& strokes,
   CXFA_Stroke* stroke1 = strokes[0];
   for (int32_t i = 1; i < 8; i++) {
     CXFA_Stroke* stroke2 = strokes[i];
-    if (!stroke1->SameStyles(stroke2, 0)) {
+    if (!stroke1->SameStyles(stroke2, {})) {
       bSameStyles = false;
       break;
     }
@@ -317,8 +318,9 @@ void CXFA_Rectangle::Stroke(const std::vector<CXFA_Stroke*>& strokes,
     bClose = true;
     for (int32_t i = 2; i < 8; i += 2) {
       CXFA_Stroke* stroke2 = strokes[i];
-      if (!stroke1->SameStyles(stroke2, XFA_STROKE_SAMESTYLE_NoPresence |
-                                            XFA_STROKE_SAMESTYLE_Corner)) {
+      if (!stroke1->SameStyles(stroke2,
+                               {CXFA_Stroke::SameStyleOption::kNoPresence,
+                                CXFA_Stroke::SameStyleOption::kCorner})) {
         bSameStyles = false;
         break;
       }
@@ -349,7 +351,7 @@ void CXFA_Rectangle::Stroke(const std::vector<CXFA_Stroke*>& strokes,
     }
     GetPath(strokes, rtWidget, path, i, bStart, !bSameStyles);
 
-    bStart = !stroke->SameStyles(strokes[(i + 1) % 8], 0);
+    bStart = !stroke->SameStyles(strokes[(i + 1) % 8], {});
     if (bStart) {
       if (stroke)
         stroke->Stroke(pGS, path, matrix);
@@ -479,9 +481,9 @@ void CXFA_Rectangle::GetPath(const std::vector<CXFA_Stroke*>& strokes,
     CXFA_Stroke* strokeBefore = strokes[(nIndex + 1 * 8 - 1) % 8];
     CXFA_Stroke* strokeAfter = strokes[nIndex + 1];
     if (stroke->IsInverted()) {
-      if (!stroke->SameStyles(strokeBefore, 0))
+      if (!stroke->SameStyles(strokeBefore, {}))
         halfBefore = strokeBefore->GetThickness() / 2;
-      if (!stroke->SameStyles(strokeAfter, 0))
+      if (!stroke->SameStyles(strokeAfter, {}))
         halfAfter = strokeAfter->GetThickness() / 2;
     }
   } else {

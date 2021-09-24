@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {
+  Effect,
+} from '/media/capture/video/chromeos/mojom/camera_app.mojom-webui.js';
+
 import {bitmapToJpegBlob} from '../util.js';
 import {WaitableEvent} from '../waitable_event.js';
 
@@ -60,11 +64,11 @@ export class CrosImageCapture {
       return this.capture_.getPhotoCapabilities();
     }
 
-    const supportedEffects = [cros.mojom.Effect.NO_EFFECT];
+    const supportedEffects = [Effect.NO_EFFECT];
     const isPortraitModeSupported =
         await deviceOperator.isPortraitModeSupported(this.deviceId_);
     if (isPortraitModeSupported) {
-      supportedEffects.push(cros.mojom.Effect.PORTRAIT_MODE);
+      supportedEffects.push(Effect.PORTRAIT_MODE);
     }
     const baseCapabilities = await this.capture_.getPhotoCapabilities();
 
@@ -81,28 +85,19 @@ export class CrosImageCapture {
    * received the shutter event.
    * @param {!PhotoSettings} photoSettings Photo settings for ImageCapture's
    *     takePhoto().
-   * @param {!Array<!cros.mojom.Effect>=} photoEffects Photo effects to be
+   * @param {!Array<!Effect>=} photoEffects Photo effects to be
    *     applied.
    * @return {!Promise<!Array<!Promise<!Blob>>>} A promise of the array
    *     containing promise of each blob result.
    */
   async takePhoto(photoSettings, photoEffects = []) {
-    /** @type {!Array<!Promise<!Blob>>} */
-    const takes = [];
     const deviceOperator = await DeviceOperator.getInstance();
     if (deviceOperator === null && photoEffects.length > 0) {
       throw new Error('Applying effects is not supported on this device');
     }
 
-    for (const effect of photoEffects) {
-      const take = (async () => {
-        const {data, mimeType} =
-            await deviceOperator.setReprocessOption(this.deviceId_, effect);
-        return new Blob([new Uint8Array(data)], {type: mimeType});
-      })();
-      takes.push(take);
-    }
-
+    const takes =
+        await deviceOperator.setReprocessOptions(this.deviceId_, photoEffects);
     if (deviceOperator !== null) {
       const onShutterDone = new WaitableEvent();
       const shutterObserver =

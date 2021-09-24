@@ -27,7 +27,6 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
     case SandboxType::kXrCompositing:
       return !base::FeatureList::IsEnabled(features::kXRSandbox);
-    case SandboxType::kProxyResolver:
     case SandboxType::kPdfConversion:
     case SandboxType::kIconReader:
     case SandboxType::kMediaFoundationCdm:
@@ -35,18 +34,18 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #endif
     case SandboxType::kAudio:
       return false;
-    case SandboxType::kVideoCapture:
 #if defined(OS_FUCHSIA)
+    case SandboxType::kVideoCapture:
       return false;
-#else
-      return true;
 #endif
     case SandboxType::kNetwork:
       return false;
     case SandboxType::kRenderer:
     case SandboxType::kUtility:
     case SandboxType::kGpu:
+#if BUILDFLAG(ENABLE_PLUGINS)
     case SandboxType::kPpapi:
+#endif
     case SandboxType::kCdm:
 #if BUILDFLAG(ENABLE_PRINTING)
     case SandboxType::kPrintBackend:
@@ -101,6 +100,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kGpuProcess);
       break;
+#if BUILDFLAG(ENABLE_PLUGINS)
     case SandboxType::kPpapi:
       if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
           switches::kUtilityProcess) {
@@ -111,6 +111,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
                switches::kPpapiPluginProcess);
       }
       break;
+#endif
     case SandboxType::kUtility:
     case SandboxType::kNetwork:
     case SandboxType::kCdm:
@@ -119,10 +120,11 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #endif
     case SandboxType::kPrintCompositor:
     case SandboxType::kAudio:
+#if defined(OS_FUCHSIA)
     case SandboxType::kVideoCapture:
+#endif
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
-    case SandboxType::kProxyResolver:
     case SandboxType::kPdfConversion:
     case SandboxType::kIconReader:
     case SandboxType::kMediaFoundationCdm:
@@ -186,8 +188,10 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
     return SandboxType::kGpu;
   }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (process_type == switches::kPpapiPluginProcess)
     return SandboxType::kPpapi;
+#endif
 
   // NaCl tests on all platforms use the loader process.
   if (process_type == switches::kNaClLoaderProcess) {
@@ -228,8 +232,10 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kNoneSandbox;
     case SandboxType::kNetwork:
       return switches::kNetworkSandbox;
+#if BUILDFLAG(ENABLE_PLUGINS)
     case SandboxType::kPpapi:
       return switches::kPpapiSandbox;
+#endif
     case SandboxType::kCdm:
       return switches::kCdmSandbox;
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -242,8 +248,10 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kUtilitySandbox;
     case SandboxType::kAudio:
       return switches::kAudioSandbox;
+#if defined(OS_FUCHSIA)
     case SandboxType::kVideoCapture:
       return switches::kVideoCaptureSandbox;
+#endif
 #if !defined(OS_MAC)
     case SandboxType::kService:
       return switches::kServiceSandbox;
@@ -253,8 +261,6 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
       return switches::kXrCompositingSandbox;
-    case SandboxType::kProxyResolver:
-      return switches::kProxyResolverSandbox;
     case SandboxType::kPdfConversion:
       return switches::kPdfConversionSandbox;
     case SandboxType::kIconReader:
@@ -314,8 +320,10 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
   }
   if (sandbox_string == switches::kNetworkSandbox)
     return SandboxType::kNetwork;
+#if BUILDFLAG(ENABLE_PLUGINS)
   if (sandbox_string == switches::kPpapiSandbox)
     return SandboxType::kPpapi;
+#endif
   if (sandbox_string == switches::kCdmSandbox)
     return SandboxType::kCdm;
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -327,8 +335,6 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #if defined(OS_WIN)
   if (sandbox_string == switches::kXrCompositingSandbox)
     return SandboxType::kXrCompositing;
-  if (sandbox_string == switches::kProxyResolverSandbox)
-    return SandboxType::kProxyResolver;
   if (sandbox_string == switches::kPdfConversionSandbox)
     return SandboxType::kPdfConversion;
   if (sandbox_string == switches::kIconReaderSandbox)
@@ -344,8 +350,10 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kAudio;
   if (sandbox_string == switches::kSpeechRecognitionSandbox)
     return SandboxType::kSpeechRecognition;
+#if defined(OS_FUCHSIA)
   if (sandbox_string == switches::kVideoCaptureSandbox)
     return SandboxType::kVideoCapture;
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (sandbox_string == switches::kImeSandbox)
     return SandboxType::kIme;

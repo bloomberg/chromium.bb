@@ -12,6 +12,7 @@ import errno
 import json
 import logging
 import os
+import platform
 import posixpath
 import re
 import sys
@@ -491,7 +492,7 @@ class GitWrapper(SCMWrapper):
     if revision.startswith('origin/'):
       revision = 'refs/remotes/' + revision
 
-    if managed:
+    if managed and platform.system() == 'Windows':
       self._DisableHooks()
 
     printed_path = False

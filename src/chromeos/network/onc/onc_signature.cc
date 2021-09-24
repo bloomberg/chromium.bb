@@ -311,6 +311,8 @@ const OncFieldSignature cellular_fields[] = {
     {::onc::cellular::kAPN, &kCellularApnSignature},
     {::onc::cellular::kAPNList, &kCellularApnListSignature},
     {::onc::cellular::kAutoConnect, &kBoolSignature},
+    {::onc::cellular::kICCID, &kStringSignature},
+    {::onc::cellular::kSMDPAddress, &kStringSignature},
     {nullptr}};
 
 const OncFieldSignature cellular_with_state_fields[] = {
@@ -323,7 +325,6 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kHardwareRevision, &kStringSignature},
     {::onc::cellular::kHomeProvider, &kCellularProviderSignature},
     {::onc::cellular::kEID, &kStringSignature},
-    {::onc::cellular::kICCID, &kStringSignature},
     {::onc::cellular::kIMEI, &kStringSignature},
     {::onc::cellular::kIMSI, &kStringSignature},
     {::onc::cellular::kLastGoodAPN, &kCellularApnSignature},
@@ -340,7 +341,6 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kSignalStrength, &kIntegerSignature},
     {::onc::cellular::kSIMLockStatus, &kSIMLockStatusSignature},
     {::onc::cellular::kSIMPresent, &kBoolSignature},
-    {::onc::cellular::kSMDPAddress, &kStringSignature},
     {::onc::cellular::kSupportNetworkScan, &kBoolSignature},
     {nullptr}};
 

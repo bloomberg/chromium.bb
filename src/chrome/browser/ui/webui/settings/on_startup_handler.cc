@@ -39,11 +39,11 @@ void OnStartupHandler::OnJavascriptDisallowed() {
 }
 
 void OnStartupHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getNtpExtension",
       base::BindRepeating(&OnStartupHandler::HandleGetNtpExtension,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "validateStartupPage",
       base::BindRepeating(&OnStartupHandler::HandleValidateStartupPage,
                           base::Unretained(this)));
@@ -89,7 +89,7 @@ void OnStartupHandler::HandleGetNtpExtension(const base::ListValue* args) {
 }
 
 void OnStartupHandler::HandleValidateStartupPage(const base::ListValue* args) {
-  CHECK_EQ(args->GetSize(), 2U);
+  CHECK_EQ(args->GetList().size(), 2U);
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
   std::string url_string;

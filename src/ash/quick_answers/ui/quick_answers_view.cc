@@ -4,6 +4,7 @@
 
 #include "ash/quick_answers/ui/quick_answers_view.h"
 
+#include "ash/components/quick_answers/quick_answers_model.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
@@ -14,7 +15,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
-#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -43,11 +43,11 @@
 namespace ash {
 namespace {
 
-using chromeos::quick_answers::QuickAnswer;
-using chromeos::quick_answers::QuickAnswerText;
-using chromeos::quick_answers::QuickAnswerUiElement;
-using chromeos::quick_answers::QuickAnswerUiElementType;
-using chromeos::quick_answers::ResultType;
+using quick_answers::QuickAnswer;
+using quick_answers::QuickAnswerText;
+using quick_answers::QuickAnswerUiElement;
+using quick_answers::QuickAnswerUiElementType;
+using quick_answers::ResultType;
 using views::Button;
 using views::Label;
 using views::View;
@@ -153,6 +153,7 @@ class MainView : public views::Button {
 
   MainView(PressedCallback callback) : Button(std::move(callback)) {
     SetInstallFocusRingOnFocus(false);
+    set_suppress_default_focus_handling();
 
     // This is because waiting for mouse-release to fire buttons would be too
     // late, since mouse-press dismisses the menu.
@@ -270,6 +271,7 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
 
   // Focus.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  set_suppress_default_focus_handling();
 
   // Allow tooltips to be shown despite menu-controller owning capture.
   GetWidget()->SetNativeWindowProperty(

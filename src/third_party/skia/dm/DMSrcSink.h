@@ -329,7 +329,7 @@ private:
 };
 #endif
 
-#if defined(SK_XML)
+#if defined(SK_ENABLE_SVG)
 } // namespace DM
 
 class SkSVGDOM;
@@ -352,7 +352,7 @@ private:
 
     using INHERITED = Src;
 };
-#endif // SK_XML
+#endif // SK_ENABLE_SVG
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 class MSKPSrc : public Src {
@@ -539,7 +539,7 @@ public:
 
 class RasterSink : public Sink {
 public:
-    explicit RasterSink(SkColorType, sk_sp<SkColorSpace> = nullptr);
+    explicit RasterSink(SkColorType);
 
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
     const char* fileExtension() const override { return "png"; }
@@ -549,12 +549,6 @@ public:
 private:
     SkColorType         fColorType;
     sk_sp<SkColorSpace> fColorSpace;
-};
-
-class ThreadedSink : public RasterSink {
-public:
-    explicit ThreadedSink(SkColorType, sk_sp<SkColorSpace> = nullptr);
-    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 };
 
 class SKPSink : public Sink {

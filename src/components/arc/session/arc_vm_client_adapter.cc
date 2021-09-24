@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 #include <set>
 #include <utility>
 #include <vector>
@@ -53,11 +54,13 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/system/core_scheduling.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_dlc_installer.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/session/file_system_status.h"
@@ -165,6 +168,8 @@ std::vector<std::string> GenerateUpgradeProps(
                          upgrade_params.skip_gms_core_cache),
       base::StringPrintf("%s.arc_demo_mode=%d", prefix.c_str(),
                          upgrade_params.is_demo_session),
+      base::StringPrintf("%s.enable_arc_nearby_share=%d", prefix.c_str(),
+                         upgrade_params.enable_arc_nearby_share),
       base::StringPrintf(
           "%s.supervision.transition=%d", prefix.c_str(),
           static_cast<int>(upgrade_params.management_transition)),
@@ -182,7 +187,7 @@ std::vector<std::string> GenerateUpgradeProps(
     }
   }
 
-  // TODO(niwa): Handle |is_account_managed| and
+  // TODO(lgcheng): Handle |is_account_managed| and
   // |is_managed_adb_sideloading_allowed| in |upgrade_params| when we
   // implement apk sideloading for ARCVM.
   return result;
@@ -234,6 +239,8 @@ std::vector<std::string> GenerateKernelCmdline(
       "androidboot.chromeos_channel=" + channel,
       base::StringPrintf("androidboot.iioservice_present=%d",
                          BUILDFLAG(USE_IIOSERVICE)),
+      base::StringPrintf("androidboot.enable_notifications_refresh=%d",
+                         start_params.enable_notifications_refresh),
   };
 
   const ArcVmUreadaheadMode mode =
@@ -253,9 +260,6 @@ std::vector<std::string> GenerateKernelCmdline(
   // (go/arcvm-android-sh-restricted)
   if (channel == "testimage")
     result.push_back("androidboot.vshd_service_override=vshd_for_test");
-
-  // TODO(niwa): Check if we need to set ro.boot.enable_adb_sideloading for
-  // ARCVM.
 
   // Only add boot property if flag to disable media store maintenance is set.
   if (start_params.disable_media_store_maintenance)
@@ -395,8 +399,16 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       const int max_mib = kVmMemorySizeMaxMiB.Get();
       const int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
       constexpr int kVmRamMinMib = 2048;
+
+      // This is a workaround for ARM Chromebooks where userland including
+      // crosvm is compiled in 32 bit. crosvm binary in 32 bit doesn't have
+      // enough virtual address space to map >4GB of VM memory obviously.
+      // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+      const int vm_ram_max_mib =
+          (sizeof(uintptr_t) == 4) ? 3500 : std::numeric_limits<int>::max();
+
       if (vm_ram_mib > kVmRamMinMib) {
-        request.set_memory_mib(vm_ram_mib);
+        request.set_memory_mib(std::min(vm_ram_max_mib, vm_ram_mib));
       } else {
         VLOG(1) << "VmMemorySize is enabled, but computed size is "
                 << "min(" << ram_mib << " + " << shift_mib << "," << max_mib
@@ -756,6 +768,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
     is_dev_mode_ = is_dev_mode;
+    std::vector<std::string> enviroment;
+    if (start_params_.disable_ureadahead)
+      enviroment.emplace_back("DISABLE_UREADAHEAD=1");
     std::deque<JobDesc> jobs{
         // Note: the first Upstart job is a task, and the callback for the start
         // request won't be called until the task finishes. When the callback is
@@ -766,8 +781,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
             kArcVmPostVmStartServicesJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcVmPostLoginServicesJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcVmPreLoginServicesJobName,
-                UpstartOperation::JOB_STOP_AND_START,
-                {}},
+                UpstartOperation::JOB_STOP_AND_START, std::move(enviroment)},
     };
     ConfigureUpstartJobs(
         std::move(jobs),
@@ -853,6 +867,18 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     if (file_system_status_rewriter_for_testing_)
       file_system_status_rewriter_for_testing_.Run(&file_system_status);
 
+    VLOG(2) << "Wait for DLC installation if necessary";
+    // Waits for a stable state (kInstalled/kUninstalled) and proceeds
+    // regardless of installation result because even if the installation
+    // has failed, it will only affect limited functionality (e.g. without
+    // Houdini library for ARM apps). ARCVM should still continue to start.
+    ArcDlcInstaller::Get()->WaitForStableState(base::BindOnce(
+        &ArcVmClientAdapter::LoadDemoResources, weak_factory_.GetWeakPtr(),
+        std::move(callback), std::move(file_system_status)));
+  }
+
+  void LoadDemoResources(chromeos::VoidDBusMethodCallback callback,
+                         FileSystemStatus file_system_status) {
     VLOG(2) << "Retrieving demo session apps path";
     DCHECK(demo_mode_delegate_);
     demo_mode_delegate_->EnsureOfflineResourcesLoaded(base::BindOnce(
@@ -862,38 +888,21 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnDemoResourcesLoaded(chromeos::VoidDBusMethodCallback callback,
                              FileSystemStatus file_system_status) {
-    VLOG(2) << "Checking number of vcpus to spin up";
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&ArcVmClientAdapter::GetNumVCPUsToStart,
-                       start_params_.num_cores_disabled),
-        base::BindOnce(&ArcVmClientAdapter::OnGetNumVCPUsToStart,
-                       weak_factory_.GetWeakPtr(), std::move(callback),
-                       std::move(file_system_status)));
-  }
+    const base::FilePath demo_session_apps_path =
+        demo_mode_delegate_->GetDemoAppsPath();
 
-  static int32_t GetNumVCPUsToStart(uint32_t num_cores_disabled) {
     // When the CPU has MDS or L1TF vulnerabilities, crosvm won't be allowed to
     // run two vCPUs on the same physical core at the same time. This
     // effectively disables SMT on crosvm. Because of this restriction, when the
     // CPU has the vulnerabilities, set |cpus| to the number of physical cores.
     // Otherwise, set the variable to the number of logical cores minus the ones
     // disabled by chrome://flags/#scheduler-configuration.
-    // TODO(yusukes): Stop doing this on the other thread once we migrate to
-    // https://crrev.com/c/3063740.
     const int32_t cpus =
-        IsCoreSchedulingAvailable()
-            ? NumberOfProcessorsForCoreScheduling()
-            : base::SysInfo::NumberOfProcessors() - num_cores_disabled;
+        chromeos::system::IsCoreSchedulingAvailable()
+            ? chromeos::system::NumberOfProcessorsForCoreScheduling()
+            : base::SysInfo::NumberOfProcessors() -
+                  start_params_.num_cores_disabled;
     DCHECK_LT(0, cpus);
-    return cpus;
-  }
-
-  void OnGetNumVCPUsToStart(chromeos::VoidDBusMethodCallback callback,
-                            FileSystemStatus file_system_status,
-                            int32_t cpus) {
-    const base::FilePath demo_session_apps_path =
-        demo_mode_delegate_->GetDemoAppsPath();
 
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
         start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_,

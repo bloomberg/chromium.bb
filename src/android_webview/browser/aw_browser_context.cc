@@ -396,6 +396,11 @@ storage::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }
 
+content::PlatformNotificationService*
+AwBrowserContext::GetPlatformNotificationService() {
+  return nullptr;
+}
+
 content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
   // TODO(johnme): Support push messaging in WebView.
   return NULL;
@@ -486,7 +491,10 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 
   // WebView should persist and restore cookies between app sessions (including
   // session cookies).
-  context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
+  base::FilePath cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->file_paths->data_path = cookie_path.DirName();
+  context_params->file_paths->cookie_database_name = cookie_path.BaseName();
   context_params->restore_old_session_cookies = true;
   context_params->persist_session_cookies = true;
   context_params->cookie_manager_params =
@@ -511,9 +519,6 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // WebView does not currently support Certificate Transparency
   // (http://crbug.com/921750).
   context_params->enforce_chrome_ct_policy = false;
-
-  // WebView does not support ftp yet.
-  context_params->enable_ftp_url_support = false;
 
   context_params->enable_brotli = base::FeatureList::IsEnabled(
       android_webview::features::kWebViewBrotliSupport);

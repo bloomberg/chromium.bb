@@ -10,23 +10,13 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/button.css">
     <link rel="stylesheet" href="/css/document_mode_dialog.css">
+    <link rel="stylesheet" href="/css/flash.css">
     <link rel="stylesheet" href="/css/focus_ring.css">
     <link rel="stylesheet" href="/css/inkdrop.css">
     <link rel="stylesheet" href="/css/new_feature_toast.css">
     <link rel="stylesheet" href="/css/ptz_panel.css">
     <link rel="stylesheet" href="/css/review_document.css">
     <link rel="stylesheet" href="/css/scan.css">
-    <script src="/js/mojo/mojo_bindings_lite.js"></script>
-    <script src="/js/mojo/time.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_metadata_tags.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_metadata.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_common.mojom-lite.js"></script>
-    <script src="/js/mojo/image_capture.mojom-lite.js"></script>
-    <script src="/js/mojo/geometry.mojom-lite.js"></script>
-    <script src="/js/mojo/range.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_intent.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_app.mojom-lite.js"></script>
-    <script src="/js/mojo/camera_app_helper.mojom-lite.js"></script>
     <script type="module" src="/js/init.js"></script>
   </head>
   <body class="sound mirror mic grid-3x3 view-splash">
@@ -212,16 +202,6 @@
           <div class="label" i18n-text="label_scan_qrcode_option"
                aria-hidden="true"></div>
         </div>
-      </div>
-      <div id="banner" class="horizontal-center-stripe" aria-live="polite">
-        <div id="banner-title">
-          <div id="banner-title-icon"></div>
-          <span id="banner-title-text" i18n-text="banner_title"></span>
-        </div>
-        <div id="banner-msg">
-          <span i18n-text="banner_msg"></span>
-        </div>
-        <button id="banner-close" i18n-label="banner_close_button"></button>
       </div>
       <div id="confirm-result-groups" class="buttons right-stripe circle">
         <button id="confirm-result" tabindex="0"
@@ -551,7 +531,8 @@
           <span i18n-text="expert_enable_document_mode_on_all_cameras"></span>
         </label>
         <label class="menu-item inkdrop require-chromeos-vcd">
-          <input class="icon" type="checkbox" tabindex="0"
+          <input class="icon" id="expert-enable-multistream-recording"
+                 type="checkbox" tabindex="0"
                  data-state="enable-multistream-recording"
                  data-key="enableMultistreamRecording">
           <span i18n-text="expert_multistream_recording"></span>
@@ -562,10 +543,22 @@
                  data-key="expert">
           <span i18n-text="expert_enable_expert_mode"></span>
         </label>
+        <label class="menu-item inkdrop">
+          <input id="expert-enable-gif-recording" class="icon" type="checkbox"
+                 tabindex="0" data-state="enable-gif-recording"
+                 data-key="enable-gif-recording">
+          <!-- TODO(b:191950622): Handle i18n translation of the text here.-->
+          <span>Enable GIF Recording</span>
+        </label>
       </div>
       <div id="spinner" class="centered-overlay"></div>
     </div>
-    <div id="view-flash"></div>
+    <div id="view-flash">
+      <div id="processing-indicator" class="centered-overlay">
+        <div class="icon"></div>
+        <div class="msg" i18n-text="msg_processing_image"></div>
+      </div>
+    </div>
     <div id="view-splash"></div>
     <div id="view-warning">
       <div id="error-msg" aria-live="polite"></div>
