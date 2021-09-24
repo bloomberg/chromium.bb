@@ -81,11 +81,9 @@ class BLPWTK2_EXPORT URLRequest {
     virtual String httpMethod() const = 0;
     virtual String httpHeaderField(const StringRef& name) const = 0;
     virtual void visitHTTPHeaderFields(HTTPHeaderVisitor* visitor) const = 0;
-    virtual void visitHTTPBody(HTTPBodyVisitor* visitor) const = 0;
     virtual bool reportUploadProgress() const = 0;
     virtual bool reportRawHeaders() const = 0;
     virtual bool hasUserGesture() const = 0;
-    virtual int requesterID() const = 0;
     virtual Priority priority() const = 0;
 
   protected:

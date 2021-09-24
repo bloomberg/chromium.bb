@@ -24,45 +24,42 @@
 #define INCLUDED_BLPWTK2_INPROCESSRESOURCELOADERBRIDGE_H
 
 #include <base/memory/scoped_refptr.h>
-#include <blpwtk2_config.h>
-#include <content/renderer/loader/resource_loader_bridge.h>
+#include <third_party/blink/public/platform/web_resource_request_sender_delegate.h>
+#include <memory>
 
-namespace content {
-struct RequestInfo;
-}  // namespace content
-
-namespace network {
-struct ResourceRequest;
-}  // namespace network
 
 namespace blpwtk2 {
 
-class InProcessResourceLoaderBridge : public content::ResourceLoaderBridge {
+class InProcessResourceContext;
+
+class InProcessResourceLoaderBridge : public blink::WebResourceRequestSenderDelegate {
  public:
-  InProcessResourceLoaderBridge(
-      const content::ResourceRequestInfoProvider& request_info_provider);
+  InProcessResourceLoaderBridge();
   ~InProcessResourceLoaderBridge() final;
 
-  // Override for blink::WebNavigationBodyLoader
-  // While deferred, no more data will be read and no notifications
-  // will be called on the client. This method can be called
-  // multiples times, at any moment.
-  void SetDefersLoading(blink::WebURLLoader::DeferType defers) override;
+  void OnRequestComplete() override;
 
-  // Starts loading the body. Client must be non-null, and will receive
-  // the body, code cache and final result.
-  void StartLoadingBody(blink::WebNavigationBodyLoader::Client* client,
-                        bool use_isolated_code_cache) override;
+  scoped_refptr<blink::WebRequestPeer> OnReceivedResponse(
+      scoped_refptr<blink::WebRequestPeer> current_peer,
+      const blink::WebString& mime_type,
+      const blink::WebURL& url) override;
 
-  // Override of the rest functions in content::ResourceLoaderBridge
-  void Start(std::unique_ptr<content::ResourceReceiver> receiver) override;
-  void Cancel() override;
-  void SyncLoad(blink::SyncLoadResponse* response) override;
+  bool CanHandleURL(const std::string& url) override;
+
+  std::unique_ptr<blink::WebNavigationBodyLoader>
+      CreateBodyLoader(network::ResourceRequest* request) override;
+
+  void Start(blink::WebRequestPeer* peer,
+             blink::WebResourceRequestSender* sender,
+             network::ResourceRequest* request,
+             int request_id,
+             scoped_refptr<base::SingleThreadTaskRunner> runner) override;
+
+  void Cancel(int request_id) override;
 
  private:
-  class InProcessURLRequest;
-  class InProcessResourceContext;
-  scoped_refptr<InProcessResourceContext> d_context;
+  std::unordered_map<int,scoped_refptr<InProcessResourceContext>> d_contexts;
+
 
   DISALLOW_COPY_AND_ASSIGN(InProcessResourceLoaderBridge);
 };

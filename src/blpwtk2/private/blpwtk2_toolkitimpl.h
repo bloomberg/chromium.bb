@@ -28,6 +28,7 @@
 #include <blpwtk2_contentmaindelegateimpl.h>
 #include <blpwtk2_toolkit.h>
 #include <blpwtk2_rendereriothread.h>
+#include <blpwtk2_inprocessresourceloaderbridge.h>
 
 
 
@@ -93,6 +94,8 @@ class ToolkitImpl : public Toolkit {
         // browser code in the application thread.
 
     std::unique_ptr<base::SingleThreadTaskExecutor> d_renderMainMessageLoop;
+
+    std::unique_ptr<InProcessResourceLoaderBridge> d_rendererResourceDelegate;
 
 
 
