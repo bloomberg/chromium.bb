@@ -80,7 +80,7 @@ entries = {
   'src/third_party/ruy/src': 'https://chromium.googlesource.com/external/github.com/google/ruy.git@34ea9f4993955fa1ff4eb58e504421806b7f2e8f',
   'src/third_party/securemessage/src': 'https://chromium.googlesource.com/external/github.com/google/securemessage.git@fa07beb12babc3b25e0c5b1f38c16aa8cb6b8f84',
   'src/third_party/shaderc/src': 'https://chromium.googlesource.com/external/github.com/google/shaderc.git@fadb0edb247a1daa74f9a206a27e9a1c0417ce49',
-  'src/third_party/skia': 'https://skia.googlesource.com/skia.git@fd7c5792caf74bbe87b2557d9b50a7f504f3cd8a',
+  'src/third_party/skia': 'https://skia.googlesource.com/skia.git@a71591a1efcc901dbebdb196d7a3c6e09364cf1f',
   'src/third_party/smhasher/src': 'https://chromium.googlesource.com/external/smhasher.git@e87738e57558e0ec472b2fc3a643b838e5b6e88f',
   'src/third_party/snappy/src': 'https://chromium.googlesource.com/external/github.com/google/snappy.git@9c1be17938429574cdec8fbf820f2d9d5ea66c5c',
   'src/third_party/sqlite/src': 'https://chromium.googlesource.com/chromium/deps/sqlite.git@369afe94faeeeac33fca2e478aaab8bb85813d79',
