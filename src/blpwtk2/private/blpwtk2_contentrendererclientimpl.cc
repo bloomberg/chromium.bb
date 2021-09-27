@@ -21,9 +21,7 @@
  */
 
 #include <blpwtk2_contentrendererclientimpl.h>
-#include <blpwtk2_inprocessresourceloaderbridge.h>
 #include <blpwtk2_renderviewobserverimpl.h>
-#include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
 
@@ -41,6 +39,7 @@
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_thread.h>
+#include <content/public/renderer/render_view.h>
 #include <net/base/net_errors.h>
 #include <mojo/public/cpp/bindings/binder_map.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -86,7 +85,7 @@ void ContentRendererClientImpl::RenderViewCreated(
     // is registered with the RenderView.  The RenderViewImpl's destructor
     // will call OnDestruct() on all observers, which will delete this
     // instance of RenderViewObserverImpl.
-    new RenderViewObserverImpl(render_view);
+    new RenderViewObserverImpl(render_view? render_view->GetWebView() : nullptr);
 }
 
 void ContentRendererClientImpl::RenderFrameCreated(
@@ -135,18 +134,6 @@ void ContentRendererClientImpl::PrepareErrorPage(
             *error_html += "<p>" + localdesc + "</p>";
         }
     }
-}
-
-std::unique_ptr<content::ResourceLoaderBridge>
-ContentRendererClientImpl::OverrideResourceLoaderBridge(
-    const content::ResourceRequestInfoProvider& request_info) {
-  StringRef url = request_info.url().spec();
-
-  if (!Statics::inProcessResourceLoader ||
-      !Statics::inProcessResourceLoader->canHandleURL(url)) {
-    return nullptr;
-  }
-  return std::make_unique<InProcessResourceLoaderBridge>(request_info);
 }
 
 bool ContentRendererClientImpl::OverrideCreatePlugin(

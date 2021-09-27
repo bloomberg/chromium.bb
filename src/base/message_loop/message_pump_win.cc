@@ -198,7 +198,7 @@ bool MessagePumpForUI::MessageCallback(
 }
 
 bool MessagePumpForUI::DoIdleWork() {
-  return state_->delegate->DoIdleWork();
+  return run_state_->delegate->DoIdleWork();
 }
 
 void MessagePumpForUI::DoRunLoop() {
