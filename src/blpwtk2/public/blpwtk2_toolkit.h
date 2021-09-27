@@ -182,10 +182,6 @@ class Toolkit {
         // Disposes of per-context data for a context created with
         // 'createWebScriptContext()'
 
-    virtual void addOriginToTrustworthyList(const StringRef& originString) = 0;
-        // Adds the security origin specified by 'originString' to the list of
-        // origins that blink considers 'trustworthy'.
-
     virtual void setWebViewHostObserver(WebViewHostObserver* observer) = 0;
         // Sets the observer that will be called by the browser thread when
         // WebView's are created and destroyed.
