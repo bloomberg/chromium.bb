@@ -321,10 +321,6 @@ void SetCefPrefs(const CefBrowserSettings& cef,
             web.javascript_can_access_clipboard);
   SET_STATE(cef.javascript_dom_paste, web.dom_paste_enabled);
   SET_STATE(cef.plugins, web.plugins_enabled);
-  SET_STATE(cef.universal_access_from_file_urls,
-            web.allow_universal_access_from_file_urls);
-  SET_STATE(cef.file_access_from_file_urls,
-            web.allow_file_access_from_file_urls);
   SET_STATE(cef.image_loading, web.loads_images_automatically);
   SET_STATE(cef.image_shrink_standalone_to_fit,
             web.shrinks_standalone_images_to_fit);
@@ -332,7 +328,6 @@ void SetCefPrefs(const CefBrowserSettings& cef,
   SET_STATE(cef.tab_to_links, web.tabs_to_links);
   SET_STATE(cef.local_storage, web.local_storage_enabled);
   SET_STATE(cef.databases, web.databases_enabled);
-  SET_STATE(cef.application_cache, web.application_cache_enabled);
 
   // Never explicitly enable GPU-related functions in this method because the
   // GPU blacklist is not being checked here.
