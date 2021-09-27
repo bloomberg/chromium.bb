@@ -37,7 +37,6 @@
 #include <content/browser/renderer_host/render_process_host_impl.h>
 #include <mojo/core/embedder/embedder.h>
 #include <mojo/public/cpp/bindings/interface_request.h>
-#include <mojo/public/cpp/bindings/strong_binding.h>
 #include <mojo/public/cpp/bindings/self_owned_receiver.h>
 #include "mojo/public/cpp/system//invitation.h"
 
@@ -199,7 +198,7 @@ bool ProcessHostImpl::Impl::onRenderLaunched(
   mojo::OutgoingInvitation::Send(impl_ptr->TakeOutgoingInvitation(),
                                  render_process_handle,
                                  std::move(local_channel_endpoint),
-                                 base::Bind(std::move(on_invitation_error)));
+                                 base::BindRepeating(on_invitation_error));
   return true;
 }
 
@@ -315,7 +314,7 @@ void ProcessHostImpl::registerMojoInterfaces(
       base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI});
 
-  registry->AddInterface(base::Bind(&ProcessHostImpl::create, runner), runner);
+  registry->AddInterface(base::BindRepeating(&ProcessHostImpl::create, runner), runner);
 }
 
 // static
@@ -460,10 +459,13 @@ void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
     // Create an instance of WebViewHost and bind its lifetime to hostRequest.
     // We are passing a Mojo interface pointer to the renderer's toolkit as
     // well as a new instance of WebViewImpl to the WebViewHost.
-    mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::WebViewHost> hostReceiver =
+        std::move(hostRequest);
+    
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<WebViewHostImpl>(std::move(clientPtr), *params,
                                           browserContext, hostId, d_impl),
-        std::move(hostRequest));
+        std::move(hostReceiver));
   } else {
     mojom::WebViewClientPtr clientPtr;
     std::move(callback).Run(mojo::MakeRequest(&clientPtr), ESRCH);

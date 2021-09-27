@@ -15,6 +15,8 @@
 #include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/services/language_detection/language_detection_service_impl.h"
+#include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
@@ -42,13 +44,11 @@
 #include "chrome/services/mac_notifications/mac_notification_provider_impl.h"
 #endif  // defined(OS_MAC)
 
-#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
+#if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/services/speech/speech_recognition_service_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/mirroring_service.h"
-#include "components/services/language_detection/language_detection_service_impl.h"
-#include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -90,10 +90,8 @@
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
-#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
 #include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/services/recording/recording_service.h"
@@ -126,7 +124,6 @@ auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
 }
 
-#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
 auto RunLanguageDetectionService(
     mojo::PendingReceiver<language_detection::mojom::LanguageDetectionService>
         receiver) {
@@ -140,7 +137,6 @@ auto RunQRCodeGeneratorService(
   return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
       std::move(receiver));
 }
-#endif
 
 auto RunWebAppOriginAssociationParser(
     mojo::PendingReceiver<webapps::mojom::WebAppOriginAssociationParser>
@@ -175,7 +171,7 @@ auto RunMacNotificationService(
 }
 #endif  // defined(OS_MAC)
 
-#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
+#if !defined(OS_ANDROID)
 auto RunProxyResolver(
     mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolverFactory>
         receiver) {
@@ -326,15 +322,11 @@ void RegisterElevatedMainThreadServices(mojo::ServiceFactory& services) {
 void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunFilePatcher);
   services.Add(RunUnzipper);
-
-#if !defined(BLPWTK2_IMPLEMENTATION)
   services.Add(RunLanguageDetectionService);
   services.Add(RunQRCodeGeneratorService);
-#endif
-
   services.Add(RunWebAppOriginAssociationParser);
 
-#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
+#if !defined(OS_ANDROID)
   services.Add(RunProfileImporter);
   services.Add(RunMirroringService);
   services.Add(RunSpeechRecognitionService);
@@ -400,7 +392,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 }
 
 void RegisterIOThreadServices(mojo::ServiceFactory& services) {
-#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
+#if !defined(OS_ANDROID)
   services.Add(RunProxyResolver);
 #endif
 }
