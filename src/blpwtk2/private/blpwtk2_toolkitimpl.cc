@@ -67,8 +67,8 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
-#include <mojo/public/cpp/system/wait_set.h>
 #include <content/browser/browser_thread_impl.h>
+#include <mojo/public/cpp/system/wait_set.h>
 #include <sandbox/win/src/win_utils.h>
 #include <sandbox/policy/switches.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>

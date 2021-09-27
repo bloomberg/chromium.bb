@@ -26,9 +26,9 @@
 #include <blpwtk2_webviewproxy.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
+#include <blpwtk2_processclientdelegate.h>
 #include <blpwtk2_webviewclientimpl.h>
 #include <blpwtk2_mainmessagepump.h>
-#include <blpwtk2_processclientdelegate.h>
 
 #include <base/bind.h>
 #include <base/task/single_thread_task_executor.h>
