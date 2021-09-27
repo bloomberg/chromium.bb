@@ -21,7 +21,6 @@
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "content/public/common/content_client.h"
 #include "media/base/audio_parameters.h"
-#include "content/renderer/loader/resource_loader_bridge.h"
 #include "media/base/supported_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
@@ -71,16 +70,9 @@ namespace mojo {
 class BinderMap;
 }
 
-namespace network {
-struct ResourceRequest;
-}
-
 namespace content {
 class RenderFrame;
 class RenderView;
-struct RequestInfo;
-class ResourceLoaderBridge;
-class ResourceRequestBodyImpl;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
