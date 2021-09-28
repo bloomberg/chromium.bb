@@ -32,7 +32,6 @@
 #include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
-#include <blpwtk2_requestinterceptorimpl.h>
 #include <net/url_request/url_request_context_builder.h>
 
 
@@ -145,7 +144,7 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
 
 BrowserContextImpl::~BrowserContextImpl()
 {
-    NotifyWillBeDestroyed(this);
+    NotifyWillBeDestroyed();
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     DCHECK(0 == d_numWebViews);
     DCHECK(!d_isDestroyed);

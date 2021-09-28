@@ -107,8 +107,8 @@ void BrowserThread::sync()
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&event)));
+        base::BindRepeating(&base::WaitableEvent::Signal,
+                            base::Unretained(&event)));
     event.Wait();
 }
 
