@@ -30,7 +30,8 @@ class PageHolder : public TestPageHolder,
                     web_contents,
                     web_contents,
                     web_contents,
-                    FrameTree::Type::kPrimary) {
+                    FrameTree::Type::kPrimary,
+                    web_contents->GetFrameTree()->RenderProcessAffinity()) {
     frame_tree_.Init(
         SiteInstance::Create(web_contents->GetBrowserContext()).get(), false,
         "");
