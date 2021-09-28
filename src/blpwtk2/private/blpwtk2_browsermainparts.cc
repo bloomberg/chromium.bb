@@ -22,6 +22,7 @@
 
 #include <blpwtk2_browsermainparts.h>
 #include <blpwtk2_browserthread.h>
+#include <base/run_loop.h>
 
 namespace blpwtk2 {
 
@@ -41,8 +42,9 @@ void BrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
     chrome_extra_parts_.push_back(parts);
 }
 
-void BrowserMainParts::PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) {
-    BrowserThread::SetMainMessageLoopQuitClosure(std::move(quit_closure));
+void BrowserMainParts::WillRunMainMessageLoop(std::unique_ptr<base::RunLoop>& run_loop) {
+
+    BrowserThread::SetMainMessageLoopQuitClosure(run_loop->QuitClosure());
 }
 
 }  // close namespace blpwtk2
