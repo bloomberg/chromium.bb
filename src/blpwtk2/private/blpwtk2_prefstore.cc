@@ -52,7 +52,7 @@ void PrefStore::RemoveObserver(PrefStore::Observer* observer)
 
 bool PrefStore::HasObservers() const
 {
-    return !d_observers.might_have_observers();
+    return !d_observers.empty();
 }
 
 bool PrefStore::IsInitializationComplete() const
