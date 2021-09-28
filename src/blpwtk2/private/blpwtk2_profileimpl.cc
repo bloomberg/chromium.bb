@@ -33,12 +33,12 @@
 #include <base/task/single_thread_task_executor.h>
 #include <ipc/ipc_sender.h>
 #include <ipc/ipc_sync_channel.h>
-#include <content/public/common/service_manager_connection.h>
 #include <content/public/renderer/render_thread.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
-#include <mojo/public/cpp/bindings/strong_binding.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service_filter.h>
+
+#include <mojo/public/cpp/bindings/self_owned_receiver.h>
 
 namespace blpwtk2 {
 
@@ -172,35 +172,39 @@ String ProfileImpl::registerScreenForStreaming(NativeScreen screen)
 
 // static
 static void onWebViewCreated(
-        WebViewProxy                *proxy,
-        WebViewDelegate             *delegate,
-        mojom::WebViewHostPtr       *webViewHostPtr,
-        mojom::WebViewClientRequest  webViewClientRequest,
-        int                          status)
+        std::unique_ptr<WebViewProxy>  proxy,
+        WebViewDelegate               *delegate,
+        mojom::WebViewHostPtr          webViewHostPtr,
+        mojom::WebViewClientRequest    webViewClientRequest,
+        int                            status)
 {
     DCHECK(0 == status);
     if (status) {
-        static_cast<WebView*>(proxy)->destroy();
-        proxy = nullptr;
+        static_cast<WebView*>(proxy.get())->destroy();
+        delegate->created(nullptr);
     }
     else {
         // Create a webview client and webview proxy.  They both have a
         // reference to one another so that when one goes away, it can tell
         // the other to dispose dangling references.
         std::unique_ptr<WebViewClientImpl> webViewClientImpl =
-            std::make_unique<WebViewClientImpl>(std::move(*webViewHostPtr),
-                                                proxy);
+            std::make_unique<WebViewClientImpl>(std::move(webViewHostPtr),
+                                                proxy.get());
 
         proxy->setClient(webViewClientImpl.get());
 
+        mojo::PendingReceiver<mojom::WebViewClient> webViewClientReceiver =
+            std::move(webViewClientRequest);
+
         // Bind the webview client to the request from process host.  This
         // will make its lifetime managed by Mojo.
-        mojo::MakeStrongBinding(std::move(webViewClientImpl),
-                                std::move(webViewClientRequest));
+        mojo::MakeSelfOwnedReceiver(std::move(webViewClientImpl),
+                                    std::move(webViewClientReceiver));
+
+        delegate->created(proxy.get());
     }
 
-    delegate->created(proxy);
-    delete webViewHostPtr;
+    proxy.release();
 }
 
 void ProfileImpl::createWebView(WebViewDelegate            *delegate,
@@ -212,21 +216,21 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
         getWebViewCreateParamsImpl(params);
 
     // Create a new instance of WebViewProxy.
-    WebViewProxy *proxy = new WebViewProxy(delegate, this);
+    auto proxy = std::make_unique<WebViewProxy>(delegate, this);
 
     // Ask the process host to create a webview host. 
-    mojom::WebViewHostPtr *webViewHostPtr =
-        new mojom::WebViewHostPtr;
+    mojom::WebViewHostPtr webViewHostPtr;
+    auto request = mojo::MakeRequest(&webViewHostPtr,
+                                     base::ThreadTaskRunnerHandle::Get());
 
     d_hostPtr->createWebView(
-        mojo::MakeRequest(webViewHostPtr,
-        base::ThreadTaskRunnerHandle::Get()),
+        std::move(request),
         createParams->Clone(),
-        base::Bind(
+        base::BindOnce(
             &onWebViewCreated,
-            proxy,
-            delegate,
-            webViewHostPtr));
+            std::move(proxy),
+            base::Unretained(delegate),
+            std::move(webViewHostPtr)));
 }
 
 void ProfileImpl::addHttpProxy(ProxyType        type,

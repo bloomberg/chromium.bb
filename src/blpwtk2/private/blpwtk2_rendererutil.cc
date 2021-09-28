@@ -27,7 +27,6 @@
 
 #include <base/logging.h>  // for DCHECK
 
-#include <content/renderer/render_widget.h>
 #include <content/public/browser/native_web_keyboard_event.h>
 #include <ui/events/event.h>
 

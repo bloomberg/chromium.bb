@@ -30,7 +30,6 @@
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_browsermainparts.h>
-#include <blpwtk2_requestinterceptorimpl.h>
 #include <blpwtk2_resourceloader.h>
 
 #include <base/json/json_reader.h>
@@ -45,8 +44,6 @@
 #include <content/public/browser/render_process_host.h>
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include <content/public/browser/web_contents.h>
-#include "content/public/common/service_manager_connection.h"
-#include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
 #include <chrome/grit/browser_resources.h>
@@ -67,15 +64,12 @@ namespace blpwtk2 {
                         // class ContentBrowserClientImpl
                         // ------------------------------
 
-ContentBrowserClientImpl::ContentBrowserClientImpl() :
-    d_interceptor(std::make_unique<RequestInterceptorImpl>())
+ContentBrowserClientImpl::ContentBrowserClientImpl()
 {
-    net::URLRequestJobFactory::SetInterceptorForTesting(d_interceptor.get());
 }
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl()
 {
-    net::URLRequestJobFactory::SetInterceptorForTesting(nullptr);
 }
 
 std::unique_ptr<content::BrowserMainParts>
@@ -99,15 +93,13 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
-    content::RenderViewHost *render_view_host,
+    content::WebContents *web_contents,
     blink::web_pref::WebPreferences *prefs)
 {
-    content::WebContents* webContents =
-        content::WebContents::FromRenderViewHost(render_view_host);
-    DCHECK(webContents);
+    DCHECK(web_contents);
 
     WebViewImpl* webViewImpl =
-        static_cast<WebViewImpl*>(webContents->GetDelegate());
+        static_cast<WebViewImpl*>(web_contents->GetDelegate());
     DCHECK(webViewImpl);
 
     webViewImpl->overrideWebkitPrefs(prefs);
@@ -146,9 +138,10 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url)
     return false;
 }
 
-content::DevToolsManagerDelegate *ContentBrowserClientImpl::GetDevToolsManagerDelegate()
+std::unique_ptr<content::DevToolsManagerDelegate>
+ContentBrowserClientImpl::CreateDevToolsManagerDelegate()
 {
-    return new DevToolsManagerDelegateImpl();
+    return std::make_unique<DevToolsManagerDelegateImpl>();
 }
 
 void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
@@ -171,12 +164,6 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
     return d_broker_client_invitation.load();
 }
 
-std::vector<service_manager::Manifest>
-ContentBrowserClientImpl::GetExtraServiceManifests()
-{
-    return std::vector<service_manager::Manifest>{};
-}
-
 std::string ContentBrowserClientImpl::GetUserAgent()
 {
     // include Chrome in our user-agent because some sites actually look for
@@ -195,7 +182,7 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     bool in_memory,
     const base::FilePath& relative_partition_path,
     network::mojom::NetworkContextParams* network_context_params,
-    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
+    cert_verifier::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
 {
     DCHECK(context);
     BrowserContextImpl* pContextImpl = static_cast<BrowserContextImpl*>(context);

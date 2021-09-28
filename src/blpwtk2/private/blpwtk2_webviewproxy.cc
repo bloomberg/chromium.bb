@@ -37,6 +37,7 @@
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_view.h>
 #include <third_party/blink/public/web/web_local_frame.h>
+#include <third_party/blink/public/web/web_frame_widget.h>
 #include <third_party/blink/public/web/web_view.h>
 
 #include <dwmapi.h>
@@ -48,7 +49,7 @@
 #define VALIDATE_RENDER_VIEW_IMPL(rv, ret)                                     \
   if (!rv) {                                                                   \
     LOG(WARNING)                                                               \
-        << "nullptr is returned from content::RenderView::FromRoutingID with " \
+        << "nullptr is returned from content::RenderViewImpl::FromRoutingID with " \
            "d_renderViewRoutingId = "                                          \
         << d_renderViewRoutingId;                                              \
     return ret;                                                                \
@@ -114,7 +115,7 @@ WebFrame *WebViewProxy::mainFrame()
 
     if (!d_mainFrame.get()) {
         content::RenderView *rv =
-            content::RenderView::FromRoutingID(d_renderViewRoutingId);
+            content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
         VALIDATE_RENDER_VIEW(rv);
 
         blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
@@ -384,7 +385,7 @@ void WebViewProxy::handleInputEvents(const InputEvent *events, size_t eventsCoun
     DCHECK(d_gotRenderViewInfo);
 
     content::RenderView *rv =
-        content::RenderView::FromRoutingID(d_renderViewRoutingId);
+        content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
     DCHECK(rv);
 
     blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
@@ -426,7 +427,7 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
     }
     d_client->proxy()->setBackgroundColor(red, green, blue);
 
-    content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    content::RenderView* rv = content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
     VALIDATE_RENDER_VIEW_VOID(rv);
     blink::WebView* web_view = rv->GetWebView();
     web_view->SetBaseBackgroundColor(
@@ -463,7 +464,7 @@ v8::MaybeLocal<v8::Value> WebViewProxy::callFunction(
         << "You should wait for didFinishLoad";
     DCHECK(d_gotRenderViewInfo);
 
-    content::RenderView *rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    content::RenderView *rv = content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
     VALIDATE_RENDER_VIEW(rv);
     blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
     DCHECK(webFrame->IsWebLocalFrame());
@@ -577,16 +578,16 @@ void WebViewProxy::notifyRoutingId(int id)
     }
 
     content::RenderView *rv =
-        content::RenderView::FromRoutingID(id);
+        content::RenderViewImpl::FromRoutingID(id);
 
     if (!rv) {
         // The RenderView has not been created yet.  Keep reposting this task
         // until the RenderView is available.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&WebViewProxy::notifyRoutingId,
-                       base::Unretained(this),
-                       id));
+            base::BindOnce(&WebViewProxy::notifyRoutingId,
+                           base::Unretained(this),
+                           id));
         return;
     }
 
@@ -606,7 +607,7 @@ void WebViewProxy::onLoadStatus(int status)
 
         if (!d_securityToken.IsEmpty()) {
             content::RenderView *rv =
-                content::RenderView::FromRoutingID(d_renderViewRoutingId);
+                content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
             VALIDATE_RENDER_VIEW_VOID(rv);
 
             blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
