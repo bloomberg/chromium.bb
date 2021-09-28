@@ -142,34 +142,6 @@ SkBitmap& Blob::makeSkBitmap()
     return blob->skiaBitmap();
 }
 
-// StorageDataElementBlob
-
-class StorageDataElementBlob : public Blob::Impl {
-    const network::DataElement& d_element;
-
-public:
-    StorageDataElementBlob(const network::DataElement& element)
-    : d_element(element) {
-    }
-
-    void copyTo(void *dest) const override
-    {
-        std::memcpy(dest, d_element.bytes(), d_element.length());
-    }
-
-    size_t size() const override
-    {
-        return d_element.length();
-    }
-};
-
-void Blob::makeStorageDataElement(const network::DataElement& element)
-{
-    DCHECK(!d_impl);
-    StorageDataElementBlob *blob = new StorageDataElementBlob(element);
-    d_impl = blob;
-}
-
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
