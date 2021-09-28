@@ -90,7 +90,7 @@ class WebViewImpl final : public WebView,
     BrowserContextImpl *d_browserContext;
     NativeViewWidget *d_widget;  // owned by the views system
     WebViewProperties d_properties;  // TODO(SHEZ): move more properties into this struct
-    content::CustomContextMenuContext d_customContext;
+    GURL d_linkFollowed;
     bool d_isReadyForDelete;  // when the underlying WebContents can be deleted
     bool d_wasDestroyed;      // if destroy() has been called
     bool d_isDeletingSoon;    // when DeleteSoon has been called
@@ -211,8 +211,8 @@ class WebViewImpl final : public WebView,
     gfx::NativeView getNativeView() const;
     void showContextMenu(const ContextMenuParams& params);
     void saveCustomContextMenuContext(
-        content::RenderFrameHost                 *rfh,
-        const content::CustomContextMenuContext&  context);
+        content::RenderFrameHost *rfh,
+        const GURL&               link_followed);
     void handleFindRequest(const FindOnPageRequest& request);
     void overrideWebkitPrefs(blink::web_pref::WebPreferences* prefs);
     void onRenderViewHostMadeCurrent(content::RenderViewHost* renderViewHost);

@@ -311,7 +311,7 @@ void MainMessagePump::doWork()
             if (microtasksScopeDepth) {
                 auto policy = isolate->GetMicrotasksPolicy();
                 isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
-                isolate->RunMicrotasks();
+                isolate->PerformMicrotaskCheckpoint();
                 isolate->SetMicrotasksPolicy(policy);
             }
         }

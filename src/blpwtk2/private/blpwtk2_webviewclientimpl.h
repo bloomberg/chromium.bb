@@ -184,8 +184,8 @@ class WebViewClientImpl final : public WebViewClient
     DISALLOW_COPY_AND_ASSIGN(WebViewClientImpl);
 
   public:
-    WebViewClientImpl(mojom::WebViewHostPtr&&  hostPtr,
-                      WebViewClientDelegate   *delegate);
+    WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
+                      WebViewClientDelegate *delegate);
 
     ~WebViewClientImpl() final;
 };
