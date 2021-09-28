@@ -25,7 +25,7 @@
 
 #include <blpwtk2_config.h>
 
-#include <content/public/renderer/render_view_observer.h>
+#include <third_party/blink/public/web/web_view_observer.h>
 
 namespace blpwtk2 {
 
@@ -34,9 +34,9 @@ namespace blpwtk2 {
 // This object is created for each RenderView in the renderer process.  It is
 // created from ContentRendererClientImpl::RenderViewCreated(), and gets
 // automatically deleted when the RenderView is destroyed.
-class RenderViewObserverImpl : public content::RenderViewObserver {
+class RenderViewObserverImpl : public blink::WebViewObserver {
   public:
-    RenderViewObserverImpl(content::RenderView* renderView);
+    RenderViewObserverImpl(blink::WebView* renderView);
     ~RenderViewObserverImpl() final;
     void OnDestruct() override;
 
