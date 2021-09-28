@@ -27,6 +27,8 @@
 #include <blpwtk2_webview.h>
 #include <blpwtk2_string.h>
 
+#include <third_party/blink/public/web/web_widget.h>
+
 namespace content {
 
 class RenderWidget;

@@ -76,8 +76,6 @@ target(link_target_type, "renderer") {
     "internal_document_state_data.h",
     "loader/navigation_body_loader.cc",
     "loader/navigation_body_loader.h",
-    "loader/resource_loader_bridge.cc",
-    "loader/resource_loader_bridge.h",
     "media/audio_decoder.cc",
     "media/audio_decoder.h",
     "media/batching_media_log.cc",

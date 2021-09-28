@@ -179,10 +179,10 @@ void WebViewImpl::showContextMenu(const ContextMenuParams& params)
 }
 
 void WebViewImpl::saveCustomContextMenuContext(
-    content::RenderFrameHost                 *rfh,
-    const content::CustomContextMenuContext&  context)
+    content::RenderFrameHost *rfh,
+    const GURL&               link_followed)
 {
-    d_customContext = context;
+    d_linkFollowed = link_followed;
 }
 
 void WebViewImpl::handleFindRequest(const FindOnPageRequest& request)
@@ -324,7 +324,7 @@ void WebViewImpl::clearTooltip()
         static_cast<content::RenderWidgetHostViewBase*>(
             d_webContents->GetRenderWidgetHostView());
 
-    rwhv->SetTooltipText(L"");
+    rwhv->UpdateTooltip(u"");
 }
 
 v8::MaybeLocal<v8::Value> WebViewImpl::callFunction(v8::Local<v8::Function>  func,
@@ -550,7 +550,7 @@ void WebViewImpl::performCustomContextMenuAction(int actionId)
 {
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
-    d_webContents->ExecuteCustomContextMenuCommand(actionId, d_customContext);
+    d_webContents->ExecuteCustomContextMenuCommand(actionId, d_linkFollowed);
 }
 
 void WebViewImpl::find(const StringRef& text, bool matchCase, bool forward)
@@ -588,7 +588,7 @@ void WebViewImpl::replaceMisspelledRange(const StringRef& text)
 {
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
-    base::string16 text16;
+    std::u16string text16;
     base::UTF8ToUTF16(text.data(), text.length(), &text16);
     d_webContents->ReplaceMisspelling(text16);
 }
@@ -697,9 +697,6 @@ void WebViewImpl::RequestMediaAccessPermission(
 
         void OnDeviceStopped(const std::string& label,
                              const content::DesktopMediaID& media_id) override {
-        }
-
-        void SetStopCallback(base::OnceClosure stop) override {
         }
     };
 
