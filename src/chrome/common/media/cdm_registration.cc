@@ -291,7 +291,7 @@ void AddWidevine(std::vector<content::CdmInfo>* cdms) {
 }
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && !defined(BLPWTK2_IMPLEMENTATION)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 void AddExternalClearKey(std::vector<content::CdmInfo>* cdms) {
   // Register Clear Key CDM if specified in command line.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -344,7 +344,7 @@ void RegisterCdmInfo(std::vector<content::CdmInfo>* cdms) {
   AddWidevine(cdms);
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && !defined(BLPWTK2_IMPLEMENTATION)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   AddExternalClearKey(cdms);
 #endif
 }
