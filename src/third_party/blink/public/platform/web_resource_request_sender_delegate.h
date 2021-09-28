@@ -11,7 +11,6 @@ namespace blink {
 class WebRequestPeer;
 class WebString;
 class WebURL;
-class ResourceLoaderBridge;
 
 // Interface that allows observing request events and optionally replacing
 // the peer. Note that if it doesn't replace the peer it must return the
@@ -28,11 +27,6 @@ class BLINK_PLATFORM_EXPORT WebResourceRequestSenderDelegate {
       scoped_refptr<WebRequestPeer> current_peer,
       const WebString& mime_type,
       const WebURL& url) = 0;
-
-  // Allows the embedder to override the ResourceLoaderBridge used.
-  // If it returns NULL, the content layer will use the default loader.
-  virtual std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
-      const ResourceRequestInfoProvider& request_info) = 0;
 };
 
 }  // namespace blink

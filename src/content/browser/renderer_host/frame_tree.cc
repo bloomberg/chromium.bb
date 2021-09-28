@@ -164,7 +164,7 @@ FrameTree::FrameTree(
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate,
     Type type,
-    int render_process_afinity)
+    int render_process_affinity)
     : delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),

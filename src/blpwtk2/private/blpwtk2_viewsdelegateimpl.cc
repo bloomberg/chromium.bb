@@ -80,7 +80,8 @@ void ViewsDelegateImpl::OnBeforeWidgetInit(
     if (params->parent && params->type != views::Widget::InitParams::TYPE_MENU) {
         params->native_widget = new views::NativeWidgetAura(delegate);
     }
-    else if (!params->parent && !params->context) {
+    else if ((!params->parent && !params->context) ||
+        params->type == views::Widget::InitParams::TYPE_TOOLTIP) {
         params->native_widget = new views::DesktopNativeWidgetAura(delegate);
     }
 #endif
