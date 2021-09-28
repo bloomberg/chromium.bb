@@ -262,7 +262,7 @@ void setDefaultLocaleIfWindowsLocaleIsNotSupported()
     wcstombs(&localeName[0], &localeNameW[0], LOCALE_NAME_MAX_LENGTH);
 
     // 2. Get the available locales from Chromium
-    const auto& availableLocales = l10n_util::GetAvailableLocales();
+    const auto& availableLocales = l10n_util::GetAvailableICULocales();
 
     // 3. If the user's locale is not available, fall back to en-US.
     if (std::find(availableLocales.begin(),
@@ -314,13 +314,13 @@ static void startRenderer(
                           channelInfo.getMojoControllerHandle(), 0);
 }
 
-static size_t GetSwitchPrefixLength(const base::string16& string)
+static size_t GetSwitchPrefixLength(const std::u16string& string)
 {
-    const wchar_t* const kSwitchPrefixes[] = {L"--", L"-", L"/"};
+    const char16_t* const kSwitchPrefixes[] = {u"--", u"-", u"/"};
     size_t switch_prefix_count = base::size(kSwitchPrefixes);
 
     for (size_t i = 0; i < switch_prefix_count; ++i) {
-        base::string16 prefix(kSwitchPrefixes[i]);
+        std::u16string prefix(kSwitchPrefixes[i]);
         if (string.compare(0, prefix.length(), prefix) == 0) {
             return prefix.length();
         }
@@ -328,12 +328,12 @@ static size_t GetSwitchPrefixLength(const base::string16& string)
     return 0;
 }
 
-static bool IsSwitch(const base::string16&  string,
-                     base::string16        *switch_string,
-                     base::string16        *switch_value,
+static bool IsSwitch(const std::u16string&  string,
+                     std::u16string        *switch_string,
+                     std::u16string        *switch_value,
                      bool                   skipPrefixLengthCheck)
 {
-    const wchar_t kSwitchValueSeparator[] = FILE_PATH_LITERAL("=");
+    const char16_t kSwitchValueSeparator[] = u"=";
 
     switch_string->clear();
     switch_value->clear();
@@ -345,7 +345,7 @@ static bool IsSwitch(const base::string16&  string,
 
     const size_t equals_position = string.find(kSwitchValueSeparator);
     *switch_string = string.substr(0, equals_position);
-    if (equals_position != base::string16::npos) {
+    if (equals_position != std::u16string::npos) {
         *switch_value = string.substr(equals_position + 1);
     }
 
@@ -354,7 +354,7 @@ static bool IsSwitch(const base::string16&  string,
 
 static void appendCommandLine(const std::vector<std::string>& argv)
 {
-    const wchar_t kSwitchTerminator[] = FILE_PATH_LITERAL("--");
+    const char16_t kSwitchTerminator[] = u"--";
 
     bool parseSwitches = true;
     base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
@@ -362,20 +362,24 @@ static void appendCommandLine(const std::vector<std::string>& argv)
     for (const auto& arg_utf8 : argv) {
         // Convert the UTF-8 encoded argument to UTF-16
         std::string temp = "--" + arg_utf8;
-        base::string16 arg;
+        std::u16string arg;
         base::UTF8ToUTF16(temp.data(), temp.size(), &arg);
 
         // Trim whitespaces from the argument
         base::TrimWhitespace(arg, base::TRIM_ALL, &arg);
         parseSwitches &= (arg != kSwitchTerminator);
 
-        base::string16 switch_string, switch_value;
+        std::u16string switch_string, switch_value;
         if (parseSwitches && IsSwitch(arg, &switch_string, &switch_value, false)) {
             commandLine->AppendSwitchNative(
-                    base::UTF16ToASCII(switch_string), switch_value);
+                base::UTF16ToASCII(switch_string),
+                std::wstring(reinterpret_cast<const wchar_t*>(switch_value.data()),
+                             switch_value.size()));
         }
         else {
-            commandLine->AppendArgNative(arg);
+            commandLine->AppendArgNative(
+                    std::wstring(reinterpret_cast<const wchar_t*>(arg.data()),
+                                 arg.size()));
         }
     }
 }
@@ -396,14 +400,14 @@ static std::vector<std::string> concateCmdLineFeatureSwitches(const std::vector<
   const std::vector<std::string> featureKeys = {
       switches::kDisableFeatures, switches::kEnableFeatures,
       switches::kDisableBlinkFeatures, switches::kEnableBlinkFeatures};
-  base::string16 switchName16;
-  base::string16 switchValue16;
+  std::u16string switchName16;
+  std::u16string switchValue16;
   std::vector<std::string> res;
   std::map<std::string, std::set<std::string>> combinedKeyValues;
 
   // Gather key value features into combinedKeyValues
   for (const std::string& swtStringUtf8: switches) {
-    base::string16 swtStringUtf16;
+    std::u16string swtStringUtf16;
     base::UTF8ToUTF16(swtStringUtf8.data(), swtStringUtf8.size(), &swtStringUtf16);
     IsSwitch(swtStringUtf16, &switchName16, &switchValue16, true);
     std::string switchName = base::UTF16ToASCII(switchName16);
@@ -565,11 +569,11 @@ std::string ToolkitImpl::createProcessHost(
     // newly spawned browser thread.
     d_browserThread->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&createLoopbackHostChannel,
-                   &hostChannel,
-                   isolated,
-                   profileDir,
-                   d_browserThread->task_runner()));
+        base::BindOnce(&createLoopbackHostChannel,
+                       base::Unretained(&hostChannel),
+                       isolated,
+                       profileDir,
+                       d_browserThread->task_runner()));
 
     // Wait for process host to come alive.
     LOG(INFO) << "Waiting for ProcessHost on the browser thread";
@@ -708,7 +712,7 @@ ToolkitImpl::~ToolkitImpl()
         if (d_browserThread.get()) {
             d_browserThread->task_runner()->PostTask(
                 FROM_HERE,
-                base::Bind(&ProcessHostImpl::releaseAll));
+                base::BindOnce(&ProcessHostImpl::releaseAll));
 
             // Make sure any tasks posted to the browser-main thread have been
             // handled.
@@ -807,13 +811,6 @@ void ToolkitImpl::postHandleMessage(const NativeMsg *msg)
     return d_messagePump->postHandleMessage(*msg);
 }
 
-void ToolkitImpl::addOriginToTrustworthyList(const StringRef& originString)
-{
-    DCHECK(Statics::isInApplicationMainThread());
-    DCHECK(Statics::isRendererMainThreadMode());
-    blink::WebSecurityPolicy::AddOriginToTrustworthySafelist(toWebString(originString));
-}
-
 void ToolkitImpl::setWebViewHostObserver(WebViewHostObserver* observer)
 {
     if (Statics::isInBrowserMainThread()) {
@@ -822,9 +819,9 @@ void ToolkitImpl::setWebViewHostObserver(WebViewHostObserver* observer)
     else if (d_browserThread) {
         d_browserThread->task_runner()->PostTask(
                 FROM_HERE,
-                base::Bind(&ToolkitImpl::setWebViewHostObserver,
-                           base::Unretained(this),
-                           observer));
+                base::BindOnce(&ToolkitImpl::setWebViewHostObserver,
+                               base::Unretained(this),
+                               observer));
     }
 }
 
