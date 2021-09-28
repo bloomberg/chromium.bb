@@ -19,7 +19,7 @@ struct PrinterBasicInfo;
 
 extern const char kPrinter[];
 
-#if defined(OS_WIN) && defined(ENABLE_PRINT_PREVIEW)
+#if defined(OS_WIN)
 std::string GetUserFriendlyName(const std::string& printer_name);
 #endif
 

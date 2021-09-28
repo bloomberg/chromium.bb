@@ -46,7 +46,7 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
-    params.activatable = views::Widget::InitParams::ACTIVATABLE_DEFAULT;
+    params.activatable = views::Widget::InitParams::Activatable::kDefault;
     params.layer_type = ui::LAYER_SOLID_COLOR;
     d_impl->set_focus_on_creation(false);
     d_impl->Init(std::move(params));
