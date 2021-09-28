@@ -166,10 +166,6 @@ class Toolkit {
         // message that the application's message loop processes, even if it
         // doesn't belong to blpwtk2 and also if preHandleMessage returns true.
 
-    virtual void addOriginToTrustworthyList(const StringRef& originString) = 0;
-        // Adds the security origin specified by 'originString' to the list of
-        // origins that blink considers 'trustworthy'.
-
     virtual void setWebViewHostObserver(WebViewHostObserver* observer) = 0;
         // Sets the observer that will be called by the browser thread when
         // WebView's are created and destroyed.

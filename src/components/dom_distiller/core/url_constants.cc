@@ -5,9 +5,9 @@
 #include "components/dom_distiller/core/url_constants.h"
 
 namespace dom_distiller {
-#if defined(USE_DOM_DISTILLER)
+//#if defined(USE_DOM_DISTILLER)
 const char kDomDistillerScheme[] = "chrome-distiller";
-#endif
+//#endif
 
 const char kEntryIdKey[] = "entry_id";
 const char kUrlKey[] = "url";
