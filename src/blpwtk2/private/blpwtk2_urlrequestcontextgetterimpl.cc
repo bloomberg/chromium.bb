@@ -28,6 +28,7 @@
 #include <base/strings/string_util.h>
 #include <base/memory/ptr_util.h>
 #include <base/task/post_task.h>
+#include <base/task/thread_pool.h>
 #include <base/task/task_traits.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
@@ -66,7 +67,7 @@ URLRequestContextGetterImpl::URLRequestContextGetterImpl(
 , d_diskCacheEnabled(diskCacheEnabled)
 , d_cookiePersistenceEnabled(cookiePersistenceEnabled)
 , d_wasProxyInitialized(false)
-, d_background_task_runner(base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}))
+, d_background_task_runner(base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}))
 {
 }
 
@@ -102,15 +103,14 @@ void URLRequestContextGetterImpl::setProxyConfig(const net::ProxyConfig& config)
           "to load any webpage."
       })");
 
-    net::ProxyConfigService* proxyConfigService =
-        new net::ProxyConfigServiceFixed(
+    auto proxyConfigService = std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfigWithAnnotation(config, annotation_tag));
 
     GetNetworkTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&URLRequestContextGetterImpl::updateProxyConfig,
-                   this,
-                   proxyConfigService));
+        base::BindOnce(&URLRequestContextGetterImpl::updateProxyConfig,
+                       base::Unretained(this),
+                       std::move(proxyConfigService)));
 }
 
 void URLRequestContextGetterImpl::useSystemProxyConfig()
@@ -125,12 +125,14 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
     // We must create the proxy config service on the UI loop on Linux
     // because it must synchronously run on the glib message loop.  This
     // will be passed to the ProxyServer on the IO thread.
-    net::ProxyConfigService* proxyConfigService =
-        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(ioLoop).release();
+    auto proxyConfigService =
+        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(ioLoop);
 
     GetNetworkTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&URLRequestContextGetterImpl::updateProxyConfig,
-                              this, proxyConfigService));
+        FROM_HERE,
+        base::BindOnce(&URLRequestContextGetterImpl::updateProxyConfig,
+                       this,
+                       std::move(proxyConfigService)));
 }
 
 // net::URLRequestContextGetter implementation.
@@ -219,21 +221,20 @@ void URLRequestContextGetterImpl::initialize()
 }
 
 void URLRequestContextGetterImpl::updateProxyConfig(
-    net::ProxyConfigService* proxyConfigService)
+    std::unique_ptr<net::ProxyConfigService> proxyConfigService)
 {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    std::unique_ptr<net::ProxyConfigService> proxyConfigService_(proxyConfigService);
 
     if (d_urlRequestContext) {
         net::ProxyResolutionService* proxyService = d_urlRequestContext->proxy_resolution_service();
         DCHECK(proxyService);
-        proxyService->ResetConfigService(std::move(proxyConfigService_));
+        proxyService->ResetConfigService(std::move(proxyConfigService));
         return;
     }
 
     // TODO(jam): use v8 if possible, look at chrome code.
     d_proxyService = net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
-            std::move(proxyConfigService_), nullptr, /*quick_check_enabled=*/true);
+            std::move(proxyConfigService), nullptr, /*quick_check_enabled=*/true);
 }
 
 }  // close namespace blpwtk2

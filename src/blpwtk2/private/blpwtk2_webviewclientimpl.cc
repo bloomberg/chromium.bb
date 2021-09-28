@@ -37,8 +37,8 @@ namespace blpwtk2 {
                         // class WebViewClientImpl
                         // -----------------------
 
-WebViewClientImpl::WebViewClientImpl(mojom::WebViewHostPtr&&  hostPtr,
-                                     WebViewClientDelegate   *delegate)
+WebViewClientImpl::WebViewClientImpl(mojom::WebViewHostPtr  hostPtr,
+                                     WebViewClientDelegate *delegate)
     : d_hostPtr(std::move(hostPtr))
     , d_delegate(delegate)
     , d_nativeView(0)
@@ -78,29 +78,29 @@ mojom::WebViewHost *WebViewClientImpl::proxy()
 void WebViewClientImpl::goBack()
 {
     DCHECK(d_hostPtr);
-    d_hostPtr->back(base::Bind(&WebViewClientImpl::loadStatus,
-                               base::Unretained(this)));
+    d_hostPtr->back(base::BindOnce(&WebViewClientImpl::loadStatus,
+                                   base::Unretained(this)));
 }
 
 void WebViewClientImpl::goForward()
 {
     DCHECK(d_hostPtr);
-    d_hostPtr->forward(base::Bind(&WebViewClientImpl::loadStatus,
-                                  base::Unretained(this)));
+    d_hostPtr->forward(base::BindOnce(&WebViewClientImpl::loadStatus,
+                                      base::Unretained(this)));
 }
 
 void WebViewClientImpl::reload()
 {
     DCHECK(d_hostPtr);
-    d_hostPtr->reload(base::Bind(&WebViewClientImpl::loadStatus,
-                                 base::Unretained(this)));
+    d_hostPtr->reload(base::BindOnce(&WebViewClientImpl::loadStatus,
+                                     base::Unretained(this)));
 }
 
 void WebViewClientImpl::loadUrl(const std::string& url)
 {
     DCHECK(d_hostPtr);
-    d_hostPtr->loadUrl(url, base::Bind(&WebViewClientImpl::loadStatus,
-                                       base::Unretained(this)));
+    d_hostPtr->loadUrl(url, base::BindOnce(&WebViewClientImpl::loadStatus,
+                                           base::Unretained(this)));
 }
 
 void WebViewClientImpl::move(const gfx::Rect& rect)
@@ -115,8 +115,8 @@ void WebViewClientImpl::move(const gfx::Rect& rect)
                         d_rect.y(),
                         d_rect.width(),
                         d_rect.height(),
-                        base::Bind(&WebViewClientImpl::moveAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&WebViewClientImpl::moveAck,
+                                       base::Unretained(this)));
     }
 }
 
@@ -143,7 +143,7 @@ void WebViewClientImpl::applyRegion(NativeRegion region)
 
     DCHECK(d_hostPtr);
     d_hostPtr->applyRegion(regionBlob,
-                           base::Bind(&deleteRegion, region));
+                           base::BindOnce(&deleteRegion, std::move(region)));
 }
 
 void WebViewClientImpl::ncHitTestResult(int x, int y, int result)
@@ -167,7 +167,8 @@ void WebViewClientImpl::applyNCHitTestRegion(NativeRegion region)
 
     DCHECK(d_hostPtr);
     d_hostPtr->applyNCHitTestRegion(regionBlob,
-                                    base::Bind(&deleteRegion, region));
+                                    base::BindOnce(&deleteRegion,
+                                                   std::move(region)));
 }
 
 void WebViewClientImpl::setParentStatusUpdate(int status, unsigned int parent)
@@ -194,7 +195,10 @@ void WebViewClientImpl::setParent(NativeView parent)
     }
     else {
         DCHECK(d_hostPtr);
-        d_hostPtr->setParent(static_cast<unsigned int>(reinterpret_cast<intptr_t>(parent)), base::Bind(&WebViewClientImpl::setParentStatusUpdate, base::Unretained(this)));
+        d_hostPtr->setParent(
+                static_cast<unsigned int>(reinterpret_cast<intptr_t>(parent)),
+                base::BindOnce(&WebViewClientImpl::setParentStatusUpdate,
+                               base::Unretained(this)));
     }
 }
 
@@ -385,8 +389,8 @@ void WebViewClientImpl::moveAck(int x, int y, int w, int h)
                         d_rect.y(),
                         d_rect.width(),
                         d_rect.height(),
-                        base::Bind(&WebViewClientImpl::moveAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&WebViewClientImpl::moveAck,
+                                       base::Unretained(this)));
     }
     else {
         d_pendingMoveAck = false;
