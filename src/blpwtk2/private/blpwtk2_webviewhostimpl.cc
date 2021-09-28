@@ -196,8 +196,8 @@ void WebViewHostImpl::requestNCHitTest(WebView *source)
 {
     DCHECK(source == d_impl);
     d_clientPtr->ncHitTest(
-            base::Bind(&WebViewImpl::onNCHitTestResult,
-                       base::Unretained(d_impl)));
+            base::BindOnce(&WebViewImpl::onNCHitTestResult,
+                           base::Unretained(d_impl)));
 }
 
 void WebViewHostImpl::ncDragBegin(WebView      *source,
@@ -219,8 +219,8 @@ void WebViewHostImpl::ncDragBegin(WebView      *source,
             hitTestCode,
             startPoint.x,
             startPoint.y,
-            base::Bind(&WebViewHostImpl::onNCDragAck,
-                       base::Unretained(this)));
+            base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                           base::Unretained(this)));
 }
 
 void WebViewHostImpl::ncDragMove(WebView *source, const POINT& movePoint)
@@ -243,8 +243,8 @@ void WebViewHostImpl::ncDragMove(WebView *source, const POINT& movePoint)
     d_clientPtr->ncDragMove(
             movePoint.x,
             movePoint.y,
-            base::Bind(&WebViewHostImpl::onNCDragAck,
-                       base::Unretained(this)));
+            base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                           base::Unretained(this)));
 }
 
 void WebViewHostImpl::ncDragEnd(WebView *source, const POINT& endPoint)
@@ -263,8 +263,8 @@ void WebViewHostImpl::ncDragEnd(WebView *source, const POINT& endPoint)
     d_clientPtr->ncDragEnd(
             endPoint.x,
             endPoint.y,
-            base::Bind(&WebViewHostImpl::onNCDragAck,
-                       base::Unretained(this)));
+            base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                           base::Unretained(this)));
 }
 
 void WebViewHostImpl::findState(WebView *source,
@@ -313,8 +313,8 @@ void WebViewHostImpl::onNCDragAck()
                         d_dragState.hitTestCode,
                         d_dragState.startPoint.x(),
                         d_dragState.startPoint.y(),
-                        base::Bind(&WebViewHostImpl::onNCDragAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                                       base::Unretained(this)));
                 break;
             }
         }
@@ -325,8 +325,8 @@ void WebViewHostImpl::onNCDragAck()
                 d_clientPtr->ncDragMove(
                         d_dragState.movePoint.x(),
                         d_dragState.movePoint.y(),
-                        base::Bind(&WebViewHostImpl::onNCDragAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                                       base::Unretained(this)));
                 break;
             }
         }
@@ -337,8 +337,8 @@ void WebViewHostImpl::onNCDragAck()
                 d_clientPtr->ncDragEnd(
                         d_dragState.endPoint.x(),
                         d_dragState.endPoint.y(),
-                        base::Bind(&WebViewHostImpl::onNCDragAck,
-                                   base::Unretained(this)));
+                        base::BindOnce(&WebViewHostImpl::onNCDragAck,
+                                       base::Unretained(this)));
                 break;
             }
         }
@@ -372,7 +372,7 @@ void WebViewHostImpl::loadInspector(unsigned int pid, int routingId)
 {
     if (!d_loadUrlCallback) {
         d_impl->loadInspector(pid, routingId);
-        d_loadUrlCallback = base::Bind(&onInspectorLoad);
+        d_loadUrlCallback = base::BindOnce(&onInspectorLoad);
     }
 }
 

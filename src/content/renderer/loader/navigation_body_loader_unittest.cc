@@ -50,18 +50,17 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     writer_ = std::move(producer_handle);
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = client_remote_.BindNewPipeAndPassReceiver();
-    auto response_body = mojo::ScopedDataPipeConsumerHandle();
     blink::WebNavigationParams navigation_params;
     navigation_params.sandbox_flags = network::mojom::WebSandboxFlags::kNone;
     auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), /*request_id=*/1,
-        network::mojom::URLResponseHead::New(), std::move(response_body),
+        network::mojom::URLResponseHead::New(), std::move(consumer_handle),
         std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         /*render_frame_impl=*/nullptr, /*is_main_frame=*/true,
-        &navigation_params, nullptr);
+        &navigation_params);
     loader_ = std::move(navigation_params.body_loader);
   }
 
@@ -335,7 +334,6 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   blink::WebNavigationParams navigation_params;
   navigation_params.sandbox_flags = network::mojom::WebSandboxFlags::kNone;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
-  auto response_body = mojo::ScopedDataPipeConsumerHandle();
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   MojoResult rv =
@@ -343,10 +341,10 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   ASSERT_EQ(MOJO_RESULT_OK, rv);
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       std::move(common_params), std::move(commit_params), /*request_id=*/1,
-      std::move(response), std::move(response_body), std::move(endpoints),
+      std::move(response), std::move(consumer_handle), std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       /*render_frame_impl=*/nullptr, /*is_main_frame=*/true,
-      &navigation_params, nullptr);
+      &navigation_params);
   EXPECT_TRUE(
       navigation_params.response.SecurityDetailsForTesting().has_value());
 }
