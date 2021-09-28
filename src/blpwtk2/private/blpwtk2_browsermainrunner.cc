@@ -35,14 +35,12 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
 #include <components/discardable_memory/service/discardable_shared_memory_manager.h>
-#include <content/app/service_manager_environment.h>
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
 #include <content/public/common/content_switches.h>
 #include <net/base/net_errors.h>
 #include <net/socket/tcp_server_socket.h>
 #include <ui/views/widget/desktop_aura/desktop_screen.h>
-#include <ui/display/screen.h>
 #include <base/threading/thread_restrictions.h>
 #include <content/browser/startup_helper.h>
 #include <services/tracing/public/cpp/trace_startup.h>
@@ -79,9 +77,9 @@ BrowserMainRunner::BrowserMainRunner(
     // https://chromium.googlesource.com/chromium/src/+/71c9d0a0174a4ec37db019b87ab86aaee3a81509%5E%21/#F0
     content::BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
-    d_service_manager_environment = std::make_unique<content::ServiceManagerEnvironment>(
+    d_mojo_ipc_support = std::make_unique<content::MojoIpcSupport>(
         content::BrowserTaskExecutor::CreateIOThread());
-    d_startup_data = d_service_manager_environment->CreateBrowserStartupData();
+    d_startup_data = d_mojo_ipc_support->CreateBrowserStartupData();
     d_mainParams.startup_data = d_startup_data.get();
 
     int rc = d_impl->Initialize(d_mainParams);
@@ -91,13 +89,12 @@ BrowserMainRunner::BrowserMainRunner(
 
     Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 
-    display::Screen *screen;
     {
         base::ScopedAllowBlocking allow_blocking;
-        screen = views::CreateDesktopScreen();
+        d_screen = views::CreateDesktopScreen();
     }
 
-    display::Screen::SetScreenInstance(screen);
+    display::Screen::SetScreenInstance(d_screen.get());
     d_viewsDelegate.reset(new ViewsDelegateImpl());
     content::StartBrowserThreadPool();
 }

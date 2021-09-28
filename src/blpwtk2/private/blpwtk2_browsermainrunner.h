@@ -25,11 +25,13 @@
 
 #include <blpwtk2_config.h>
 
+#include <content/app/mojo_ipc_support.h>
 #include <content/browser/startup_data_impl.h>
 #include <content/public/common/main_function_params.h>
 #include <sandbox/win/src/sandbox.h>
 #include <memory>
 #include <mojo/core/embedder/scoped_ipc_support.h>
+#include <ui/display/screen.h>
 
 namespace content {
 class BrowserMainRunner;
@@ -67,10 +69,11 @@ class BrowserMainRunner
     std::unique_ptr<content::BrowserMainRunner> d_impl;
     std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       d_discardable_shared_memory_manager;
-    std::unique_ptr<content::ServiceManagerEnvironment> d_service_manager_environment;
+    std::unique_ptr<content::MojoIpcSupport> d_mojo_ipc_support;
     std::unique_ptr<content::StartupDataImpl> d_startup_data;
     std::unique_ptr<ViewsDelegateImpl> d_viewsDelegate;
     sandbox::SandboxInterfaceInfo d_sandboxInfo;
+    std::unique_ptr<display::Screen> d_screen;
 
     // The delegate will outlive this object.
     content::ContentMainDelegate* d_delegate = nullptr;

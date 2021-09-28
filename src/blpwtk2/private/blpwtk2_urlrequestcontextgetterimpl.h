@@ -80,7 +80,7 @@ private:
     // Called on the IO thread.
     void initialize();
     void updateProxyConfig(
-        net::ProxyConfigService* proxyConfigService);
+        std::unique_ptr<net::ProxyConfigService> proxyConfigService);
 
     std::unique_ptr<net::ProxyResolutionService> d_proxyService;
     scoped_refptr<net::CookieMonster::PersistentCookieStore> d_cookieStore;
