@@ -78,11 +78,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     // care to initialize the string values with safe defaults before the
     // call.
 
-    std::unique_ptr<content::ResourceLoaderBridge> OverrideResourceLoaderBridge(
-        const content::ResourceRequestInfoProvider& request_info) override;
-    // Allows the embedder to override the ResourceLoaderBridge used.
-    // If it returns NULL, the content layer will use the default loader.
-
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
 
     bool OverrideCreatePlugin(
