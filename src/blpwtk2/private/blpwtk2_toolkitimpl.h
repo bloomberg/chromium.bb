@@ -179,7 +179,6 @@ class ToolkitImpl : public Toolkit {
     Profile *getProfile(int pid, bool launchDevToolsServer) override;
     bool preHandleMessage(const NativeMsg *msg) override;
     void postHandleMessage(const NativeMsg *msg) override;
-    void addOriginToTrustworthyList(const StringRef& originString) override;
     void setWebViewHostObserver(WebViewHostObserver* observer) override;
     void onTerminating() override;
     void setTraceThreshold(unsigned int timeoutMS) override;
