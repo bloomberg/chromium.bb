@@ -31,22 +31,23 @@
 #include <base/strings/utf_string_conversions.h>
 #include <content/public/browser/web_contents.h>
 #include <content/public/browser/context_menu_params.h>
-#include <content/public/common/menu_item.h>
 #include <third_party/blink/public/common/context_menu_data/edit_flags.h>
 #include <ui/aura/window_tree_host.h>
 #include <ui/aura/window.h>
 
+#include <third_party/blink/public/mojom/context_menu/context_menu.mojom.h>
+
 namespace {
 
-void convertItem(const content::MenuItem&         item1,
-                 blpwtk2::mojom::ContextMenuItem *item2Impl);
+void convertItem(const blink::mojom::CustomContextMenuItemPtr&  item1,
+                 blpwtk2::mojom::ContextMenuItem               *item2Impl);
 
-void convertSubmenus(const content::MenuItem&         item1,
-                     blpwtk2::mojom::ContextMenuItem *item2Impl)
+void convertSubmenus(const blink::mojom::CustomContextMenuItemPtr&  item1,
+                     blpwtk2::mojom::ContextMenuItem               *item2Impl)
 {
-    item2Impl->subMenu.resize(item1.submenu.size());
-    for (size_t i = 0; i < item1.submenu.size(); ++i) {
-        convertItem(item1.submenu[i], item2Impl->subMenu[i].get());
+    item2Impl->subMenu.resize(item1->submenu.size());
+    for (size_t i = 0; i < item1->submenu.size(); ++i) {
+        convertItem(item1->submenu[i], item2Impl->subMenu[i].get());
     }
 }
 
@@ -60,35 +61,35 @@ void convertCustomItems(const content::ContextMenuParams&  params,
     }
 }
 
-void convertItem(const content::MenuItem&         item1,
-                 blpwtk2::mojom::ContextMenuItem *item2Impl)
+void convertItem(const blink::mojom::CustomContextMenuItemPtr&  item1,
+                 blpwtk2::mojom::ContextMenuItem               *item2Impl)
 {
-    item2Impl->label = base::UTF16ToUTF8(item1.label);
-    item2Impl->tooltip = base::UTF16ToUTF8(item1.tool_tip);
-    switch (item1.type) {
-    case content::MenuItem::OPTION:
+    item2Impl->label = base::UTF16ToUTF8(item1->label);
+    item2Impl->tooltip = base::UTF16ToUTF8(item1->tool_tip);
+    switch (item1->type) {
+    case blink::mojom::CustomContextMenuItemType::kOption:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::OPTION;
         break;
-    case content::MenuItem::CHECKABLE_OPTION:
+    case blink::mojom::CustomContextMenuItemType::kCheckableOption:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::CHECKABLE_OPTION;
         break;
-    case content::MenuItem::GROUP:
+    case blink::mojom::CustomContextMenuItemType::kGroup:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::GROUP;
         break;
-    case content::MenuItem::SEPARATOR:
+    case blink::mojom::CustomContextMenuItemType::kSeparator:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::SEPARATOR;
         break;
-    case content::MenuItem::SUBMENU:
+    case blink::mojom::CustomContextMenuItemType::kSubMenu:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::SUBMENU;
         break;
     }
-    item2Impl->action = item1.action;
+    item2Impl->action = item1->action;
     item2Impl->textDirection =
-        item1.rtl ? blpwtk2::mojom::TextDirection::RIGHT_TO_LEFT :
+        item1->rtl ? blpwtk2::mojom::TextDirection::RIGHT_TO_LEFT :
                     blpwtk2::mojom::TextDirection::LEFT_TO_RIGHT;
-    item2Impl->hasDirectionalOverride = item1.has_directional_override;
-    item2Impl->enabled = item1.enabled;
-    item2Impl->checked = item1.checked;
+    item2Impl->hasDirectionalOverride = item1->has_directional_override;
+    item2Impl->enabled = item1->enabled;
+    item2Impl->checked = item1->checked;
     convertSubmenus(item1, item2Impl);
 }
 
@@ -118,7 +119,7 @@ void WebContentsViewDelegateImpl::ShowContextMenu(
     WebViewImpl *webViewImpl =
         static_cast<WebViewImpl*>(d_webContents->GetDelegate());
     webViewImpl->saveCustomContextMenuContext(renderFrameHost,
-                                              params.custom_context);
+                                              params.link_followed);
 
     gfx::Point point(params.x, params.y);
     aura::WindowTreeHost* host = webViewImpl->getNativeView()->GetHost();
