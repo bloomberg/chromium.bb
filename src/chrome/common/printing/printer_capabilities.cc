@@ -130,7 +130,7 @@ base::Value AssemblePrinterCapabilities(
 
 }  // namespace
 
-#if defined(OS_WIN) && defined(ENABLE_PRINT_PREVIEW)
+#if defined(OS_WIN)
 std::string GetUserFriendlyName(const std::string& printer_name) {
   // `printer_name` may be a UNC path like \\printserver\printername.
   if (!base::StartsWith(printer_name, "\\\\",
