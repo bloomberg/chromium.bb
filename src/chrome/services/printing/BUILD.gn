@@ -5,7 +5,6 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
-import("//blpwtk2/blpwtk2.gni")
 
 source_set("lib") {
   sources = []
@@ -14,7 +13,7 @@ source_set("lib") {
 
   public_deps = []
 
-  if (enable_print_preview || is_blpwtk2) {
+  if (enable_print_preview) {
     sources = [
       "pdf_nup_converter.cc",
       "pdf_nup_converter.h",
