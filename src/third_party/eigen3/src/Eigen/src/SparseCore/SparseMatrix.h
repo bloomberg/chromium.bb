@@ -29,10 +29,10 @@ namespace Eigen {
   *
   * More details on this storage sceheme are given in the \ref TutorialSparse "manual pages".
   *
-  * \tparam _Scalar the scalar type, i.e. the type of the coefficients
-  * \tparam _Options Union of bit flags controlling the storage scheme. Currently the only possibility
+  * \tparam Scalar_ the scalar type, i.e. the type of the coefficients
+  * \tparam Options_ Union of bit flags controlling the storage scheme. Currently the only possibility
   *                 is ColMajor or RowMajor. The default is 0 which means column-major.
-  * \tparam _StorageIndex the type of the indices. It has to be a \b signed type (e.g., short, int, std::ptrdiff_t). Default is \c int.
+  * \tparam StorageIndex_ the type of the indices. It has to be a \b signed type (e.g., short, int, std::ptrdiff_t). Default is \c int.
   *
   * \warning In %Eigen 3.2, the undocumented type \c SparseMatrix::Index was improperly defined as the storage index type (e.g., int),
   *          whereas it is now (starting from %Eigen 3.3) deprecated and always defined as Eigen::Index.
@@ -43,11 +43,11 @@ namespace Eigen {
   */
 
 namespace internal {
-template<typename _Scalar, int _Options, typename _StorageIndex>
-struct traits<SparseMatrix<_Scalar, _Options, _StorageIndex> >
+template<typename Scalar_, int Options_, typename StorageIndex_>
+struct traits<SparseMatrix<Scalar_, Options_, StorageIndex_> >
 {
-  typedef _Scalar Scalar;
-  typedef _StorageIndex StorageIndex;
+  typedef Scalar_ Scalar;
+  typedef StorageIndex_ StorageIndex;
   typedef Sparse StorageKind;
   typedef MatrixXpr XprKind;
   enum {
@@ -55,21 +55,21 @@ struct traits<SparseMatrix<_Scalar, _Options, _StorageIndex> >
     ColsAtCompileTime = Dynamic,
     MaxRowsAtCompileTime = Dynamic,
     MaxColsAtCompileTime = Dynamic,
-    Flags = _Options | NestByRefBit | LvalueBit | CompressedAccessBit,
+    Flags = Options_ | NestByRefBit | LvalueBit | CompressedAccessBit,
     SupportedAccessPatterns = InnerRandomAccessPattern
   };
 };
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int DiagIndex>
-struct traits<Diagonal<SparseMatrix<_Scalar, _Options, _StorageIndex>, DiagIndex> >
+template<typename Scalar_, int Options_, typename StorageIndex_, int DiagIndex>
+struct traits<Diagonal<SparseMatrix<Scalar_, Options_, StorageIndex_>, DiagIndex> >
 {
-  typedef SparseMatrix<_Scalar, _Options, _StorageIndex> MatrixType;
+  typedef SparseMatrix<Scalar_, Options_, StorageIndex_> MatrixType;
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
   typedef typename remove_reference<MatrixTypeNested>::type _MatrixTypeNested;
 
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef Dense StorageKind;
-  typedef _StorageIndex StorageIndex;
+  typedef StorageIndex_ StorageIndex;
   typedef MatrixXpr XprKind;
 
   enum {
@@ -81,9 +81,9 @@ struct traits<Diagonal<SparseMatrix<_Scalar, _Options, _StorageIndex>, DiagIndex
   };
 };
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int DiagIndex>
-struct traits<Diagonal<const SparseMatrix<_Scalar, _Options, _StorageIndex>, DiagIndex> >
- : public traits<Diagonal<SparseMatrix<_Scalar, _Options, _StorageIndex>, DiagIndex> >
+template<typename Scalar_, int Options_, typename StorageIndex_, int DiagIndex>
+struct traits<Diagonal<const SparseMatrix<Scalar_, Options_, StorageIndex_>, DiagIndex> >
+ : public traits<Diagonal<SparseMatrix<Scalar_, Options_, StorageIndex_>, DiagIndex> >
 {
   enum {
     Flags = 0
@@ -92,13 +92,13 @@ struct traits<Diagonal<const SparseMatrix<_Scalar, _Options, _StorageIndex>, Dia
 
 } // end namespace internal
 
-template<typename _Scalar, int _Options, typename _StorageIndex>
+template<typename Scalar_, int Options_, typename StorageIndex_>
 class SparseMatrix
-  : public SparseCompressedBase<SparseMatrix<_Scalar, _Options, _StorageIndex> >
+  : public SparseCompressedBase<SparseMatrix<Scalar_, Options_, StorageIndex_> >
 {
     typedef SparseCompressedBase<SparseMatrix> Base;
     using Base::convert_index;
-    friend class SparseVector<_Scalar,0,_StorageIndex>;
+    friend class SparseVector<Scalar_,0,StorageIndex_>;
     template<typename, typename, typename, typename, typename>
     friend struct internal::Assignment;
   public:
@@ -118,7 +118,7 @@ class SparseMatrix
     using Base::IsRowMajor;
     typedef internal::CompressedStorage<Scalar,StorageIndex> Storage;
     enum {
-      Options = _Options
+      Options = Options_
     };
 
     typedef typename Base::IndexVector IndexVector;
@@ -1104,11 +1104,11 @@ void set_from_triplets(const InputIterator& begin, const InputIterator& end, Spa
   * an abstract iterator over a complex data-structure that would be expensive to evaluate. The triplets should rather
   * be explicitly stored into a std::vector for instance.
   */
-template<typename Scalar, int _Options, typename _StorageIndex>
+template<typename Scalar, int Options_, typename StorageIndex_>
 template<typename InputIterators>
-void SparseMatrix<Scalar,_Options,_StorageIndex>::setFromTriplets(const InputIterators& begin, const InputIterators& end)
+void SparseMatrix<Scalar,Options_,StorageIndex_>::setFromTriplets(const InputIterators& begin, const InputIterators& end)
 {
-  internal::set_from_triplets<InputIterators, SparseMatrix<Scalar,_Options,_StorageIndex> >(begin, end, *this, internal::scalar_sum_op<Scalar,Scalar>());
+  internal::set_from_triplets<InputIterators, SparseMatrix<Scalar,Options_,StorageIndex_> >(begin, end, *this, internal::scalar_sum_op<Scalar,Scalar>());
 }
 
 /** The same as setFromTriplets but when duplicates are met the functor \a dup_func is applied:
@@ -1120,17 +1120,17 @@ void SparseMatrix<Scalar,_Options,_StorageIndex>::setFromTriplets(const InputIte
   * mat.setFromTriplets(triplets.begin(), triplets.end(), [] (const Scalar&,const Scalar &b) { return b; });
   * \endcode
   */
-template<typename Scalar, int _Options, typename _StorageIndex>
+template<typename Scalar, int Options_, typename StorageIndex_>
 template<typename InputIterators,typename DupFunctor>
-void SparseMatrix<Scalar,_Options,_StorageIndex>::setFromTriplets(const InputIterators& begin, const InputIterators& end, DupFunctor dup_func)
+void SparseMatrix<Scalar,Options_,StorageIndex_>::setFromTriplets(const InputIterators& begin, const InputIterators& end, DupFunctor dup_func)
 {
-  internal::set_from_triplets<InputIterators, SparseMatrix<Scalar,_Options,_StorageIndex>, DupFunctor>(begin, end, *this, dup_func);
+  internal::set_from_triplets<InputIterators, SparseMatrix<Scalar,Options_,StorageIndex_>, DupFunctor>(begin, end, *this, dup_func);
 }
 
 /** \internal */
-template<typename Scalar, int _Options, typename _StorageIndex>
+template<typename Scalar, int Options_, typename StorageIndex_>
 template<typename DupFunctor>
-void SparseMatrix<Scalar,_Options,_StorageIndex>::collapseDuplicates(DupFunctor dup_func)
+void SparseMatrix<Scalar,Options_,StorageIndex_>::collapseDuplicates(DupFunctor dup_func)
 {
   eigen_assert(!isCompressed());
   // TODO, in practice we should be able to use m_innerNonZeros for that task
@@ -1168,9 +1168,9 @@ void SparseMatrix<Scalar,_Options,_StorageIndex>::collapseDuplicates(DupFunctor 
   m_data.resize(m_outerIndex[m_outerSize]);
 }
 
-template<typename Scalar, int _Options, typename _StorageIndex>
+template<typename Scalar, int Options_, typename StorageIndex_>
 template<typename OtherDerived>
-EIGEN_DONT_INLINE SparseMatrix<Scalar,_Options,_StorageIndex>& SparseMatrix<Scalar,_Options,_StorageIndex>::operator=(const SparseMatrixBase<OtherDerived>& other)
+EIGEN_DONT_INLINE SparseMatrix<Scalar,Options_,StorageIndex_>& SparseMatrix<Scalar,Options_,StorageIndex_>::operator=(const SparseMatrixBase<OtherDerived>& other)
 {
   EIGEN_STATIC_ASSERT((internal::is_same<Scalar, typename OtherDerived::Scalar>::value),
         YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY)
@@ -1241,8 +1241,8 @@ EIGEN_DONT_INLINE SparseMatrix<Scalar,_Options,_StorageIndex>& SparseMatrix<Scal
   }
 }
 
-template<typename _Scalar, int _Options, typename _StorageIndex>
-typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar& SparseMatrix<_Scalar,_Options,_StorageIndex>::insert(Index row, Index col)
+template<typename Scalar_, int Options_, typename StorageIndex_>
+typename SparseMatrix<Scalar_,Options_,StorageIndex_>::Scalar& SparseMatrix<Scalar_,Options_,StorageIndex_>::insert(Index row, Index col)
 {
   eigen_assert(row>=0 && row<rows() && col>=0 && col<cols());
   
@@ -1361,8 +1361,8 @@ typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar& SparseMatrix<_Sca
   return insertUncompressed(row,col);
 }
     
-template<typename _Scalar, int _Options, typename _StorageIndex>
-EIGEN_DONT_INLINE typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar& SparseMatrix<_Scalar,_Options,_StorageIndex>::insertUncompressed(Index row, Index col)
+template<typename Scalar_, int Options_, typename StorageIndex_>
+EIGEN_DONT_INLINE typename SparseMatrix<Scalar_,Options_,StorageIndex_>::Scalar& SparseMatrix<Scalar_,Options_,StorageIndex_>::insertUncompressed(Index row, Index col)
 {
   eigen_assert(!isCompressed());
 
@@ -1393,8 +1393,8 @@ EIGEN_DONT_INLINE typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar&
   return (m_data.value(p) = Scalar(0));
 }
 
-template<typename _Scalar, int _Options, typename _StorageIndex>
-EIGEN_DONT_INLINE typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar& SparseMatrix<_Scalar,_Options,_StorageIndex>::insertCompressed(Index row, Index col)
+template<typename Scalar_, int Options_, typename StorageIndex_>
+EIGEN_DONT_INLINE typename SparseMatrix<Scalar_,Options_,StorageIndex_>::Scalar& SparseMatrix<Scalar_,Options_,StorageIndex_>::insertCompressed(Index row, Index col)
 {
   eigen_assert(isCompressed());
 
@@ -1502,12 +1502,12 @@ EIGEN_DONT_INLINE typename SparseMatrix<_Scalar,_Options,_StorageIndex>::Scalar&
 
 namespace internal {
 
-template<typename _Scalar, int _Options, typename _StorageIndex>
-struct evaluator<SparseMatrix<_Scalar,_Options,_StorageIndex> >
-  : evaluator<SparseCompressedBase<SparseMatrix<_Scalar,_Options,_StorageIndex> > >
+template<typename Scalar_, int Options_, typename StorageIndex_>
+struct evaluator<SparseMatrix<Scalar_,Options_,StorageIndex_> >
+  : evaluator<SparseCompressedBase<SparseMatrix<Scalar_,Options_,StorageIndex_> > >
 {
-  typedef evaluator<SparseCompressedBase<SparseMatrix<_Scalar,_Options,_StorageIndex> > > Base;
-  typedef SparseMatrix<_Scalar,_Options,_StorageIndex> SparseMatrixType;
+  typedef evaluator<SparseCompressedBase<SparseMatrix<Scalar_,Options_,StorageIndex_> > > Base;
+  typedef SparseMatrix<Scalar_,Options_,StorageIndex_> SparseMatrixType;
   evaluator() : Base() {}
   explicit evaluator(const SparseMatrixType &mat) : Base(mat) {}
 };

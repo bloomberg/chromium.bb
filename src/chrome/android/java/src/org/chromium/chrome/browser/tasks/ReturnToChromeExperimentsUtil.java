@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -322,7 +323,8 @@ public final class ReturnToChromeExperimentsUtil {
         }
 
         if (params.getTransitionType() == PageTransition.AUTO_BOOKMARK) {
-            if (params.getReferrer() == null) {
+            if (!TextUtils.equals(UrlConstants.RECENT_TABS_URL, params.getUrl())
+                    && params.getReferrer() == null) {
                 RecordUserAction.record("Suggestions.Tile.Tapped.StartSurface");
             }
         } else if (url == null) {
@@ -467,8 +469,11 @@ public final class ReturnToChromeExperimentsUtil {
         // If user launches Chrome by tapping the app icon, the intentUrl is NULL;
         // If user taps the "New Tab" item from the app icon, the intentUrl will be chrome://newtab,
         // and UrlUtilities.isCanonicalizedNTPUrl(intentUrl) returns true.
+        // If user taps the "New Incognito Tab" item from the app icon, skip here and continue the
+        // following checks.
         if (UrlUtilities.isCanonicalizedNTPUrl(intentUrl)
-                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage(context)) {
+                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage(context)
+                && !intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)) {
             return true;
         }
         if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePageNoTabs(context)

@@ -1724,8 +1724,8 @@
   },
   {
     "name": "enable-de-jelly",
-    "owners": [ "ericrk", "//components/viz/OWNERS" ],
-    "expiry_milestone": 94
+    "owners": [ "boliu", "//components/viz/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "enable-debug-for-secure-payment-confirmation",
@@ -2556,6 +2556,11 @@
     "name": "enable-restricted-web-apis",
     "owners": [ "anqing", "apotapchuk" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "enable-retail-coupons",
+    "owners": [ "meiliang", "yuezhanggg", "wychen", "dtrainor" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-reven-log-source",
@@ -5484,6 +5489,11 @@
     "name": "turn-off-streaming-media-caching-on-battery",
     "owners": [ "wicarr@microsoft.com", "cassew@google.com" ],
     "expiry_milestone": 91
+  },
+  {
+    "name": "u2f-security-key-api",
+    "owners": [ "//device/fido/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "ui-debug-tools",

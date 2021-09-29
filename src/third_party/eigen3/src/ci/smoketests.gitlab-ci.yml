@@ -22,26 +22,12 @@
   only:
     - merge_requests
 
-buildsmoketests:x86-64:linux:gcc-10:cxx11-off:
-  extends: .buildsmoketests:linux:base
-  variables:
-    EIGEN_CI_CXX_COMPILER: "g++-10"
-    EIGEN_CI_CC_COMPILER: "gcc-10"
-    EIGEN_TEST_CXX11: "off"
-
 buildsmoketests:x86-64:linux:gcc-10:cxx11-on:
   extends: .buildsmoketests:linux:base
   variables:
     EIGEN_CI_CXX_COMPILER: "g++-10"
     EIGEN_CI_CC_COMPILER: "gcc-10"
     EIGEN_TEST_CXX11: "on"
-
-buildsmoketests:x86-64:linux:clang-10:cxx11-off:
-  extends: .buildsmoketests:linux:base
-  variables:
-    EIGEN_CI_CXX_COMPILER: "clang++-10"
-    EIGEN_CI_CC_COMPILER: "clang-10"
-    EIGEN_TEST_CXX11: "off"
 
 buildsmoketests:x86-64:linux:clang-10:cxx11-on:
   extends: .buildsmoketests:linux:base
@@ -78,26 +64,12 @@ buildsmoketests:x86-64:linux:clang-10:cxx11-on:
   only:
     - merge_requests
 
-smoketests:x86-64:linux:gcc-10:cxx11-off:
-  extends: .smoketests:linux:base
-  variables:
-    EIGEN_CI_CXX_COMPILER: g++-10
-    EIGEN_CI_CC_COMPILER: gcc-10
-  needs: [ "buildsmoketests:x86-64:linux:gcc-10:cxx11-off" ]
-
 smoketests:x86-64:linux:gcc-10:cxx11-on:
   extends: .smoketests:linux:base
   variables:
     EIGEN_CI_CXX_COMPILER: g++-10
     EIGEN_CI_CC_COMPILER: gcc-10
   needs: [ "buildsmoketests:x86-64:linux:gcc-10:cxx11-on" ]
-
-smoketests:x86-64:linux:clang-10:cxx11-off:
-  extends: .smoketests:linux:base
-  variables:
-    EIGEN_CI_CXX_COMPILER: clang++-10
-    EIGEN_CI_CC_COMPILER: clang-10
-  needs: [ "buildsmoketests:x86-64:linux:clang-10:cxx11-off" ]
 
 smoketests:x86-64:linux:clang-10:cxx11-on:
   extends: .smoketests:linux:base

@@ -21,38 +21,23 @@ namespace signin {
 class IdentityManager;
 }  // namespace signin
 
-class CartLoader {
+namespace Variations {
+class VariationsClient;
+}  // namespace Variations
+
+// Delegate class that enables FetchDiscountWorker to use relevant
+// functionalities from CartService.
+class CartServiceDelegate {
  public:
-  explicit CartLoader(Profile* profile);
-  virtual ~CartLoader();
+  explicit CartServiceDelegate(CartService* cart_service);
+  virtual ~CartServiceDelegate();
   virtual void LoadAllCarts(CartDB::LoadCallback callback);
+  virtual void UpdateCart(const std::string& cart_url,
+                          const cart_db::ChromeCartContentProto new_proto,
+                          const bool is_tester);
 
  private:
   CartService* cart_service_;
-};
-
-class CartDiscountUpdater {
- public:
-  explicit CartDiscountUpdater(Profile* profile);
-  virtual ~CartDiscountUpdater();
-  virtual void update(const std::string& cart_url,
-                      const cart_db::ChromeCartContentProto new_proto,
-                      const bool is_tester);
-
- private:
-  CartService* cart_service_;
-};
-
-class CartLoaderAndUpdaterFactory {
- public:
-  // TODO(crbug.com/1207197): Investigate to pass in Cartservice directly.
-  explicit CartLoaderAndUpdaterFactory(Profile* profile);
-  virtual ~CartLoaderAndUpdaterFactory();
-  virtual std::unique_ptr<CartLoader> createCartLoader();
-  virtual std::unique_ptr<CartDiscountUpdater> createCartDiscountUpdater();
-
- private:
-  Profile* profile_;
 };
 
 // This is used to fetch discounts for active Carts in cart_db. It starts
@@ -78,8 +63,9 @@ class FetchDiscountWorker {
       scoped_refptr<network::SharedURLLoaderFactory>
           browserProcessURLLoaderFactory,
       std::unique_ptr<CartDiscountFetcherFactory> fetcher_factory,
-      std::unique_ptr<CartLoaderAndUpdaterFactory> cartLoaderAndUpdaterFactory,
-      signin::IdentityManager* const identity_manager);
+      std::unique_ptr<CartServiceDelegate> cart_service_delegate,
+      signin::IdentityManager* const identity_manager,
+      variations::VariationsClient* const chrome_variations_client);
   ~FetchDiscountWorker();
   // Starts the worker to work.
   void Start(base::TimeDelta delay);
@@ -95,17 +81,17 @@ class FetchDiscountWorker {
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   // This is used to create a CartDiscountFetcher to fetch discounts.
   std::unique_ptr<CartDiscountFetcherFactory> fetcher_factory_;
-  // This is used to create CartLoader to load all active carts, and
-  // CartDiscountUpdater to update the given cart discount.
-  std::unique_ptr<CartLoaderAndUpdaterFactory> cart_loader_and_updater_factory_;
+  // This is used to access CartService functionalities such as loading all
+  // active carts, updating given cart discount, etc.
+  std::unique_ptr<CartServiceDelegate> cart_service_delegate_;
   // This is used to identify whether user is a sync user.
   signin::IdentityManager* const identity_manager_;
   // This is used to fetch the oauth token.
   std::unique_ptr<const signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
+  variations::VariationsClient* const chrome_variations_client_;
 
-  // This is run in the UI thread, it creates a `CartLoader` and loads all
-  // active carts.
+  // This is run in the UI thread, it loads all active carts.
   void PrepareToFetch();
 
   // This is run if user is a sync user.
@@ -126,6 +112,8 @@ class FetchDiscountWorker {
                     bool success,
                     std::vector<CartDB::KeyAndValue> proto_pairs);
 
+  std::string GetVariationsHeaders();
+
   // TODO(crbug.com/1207197): Change these two static method to anonymous
   // namespace in the cc file. This is run in a background thread, it fetches
   // for discounts for all active carts.
@@ -136,7 +124,8 @@ class FetchDiscountWorker {
       std::vector<CartDB::KeyAndValue> proto_pairs,
       const bool is_oauth_fetch,
       const std::string access_token_str,
-      const std::string fetch_for_locale);
+      const std::string fetch_for_locale,
+      const std::string variation_headers);
 
   // This is run in a background thread, it posts AfterDiscountFetched() back to
   // UI thread to process the fetched result.

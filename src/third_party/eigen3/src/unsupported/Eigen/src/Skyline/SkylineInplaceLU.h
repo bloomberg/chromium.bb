@@ -116,7 +116,7 @@ protected:
  * using the default algorithm.
  */
 template<typename MatrixType>
-//template<typename _Scalar>
+//template<typename Scalar_>
 void SkylineInplaceLU<MatrixType>::compute() {
     const size_t rows = m_lu.rows();
     const size_t cols = m_lu.cols();

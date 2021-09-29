@@ -960,6 +960,10 @@ class TensorBase<Derived, ReadOnlyAccessors>
       return TensorForcedEvalOp<const Derived>(derived());
     }
 
+    #ifdef EIGEN_READONLY_TENSORBASE_PLUGIN
+    #include EIGEN_READONLY_TENSORBASE_PLUGIN
+    #endif
+
   protected:
     template <typename Scalar, int NumIndices, int Options, typename IndexType> friend class Tensor;
     template <typename Scalar, typename Dimensions, int Option, typename IndexTypes> friend class TensorFixedSize;
@@ -1151,6 +1155,10 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
     TensorAsyncDevice<Derived, DeviceType, DoneCallback> device(const DeviceType& dev, DoneCallback done) {
       return TensorAsyncDevice<Derived, DeviceType, DoneCallback>(dev, derived(), std::move(done));
     }
+
+    #ifdef EIGEN_TENSORBASE_PLUGIN
+    #include EIGEN_TENSORBASE_PLUGIN
+    #endif
 
  protected:
     EIGEN_DEFAULT_EMPTY_CONSTRUCTOR_AND_DESTRUCTOR(TensorBase)

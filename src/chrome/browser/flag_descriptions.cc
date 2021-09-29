@@ -183,6 +183,13 @@ const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
     "a blob and the verification process of the signed exchange is skipped for "
     "the succeeding navigation.";
 
+const char kU2FSecurityKeyAPIName[] = "Enable the U2F Security Key API";
+const char kU2FSecurityKeyAPIDescription[] =
+    "Enable the legacy U2F Security Key API (CryptoToken). The U2F Security "
+    "Key API has been deprecated and will be removed soon. For more "
+    "information, refer to the deprecation announcement at "
+    "https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A";
+
 const char kUseLookalikesForNavigationSuggestionsName[] =
     "Use lookalike URL suggestions for navigation suggestions";
 const char kUseLookalikesForNavigationSuggestionsDescription[] =
@@ -1110,7 +1117,7 @@ const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
 const char kEnableLensRegionSearchName[] =
     "Search your screen with Google Lens";
 const char kEnableLensRegionSearchDescription[] =
-    "Right click and select \"Search part of the page with Google Lens\" to "
+    "Right click and select \"Search images with Google Lens\" to "
     "search any region of the site to learn more about the visual content you "
     "see while you browse and shop on the web.";
 
@@ -1147,6 +1154,10 @@ const char kReduceHorizontalFlingVelocityName[] =
 const char kReduceHorizontalFlingVelocityDescription[] =
     "Reduces the velocity of horizontal flings to 20\% of their original"
     "velocity.";
+
+const char kRetailCouponsName[] = "Enable to fetch for retail coupons";
+const char kRetailCouponsDescription[] =
+    "Allow to fetch retail coupons for consented users";
 
 const char kEnableResamplingInputEventsName[] =
     "Enable resampling input events";

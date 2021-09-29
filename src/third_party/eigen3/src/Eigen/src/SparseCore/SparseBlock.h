@@ -283,13 +283,13 @@ public:
 
 } // namespace internal
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int BlockRows, int BlockCols>
-class BlockImpl<SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true,Sparse>
-  : public internal::sparse_matrix_block_impl<SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols>
+template<typename Scalar_, int Options_, typename StorageIndex_, int BlockRows, int BlockCols>
+class BlockImpl<SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true,Sparse>
+  : public internal::sparse_matrix_block_impl<SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols>
 {
 public:
-  typedef _StorageIndex StorageIndex;
-  typedef SparseMatrix<_Scalar, _Options, _StorageIndex> SparseMatrixType;
+  typedef StorageIndex_ StorageIndex;
+  typedef SparseMatrix<Scalar_, Options_, StorageIndex_> SparseMatrixType;
   typedef internal::sparse_matrix_block_impl<SparseMatrixType,BlockRows,BlockCols> Base;
   inline BlockImpl(SparseMatrixType& xpr, Index i)
     : Base(xpr, i)
@@ -302,13 +302,13 @@ public:
   using Base::operator=;
 };
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int BlockRows, int BlockCols>
-class BlockImpl<const SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true,Sparse>
-  : public internal::sparse_matrix_block_impl<const SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols>
+template<typename Scalar_, int Options_, typename StorageIndex_, int BlockRows, int BlockCols>
+class BlockImpl<const SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true,Sparse>
+  : public internal::sparse_matrix_block_impl<const SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols>
 {
 public:
-  typedef _StorageIndex StorageIndex;
-  typedef const SparseMatrix<_Scalar, _Options, _StorageIndex> SparseMatrixType;
+  typedef StorageIndex_ StorageIndex;
+  typedef const SparseMatrix<Scalar_, Options_, StorageIndex_> SparseMatrixType;
   typedef internal::sparse_matrix_block_impl<SparseMatrixType,BlockRows,BlockCols> Base;
   inline BlockImpl(SparseMatrixType& xpr, Index i)
     : Base(xpr, i)
@@ -545,20 +545,20 @@ public:
   inline operator bool() const { return m_outerPos < m_end; }
 };
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int BlockRows, int BlockCols>
-struct unary_evaluator<Block<SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true>, IteratorBased>
-  : evaluator<SparseCompressedBase<Block<SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true> > >
+template<typename Scalar_, int Options_, typename StorageIndex_, int BlockRows, int BlockCols>
+struct unary_evaluator<Block<SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true>, IteratorBased>
+  : evaluator<SparseCompressedBase<Block<SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true> > >
 {
-  typedef Block<SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true> XprType;
+  typedef Block<SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true> XprType;
   typedef evaluator<SparseCompressedBase<XprType> > Base;
   explicit unary_evaluator(const XprType &xpr) : Base(xpr) {}
 };
 
-template<typename _Scalar, int _Options, typename _StorageIndex, int BlockRows, int BlockCols>
-struct unary_evaluator<Block<const SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true>, IteratorBased>
-  : evaluator<SparseCompressedBase<Block<const SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true> > >
+template<typename Scalar_, int Options_, typename StorageIndex_, int BlockRows, int BlockCols>
+struct unary_evaluator<Block<const SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true>, IteratorBased>
+  : evaluator<SparseCompressedBase<Block<const SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true> > >
 {
-  typedef Block<const SparseMatrix<_Scalar, _Options, _StorageIndex>,BlockRows,BlockCols,true> XprType;
+  typedef Block<const SparseMatrix<Scalar_, Options_, StorageIndex_>,BlockRows,BlockCols,true> XprType;
   typedef evaluator<SparseCompressedBase<XprType> > Base;
   explicit unary_evaluator(const XprType &xpr) : Base(xpr) {}
 };

@@ -6,14 +6,13 @@ package org.chromium.chrome.browser.share.long_screenshots.bitmap_generation;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.util.Size;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
-import org.chromium.components.paint_preview.common.proto.PaintPreview.PaintPreviewProto;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.components.paintpreview.player.CompositorStatus;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
@@ -27,7 +26,8 @@ import org.chromium.url.GURL;
 public class LongScreenshotsCompositor {
     private PlayerCompositorDelegate mDelegate;
     private Callback<Integer> mCompositorCallback;
-    private int mCompositedWidth;
+    private Size mContentSize;
+    private Size mScrollOffset;
 
     private static PlayerCompositorDelegate.Factory sCompositorDelegateFactory =
             new CompositorDelegateFactory();
@@ -38,16 +38,17 @@ public class LongScreenshotsCompositor {
      * @param url The URL for which the content should be composited for.
      * @param nativePaintPreviewServiceProvider The native paint preview service.
      * @param directoryKey The key for the directory storing the data.
-     * @param response The proto with the address of the captured bitmap.
+     * @param nativeCaptureResultPtr A pointer to a native paint_preview::CaptureResult.
      */
     public LongScreenshotsCompositor(GURL url,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
-            String directoryKey, PaintPreviewProto response, Callback<Integer> compositorCallback) {
+            String directoryKey, long nativeCaptureResultPtr,
+            Callback<Integer> compositorCallback) {
         mCompositorCallback = compositorCallback;
 
-        mDelegate = getCompositorDelegateFactory().createForProto(nativePaintPreviewServiceProvider,
-                response, url, directoryKey, true, this::onCompositorReady,
-                this::onCompositorError);
+        mDelegate = getCompositorDelegateFactory().createForCaptureResult(
+                nativePaintPreviewServiceProvider, nativeCaptureResultPtr, url, directoryKey, true,
+                this::onCompositorReady, this::onCompositorError);
     }
 
     /**
@@ -66,10 +67,16 @@ public class LongScreenshotsCompositor {
     protected void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
             int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
             UnguessableToken[] subFrameGuids, int[] subFrameClipRects, long nativeAxTree) {
-        mCompositedWidth = (frameContentSize != null && frameContentSize.length >= 2)
-                ? frameContentSize[0]
-                : 0;
+        mContentSize = getMainFrameValues(frameContentSize);
+        mScrollOffset = getMainFrameValues(scrollOffsets);
         mCompositorCallback.onResult(CompositorStatus.OK);
+    }
+
+    private Size getMainFrameValues(int[] arr) {
+        if (arr != null && arr.length >= 2) {
+            return new Size(arr[0], arr[1]);
+        }
+        return new Size(0, 0);
     }
 
     /**
@@ -93,33 +100,37 @@ public class LongScreenshotsCompositor {
         }
     }
 
-    public int getWidth() {
-        return mCompositedWidth;
-    }
-
     static class CompositorDelegateFactory implements PlayerCompositorDelegate.Factory {
         @Override
         public PlayerCompositorDelegate create(NativePaintPreviewServiceProvider service,
                 @NonNull GURL url, String directoryKey, boolean mainFrameMode,
                 @NonNull PlayerCompositorDelegate.CompositorListener compositorListener,
                 Callback<Integer> compositorErrorCallback) {
-            return new PlayerCompositorDelegateImpl(service, null, url, directoryKey, mainFrameMode,
+            return new PlayerCompositorDelegateImpl(service, 0, url, directoryKey, mainFrameMode,
                     compositorListener, compositorErrorCallback);
         }
 
         @Override
-        public PlayerCompositorDelegate createForProto(NativePaintPreviewServiceProvider service,
-                @Nullable PaintPreviewProto proto, @NonNull GURL url, String directoryKey,
-                boolean mainFrameMode,
+        public PlayerCompositorDelegate createForCaptureResult(
+                NativePaintPreviewServiceProvider service, long nativeCaptureResultPtr,
+                @NonNull GURL url, String directoryKey, boolean mainFrameMode,
                 @NonNull PlayerCompositorDelegate.CompositorListener compositorListener,
                 Callback<Integer> compositorErrorCallback) {
-            return new PlayerCompositorDelegateImpl(service, proto, url, directoryKey,
-                    mainFrameMode, compositorListener, compositorErrorCallback);
+            return new PlayerCompositorDelegateImpl(service, nativeCaptureResultPtr, url,
+                    directoryKey, mainFrameMode, compositorListener, compositorErrorCallback);
         }
     }
 
     private PlayerCompositorDelegate.Factory getCompositorDelegateFactory() {
         return sCompositorDelegateFactory;
+    }
+
+    public Size getContentSize() {
+        return mContentSize;
+    }
+
+    public Size getScrollOffset() {
+        return mScrollOffset;
     }
 
     @VisibleForTesting

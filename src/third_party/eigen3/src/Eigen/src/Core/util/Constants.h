@@ -312,7 +312,7 @@ enum SpecializedType {
 };
 
 /** \ingroup enums
-  * Enum containing possible values for the \p _Options template parameter of
+  * Enum containing possible values for the \p Options_ template parameter of
   * Matrix, Array and BandMatrix. */
 enum StorageOptions {
   /** Storage order is column major (see \ref TopicStorageOrders). */

@@ -16,10 +16,10 @@ struct other_matrix_type
   typedef int type;
 };
 
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-struct other_matrix_type<Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct other_matrix_type<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
 {
-  typedef Matrix<_Scalar, _Rows, _Cols, _Options^RowMajor, _MaxRows, _MaxCols> type;
+  typedef Matrix<Scalar_, Rows_, Cols_, Options_^RowMajor, MaxRows_, MaxCols_> type;
 };
 
 template<typename MatrixType> void swap(const MatrixType& m)

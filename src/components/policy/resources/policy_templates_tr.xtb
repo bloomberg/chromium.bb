@@ -1475,6 +1475,7 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 <translation id="2725855586003209701">Politika Etkin değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı cihazlar kısa süre önce oturum açan cihaz kullanıcılarının listesini bildirir.
 
       Politika Devre Dışı değerine ayarlanırsa kayıtlı cihazlar kullanıcı listesini bildirmez.</translation>
+<translation id="2730419309754848345">PDF'yi Resim Olarak Yazdır Varsayılan Ayar</translation>
 <translation id="2731627323327011390">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> sertifikalarının kullanımını devre dışı bırak</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
 
@@ -3225,6 +3226,7 @@ Bu politika ayarlandığında <ph name="PRODUCT_OS_NAME" />, listenin boş olmam
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
 <translation id="4996068111491152684">Ağ kimlik doğrulaması için <ph name="PRODUCT_OS_NAME" /> giriş kimlik bilgilerini kullanma.</translation>
 <translation id="4996086761250834365"><ph name="PLUGIN_VM_NAME" /> Ürün Analizine izin verin.</translation>
+<translation id="4997074784107449343">Resim olarak yazdır, PDF dokümanların yazdırma önizlemelerinde kullanılabildiği durumlarda varsayılan olarak seçilmez.</translation>
 <translation id="500149597848135831">Tüm varyasyonları etkinleştirme</translation>
 <translation id="5017369989680827157">Politikayı True (Doğru) değerine ayarlamak veya ayarlamadan bırakmak, kullanıcı arayüzünde adresler için Otomatik doldurma kontrolünü kullanıcıya verir.
 
@@ -3970,6 +3972,13 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Politika, Devre Dışı değerine ayarlanırsa QUIC protokolünün kullanımına izin verilmez.</translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
+<translation id="5928633129285224981"><ph name="PRODUCT_NAME" /> üzerinde PDF yazdırılırken Resim olarak yazdır'ın varsayılan olarak seçilip seçilmeyeceğini kontrol eder.
+
+      Bu politika Etkin değerine ayarlanırsa <ph name="PRODUCT_NAME" /> varsayılan olarak PDF yazdırırken Yazdırma Önizleme'de Resim olarak yazdır seçeneğini ayarlar.
+
+      Bu politika Devre Dışı değerine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> üzerinde Resim olarak yazdır seçeneği baştan seçilmemiş olur.  Seçeneğin kullanılabildiği durumlarda kullanıcı, ayrı ayrı her bir PDF'nin yazdırma işi için bu seçimi yapabilir.
+
+      Bu politika, <ph name="MS_WIN_NAME" /> veya <ph name="MAC_OS_NAME" /> üzerinde yalnızca <ph name="PRINT_PDF_AS_IMAGE_AVAILABILITY_POLICY_NAME" /> politikasının da etkin olduğu durumlarda geçerli olur.</translation>
 <translation id="5929855945144989709">Cihazların Chrome OS'te sanal makineler çalıştırmasına izin verme</translation>
 <translation id="5932767795525445337">Bu politika, Android uygulamalarını sabitlemek için de kullanılabilir.</translation>
 <translation id="5934763632608026594">Politikanın ayarlanması, <ph name="PRODUCT_NAME" /> ürününün web uygulaması yönetimi ayarlarını kontrol eder.
@@ -5789,6 +5798,7 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
       Politika Devre Dışı değerine ayarlanır veya ayarlanmadan bırakılırsa paket gönderilmez.</translation>
 <translation id="816783746144552109">Cihaz için izin verilen minimum Chrome sürümünü yapılandırın.</translation>
 <translation id="8171924760436219650">Giriş ekranında birincil fare düğmesini sağ düğme yap</translation>
+<translation id="8173864651667424191">Resim olarak yazdır, PDF dokümanların yazdırma önizlemelerinde kullanılabildiği durumlarda varsayılan olarak seçilir.</translation>
 <translation id="8176035528522326671">Kurumsal kullanıcının sadece birincil çok profilli kullanıcı olmasına izin ver (Kurumsal olarak yönetilen kullanıcılar için varsayılan çalışma biçimidir)</translation>
 <translation id="8179161412673077784">Kötüye kullanım deneyimi yaşatan sitelerin yeni pencere veya sekme açmasını engelle</translation>
 <translation id="8183108371184777472">Tarayıcı penceresini başlatmayı engelleme</translation>

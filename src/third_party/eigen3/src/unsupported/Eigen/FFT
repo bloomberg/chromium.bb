@@ -203,11 +203,11 @@ class FFT
     }
     */
 
-    template <typename _Input>
+    template <typename Input_>
     inline
-    void fwd( std::vector<Complex> & dst, const std::vector<_Input> & src) 
+    void fwd( std::vector<Complex> & dst, const std::vector<Input_> & src)
     {
-      if ( NumTraits<_Input>::IsComplex == 0 && HasFlag(HalfSpectrum) )
+      if ( NumTraits<Input_>::IsComplex == 0 && HasFlag(HalfSpectrum) )
         dst.resize( (src.size()>>1)+1); // half the bins + Nyquist bin
       else
         dst.resize(src.size());
@@ -343,12 +343,12 @@ class FFT
       }
     }
 
-    template <typename _Output>
+    template <typename Output_>
     inline
-    void inv( std::vector<_Output> & dst, const std::vector<Complex> & src,Index nfft=-1)
+    void inv( std::vector<Output_> & dst, const std::vector<Complex> & src,Index nfft=-1)
     {
       if (nfft<1)
-        nfft = ( NumTraits<_Output>::IsComplex == 0 && HasFlag(HalfSpectrum) ) ? 2*(src.size()-1) : src.size();
+        nfft = ( NumTraits<Output_>::IsComplex == 0 && HasFlag(HalfSpectrum) ) ? 2*(src.size()-1) : src.size();
       dst.resize( nfft );
       inv( &dst[0],&src[0],nfft);
     }

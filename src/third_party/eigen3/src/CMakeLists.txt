@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.5.0)
 
 project(Eigen3)
 
+set(CMAKE_CXX_STANDARD 11 CACHE STRING "Default C++ standard")
+set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "Require C++ standard")
+set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "Allow C++ extensions")
+
 # guard against in-source builds
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
@@ -62,8 +66,7 @@ include(CMakeDependentOption)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
-option(EIGEN_TEST_CXX11 "Enable testing with C++11 and C++11 features (e.g. Tensor module)." OFF)
-
+option(EIGEN_TEST_CXX11 "Enable testing of unsupported CXX11 tests (i.e. those starting with cxx11_)." OFF)
 
 macro(ei_add_cxx_compiler_flag FLAG)
   string(REGEX REPLACE "-" "" SFLAG1 ${FLAG})
@@ -74,19 +77,8 @@ macro(ei_add_cxx_compiler_flag FLAG)
   endif()
 endmacro()
 
-check_cxx_compiler_flag("-std=c++11" EIGEN_COMPILER_SUPPORT_CPP11)
-
-if(EIGEN_TEST_CXX11)
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-  if(EIGEN_COMPILER_SUPPORT_CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  endif()
-else()
-  #set(CMAKE_CXX_STANDARD 03)
-  #set(CMAKE_CXX_EXTENSIONS OFF)
-  ei_add_cxx_compiler_flag("-std=c++03")
-endif()
+# Determine if we should build shared libraries on this platform.
+get_cmake_property(EIGEN_BUILD_SHARED_LIBS TARGET_SUPPORTS_SHARED_LIBS)
 
 #############################################################################
 # find how to link to the standard libraries                                #
@@ -179,18 +171,6 @@ if(NOT MSVC)
   ei_add_cxx_compiler_flag("-fstrict-aliasing")
   ei_add_cxx_compiler_flag("-wd981")                    # disable ICC's "operands are evaluated in unspecified order" remark
   ei_add_cxx_compiler_flag("-wd2304")                   # disable ICC's "warning #2304: non-explicit constructor with single argument may cause implicit type conversion" produced by -Wnon-virtual-dtor
-
-
-  # The -ansi flag must be added last, otherwise it is also used as a linker flag by check_cxx_compiler_flag making it fails
-  # Moreover we should not set both -strict-ansi and -ansi
-  check_cxx_compiler_flag("-strict-ansi" COMPILER_SUPPORT_STRICTANSI)
-  ei_add_cxx_compiler_flag("-Qunused-arguments")        # disable clang warning: argument unused during compilation: '-ansi'
-
-  if(COMPILER_SUPPORT_STRICTANSI)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -strict-ansi")
-  else()
-    ei_add_cxx_compiler_flag("-ansi")
-  endif()
 
   if(ANDROID_NDK)
     ei_add_cxx_compiler_flag("-pie")

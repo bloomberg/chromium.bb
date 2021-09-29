@@ -353,12 +353,12 @@ struct redux_impl<Func, Evaluator, LinearVectorizedTraversal, CompleteUnrolling>
 };
 
 // evaluator adaptor
-template<typename _XprType>
-class redux_evaluator : public internal::evaluator<_XprType>
+template<typename XprType_>
+class redux_evaluator : public internal::evaluator<XprType_>
 {
-  typedef internal::evaluator<_XprType> Base;
+  typedef internal::evaluator<XprType_> Base;
 public:
-  typedef _XprType XprType;
+  typedef XprType_ XprType;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
   explicit redux_evaluator(const XprType &xpr) : Base(xpr) {}
   

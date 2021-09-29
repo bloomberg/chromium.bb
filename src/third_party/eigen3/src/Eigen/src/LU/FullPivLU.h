@@ -13,8 +13,8 @@
 namespace Eigen {
 
 namespace internal {
-template<typename _MatrixType> struct traits<FullPivLU<_MatrixType> >
- : traits<_MatrixType>
+template<typename MatrixType_> struct traits<FullPivLU<MatrixType_> >
+ : traits<MatrixType_>
 {
   typedef MatrixXpr XprKind;
   typedef SolverStorage StorageKind;
@@ -30,7 +30,7 @@ template<typename _MatrixType> struct traits<FullPivLU<_MatrixType> >
   *
   * \brief LU decomposition of a matrix with complete pivoting, and related features
   *
-  * \tparam _MatrixType the type of the matrix of which we are computing the LU decomposition
+  * \tparam MatrixType_ the type of the matrix of which we are computing the LU decomposition
   *
   * This class represents a LU decomposition of any matrix, with complete pivoting: the matrix A is
   * decomposed as \f$ A = P^{-1} L U Q^{-1} \f$ where L is unit-lower-triangular, U is
@@ -57,11 +57,11 @@ template<typename _MatrixType> struct traits<FullPivLU<_MatrixType> >
   *
   * \sa MatrixBase::fullPivLu(), MatrixBase::determinant(), MatrixBase::inverse()
   */
-template<typename _MatrixType> class FullPivLU
-  : public SolverBase<FullPivLU<_MatrixType> >
+template<typename MatrixType_> class FullPivLU
+  : public SolverBase<FullPivLU<MatrixType_> >
 {
   public:
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef SolverBase<FullPivLU> Base;
     friend class SolverBase<FullPivLU>;
 
@@ -613,11 +613,11 @@ MatrixType FullPivLU<MatrixType>::reconstructedMatrix() const
 /********* Implementation of kernel() **************************************************/
 
 namespace internal {
-template<typename _MatrixType>
-struct kernel_retval<FullPivLU<_MatrixType> >
-  : kernel_retval_base<FullPivLU<_MatrixType> >
+template<typename MatrixType_>
+struct kernel_retval<FullPivLU<MatrixType_> >
+  : kernel_retval_base<FullPivLU<MatrixType_> >
 {
-  EIGEN_MAKE_KERNEL_HELPERS(FullPivLU<_MatrixType>)
+  EIGEN_MAKE_KERNEL_HELPERS(FullPivLU<MatrixType_>)
 
   enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
             MatrixType::MaxColsAtCompileTime,
@@ -699,11 +699,11 @@ struct kernel_retval<FullPivLU<_MatrixType> >
 
 /***** Implementation of image() *****************************************************/
 
-template<typename _MatrixType>
-struct image_retval<FullPivLU<_MatrixType> >
-  : image_retval_base<FullPivLU<_MatrixType> >
+template<typename MatrixType_>
+struct image_retval<FullPivLU<MatrixType_> >
+  : image_retval_base<FullPivLU<MatrixType_> >
 {
-  EIGEN_MAKE_IMAGE_HELPERS(FullPivLU<_MatrixType>)
+  EIGEN_MAKE_IMAGE_HELPERS(FullPivLU<MatrixType_>)
 
   enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
             MatrixType::MaxColsAtCompileTime,
@@ -740,9 +740,9 @@ struct image_retval<FullPivLU<_MatrixType> >
 } // end namespace internal
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-template<typename _MatrixType>
+template<typename MatrixType_>
 template<typename RhsType, typename DstType>
-void FullPivLU<_MatrixType>::_solve_impl(const RhsType &rhs, DstType &dst) const
+void FullPivLU<MatrixType_>::_solve_impl(const RhsType &rhs, DstType &dst) const
 {
   /* The decomposition PAQ = LU can be rewritten as A = P^{-1} L U Q^{-1}.
   * So we proceed as follows:
@@ -787,9 +787,9 @@ void FullPivLU<_MatrixType>::_solve_impl(const RhsType &rhs, DstType &dst) const
     dst.row(permutationQ().indices().coeff(i)).setZero();
 }
 
-template<typename _MatrixType>
+template<typename MatrixType_>
 template<bool Conjugate, typename RhsType, typename DstType>
-void FullPivLU<_MatrixType>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
+void FullPivLU<MatrixType_>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
 {
   /* The decomposition PAQ = LU can be rewritten as A = P^{-1} L U Q^{-1},
    * and since permutations are real and unitary, we can write this

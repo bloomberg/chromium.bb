@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
@@ -38,8 +39,6 @@
   */
 
 
-#include "src/SparseExtra/DynamicSparseMatrix.h"
-#include "src/SparseExtra/BlockOfDynamicSparseMatrix.h"
 #include "src/SparseExtra/RandomSetter.h"
 
 #include "src/SparseExtra/MarketIO.h"

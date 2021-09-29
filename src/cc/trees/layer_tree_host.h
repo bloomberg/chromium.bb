@@ -446,6 +446,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetPrefersReducedMotion(bool prefers_reduced_motion);
 
+  void SetMayThrottleIfUndrawnFrames(bool may_throttle_if_undrawn_frames);
+  bool GetMayThrottleIfUndrawnFramesForTesting() const;
+
   void SetBrowserControlsParams(const BrowserControlsParams& params);
   void SetBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
 
@@ -503,6 +506,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool new_local_surface_id_request_for_testing() const {
     return new_local_surface_id_request_;
   }
+
+  // Records the amount of time spent performing an update in response to new
+  // blink::VisualProperties.
+  void SetVisualPropertiesUpdateDuration(
+      base::TimeDelta visual_properties_update_duration);
 
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& display_color_spaces);
@@ -898,6 +906,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool clear_caches_on_next_commit_ = false;
   viz::LocalSurfaceId local_surface_id_from_parent_;
   bool new_local_surface_id_request_ = false;
+  base::TimeDelta visual_properties_update_duration_;
   uint32_t defer_main_frame_update_count_ = 0;
 
   SkColor background_color_ = SK_ColorWHITE;
@@ -918,6 +927,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool is_viewport_mobile_optimized_ = false;
 
   bool prefers_reduced_motion_ = false;
+  bool may_throttle_if_undrawn_frames_ = true;
   bool have_scroll_event_handlers_ = false;
   EventListenerProperties event_listener_properties_
       [static_cast<size_t>(EventListenerClass::kLast) + 1];

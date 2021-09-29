@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.scroll_capture;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.CancellationSignal;
+import android.util.Size;
 import android.view.ScrollCaptureSession;
 import android.view.Surface;
 
@@ -120,38 +122,9 @@ public class ScrollCaptureCallbackImplTest {
 
         int viewportWidth = 200;
         int viewportHeight = 500;
-        int contentWidth = 200;
-        int contentHeight = 2000;
-        int scrollY = 0;
-        setupRenderCoordinates(viewportWidth, viewportHeight, contentWidth, contentHeight, scrollY);
+        when(mRenderCoordinates.getLastFrameViewportWidthPixInt()).thenReturn(viewportWidth);
+        when(mRenderCoordinates.getLastFrameViewportHeightPixInt()).thenReturn(viewportHeight);
         scrollCaptureCallback.onScrollCaptureSearch(signal, mRectConsumer);
-
-        scrollCaptureCallback.onScrollCaptureStart(session, signal, onReady);
-        Assert.assertEquals(new Rect(0, 0, contentWidth, contentHeight),
-                scrollCaptureCallback.getContentAreaForTesting());
-        Assert.assertEquals(new Rect(0, 0, viewportWidth, viewportHeight),
-                scrollCaptureCallback.getInitialRectForTesting());
-        Assert.assertFalse(signal.isCanceled());
-
-        // Test non-zero Y offset
-        scrollY = 300;
-        when(mRenderCoordinates.getScrollYPixInt()).thenReturn(scrollY);
-        scrollCaptureCallback.onScrollCaptureStart(session, signal, onReady);
-        Assert.assertEquals(new Rect(0, scrollY, viewportWidth, scrollY + viewportHeight),
-                scrollCaptureCallback.getInitialRectForTesting());
-        Assert.assertFalse(signal.isCanceled());
-
-        // Test zoomed on content
-        int pageScaleFactor = 2;
-        when(mRenderCoordinates.getPageScaleFactor()).thenReturn((float) pageScaleFactor);
-        scrollCaptureCallback.onScrollCaptureStart(session, signal, onReady);
-        Assert.assertEquals(
-                new Rect(0, 0, contentWidth / pageScaleFactor, contentHeight / pageScaleFactor),
-                scrollCaptureCallback.getContentAreaForTesting());
-        Assert.assertEquals(new Rect(0, scrollY / pageScaleFactor, viewportWidth,
-                                    scrollY / pageScaleFactor + viewportHeight),
-                scrollCaptureCallback.getInitialRectForTesting());
-        Assert.assertFalse(signal.isCanceled());
 
         // Test EntryManager initialization
         scrollCaptureCallback.onScrollCaptureStart(session, signal, onReady);
@@ -166,7 +139,28 @@ public class ScrollCaptureCallbackImplTest {
         Assert.assertTrue(signal.isCanceled());
         inOrder.verify(onReady, times(0)).run();
         observer.onStatusChange(EntryStatus.CAPTURE_COMPLETE);
+        inOrder.verify(onReady, times(0)).run();
+
+        observer.onCompositorReady(new Size(0, 0), new Size(0, 0));
+        inOrder.verify(onReady, times(0)).run();
+        observer.onCompositorReady(new Size(100, 100), new Size(0, 0));
         inOrder.verify(onReady).run();
+
+        // Test contentArea and initialRect assignment
+        int contentWidth = 200;
+        int contentHeight = 2000;
+        observer.onCompositorReady(new Size(contentWidth, contentHeight), new Size(0, 0));
+        Assert.assertEquals(new Rect(0, 0, contentWidth, contentHeight),
+                scrollCaptureCallback.getContentAreaForTesting());
+        Assert.assertEquals(new Rect(0, 0, viewportWidth, viewportHeight),
+                scrollCaptureCallback.getInitialRectForTesting());
+
+        // Test non-zero Y offset
+        int scrollY = 300;
+        observer.onCompositorReady(new Size(contentWidth, contentHeight), new Size(0, scrollY));
+        scrollCaptureCallback.onScrollCaptureStart(session, signal, onReady);
+        Assert.assertEquals(new Rect(0, scrollY, viewportWidth, scrollY + viewportHeight),
+                scrollCaptureCallback.getInitialRectForTesting());
     }
 
     @Test
@@ -194,9 +188,17 @@ public class ScrollCaptureCallbackImplTest {
         int contentWidth = 500;
         int contentHeight = 5000;
         int scrollY = 1000;
-        setupRenderCoordinates(viewportWidth, viewportHeight, contentWidth, contentHeight, scrollY);
+        when(mRenderCoordinates.getLastFrameViewportWidthPixInt()).thenReturn(viewportWidth);
+        when(mRenderCoordinates.getLastFrameViewportHeightPixInt()).thenReturn(viewportHeight);
+        // Set up viewportRect
         scrollCaptureCallback.onScrollCaptureSearch(signal, mRectConsumer);
         scrollCaptureCallback.onScrollCaptureStart(session, signal, () -> {});
+        // Set up contentArea and initialRect
+        ArgumentCaptor<BitmapGeneratorObserver> observerArgumentCaptor =
+                ArgumentCaptor.forClass(BitmapGeneratorObserver.class);
+        inOrder.verify(mEntryManager).addBitmapGeneratorObserver(observerArgumentCaptor.capture());
+        BitmapGeneratorObserver observer = observerArgumentCaptor.getValue();
+        observer.onCompositorReady(new Size(contentWidth, contentHeight), new Size(0, scrollY));
 
         // Test capture area outside the content area.
         Rect captureArea = new Rect(0, -2000, 500, -1000);
@@ -210,7 +212,7 @@ public class ScrollCaptureCallbackImplTest {
                 session, signal, captureArea, mRectConsumer);
         inOrder.verify(mRectConsumer).accept(eq(new Rect()));
 
-        when(mEntryManager.generateEntry(any())).thenReturn(entry);
+        when(mEntryManager.generateEntry(any(), anyBoolean())).thenReturn(entry);
         doAnswer(invocation -> {
             EntryListener listener = invocation.getArgument(0);
             listener.onResult(EntryStatus.BITMAP_GENERATED);
@@ -240,18 +242,9 @@ public class ScrollCaptureCallbackImplTest {
 
         // Test end capture
         scrollCaptureCallback.onScrollCaptureEnd(onReady);
+        inOrder.verify(mEntryManager).destroy();
         Assert.assertNull(scrollCaptureCallback.getContentAreaForTesting());
         Assert.assertNull(scrollCaptureCallback.getInitialRectForTesting());
         inOrder.verify(onReady).run();
-    }
-
-    private void setupRenderCoordinates(int viewportWidth, int viewportHeight, int contentWidth,
-            int contentHeight, int scrollY) {
-        when(mRenderCoordinates.getPageScaleFactor()).thenReturn(1f);
-        when(mRenderCoordinates.getLastFrameViewportWidthPixInt()).thenReturn(viewportWidth);
-        when(mRenderCoordinates.getLastFrameViewportHeightPixInt()).thenReturn(viewportHeight);
-        when(mRenderCoordinates.getContentWidthPixInt()).thenReturn(contentWidth);
-        when(mRenderCoordinates.getContentHeightPixInt()).thenReturn(contentHeight);
-        when(mRenderCoordinates.getScrollYPixInt()).thenReturn(scrollY);
     }
 }

@@ -14,13 +14,13 @@
 namespace Eigen {
 
 namespace internal {
-template<typename _MatrixType> struct traits<PartialPivLU<_MatrixType> >
- : traits<_MatrixType>
+template<typename MatrixType_> struct traits<PartialPivLU<MatrixType_> >
+ : traits<MatrixType_>
 {
   typedef MatrixXpr XprKind;
   typedef SolverStorage StorageKind;
   typedef int StorageIndex;
-  typedef traits<_MatrixType> BaseTraits;
+  typedef traits<MatrixType_> BaseTraits;
   enum {
     Flags = BaseTraits::Flags & RowMajorBit,
     CoeffReadCost = Dynamic
@@ -46,7 +46,7 @@ struct enable_if_ref<Ref<T>,Derived> {
   *
   * \brief LU decomposition of a matrix with partial pivoting, and related features
   *
-  * \tparam _MatrixType the type of the matrix of which we are computing the LU decomposition
+  * \tparam MatrixType_ the type of the matrix of which we are computing the LU decomposition
   *
   * This class represents a LU decomposition of a \b square \b invertible matrix, with partial pivoting: the matrix A
   * is decomposed as A = PLU where L is unit-lower-triangular, U is upper-triangular, and P
@@ -73,12 +73,12 @@ struct enable_if_ref<Ref<T>,Derived> {
   *
   * \sa MatrixBase::partialPivLu(), MatrixBase::determinant(), MatrixBase::inverse(), MatrixBase::computeInverse(), class FullPivLU
   */
-template<typename _MatrixType> class PartialPivLU
-  : public SolverBase<PartialPivLU<_MatrixType> >
+template<typename MatrixType_> class PartialPivLU
+  : public SolverBase<PartialPivLU<MatrixType_> >
 {
   public:
 
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef SolverBase<PartialPivLU> Base;
     friend class SolverBase<PartialPivLU>;
 

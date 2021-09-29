@@ -166,8 +166,8 @@ template<typename Derived> class TriangularBase : public EigenBase<Derived>
   * \sa MatrixBase::triangularView()
   */
 namespace internal {
-template<typename MatrixType, unsigned int _Mode>
-struct traits<TriangularView<MatrixType, _Mode> > : traits<MatrixType>
+template<typename MatrixType, unsigned int Mode_>
+struct traits<TriangularView<MatrixType, Mode_> > : traits<MatrixType>
 {
   typedef typename ref_selector<MatrixType>::non_const_type MatrixTypeNested;
   typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNestedNonRef;
@@ -175,30 +175,30 @@ struct traits<TriangularView<MatrixType, _Mode> > : traits<MatrixType>
   typedef typename MatrixType::PlainObject FullMatrixType;
   typedef MatrixType ExpressionType;
   enum {
-    Mode = _Mode,
+    Mode = Mode_,
     FlagsLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
     Flags = (MatrixTypeNestedCleaned::Flags & (HereditaryBits | FlagsLvalueBit) & (~(PacketAccessBit | DirectAccessBit | LinearAccessBit)))
   };
 };
 }
 
-template<typename _MatrixType, unsigned int _Mode, typename StorageKind> class TriangularViewImpl;
+template<typename MatrixType_, unsigned int Mode_, typename StorageKind> class TriangularViewImpl;
 
-template<typename _MatrixType, unsigned int _Mode> class TriangularView
-  : public TriangularViewImpl<_MatrixType, _Mode, typename internal::traits<_MatrixType>::StorageKind >
+template<typename MatrixType_, unsigned int Mode_> class TriangularView
+  : public TriangularViewImpl<MatrixType_, Mode_, typename internal::traits<MatrixType_>::StorageKind >
 {
   public:
 
-    typedef TriangularViewImpl<_MatrixType, _Mode, typename internal::traits<_MatrixType>::StorageKind > Base;
+    typedef TriangularViewImpl<MatrixType_, Mode_, typename internal::traits<MatrixType_>::StorageKind > Base;
     typedef typename internal::traits<TriangularView>::Scalar Scalar;
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
 
   protected:
     typedef typename internal::traits<TriangularView>::MatrixTypeNested MatrixTypeNested;
     typedef typename internal::traits<TriangularView>::MatrixTypeNestedNonRef MatrixTypeNestedNonRef;
 
     typedef typename internal::remove_all<typename MatrixType::ConjugateReturnType>::type MatrixConjugateReturnType;
-    typedef TriangularView<typename internal::add_const<MatrixType>::type, _Mode> ConstTriangularView;
+    typedef TriangularView<typename internal::add_const<MatrixType>::type, Mode_> ConstTriangularView;
 
   public:
 
@@ -206,7 +206,7 @@ template<typename _MatrixType, unsigned int _Mode> class TriangularView
     typedef typename internal::traits<TriangularView>::MatrixTypeNestedCleaned NestedExpression;
 
     enum {
-      Mode = _Mode,
+      Mode = Mode_,
       Flags = internal::traits<TriangularView>::Flags,
       TransposeMode = (Mode & Upper ? Lower : 0)
                     | (Mode & Lower ? Upper : 0)
@@ -342,16 +342,17 @@ template<typename _MatrixType, unsigned int _Mode> class TriangularView
   *
   * \sa class TriangularView, MatrixBase::triangularView()
   */
-template<typename _MatrixType, unsigned int _Mode> class TriangularViewImpl<_MatrixType,_Mode,Dense>
-  : public TriangularBase<TriangularView<_MatrixType, _Mode> >
+template<typename MatrixType_, unsigned int Mode_> class TriangularViewImpl<MatrixType_,Mode_,Dense>
+  : public TriangularBase<TriangularView<MatrixType_, Mode_> >
 {
   public:
 
-    typedef TriangularView<_MatrixType, _Mode> TriangularViewType;
+    typedef TriangularView<MatrixType_, Mode_> TriangularViewType;
+
     typedef TriangularBase<TriangularViewType> Base;
     typedef typename internal::traits<TriangularViewType>::Scalar Scalar;
 
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef typename MatrixType::PlainObject DenseMatrixType;
     typedef DenseMatrixType PlainObject;
 
@@ -362,7 +363,7 @@ template<typename _MatrixType, unsigned int _Mode> class TriangularViewImpl<_Mat
     typedef typename internal::traits<TriangularViewType>::StorageKind StorageKind;
 
     enum {
-      Mode = _Mode,
+      Mode = Mode_,
       Flags = internal::traits<TriangularViewType>::Flags
     };
 

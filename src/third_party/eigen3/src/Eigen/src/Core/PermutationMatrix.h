@@ -269,13 +269,13 @@ class PermutationBase : public EigenBase<Derived>
 };
 
 namespace internal {
-template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename _StorageIndex>
-struct traits<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageIndex> >
- : traits<Matrix<_StorageIndex,SizeAtCompileTime,SizeAtCompileTime,0,MaxSizeAtCompileTime,MaxSizeAtCompileTime> >
+template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename StorageIndex_>
+struct traits<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, StorageIndex_> >
+ : traits<Matrix<StorageIndex_,SizeAtCompileTime,SizeAtCompileTime,0,MaxSizeAtCompileTime,MaxSizeAtCompileTime> >
 {
   typedef PermutationStorage StorageKind;
-  typedef Matrix<_StorageIndex, SizeAtCompileTime, 1, 0, MaxSizeAtCompileTime, 1> IndicesType;
-  typedef _StorageIndex StorageIndex;
+  typedef Matrix<StorageIndex_, SizeAtCompileTime, 1, 0, MaxSizeAtCompileTime, 1> IndicesType;
+  typedef StorageIndex_ StorageIndex;
   typedef void Scalar;
 };
 }
@@ -287,14 +287,14 @@ struct traits<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _Storag
   *
   * \tparam SizeAtCompileTime the number of rows/cols, or Dynamic
   * \tparam MaxSizeAtCompileTime the maximum number of rows/cols, or Dynamic. This optional parameter defaults to SizeAtCompileTime. Most of the time, you should not have to specify it.
-  * \tparam _StorageIndex the integer type of the indices
+  * \tparam StorageIndex_ the integer type of the indices
   *
   * This class represents a permutation matrix, internally stored as a vector of integers.
   *
   * \sa class PermutationBase, class PermutationWrapper, class DiagonalMatrix
   */
-template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename _StorageIndex>
-class PermutationMatrix : public PermutationBase<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageIndex> >
+template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename StorageIndex_>
+class PermutationMatrix : public PermutationBase<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, StorageIndex_> >
 {
     typedef PermutationBase<PermutationMatrix> Base;
     typedef internal::traits<PermutationMatrix> Traits;
@@ -389,20 +389,20 @@ class PermutationMatrix : public PermutationBase<PermutationMatrix<SizeAtCompile
 
 
 namespace internal {
-template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename _StorageIndex, int _PacketAccess>
-struct traits<Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageIndex>,_PacketAccess> >
- : traits<Matrix<_StorageIndex,SizeAtCompileTime,SizeAtCompileTime,0,MaxSizeAtCompileTime,MaxSizeAtCompileTime> >
+template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename StorageIndex_, int _PacketAccess>
+struct traits<Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, StorageIndex_>,_PacketAccess> >
+ : traits<Matrix<StorageIndex_,SizeAtCompileTime,SizeAtCompileTime,0,MaxSizeAtCompileTime,MaxSizeAtCompileTime> >
 {
   typedef PermutationStorage StorageKind;
-  typedef Map<const Matrix<_StorageIndex, SizeAtCompileTime, 1, 0, MaxSizeAtCompileTime, 1>, _PacketAccess> IndicesType;
-  typedef _StorageIndex StorageIndex;
+  typedef Map<const Matrix<StorageIndex_, SizeAtCompileTime, 1, 0, MaxSizeAtCompileTime, 1>, _PacketAccess> IndicesType;
+  typedef StorageIndex_ StorageIndex;
   typedef void Scalar;
 };
 }
 
-template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename _StorageIndex, int _PacketAccess>
-class Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageIndex>,_PacketAccess>
-  : public PermutationBase<Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageIndex>,_PacketAccess> >
+template<int SizeAtCompileTime, int MaxSizeAtCompileTime, typename StorageIndex_, int _PacketAccess>
+class Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, StorageIndex_>,_PacketAccess>
+  : public PermutationBase<Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, StorageIndex_>,_PacketAccess> >
 {
     typedef PermutationBase<Map> Base;
     typedef internal::traits<Map> Traits;
@@ -452,18 +452,18 @@ class Map<PermutationMatrix<SizeAtCompileTime, MaxSizeAtCompileTime, _StorageInd
     IndicesType m_indices;
 };
 
-template<typename _IndicesType> class TranspositionsWrapper;
+template<typename IndicesType_> class TranspositionsWrapper;
 namespace internal {
-template<typename _IndicesType>
-struct traits<PermutationWrapper<_IndicesType> >
+template<typename IndicesType_>
+struct traits<PermutationWrapper<IndicesType_> >
 {
   typedef PermutationStorage StorageKind;
   typedef void Scalar;
-  typedef typename _IndicesType::Scalar StorageIndex;
-  typedef _IndicesType IndicesType;
+  typedef typename IndicesType_::Scalar StorageIndex;
+  typedef IndicesType_ IndicesType;
   enum {
-    RowsAtCompileTime = _IndicesType::SizeAtCompileTime,
-    ColsAtCompileTime = _IndicesType::SizeAtCompileTime,
+    RowsAtCompileTime = IndicesType_::SizeAtCompileTime,
+    ColsAtCompileTime = IndicesType_::SizeAtCompileTime,
     MaxRowsAtCompileTime = IndicesType::MaxSizeAtCompileTime,
     MaxColsAtCompileTime = IndicesType::MaxSizeAtCompileTime,
     Flags = 0
@@ -476,14 +476,14 @@ struct traits<PermutationWrapper<_IndicesType> >
   *
   * \brief Class to view a vector of integers as a permutation matrix
   *
-  * \tparam _IndicesType the type of the vector of integer (can be any compatible expression)
+  * \tparam IndicesType_ the type of the vector of integer (can be any compatible expression)
   *
   * This class allows to view any vector expression of integers as a permutation matrix.
   *
   * \sa class PermutationBase, class PermutationMatrix
   */
-template<typename _IndicesType>
-class PermutationWrapper : public PermutationBase<PermutationWrapper<_IndicesType> >
+template<typename IndicesType_>
+class PermutationWrapper : public PermutationBase<PermutationWrapper<IndicesType_> >
 {
     typedef PermutationBase<PermutationWrapper> Base;
     typedef internal::traits<PermutationWrapper> Traits;

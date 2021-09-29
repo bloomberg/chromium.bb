@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share.long_screenshots.bitmap_generation;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.util.Size;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -48,20 +49,28 @@ public class EntryManager {
          * @param status current status.
          */
         void onStatusChange(@EntryStatus int status);
+
+        /**
+         * Called when the compositor is ready.
+         * @param contentSize size of the main frame.
+         * @param scrollOffset the offset of the viewport rect relative to the main frame.
+         */
+        void onCompositorReady(Size contentSize, Size scrollOffset);
     }
 
     /**
      * @param context An instance of current Android {@link Context}.
      * @param tab Tab to generate the bitmap for.
+     * @param inMemory Use memory buffers to store the capture rather than temporary files.
      */
-    public EntryManager(Context context, Tab tab) {
+    public EntryManager(Context context, Tab tab, boolean inMemory) {
         mEntries = new ArrayList<LongScreenshotsEntry>();
         mQueuedEntries = new ArrayList<LongScreenshotsEntry>();
         mGeneratorObservers = new ObserverList<>();
         mBoundsManager = new ScreenshotBoundsManager(context, tab);
 
         mGenerator = new BitmapGenerator(tab, mBoundsManager, createBitmapGeneratorCallback());
-        mGenerator.captureTab();
+        mGenerator.captureTab(inMemory);
         updateGeneratorStatus(EntryStatus.CAPTURE_IN_PROGRESS);
         // TODO(cb/1153969): Remove, or make this a finch param. Consider increasing default.
         mMaxMemoryUsageInKb = 16 * 1024;
@@ -171,8 +180,9 @@ public class EntryManager {
      * @param updateMemoryUsage The callback to be notified of the bitmap memory usage.
      * @return The new entry that generates the bitmap.
      */
-    public LongScreenshotsEntry generateEntry(Rect bounds) {
-        LongScreenshotsEntry entry = new LongScreenshotsEntry(mGenerator, bounds, (bytes) -> {});
+    public LongScreenshotsEntry generateEntry(Rect bounds, boolean boundsRelativeToCapture) {
+        LongScreenshotsEntry entry = new LongScreenshotsEntry(
+                mGenerator, bounds, (bytes) -> {}, boundsRelativeToCapture);
         processEntry(entry, true, false);
         return entry;
     }
@@ -228,7 +238,11 @@ public class EntryManager {
 
     public void addBitmapGeneratorObserver(BitmapGeneratorObserver observer) {
         mGeneratorObservers.addObserver(observer);
+
         observer.onStatusChange(mGeneratorStatus);
+        if (mGeneratorStatus == EntryStatus.CAPTURE_COMPLETE) {
+            observer.onCompositorReady(mGenerator.getContentSize(), mGenerator.getScrollOffset());
+        }
     }
 
     public void removeBitmapGeneratorObserver(BitmapGeneratorObserver observer) {
@@ -255,6 +269,12 @@ public class EntryManager {
                     LongScreenshotsMetrics.logLongScreenshotsEvent(
                             LongScreenshotsMetrics.LongScreenshotsEvent
                                     .GENERATOR_COMPOSITOR_CAPTURE_COMPLETE);
+
+                    Size contentSize = mGenerator.getContentSize();
+                    Size scrollOffset = mGenerator.getScrollOffset();
+                    for (BitmapGeneratorObserver observer : mGeneratorObservers) {
+                        observer.onCompositorReady(contentSize, scrollOffset);
+                    }
                 } else {
                     updateGeneratorStatus(EntryStatus.GENERATION_ERROR);
                     LongScreenshotsMetrics.logLongScreenshotsEvent(
@@ -278,5 +298,12 @@ public class EntryManager {
                 }
             }
         };
+    }
+
+    public void destroy() {
+        if (mGenerator != null) {
+            mGenerator.destroy();
+            mGenerator = null;
+        }
     }
 }

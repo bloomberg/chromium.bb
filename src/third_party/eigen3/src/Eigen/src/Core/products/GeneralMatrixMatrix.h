@@ -14,7 +14,7 @@ namespace Eigen {
 
 namespace internal {
 
-template<typename _LhsScalar, typename _RhsScalar> class level3_blocking;
+template<typename LhsScalar_, typename RhsScalar_> class level3_blocking;
 
 /* Specialization for a row-major destination matrix => simple transposition of the product */
 template<
@@ -247,11 +247,11 @@ struct gemm_functor
 template<int StorageOrder, typename LhsScalar, typename RhsScalar, int MaxRows, int MaxCols, int MaxDepth, int KcFactor=1,
 bool FiniteAtCompileTime = MaxRows!=Dynamic && MaxCols!=Dynamic && MaxDepth != Dynamic> class gemm_blocking_space;
 
-template<typename _LhsScalar, typename _RhsScalar>
+template<typename LhsScalar_, typename RhsScalar_>
 class level3_blocking
 {
-    typedef _LhsScalar LhsScalar;
-    typedef _RhsScalar RhsScalar;
+    typedef LhsScalar_ LhsScalar;
+    typedef RhsScalar_ RhsScalar;
 
   protected:
     LhsScalar* m_blockA;
@@ -275,19 +275,19 @@ class level3_blocking
     inline RhsScalar* blockB() { return m_blockB; }
 };
 
-template<int StorageOrder, typename _LhsScalar, typename _RhsScalar, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
-class gemm_blocking_space<StorageOrder,_LhsScalar,_RhsScalar,MaxRows, MaxCols, MaxDepth, KcFactor, true /* == FiniteAtCompileTime */>
+template<int StorageOrder, typename LhsScalar_, typename RhsScalar_, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
+class gemm_blocking_space<StorageOrder,LhsScalar_,RhsScalar_,MaxRows, MaxCols, MaxDepth, KcFactor, true /* == FiniteAtCompileTime */>
   : public level3_blocking<
-      typename conditional<StorageOrder==RowMajor,_RhsScalar,_LhsScalar>::type,
-      typename conditional<StorageOrder==RowMajor,_LhsScalar,_RhsScalar>::type>
+      typename conditional<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>::type,
+      typename conditional<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>::type>
 {
     enum {
       Transpose = StorageOrder==RowMajor,
       ActualRows = Transpose ? MaxCols : MaxRows,
       ActualCols = Transpose ? MaxRows : MaxCols
     };
-    typedef typename conditional<Transpose,_RhsScalar,_LhsScalar>::type LhsScalar;
-    typedef typename conditional<Transpose,_LhsScalar,_RhsScalar>::type RhsScalar;
+    typedef typename conditional<Transpose,RhsScalar_,LhsScalar_>::type LhsScalar;
+    typedef typename conditional<Transpose,LhsScalar_,RhsScalar_>::type RhsScalar;
     typedef gebp_traits<LhsScalar,RhsScalar> Traits;
     enum {
       SizeA = ActualRows * MaxDepth,
@@ -326,17 +326,17 @@ class gemm_blocking_space<StorageOrder,_LhsScalar,_RhsScalar,MaxRows, MaxCols, M
     inline void allocateAll() {}
 };
 
-template<int StorageOrder, typename _LhsScalar, typename _RhsScalar, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
-class gemm_blocking_space<StorageOrder,_LhsScalar,_RhsScalar,MaxRows, MaxCols, MaxDepth, KcFactor, false>
+template<int StorageOrder, typename LhsScalar_, typename RhsScalar_, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
+class gemm_blocking_space<StorageOrder,LhsScalar_,RhsScalar_,MaxRows, MaxCols, MaxDepth, KcFactor, false>
   : public level3_blocking<
-      typename conditional<StorageOrder==RowMajor,_RhsScalar,_LhsScalar>::type,
-      typename conditional<StorageOrder==RowMajor,_LhsScalar,_RhsScalar>::type>
+      typename conditional<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>::type,
+      typename conditional<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>::type>
 {
     enum {
       Transpose = StorageOrder==RowMajor
     };
-    typedef typename conditional<Transpose,_RhsScalar,_LhsScalar>::type LhsScalar;
-    typedef typename conditional<Transpose,_LhsScalar,_RhsScalar>::type RhsScalar;
+    typedef typename conditional<Transpose,RhsScalar_,LhsScalar_>::type LhsScalar;
+    typedef typename conditional<Transpose,LhsScalar_,RhsScalar_>::type RhsScalar;
     typedef gebp_traits<LhsScalar,RhsScalar> Traits;
 
     Index m_sizeA;

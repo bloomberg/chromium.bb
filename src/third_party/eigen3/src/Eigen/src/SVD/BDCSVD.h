@@ -33,15 +33,15 @@ namespace Eigen {
 IOFormat bdcsvdfmt(8, 0, ", ", "\n", "  [", "]");
 #endif
   
-template<typename _MatrixType> class BDCSVD;
+template<typename MatrixType_> class BDCSVD;
 
 namespace internal {
 
-template<typename _MatrixType> 
-struct traits<BDCSVD<_MatrixType> >
-        : traits<_MatrixType>
+template<typename MatrixType_>
+struct traits<BDCSVD<MatrixType_> >
+        : traits<MatrixType_>
 {
-  typedef _MatrixType MatrixType;
+  typedef MatrixType_ MatrixType;
 };  
 
 } // end namespace internal
@@ -54,7 +54,7 @@ struct traits<BDCSVD<_MatrixType> >
  *
  * \brief class Bidiagonal Divide and Conquer SVD
  *
- * \tparam _MatrixType the type of the matrix of which we are computing the SVD decomposition
+ * \tparam MatrixType_ the type of the matrix of which we are computing the SVD decomposition
  *
  * This class first reduces the input matrix to bi-diagonal form using class UpperBidiagonalization,
  * and then performs a divide-and-conquer diagonalization. Small blocks are diagonalized using class JacobiSVD.
@@ -69,8 +69,8 @@ struct traits<BDCSVD<_MatrixType> >
  *
  * \sa class JacobiSVD
  */
-template<typename _MatrixType> 
-class BDCSVD : public SVDBase<BDCSVD<_MatrixType> >
+template<typename MatrixType_>
+class BDCSVD : public SVDBase<BDCSVD<MatrixType_> >
 {
   typedef SVDBase<BDCSVD> Base;
     
@@ -80,7 +80,7 @@ public:
   using Base::computeU;
   using Base::computeV;
   
-  typedef _MatrixType MatrixType;
+  typedef MatrixType_ MatrixType;
   typedef typename MatrixType::Scalar Scalar;
   typedef typename NumTraits<typename MatrixType::Scalar>::Real RealScalar;
   typedef typename NumTraits<RealScalar>::Literal Literal;

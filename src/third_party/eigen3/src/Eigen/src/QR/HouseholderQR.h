@@ -15,8 +15,8 @@
 namespace Eigen { 
 
 namespace internal {
-template<typename _MatrixType> struct traits<HouseholderQR<_MatrixType> >
- : traits<_MatrixType>
+template<typename MatrixType_> struct traits<HouseholderQR<MatrixType_> >
+ : traits<MatrixType_>
 {
   typedef MatrixXpr XprKind;
   typedef SolverStorage StorageKind;
@@ -33,7 +33,7 @@ template<typename _MatrixType> struct traits<HouseholderQR<_MatrixType> >
   *
   * \brief Householder QR decomposition of a matrix
   *
-  * \tparam _MatrixType the type of the matrix of which we are computing the QR decomposition
+  * \tparam MatrixType_ the type of the matrix of which we are computing the QR decomposition
   *
   * This class performs a QR decomposition of a matrix \b A into matrices \b Q and \b R
   * such that 
@@ -53,12 +53,12 @@ template<typename _MatrixType> struct traits<HouseholderQR<_MatrixType> >
   *
   * \sa MatrixBase::householderQr()
   */
-template<typename _MatrixType> class HouseholderQR
-        : public SolverBase<HouseholderQR<_MatrixType> >
+template<typename MatrixType_> class HouseholderQR
+        : public SolverBase<HouseholderQR<MatrixType_> >
 {
   public:
 
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef SolverBase<HouseholderQR> Base;
     friend class SolverBase<HouseholderQR>;
 
@@ -356,9 +356,9 @@ struct householder_qr_inplace_blocked
 } // end namespace internal
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-template<typename _MatrixType>
+template<typename MatrixType_>
 template<typename RhsType, typename DstType>
-void HouseholderQR<_MatrixType>::_solve_impl(const RhsType &rhs, DstType &dst) const
+void HouseholderQR<MatrixType_>::_solve_impl(const RhsType &rhs, DstType &dst) const
 {
   const Index rank = (std::min)(rows(), cols());
 
@@ -374,9 +374,9 @@ void HouseholderQR<_MatrixType>::_solve_impl(const RhsType &rhs, DstType &dst) c
   dst.bottomRows(cols()-rank).setZero();
 }
 
-template<typename _MatrixType>
+template<typename MatrixType_>
 template<bool Conjugate, typename RhsType, typename DstType>
-void HouseholderQR<_MatrixType>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
+void HouseholderQR<MatrixType_>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
 {
   const Index rank = (std::min)(rows(), cols());
 

@@ -13,9 +13,9 @@
 namespace Eigen {
 
 namespace internal {
-template <typename _MatrixType>
-struct traits<CompleteOrthogonalDecomposition<_MatrixType> >
-    : traits<_MatrixType> {
+template <typename MatrixType_>
+struct traits<CompleteOrthogonalDecomposition<MatrixType_> >
+    : traits<MatrixType_> {
   typedef MatrixXpr XprKind;
   typedef SolverStorage StorageKind;
   typedef int StorageIndex;
@@ -47,11 +47,11 @@ struct traits<CompleteOrthogonalDecomposition<_MatrixType> >
   * 
   * \sa MatrixBase::completeOrthogonalDecomposition()
   */
-template <typename _MatrixType> class CompleteOrthogonalDecomposition
-          : public SolverBase<CompleteOrthogonalDecomposition<_MatrixType> >
+template <typename MatrixType_> class CompleteOrthogonalDecomposition
+          : public SolverBase<CompleteOrthogonalDecomposition<MatrixType_> >
 {
  public:
-  typedef _MatrixType MatrixType;
+  typedef MatrixType_ MatrixType;
   typedef SolverBase<CompleteOrthogonalDecomposition> Base;
 
   template<typename Derived>
@@ -529,9 +529,9 @@ void CompleteOrthogonalDecomposition<MatrixType>::applyZAdjointOnTheLeftInPlace(
 }
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-template <typename _MatrixType>
+template <typename MatrixType_>
 template <typename RhsType, typename DstType>
-void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(
+void CompleteOrthogonalDecomposition<MatrixType_>::_solve_impl(
     const RhsType& rhs, DstType& dst) const {
   const Index rank = this->rank();
   if (rank == 0) {
@@ -561,9 +561,9 @@ void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl(
   dst = colsPermutation() * dst;
 }
 
-template<typename _MatrixType>
+template<typename MatrixType_>
 template<bool Conjugate, typename RhsType, typename DstType>
-void CompleteOrthogonalDecomposition<_MatrixType>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
+void CompleteOrthogonalDecomposition<MatrixType_>::_solve_impl_transposed(const RhsType &rhs, DstType &dst) const
 {
   const Index rank = this->rank();
 

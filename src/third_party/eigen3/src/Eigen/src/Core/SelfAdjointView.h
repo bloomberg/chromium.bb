@@ -46,12 +46,12 @@ struct traits<SelfAdjointView<MatrixType, UpLo> > : traits<MatrixType>
 }
 
 
-template<typename _MatrixType, unsigned int UpLo> class SelfAdjointView
-  : public TriangularBase<SelfAdjointView<_MatrixType, UpLo> >
+template<typename MatrixType_, unsigned int UpLo> class SelfAdjointView
+  : public TriangularBase<SelfAdjointView<MatrixType_, UpLo> >
 {
   public:
 
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef TriangularBase<SelfAdjointView> Base;
     typedef typename internal::traits<SelfAdjointView>::MatrixTypeNested MatrixTypeNested;
     typedef typename internal::traits<SelfAdjointView>::MatrixTypeNestedCleaned MatrixTypeNestedCleaned;

@@ -73,8 +73,8 @@ struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, t
 
 // FIXME: what is the purpose of the following specialization? Is it for the BlockedSparse format?
 // -> let's disable it for now as it is conflicting with generic scalar*matrix and matrix*scalar operators
-// template<typename T1, typename T2/*, int _Options, typename _StrideType*/>
-// struct ScalarBinaryOpTraits<T1, Ref<T2/*, _Options, _StrideType*/> >
+// template<typename T1, typename T2/*, int Options_, typename _StrideType*/>
+// struct ScalarBinaryOpTraits<T1, Ref<T2/*, Options_, _StrideType*/> >
 // {
 //   enum {
 //     Defined = 1

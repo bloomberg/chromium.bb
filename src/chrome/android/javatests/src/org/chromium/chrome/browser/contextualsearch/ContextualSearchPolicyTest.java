@@ -246,5 +246,100 @@ public class ContextualSearchPolicyTest {
         });
     }
 
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+    public void testIsContextualSearchFullyOptedIn_NoMultilevelSettingsUI() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Default is not fully opted in.
+            Assert.assertFalse(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose not to opt in.
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(false);
+            Assert.assertFalse(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose to opt in.
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(true);
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+    public void testIsContextualSearchFullyOptedIn_MultilevelSettingsUI() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Default is not fully opted in.
+            Assert.assertFalse(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose not to opt in.
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(false);
+            Assert.assertFalse(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose to opt in.
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(true);
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+    public void testSetContextualSearchFullyOptedIn() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Default is not fully opted in.
+            Assert.assertFalse(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose to fully opt in.
+            ContextualSearchPolicy.setContextualSearchFullyOptedIn(true);
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Choose to disable Contextual Search.
+            ContextualSearchPolicy.setContextualSearchState(false);
+            // The Contextual Search pref is disabled, but opt-in pref should still be enabled since
+            // it is not disabled explicitly.
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchDisabled());
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+
+            // Enable the Contextual Search again.
+            ContextualSearchPolicy.setContextualSearchState(true);
+            Assert.assertTrue(ContextualSearchPolicy.isContextualSearchPrefFullyOptedIn());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+    public void testShouldPreviousGestureResolve() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(mPolicy.shouldPreviousGestureResolve());
+
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(true);
+            Assert.assertTrue(mPolicy.shouldPreviousGestureResolve());
+
+            ContextualSearchPolicy.setContextualSearchFullyOptedIn(false);
+            Assert.assertFalse(mPolicy.shouldPreviousGestureResolve());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+    public void testIsContextualSearchFullyEnabled() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(mPolicy.isContextualSearchFullyEnabled());
+
+            ContextualSearchPolicy.setContextualSearchPromoCardSelection(true);
+            Assert.assertTrue(mPolicy.isContextualSearchFullyEnabled());
+
+            ContextualSearchPolicy.setContextualSearchFullyOptedIn(false);
+            Assert.assertFalse(mPolicy.isContextualSearchFullyEnabled());
+        });
+    }
     // TODO(donnd): This set of tests is not complete, add more tests.
 }

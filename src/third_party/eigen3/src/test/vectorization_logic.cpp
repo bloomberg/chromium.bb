@@ -337,7 +337,8 @@ struct vectorization_logic_half
         ((!EIGEN_UNALIGNED_VECTORIZE) && (sizeof(Scalar)==16)) ? NoUnrolling : CompleteUnrolling));
               
       VERIFY(test_assign(Matrix3(),Matrix3().cwiseQuotient(Matrix3()),
-        PacketTraits::HasDiv ? LinearVectorizedTraversal : LinearTraversal,CompleteUnrolling));
+        PacketTraits::HasDiv ? LinearVectorizedTraversal : LinearTraversal,
+        PacketTraits::HasDiv ? CompleteUnrolling : NoUnrolling));
         
       VERIFY(test_assign(Matrix<Scalar,17,17>(),Matrix<Scalar,17,17>()+Matrix<Scalar,17,17>(),
         sizeof(Scalar)==16 ? InnerVectorizedTraversal : (EIGEN_UNALIGNED_VECTORIZE ? LinearVectorizedTraversal : LinearTraversal),

@@ -58,8 +58,8 @@ struct traits<Product<Lhs, Rhs, Option> >
   *
   * \brief Expression of the product of two arbitrary matrices or vectors
   *
-  * \tparam _Lhs the type of the left-hand side expression
-  * \tparam _Rhs the type of the right-hand side expression
+  * \tparam Lhs_ the type of the left-hand side expression
+  * \tparam Rhs_ the type of the right-hand side expression
   *
   * This class represents an expression of the product of two arbitrary matrices.
   *
@@ -67,16 +67,16 @@ struct traits<Product<Lhs, Rhs, Option> >
   * \tparam Option     can be DefaultProduct, AliasFreeProduct, or LazyProduct
   *
   */
-template<typename _Lhs, typename _Rhs, int Option>
-class Product : public ProductImpl<_Lhs,_Rhs,Option,
-                                   typename internal::product_promote_storage_type<typename internal::traits<_Lhs>::StorageKind,
-                                                                                   typename internal::traits<_Rhs>::StorageKind,
-                                                                                   internal::product_type<_Lhs,_Rhs>::ret>::ret>
+template<typename Lhs_, typename Rhs_, int Option>
+class Product : public ProductImpl<Lhs_,Rhs_,Option,
+                                   typename internal::product_promote_storage_type<typename internal::traits<Lhs_>::StorageKind,
+                                                                                   typename internal::traits<Rhs_>::StorageKind,
+                                                                                   internal::product_type<Lhs_,Rhs_>::ret>::ret>
 {
   public:
 
-    typedef _Lhs Lhs;
-    typedef _Rhs Rhs;
+    typedef Lhs_ Lhs;
+    typedef Rhs_ Rhs;
 
     typedef typename ProductImpl<
         Lhs, Rhs, Option,

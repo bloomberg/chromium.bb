@@ -7091,6 +7091,7 @@ others/histograms.xml -->
   <int value="131080" label="kContent-kWebBluetooth"/>
   <int value="131081" label="kContent-kWebUSB"/>
   <int value="131082" label="kContent-kMediaSession"/>
+  <int value="131083" label="kContent-kMediaSessionService"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -7732,6 +7733,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="248" label="MDDH_NOT_TOP_LEVEL"/>
   <int value="249" label="RFH_DID_CHANGE_IFRAME_ATTRIBUTE"/>
   <int value="250" label="FARI_LOGOUT_BAD_ENDPOINT"/>
+  <int value="251" label="RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -9357,6 +9359,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanIsAdaptiveIcon">
   <int value="0" label="Non adaptive icon"/>
   <int value="1" label="Adaptive icon"/>
+</enum>
+
+<enum name="BooleanIsAddToCart">
+  <int value="0" label="Not Add-to-cart"/>
+  <int value="1" label="Is Add-to-cart"/>
 </enum>
 
 <enum name="BooleanIsGenerationTriggeredManually">
@@ -19121,6 +19128,8 @@ Called by update_debug_scenarios.py.-->
   <int value="5" label="kDebugBackForwardCacheEvictRestoreRace"/>
   <int value="6" label="kDebugNoResponseHeadForHttpOrHttps"/>
   <int value="7" label="kDebugSubframeProxyCreationWithNoRVH"/>
+  <int value="8" label="kDebugBackForwardCacheEntryExistsOnSubframeHistoryNav"/>
+  <int value="9" label="kDebugNoRenderFrameProxyHostOnSetFocusedFrame"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -26281,6 +26290,7 @@ Called by update_document_policy_enum.py.-->
   <int value="893" label="BrowserLegacyExtensionPointsBlocked"/>
   <int value="894" label="DeviceRestrictedManagedGuestSessionEnabled"/>
   <int value="895" label="PrintPostScriptMode"/>
+  <int value="896" label="PrintPdfAsImageDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -47454,6 +47464,7 @@ from previous Chrome versions.
   <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
+  <int value="-1893119399" label="U2FSecurityKeyAPI:enabled"/>
   <int value="-1893019071" label="CSSOMViewScrollCoordinates:disabled"/>
   <int value="-1892758622" label="SendTabToSelfV2:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
@@ -49445,6 +49456,7 @@ from previous Chrome versions.
   <int value="-336768659" label="NtpPhotosModule:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
   <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
+  <int value="-332010491" label="RetailCoupons:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327520505" label="RelatedSearchesAlternateUx:enabled"/>
@@ -52447,6 +52459,7 @@ from previous Chrome versions.
   <int value="2027793952" label="EditPasswordsInSettings:disabled"/>
   <int value="2032558514"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
+  <int value="2032880973" label="U2FSecurityKeyAPI:disabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
   <int value="2037562553" label="OmniboxBubbleUrlSuggestions:disabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
@@ -52554,6 +52567,7 @@ from previous Chrome versions.
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2123183411" label="BlinkHeapIncrementalMarking:enabled"/>
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
+  <int value="2125732298" label="RetailCoupons:disabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2127648677" label="OmniboxExperimentalSuggestScoring:disabled"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
@@ -68011,6 +68025,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Valid minidump in background app"/>
 </enum>
 
+<enum name="ProcessIntegrityResult">
+  <int value="0" label="Low integrity level"/>
+  <int value="1" label="Medium integrity level from Open GL"/>
+  <int value="2" label="Medium integrity level from Desktop access check"/>
+</enum>
+
 <enum name="ProcessNameHash">
   <summary>
     The hash of a lower case process name generated using metrics::HashName.
@@ -80004,6 +80024,27 @@ would be helpful to identify which type is being sent.
   <int value="6" label="User selected for survey"/>
   <int value="7" label="Survey already exists [removed]"/>
   <int value="8" label="First time user"/>
+</enum>
+
+<enum name="SurveyPresentationStatusCode">
+  <summary>
+    Results when survey has been download and requested to be shown. Used by
+    Android.Survey.ShowSurveyStatus.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Account changed or signed out"/>
+  <int value="2" label="Survey container was invalid"/>
+  <int value="3" label="Survey data was unavailable"/>
+  <int value="4" label="Client activity was destroyed"/>
+  <int value="5" label="Client activity was finishing"/>
+  <int value="6" label="Client activity was invalid"/>
+  <int value="7" label="Survey completion style was invalid"/>
+  <int value="8" label="Survey prompt style was invalid"/>
+  <int value="9" label="Survey data type was invalid"/>
+  <int value="10" label="Survey payload was invalid"/>
+  <int value="11" label="Survey was already running"/>
+  <int value="12" label="Survey had expired"/>
+  <int value="13" label="Unknown reason for failure"/>
 </enum>
 
 <enum name="SuspendAttempt">

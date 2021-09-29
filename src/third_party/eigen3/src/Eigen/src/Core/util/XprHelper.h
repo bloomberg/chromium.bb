@@ -247,24 +247,24 @@ template<typename T> struct compute_default_alignment<T,Dynamic> {
   enum { value = EIGEN_MAX_ALIGN_BYTES };
 };
 
-template<typename _Scalar, int _Rows, int _Cols,
-         int _Options = AutoAlign |
-                          ( (_Rows==1 && _Cols!=1) ? RowMajor
-                          : (_Cols==1 && _Rows!=1) ? ColMajor
+template<typename Scalar_, int Rows_, int Cols_,
+         int Options_ = AutoAlign |
+                          ( (Rows_==1 && Cols_!=1) ? RowMajor
+                          : (Cols_==1 && Rows_!=1) ? ColMajor
                           : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION ),
-         int _MaxRows = _Rows,
-         int _MaxCols = _Cols
+         int MaxRows_ = Rows_,
+         int MaxCols_ = Cols_
 > class make_proper_matrix_type
 {
     enum {
-      IsColVector = _Cols==1 && _Rows!=1,
-      IsRowVector = _Rows==1 && _Cols!=1,
-      Options = IsColVector ? (_Options | ColMajor) & ~RowMajor
-              : IsRowVector ? (_Options | RowMajor) & ~ColMajor
-              : _Options
+      IsColVector = Cols_==1 && Rows_!=1,
+      IsRowVector = Rows_==1 && Cols_!=1,
+      Options = IsColVector ? (Options_ | ColMajor) & ~RowMajor
+              : IsRowVector ? (Options_ | RowMajor) & ~ColMajor
+              : Options_
     };
   public:
-    typedef Matrix<_Scalar, _Rows, _Cols, Options, _MaxRows, _MaxCols> type;
+    typedef Matrix<Scalar_, Rows_, Cols_, Options, MaxRows_, MaxCols_> type;
 };
 
 template<typename Scalar, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
@@ -278,9 +278,9 @@ class compute_matrix_flags
     enum { ret = DirectAccessBit | LvalueBit | NestByRefBit | row_major_bit };
 };
 
-template<int _Rows, int _Cols> struct size_at_compile_time
+template<int Rows_, int Cols_> struct size_at_compile_time
 {
-  enum { ret = (_Rows==Dynamic || _Cols==Dynamic) ? Dynamic : _Rows * _Cols };
+  enum { ret = (Rows_==Dynamic || Cols_==Dynamic) ? Dynamic : Rows_ * Cols_ };
 };
 
 template<typename XprType> struct size_of_xpr_at_compile_time
@@ -350,16 +350,16 @@ template<typename T> struct eval<T,DiagonalShape>
 };
 
 // for matrices, no need to evaluate, just use a const reference to avoid a useless copy
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-struct eval<Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>, Dense>
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct eval<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_>, Dense>
 {
-  typedef const Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& type;
+  typedef const Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_>& type;
 };
 
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-struct eval<Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>, Dense>
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct eval<Array<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_>, Dense>
 {
-  typedef const Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& type;
+  typedef const Array<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_>& type;
 };
 
 

@@ -51,7 +51,7 @@ gclient_gn_args = [
 
 
 vars = {
-  "buildspec_platforms": "linux64, mac64, win, win64",
+  "buildspec_platforms": "all",
   # Variable that can be used to support multiple build scenarios, like having
   # Chromium specific targets in a client project's GN file or sync dependencies
   # conditionally etc.
@@ -229,11 +229,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fe4b799ecf710bc7217fc719804cc212a52cad9b',
+  'skia_revision': '199a4e0d97e1a9cd2f558c3f9c2df701bc49cdf7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '150ff9766609aeadba3b55ac1d0a463eae32f765',
+  'v8_revision': '4411d6fc6c0e0b009010705075a9a7cf795d45bb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -1022,7 +1022,7 @@ deps = {
     Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + 'f339eb9463714c3d31657c8ee1bd53d1c7e5c555',
 
   'src/third_party/eigen3/src':
-    Var('chromium_git') + '/external/gitlab.com/libeigen/eigen.git' + '@' + '5ad8b9bfe2bf75620bc89467c5cc051fc2a597df',
+    Var('chromium_git') + '/external/gitlab.com/libeigen/eigen.git' + '@' + '1415817d8daa7fa72ec9b26a6b9d166a1d54626a',
 
   'src/third_party/emoji-metadata/src': {
     'url': Var('chromium_git') + '/external/github.com/googlefonts/emoji-metadata' + '@' + '069b14c94db6c1625a143d9f82e07a08a29909cf',
@@ -1552,7 +1552,7 @@ deps = {
     Var('swiftshader_git') + '/SwiftShader.git' + '@' +  Var('swiftshader_revision'),
 
   'src/third_party/text-fragments-polyfill/src': {
-    'url': Var('chromium_git') + '/external/github.com/GoogleChromeLabs/text-fragments-polyfill.git' + '@' + '9eefe898215bf299dbcca2aa0a04ae157b6d6330',
+    'url': Var('chromium_git') + '/external/github.com/GoogleChromeLabs/text-fragments-polyfill.git' + '@' + '27a7c99b821c53643a9d3236428c4a27b51b5427',
     'condition': 'checkout_ios',
   },
 
@@ -1675,7 +1675,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cdcbb2bd1abe026746ec5028092d95363da85409',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b429b3f7eb30ee66dd402057e998b2d80c93ecaf',
     'condition': 'checkout_src_internal',
   },
 

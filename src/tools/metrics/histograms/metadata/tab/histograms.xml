@@ -397,17 +397,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
   <summary>
-    [iOS] A count of the number of alive renderers when a renderer termination
-    occurs. Expired for M78-94.
+    [iOS] A count of the number of alive renderers in the current window when a
+    renderer termination occurs. Expired for M78-94.
   </summary>
 </histogram>
 
 <histogram name="Tab.RendererTermination.RecentlyAliveRenderersCount"
-    units="renderers" expires_after="M77">
+    units="renderers" expires_after="M106">
   <owner>pkl@chromium.org</owner>
   <summary>
     [iOS] The number of renderers which are either currently alive or recently
-    terminated at the time of a renderer termination.
+    terminated in the current window at the time of a renderer termination.
   </summary>
 </histogram>
 
@@ -417,6 +417,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     [iOS] Records whether a memory warning had recently been received before a
     renderer termination.
+  </summary>
+</histogram>
+
+<histogram name="Tab.RendererTermination.TotalTabCount" units="tabs"
+    expires_after="M106">
+  <owner>ajuma@chromium.org</owner>
+  <owner>thegreenfrog@chromium.org</owner>
+  <summary>
+    [iOS] The number of tabs of the current window at the time of a renderer
+    termination.
   </summary>
 </histogram>
 
@@ -1923,7 +1933,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.ScrubbedInInterval.KeyPress" units="tabs"
-    expires_after="2021-10-01">
+    expires_after="2022-02-13">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1935,7 +1945,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Tabs.ScrubbedInInterval.MousePress" units="tabs"
-    expires_after="2021-10-01">
+    expires_after="2022-02-13">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
