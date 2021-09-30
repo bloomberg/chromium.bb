@@ -32,7 +32,6 @@
 #include <base/macros.h>
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
-#include <mojo/public/cpp/bindings/binding.h>
 #include <mojo/public/cpp/bindings/remote.h>
 #include <third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h>
 
@@ -73,7 +72,7 @@ class ProfileImpl : public Profile, public mojom::ProcessClient {
     ~ProfileImpl() final;
 
     DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
-    mojo::Binding<mojom::ProcessClient> d_binding;
+    mojo::Receiver<mojom::ProcessClient> d_receiver;
     ProcessClientDelegate *d_ipcDelegate;
     void onBindProcessDone(mojom::ProcessClientRequest processClientRequest);
 

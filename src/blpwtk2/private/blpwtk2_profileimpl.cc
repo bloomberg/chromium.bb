@@ -61,7 +61,7 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     : d_numWebViews(0)
     , d_processId(pid)
     , d_pump(pump)
-    , d_binding(this)
+    , d_receiver(this)
     , d_ipcDelegate(nullptr)
 {
     static const std::string SERVICE_NAME("content_browser");
@@ -73,7 +73,7 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     d_hostPtr->bindProcess(
         pid,
         launchDevToolsServer,
-        base::Bind(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
+        base::BindOnce(&ProfileImpl::onBindProcessDone, base::Unretained(this)));
 }
 
 ProfileImpl::~ProfileImpl()
@@ -325,7 +325,9 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 void ProfileImpl::onBindProcessDone(
     mojom::ProcessClientRequest processClientRequest)
 {
-    d_binding.Bind(std::move(processClientRequest));
+    mojo::PendingReceiver<mojom::ProcessClient> receiver =
+        std::move(processClientRequest);
+    d_receiver.Bind(std::move(receiver));
 }
 
 void ProfileImpl::opaqueMessageToBrowserAsync(const StringRef& msg)
