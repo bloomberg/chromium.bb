@@ -181,7 +181,7 @@ void WebViewHostImpl::enterFullscreenMode(WebView *source)
 {
     DCHECK(source == d_impl);
     d_clientPtr->enterFullscreenMode(
-        base::Bind(&WebViewImpl::onEnterFullscreenModeResult,
+        base::BindOnce(&WebViewImpl::onEnterFullscreenModeResult,
                     base::Unretained(d_impl))
     );
 }
