@@ -36,10 +36,10 @@
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "v8/include/v8.h"
+#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 
@@ -166,7 +166,7 @@ class BLINK_EXPORT WebFrame {
 
   // Draws the contents of the web frame at the specified region onto the
   // specified canvas
-  virtual void DrawInCanvas(const WebRect&,
+  virtual void DrawInCanvas(const gfx::Rect&,
                             const WebString&,
                             cc::PaintCanvas*) = 0;
 

@@ -2793,7 +2793,7 @@ WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
   return dev_tools_agent_;
 }
 
-void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
+void WebLocalFrameImpl::DrawInCanvas(const gfx::Rect& rect,
                                      const WebString& styleClass,
                                      cc::PaintCanvas* canvas) {
   // Set the new "style" attribute if specified
@@ -2829,7 +2829,7 @@ void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
     }
   }
 
-  WebPrintParams print_params(WebSize{ rect.width, rect.height }, false);
+  WebPrintParams print_params(rect.size(), false);
   print_params.print_content_area = rect;
   print_params.printable_area = rect;
   print_params.use_media_selector = false;

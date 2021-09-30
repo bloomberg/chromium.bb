@@ -187,7 +187,7 @@ void RendererUtil::drawContentsToBlob(content::RenderView        *rv,
         cc::SkiaPaintCanvas canvas(bitmap);
         canvas.scale(params.destWidth / srcWidth, params.destHeight / srcHeight);
 
-        webFrame->DrawInCanvas(blink::WebRect(params.srcRegion.left, params.srcRegion.top, srcWidth, srcHeight),
+        webFrame->DrawInCanvas(gfx::Rect(params.srcRegion.left, params.srcRegion.top, srcWidth, srcHeight),
                                blink::WebString::FromUTF8(params.styleClass.data(), params.styleClass.length()),
                                &canvas);
 

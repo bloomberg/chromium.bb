@@ -106,7 +106,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void ResendVisualProperties() override;
   float GetCompositingScaleFactor() override;
   v8::Isolate* ScriptIsolate() const override;
-  void DrawInCanvas(const WebRect&, const WebString&, cc::PaintCanvas*) override;
+  void DrawInCanvas(const gfx::Rect&, const WebString&, cc::PaintCanvas*) override;
   WebString UniqueName() const override;
   const FrameVisualProperties& GetPendingVisualPropertiesForTesting()
       const override;
