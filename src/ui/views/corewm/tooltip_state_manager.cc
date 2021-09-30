@@ -90,7 +90,7 @@ void TooltipStateManager::StopWillShowTooltipTimer() {
   will_show_tooltip_timer_.Stop();
 }
 
-const HWND TooltipStateManager::GetTooltipParentHwnd() {
+HWND TooltipStateManager::GetTooltipParentHwnd() {
   return tooltip_->GetParentHwnd();
 }
 
