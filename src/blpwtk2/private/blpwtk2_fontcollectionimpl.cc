@@ -24,7 +24,8 @@
 #include "base/debug/alias.h"
 #include "base/stl_util.h"
 #include <base/files/memory_mapped_file.h>
-#include <base/strings/string16.h>
+#include <base/trace_event/common/trace_event_common.h>
+#include <base/trace_event/trace_event.h>
 
 namespace mswr = Microsoft::WRL;
 
@@ -250,7 +251,7 @@ HRESULT STDMETHODCALLTYPE FontFileStream::GetLastWriteTime(UINT64 *last_write_ti
 
 HRESULT FontFileStream::RuntimeClassInitialize(const std::wstring& font_file)
 {
-    base::string16 font_file_name(font_file);
+    std::wstring font_file_name(font_file);
     base::FilePath path = base::FilePath(font_file_name);
     d_memory.reset(new base::MemoryMappedFile());
 
