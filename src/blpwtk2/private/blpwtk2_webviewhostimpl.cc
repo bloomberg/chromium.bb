@@ -281,8 +281,8 @@ void WebViewHostImpl::didInterceptMessage(WebView *source)
     if (!d_messageInterceptState.pendingAck) {
         d_messageInterceptState.pendingAck = true;
         d_clientPtr->didInterceptMessage(
-                base::Bind(&WebViewHostImpl::onInterceptMessageAck,
-                           base::Unretained(this)));
+                base::BindOnce(&WebViewHostImpl::onInterceptMessageAck,
+                               base::Unretained(this)));
     }
     else {
         d_messageInterceptState.pendingUpdate = true;
