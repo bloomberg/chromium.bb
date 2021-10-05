@@ -47,6 +47,7 @@
 
 #include <third_party/blink/public/mojom/page/widget.mojom.h>
 //#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include <third_party/blink/public/mojom/input/pointer_lock_context.mojom.h>
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -55,6 +56,7 @@
 #include <ui/base/ime/input_method_delegate.h>
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
+#include <ui/gfx/selection_bound.h>
 #include <ui/views/corewm/tooltip_win.h>
 
 #include <functional>
@@ -180,7 +182,7 @@ class RenderWebView final : public WebView
     bool d_hasCompositionText = false;
     ui::mojom::TextInputStatePtr d_textInputState;
     gfx::SelectionBound d_selectionAnchor, d_selectionFocus;
-    base::string16 d_selectionText;
+    std::u16string d_selectionText;
     std::size_t d_selectionTextOffset = 0;
     gfx::Range d_selectionRange;
 
@@ -188,7 +190,7 @@ class RenderWebView final : public WebView
     scoped_refptr<DragDrop> d_dragDrop;
 
     // State related to displaying native tooltips:
-    base::string16 d_tooltipText, d_lastTooltipText, d_tooltipTextAtMousePress;
+    std::u16string d_tooltipText, d_lastTooltipText, d_tooltipTextAtMousePress;
     std::unique_ptr<views::corewm::Tooltip> d_tooltip;
 
     base::OneShotTimer d_tooltipDeferTimer;
@@ -410,7 +412,7 @@ class RenderWebView final : public WebView
     void SetCompositionText(const ui::CompositionText& composition) override;
     uint32_t ConfirmCompositionText(bool keep_selection) override;
     void ClearCompositionText() override;
-    void InsertText(const base::string16& text) override;
+    void InsertText(const std::u16string& text, InsertTextCursorBehavior cursor_behavior) override;
     void InsertChar(const ui::KeyEvent& event) override;
     ui::TextInputType GetTextInputType() const override;
     ui::TextInputMode GetTextInputMode() const override;
@@ -428,7 +430,7 @@ class RenderWebView final : public WebView
     bool SetEditableSelectionRange(const gfx::Range& range) override;
     bool DeleteRange(const gfx::Range& range) override;
     bool GetTextFromRange(const gfx::Range& range,
-        base::string16* text) const override;
+        std::u16string* text) const override;
     void OnInputMethodChanged() override;
     bool ChangeTextDirectionAndLayoutAlignment(
         base::i18n::TextDirection direction) override;
@@ -446,8 +448,10 @@ class RenderWebView final : public WebView
       base::Optional<gfx::Rect>* selection_bounds) override {}
     void SetActiveCompositionForAccessibility(
         const gfx::Range& range,
-        const base::string16& active_composition_text,
+        const std::u16string& active_composition_text,
         bool is_composition_committed) override {}
+    gfx::Rect GetSelectionBoundingBox() const override;
+
     // DragDropDelegate overrides:
     void DragTargetEnter(
         const std::vector<content::DropData::Metadata>& drop_data,
@@ -469,17 +473,18 @@ class RenderWebView final : public WebView
     void DragSourceEnded(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::DragOperation drag_operation) override;
+        blink::DragOperationsMask drag_operation) override;
     void DragSourceSystemEnded() override;
 
     // blink::mojom::WidgetHost override:
     void SetCursor(const ui::Cursor& cursor) override;
-    void SetToolTipText(const ::base::string16& tooltip_text, base::i18n::TextDirection text_direction_hint) override;
+    void UpdateTooltipUnderCursor(const std::u16string& tooltip_text, base::i18n::TextDirection text_direction_hint) override;
     void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
     void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                 base::i18n::TextDirection anchor_dir,
                                 const gfx::Rect& focus_rect,
                                 base::i18n::TextDirection focus_dir,
+                                const gfx::Rect& bounding_box_rect,
                                 bool is_anchor_first) override;
     void CreateFrameSink(
         mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
@@ -508,7 +513,7 @@ class RenderWebView final : public WebView
     void OnSetCursor(const content::WebCursor& cursor);
 
     // Keyboard events:
-    void OnSelectionChanged(const base::string16& text,
+    void OnSelectionChanged(const std::u16string& text,
         uint32_t offset,
         const gfx::Range& range);
 
@@ -519,7 +524,7 @@ class RenderWebView final : public WebView
                         blink::mojom::DragEventSourceInfoPtr event_info);
 
     void OnUpdateDragCursor(
-        blink::DragOperation drag_operation);
+        ui::mojom::DragOperation drag_operation);
 
     // Renderer-driven popups:
     void OnShowWidget(const gfx::Rect initial_rect);
@@ -567,6 +572,8 @@ class RenderWebView final : public WebView
     void updateTooltip();
     void onSessionChange(WPARAM status_code, const bool* is_current_session);
     void forceRedrawWindow(int attempts);
+    void onDragTargetDropAck();
+    void onDragSourceEndedAck();
 
     // IPC message handlers
     void OnUpdateScreenRectsAck();

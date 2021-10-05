@@ -69,7 +69,7 @@ class DragDropDelegate {
     virtual void DragSourceEnded(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::DragOperation drag_operation) = 0;
+        blink::DragOperationsMask drag_operation) = 0;
 
     virtual void DragSourceSystemEnded() = 0;
 };
@@ -87,7 +87,7 @@ class DragDrop : public ui::DropTargetWin
         const SkBitmap& bitmap,
         const gfx::Vector2d& bitmap_offset_in_dip);
     void UpdateDragCursor(
-        blink::DragOperation drag_operation);
+        blink::DragOperationsMask drag_operation);
 
     DWORD OnDragEnter(
         IDataObject* data_object,

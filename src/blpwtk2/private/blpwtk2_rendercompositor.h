@@ -27,7 +27,6 @@
 #include <base/memory/scoped_refptr.h>
 #include <third_party/blink/public/mojom/page/widget.mojom.h>
 #include <gpu/ipc/common/surface_handle.h>
-#include <mojo/public/cpp/bindings/binding.h>
 #include <ui/gfx/geometry/size.h>
 
 #include <map>

@@ -263,7 +263,7 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
             delegate, this, properties);
 
         // Override the WebViewProxy's delegate with the RenderWebView:
-        static_cast<WebView *>(proxy)->setDelegate(renderWebView);
+        static_cast<WebView *>(proxy.get())->setDelegate(renderWebView);
 
         // Re-assign `delegate` for passing to `createWebView()`:
         delegate = renderWebView;

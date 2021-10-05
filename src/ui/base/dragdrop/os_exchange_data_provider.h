@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual void SetPickledData(const ClipboardFormatType& format,
                               const base::Pickle& data) = 0;
   virtual void SetCustomData(const FORMATETC& format,
-                             const base::string16& data) {}
+                             const std::u16string& data) {}
 
   virtual bool GetString(std::u16string* data) const = 0;
   virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
 
   virtual void EnumerateCustomData(std::vector<FORMATETC>* formats) const {}
   virtual bool GetCustomData(const FORMATETC& format,
-                             base::string16* data) const = 0;
+                             std::u16string* data) const = 0;
 
   virtual bool HasString() const = 0;
   virtual bool HasURL(FilenameToURLPolicy policy) const = 0;

@@ -1058,8 +1058,7 @@ class CORE_EXPORT LocalFrame final
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
 
-  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride,
-                           HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride>
       local_frame_host_partial_override_remote_{nullptr};
 
   // LocalFrame can be reused by multiple ExecutionContext.

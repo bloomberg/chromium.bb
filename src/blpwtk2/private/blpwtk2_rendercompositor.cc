@@ -217,7 +217,8 @@ protected:
     bool needs_swap_size_notifications() { return needs_swap_size_notifications_; }
 
     // Called when a swap completion is signaled from ImageTransportSurface.
-    virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response);
+    virtual void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response,
+                                          gfx::GpuFenceHandle release_fence);
 
     // Called in SwapBuffers() when a swap is determined to be partial. Subclasses
     // might override this method because different platforms handle partial swaps
@@ -312,7 +313,8 @@ public:
 
     // viz::HostFrameSinkClient overrides:
     void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {}
-    void OnFrameTokenChanged(uint32_t frame_token) override {}
+    void OnFrameTokenChanged(uint32_t frame_token,
+                             base::TimeTicks activation_time) override {}
 };
 
 //
@@ -898,9 +900,10 @@ bool GpuOutputSurface::HasExternalStencilTest() const
 void GpuOutputSurface::ApplyExternalStencil() {
 }
 
-void GpuOutputSurface::DidReceiveSwapBuffersAck(const gfx::SwapResponse& response)
+void GpuOutputSurface::DidReceiveSwapBuffersAck(const gfx::SwapResponse& response,
+                                                gfx::GpuFenceHandle release_fence)
 {
-    client_->DidReceiveSwapBuffersAck(response.timings);
+    client_->DidReceiveSwapBuffersAck(response.timings, std::move(release_fence));
 }
 
 void GpuOutputSurface::HandlePartialSwap(const gfx::Rect& sub_buffer_rect,
@@ -927,7 +930,8 @@ void GpuOutputSurface::OnGpuSwapBuffersCompleted(
         client_->DidReceiveCALayerParams(params.ca_layer_params);
     }
 
-    DidReceiveSwapBuffersAck(params.swap_response);
+    gfx::GpuFenceHandle release_fence = gfx::GpuFenceHandle();
+    DidReceiveSwapBuffersAck(params.swap_response, std::move(release_fence));
 
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
     latency_tracker_.OnGpuSwapBuffersCompleted(
@@ -1036,7 +1040,8 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     auto root_compositor_frame_sink = viz::RootCompositorFrameSinkImpl::Create(
         std::move(root_params),
         d_context.frame_sink_manager(), &d_context,
-        viz::BeginFrameSource::kNotRestartableId, false, debug_settings);
+        viz::BeginFrameSource::kNotRestartableId, false, debug_settings,
+        d_context.frame_sink_manager()->gpu_pipeline_);
 
     d_root_compositor_frame_sink = std::move(root_compositor_frame_sink);
 

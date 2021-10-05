@@ -123,13 +123,13 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
 
     drop_data->did_originate_from_renderer = data.DidOriginateFromRenderer();
 
-    base::string16 plain_text;
+    std::u16string plain_text;
     data.GetString(&plain_text);
     if (!plain_text.empty())
         drop_data->text = base::make_optional(plain_text);
 
     GURL url;
-    base::string16 url_title;
+    std::u16string url_title;
     data.GetURLAndTitle(
         ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
     if (url.is_valid()) {
@@ -137,7 +137,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
         drop_data->url_title = url_title;
     }
 
-    base::string16 html;
+    std::u16string html;
     GURL html_base_url;
     data.GetHtml(&html, &html_base_url);
     if (!html.empty())
@@ -162,11 +162,11 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     data.provider().EnumerateCustomData(&custom_data_formats);
     for (const auto& format_etc : custom_data_formats) {
         std::wstring key = L"blp_" + std::to_wstring(format_etc.cfFormat);
-        base::string16 value;
+        std::u16string value;
         if (extractData) {
             data.provider().GetCustomData(format_etc, &value);
         }
-        drop_data->custom_data.insert(std::make_pair(key, value));
+        drop_data->custom_data.insert(std::make_pair(std::u16string(key.begin(), key.end()), value));
     }
 
     return drop_data;
@@ -270,17 +270,17 @@ std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& 
 
     // Only if custom drag-and-drop topics is available in blpwtk2:
     if (!drop_data.custom_data.empty()) {
-        std::unordered_map<base::string16, base::string16> custom_data;
+        std::unordered_map<std::u16string, std::u16string> custom_data;
 
         for (auto it = drop_data.custom_data.begin();
              it != drop_data.custom_data.end(); ++it) {
         // Look for a special format topic.  In addition to adding them as chromium
         // WebCustomDataFormat, also add these formats separately to clipboard.
         int format = 0;
-        std::wstring sft;
-        if (it->first.compare(0, 4, L"blp_") == 0) {
+        std::u16string sft;
+        if (it->first.compare(0, 4, u"blp_") == 0) {
             sft = it->first.substr(4);
-            format = std::stoi(sft);
+            format = std::stoi(std::wstring(sft.begin(), sft.end()));
         }
 
         if (format) {
@@ -373,7 +373,7 @@ void DragDrop::StartDragging(
     d_delegate->DragSourceSystemEnded();
 }
 
-void DragDrop::UpdateDragCursor(blink::DragOperation drag_operation)
+void DragDrop::UpdateDragCursor(blink::DragOperationsMask drag_operation)
 {
     d_current_drag_operation = drag_operation;
 }

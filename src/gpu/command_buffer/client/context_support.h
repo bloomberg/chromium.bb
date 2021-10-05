@@ -61,6 +61,7 @@ class ContextSupport {
 
   using SwapCompletedCallback =
       base::OnceCallback<void(const SwapBuffersCompleteParams&)>;
+
   using PresentationCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void Swap(uint32_t flags,

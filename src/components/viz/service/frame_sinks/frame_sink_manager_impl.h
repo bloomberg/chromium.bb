@@ -389,7 +389,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
 
+ public:
   gfx::RenderingPipeline* gpu_pipeline_ = nullptr;
+ private:
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };

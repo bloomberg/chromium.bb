@@ -160,7 +160,7 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   void SetCustomData(const FORMATETC& format,
-                     const base::string16& data) override;
+                     const std::u16string& data) override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
   void SetHtml(const std::u16string& html, const GURL& base_url) override;
@@ -181,7 +181,7 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
                       base::Pickle* data) const override;
   void EnumerateCustomData(std::vector<FORMATETC>* formats) const override;
   bool GetCustomData(const FORMATETC& format,
-                     base::string16* data) const override;  
+                     std::u16string* data) const override;  
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
   bool GetHtml(std::u16string* html, GURL* base_url) const override;

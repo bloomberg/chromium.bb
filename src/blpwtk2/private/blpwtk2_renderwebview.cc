@@ -31,9 +31,8 @@
 #include <base/run_loop.h>
 #include <cc/trees/layer_tree_host.h>
 #include <content/browser/renderer_host/display_util.h>
-#include <content/browser/renderer_host/drop_data_util.h>
+#include <content/browser/renderer_host/data_transfer_util.h>
 #include <content/common/frame_messages.h>
-#include <content/public/renderer/render_view_observer.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
 #include <content/renderer/render_frame_impl.h>
@@ -43,6 +42,8 @@
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_widget.h>
 #include <third_party/blink/public/web/web_view.h>
+#include <third_party/blink/public/web/web_view_observer.h>
+#include <third_party/blink/public/common/widget/screen_infos.h>
 #include <ui/base/ime/init/input_method_factory.h>
 #include <ui/base/ime/input_method.h>
 #include <ui/base/win/lock_state.h>
@@ -51,6 +52,8 @@
 #include <ui/display/screen.h>
 #include <ui/events/base_event_utils.h>
 #include <ui/events/blink/web_input_event.h>
+#include <ui/base/cursor/cursor_loader.h>
+#include <ui/base/cursor/win/win_cursor.h>
 #include <ui/base/win/session_change_observer.h>
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
@@ -62,12 +65,20 @@
 namespace {
 
 // static
-content::RenderWidget* GetWidgetFromViewRoutingId(const base::Optional<int>& renderViewRoutingId) {
+blink::WebFrameWidget *GetWidgetFromViewRoutingId(const base::Optional<int>& renderViewRoutingId) {
   if (!renderViewRoutingId) {
       return nullptr;
   }
   content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(*renderViewRoutingId);
-  return rv->GetMainRenderFrame()->GetLocalRootRenderWidget();
+
+  blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+  DCHECK(webFrame->IsWebLocalFrame());
+
+  blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
+  content::RenderFrameImpl* render_frame =
+      content::RenderFrameImpl::FromWebFrame(localWebFrame);
+
+  return render_frame->GetLocalRootWebFrameWidget();
 }
 
 void GetNativeViewScreenInfo(blink::ScreenInfo* screen_info,
@@ -113,7 +124,7 @@ public:
     }
 
 
-    void TextSelectionChanged(const ::base::string16& text, uint32_t offset, const ::gfx::Range& range) final {
+    void TextSelectionChanged(const std::u16string& text, uint32_t offset, const ::gfx::Range& range) final {
         renderWebView_->OnSelectionChanged(text, offset, range);
     }
 
@@ -186,20 +197,20 @@ private:
                   // class RenderWebView::RenderViewObserver
                   // ---------------------------------------
 
-class RenderWebView::RenderViewObserver : public content::RenderViewObserver {
+class RenderWebView::RenderViewObserver : public blink::WebViewObserver {
     RenderWebView *d_renderWebView;
 
   public:
 
-    RenderViewObserver(content::RenderViewImpl *rv, RenderWebView *renderWebView);
+    RenderViewObserver(blink::WebView *rv, RenderWebView *renderWebView);
     ~RenderViewObserver() override;
 
     void OnDestruct() override;
 };
 
 RenderWebView::RenderViewObserver::RenderViewObserver(
-    content::RenderViewImpl *rv, RenderWebView *renderWebView)
-: content::RenderViewObserver(rv)
+    blink::WebView *rv, RenderWebView *renderWebView)
+: blink::WebViewObserver(rv)
 , d_renderWebView(renderWebView)
 {
     d_renderWebView->d_renderViewObserver = this;
@@ -364,7 +375,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     case WM_NCDESTROY: {
         if (d_gotRenderViewInfo) {
             GetWidgetFromViewRoutingId(d_renderViewRoutingId)->
-                layer_tree_host()->SetVisible(false);
+                LayerTreeHost()->SetVisible(false);
         }
 
         if (d_compositor) {
@@ -416,7 +427,8 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
         BeginPaint(d_hwnd.get(), &ps);
 
         if (d_gotRenderViewInfo) {
-            GetWidgetFromViewRoutingId(d_renderViewRoutingId)->Redraw();
+            blink::WebFrameWidget *web_frame_widget = GetWidgetFromViewRoutingId(d_renderViewRoutingId);
+            web_frame_widget->LayerTreeHost()->SetNeedsRedrawRect(gfx::Rect(web_frame_widget->Size()));
         }
 
         EndPaint(d_hwnd.get(), &ps);
@@ -836,7 +848,7 @@ void RenderWebView::initializeBrowserLike()
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
 
-    d_cursorLoader = ui::CursorLoader::Create();
+    d_cursorLoader = std::make_unique<ui::CursorLoader>();
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 
     d_inputMethod = ui::CreateInputMethod(this, d_hwnd.get());
@@ -847,7 +859,7 @@ void RenderWebView::initializeBrowserLike()
 
     d_windowsSessionChangeObserver =
         std::make_unique<ui::SessionChangeObserver>(
-            base::Bind(&RenderWebView::onSessionChange, base::Unretained(this)));
+            base::BindRepeating(&RenderWebView::onSessionChange, base::Unretained(this)));
 }
 
 // Perform initialization tasks after the renderer side of a regular WebView has been
@@ -861,10 +873,11 @@ void RenderWebView::initializeRendererForWebView()
     GetMessageDelegate().AddRoute(*d_renderViewRoutingId, this);
 
     // Obtain a reference to the `blink::WebFrameWidget` created by the `RenderView`:
-    d_frame_widget = rv->GetWebView()->MainFrameWidget();
+    blink::WebView *web_view = rv->GetWebView();
+    d_frame_widget = web_view->MainFrameWidget();
 
     // Observe the lifecycle of the RenderView:
-    d_renderViewObserver = new RenderViewObserver(rv, this);
+    d_renderViewObserver = new RenderViewObserver(web_view, this);
 
     // The blink::WebView needs the HWND in order for the print dialog to work:
     rv->GetWebView()->SetHwnd(d_hwnd.get());
@@ -888,7 +901,7 @@ void RenderWebView::initializeRenderer()
     d_gotRenderViewInfo = true;
     content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId);
 
-    content::RenderWidget *rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId);
+    blink::WebWidget *widget = GetWidgetFromViewRoutingId(d_renderViewRoutingId);
 
     mojo::PendingAssociatedRemote<blink::mojom::LocalFrameHostPartialOverride> blink_local_frame_host = mojo_local_frame_host_impl_->BindNewEndpointAndPassRemote();
     mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host = mojo_frame_widget_host_impl_->BindNewEndpointAndPassRemote();
@@ -906,7 +919,7 @@ void RenderWebView::initializeRenderer()
         GetMessageDelegate().BindNewAssociatedEndpointAndPassReceiver(
             blink_frame_widget_);
 
-    rw->GetWebWidget()->ResetWidgetInterfaces(std::move(blink_widget_host),
+    widget->ResetWidgetInterfaces(std::move(blink_widget_host),
         std::move(blink_frame_widget_host), std::move(blink_popup_widget_host), std::move(blink_widget), std::move(blink_frame_widget));
 
     // Override input event routing:
@@ -952,7 +965,6 @@ void RenderWebView::updateVisibility()
     if (d_visible) {
         if (rv) {
             rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible, false);
-            rv->OnPageVisibilityChanged(content::PageVisibilityState::kVisible);
         }
         if (blink_widget_) {
             blink_widget_->WasShown(base::TimeTicks::Now(), false, nullptr);
@@ -964,7 +976,6 @@ void RenderWebView::updateVisibility()
         }
         if (rv) {
             rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kHidden, false);
-            rv->OnPageVisibilityChanged(content::PageVisibilityState::kHidden);
         }
 
         d_tooltip->Hide();
@@ -983,10 +994,10 @@ void RenderWebView::updateGeometry()
 
     blink::VisualProperties params = {};
 
-    GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
+    GetNativeViewScreenInfo(&params.screen_infos.mutable_current(), d_hwnd.get());
 
-    auto dip_size = gfx::Size { size.width()  / params.screen_info.device_scale_factor,
-                                size.height() / params.screen_info.device_scale_factor  };
+    auto dip_size = gfx::Size { size.width()  / params.screen_infos.current().device_scale_factor,
+                                size.height() / params.screen_infos.current().device_scale_factor  };
 
     params.new_size = dip_size;
     params.visible_viewport_size = dip_size;
@@ -1040,7 +1051,8 @@ void RenderWebView::detachFromRoutingId()
 bool RenderWebView::dispatchIPCMessage(const IPC::Message& message)
 {
     if (d_renderViewRoutingId) {
-        content::RenderView *rv = content::RenderView::FromRoutingID(*d_renderViewRoutingId);
+        content::RenderViewImpl *rv =
+            content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId);
 
         blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
 
@@ -1145,7 +1157,10 @@ void RenderWebView::showTooltip()
     POINT location;
     GetCursorPos(&location);
 
-    d_tooltip->SetText(nullptr, d_lastTooltipText, gfx::Point(location));
+    views::corewm::TooltipPosition position;
+    position.anchor_point = gfx::Point(location);
+
+    d_tooltip->Update(nullptr, d_lastTooltipText, position);
     d_tooltip->Show();
 
     d_tooltipShownTimer.Start(
@@ -1222,13 +1237,21 @@ void RenderWebView::forceRedrawWindow(int attempts)
             return;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(&RenderWebView::forceRedrawWindow,
-                       base::Unretained(this),
-                       attempts),
+            base::BindOnce(&RenderWebView::forceRedrawWindow,
+                           base::Unretained(this),
+                           attempts),
             base::TimeDelta::FromMilliseconds(500));
         return;
     }
     InvalidateRect(d_hwnd.get(), NULL, FALSE);
+}
+
+void RenderWebView::onDragTargetDropAck()
+{
+}
+
+void RenderWebView::onDragSourceEndedAck()
+{
 }
 
 // blpwtk2::WebView overrides:
@@ -1943,7 +1966,7 @@ void RenderWebView::ClearCompositionText()
     if (d_hasCompositionText) {
         d_widgetInputHandler->
             ImeSetComposition(
-                base::string16(),
+                std::u16string(),
                 {},
                 gfx::Range::InvalidRange(),
                 0, 0);
@@ -1952,7 +1975,7 @@ void RenderWebView::ClearCompositionText()
     d_hasCompositionText = false;
 }
 
-void RenderWebView::InsertText(const base::string16& text)
+void RenderWebView::InsertText(const std::u16string& text, InsertTextCursorBehavior cursor_behavior)
 {
     if (!text.empty()) {
         d_widgetInputHandler->
@@ -2090,7 +2113,7 @@ bool RenderWebView::DeleteRange(const gfx::Range& range)
 
 bool RenderWebView::GetTextFromRange(
     const gfx::Range& range,
-    base::string16* text) const
+    std::u16string* text) const
 {
     gfx::Range selection_text_range(
         d_selectionTextOffset,
@@ -2161,6 +2184,12 @@ bool RenderWebView::SetCompositionFromExistingText(const gfx::Range& range,
     return false;
 }
 
+gfx::Rect RenderWebView::GetSelectionBoundingBox() const
+{
+    NOTIMPLEMENTED();
+    return gfx::Rect();
+}
+
 // DragDropDelegate overrides:
 void RenderWebView::DragTargetEnter(
     const std::vector<content::DropData::Metadata>& drag_data_metadata,
@@ -2171,7 +2200,7 @@ void RenderWebView::DragTargetEnter(
 {
     if (blink_frame_widget_) {
       blink_frame_widget_->DragTargetDragEnter(
-          DropMetaDataToDragData(drag_data_metadata), client_pt, screen_pt,
+          content::DropMetaDataToDragData(drag_data_metadata), client_pt, screen_pt,
           ops_allowed, key_modifiers,
           base::BindOnce(&RenderWebView::OnUpdateDragCursor,
                          base::Unretained(this)));
@@ -2218,22 +2247,24 @@ void RenderWebView::DragTargetDrop(const content::DropData& drop_data,
     int processID = ::GetCurrentProcessId();
     blink_frame_widget_->DragTargetDrop(content::DropDataToDragData(drop_data, nullptr, processID),
                                         ConvertWindowPointToViewport(client_pt),
-                                        screen_pt, key_modifiers);
+                                        screen_pt, key_modifiers,
+                                        base::BindOnce(&RenderWebView::onDragTargetDropAck,
+                                                       base::Unretained(this)));
   }
 }
 
 void RenderWebView::DragSourceEnded(
     const gfx::PointF& client_pt,
     const gfx::PointF& screen_pt,
-    blink::DragOperation drag_operation)
+    blink::DragOperationsMask drag_operation)
 {
   if (!d_gotRenderViewInfo) {
     return;
   }
   if (blink_frame_widget_) {
     blink_frame_widget_->DragSourceEndedAt(
-        ConvertWindowPointToViewport(client_pt), screen_pt, drag_operation);
-  
+        ConvertWindowPointToViewport(client_pt), screen_pt, static_cast<ui::mojom::DragOperation>(drag_operation), 
+        base::BindOnce(&RenderWebView::onDragSourceEndedAck, base::Unretained(this)));
   }
 }
 
@@ -2255,7 +2286,7 @@ void RenderWebView::SetCursor(const ui::Cursor& cursor)
     OnSetCursor(content::WebCursor(cursor));
 }
 
-void RenderWebView::SetToolTipText(const ::base::string16& tooltip_text, ::base::i18n::TextDirection text_direction_hint)
+void RenderWebView::UpdateTooltipUnderCursor(const std::u16string& tooltip_text, ::base::i18n::TextDirection text_direction_hint)
 {
     d_tooltipText = tooltip_text;
     updateTooltip();
@@ -2311,8 +2342,7 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
         if (d_currentCursor.cursor().type() != ui::mojom::CursorType::kCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
-
-            platformCursor = native_cursor.platform();
+            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
         }
         else {
             ui::Cursor uiCursor(ui::mojom::CursorType::kCustom);
@@ -2325,7 +2355,8 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
             uiCursor.set_custom_hotspot(hotspot);
             uiCursor.set_image_scale_factor(scale_factor);
 
-            platformCursor = d_currentCursor.GetPlatformCursor(uiCursor);
+            auto native_cursor = d_currentCursor.GetNativeCursor();
+            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
         }
 
         setPlatformCursor(platformCursor);
@@ -2336,6 +2367,7 @@ void RenderWebView::SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                                            base::i18n::TextDirection anchor_dir,
                                            const gfx::Rect& focus_rect,
                                            base::i18n::TextDirection focus_dir,
+                                           const gfx::Rect& bounding_box_rect,
                                            bool is_anchor_first) {
     gfx::SelectionBound anchor_bound, focus_bound;
     anchor_bound.SetEdge(
@@ -2381,7 +2413,7 @@ void RenderWebView::SelectionBoundsChanged(const gfx::Rect& anchor_rect,
 }
 
 void RenderWebView::OnSelectionChanged(
-    const base::string16& text,
+    const std::u16string& text,
     uint32_t offset,
     const gfx::Range& range)
 {
@@ -2425,15 +2457,16 @@ void RenderWebView::StartDragging(blink::mojom::DragDataPtr drag_data,
 {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&RenderWebView::onStartDraggingImpl, base::Unretained(this),
-                 content::DragDataToDropData(*drag_data), drag_operations_mask,
-                 unsafe_bitmap, bitmap_offset_in_dip));
+      base::BindOnce(&RenderWebView::onStartDraggingImpl, base::Unretained(this),
+                     content::DragDataToDropData(*drag_data), drag_operations_mask,
+                     unsafe_bitmap, bitmap_offset_in_dip));
 }
 
 void RenderWebView::OnUpdateDragCursor(
-    blink::DragOperation drag_operation)
+    ui::mojom::DragOperation drag_operation)
 {
-    d_dragDrop->UpdateDragCursor(drag_operation);
+    d_dragDrop->UpdateDragCursor(
+            static_cast<blink::DragOperationsMask>(drag_operation));
 }
 
 // Used only for renderer-driven popups:
