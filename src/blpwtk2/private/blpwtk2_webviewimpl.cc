@@ -59,6 +59,7 @@
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
 #include <ui/aura/window.h>
+#include <ui/compositor/layer.h>
 #include <errno.h>
 namespace blpwtk2 {
 

@@ -28,8 +28,6 @@ GpuDataLogger::~GpuDataLogger() {}
 
 GpuMode GpuDataLogger::toWtk2GpuMode(gpu::GpuMode mode)
 {
-   // Alert us in case of upstream gpu::GpuMode update
-   static_assert((int)gpu::GpuMode::DISABLED == 6, "gpu::GpuMode should only have 6 types");
    GpuMode wtk2Mode;
    switch(mode) {
         case gpu::GpuMode::HARDWARE_GL:
@@ -39,9 +37,6 @@ GpuMode GpuDataLogger::toWtk2GpuMode(gpu::GpuMode mode)
             break;
         case gpu::GpuMode::SWIFTSHADER:
             wtk2Mode = GpuMode::kOOPSoftware;
-            break;
-        case gpu::GpuMode::DISABLED:
-            wtk2Mode = GpuMode::kDisabled;
             break;
         default:
             wtk2Mode = GpuMode::kUnknown;
