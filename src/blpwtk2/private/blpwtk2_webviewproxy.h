@@ -28,6 +28,10 @@
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewclientdelegate.h>
 
+namespace blink {
+class WebFrameWidget;
+}
+
 namespace gfx {
 class Point;
 }  // close namespace gfx
@@ -110,7 +114,7 @@ class WebViewProxy final : public WebView
     std::size_t getTileMemoryBytes() const override;
     void overrideTileMemoryLimit(std::size_t limit) override;
     void setTag(const char* pTag) override;
-    content::RenderWidget* getRenderWidget() const;
+    blink::WebFrameWidget* getWebFrameWidget() const;
 
     bool validateClient();
 

@@ -42,7 +42,7 @@ namespace {
 typedef std::unordered_set<TileManager*> TileManagers;
 static base::LazyInstance<TileManagers>::Leaky g_tileManagers =
     LAZY_INSTANCE_INITIALIZER;
-static base::Optional<size_t> g_totalTileMemoryLimit;
+static absl::optional<size_t> g_totalTileMemoryLimit;
 
 // Flag to indicate whether we should try and detect that
 // a tile is of solid color.
