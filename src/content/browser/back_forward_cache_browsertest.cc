@@ -1318,6 +1318,86 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
   }
 }
 
+// Tests that evicting a page in between the time the back/forward cache
+// NavigationRequest restore was created and when the NavigationRequest actually
+// starts after finishing beforeunload won't result in a crash.
+// See https://crbug.com/1218114.
+IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
+                       EvictedWhileWaitingForBeforeUnload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameDeletedObserver delete_observer(rfh_a.get());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImplWrapper rfh_b(current_frame_host());
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b.get());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 3) Navigate to C, which has a beforeunload handler that never finishes.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImplWrapper rfh_c(current_frame_host());
+  EXPECT_TRUE(ExecJs(rfh_c.get(), R"(
+    window.onbeforeunload = () => {
+      while (true) {}
+    }
+  )"));
+  // Both A & B are in the back/forward cache.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+
+  // 4) Evict entry A. This will post a task that destroys all evicted entries
+  // when it runs (task #1).
+  DisableBFCacheForRFHForTesting(rfh_a->GetGlobalId());
+  EXPECT_FALSE(rfh_a.IsDestroyed());
+  EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
+
+  // 5) Trigger a back navigation to B. This will create a BFCache restore
+  // navigation to B, but will wait for C's beforeunload handler to finish
+  // running before continuing.
+  web_contents()->GetController().GoBack();
+
+  // 6) Post a task to run BeforeUnloadCompleted (task #2). This will continue
+  // the BFCache restore navigation to B from step 5, which is currently waiting
+  // for a BeforeUnloadCompleted call.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        root->navigator().BeforeUnloadCompleted(root, true /* proceed */,
+                                                base::TimeTicks::Now());
+      }));
+
+  // 7) Evict entry B. This will post a task (task #3) to restart the navigation
+  // to B, and also another task (task #4) to destroy all evicted entries.
+  DisableBFCacheForRFHForTesting(rfh_b->GetGlobalId());
+  EXPECT_FALSE(rfh_b.IsDestroyed());
+  EXPECT_TRUE(rfh_b->is_evicted_from_back_forward_cache());
+
+  // 8) Wait until the back navigation to B finishes. This will run posted tasks
+  // in order. So:
+  // - Task #1 from step 4 will run and destroy all evicted entries. As both the
+  // entries for A & B have been evicted, they are both destroyed.
+  // - Task #2 from step 6 will run and continue the back/forward cache restore
+  // NavigationRequest to B. However, it would notice that the entry for B is
+  // now gone, and should handle it gracefully.
+  // - Task #3 from step 7 to restart navigation to B runs, and should create a
+  // NavigationRequest to replace the previous NavigationRequest to B.
+  // - Task #4 from step 7 to destroy evicted entries runs and won't destroy
+  // any entry since there's no longer any entry in the back/forward cache.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), url_b);
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {RenderFrameHostDisabledForTestingReason()},
+                    FROM_HERE);
+}
+
 class BackgroundForegroundProcessLimitBackForwardCacheBrowserTest
     : public BackForwardCacheBrowserTest {
  protected:
@@ -10180,6 +10260,74 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
     EXPECT_EQ(EvalJs(rfh_subframe_a, "focusCount").ExtractInt(), 2);
     EXPECT_EQ(EvalJs(rfh_subframe_a, "blurCount").ExtractInt(), 1);
   }
+}
+
+// Tests that trying to focus on a BFCached cross-site iframe won't crash.
+// See https://crbug.com/1250218.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FocusSameSiteSubframeOnPagehide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL main_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to a page with a same-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper rfh_1(current_frame_host());
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 2) Navigate away from the page while trying to focus the subframe on
+  // pagehide. The DidFocusFrame IPC should arrive after the page gets into
+  // BFCache and should be ignored by the browser. The focus after navigation
+  // should go to the new main frame.
+  EXPECT_TRUE(ExecJs(rfh_1.get(), R"(
+    window.onpagehide = function(e) {
+      document.getElementById("test_iframe").focus();
+  })"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  EXPECT_NE(rfh_1.get(), web_contents()->GetFocusedFrame());
+  EXPECT_EQ(current_frame_host(), web_contents()->GetFocusedFrame());
+
+  // 3) Navigate back to the page. The focus should be on the main frame.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+  ExpectRestored(FROM_HERE);
+}
+
+// Tests that trying to focus on a BFCached cross-site iframe won't crash.
+// See https://crbug.com/1250218.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FocusCrossSiteSubframeOnPagehide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL main_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to a page with a cross-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper rfh_1(current_frame_host());
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 2) Navigate away from the page while trying to focus the subframe on
+  // pagehide. The DidFocusFrame IPC should arrive after the page gets into
+  // BFCache and should be ignored by the browser. The focus after navigation
+  // should go to the new main frame.
+  EXPECT_TRUE(ExecJs(rfh_1.get(), R"(
+    window.onpagehide = function(e) {
+      document.getElementById("child-0").focus();
+    })"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  EXPECT_NE(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 3) Navigate back to the page. The focus should be on the original page's
+  // main frame.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_1.get(), current_frame_host());
+  ExpectRestored(FROM_HERE);
 }
 
 // We should try to reuse process on same-site renderer-initiated navigations.

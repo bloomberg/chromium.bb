@@ -146,6 +146,7 @@
 <translation id="1986685561493779662">這個名稱已有人使用</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />按鈕</translation>
 <translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
+<translation id="200114059308480249">要在使用 Google 搜尋時納入前後文嗎？</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
@@ -243,6 +244,7 @@
 <translation id="2517472476991765520">掃描</translation>
 <translation id="2518590038762162553">使用精簡模式時，Chrome 可加快網頁載入速度，並可節省多達 60% 的數據用量。Chrome 會將你的網路流量傳送給 Google，以便針對你造訪的網頁進行最佳化處理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
+<translation id="2527209463677295330">納入較多網頁文字，也許能搜尋到更相關的結果</translation>
 <translation id="2527497042232966453">已切換為無痕分頁</translation>
 <translation id="2527779675047087889">隱藏剪貼簿內容</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
@@ -319,6 +321,7 @@
 <translation id="2979448359891869301">無法擴展螢幕截圖範圍。請在手機負載降低時再試一次。</translation>
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981364137500752533">最多只能開啟 5 個視窗。</translation>
+<translation id="2984978667043170458">使用 Google 搜尋時納入前後文</translation>
 <translation id="2987620471460279764">從其他裝置分享的文字</translation>
 <translation id="2989523299700148168">最近造訪過</translation>
 <translation id="2992473221983447149">圖片說明</translation>
@@ -378,7 +381,6 @@
 <translation id="3295530008794733555">瀏覽速度更快，數據用量更少。</translation>
 <translation id="3297344142967351106">語音協助</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
-<translation id="3332570638882314953">取得關聯性更高的資訊</translation>
 <translation id="3334729583274622784">是否要變更副檔名？</translation>
 <translation id="3341058695485821946">查看節省的數據用量</translation>
 <translation id="3341262203274374114">無法取消追蹤，發生錯誤。</translation>
@@ -848,7 +850,6 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="6203593061661911168">連上 Wi-Fi 網路後將開始下載</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
 <translation id="6211386937064921208">正在預覽這個網頁</translation>
-<translation id="6212786426849242805">讓 Google 同時考量網頁上的部分文字</translation>
 <translation id="6221633008163990886">解鎖即可匯出你的密碼</translation>
 <translation id="6232535412751077445">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
 
@@ -975,12 +976,10 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="6882836635272038266">針對已知不安全的網站、下載內容和擴充功能提供標準防護機制。</translation>
 <translation id="6883204995689174413">分享</translation>
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
-<translation id="6889847736310813892">如果希望 Google 針對醒目顯示的字詞提供更相關的結果，你可以讓 Google 參考網頁上的其他文字。這項<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />隨時可以變更。</translation>
 <translation id="6891726759199484455">解鎖即可複製你的密碼</translation>
 <translation id="6896758677409633944">複製</translation>
 <translation id="6900532703269623216">強化防護</translation>
 <translation id="6903907808598579934">開啟同步功能</translation>
-<translation id="6924672435311694692">查看更符合需求的搜尋結果</translation>
 <translation id="6929699136511445623">啟用 Android 系統同步功能</translation>
 <translation id="6942665639005891494">你隨時可以使用 [設定] 選單選項變更預設的下載位置</translation>
 <translation id="694267552845942083">你正在自訂同步功能設定。如要開啟同步功能，請輕觸畫面底部附近的 [確認] 按鈕。向上瀏覽</translation>
@@ -1048,6 +1047,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方式</translation>
 <translation id="7375125077091615385">類型：</translation>
+<translation id="7376560087009844242">使用輕觸搜尋功能時，納入較多網頁文字也許能找到更相關的結果。你隨時可以前往<ph name="BEGIN_LINK" />設定頁面<ph name="END_LINK" />調整設定。</translation>
 <translation id="7386842512861524348">如果 Chrome 未另行通知，表示網站連線安全無虞。</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -1062,6 +1062,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="7444811645081526538">更多類別</translation>
 <translation id="7453467225369441013">大多數網站都會將你登出，但系統並不會將你登出 Google 帳戶。</translation>
 <translation id="7454641608352164238">空間不足</translation>
+<translation id="7474822150871987353">不必離開原本的網頁，即可查看網站上各主題的資訊。只要選取網頁上的一或多個字詞，就能展開搜尋。</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
 <translation id="7479104141328977413">分頁管理</translation>
@@ -1218,7 +1219,6 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="829672787777123339">正在連線至裝置…</translation>
 <translation id="8310344678080805313">標準分頁</translation>
 <translation id="831192587911042850">將目前的網站加到你追蹤的網站清單中。</translation>
-<translation id="8319544457245040955">不必離開原本的網頁，即可查看主題資訊。只要選取網頁上的一或多個字詞，就能展開搜尋。如要編輯搜尋內容，請查看結果並在新分頁中開啟結果。</translation>
 <translation id="8327155640814342956">為獲得最佳瀏覽體驗，請開啟 Chrome 進行更新</translation>
 <translation id="834313815369870491">一律不翻譯的網站</translation>
 <translation id="8349013245300336738">依使用資料量排序</translation>
@@ -1229,6 +1229,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8410695015584479363">追蹤價格</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
+<translation id="8419244640277402268">納入</translation>
 <translation id="8424781820952413435">已傳送頁面。如要查看這個頁面，請在<ph name="DEVICE_TYPE" />上開啟 Chrome</translation>
 <translation id="8427875596167638501">已在畫面下半部顯示預覽分頁</translation>
 <translation id="8428213095426709021">設定</translation>

@@ -8685,6 +8685,32 @@
             ]
         }
     ],
+    "UMA-NonUniformity-Trial-1-Percent": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "ios",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "group_01",
+                    "params": {
+                        "delta": "0.01"
+                    },
+                    "enable_features": [
+                        "UMANonUniformityLogNormal"
+                    ]
+                }
+            ]
+        }
+    ],
     "UnidoPreferSync": [
         {
             "platforms": [
@@ -9278,7 +9304,8 @@
                         "enable_share": "true",
                         "experiment_tag": "",
                         "fetch_frequency": "15",
-                        "use_animated_gif_url": "true"
+                        "use_animated_gif_url": "true",
+                        "use_animated_gif_url_for_summary_card": "false"
                     },
                     "enable_features": [
                         "VideoTutorials"

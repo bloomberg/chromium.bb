@@ -1870,7 +1870,7 @@
 <translation id="2932085390869194046">Прапанаваць пароль...</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (уліковы запіс для дзяцей)</translation>
 <translation id="2932483646085333864">Каб пачаць сінхранізацыю, выйдзіце з уліковага запісу, а потым увайдзіце зноў</translation>
-<translation id="2932883381142163287">Паскардзіцца</translation>
+<translation id="2932883381142163287">Паскардзіцца на парушэнне</translation>
 <translation id="2933632078076743449">Апошняе абнаўленне</translation>
 <translation id="2934999512438267372">Поўны кантроль над прыладамі MIDI дазволены</translation>
 <translation id="2935225303485967257">Кіраваць профілямі</translation>
@@ -2946,6 +2946,7 @@
 <translation id="4066207411788646768">Каб паглядзець даступныя ў сетцы прынтары, патрабуецца падключэнне да інтэрнэту.</translation>
 <translation id="4068776064906523561">Захаваныя адбіткі пальцаў</translation>
 <translation id="407173827865827707">Па націсканні</translation>
+<translation id="4072701974556190758">Пароль будзе захаваны ва Уліковым запісе Google <ph name="ACCOUNT" />. Вам не трэба запамінаць яго.</translation>
 <translation id="4074900173531346617">Сертыфікат для падпісвання электроннай пошты</translation>
 <translation id="407520071244661467">Маштаб</translation>
 <translation id="407543464472585404">Профіль карыстальніка <ph name="NAME" /> звязаны з адрасам электроннай пошты <ph name="EMAIL" /></translation>

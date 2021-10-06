@@ -19,11 +19,12 @@ var priceCleanupRegex = new RegExp(
 var cartItemHTMLRegex = new RegExp(
     '(cart|basket|bundle)[-_]?((\\w+)[-_])?(item|product)', 'i');
 var cartItemTextRegex = new RegExp(
-    '(remove|delete|save for later|move to (favo(u?)rite|list|wish( ?)list)s?)'+
-    '|(qty)', 'i');
+    'remove|delete|save for later|move to (favo(u?)rite|list|wish( ?)list)s?',
+    'i');
+var cartItemQtyRegex = new RegExp('qty', 'i');
 var moveToCartTextRegex = new RegExp('move to (cart|bag)', 'i');
 var addToCartTextRegex = new RegExp('add to cart', 'i');
-var cartPriceTextRegex = new RegExp('estimated (sales )?tax', 'i');
+var cartPriceTextRegex = new RegExp('((estimated (sales )?)|(sales ))tax', 'i');
 var minicartHTMLRegex = new RegExp('mini-cart-product', 'i');
 var productIdHTMLRegex = new RegExp('<a href="#modal-(\\w+)', 'i');
 var productIdURLRegex = new RegExp(
@@ -104,7 +105,8 @@ function multipleImagesSupported() {
   // large and are picked up. Adding in hostname.endsWith('target.com') is a
   // workaround for this problem. In target we only get one image per product.
   return hostname.endsWith('craigslist.org') || hostname.endsWith('target.com')
-      || hostname.endsWith('zazzle.com');
+      || hostname.endsWith('zazzle.com')
+      || hostname.endsWith("ashleyfurniture.com");
 }
 
 function extractImage(item) {
@@ -189,7 +191,8 @@ function extractUrl(item) {
   // triggers JS to initiate navigation instead of <a>, and ae.com shows side
   // panel after clicking on each item instead of directing to product page.
   if (document.URL.includes("samsclub.com")
-      || document.URL.includes("ae.com")) {
+      || document.URL.includes("ae.com")
+      || document.URL.includes("kiehls.com")) {
     return "";
   }
   let anchors;
@@ -493,8 +496,12 @@ function extractPrice(item) {
   }
   // Generic heuristic to search for price elements.
   let captured_prices = [];
-  for (const price of item.querySelectorAll('span, b, p, div, h3, td, li')) {
-    const candidate = price.innerText.trim();
+  for (const price of item.querySelectorAll(
+    'span, b, p, div, h3, td, li, em')) {
+    let candidate = price.innerText.trim();
+    if (document.URL.includes("thecompanystore.com")) {
+      candidate = candidate.split("\n")[0];
+    }
     if (!candidate.match(priceRegexFull))
       continue;
     if (verbose > 1)
@@ -593,7 +600,7 @@ function extractItem(item) {
       console.warn('no title found', item);
     return null;
   }
-  price = extractPrice(item);
+  let price = extractPrice(item);
   // eBay "You may also like" and "Guides" are not product items.
   // Not having price is one hint.
   // FIXME: "Also viewed" items in Gap doesn't have prices.
@@ -654,7 +661,11 @@ function isCartItem(item) {
   if ((document.URL.includes("ashleyfurniture.com")
       || document.URL.includes("gnc.com"))
       && matchPattern(item, minicartHTMLRegex, false)) return false;
+  if (document.URL.includes("ashleyfurniture.com")
+      && matchPattern(item, cartItemQtyRegex, true) === null)
+    return false;
   return matchPattern(item, cartItemTextRegex, true) ||
+    matchPattern(item, cartItemQtyRegex, true) ||
     matchPattern(item, cartItemHTMLRegex, false);
 }
 
@@ -700,6 +711,13 @@ function extractOneItem(item, extracted_items, processed, output,
   if (hasOverlap(item, extracted_items)) {
     if (verbose > 0)
       console.log('overlap', item);
+    return;
+  }
+  if (item.getBoundingClientRect().top <= 10 &&
+      (document.URL.includes("partycity.com")
+      || document.URL.includes("chewy.com"))) {
+    if (verbose > 0)
+        console.log('likely cart page header', item);
     return;
   }
   if (processed.has(item))
@@ -774,6 +792,21 @@ function documentPositionComparator(a, b) {
   }
 }
 
+// Remove duplicate products with identical product URLs.
+function deduplicateResults(output) {
+  if (!document.URL.includes("sourcebmx.com")) return output;
+  const productUrls = new Set();
+  let filteredOutput = [];
+  for (let i = 0; i < output.length; i++) {
+    const productUrl = output[i]["url"];
+    if (!productUrls.has(productUrl)) {
+      filteredOutput.push(output[i]);
+      productUrls.add(productUrl)
+    }
+  }
+  return filteredOutput;
+}
+
 function extractAllItems(root) {
   let items = [];
   // Root element being null could be due to the
@@ -794,6 +827,9 @@ function extractAllItems(root) {
     // has two images in cart item. Remove this when we support cart
     // with multiple images for one product.
     items = root.getElementsByClassName("CartItem CartLineItem");
+  } else if (document.URL.includes("kiehls.com")
+    || document.URL.includes("laroche-posay.us")) {
+    items = root.querySelectorAll(".c-product-table__row");
   } else {
     // Generic pattern
     const candidates = new Set();
@@ -852,7 +888,7 @@ function extractAllItems(root) {
   for (const key of keysInDocOrder) {
     output.push(outputMap.get(key));
   }
-  return output;
+  return deduplicateResults(output);
 }
 
 extracted_results = extractAllItems(document);
