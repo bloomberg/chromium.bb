@@ -52,10 +52,10 @@ class JsWidget : public blink::WebPlugin {
     bool Initialize(blink::WebPluginContainer*) override;
     void Destroy() override;
     blink::WebPluginContainer* Container() const override;
-    void Paint(cc::PaintCanvas*, const blink::WebRect&) override {}
+    void Paint(cc::PaintCanvas*, const gfx::Rect&) override {}
     void UpdateGeometry(
-        const blink::WebRect& windowRect, const blink::WebRect& clipRect,
-        const blink::WebRect& unobscuredRect, bool isVisible) override;
+        const gfx::Rect& windowRect, const gfx::Rect& clipRect,
+        const gfx::Rect& unobscuredRect, bool isVisible) override;
     void UpdateFocus(bool, blink::mojom::FocusType) override {}
     void UpdateVisibility(bool isVisible) override;
     blink::WebInputEventResult HandleInputEvent(
@@ -69,7 +69,7 @@ class JsWidget : public blink::WebPlugin {
     void DetachFromLayout() override;
 
   private:
-    blink::WebRect LocalToRootFrameRect(const blink::WebRect& localRect) const;
+    gfx::Rect LocalToRootFrameRect(const gfx::Rect& localRect) const;
 
     blink::WebPluginContainer* d_container;
     blink::WebLocalFrame* d_frame;

@@ -34,15 +34,15 @@
 
 namespace blpwtk2 {
 
-static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, v8::Local<v8::Context> context, const blink::WebRect& rc)
+static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, v8::Local<v8::Context> context, const gfx::Rect& rc)
 {
     // TODO: make a template for this
     // Since the caller UpdateGeometry has a HandleScope, it is ok to not declare another HandleScope here for optimization.
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    v8::Maybe<bool> maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x));
-    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y));
-    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "width").ToLocalChecked(), v8::Integer::New(isolate, rc.width));
-    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "height").ToLocalChecked(), v8::Integer::New(isolate, rc.height));
+    v8::Maybe<bool> maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x()));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y()));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "width").ToLocalChecked(), v8::Integer::New(isolate, rc.width()));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "height").ToLocalChecked(), v8::Integer::New(isolate, rc.height()));
 
     if (!maybe.IsJust() || !maybe.FromJust())
       LOG(WARNING) << "Failed to set x, y, width, height in jswidget ToV8().";
@@ -94,8 +94,8 @@ blink::WebPluginContainer* JsWidget::Container() const
 }
 
 void JsWidget::UpdateGeometry(
-    const blink::WebRect& windowRect, const blink::WebRect& clipRect,
-    const blink::WebRect& unobscuredRect, bool isVisible)
+    const gfx::Rect& windowRect, const gfx::Rect& clipRect,
+    const gfx::Rect& unobscuredRect, bool isVisible)
 {
     if (!d_hasParent) {
         return;
@@ -181,15 +181,15 @@ void JsWidget::DetachFromLayout()
     d_hasParent = false;
 }
 
-blink::WebRect JsWidget::LocalToRootFrameRect(const blink::WebRect& localRect) const
+gfx::Rect JsWidget::LocalToRootFrameRect(const gfx::Rect& localRect) const
 {
-    gfx::Point rect_corner0 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x, localRect.y));
-    gfx::Point rect_corner1 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x + localRect.width, localRect.y + localRect.height));
+    gfx::Point rect_corner0 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x(), localRect.y()));
+    gfx::Point rect_corner1 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x() + localRect.width(), localRect.y() + localRect.height()));
     int x = rect_corner0.x() <= rect_corner1.x() ? rect_corner0.x() : rect_corner1.x();
     int width = rect_corner0.x() <= rect_corner1.x() ? (rect_corner1.x() - rect_corner0.x()) : (rect_corner0.x() - rect_corner1.x());
     int y = rect_corner0.y() <= rect_corner1.y() ? rect_corner0.y() : rect_corner1.y();
     int height = rect_corner0.y() <= rect_corner1.y() ? (rect_corner1.y() - rect_corner0.y()) : (rect_corner0.y() - rect_corner1.y());
-    return blink::WebRect(x, y, width, height);
+    return gfx::Rect(x, y, width, height);
 }
 
 
