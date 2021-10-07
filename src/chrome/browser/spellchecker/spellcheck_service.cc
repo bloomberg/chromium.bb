@@ -168,13 +168,10 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::InitForAllRenderers,
                           base::Unretained(this)));
 
-  // SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
   custom_dictionary_ =
       std::make_unique<SpellcheckCustomDictionary>(context_->GetPath());
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
-#endif
 
   content::SpellcheckData* spellcheckData =
       content::SpellcheckData::FromContext(context);
@@ -421,11 +418,8 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* host) {
           hunspell_dictionary->GetLanguage()));
     }
 
-    // blpwtk2: Remove dependency on Chrome's custom dictionary
-#if 0
     custom_words.assign(custom_dictionary_->GetWords().begin(),
                         custom_dictionary_->GetWords().end());
-#endif
 
     // blpwtk2: Send the list of custom words to the renderer
     content::SpellcheckData* spellcheckData =
@@ -452,12 +446,9 @@ SpellCheckHostMetrics* SpellcheckService::GetMetrics() const {
   return metrics_.get();
 }
 
-// SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
 SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
   return custom_dictionary_.get();
 }
-#endif
 
 void SpellcheckService::LoadDictionaries() {
   hunspell_dictionaries_.clear();
@@ -600,8 +591,6 @@ void SpellcheckService::OnCustomWordsChanged(
   }
 }
 
-// SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
 void SpellcheckService::OnCustomDictionaryLoaded() {
   InitForAllRenderers();
 }
@@ -624,7 +613,6 @@ void SpellcheckService::OnCustomDictionaryChanged(
                                                                 deletions);
   }
 }
-#endif
 
 void SpellcheckService::OnHunspellDictionaryInitialized(
     const std::string& language) {

@@ -18,11 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 
-// SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
-#endif
-
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -59,10 +55,7 @@ class LanguageSettingsPrivateApiTestDelayInit;
 class SpellcheckService : public KeyedService,
                           public content::NotificationObserver,
                           public content::SpellcheckData::Observer,
-                          // SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
                           public SpellcheckCustomDictionary::Observer,
-#endif
                           public SpellcheckHunspellDictionary::Observer {
  public:
   // Event types used for reporting the status of this class and its derived
@@ -133,11 +126,8 @@ class SpellcheckService : public KeyedService,
   // or null when metrics recording is disabled.
   SpellCheckHostMetrics* GetMetrics() const;
 
-// SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
   // Returns the instance of the custom dictionary.
   SpellcheckCustomDictionary* GetCustomDictionary();
-#endif
 
   // Returns the instance of the vector of Hunspell dictionaries.
   const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
@@ -157,13 +147,10 @@ class SpellcheckService : public KeyedService,
       const std::vector<base::StringPiece>& words_added,
       const std::vector<base::StringPiece>& words_removed) override;
 
-// SHEZ: Remove dependency on Chrome's custom dictionary
-#if 0
   // SpellcheckCustomDictionary::Observer implementation.
   void OnCustomDictionaryLoaded() override;
   void OnCustomDictionaryChanged(
       const SpellcheckCustomDictionary::Change& change) override;
-#endif
 
   // SpellcheckHunspellDictionary::Observer implementation.
   void OnHunspellDictionaryInitialized(const std::string& language) override;
@@ -324,10 +311,7 @@ class SpellcheckService : public KeyedService,
 
   std::unique_ptr<SpellCheckHostMetrics> metrics_;
 
-// blpwtk2: Remove dependency on Chrome's custom dictionary
-#if 0
   std::unique_ptr<SpellcheckCustomDictionary> custom_dictionary_;
-#endif
 
   std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>
       hunspell_dictionaries_;

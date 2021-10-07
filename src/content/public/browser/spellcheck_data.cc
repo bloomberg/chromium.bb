@@ -69,11 +69,11 @@ void SpellcheckData::AdjustCustomWords(
     const std::vector<base::StringPiece>& to_add,
     const std::vector<base::StringPiece>& to_remove) {
   for (size_t i = 0; i < to_add.size(); ++i) {
-    custom_words_.insert(to_add[i].as_string());
+    custom_words_.insert(std::string(to_add[i]));
   }
   for (size_t i = 0; i < to_remove.size(); ++i) {
       CustomWordsSet::iterator it =
-          custom_words_.find(to_remove[i].as_string());
+          custom_words_.find(std::string(to_remove[i]));
       if (it != custom_words_.end()) {
         custom_words_.erase(it);
       }

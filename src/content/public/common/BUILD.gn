@@ -389,3 +389,5 @@ mojom("renderer_type") {
 
 mojom("window_container_mojom") {
    sources = ["window_container_type.mojom"]
+}
+
