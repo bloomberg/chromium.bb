@@ -40,7 +40,6 @@ const CSSValue* BbRubberbandGroupDelimiter::ParseSingleValue(
 
 const CSSValue* BbRubberbandGroupDelimiter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   if (style.BbRubberbandGroupDelimiter() == g_null_atom)

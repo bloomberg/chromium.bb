@@ -11,7 +11,6 @@ namespace css_longhand {
 
 const CSSValue* Rubberbandable::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Rubberbandable());

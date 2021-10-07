@@ -44,13 +44,12 @@
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
 namespace cc {
 class PaintCanvas;
 }
@@ -213,13 +212,13 @@ class WebView {
   // at lines and characters, using the information that was gathered by
   // 'StartRubberbanding()'.  The behavior is undefined if
   // 'IsRubberbanding()' returns false.
-  virtual WebRect ExpandRubberbandRect(const WebRect&) = 0;
+  virtual gfx::Rect ExpandRubberbandRect(const gfx::Rect&) = 0;
   // Finish rubberbanding and return the text contained in the specified
   // rectangle (in WebView client coordinates).  Also, dispatch a
   // "rubberbandfinished" event from the main document.  The behavior is
   // undefined if 'IsRubberbanding()' returns false.  Note that after this
   // method returns, 'IsRubberbanding()' will return false.
-  virtual WebString FinishRubberbanding(const WebRect&) = 0;
+  virtual WebString FinishRubberbanding(const gfx::Rect&) = 0;
   // Abort rubberbanding.  Also, dispatch a "rubberbandaborted" event from
   // the main document.  The behavior is undefined if 'IsRubberbanding()'
   // returns false.  Note that after this method returns, 'IsRubberbanding()'
@@ -230,7 +229,7 @@ class WebView {
   // undefined if 'IsRubberbanding()' returns true.  Note that after this
   // method returns, 'IsRubberbanding()' will remain false.  Also note that
   // the rubberband events will not be dispatched.
-  virtual WebString GetTextInRubberband(const WebRect&) = 0;
+  virtual WebString GetTextInRubberband(const gfx::Rect&) = 0;
   // Begin rubberbanding, regardless of the state of the mouse/alt key. This
   // method will internally invoke 'preStartRubberbanding' and, on success,
   // 'startRubberBanding'. Rubberbanding will begin at the specified 'x' and

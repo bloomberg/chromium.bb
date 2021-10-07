@@ -40,7 +40,6 @@ const CSSValue* BbRubberbandEmptyText::ParseSingleValue(
 
 const CSSValue* BbRubberbandEmptyText::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   if (style.BbRubberbandEmptyText() == g_null_atom)

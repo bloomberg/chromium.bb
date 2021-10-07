@@ -207,6 +207,9 @@ class TestWebFrameWidgetHost : public mojom::blink::WidgetHost,
       mojo::PendingRemote<cc::mojom::blink::RenderFrameMetadataObserver>
           render_frame_metadata_observer) override;
 
+  void SetRubberbandRect(const gfx::Rect& rect) override {}
+  void HideRubberbandRect() override {}
+
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
@@ -288,10 +291,6 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   bool ShouldAutoDetermineCompositingToLCDTextSetting() override {
     return false;
   }
-
-  void SetRubberbandRect(const gfx::Rect& rect) override {}
-  void HideRubberbandRect() override {}
-
 
  private:
   cc::FakeLayerTreeFrameSink* last_created_frame_sink_ = nullptr;

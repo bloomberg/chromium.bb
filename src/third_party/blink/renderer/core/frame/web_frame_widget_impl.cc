@@ -3235,11 +3235,11 @@ void WebFrameWidgetImpl::FocusChangeComplete() {
     focused->AutofillClient()->DidCompleteFocusChangeInFrame();
 }
 
-void WebFrameWidgetBase::SetRubberbandRect(const gfx::Rect& rect) {
+void WebFrameWidgetImpl::SetRubberbandRect(const gfx::Rect& rect) {
   widget_base_->SetRubberbandRect(rect);
 }
 
-void WebFrameWidgetBase::HideRubberbandRect() {
+void WebFrameWidgetImpl::HideRubberbandRect() {
   widget_base_->HideRubberbandRect();
 }
 

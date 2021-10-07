@@ -330,10 +330,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool IsRubberbanding() const override;
   bool PreStartRubberbanding() override;
   void StartRubberbanding() override;
-  WebRect ExpandRubberbandRect(const WebRect&) override;
-  WebString FinishRubberbanding(const WebRect&) override;
+  gfx::Rect ExpandRubberbandRect(const gfx::Rect&) override;
+  WebString FinishRubberbanding(const gfx::Rect&) override;
   void AbortRubberbanding() override;
-  WebString GetTextInRubberband(const WebRect&) override;
+  WebString GetTextInRubberband(const gfx::Rect&) override;
   bool ForceStartRubberbanding(int x, int y) override;
 
   Frame* FocusedCoreFrame() const;
@@ -599,6 +599,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // is used to shrink the visible viewport to allow things like the ChromeOS
   // virtual keyboard to overlay over content but allow scrolling it into view.
   void ResizeVisualViewport(const gfx::Size&);
+  bool HandleAltDragRubberbandEvent(const WebInputEvent&);
+
+  // Whether Alt+Mousedrag rubberbanding is enabled or not.
+  bool isAltDragRubberbandingEnabled_ = false;
+  // Whether rubberbanding has been forced on
+  bool rubberbandingForcedOn_ = false;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
@@ -733,8 +739,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RubberbandWalkFrame(const RubberbandContext&, const LocalFrame*, const LayoutPoint&);
   void RubberbandWalkLayoutObject(const RubberbandContext&, const LayoutObject*);
   WTF::String GetTextInRubberbandImpl(const LayoutRect&);
-  bool HandleAltDragRubberbandEvent(const WebInputEvent&);
-  LayoutRect ExpandRubberbandRectImpl(const WebRect& rcOrig);
+
+  LayoutRect ExpandRubberbandRectImpl(const gfx::Rect& rcOrig);
   WebString FinishRubberbandingImpl(const LayoutRect&);
 
   // Can be null (e.g. unittests, shared workers, etc).
@@ -841,11 +847,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Persistent<DevToolsEmulator> dev_tools_emulator_;
 
   std::unique_ptr<RubberbandState> rubberbandState_;
-
-  // Whether Alt+Mousedrag rubberbanding is enabled or not.
-  bool isAltDragRubberbandingEnabled_ = false;
-  // Whether rubberbanding has been forced on
-  bool rubberbandingForcedOn_ = false;
 
   // Whether the user can press tab to focus links.
   bool tabs_to_links_ = false;

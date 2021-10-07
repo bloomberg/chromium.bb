@@ -28,23 +28,24 @@
 #include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/web/web_view_client.h"
 
@@ -858,10 +859,10 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
         WebLocalFrameImpl* main_frame = MainFrameImpl();
 
         if (main_frame) {
-            WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+            WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
             IntPoint start = rubberbandState_->impl_->m_startPoint;
             IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
-            WebRect rc = ExpandRubberbandRect(getRubberbandRect(start, extent));
+            gfx::Rect rc = ExpandRubberbandRect(getRubberbandRect(start, extent));
             widget->SetRubberbandRect(gfx::Rect(rc));
         }
         return true;
@@ -911,18 +912,18 @@ void WebViewImpl::StartRubberbanding()
     RubberbandWalkFrame(context, page_->DeprecatedLocalMainFrame(), LayoutPoint());
 }
 
-WebRect WebViewImpl::ExpandRubberbandRect(const WebRect& rcOrig)
+gfx::Rect WebViewImpl::ExpandRubberbandRect(const gfx::Rect& rcOrig)
 {
     LayoutRect rc = ExpandRubberbandRectImpl(rcOrig);
     return PixelSnappedIntRect(rc);
 }
 
-LayoutRect WebViewImpl::ExpandRubberbandRectImpl(const WebRect& rcOrig)
+LayoutRect WebViewImpl::ExpandRubberbandRectImpl(const gfx::Rect& rcOrig)
 {
     DCHECK(IsRubberbanding());
 
-    LayoutRect rc(rcOrig);
-    LayoutRect origRect(rcOrig);
+    LayoutRect rc(rcOrig.x(), rcOrig.y(), rcOrig.width(), rcOrig.height());
+    LayoutRect origRect(rcOrig.x(), rcOrig.y(), rcOrig.width(), rcOrig.height());
 
 
     const auto& stateImpl = rubberbandState_->impl_;
@@ -987,9 +988,9 @@ LayoutRect WebViewImpl::ExpandRubberbandRectImpl(const WebRect& rcOrig)
     return rc;
 }
 
-WebString WebViewImpl::FinishRubberbanding(const WebRect& rc)
+WebString WebViewImpl::FinishRubberbanding(const gfx::Rect& rc)
 {
-    LayoutRect layoutRc(rc);
+    LayoutRect layoutRc(rc.x(), rc.y(), rc.width(), rc.height());
     return FinishRubberbandingImpl(layoutRc);
 }
 
@@ -999,7 +1000,7 @@ WebString WebViewImpl::FinishRubberbandingImpl(const LayoutRect& rc)
 
     WebLocalFrameImpl* main_frame = MainFrameImpl();
     if (main_frame) {
-        WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+        WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
         widget->HideRubberbandRect();
     }
 
@@ -1021,7 +1022,7 @@ void WebViewImpl::AbortRubberbanding()
 
     WebLocalFrameImpl* main_frame = MainFrameImpl();
     if (main_frame) {
-        WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+        WebFrameWidgetImpl* widget = main_frame->LocalRootFrameWidget();
         widget->HideRubberbandRect();
     }
 
@@ -1034,7 +1035,7 @@ void WebViewImpl::AbortRubberbanding()
     }
 }
 
-WebString WebViewImpl::GetTextInRubberband(const WebRect& rc)
+WebString WebViewImpl::GetTextInRubberband(const gfx::Rect& rc)
 {
     DCHECK(!IsRubberbanding());
 
@@ -1046,9 +1047,9 @@ WebString WebViewImpl::GetTextInRubberband(const WebRect& rc)
     RubberbandContext context;
     RubberbandLayerContext layerContext;
     context.m_layerContext = &layerContext;
-    layerContext.m_clipRect = LayoutRect(rc);
+    layerContext.m_clipRect = LayoutRect(rc.x(), rc.y(), rc.width(), rc.height());
     RubberbandWalkFrame(context, page_->DeprecatedLocalMainFrame(), LayoutPoint());
-    LayoutRect layoutRc(rc);
+    LayoutRect layoutRc(rc.x(), rc.y(), rc.width(), rc.height());
     WTF::String result = GetTextInRubberbandImpl(layoutRc);
     rubberbandState_.reset(nullptr);
     return result;
@@ -1061,18 +1062,17 @@ void appendCandidatesByLayoutNGText(
 {
     static const UChar space = ' ';
     const Font& font = layoutText->Style()->GetFont();
-    for (const NGPaintFragment* paintFragment :
-        NGPaintFragment::InlineFragmentsFor(layoutText)) {
-        const auto& physicalFragment = paintFragment->PhysicalFragment();
-        if (!physicalFragment.IsText()) {
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*layoutText); cursor;
+        cursor.MoveToNextForSameLayoutObject()) {
+        DCHECK(cursor.Current().Item());
+        const NGFragmentItem& item = *cursor.Current();
+        DCHECK(item.IsText());
+        if (UNLIKELY(item.IsHiddenForPaint()))
             continue;
-        }
-        const blink::NGPhysicalTextFragment& physicalTextFragment =
-            blink::To<blink::NGPhysicalTextFragment>(physicalFragment);
-        const blink::PhysicalOffset& offset = paintFragment->OffsetInContainerBlock();
-        const blink::LayoutSize fragSize{physicalTextFragment.Size().width,
-                                         physicalTextFragment.Size().height};
-        LayoutRect localRect{offset.ToLayoutPoint(), fragSize};
+
+        PhysicalRect rect = item.RectInContainerFragment();
+        LayoutRect localRect{rect.offset.ToLayoutPoint(), rect.size.ToLayoutSize()};
         // NG needs to take m_layerScrollOffset into account
         localRect.Move(-localContext.m_layerContext->m_layerScrollOffset.Width(),
                        -localContext.m_layerContext->m_layerScrollOffset.Height());
@@ -1086,14 +1086,14 @@ void appendCandidatesByLayoutNGText(
         candidate.m_absRect = absRect;
         candidate.m_clipRect = candidate.m_absRect;
         candidate.m_clipRect.Intersect(localContext.m_layerContext->m_clipRect);
-        candidate.m_text = physicalTextFragment.Text().ToString();
-        candidate.m_isLTR = blink::IsLtr(physicalFragment.ResolvedDirection());
+        candidate.m_text = item.Text(cursor.Items()).ToString();
+        candidate.m_isLTR = blink::IsLtr(item.ResolvedDirection());
         candidate.m_useLeadingTab = isTextWithTab(layoutText);
         // startOffset is indexed to layoutText->GetText()
-        int startOffset = physicalTextFragment.StartOffset();
+        int startOffset = item.StartOffset();
         // m_start is indexed to candidate.m_text, which is also physicalTextFragment.Text()
         candidate.m_start = 0;
-        candidate.m_len = physicalTextFragment.TextLength();
+        candidate.m_len = item.TextLength();
         candidate.m_groupId = localContext.m_groupId;
         candidate.m_groupDelimiter = localContext.m_groupDelimiter;
 
@@ -1105,7 +1105,7 @@ void appendCandidatesByLayoutNGText(
 
         candidate.m_charPositions.reserve(candidate.m_len);
         for (int id = startOffset; id < startOffset + candidate.m_len; ++id) {
-            auto localRect2 = physicalTextFragment.LocalRect(id, id + 1);
+            auto localRect2 = item.LocalRect(item.Text(cursor.Items()), id, id + 1);
             LayoutUnit pos = localRect2.X();
             pos *= localContext.m_layerContext->m_scaleX;
             if (candidate.m_isLTR)
