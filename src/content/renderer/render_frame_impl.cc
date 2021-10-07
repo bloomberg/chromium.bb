@@ -1446,6 +1446,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   web_frame_widget->InitializeCompositing(
       agent_scheduling_group.agent_group_scheduler(),
       params->widget_params->visual_properties.screen_infos,
+      params->widget_params->routing_id,
       /*settings=*/nullptr);
 
   // The WebFrame created here was already attached to the Page as its main
@@ -1635,6 +1636,7 @@ void RenderFrameImpl::CreateFrame(
     web_frame_widget->InitializeCompositing(
         agent_scheduling_group.agent_group_scheduler(),
         widget_params->visual_properties.screen_infos,
+        widget_params->routing_id,
         /*settings=*/nullptr);
 
     // The WebFrameWidget should start with valid VisualProperties, including a
@@ -1677,6 +1679,7 @@ void RenderFrameImpl::CreateFrame(
     web_frame_widget->InitializeCompositing(
         agent_scheduling_group.agent_group_scheduler(),
         widget_params->visual_properties.screen_infos,
+        widget_params->routing_id,
         /*settings=*/nullptr);
 
     // The WebFrameWidget should start with valid VisualProperties, including a

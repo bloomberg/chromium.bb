@@ -994,7 +994,12 @@ WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
       std::move(widget_receiver), agent_group_scheduler.DefaultTaskRunner());
   popup_widget->InitializeCompositing(agent_group_scheduler,
                                       opener_widget->GetOriginalScreenInfos(),
+                                      -1,
                                       /*settings=*/nullptr);
+
+  // blpwtk2: The view id passed into InitializeCompositing is only used
+  // for performance metrics. Since embedders of blpwtk2 do not use web
+  // popups, it's ok to pass a sentinel value of -1.
 
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)

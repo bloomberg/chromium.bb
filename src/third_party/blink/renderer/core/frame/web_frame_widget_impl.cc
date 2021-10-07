@@ -1916,7 +1916,8 @@ void WebFrameWidgetImpl::InitializeCompositing(
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
-      agent_group_scheduler, is_for_child_local_root_, screen_infos, settings,
+      agent_group_scheduler, is_for_child_local_root_, screen_infos, view_id,
+      settings,
       input_handler_weak_ptr_factory_.GetWeakPtr());
 
   LocalFrameView* frame_view;
