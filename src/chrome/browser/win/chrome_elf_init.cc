@@ -116,6 +116,7 @@ void BrowserBlacklistBeaconSetup() {
 
   if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
     // The blacklist setup didn't crash, so we report if it was enabled or not.
+#if !defined(BLPWTK2_IMPLEMENTATION)
     if (IsThirdPartyInitialized()) {
       RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
     } else {
@@ -124,7 +125,7 @@ void BrowserBlacklistBeaconSetup() {
       // for more details.
       RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
     }
-
+#endif
     // Regardless of if the blacklist was fully enabled or not, report how many
     // times we had to try to set it up.
     DWORD attempt_count = 0;
