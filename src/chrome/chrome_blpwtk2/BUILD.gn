@@ -26,6 +26,7 @@ group("chrome_blpwtk2") {
      "//base:base",
      "//chrome/browser:browser",
      "//chrome/utility:utility",
+     "//components/crash/core/app:crash_export_thunks",
      "//components/printing/browser",
      "//components/printing/renderer",
      "//components/mirroring/mojom:service",
