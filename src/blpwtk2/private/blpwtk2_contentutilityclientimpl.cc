@@ -38,10 +38,10 @@ void ContentUtilityClientImpl::UtilityThreadStarted() {
 bool ContentUtilityClientImpl::OnMessageReceived(const IPC::Message& message) {
   return chrome_utility_client_->OnMessageReceived(message);
 }
-bool ContentUtilityClientImpl::HandleServiceRequest(
+bool ContentUtilityClientImpl::HandleServiceRequestDeprecated(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-    return chrome_utility_client_->HandleServiceRequest(service_name, std::move(receiver));
+    mojo::ScopedMessagePipeHandle service_pipe) {
+    return chrome_utility_client_->HandleServiceRequestDeprecated(service_name, std::move(service_pipe));
 }
 
 void ContentUtilityClientImpl::RegisterNetworkBinders(

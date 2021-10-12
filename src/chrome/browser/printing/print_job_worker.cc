@@ -352,7 +352,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   if (document_name.empty()) {
     // TODO(LEVI): Set this to what it should really be
     document_name = SimplifyDocumentTitle(
-        L"Default Print Document Title");
+        std::u16string(u"Default Print Document Title"));
   }
   PrintingContext::Result result =
       printing_context_->NewDocument(document_name);

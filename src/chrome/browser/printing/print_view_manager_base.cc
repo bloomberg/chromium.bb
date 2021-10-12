@@ -531,8 +531,9 @@ void PrintViewManagerBase::NavigationStopped() {
 
 std::u16string PrintViewManagerBase::RenderSourceName() {
   std::u16string name(web_contents()->GetTitle());
-  if (name.empty())
-    name = L"Default Print Document Title";  // TODO(LEVI): Set this to what it really should be
+  if (name.empty()) {
+    name = std::u16string(u"Default Print Document Title");
+  }
   return name;
 }
 

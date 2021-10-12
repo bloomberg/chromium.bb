@@ -215,7 +215,7 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   }
 #endif
 
-  const base::string16& header_footer_html() const {
+  const std::u16string& header_footer_html() const {
     return s_header_footer_html;
   }
 
@@ -255,7 +255,7 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // Sets the default value for header_footer_html and
   // print_background_graphics configuration.
   static void SetDefaultPrinterSettings(
-      const base::string16& header_footer_html,
+      const std::u16string& header_footer_html,
       bool print_background_graphics);
 
  private:
@@ -349,7 +349,7 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
 #endif
 
   // The HTML content used to format header and footer of printed pages.
-  static base::string16 s_header_footer_html;
+  static std::u16string s_header_footer_html;
 
   // Stores the default value of printing background graphics configuration.
   static bool s_print_background_graphics;

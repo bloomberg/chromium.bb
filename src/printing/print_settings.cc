@@ -245,7 +245,7 @@ absl::optional<bool> IsColorModelSelected(mojom::ColorModel color_model) {
 
 // Global SequenceNumber used for generating unique cookie values.
 static base::AtomicSequenceNumber cookie_seq;
-base::string16 PrintSettings::s_header_footer_html;
+std::u16string PrintSettings::s_header_footer_html;
 bool PrintSettings::s_print_background_graphics;
 
 PrintSettings::PrintSettings() {
@@ -396,7 +396,7 @@ void PrintSettings::SetOrientation(bool landscape) {
 }
 
 void PrintSettings::SetDefaultPrinterSettings(
-    const base::string16& header_footer_html,
+    const std::u16string& header_footer_html,
     bool print_background_graphics) {
   s_header_footer_html = header_footer_html;
   s_print_background_graphics = print_background_graphics;

@@ -56,8 +56,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
-#include <chrome/browser/printing/printing_message_filter.h>
-
 namespace blpwtk2 {
 
                         // ------------------------------
@@ -83,13 +81,6 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
 bool ContentBrowserClientImpl::ShouldEnableStrictSiteIsolation()
 {
     return false;
-}
-
-void ContentBrowserClientImpl::RenderProcessWillLaunch(
-    content::RenderProcessHost *host)
-{
-    int id = host->GetID();
-    host->AddFilter(new printing::PrintingMessageFilter(id, nullptr));
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
