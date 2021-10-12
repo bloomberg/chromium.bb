@@ -34,7 +34,7 @@
 #include <content/browser/gpu/compositor_util.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_internals_ui.h>
-#include <content/browser/gpu/gpu_process_host.h>
+// #include <content/browser/gpu/gpu_process_host.h>
 #include <third_party/angle/src/common/version.h>
 
 #include <fstream>
@@ -63,8 +63,8 @@ std::string createSourcePermalink(const std::string& revisionIdentifier,
 
 std::string getGpuInfo(const Profile* profile) {
     base::DictionaryValue gpuInfo;
-    gpuInfo.Set("featureStatus", content::GetFeatureStatus());
-    gpuInfo.Set("problems", content::GetProblems());
+    gpuInfo.Set("featureStatus", std::make_unique<base::Value>(content::GetFeatureStatus()));
+    gpuInfo.Set("problems", std::make_unique<base::Value>(content::GetProblems()));
 
     base::ListValue* workarounds = new base::ListValue();
     for (const auto& workaround : content::GetDriverBugWorkarounds()) {
@@ -72,10 +72,10 @@ std::string getGpuInfo(const Profile* profile) {
     }
     std::unique_ptr<base::Value> workarounds_v(workarounds);
     gpuInfo.Set("workarounds", std::move(workarounds_v));
-    gpuInfo.Set("memoryBufferInfo", content::GpuInternalsUI::GetGpuMemoryBufferInfo());
-    gpuInfo.Set("LogMessage", content::GpuDataManagerImpl::GetInstance()->GetLogMessages());
+    gpuInfo.Set("memoryBufferInfo", std::make_unique<base::Value>(content::GpuInternalsUI::GetGpuMemoryBufferInfo()));
+    gpuInfo.SetList("LogMessage", content::GpuDataManagerImpl::GetInstance()->GetLogMessages());
     
-    gpuInfo.SetInteger("gpu_process_crash_count", content::GpuProcessHost::GetGpuCrashCount());
+//    gpuInfo.SetInteger("gpu_process_crash_count", content::GpuProcessHost::GetGpuCrashCount());
     gpuInfo.SetBoolean("in_process_gpu", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().in_process_gpu);
     gpuInfo.SetBoolean("direct_composition", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().overlay_info.direct_composition);
     gpuInfo.SetBoolean("gpu_active", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().active);
@@ -91,8 +91,8 @@ std::string getGpuInfo(const Profile* profile) {
     gpuInfo.SetString("gl_renderer", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().gl_renderer);
     gpuInfo.SetString("gl_version", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().gl_version);
 
-    gpuInfo.SetString("command_line",
-        base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+    std::wstring cmdstr = base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+    gpuInfo.SetString("command_line", std::u16string(cmdstr.begin(), cmdstr.end()));
 
     gpuInfo.SetString("operating_system",
         base::SysInfo::OperatingSystemName() + " " +
