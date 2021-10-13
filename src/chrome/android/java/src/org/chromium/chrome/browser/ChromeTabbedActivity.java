@@ -133,7 +133,6 @@ import org.chromium.chrome.browser.reengagement.ReengagementNotificationControll
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
-import org.chromium.chrome.browser.signin.ui.SigninPromoController;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
@@ -993,8 +992,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         resetSavedInstanceState();
         StartSurfaceConfiguration.addFeedVisibilityObserver();
         BookmarkUtils.maybeExpireLastBookmarkLocationForReadLater(
-                mInactivityTracker.getTimeSinceLastBackgroundedMs());
-        SigninPromoController.maybeExpireNTPPromo(
                 mInactivityTracker.getTimeSinceLastBackgroundedMs());
     }
 
@@ -2146,10 +2143,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         // If we aren't in the overview mode, we handle the Tab with launchType
-        // TabLaunchType.FROM_START_SURFACE here.
+        // TabLaunchType.FROM_START_SURFACE or has "OpenedFromStart" property.
         if (!mOverviewModeController.overviewVisible()
-                && type == TabLaunchType.FROM_START_SURFACE) {
-            if (StartSurfaceUserData.getKeepTab(currentTab)) {
+                && (type == TabLaunchType.FROM_START_SURFACE
+                        || StartSurfaceUserData.isOpenedFromStart(currentTab))) {
+            if (StartSurfaceUserData.getKeepTab(currentTab)
+                    || StartSurfaceUserData.isOpenedFromStart(currentTab)) {
                 // If the current tab is created from the start surface with the keepTab property,
                 // shows the Start surface Homepage to prevent a loop between the current tab and
                 // previous overview mode. Once in the Start surface, it will close Chrome if back

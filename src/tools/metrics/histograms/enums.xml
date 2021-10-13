@@ -14358,7 +14358,8 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Go to URL"/>
   <int value="20" label="Copy link to text"/>
   <int value="21" label="Search Image with Google Lens"/>
-  <int value="22" label="Search part of page with Google Lens"/>
+  <int value="22" label="Search Images with Google Lens"/>
+  <int value="23" label="Search Images with non-Google visual search provider"/>
 </enum>
 
 <enum name="ContextMenuOptionIOS">
@@ -45939,6 +45940,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open results in a new tab"/>
   <int value="2" label="Error capturing image from selected region"/>
+  <int value="3" label="User exited the capture mode via the escape key."/>
+  <int value="4"
+      label="User exited the capture mode via the close button on the
+             instructional bubble."/>
+  <int value="5"
+      label="User navigated away from the page while capture mode was open,
+             closing the capture mode."/>
 </enum>
 
 <enum name="LensSdkError">
@@ -49690,6 +49698,7 @@ from previous Chrome versions.
   <int value="-135584175" label="EnableAggregatedMlAppRanking:enabled"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
+  <int value="-132786900" label="CommerceDeveloper:disabled"/>
   <int value="-132082004" label="CacheOneGoogleBar:enabled"/>
   <int value="-131886819"
       label="AutofillEnableMerchantBoundVirtualCards:enabled"/>
@@ -51125,6 +51134,7 @@ from previous Chrome versions.
   <int value="1009437086" label="AutofillEnableOfferNotification:disabled"/>
   <int value="1009976778" label="SidePanel:disabled"/>
   <int value="1011550878" label="MessagesForAndroidPermissionUpdate:disabled"/>
+  <int value="1012643576" label="CommerceDeveloper:enabled"/>
   <int value="1012942422" label="HorizontalTabSwitcherAndroid:disabled"/>
   <int value="1015012662" label="ChromeOSDirectVideoDecoder:enabled"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
@@ -55605,6 +55615,7 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MessageIdentifier">
+  <int value="0" label="InvalidMessage"/>
   <int value="1" label="SavePassword"/>
   <int value="2" label="UpdatePassword"/>
   <int value="3" label="GeneratedPasswordSaved"/>
@@ -71852,6 +71863,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="113" label="IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE"/>
   <int value="114" label="IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT"/>
   <int value="115" label="IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH"/>
+  <int value="116" label="IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
@@ -75616,6 +75628,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="ShareSourceDesktop">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="OMNIBOX_SHARING_HUB"/>
+  <int value="2" label="WEB_CONTEXT_MENU"/>
+  <int value="3" label="APP_MENU_SHARING_HUB"/>
 </enum>
 
 <enum name="ShareTargetUpdateResult">

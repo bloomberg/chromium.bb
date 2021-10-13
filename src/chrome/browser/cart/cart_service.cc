@@ -12,6 +12,7 @@
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
 #include "chrome/browser/cart/cart_features.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -48,6 +49,9 @@ constexpr base::FeatureParam<bool> kRbdUtmParam{
     &ntp_features::kNtpChromeCartModule,
     ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam, false};
 
+constexpr base::FeatureParam<bool> kBypassDisocuntFetchingThreshold{
+    &commerce::kCommerceDeveloper, "bypass-discount-fetching-threshold", false};
+
 std::string eTLDPlusOne(const GURL& url) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
       url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
@@ -80,21 +84,6 @@ absl::optional<base::Value> JSONToDictionary(int resource_id) {
 bool IsExpired(const cart_db::ChromeCartContentProto& proto) {
   return (base::Time::Now() - base::Time::FromDoubleT(proto.timestamp()))
              .InDays() > 14;
-}
-
-const re2::RE2& GetPartnerMerchantPattern() {
-  re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(
-      cart_features::kPartnerMerchantPattern.Get(), options);
-  return *instance;
-}
-
-bool IsPartnerMerchant(const GURL& url) {
-  const std::string& url_string = url.spec();
-  return RE2::PartialMatch(
-      re2::StringPiece(url_string.data(), url_string.size()),
-      GetPartnerMerchantPattern());
 }
 
 const re2::RE2& GetSkipCartExtractionPattern() {
@@ -153,7 +142,8 @@ void CartService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 GURL CartService::AppendUTM(const GURL& base_url, bool is_discount_enabled) {
-  DCHECK(base_url.is_valid() && IsPartnerMerchant(base_url));
+  DCHECK(base_url.is_valid() &&
+         cart_features::IsRuleDiscountPartnerMerchant(base_url));
 
   if (kRbdUtmParam.Get()) {
     return net::AppendOrReplaceQueryParameter(
@@ -308,7 +298,8 @@ void CartService::HasPartnerCarts(
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
   for (auto proto_pair : proto_pairs) {
-    if (IsPartnerMerchant(GURL(proto_pair.second.merchant_cart_url()))) {
+    if (cart_features::IsPartnerMerchant(
+            GURL(proto_pair.second.merchant_cart_url()))) {
       std::move(callback).Run(true);
       return;
     }
@@ -346,11 +337,12 @@ void CartService::GetDiscountURL(
     const GURL& cart_url,
     base::OnceCallback<void(const ::GURL&)> callback) {
   auto url = cart_url;
-  if (IsPartnerMerchant(cart_url)) {
+  if (cart_features::IsRuleDiscountPartnerMerchant(cart_url)) {
     url = AppendUTM(cart_url, IsCartDiscountEnabled());
   }
 
-  if (!IsPartnerMerchant(cart_url) || !IsCartDiscountEnabled()) {
+  if (!cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
+      !IsCartDiscountEnabled()) {
     std::move(callback).Run(url);
     CartDiscountMetricCollector::RecordClickedOnDiscount(false);
     return;
@@ -409,7 +401,8 @@ void CartService::OnDiscountURLFetched(
 void CartService::PrepareForNavigation(const GURL& cart_url,
                                        bool is_navigating) {
   metrics_tracker_->PrepareToRecordUKM(cart_url);
-  if (is_navigating || !IsPartnerMerchant(cart_url) ||
+  if (is_navigating ||
+      !cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
       !IsCartDiscountEnabled()) {
     return;
   }
@@ -855,7 +848,8 @@ void CartService::StartGettingDiscount() {
       profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime);
   base::TimeDelta fetch_delay = cart_features::kDiscountFetchDelayParam.Get() -
                                 (base::Time::Now() - last_fetched_time);
-  if (last_fetched_time == base::Time() || fetch_delay < base::TimeDelta()) {
+  if (last_fetched_time == base::Time() || fetch_delay < base::TimeDelta() ||
+      kBypassDisocuntFetchingThreshold.Get()) {
     fetch_delay = base::TimeDelta();
   }
 

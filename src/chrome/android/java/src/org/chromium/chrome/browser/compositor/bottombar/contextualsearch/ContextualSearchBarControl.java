@@ -122,6 +122,9 @@ public class ContextualSearchBarControl {
     /** The max height of the Related Searches section of the Bar, used for shrink animation. */
     private float mInBarRelatedSearchesMaxHeightForShrinkAnimation;
 
+    /** A way to notify tests when the in-bar animation changes. */
+    private Runnable mInBarAnimationTestNotifier;
+
     /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
@@ -182,6 +185,11 @@ public class ContextualSearchBarControl {
      * Removes the bottom bar views from the parent container.
      */
     public void destroy() {
+        // Make sure animations are canceled otherwise setting the height can put it into an
+        // inconsistent state.
+        if (mInBarRelatedSearchesAnimation != null) {
+            mInBarRelatedSearchesAnimation.cancel();
+        }
         mContextControl.destroy();
         mSearchTermControl.destroy();
         mCaptionControl.destroy();
@@ -583,21 +591,27 @@ public class ContextualSearchBarControl {
         if (mInBarRelatedSearchesAnimation == null || mInBarRelatedSearchesAnimation.hasEnded()) {
             clearCacheMaxHeightForShrinkAnimation();
         }
+        if (mInBarAnimationTestNotifier != null) mInBarAnimationTestNotifier.run();
     }
 
     /** Returns the maximum height of the Related Searches UI that we show right in the Bar. */
     private float getInBarRelatedSearchesMaximumHeight() {
         float currentRelatedSearchesMaxHeight =
-                mContextualSearchPanel.getRelatedSearchesMaximumHeightDps();
+                mContextualSearchPanel.getInBarRelatedSearchesMaximumHeightDps();
         return currentRelatedSearchesMaxHeight > 0f
                 ? currentRelatedSearchesMaxHeight
                 : mInBarRelatedSearchesMaxHeightForShrinkAnimation;
     }
 
-    /** Caches the current Related Searches max height so we can use it when animating them away. */
+    /**
+     * Caches the current Related Searches max height so we can use it when shrinking the Bar to
+     * animate the carousel away.
+     * The caller needs to call this when an expanding animation has reached its maximum height, but
+     * may call it repeatedly as long as the Bar keeps growing.
+     */
     private void cacheMaxHeightForShrinkAnimation() {
         mInBarRelatedSearchesMaxHeightForShrinkAnimation =
-                mContextualSearchPanel.getRelatedSearchesMaximumHeightDps();
+                mContextualSearchPanel.getInBarRelatedSearchesMaximumHeightDps();
     }
 
     /** Clears the Related Searches max height used for animating them away. */
@@ -611,5 +625,11 @@ public class ContextualSearchBarControl {
      */
     float getInBarRelatedSearchesAnimatedHeightDps() {
         return mInBarRelatedSearchesAnimatedHeightDps;
+    }
+
+    @VisibleForTesting
+    public void setInBarAnimationTestNotifier(Runnable runnable) {
+        assert mInBarAnimationTestNotifier == null;
+        mInBarAnimationTestNotifier = runnable;
     }
 }

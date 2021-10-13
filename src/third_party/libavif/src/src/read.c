@@ -154,9 +154,9 @@ typedef struct avifDecoderItem
     struct avifMeta * meta; // Unowned; A back-pointer for convenience
     uint8_t type[4];
     size_t size;
-    uint32_t idatID; // If non-zero, offset is relative to this idat box (iloc construction_method==1)
-    uint32_t width;  // Set from this item's ispe property, if present
-    uint32_t height; // Set from this item's ispe property, if present
+    avifBool idatStored; // If true, offset is relative to the associated meta box's idat box (iloc construction_method==1)
+    uint32_t width;      // Set from this item's ispe property, if present
+    uint32_t height;     // Set from this item's ispe property, if present
     avifContentType contentType;
     avifPropertyArray properties;
     avifExtentArray extents;       // All extent offsets/sizes
@@ -173,14 +173,6 @@ typedef struct avifDecoderItem
     avifBool progressive; // if true, this item has progressive layers (a1lx), but does not select a specific layer (lsel)
 } avifDecoderItem;
 AVIF_ARRAY_DECLARE(avifDecoderItemArray, avifDecoderItem, item);
-
-// idat storage
-typedef struct avifDecoderItemData
-{
-    uint32_t id;
-    avifRWData data;
-} avifDecoderItemData;
-AVIF_ARRAY_DECLARE(avifDecoderItemDataArray, avifDecoderItemData, idat);
 
 // grid storage
 typedef struct avifImageGrid
@@ -654,10 +646,11 @@ typedef struct avifMeta
     // (ipma) box.
     avifPropertyArray properties;
 
-    // Filled with the contents of "idat" boxes, which are raw data that an item can directly refer to in its
-    // item location box (iloc) instead of just giving an offset into the overall file. If all items' iloc boxes
-    // simply point at an offset/length in the file itself, this array will likely be empty.
-    avifDecoderItemDataArray idats;
+    // Filled with the contents of this meta box's "idat" box, which is raw data that an item can
+    // directly refer to in its item location box (iloc) instead of just giving an offset into the
+    // overall file. If all items' iloc boxes simply point at an offset/length in the file itself,
+    // this buffer will likely be empty.
+    avifRWData idat;
 
     // Ever-incrementing ID for uniquely identifying which 'meta' box contains an idat (when
     // multiple meta boxes exist as BMFF siblings). Each time avifParseMetaBox() is called on an
@@ -679,7 +672,6 @@ static avifMeta * avifMetaCreate()
     memset(meta, 0, sizeof(avifMeta));
     avifArrayCreate(&meta->items, sizeof(avifDecoderItem), 8);
     avifArrayCreate(&meta->properties, sizeof(avifProperty), 16);
-    avifArrayCreate(&meta->idats, sizeof(avifDecoderItemData), 1);
     return meta;
 }
 
@@ -695,11 +687,7 @@ static void avifMetaDestroy(avifMeta * meta)
     }
     avifArrayDestroy(&meta->items);
     avifArrayDestroy(&meta->properties);
-    for (uint32_t i = 0; i < meta->idats.count; ++i) {
-        avifDecoderItemData * idat = &meta->idats.idat[i];
-        avifRWDataFree(&idat->data);
-    }
-    avifArrayDestroy(&meta->idats);
+    avifRWDataFree(&meta->idat);
     avifFree(meta);
 }
 
@@ -733,6 +721,7 @@ typedef struct avifDecoderData
     avifImageGrid colorGrid;
     avifImageGrid alphaGrid;
     avifDecoderSource source;
+    uint8_t majorBrand[4];                     // From the file's ftyp, used by AVIF_DECODER_SOURCE_AUTO
     avifDiagnostics * diag;                    // Shallow copy; owned by avifDecoder
     const avifSampleTable * sourceSampleTable; // NULL unless (source == AVIF_DECODER_SOURCE_TRACKS), owned by an avifTrack
     avifBool cicpSet;                          // True if avifDecoder's image has had its CICP set correctly yet.
@@ -834,16 +823,13 @@ static avifResult avifDecoderItemMaxExtent(const avifDecoderItem * item, const a
         return AVIF_RESULT_TRUNCATED_DATA;
     }
 
-    if (item->idatID != 0) {
+    if (item->idatStored) {
         // construction_method: idat(1)
 
-        // Find associated idat box
-        for (uint32_t i = 0; i < item->meta->idats.count; ++i) {
-            if (item->meta->idats.idat[i].id == item->idatID) {
-                // Already read from a meta box during Parse()
-                memset(outExtent, 0, sizeof(avifExtent));
-                return AVIF_RESULT_OK;
-            }
+        if (item->meta->idat.size > 0) {
+            // Already read from a meta box during Parse()
+            memset(outExtent, 0, sizeof(avifExtent));
+            return AVIF_RESULT_OK;
         }
 
         // no associated idat box was found in the meta box, bail out
@@ -1006,18 +992,12 @@ static avifResult avifDecoderItemRead(avifDecoderItem * item,
 
     // Find this item's source of all extents' data, based on the construction method
     const avifRWData * idatBuffer = NULL;
-    if (item->idatID != 0) {
+    if (item->idatStored) {
         // construction_method: idat(1)
 
-        // Find associated idat box
-        for (uint32_t i = 0; i < item->meta->idats.count; ++i) {
-            if (item->meta->idats.idat[i].id == item->idatID) {
-                idatBuffer = &item->meta->idats.idat[i].data;
-                break;
-            }
-        }
-
-        if (idatBuffer == NULL) {
+        if (item->meta->idat.size > 0) {
+            idatBuffer = &item->meta->idat;
+        } else {
             // no associated idat box was found in the meta box, bail out
             avifDiagnosticsPrintf(diag, "Item ID %u is stored in an idat, but no associated idat box was found", item->id);
             return AVIF_RESULT_NO_CONTENT;
@@ -1521,12 +1501,22 @@ static avifBool avifParseItemLocationBox(avifMeta * meta, const uint8_t * raw, s
     }
     for (uint32_t i = 0; i < itemCount; ++i) {
         uint32_t itemID;
-        uint32_t idatID = 0;
         if (version < 2) {
             CHECK(avifROStreamReadU16(&s, &tmp16)); // unsigned int(16) item_ID;
             itemID = tmp16;
         } else {
             CHECK(avifROStreamReadU32(&s, &itemID)); // unsigned int(32) item_ID;
+        }
+
+        avifDecoderItem * item = avifMetaFindItem(meta, itemID);
+        if (!item) {
+            avifDiagnosticsPrintf(diag, "Box[iloc] has an invalid item ID [%u]", itemID);
+            return AVIF_FALSE;
+        }
+        if (item->extents.count > 0) {
+            // This item has already been given extents via this iloc box. This is invalid.
+            avifDiagnosticsPrintf(diag, "Item ID [%u] contains duplicate sets of extents", itemID);
+            return AVIF_FALSE;
         }
 
         if ((version == 1) || (version == 2)) {
@@ -1541,21 +1531,9 @@ static avifBool avifParseItemLocationBox(avifMeta * meta, const uint8_t * raw, s
                 return AVIF_FALSE;
             }
             if (constructionMethod == 1) {
-                idatID = meta->idatID;
+                item->idatStored = AVIF_TRUE;
             }
         }
-
-        avifDecoderItem * item = avifMetaFindItem(meta, itemID);
-        if (!item) {
-            avifDiagnosticsPrintf(diag, "Box[iloc] has an invalid item ID [%u]", itemID);
-            return AVIF_FALSE;
-        }
-        if (item->extents.count > 0) {
-            // This item has already been given extents via this iloc box. This is invalid.
-            avifDiagnosticsPrintf(diag, "Item ID [%u] contains duplicate sets of extents", itemID);
-            return AVIF_FALSE;
-        }
-        item->idatID = idatID;
 
         uint16_t dataReferenceIndex;                                 // unsigned int(16) data_ref rence_index;
         CHECK(avifROStreamReadU16(&s, &dataReferenceIndex));         //
@@ -2072,17 +2050,16 @@ static avifBool avifParsePrimaryItemBox(avifMeta * meta, const uint8_t * raw, si
 static avifBool avifParseItemDataBox(avifMeta * meta, const uint8_t * raw, size_t rawLen, avifDiagnostics * diag)
 {
     // Check to see if we've already seen an idat box for this meta box. If so, bail out
-    for (uint32_t i = 0; i < meta->idats.count; ++i) {
-        if (meta->idats.idat[i].id == meta->idatID) {
-            avifDiagnosticsPrintf(diag, "Meta box contains multiple idat boxes");
-            return AVIF_FALSE;
-        }
+    if (meta->idat.size > 0) {
+        avifDiagnosticsPrintf(diag, "Meta box contains multiple idat boxes");
+        return AVIF_FALSE;
+    }
+    if (rawLen == 0) {
+        avifDiagnosticsPrintf(diag, "idat box has a length of 0");
+        return AVIF_FALSE;
     }
 
-    int index = avifArrayPushIndex(&meta->idats);
-    avifDecoderItemData * idat = &meta->idats.idat[index];
-    idat->id = meta->idatID;
-    avifRWDataSet(&idat->data, raw, rawLen);
+    avifRWDataSet(&meta->idat, raw, rawLen);
     return AVIF_TRUE;
 }
 
@@ -2683,7 +2660,7 @@ static avifBool avifParseTrackBox(avifDecoderData * data, const uint8_t * raw, s
     return AVIF_TRUE;
 }
 
-static avifBool avifParseMoovBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen, uint32_t imageSizeLimit)
+static avifBool avifParseMovieBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen, uint32_t imageSizeLimit)
 {
     BEGIN_STREAM(s, raw, rawLen, data->diag, "Box[moov]");
 
@@ -2785,6 +2762,7 @@ static avifResult avifParse(avifDecoder * decoder)
                 return AVIF_RESULT_INVALID_FTYP;
             }
             ftypSeen = AVIF_TRUE;
+            memcpy(data->majorBrand, ftyp.majorBrand, 4); // Remember the major brand for future AVIF_DECODER_SOURCE_AUTO decisions
             needsMeta = avifFileTypeHasBrand(&ftyp, "avif");
             needsMoov = avifFileTypeHasBrand(&ftyp, "avis");
         } else if (!memcmp(header.type, "meta", 4)) {
@@ -2793,7 +2771,7 @@ static avifResult avifParse(avifDecoder * decoder)
             metaSeen = AVIF_TRUE;
         } else if (!memcmp(header.type, "moov", 4)) {
             CHECKERR(!moovSeen, AVIF_RESULT_BMFF_PARSE_FAILED);
-            CHECKERR(avifParseMoovBox(data, boxContents.data, boxContents.size, decoder->imageSizeLimit), AVIF_RESULT_BMFF_PARSE_FAILED);
+            CHECKERR(avifParseMovieBox(data, boxContents.data, boxContents.size, decoder->imageSizeLimit), AVIF_RESULT_BMFF_PARSE_FAILED);
             moovSeen = AVIF_TRUE;
         }
 
@@ -3101,9 +3079,19 @@ avifResult avifDecoderParse(avifDecoder * decoder)
                 avifDiagnosticsPrintf(data->diag, "Item ID [%u] size is too large [%ux%u]", item->id, item->width, item->height);
                 return AVIF_RESULT_BMFF_PARSE_FAILED;
             }
-        } else if (!item->auxForID) { // NON-STANDARD: Allow auxiliary images to not have an ispe property. See: https://crbug.com/1245673
-            avifDiagnosticsPrintf(data->diag, "Item ID [%u] is missing a mandatory ispe property", item->id);
-            return AVIF_RESULT_BMFF_PARSE_FAILED;
+        } else {
+            const avifProperty * auxCProp = avifPropertyArrayFind(&item->properties, "auxC");
+            if (auxCProp && isAlphaURN(auxCProp->u.auxC.auxType)) {
+                if (decoder->strictFlags & AVIF_STRICT_ALPHA_ISPE_REQUIRED) {
+                    avifDiagnosticsPrintf(data->diag,
+                                          "[Strict] Alpha auxiliary image item ID [%u] is missing a mandatory ispe property",
+                                          item->id);
+                    return AVIF_RESULT_BMFF_PARSE_FAILED;
+                }
+            } else {
+                avifDiagnosticsPrintf(data->diag, "Item ID [%u] is missing a mandatory ispe property", item->id);
+                return AVIF_RESULT_BMFF_PARSE_FAILED;
+            }
         }
     }
     return avifDecoderReset(decoder);
@@ -3160,7 +3148,12 @@ avifResult avifDecoderReset(avifDecoder * decoder)
 
     data->sourceSampleTable = NULL; // Reset
     if (decoder->requestedSource == AVIF_DECODER_SOURCE_AUTO) {
-        if (data->tracks.count > 0) {
+        // Honor the major brand (avif or avis) if present, otherwise prefer avis (tracks) if possible.
+        if (!memcmp(data->majorBrand, "avis", 4)) {
+            data->source = AVIF_DECODER_SOURCE_TRACKS;
+        } else if (!memcmp(data->majorBrand, "avif", 4)) {
+            data->source = AVIF_DECODER_SOURCE_PRIMARY_ITEM;
+        } else if (data->tracks.count > 0) {
             data->source = AVIF_DECODER_SOURCE_TRACKS;
         } else {
             data->source = AVIF_DECODER_SOURCE_PRIMARY_ITEM;
@@ -3428,7 +3421,7 @@ avifResult avifDecoderReset(avifDecoder * decoder)
         if (alphaItem) {
             if (!alphaItem->width && !alphaItem->height) {
                 // NON-STANDARD: Alpha subimage does not have an ispe property; adopt width/height from color item
-                // See: https://crbug.com/1245673
+                assert(!(decoder->strictFlags & AVIF_STRICT_ALPHA_ISPE_REQUIRED));
                 alphaItem->width = colorItem->width;
                 alphaItem->height = colorItem->height;
             }

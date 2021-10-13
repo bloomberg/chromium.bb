@@ -7,18 +7,22 @@
 
 #include "base/feature_list.h"
 #include "components/search/ntp_features.h"
+#include "url/gurl.h"
 
 namespace cart_features {
-constexpr base::FeatureParam<std::string> kPartnerMerchantPattern{
-    &ntp_features::kNtpChromeCartModule, "partner-merchant-pattern",
-    // This regex does not match anything.
-    "\\b\\B"};
-
 // Default value is 6 hours.
 constexpr base::FeatureParam<base::TimeDelta> kDiscountFetchDelayParam(
     &ntp_features::kNtpChromeCartModule,
     "discount-fetch-delay",
     base::TimeDelta::FromHours(6));
+
+// Check if a URL belongs to a partner merchant of rule discount.
+bool IsRuleDiscountPartnerMerchant(const GURL& url);
+
+// Check if a URL belongs to a partner merchant of any discount types.
+// TODO(crbug.com/1253633): Move this method to commerce_feature_list after
+// modularizing CartService-related components.
+bool IsPartnerMerchant(const GURL& url);
 }  // namespace cart_features
 
 #endif  // CHROME_BROWSER_CART_CART_FEATURES_H_
