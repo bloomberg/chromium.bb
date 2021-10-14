@@ -147,7 +147,6 @@ CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
   return element->UncachedStyleForPseudoElement(
       StyleRequest(pseudo_id, this, part_type, 
           element->GetLayoutObject()->Style()));
-  }
 }
 
 void CustomScrollbar::DestroyScrollbarParts() {
