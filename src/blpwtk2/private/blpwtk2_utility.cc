@@ -34,7 +34,6 @@
 #include <content/browser/gpu/compositor_util.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_internals_ui.h>
-// #include <content/browser/gpu/gpu_process_host.h>
 #include <third_party/angle/src/common/version.h>
 
 #include <fstream>
@@ -75,7 +74,7 @@ std::string getGpuInfo(const Profile* profile) {
     gpuInfo.Set("memoryBufferInfo", std::make_unique<base::Value>(content::GpuInternalsUI::GetGpuMemoryBufferInfo()));
     gpuInfo.SetList("LogMessage", content::GpuDataManagerImpl::GetInstance()->GetLogMessages());
     
-//    gpuInfo.SetInteger("gpu_process_crash_count", content::GpuProcessHost::GetGpuCrashCount());
+    gpuInfo.SetInteger("gpu_process_crash_count", content::GpuDataManagerImpl::GetGpuCrashCount());
     gpuInfo.SetBoolean("in_process_gpu", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().in_process_gpu);
     gpuInfo.SetBoolean("direct_composition", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().overlay_info.direct_composition);
     gpuInfo.SetBoolean("gpu_active", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().active);
