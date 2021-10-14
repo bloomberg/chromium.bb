@@ -1367,7 +1367,7 @@ void RenderWebView::setLogicalFocus(bool focused)
         webFrame->ToWebLocalFrame()->MainWorldScriptContext());
 
     blink::WebView* webView = rv->GetWebView();
-    webView->SetFocus(focused);
+    webView->SetFocusedFrame(focused? webFrame : nullptr);
 }
 #endif
 
@@ -2489,7 +2489,7 @@ std::size_t RenderWebView::getDefaultTileMemoryLimit() const{
     if (!d_renderViewRoutingId) {
         return 0;
     }
-    if (content::RenderWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
+    if (blink::WebFrameWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
         return rw->getDefaultTileMemoryLimit();
     }
     return 0;
@@ -2500,7 +2500,7 @@ std::size_t RenderWebView::getTileMemoryBytes() const
     if (!d_renderViewRoutingId) {
         return 0;
     }
-    if (content::RenderWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
+    if (blink::WebFrameWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
         return rw->getTileMemoryBytes();
     }
     return 0;
@@ -2510,7 +2510,7 @@ void RenderWebView::overrideTileMemoryLimit(std::size_t limit) {
     if (!d_renderViewRoutingId) {
         return;
     }
-    if (content::RenderWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
+    if (blink::WebFrameWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
         rw->overrideTileMemoryLimit(limit);
     }
 }
@@ -2519,7 +2519,7 @@ void RenderWebView::setTag(const char* pTag) {
     if (!d_renderViewRoutingId) {
         return;
     }
-    if (content::RenderWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
+    if (blink::WebFrameWidget* rw = GetWidgetFromViewRoutingId(d_renderViewRoutingId)) {
         rw->setTag(std::string(pTag));
     }
 }
