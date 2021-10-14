@@ -64,11 +64,6 @@ class CORE_EXPORT HighlightMarkerListImpl final : public DocumentMarkerList {
   DISALLOW_COPY_AND_ASSIGN(HighlightMarkerListImpl);
 };
 
-DEFINE_TYPE_CASTS(HighlightMarkerListImpl,
-                  DocumentMarkerList,
-                  list,
-                  list->MarkerType() == DocumentMarker::kHighlight,
-                  list.MarkerType() == DocumentMarker::kHighlight);
 
 }  // namespace blink
 

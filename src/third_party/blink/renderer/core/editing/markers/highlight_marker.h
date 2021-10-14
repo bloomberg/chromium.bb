@@ -25,6 +25,7 @@
 #define HighlightMarker_h
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -55,11 +56,13 @@ class CORE_EXPORT HighlightMarker final : public DocumentMarker {
   DISALLOW_COPY_AND_ASSIGN(HighlightMarker);
 };
 
-DEFINE_TYPE_CASTS(HighlightMarker,
-                  DocumentMarker,
-                  marker,
-                  marker->GetType() == DocumentMarker::kHighlight,
-                  marker.GetType() == DocumentMarker::kHighlight);
+template <>
+struct DowncastTraits<HighlightMarker> {
+  static bool AllowFrom(const DocumentMarker& marker) {
+    return marker.GetType() == DocumentMarker::kHighlight;
+  }
+};
+
 
 }  // namespace blink
 

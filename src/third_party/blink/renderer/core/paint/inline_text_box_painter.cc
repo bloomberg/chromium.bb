@@ -673,12 +673,12 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         }
       } break;
       case DocumentMarker::kHighlight:
-        if (ToHighlightMarker(marker).IncludeNonSelectableText() ||
+        if (To<HighlightMarker>(marker).IncludeNonSelectableText() ||
           LineLayoutAPIShim::ConstLayoutObjectFrom(inline_text_box_.GetLineLayoutItem())->IsSelectable()) {
           if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
-            PaintHighlightMarkerBackground(paint_info, box_origin, ToHighlightMarker(marker), style, font);
+            PaintHighlightMarkerBackground(paint_info, box_origin, To<HighlightMarker>(marker), style, font);
           else
-            PaintHighlightMarkerForeground(paint_info, box_origin, ToHighlightMarker(marker), style, font);
+            PaintHighlightMarkerForeground(paint_info, box_origin, To<HighlightMarker>(marker), style, font);
         }
         break;
       default:
@@ -992,7 +992,7 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
     TextPaintStyle textStyle;
     textStyle.current_color = textStyle.fill_color = textStyle.stroke_color = textStyle.emphasis_mark_color = textColor;
     textStyle.stroke_width = style.TextStrokeWidth();
-    textStyle.shadow = 0;
+    textStyle.shadow = nullptr;
 
     const SimpleFontData* font_data = font.PrimaryFont();
     DCHECK(font_data);

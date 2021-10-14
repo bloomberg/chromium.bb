@@ -231,17 +231,6 @@ DOMRectReadOnly* BBWindowHooks::getAbsoluteCaretRectAtOffset(Node* node, long of
     return DOMRectReadOnly::FromIntRect(rc);
 }
 
-bool BBWindowHooks::isOverwriteModeEnabled(Document* document)
-{
-    LocalFrame *frame = document->GetFrame();
-    return frame->GetEditor().IsOverwriteModeEnabled();
-}
-
-void BBWindowHooks::toggleOverwriteMode(Document* document)
-{
-    document->GetFrame()->GetEditor().ToggleOverwriteModeEnabled();
-}
-
 void BBWindowHooks::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
