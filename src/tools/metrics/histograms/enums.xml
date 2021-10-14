@@ -51255,7 +51255,7 @@ Called by update_use_counter_css.py.-->
   <int value="694" label="border-end-end-radius"/>
   <int value="695" label="accent-color"/>
   <int value="696" label="size-adjust"/>
-  <int value="691" label="rubberbandable"/>
+  <int value="697" label="rubberbandable"/>
 </enum>
 
 <enum name="MappedEditingCommands">
