@@ -464,7 +464,7 @@ StringRef ToolkitCreateParams::getTempFolderPath() const
 
 
 // patch section: memory diagnostics
-void ToolkitCreateParams::setTotalTileMemoryLimit(std::size_t limit) {
+void ToolkitCreateParams::setTotalTileMemoryLimit(size_t limit) {
     d_impl->d_totalTileMemoryLimit = limit;
 }
 
