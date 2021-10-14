@@ -407,7 +407,8 @@ void BrowserDesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(
   minimize_button_metrics_.OnDpiChanged();
 }
 
-bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
+bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(HWND window,
+                                                   UINT message,
                                                    WPARAM w_param,
                                                    LPARAM l_param,
                                                    LRESULT* result) {
@@ -424,7 +425,7 @@ bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
       return true;
   }
   return DesktopWindowTreeHostWin::PreHandleMSG(
-      message, w_param, l_param, result);
+      window, message, w_param, l_param, result);
 }
 
 void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
