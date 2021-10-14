@@ -57,7 +57,6 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
 
 SecurityContext::SecurityContext(ExecutionContext* execution_context)
     : execution_context_(execution_context),
-      content_security_policy_(MakeGarbageCollected<ContentSecurityPolicy>()),
       insecure_request_policy_(
           mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {}
 

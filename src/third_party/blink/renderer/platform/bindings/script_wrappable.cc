@@ -22,16 +22,17 @@ ASSERT_SIZE(ScriptWrappable, SameSizeAsScriptWrappable);
 
 v8::MaybeLocal<v8::Value> ScriptWrappable::Wrap(ScriptState* script_state) {
   const WrapperTypeInfo* wrapper_type_info = GetWrapperTypeInfo();
+  v8::Isolate* isolate = script_state->GetIsolate();
 
   if (// This throws if the current context does not have a 'ScriptState'
       // associated with it:
       !ScriptState::AccessCheck(isolate->GetCurrentContext()) ||
        // If the current context is the same as the creation context, assume
        // it's valid, otherwise call out to verify:
-      (isolate->GetCurrentContext() != creation_context->CreationContext() &&
+      (isolate->GetCurrentContext() != script_state->GetContext() &&
        // This basically fulfills the TODO in 'V8DOMWrapper::CreateWrapper()'
        !BindingSecurityForPlatform::ShouldAllowWrapperCreationOrThrowException(
-           isolate->GetCurrentContext(), creation_context->CreationContext(), wrapper_type_info))) {
+           isolate->GetCurrentContext(), script_state->GetContext(), wrapper_type_info))) {
       const String& message =
         "DOM access from invalid context";
       V8ThrowException::ThrowAccessError(

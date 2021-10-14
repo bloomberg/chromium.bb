@@ -55,7 +55,7 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
 
     WindowAgentFactory *agent_factory = MakeGarbageCollected<WindowAgentFactory>();
     WindowAgent *agent = agent_factory->GetAgentForOrigin(
-            true, isolate, blink_security_origin.get());
+            true, isolate, blink_security_origin.get(), false);
 
     LocalDOMWindow *window = LocalDOMWindow::Create(agent);
     DocumentInit init = DocumentInit::Create().WithTypeFrom("text/html")
