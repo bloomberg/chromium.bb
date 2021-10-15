@@ -280,6 +280,7 @@ shared_library("blpwtk2") {
   public_configs = [
     ":blpwtk2_public",
     ":blpwtk2_shared",
+    "//third_party/abseil-cpp:absl_include_config",
     "//third_party/angle:angle_commit_id_config",
   ]
 

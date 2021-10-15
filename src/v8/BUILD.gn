@@ -510,7 +510,11 @@ config("internal_config") {
     ":cppgc_header_features",
   ]
 
-  if (is_component_build || is_blpwtk2) {
+  if (is_component_build) {
+    defines += [ "BUILDING_V8_SHARED" ]
+    defines += [ "BUILDING_V8_PRIVATE_SHARED" ]
+  }
+  else if (is_blpwtk2) {
     defines += [ "BUILDING_V8_SHARED" ]
   }
 }
