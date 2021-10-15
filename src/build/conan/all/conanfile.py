@@ -7,13 +7,13 @@ from conans.errors import ConanInvalidConfiguration
 class BLPWTK2Conan(ConanFile):
     """Conanfile to produce a BLPWTK2 binary package."""
 
-    name = "blpwtk2-pkg"
+    default_user = "devkit"
+    default_channel = "stable"
+
+    name = "blpwtk2"
     description = "blpwtk2 libraries and headers"
     url = "bbgithub/buildbot/sotr-conan-index"
-    settings = (
-        "os",
-        "arch",
-    )
+    settings = ("os", "arch")
 
     build_requires = ("p7zip/19.00@devkit/stable",)
 
@@ -52,22 +52,23 @@ class BLPWTK2Conan(ConanFile):
         ]
 
         ## BLPWTK2 ##
-        self.cpp_info.components["blpwtk2"].libs = [f"blpwtk2.{self.version}.dll.lib"]
-        self.cpp_info.components["blpwtk2"].requires = ["icudt_from_blpwtk2"]
-        self.cpp_info.components["blpwtk2"].bindirs = [bindir]
-        self.cpp_info.components["blpwtk2"].libdirs = [libdir]
-        self.cpp_info.components["blpwtk2"].defines = [
+        label = "blpwtk2-component"
+        self.cpp_info.components[label].libs = [f"blpwtk2.{self.version}.dll.lib"]
+        self.cpp_info.components[label].requires = ["icudt_from_blpwtk2"]
+        self.cpp_info.components[label].bindirs = [bindir]
+        self.cpp_info.components[label].libdirs = [libdir]
+        self.cpp_info.components[label].defines = [
             "USING_BLPWTK2_SHARED",
             "USING_V8_SHARED",
             "USING_BLPWTK2V8",
         ]
         if "64" in str(self.settings.arch):
-            self.cpp_info.components["blpwtk2"].defines.append("V8_COMPRESS_POINTERS")
-        self.cpp_info.components["blpwtk2"].includedirs = [
+            self.cpp_info.components[label].defines.append("V8_COMPRESS_POINTERS")
+        self.cpp_info.components[label].includedirs = [
             "include/blpwtk2",
             "include/v8",
         ]
-        self.cpp_info.components["blpwtk2"].builddirs = [
+        self.cpp_info.components[label].builddirs = [
             os.path.join(self.package_folder, libdir, "cmake")
         ]
 
@@ -89,7 +90,10 @@ class BLPWTK2Conan(ConanFile):
             "include/blpwtk2",
             "include/v8",
         ]
-        self.cpp_info.components["v8"].requires = ["blpwtk2", "icudt_from_blpwtk2"]
+        self.cpp_info.components["v8"].requires = [
+            "blpwtk2-component",
+            "icudt_from_blpwtk2",
+        ]
         self.cpp_info.components["v8"].builddirs = [
             os.path.join(self.package_folder, libdir, "cmake")
         ]
