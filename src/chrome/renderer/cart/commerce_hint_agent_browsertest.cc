@@ -87,14 +87,14 @@ cart_db::ChromeCartContentProto BuildProtoWithProducts(
   return proto;
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
 void UnblockOnProfileCreation(base::RunLoop* run_loop,
                               Profile* profile,
                               Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
     run_loop->Quit();
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !defined(OS_CHROMEOS)
 
 const char kMockExample[] = "guitarcenter.com";
 const char kMockExampleFallbackURL[] = "https://www.guitarcenter.com/cart";
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, MultipleProfiles) {
   SendXHR("/add-to-cart", "product: 123");
   WaitForCartCount(kExpectedExampleFallbackCart);
 }
-#endif  // !BUILDFLAG(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
 class CommerceHintCacaoTest : public CommerceHintAgentTest {
  public:
