@@ -992,9 +992,11 @@ void RenderWebView::updateGeometry()
 
     d_compositor->Resize(size);
 
-    blink::VisualProperties params = {};
+    blink::ScreenInfo screen_info = {}; 
+    GetNativeViewScreenInfo(&screen_info, d_hwnd.get());
 
-    GetNativeViewScreenInfo(&params.screen_infos.mutable_current(), d_hwnd.get());
+    blink::VisualProperties params = {};
+    params.screen_infos = blink::ScreenInfos(screen_info);
 
     auto dip_size = gfx::Size { size.width()  / params.screen_infos.current().device_scale_factor,
                                 size.height() / params.screen_infos.current().device_scale_factor  };
