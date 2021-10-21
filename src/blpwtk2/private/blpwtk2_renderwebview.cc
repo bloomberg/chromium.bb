@@ -294,6 +294,10 @@ RenderWebView::~RenderWebView()
     if (d_renderViewObserver) {
         delete d_renderViewObserver;
     }
+
+    if (d_cursorLoader.get()) {
+      d_cursorLoader.reset(nullptr);
+    }
 }
 
 RenderMessageDelegate& RenderWebView::GetMessageDelegate()
