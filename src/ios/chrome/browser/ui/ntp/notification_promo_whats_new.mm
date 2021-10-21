@@ -168,21 +168,14 @@ bool NotificationPromoWhatsNew::CanShow() const {
     return false;
   }
 
-  // Current NTP default browser promo should only be shown for users on iOS14.
-  if (!base::ios::IsRunningOnIOS14OrLater() &&
-      command_ == kSetDefaultBrowserCommand) {
-    return false;
-  }
-
   // Check optional restrictions.
 
   if (seconds_since_install_ > 0) {
     // Do not show the promo if the app's installation did not occur more than
     // |seconds_since_install_| seconds ago.
     int64_t install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
-    const base::Time first_view_time =
-        base::Time::FromTimeT(install_date) +
-        base::TimeDelta::FromSeconds(seconds_since_install_);
+    const base::Time first_view_time = base::Time::FromTimeT(install_date) +
+                                       base::Seconds(seconds_since_install_);
     if (first_view_time > base::Time::Now()) {
       return false;
     }
@@ -192,9 +185,8 @@ bool NotificationPromoWhatsNew::CanShow() const {
     // Do not show the promo if the app's installation occurred more than
     // |max_seconds_since_install_| seconds ago.
     int64_t install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
-    const base::Time last_view_time =
-        base::Time::FromTimeT(install_date) +
-        base::TimeDelta::FromSeconds(max_seconds_since_install_);
+    const base::Time last_view_time = base::Time::FromTimeT(install_date) +
+                                      base::Seconds(max_seconds_since_install_);
     if (last_view_time < base::Time::Now()) {
       return false;
     }

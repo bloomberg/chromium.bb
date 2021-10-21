@@ -56,6 +56,7 @@ import {ElementsTreeOutline} from './ElementsTreeOutline.js';
 import type {MarkerDecorator} from './MarkerDecorator.js';
 import {MetricsSidebarPane} from './MetricsSidebarPane.js';
 import {Events as StylesSidebarPaneEvents, StylesSidebarPane} from './StylesSidebarPane.js';
+import type {StylesUpdateCompletedEvent} from './StylesSidebarPane.js';
 
 const UIStrings = {
   /**
@@ -124,6 +125,18 @@ const UIStrings = {
   * @example {::after, ::before} PH1
   */
   elementStateS: 'Element state: {PH1}',
+  /**
+  * @description Accessible name for side panel toolbar.
+  */
+  sidePanelToolbar: 'Side panel toolbar',
+  /**
+  * @description Accessible name for side panel contents.
+  */
+  sidePanelContent: 'Side panel content',
+  /**
+  * @description Accessible name for the DOM tree explorer view.
+  */
+  domTreeExplorer: 'DOM tree explorer',
 };
 
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementsPanel.ts', UIStrings);
@@ -204,6 +217,9 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     }
     stackElement.appendChild(this.contentElementInternal);
     stackElement.appendChild(crumbsContainer);
+
+    UI.ARIAUtils.markAsMain(this.contentElementInternal);
+    UI.ARIAUtils.setAccessibleName(this.contentElementInternal, i18nString(UIStrings.domTreeExplorer));
 
     this.splitWidget.setMainWidget(this.searchableViewInternal);
     this.splitMode = null;
@@ -464,14 +480,15 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     this.updateTreeOutlineVisibleWidth();
   }
 
-  private selectedNodeChanged(event: Common.EventTarget.EventTargetEvent): void {
-    let selectedNode: null|(SDK.DOMModel.DOMNode | null) = (event.data.node as SDK.DOMModel.DOMNode | null);
+  private selectedNodeChanged(
+      event: Common.EventTarget.EventTargetEvent<{node: SDK.DOMModel.DOMNode | null, focus: boolean}>): void {
+    let selectedNode = event.data.node;
 
     // If the selectedNode is a pseudoNode, we want to ensure that it has a valid parentNode
     if (selectedNode && (selectedNode.pseudoType() && !selectedNode.parentNode)) {
       selectedNode = null;
     }
-    const focus = (event.data.focus as boolean);
+    const {focus} = event.data;
     for (const treeOutline of this.treeOutlines) {
       if (!selectedNode || ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline) {
         treeOutline.selectDOMNode(null);
@@ -642,10 +659,10 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     });
   }
 
-  private domWordWrapSettingChanged(event: Common.EventTarget.EventTargetEvent): void {
-    this.contentElementInternal.classList.toggle('elements-wrap', (event.data as boolean));
+  private domWordWrapSettingChanged(event: Common.EventTarget.EventTargetEvent<boolean>): void {
+    this.contentElementInternal.classList.toggle('elements-wrap', event.data);
     for (const treeOutline of this.treeOutlines) {
-      treeOutline.setWordWrap((event.data as boolean));
+      treeOutline.setWordWrap(event.data);
     }
   }
 
@@ -760,8 +777,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     }
   }
 
-  private updateBreadcrumbIfNeeded(event: Common.EventTarget.EventTargetEvent): void {
-    const nodes = (event.data as SDK.DOMModel.DOMNode[]);
+  private updateBreadcrumbIfNeeded(event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode[]>): void {
+    const nodes = event.data;
     /* If we don't have a selected node then we can tell the breadcrumbs that & bail. */
     const selectedNode = this.selectedDOMNode();
     if (!selectedNode) {
@@ -957,12 +974,12 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
 
     let skippedInitialTabSelectedEvent = false;
 
-    const toggleMetricsWidget = (event: Common.EventTarget.EventTargetEvent): void => {
+    const toggleMetricsWidget = (event: Common.EventTarget.EventTargetEvent<StylesUpdateCompletedEvent>): void => {
       this.metricsWidget.toggleVisibility(event.data.hasMatchedStyles);
     };
 
-    const tabSelected = (event: Common.EventTarget.EventTargetEvent): void => {
-      const tabId = (event.data.tabId as string);
+    const tabSelected = (event: Common.EventTarget.EventTargetEvent<UI.TabbedPane.EventData>): void => {
+      const {tabId} = event.data;
       if (tabId === i18nString(UIStrings.computed)) {
         computedStylePanesWrapper.show(computedView.element);
         showMetricsWidgetInComputedPane();
@@ -986,6 +1003,14 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     if (this.splitMode !== _splitMode.Vertical) {
       this.splitWidget.installResizer(tabbedPane.headerElement());
     }
+
+    const headerElement = tabbedPane.headerElement();
+    UI.ARIAUtils.markAsNavigation(headerElement);
+    UI.ARIAUtils.setAccessibleName(headerElement, i18nString(UIStrings.sidePanelToolbar));
+
+    const contentElement = tabbedPane.tabbedPaneContentElement();
+    UI.ARIAUtils.markAsComplementary(contentElement);
+    UI.ARIAUtils.setAccessibleName(contentElement, i18nString(UIStrings.sidePanelContent));
 
     const stylesView = new UI.View.SimpleView(i18nString(UIStrings.styles));
     this.sidebarPaneView.appendView(stylesView);
@@ -1074,9 +1099,8 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
         SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this.trackedCSSPropertiesUpdated, this);
   }
 
-  private trackedCSSPropertiesUpdated(event: Common.EventTarget.EventTargetEvent): void {
-    const domNodes = (event.data.domNodes as (SDK.DOMModel.DOMNode | null)[]);
-
+  private trackedCSSPropertiesUpdated({data: domNodes}:
+                                          Common.EventTarget.EventTargetEvent<(SDK.DOMModel.DOMNode | null)[]>): void {
     for (const domNode of domNodes) {
       if (!domNode) {
         continue;

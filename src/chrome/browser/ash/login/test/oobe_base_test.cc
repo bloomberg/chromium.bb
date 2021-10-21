@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/ash/login/test/https_forwarder.h"
 #include "chrome/browser/ash/login/test/login_or_lock_screen_visible_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
@@ -45,8 +44,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 class GaiaPageEventWaiter : public test::TestConditionWaiter {
@@ -109,13 +107,13 @@ void OobeBaseTest::SetUp() {
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
-  command_line->AppendSwitch(chromeos::switches::kLoginManager);
-  command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+  command_line->AppendSwitch(switches::kLoginManager);
+  command_line->AppendSwitch(switches::kForceLoginManagerInTests);
   command_line->AppendSwitch(
-      chromeos::switches::kDisableOOBEChromeVoxHintTimerForTesting);
+      switches::kDisableOOBEChromeVoxHintTimerForTesting);
   if (!needs_background_networking_)
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+  command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
   // Blink features are controlled via a command line switch. Disable HTML
   // imports which are deprecated. OOBE uses a polyfill for imports that will
@@ -246,4 +244,4 @@ void OobeBaseTest::MaybeWaitForLoginScreenLoad() {
   login_screen_load_observer_.reset();
 }
 
-}  // namespace chromeos
+}  // namespace ash

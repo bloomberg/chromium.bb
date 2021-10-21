@@ -10,6 +10,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -27,6 +28,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/dlp/dlp_reporting_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/grit/chromium_strings.h"
@@ -59,17 +63,14 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
     {kManagementReportActivityTimes,
      IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},
-    {kManagementReportHardwareStatus,
-     IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS},
-    {kManagementReportNetworkInterfaces,
-     IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
+    {kManagementReportNetworkData, IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_DATA},
+    {kManagementReportHardwareData, IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_DATA},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {kManagementReportCrashReports, IDS_MANAGEMENT_REPORT_DEVICE_CRASH_REPORTS},
     {kManagementReportAppInfoAndActivity,
      IDS_MANAGEMENT_REPORT_APP_INFO_AND_ACTIVITY},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementReportPrintJobs, IDS_MANAGEMENT_REPORT_PRINT_JOBS},
-    {kManagementReportDlpEvents, IDS_MANAGEMENT_REPORT_DLP_EVENTS},
     {kManagementReportLoginLogout, IDS_MANAGEMENT_REPORT_LOGIN_LOGOUT},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
     {kManagementCrostiniContainerConfiguration,
@@ -140,6 +141,17 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     l10n_util::GetStringFUTF16(
                         IDS_MANAGEMENT_REPORT_PLUGIN_VM,
                         l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)));
+  const size_t dlp_events_count =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile() &&
+              policy::DlpRulesManagerFactory::GetForPrimaryProfile()
+                  ->GetReportingManager()
+          ? policy::DlpRulesManagerFactory::GetForPrimaryProfile()
+                ->GetReportingManager()
+                ->events_reported()
+          : 0;
+  source->AddString(kManagementReportDlpEvents,
+                    l10n_util::GetPluralStringFUTF16(
+                        IDS_MANAGEMENT_REPORT_DLP_EVENTS, dlp_events_count));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   source->AddString("enableBrandingUpdateAttribute",
@@ -179,7 +191,8 @@ std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
   if (account_manager.empty())
     account_manager = connector->GetRealm();
   if (account_manager.empty())
-    account_manager = ManagementUIHandler::GetAccountManager(profile);
+    account_manager =
+        chrome::GetAccountManagerIdentity(profile).value_or(std::string());
   if (account_manager.empty()) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                       l10n_util::GetStringUTF16(device_type));
@@ -188,7 +201,8 @@ std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
                                     l10n_util::GetStringUTF16(device_type),
                                     base::UTF8ToUTF16(account_manager));
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
-  const auto account_manager = ManagementUIHandler::GetAccountManager(profile);
+  const auto account_manager =
+      chrome::GetAccountManagerIdentity(profile).value_or(std::string());
   const auto managed =
       profile->GetProfilePolicyConnector()->IsManaged() ||
       g_browser_process->browser_policy_connector()->HasMachineLevelPolicies();

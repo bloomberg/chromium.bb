@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "chromecast/browser/extensions/api/tts/tts_extension_api.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
+#include "components/value_store/value_store_factory_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,11 +27,9 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/browser/user_script_manager.h"
-#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
@@ -182,8 +181,6 @@ void CastExtensionSystem::Shutdown() {}
 void CastExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   service_worker_manager_ =
       std::make_unique<ServiceWorkerManager>(browser_context_);
-  runtime_data_ =
-      std::make_unique<RuntimeData>(ExtensionRegistry::Get(browser_context_));
   quota_service_ = std::make_unique<QuotaService>();
   app_sorting_ = std::make_unique<NullAppSorting>();
 
@@ -197,10 +194,6 @@ void CastExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 
 ExtensionService* CastExtensionSystem::extension_service() {
   return nullptr;
-}
-
-RuntimeData* CastExtensionSystem::runtime_data() {
-  return runtime_data_.get();
 }
 
 ManagementPolicy* CastExtensionSystem::management_policy() {
@@ -220,6 +213,10 @@ StateStore* CastExtensionSystem::state_store() {
 }
 
 StateStore* CastExtensionSystem::rules_store() {
+  return nullptr;
+}
+
+StateStore* CastExtensionSystem::dynamic_user_scripts_store() {
   return nullptr;
 }
 

@@ -141,6 +141,9 @@ class MockHostResolverProc : public HostResolverProc {
         requests_waiting_(&lock_),
         slots_available_(&lock_) {}
 
+  MockHostResolverProc(const MockHostResolverProc&) = delete;
+  MockHostResolverProc& operator=(const MockHostResolverProc&) = delete;
+
   // Waits until |count| calls to |Resolve| are blocked. Returns false when
   // timed out.
   bool WaitFor(unsigned count) {
@@ -266,8 +269,6 @@ class MockHostResolverProc : public HostResolverProc {
   unsigned num_slots_available_;
   base::ConditionVariable requests_waiting_;
   base::ConditionVariable slots_available_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockHostResolverProc);
 };
 
 class ResolveHostResponseHelper {
@@ -294,6 +295,10 @@ class ResolveHostResponseHelper {
                        base::BindOnce(&ResolveHostResponseHelper::OnComplete,
                                       base::Unretained(this))));
   }
+
+  ResolveHostResponseHelper(const ResolveHostResponseHelper&) = delete;
+  ResolveHostResponseHelper& operator=(const ResolveHostResponseHelper&) =
+      delete;
 
   bool complete() const { return top_level_result_error_ != ERR_IO_PENDING; }
 
@@ -338,8 +343,6 @@ class ResolveHostResponseHelper {
   std::unique_ptr<HostResolverManager::CancellableResolveHostRequest> request_;
   int top_level_result_error_ = ERR_IO_PENDING;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResolveHostResponseHelper);
 };
 
 // Using LookupAttemptHostResolverProc simulate very long lookups, and control
@@ -613,7 +616,7 @@ class HostResolverManagerTest : public TestWithTaskEnvironment {
     resolver_->CacheResult(resolve_context_->host_cache(), key,
                            HostCache::Entry(OK, AddressList(endpoint),
                                             HostCache::Entry::SOURCE_UNKNOWN),
-                           base::TimeDelta::FromSeconds(1));
+                           base::Seconds(1));
   }
 
   const std::pair<const HostCache::Key, HostCache::Entry>* GetCacheHit(
@@ -2302,7 +2305,7 @@ TEST_F(HostResolverManagerTest, MultipleAttempts) {
   // Add a little bit of extra fudge to the delay to allow reasonable
   // flexibility for time > vs >= etc.  We don't need to fail the test if we
   // retry at t=6001 instead of t=6000.
-  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta kSleepFudgeFactor = base::Milliseconds(1);
 
   scoped_refptr<LookupAttemptHostResolverProc> resolver_proc(
       new LookupAttemptHostResolverProc(nullptr, kAttemptNumberToResolve,
@@ -2395,7 +2398,7 @@ TEST_F(HostResolverManagerTest, DefaultMaxRetryAttempts) {
   // time. Because none of the attempts posted to worker pool can complete, this
   // should cause all of the retry attempts to get posted, according to the
   // exponential backoff schedule.
-  test_task_runner->FastForwardBy(base::TimeDelta::FromMinutes(20));
+  test_task_runner->FastForwardBy(base::Minutes(20));
 
   // Unblock the resolver proc, then wait for all the worker pool and main
   // thread tasks to complete. Note that the call to SetResolvedAttemptNumber(1)
@@ -3094,7 +3097,7 @@ TEST_F(HostResolverManagerTest, Mdns_NoResponse) {
   // Add a little bit of extra fudge to the delay to allow reasonable
   // flexibility for time > vs >= etc.  We don't need to fail the test if we
   // timeout at t=6001 instead of t=6000.
-  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta kSleepFudgeFactor = base::Milliseconds(1);
 
   // Override the current thread task runner, so we can simulate the passage of
   // time to trigger the timeout.
@@ -3133,7 +3136,7 @@ TEST_F(HostResolverManagerTest, Mdns_WrongType) {
   // Add a little bit of extra fudge to the delay to allow reasonable
   // flexibility for time > vs >= etc.  We don't need to fail the test if we
   // timeout at t=6001 instead of t=6000.
-  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta kSleepFudgeFactor = base::Milliseconds(1);
 
   // Override the current thread task runner, so we can simulate the passage of
   // time to trigger the timeout.
@@ -3179,7 +3182,7 @@ TEST_F(HostResolverManagerTest, Mdns_PartialResults) {
   // Add a little bit of extra fudge to the delay to allow reasonable
   // flexibility for time > vs >= etc.  We don't need to fail the test if we
   // timeout at t=6001 instead of t=6000.
-  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+  base::TimeDelta kSleepFudgeFactor = base::Milliseconds(1);
 
   // Override the current thread task runner, so we can simulate the passage of
   // time to trigger the timeout.
@@ -3373,7 +3376,7 @@ TEST_F(HostResolverManagerTest, MdnsListener) {
 
   // Per RFC6762 section 10.1, removals take effect 1 second after receiving the
   // goodbye message.
-  clock.Advance(base::TimeDelta::FromSeconds(1));
+  clock.Advance(base::Seconds(1));
   cache_cleanup_timer_ptr->Fire();
 
   // Expect 1 record adding "1.2.3.4", another changing to "5.6.7.8", and a
@@ -3439,7 +3442,7 @@ TEST_F(HostResolverManagerTest, MdnsListener_Expiration) {
           MdnsListenerUpdateType::kAdded, DnsQueryType::A,
           CreateExpected("1.2.3.4", 100))));
 
-  clock.Advance(base::TimeDelta::FromSeconds(16));
+  clock.Advance(base::Seconds(16));
   cache_cleanup_timer_ptr->Fire();
 
   EXPECT_THAT(delegate.address_results(),
@@ -3753,7 +3756,7 @@ TEST_F(HostResolverManagerTest, NetworkIsolationKeyReadFromHostCache) {
         HostCache::Entry(OK, AddressList::CreateFromIPAddress(address, 80),
                          HostCache::Entry::SOURCE_UNKNOWN);
     resolve_context_->host_cache()->Set(key, entry, base::TimeTicks::Now(),
-                                        base::TimeDelta::FromDays(1));
+                                        base::Days(1));
   }
 
   for (bool split_cache_by_network_isolation_key : {false, true}) {
@@ -6779,7 +6782,7 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
                                              false /* ignore_secure */);
   EXPECT_TRUE(!!cache_result);
   EXPECT_TRUE(cache_result->second.has_ttl());
-  EXPECT_THAT(cache_result->second.ttl(), base::TimeDelta::FromSeconds(86400));
+  EXPECT_THAT(cache_result->second.ttl(), base::Seconds(86400));
 
   // NXDOMAIN
   ResolveHostResponseHelper no_domain_response(resolver_->CreateRequest(
@@ -6794,7 +6797,7 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
       nxkey, base::TimeTicks::Now(), false /* ignore_secure */);
   EXPECT_TRUE(!!cache_result);
   EXPECT_TRUE(cache_result->second.has_ttl());
-  EXPECT_THAT(cache_result->second.ttl(), base::TimeDelta::FromSeconds(86400));
+  EXPECT_THAT(cache_result->second.ttl(), base::Seconds(86400));
 }
 
 TEST_F(HostResolverManagerDnsTest, CachedError) {
@@ -7050,6 +7053,84 @@ TEST_F(HostResolverManagerDnsTest, CanonicalName_V4Only) {
   ASSERT_THAT(response.result_error(), IsOk());
   EXPECT_EQ(response.request()->GetAddressResults().value().GetCanonicalName(),
             "correct");
+}
+
+// Test that responses containing CNAME records but no address results are fine
+// and treated as normal NODATA responses.
+TEST_F(HostResolverManagerDnsTest, CanonicalNameWithoutResults) {
+  MockDnsClientRuleList rules;
+
+  DnsResponse a_response =
+      BuildTestDnsResponse("a.test", dns_protocol::kTypeA,
+                           {BuildTestCnameRecord("c.test", "d.test"),
+                            BuildTestCnameRecord("b.test", "c.test"),
+                            BuildTestCnameRecord("a.test", "b.test")});
+  AddDnsRule(&rules, "a.test", dns_protocol::kTypeA, std::move(a_response),
+             /*delay=*/false);
+
+  DnsResponse aaaa_response =
+      BuildTestDnsResponse("a.test", dns_protocol::kTypeAAAA,
+                           {BuildTestCnameRecord("c.test", "d.test"),
+                            BuildTestCnameRecord("b.test", "c.test"),
+                            BuildTestCnameRecord("a.test", "b.test")});
+  AddDnsRule(&rules, "a.test", dns_protocol::kTypeAAAA,
+             std::move(aaaa_response), /*delay=*/false);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  set_allow_fallback_to_proctask(false);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("a.test", 80), NetworkIsolationKey(), NetLogWithSource(),
+      /*optional_parameters=*/absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  ASSERT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+
+  // Underlying error should be the typical no-results error
+  // (ERR_NAME_NOT_RESOLVED), not anything more exotic like
+  // ERR_DNS_MALFORMED_RESPONSE.
+  EXPECT_EQ(response.request()->GetResolveErrorInfo().error,
+            ERR_NAME_NOT_RESOLVED);
+}
+
+// Test that if the response for one address family contains CNAME records but
+// no address results, it doesn't interfere with the other address family
+// receiving address results (as would happen if such a response were
+// incorrectly treated as a malformed response error).
+TEST_F(HostResolverManagerDnsTest, CanonicalNameWithResultsForOnlyOneFamily) {
+  MockDnsClientRuleList rules;
+
+  DnsResponse a_response =
+      BuildTestDnsResponse("a.test", dns_protocol::kTypeA,
+                           {BuildTestCnameRecord("c.test", "d.test"),
+                            BuildTestCnameRecord("b.test", "c.test"),
+                            BuildTestCnameRecord("a.test", "b.test")});
+  AddDnsRule(&rules, "a.test", dns_protocol::kTypeA, std::move(a_response),
+             /*delay=*/false);
+
+  DnsResponse aaaa_response = BuildTestDnsResponse(
+      "a.test", dns_protocol::kTypeAAAA,
+      {BuildTestAddressRecord("d.test", IPAddress::IPv6Localhost()),
+       BuildTestCnameRecord("c.test", "d.test"),
+       BuildTestCnameRecord("b.test", "c.test"),
+       BuildTestCnameRecord("a.test", "b.test")});
+  AddDnsRule(&rules, "a.test", dns_protocol::kTypeAAAA,
+             std::move(aaaa_response), /*delay=*/false);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("a.test", 80), NetworkIsolationKey(), NetLogWithSource(),
+      /*optional_parameters=*/absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  ASSERT_TRUE(response.request()->GetAddressResults());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(IPEndPoint(IPAddress::IPv6Localhost(), 80)));
 }
 
 // Test that without specifying source, a request that would otherwise be
@@ -7491,7 +7572,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   overrides.append_to_multi_label_name = false;
   const int ndots = 5;
   overrides.ndots = ndots;
-  const base::TimeDelta fallback_period = base::TimeDelta::FromSeconds(10);
+  const base::TimeDelta fallback_period = base::Seconds(10);
   overrides.fallback_period = fallback_period;
   const int attempts = 20;
   overrides.attempts = attempts;
@@ -11111,7 +11192,7 @@ TEST_F(HostResolverManagerDnsTest,
   // Wait an absurd amount of time (1 hour) and expect the request to not
   // complete because it is waiting on the transaction, where the mock is
   // delaying completion.
-  FastForwardBy(base::TimeDelta::FromHours(1));
+  FastForwardBy(base::Hours(1));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
@@ -11163,13 +11244,12 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithAbsoluteTimeout) {
   EXPECT_FALSE(response.complete());
 
   // Wait until 1 second before expected timeout.
-  FastForwardBy(base::TimeDelta::FromMinutes(10) -
-                base::TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Minutes(10) - base::Seconds(1));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
   // Exceed expected timeout.
-  FastForwardBy(base::TimeDelta::FromSeconds(2));
+  FastForwardBy(base::Seconds(2));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
@@ -11218,21 +11298,21 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithRelativeTimeout) {
   EXPECT_FALSE(response.complete());
 
   // Complete final address transaction after 100 seconds total.
-  FastForwardBy(base::TimeDelta::FromSeconds(50));
+  FastForwardBy(base::Seconds(50));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::A));
-  FastForwardBy(base::TimeDelta::FromSeconds(50));
+  FastForwardBy(base::Seconds(50));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::AAAA));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
   // Expect timeout at additional 10 seconds.
-  FastForwardBy(base::TimeDelta::FromSeconds(9));
+  FastForwardBy(base::Seconds(9));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
-  FastForwardBy(base::TimeDelta::FromSeconds(2));
+  FastForwardBy(base::Seconds(2));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
@@ -11281,22 +11361,22 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.complete());
 
   // Complete final address transaction after 4 minutes total.
-  FastForwardBy(base::TimeDelta::FromMinutes(2));
+  FastForwardBy(base::Minutes(2));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::A));
-  FastForwardBy(base::TimeDelta::FromMinutes(2));
+  FastForwardBy(base::Minutes(2));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::AAAA));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
   // Wait until 1 second before expected timeout (from the absolute timeout).
-  FastForwardBy(base::TimeDelta::FromSeconds(29));
+  FastForwardBy(base::Seconds(29));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
   // Exceed expected timeout.
-  FastForwardBy(base::TimeDelta::FromSeconds(2));
+  FastForwardBy(base::Seconds(2));
 
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
@@ -11346,21 +11426,21 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.complete());
 
   // Complete final address transaction after 100 seconds total.
-  FastForwardBy(base::TimeDelta::FromSeconds(50));
+  FastForwardBy(base::Seconds(50));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::A));
-  FastForwardBy(base::TimeDelta::FromSeconds(50));
+  FastForwardBy(base::Seconds(50));
   ASSERT_TRUE(
       dns_client_->CompleteOneDelayedTransactionOfType(DnsQueryType::AAAA));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
   // Expect timeout at additional 10 seconds (from the relative timeout).
-  FastForwardBy(base::TimeDelta::FromSeconds(9));
+  FastForwardBy(base::Seconds(9));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
-  FastForwardBy(base::TimeDelta::FromSeconds(2));
+  FastForwardBy(base::Seconds(2));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
@@ -11414,7 +11494,7 @@ TEST_F(HostResolverManagerDnsTest,
   // Wait an absurd amount of time (1 hour) and expect the request to not
   // complete because it is waiting on the transaction, where the mock is
   // delaying completion.
-  FastForwardBy(base::TimeDelta::FromHours(1));
+  FastForwardBy(base::Hours(1));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
@@ -11468,12 +11548,11 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.complete());
 
   // Wait until 1s before expected timeout.
-  FastForwardBy(base::TimeDelta::FromMinutes(20) -
-                base::TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Minutes(20) - base::Seconds(1));
   RunUntilIdle();
   EXPECT_FALSE(response.complete());
 
-  FastForwardBy(base::TimeDelta::FromSeconds(2));
+  FastForwardBy(base::Seconds(2));
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_TRUE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetTextResults());
@@ -12201,7 +12280,7 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest,
        ExperimentalHttpsInAddressQuery_ExperimentalTimeout) {
   const char kName[] = "combined.test";
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(2);
+  const base::TimeDelta kTimeout = base::Seconds(2);
 
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeatureWithParameters(
@@ -12294,7 +12373,7 @@ TEST_F(HostResolverManagerDnsTest, MultipleExperimentalQueries) {
 
 TEST_F(HostResolverManagerDnsTest, MultipleExperimentalQueries_Timeout) {
   const char kName[] = "combined.test";
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(2);
+  const base::TimeDelta kTimeout = base::Seconds(2);
 
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeatureWithParameters(
@@ -12545,7 +12624,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryCompletesLast) {
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(1);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(1);
 
   FastForwardBy(100 * kQuantum);
 
@@ -12653,7 +12732,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryCompletesFirst) {
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(10);
 
   FastForwardBy(kQuantum);
 
@@ -12695,7 +12774,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(1);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(1);
 
   FastForwardBy(100 * kQuantum);
 
@@ -12737,7 +12816,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(10);
 
   FastForwardBy(kQuantum);
 
@@ -12776,7 +12855,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(1);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(1);
 
   FastForwardBy(100 * kQuantum);
 
@@ -12814,7 +12893,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  constexpr base::TimeDelta kQuantum = base::TimeDelta::FromMilliseconds(10);
+  constexpr base::TimeDelta kQuantum = base::Milliseconds(10);
 
   FastForwardBy(kQuantum);
 
@@ -12896,8 +12975,8 @@ TEST_F(HostResolverManagerDnsTestIntegrity, RespectsAbsoluteTimeout) {
   // relative_timeout < absolute_timeout. For larger values, absolute_timeout >
   // relative_timeout.
 
-  base::TimeDelta absolute_timeout = base::TimeDelta::FromMilliseconds(
-      features::kDnsHttpssvcExtraTimeMs.Get());
+  base::TimeDelta absolute_timeout =
+      base::Milliseconds(features::kDnsHttpssvcExtraTimeMs.Get());
   base::TimeDelta intersection =
       100 * absolute_timeout / features::kDnsHttpssvcExtraTimePercent.Get();
 
@@ -12933,7 +13012,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, RespectsAbsoluteTimeout) {
   EXPECT_FALSE(response->request()->GetExperimentalResultsForTesting());
 
   // Out of paranoia, pass some more time to ensure no crashes occur.
-  FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  FastForwardBy(base::Milliseconds(100));
 }
 
 TEST_F(HostResolverManagerDnsTestIntegrity, RespectsRelativeTimeout) {
@@ -12947,8 +13026,8 @@ TEST_F(HostResolverManagerDnsTestIntegrity, RespectsRelativeTimeout) {
   std::unique_ptr<ResolveHostResponseHelper> response =
       DoIntegrityQuery(true /* use_secure */);
 
-  base::TimeDelta absolute_timeout = base::TimeDelta::FromMilliseconds(
-      features::kDnsHttpssvcExtraTimeMs.Get());
+  base::TimeDelta absolute_timeout =
+      base::Milliseconds(features::kDnsHttpssvcExtraTimeMs.Get());
   base::TimeDelta intersection =
       100 * absolute_timeout / features::kDnsHttpssvcExtraTimePercent.Get();
 
@@ -12985,7 +13064,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, RespectsRelativeTimeout) {
                                             CreateExpected("::1", 108)));
 
   // Out of paranoia, pass some more time to ensure no crashes occur.
-  FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  FastForwardBy(base::Milliseconds(100));
 }
 
 TEST_F(HostResolverManagerDnsTest, DohProbeRequest) {

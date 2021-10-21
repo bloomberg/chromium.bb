@@ -71,8 +71,10 @@ class VirtualCardManualFallbackBubbleViewsInteractiveUiTest
                   const std::u16string& virtual_card_cvc) {
     ResetEventWaiterForSequence({BubbleEvent::BUBBLE_SHOWN});
     // Passing in empty image will fall back to use card network icon.
-    GetController()->ShowBubble(virtual_card, virtual_card_cvc,
-                                /*virtual_card_image=*/gfx::Image());
+    GetController()->ShowBubble(
+        /*masked_card_identifier_string=*/std::u16string(), virtual_card,
+        virtual_card_cvc,
+        /*virtual_card_image=*/gfx::Image());
     event_waiter_->Wait();
   }
 
@@ -140,8 +142,14 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
 }
 
 // Invokes the bubble and verifies the bubble is dismissed upon page navigation.
+// Flaky on macOS, Linux, and Win. crbug.com/1254101
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_DismissBubbleUponNavigation DISABLED_DismissBubbleUponNavigation
+#else
+#define MAYBE_DismissBubbleUponNavigation DismissBubbleUponNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
-                       DismissBubbleUponNavigation) {
+                       MAYBE_DismissBubbleUponNavigation) {
   ShowBubble();
   ASSERT_TRUE(GetBubbleViews());
   ASSERT_TRUE(IsIconVisible());
@@ -315,47 +323,6 @@ IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
       "Autofill.VirtualCardManualFallbackBubble.Result.FirstShow",
       AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
           VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED,
-      1);
-}
-
-IN_PROC_BROWSER_TEST_F(VirtualCardManualFallbackBubbleViewsInteractiveUiTest,
-                       Metrics_BubbleClosedByLostFocus) {
-  base::HistogramTester histogram_tester;
-
-  // Show the bubble.
-  ShowBubble();
-  ASSERT_TRUE(GetBubbleViews());
-  ASSERT_TRUE(IsIconVisible());
-
-  // Mock deactivation due to lost focus.
-  views::test::WidgetDestroyedWaiter destroyed_waiter1(
-      GetBubbleViews()->GetWidget());
-  GetBubbleViews()->GetWidget()->CloseWithReason(
-      views::Widget::ClosedReason::kLostFocus);
-  destroyed_waiter1.Wait();
-
-  // Confirm .FirstShow metrics.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.VirtualCardManualFallbackBubble.Result.FirstShow",
-      AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
-          VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS,
-      1);
-
-  // Bubble is reshown by the user.
-  ReshowBubble();
-
-  // Mock deactivation due to lost focus.
-  views::test::WidgetDestroyedWaiter destroyed_waiter2(
-      GetBubbleViews()->GetWidget());
-  GetBubbleViews()->GetWidget()->CloseWithReason(
-      views::Widget::ClosedReason::kLostFocus);
-  destroyed_waiter2.Wait();
-
-  // Confirm .Reshows metrics.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.VirtualCardManualFallbackBubble.Result.Reshows",
-      AutofillMetrics::VirtualCardManualFallbackBubbleResultMetric::
-          VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS,
       1);
 }
 

@@ -6,6 +6,64 @@
       "chromiumos_preflight"
     ]
   },
+  "chromeos-betty-arc-r-chrome": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
+    ],
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "eve-arc-r|kevin",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "chrome_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
+      },
+      {
+        "args": [
+          "--strip-chrome"
+        ],
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "eve-arc-r|kevin",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "disk_usage_tast_test",
+        "test_id_prefix": "ninja://chromeos:disk_usage_tast_test/"
+      }
+    ]
+  },
   "chromeos-betty-pi-arc-cfi-thin-lto-chrome": {
     "additional_compile_targets": [
       "chromiumos_preflight"
@@ -709,7 +767,8 @@
       },
       {
         "args": [
-          "--vpython-dir=../../vpython_dir_linux_amd64"
+          "--vpython-dir=../../vpython_dir_linux_amd64",
+          "--gtest_filter=-PythonUtils.PythonRunTime"
         ],
         "merge": {
           "args": [],
@@ -723,9 +782,9 @@
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
-              "cipd_package": "infra/python/cpython/linux-amd64",
+              "cipd_package": "infra/3pp/tools/cpython3/linux-amd64",
               "location": "vpython_dir_linux_amd64",
-              "revision": "version:2.7.15.chromium14"
+              "revision": "version:2@3.8.10.chromium.21"
             },
             {
               "cipd_package": "infra/tools/luci/vpython/linux-amd64",
@@ -1217,6 +1276,99 @@
       }
     ]
   },
+  "chromeos-eve-arc-r-chrome": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
+    ],
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "eve-arc-r",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_id_prefix": "ninja://base:base_unittests/",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "eve-arc-r",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 4
+        },
+        "test": "chrome_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--strip-chrome"
+        ],
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "eve-arc-r",
+              "os": "ChromeOS",
+              "pool": "chrome.tests"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "disk_usage_tast_test",
+        "test_id_prefix": "ninja://chromeos:disk_usage_tast_test/",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      }
+    ]
+  },
   "chromeos-eve-chrome": {
     "additional_compile_targets": [
       "chromiumos_preflight"
@@ -1569,7 +1721,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-16.04",
+              "os": "Ubuntu-18.04",
               "pool": "chrome.tests"
             }
           ],
@@ -1591,8 +1743,8 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R96-14200.0.0",
-        "name": "lacros_all_tast_tests_ATLAS_TOT",
+        "cros_img": "atlas-release/R96-14263.0.0",
+        "name": "lacros_all_tast_tests_ATLAS_LKGM",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1606,8 +1758,8 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R94-14150.17.0",
-        "name": "lacros_all_tast_tests_ATLAS_TOT-1",
+        "cros_img": "atlas-release/R96-14244.0.0",
+        "name": "lacros_all_tast_tests_ATLAS_DEV",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1621,8 +1773,23 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R93-14092.46.0",
-        "name": "lacros_all_tast_tests_ATLAS_TOT-2",
+        "cros_img": "atlas-release/R94-14150.46.0",
+        "name": "lacros_all_tast_tests_ATLAS_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800
+      },
+      {
+        "args": [],
+        "cros_board": "atlas",
+        "cros_img": "atlas-release/R93-14092.66.0",
+        "name": "lacros_all_tast_tests_ATLAS_STABLE",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1636,8 +1803,8 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R96-14200.0.0",
-        "name": "lacros_all_tast_tests_EVE_TOT",
+        "cros_img": "eve-release/R96-14263.0.0",
+        "name": "lacros_all_tast_tests_EVE_LKGM",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1651,8 +1818,8 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R94-14150.17.0",
-        "name": "lacros_all_tast_tests_EVE_TOT-1",
+        "cros_img": "eve-release/R96-14244.0.0",
+        "name": "lacros_all_tast_tests_EVE_DEV",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1666,8 +1833,23 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R93-14092.46.0",
-        "name": "lacros_all_tast_tests_EVE_TOT-2",
+        "cros_img": "eve-release/R94-14150.46.0",
+        "name": "lacros_all_tast_tests_EVE_BETA",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {},
+        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
+        "test": "lacros_all_tast_tests",
+        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
+        "timeout_sec": 10800
+      },
+      {
+        "args": [],
+        "cros_board": "eve",
+        "cros_img": "eve-release/R93-14092.66.0",
+        "name": "lacros_all_tast_tests_EVE_STABLE",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -1761,7 +1943,6 @@
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "variations_smoke_tests",
         "merge": {
           "args": [],
@@ -3376,25 +3557,6 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "traffic_annotation_auditor_unittests",
-        "test_id_prefix": "ninja://tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "ui_base_unittests",
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
@@ -3686,7 +3848,6 @@
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "variations_smoke_tests",
         "merge": {
           "args": [],

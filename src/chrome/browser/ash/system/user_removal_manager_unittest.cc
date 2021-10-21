@@ -26,17 +26,22 @@ class FakeChromeUserRemovalManager : public FakeChromeUserManager {
  public:
   FakeChromeUserRemovalManager() = default;
 
+  FakeChromeUserRemovalManager(const FakeChromeUserRemovalManager&) = delete;
+  FakeChromeUserRemovalManager& operator=(const FakeChromeUserRemovalManager&) =
+      delete;
+
   void RemoveUser(const AccountId& account_id,
                   user_manager::UserRemovalReason reason,
                   user_manager::RemoveUserDelegate* delegate) override {
     RemoveUserFromList(account_id);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeChromeUserRemovalManager);
 };
 
 class UserRemovalManagerTest : public testing::Test {
+ public:
+  UserRemovalManagerTest(const UserRemovalManagerTest&) = delete;
+  UserRemovalManagerTest& operator=(const UserRemovalManagerTest&) = delete;
+
  protected:
   UserRemovalManagerTest();
   ~UserRemovalManagerTest() override;
@@ -45,9 +50,6 @@ class UserRemovalManagerTest : public testing::Test {
 
   const ScopedTestingLocalState local_state_;
   const user_manager::ScopedUserManager scoped_user_manager_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UserRemovalManagerTest);
 };
 
 UserRemovalManagerTest::UserRemovalManagerTest()
@@ -86,11 +88,11 @@ TEST_F(UserRemovalManagerTest, TestFailsafeTimer) {
   user_removal_manager::InitiateUserRemoval(base::OnceClosure());
 
   // After 55s the timer is not run yet.
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(55));
+  task_runner_->FastForwardBy(base::Seconds(55));
   EXPECT_FALSE(log_out_called);
 
   // After 60s the timer is run.
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_runner_->FastForwardBy(base::Seconds(5));
   EXPECT_TRUE(log_out_called);
 }
 

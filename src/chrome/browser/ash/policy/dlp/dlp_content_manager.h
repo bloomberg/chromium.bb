@@ -32,6 +32,8 @@ class WebContents;
 
 namespace policy {
 
+using OnDlpRestrictionChecked = base::OnceCallback<void(bool should_proceed)>;
+
 class DlpReportingManager;
 
 // System-wide class that tracks the set of currently known confidential
@@ -57,30 +59,52 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   DlpContentRestrictionSet GetOnScreenPresentRestrictions() const;
 
   // Returns whether screenshots should be restricted.
-  virtual bool IsScreenshotRestricted(const ScreenshotArea& area) const;
+  virtual bool IsScreenshotRestricted(const ScreenshotArea& area);
+
+  // Returns whether screenshots should be restricted for extensions API.
+  virtual bool IsScreenshotApiRestricted(const ScreenshotArea& area);
+
+  // Checks whether screenshots of |area| are restricted or not advised.
+  // Depending on the result, calls |callback| and passes an indicator whether
+  // to proceed or not.
+  void CheckScreenshotRestriction(const ScreenshotArea& area,
+                                  OnDlpRestrictionChecked callback);
 
   // Returns whether video capture should be restricted.
-  bool IsVideoCaptureRestricted(const ScreenshotArea& area) const;
+  bool IsVideoCaptureRestricted(const ScreenshotArea& area);
+
+  // Checks whether video capture of |area| is restricted or not advised.
+  // Depending on the result, calls |callback| and passes an indicator whether
+  // to proceed or not.
+  void CheckVideoCaptureRestriction(const ScreenshotArea& area,
+                                    OnDlpRestrictionChecked callback);
 
   // Returns whether printing should be restricted.
-  bool IsPrintingRestricted(content::WebContents* web_contents) const;
+  bool IsPrintingRestricted(content::WebContents* web_contents);
 
   // Returns whether the user should be warned before printing.
-  bool ShouldWarnBeforePrinting(content::WebContents* web_contents) const;
+  bool ShouldWarnBeforePrinting(content::WebContents* web_contents);
 
   // Returns whether screen capture of the defined content should be restricted.
   virtual bool IsScreenCaptureRestricted(
-      const content::DesktopMediaID& media_id) const;
+      const content::DesktopMediaID& media_id);
 
   // Called when video capturing for |area| is started.
   void OnVideoCaptureStarted(const ScreenshotArea& area);
 
-  // Called when video capturing is stopped.
-  void OnVideoCaptureStopped();
+  // Called when video capturing is stopped. Calls |callback| with an indicator
+  // whether to proceed or not, based on DLP restrictions and potentially
+  // confidential content captured.
+  void CheckStoppedVideoCapture(OnDlpRestrictionChecked callback);
 
   // Returns whether initiation of capture mode should be restricted because
   // any restricted content is currently visible.
-  bool IsCaptureModeInitRestricted() const;
+  bool IsCaptureModeInitRestricted();
+
+  // Checks whether initiation of capture mode is restricted or not advised
+  // based on the currently visible content. Depending on the result, calls
+  // |callback| and passes an indicator whether to proceed or not.
+  void CheckCaptureModeInitRestriction(OnDlpRestrictionChecked callback);
 
   // Called when screen capture is started.
   // |state_change_callback| will be called when restricted content will appear
@@ -94,6 +118,10 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   // Called when screen capture is stopped.
   void OnScreenCaptureStopped(const std::string& label,
                               const content::DesktopMediaID& media_id);
+
+  // Called when a Capture Mode session is finished to reset the stored user's
+  // choice.
+  void ResetCaptureModeAllowance();
 
   // The caller (test) should manage |dlp_content_manager| lifetime.
   // Reset doesn't delete the object.
@@ -133,6 +161,14 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
     bool is_running = true;
     bool showing_paused_notification = false;
     bool showing_resumed_notification = false;
+  };
+
+  // Structure to keep track of a running video capture.
+  struct VideoCaptureInfo {
+    explicit VideoCaptureInfo(const ScreenshotArea& area);
+
+    const ScreenshotArea area_;
+    bool confidential_content_observed_ = false;
   };
 
   DlpContentManager();
@@ -203,6 +239,20 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   RestrictionLevelAndUrl GetPrintingRestrictionInfo(
       content::WebContents* web_contents) const;
 
+  // Helper method for async to check the restriction level, based on which
+  // calls |callback| with an indicator whether to proceed or not.
+  void CheckScreenCaptureRestriction(RestrictionLevelAndUrl restriction_info,
+                                     OnDlpRestrictionChecked callback);
+
+  // Reports events if required by the |restriction_info| and
+  // `reporting_manager` is configured.
+  void MaybeReportEvent(const RestrictionLevelAndUrl& restriction_info,
+                        DlpRulesManager::Restriction restriction);
+
+  // Called back as part of the warning dialogs "Accept" callback, to save the
+  // user's response.
+  void OnScreenCaptureUserAllowed();
+
   // Map from currently known confidential WebContents to the restrictions.
   base::flat_map<content::WebContents*, DlpContentRestrictionSet>
       confidential_web_contents_;
@@ -214,11 +264,16 @@ class DlpContentManager : public DlpWindowObserver::Delegate {
   // Set of restriction applied to the currently visible content.
   DlpContentRestrictionSet on_screen_restrictions_;
 
-  // The currently running video capture area if any.
-  absl::optional<ScreenshotArea> running_video_capture_area_;
+  // Information about the currently running video capture area if any.
+  absl::optional<VideoCaptureInfo> running_video_capture_info_;
 
   // List of the currently running screen captures.
   std::vector<ScreenCaptureInfo> running_screen_captures_;
+
+  // Keeps track of user's selection after being shown a warning modal
+  // dialog, to avoid showing the dialog multiple times during the same capture
+  // mode session.
+  bool user_allowed_screen_capture_ = false;
 
   DlpReportingManager* reporting_manager_;
 };

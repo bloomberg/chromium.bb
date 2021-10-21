@@ -20,7 +20,8 @@ namespace dawn_native {
 
     AdapterBase::AdapterBase(InstanceBase* instance, wgpu::BackendType backend)
         : mInstance(instance), mBackend(backend) {
-        mSupportedExtensions.EnableExtension(Extension::DawnInternalUsages);
+        GetDefaultLimits(&mLimits.v1);
+        mSupportedFeatures.EnableFeature(Feature::DawnInternalUsages);
     }
 
     wgpu::BackendType AdapterBase::GetBackendType() const {
@@ -43,18 +44,18 @@ namespace dawn_native {
         return mInstance;
     }
 
-    ExtensionsSet AdapterBase::GetSupportedExtensions() const {
-        return mSupportedExtensions;
+    FeaturesSet AdapterBase::GetSupportedFeatures() const {
+        return mSupportedFeatures;
     }
 
-    bool AdapterBase::SupportsAllRequestedExtensions(
-        const std::vector<const char*>& requestedExtensions) const {
-        for (const char* extensionStr : requestedExtensions) {
-            Extension extensionEnum = mInstance->ExtensionNameToEnum(extensionStr);
-            if (extensionEnum == Extension::InvalidEnum) {
+    bool AdapterBase::SupportsAllRequestedFeatures(
+        const std::vector<const char*>& requestedFeatures) const {
+        for (const char* featureStr : requestedFeatures) {
+            Feature featureEnum = mInstance->FeatureNameToEnum(featureStr);
+            if (featureEnum == Feature::InvalidEnum) {
                 return false;
             }
-            if (!mSupportedExtensions.IsEnabled(extensionEnum)) {
+            if (!mSupportedFeatures.IsEnabled(featureEnum)) {
                 return false;
             }
         }
@@ -63,9 +64,30 @@ namespace dawn_native {
 
     WGPUDeviceProperties AdapterBase::GetAdapterProperties() const {
         WGPUDeviceProperties adapterProperties = {};
+        adapterProperties.deviceID = mPCIInfo.deviceId;
+        adapterProperties.vendorID = mPCIInfo.vendorId;
 
-        mSupportedExtensions.InitializeDeviceProperties(&adapterProperties);
+        mSupportedFeatures.InitializeDeviceProperties(&adapterProperties);
+        // This is OK for now because there are no limit feature structs.
+        // If we add additional structs, the caller will need to provide memory
+        // to store them (ex. by calling GetLimits directly instead). Currently,
+        // we keep this function as it's only used internally in Chromium to
+        // send the adapter properties across the wire.
+        GetLimits(reinterpret_cast<SupportedLimits*>(&adapterProperties.limits));
         return adapterProperties;
+    }
+
+    bool AdapterBase::GetLimits(SupportedLimits* limits) const {
+        ASSERT(limits != nullptr);
+        if (limits->nextInChain != nullptr) {
+            return false;
+        }
+        if (mUseTieredLimits) {
+            limits->limits = ApplyLimitTiers(mLimits.v1);
+        } else {
+            limits->limits = mLimits.v1;
+        }
+        return true;
     }
 
     DeviceBase* AdapterBase::CreateDevice(const DeviceDescriptor* descriptor) {
@@ -78,16 +100,59 @@ namespace dawn_native {
         return result;
     }
 
+    void AdapterBase::RequestDevice(const DeviceDescriptor* descriptor,
+                                    WGPURequestDeviceCallback callback,
+                                    void* userdata) {
+        DeviceBase* result = nullptr;
+        MaybeError err = CreateDeviceInternal(&result, descriptor);
+        WGPUDevice device = reinterpret_cast<WGPUDevice>(result);
+
+        if (err.IsError()) {
+            std::unique_ptr<ErrorData> errorData = err.AcquireError();
+            callback(WGPURequestDeviceStatus_Error, device, errorData->GetMessage().c_str(),
+                     userdata);
+            return;
+        }
+        WGPURequestDeviceStatus status =
+            device == nullptr ? WGPURequestDeviceStatus_Unknown : WGPURequestDeviceStatus_Success;
+        callback(status, device, nullptr, userdata);
+    }
+
     MaybeError AdapterBase::CreateDeviceInternal(DeviceBase** result,
                                                  const DeviceDescriptor* descriptor) {
         if (descriptor != nullptr) {
-            if (!SupportsAllRequestedExtensions(descriptor->requiredExtensions)) {
-                return DAWN_VALIDATION_ERROR("One or more requested extensions are not supported");
+            // TODO(dawn:1149): remove once requiredExtensions is no longer used.
+            for (const char* extensionStr : descriptor->requiredExtensions) {
+                Feature extensionEnum = mInstance->FeatureNameToEnum(extensionStr);
+                DAWN_INVALID_IF(extensionEnum == Feature::InvalidEnum,
+                                "Requested feature %s is unknown.", extensionStr);
+                DAWN_INVALID_IF(!mSupportedFeatures.IsEnabled(extensionEnum),
+                                "Requested feature %s is disabled.", extensionStr);
             }
+            for (const char* featureStr : descriptor->requiredFeatures) {
+                Feature featureEnum = mInstance->FeatureNameToEnum(featureStr);
+                DAWN_INVALID_IF(featureEnum == Feature::InvalidEnum,
+                                "Requested feature %s is unknown.", featureStr);
+                DAWN_INVALID_IF(!mSupportedFeatures.IsEnabled(featureEnum),
+                                "Requested feature %s is disabled.", featureStr);
+            }
+        }
+
+        if (descriptor != nullptr && descriptor->requiredLimits != nullptr) {
+            DAWN_TRY(ValidateLimits(
+                mUseTieredLimits ? ApplyLimitTiers(mLimits.v1) : mLimits.v1,
+                reinterpret_cast<const RequiredLimits*>(descriptor->requiredLimits)->limits));
+
+            DAWN_INVALID_IF(descriptor->requiredLimits->nextInChain != nullptr,
+                            "nextInChain is not nullptr.");
         }
 
         DAWN_TRY_ASSIGN(*result, CreateDeviceImpl(descriptor));
         return {};
+    }
+
+    void AdapterBase::SetUseTieredLimits(bool useTieredLimits) {
+        mUseTieredLimits = useTieredLimits;
     }
 
     void AdapterBase::ResetInternalDeviceForTesting() {

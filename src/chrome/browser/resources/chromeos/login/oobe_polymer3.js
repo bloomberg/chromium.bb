@@ -1,8 +1,24 @@
-import {loadTimeData} from './i18n_setup.js';
-import {DebuggerUI} from './debug/debug.m.js';
-import {Oobe} from './cr_ui.m.js';
+// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
+import 'chrome://oobe/screens/common/app_downloading.m.js';
+import 'chrome://oobe/screens/common/fingerprint_setup.m.js';
+import 'chrome://oobe/screens/common/gesture_navigation.m.js';
 import 'chrome://oobe/screens/common/marketing_opt_in.m.js';
+import 'chrome://oobe/screens/common/parental_handoff.m.js';
+import 'chrome://oobe/screens/common/sync_consent.m.js';
+import 'chrome://oobe/screens/common/tpm_error.m.js';
+import 'chrome://oobe/screens/common/user_creation.m.js';
+import 'chrome://oobe/screens/login/active_directory_password_change.m.js';
+import 'chrome://oobe/screens/login/management_transition.m.js';
+import 'chrome://oobe/screens/oobe/auto_enrollment_check.m.js';
+import 'chrome://oobe/screens/oobe/hid_detection.m.js';
+import 'chrome://oobe/screens/oobe/packaged_license.m.js';
+
+import {Oobe} from './cr_ui.m.js';
+import {DebuggerUI} from './debug/debug.m.js';
+import {loadTimeData} from './i18n_setup.js';
 
 function initializeDebugger() {
   if (document.readyState === 'loading')

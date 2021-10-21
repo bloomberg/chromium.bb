@@ -49,13 +49,14 @@ struct FakeEntry {
   FakeEntry();
   FakeEntry(std::unique_ptr<EntryMetadata> metadata,
             const std::string& contents);
+
+  FakeEntry(const FakeEntry&) = delete;
+  FakeEntry& operator=(const FakeEntry&) = delete;
+
   ~FakeEntry();
 
   std::unique_ptr<EntryMetadata> metadata;
   std::string contents;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeEntry);
 };
 
 // Fake provided file system implementation. Does not communicate with target
@@ -64,6 +65,10 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
  public:
   explicit FakeProvidedFileSystem(
       const ProvidedFileSystemInfo& file_system_info);
+
+  FakeProvidedFileSystem(const FakeProvidedFileSystem&) = delete;
+  FakeProvidedFileSystem& operator=(const FakeProvidedFileSystem&) = delete;
+
   ~FakeProvidedFileSystem() override;
 
   // Adds a fake entry to the fake file system.
@@ -187,7 +192,6 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   Watchers watchers_;
 
   base::WeakPtrFactory<FakeProvidedFileSystem> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };
 
 }  // namespace file_system_provider

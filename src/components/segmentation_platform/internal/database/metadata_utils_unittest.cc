@@ -11,6 +11,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace segmentation_platform {
+namespace {
+
+void AddDiscreteMapping(proto::SegmentationModelMetadata* metadata,
+                        float mappings[][2],
+                        int num_pairs,
+                        const std::string& discrete_mapping_key) {
+  auto* discrete_mappings_map = metadata->mutable_discrete_mappings();
+  auto& discrete_mappings = (*discrete_mappings_map)[discrete_mapping_key];
+  for (int i = 0; i < num_pairs; i++) {
+    auto* pair = mappings[i];
+    auto* entry = discrete_mappings.add_entries();
+    entry->set_min_result(pair[0]);
+    entry->set_rank(pair[1]);
+  }
+}
+
+}  // namespace
 
 class MetadataUtilsTest : public testing::Test {
  public:
@@ -336,13 +353,13 @@ TEST_F(MetadataUtilsTest, HasFreshResults) {
 
   // Stale results.
   auto* prediction_result = segment_info.mutable_prediction_result();
-  base::Time result_time = now - base::TimeDelta::FromDays(3);
+  base::Time result_time = now - base::Days(3);
   prediction_result->set_timestamp_us(
       result_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_FALSE(metadata_utils::HasFreshResults(segment_info, now));
 
   // Fresh results.
-  result_time = now - base::TimeDelta::FromHours(2);
+  result_time = now - base::Hours(2);
   prediction_result->set_timestamp_us(
       result_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_TRUE(metadata_utils::HasFreshResults(segment_info, now));
@@ -360,14 +377,14 @@ TEST_F(MetadataUtilsTest, HasExpiredOrUnavailableResult) {
 
   // Unexpired result.
   auto* prediction_result = segment_info.mutable_prediction_result();
-  base::Time result_time = base::Time::Now() - base::TimeDelta::FromDays(3);
+  base::Time result_time = base::Time::Now() - base::Days(3);
   prediction_result->set_timestamp_us(
       result_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_FALSE(
       metadata_utils::HasExpiredOrUnavailableResult(segment_info, now));
 
   // Expired result.
-  result_time = base::Time::Now() - base::TimeDelta::FromDays(30);
+  result_time = base::Time::Now() - base::Days(30);
   prediction_result->set_timestamp_us(
       result_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_TRUE(metadata_utils::HasExpiredOrUnavailableResult(segment_info, now));
@@ -376,32 +393,25 @@ TEST_F(MetadataUtilsTest, HasExpiredOrUnavailableResult) {
 TEST_F(MetadataUtilsTest, GetTimeUnit) {
   proto::SegmentationModelMetadata metadata;
   metadata.set_time_unit(proto::TimeUnit::DAY);
-  EXPECT_EQ(base::TimeDelta::FromDays(1),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Days(1), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::HOUR);
-  EXPECT_EQ(base::TimeDelta::FromHours(1),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Hours(1), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::MINUTE);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Minutes(1), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::SECOND);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Seconds(1), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::WEEK);
-  EXPECT_EQ(base::TimeDelta::FromDays(7),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Days(7), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::MONTH);
-  EXPECT_EQ(base::TimeDelta::FromDays(30),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Days(30), metadata_utils::GetTimeUnit(metadata));
 
   metadata.set_time_unit(proto::TimeUnit::YEAR);
-  EXPECT_EQ(base::TimeDelta::FromDays(365),
-            metadata_utils::GetTimeUnit(metadata));
+  EXPECT_EQ(base::Days(365), metadata_utils::GetTimeUnit(metadata));
 }
 
 TEST_F(MetadataUtilsTest, SignalTypeToSignalKind) {
@@ -417,6 +427,83 @@ TEST_F(MetadataUtilsTest, SignalTypeToSignalKind) {
   EXPECT_EQ(SignalKey::Kind::UNKNOWN,
             metadata_utils::SignalTypeToSignalKind(
                 proto::SignalType::UNKNOWN_SIGNAL_TYPE));
+}
+
+TEST_F(MetadataUtilsTest, CheckDiscreteMapping) {
+  proto::SegmentationModelMetadata metadata;
+  std::string segmentation_key = "some_key";
+  float mapping[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
+  AddDiscreteMapping(&metadata, mapping, 3, segmentation_key);
+
+  ASSERT_EQ(0, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.1,
+                                                      metadata));
+  ASSERT_EQ(1, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.4,
+                                                      metadata));
+  ASSERT_EQ(3, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.5,
+                                                      metadata));
+  ASSERT_EQ(3, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.6,
+                                                      metadata));
+  ASSERT_EQ(4, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.9,
+                                                      metadata));
+}
+
+TEST_F(MetadataUtilsTest, CheckDiscreteMappingInNonAscendingOrder) {
+  proto::SegmentationModelMetadata metadata;
+  std::string segmentation_key = "some_key";
+  float mapping[][2] = {{0.2, 1}, {0.7, 4}, {0.5, 3}};
+  AddDiscreteMapping(&metadata, mapping, 3, segmentation_key);
+
+  ASSERT_EQ(0, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.1,
+                                                      metadata));
+  ASSERT_EQ(1, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.4,
+                                                      metadata));
+  ASSERT_EQ(3, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.5,
+                                                      metadata));
+  ASSERT_EQ(3, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.6,
+                                                      metadata));
+  ASSERT_EQ(4, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.9,
+                                                      metadata));
+}
+
+TEST_F(MetadataUtilsTest, CheckMissingDiscreteMapping) {
+  proto::SegmentationModelMetadata metadata;
+  std::string segmentation_key = "some_key";
+
+  // Any value should result in a 0 mapping, since no mapping exists.
+  ASSERT_EQ(0, metadata_utils::ConvertToDiscreteScore(segmentation_key, 0.9,
+                                                      metadata));
+}
+
+TEST_F(MetadataUtilsTest, CheckDefaultDiscreteMapping) {
+  std::string segmentation_key = "some_key";
+  float mapping_specific[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
+  float mapping_default[][2] = {{0.2, 5}, {0.5, 6}, {0.7, 7}};
+  proto::SegmentationModelMetadata metadata;
+  AddDiscreteMapping(&metadata, mapping_specific, 3, segmentation_key);
+  AddDiscreteMapping(&metadata, mapping_default, 3, "my-default");
+
+  // No valid mapping should be found since there is no default mapping.
+  EXPECT_EQ(0, metadata_utils::ConvertToDiscreteScore("non-existing-key", 0.6,
+                                                      metadata));
+
+  metadata.set_default_discrete_mapping("my-default");
+  // Should now use the default values instead of the one from the
+  // one in the configuration key.
+  EXPECT_EQ(6, metadata_utils::ConvertToDiscreteScore("non-existing-key", 0.6,
+                                                      metadata));
+}
+
+TEST_F(MetadataUtilsTest, CheckMissingDefaultDiscreteMapping) {
+  proto::SegmentationModelMetadata metadata;
+  std::string segmentation_key = "some_key";
+  float mapping_default[][2] = {{0.2, 5}, {0.5, 6}, {0.7, 7}};
+  AddDiscreteMapping(&metadata, mapping_default, 3, "my-default");
+  metadata.set_default_discrete_mapping("not-my-default");
+
+  // Should not find 'not-my-default' mapping, since it is registered as
+  // 'my-default', so we should get a 0 result.
+  EXPECT_EQ(0, metadata_utils::ConvertToDiscreteScore("non-existing-key", 0.6,
+                                                      metadata));
 }
 
 }  // namespace segmentation_platform

@@ -40,6 +40,17 @@ extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 extern const base::Feature kUserDataSnapshot;
 #endif
 
+extern const base::Feature kSandboxExternalProtocolBlocked;
+extern const base::Feature kTriggerNetworkDataMigration;
+
+// Returns true if network context data should be migrated to the new data path.
+// Prefer using this function over querying the kTriggerNetworkDataMigration
+// feature directly, as there might be other platform specific factors that
+// determine whether data migration should occur or not.
+bool ShouldTriggerNetworkDataMigration();
+
+extern const base::Feature kWebUsbDeviceDetection;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

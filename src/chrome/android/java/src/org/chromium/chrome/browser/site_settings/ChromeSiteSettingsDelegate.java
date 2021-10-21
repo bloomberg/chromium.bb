@@ -150,12 +150,17 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
             // great to dynamically remove the preference in this way.
             case SiteSettingsCategory.Type.ADS:
                 return SiteSettingsCategory.adsCategoryEnabled();
+            case SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT:
+                return ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING);
             case SiteSettingsCategory.Type.BLUETOOTH:
                 return ContentFeatureList.isEnabled(
                         ContentFeatureList.WEB_BLUETOOTH_NEW_PERMISSIONS_BACKEND);
             case SiteSettingsCategory.Type.BLUETOOTH_SCANNING:
                 return CommandLine.getInstance().hasSwitch(
                         ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES);
+            case SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE:
+                return ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL);
             case SiteSettingsCategory.Type.NFC:
                 return ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC);
             default:

@@ -140,8 +140,7 @@ unsigned WebGLRenderingContextBase::max_active_webgl_contexts_on_worker_ = 0;
 
 namespace {
 
-constexpr base::TimeDelta kDurationBetweenRestoreAttempts =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDurationBetweenRestoreAttempts = base::Seconds(1);
 const int kMaxGLErrorsAllowedToConsole = 256;
 
 Mutex& WebGLContextLimitMutex() {
@@ -794,7 +793,7 @@ void WebGLRenderingContextBase::CompleteXrCompatiblePromiseIfPending(
                 WebFeature::kWebGLRenderingContextMakeXRCompatible))) {
       const auto& ukm_params = GetUkmParameters();
       IdentifiabilityMetricBuilder(ukm_params.source_id)
-          .SetWebfeature(WebFeature::kWebGLRenderingContextMakeXRCompatible,
+          .AddWebFeature(WebFeature::kWebGLRenderingContextMakeXRCompatible,
                          exception_code == DOMExceptionCode::kNoError)
           .Record(ukm_params.ukm_recorder);
     }
@@ -3325,7 +3324,7 @@ void WebGLRenderingContextBase::RecordIdentifiableGLParameterDigest(
       blink::IdentifiableSurface::Type::kWebGLParameter));
   const auto ukm_params = GetUkmParameters();
   blink::IdentifiabilityMetricBuilder(ukm_params.source_id)
-      .Set(blink::IdentifiableSurface::FromTypeAndToken(
+      .Add(blink::IdentifiableSurface::FromTypeAndToken(
                blink::IdentifiableSurface::Type::kWebGLParameter, pname),
            value)
       .Record(ukm_params.ukm_recorder);
@@ -3348,7 +3347,7 @@ void WebGLRenderingContextBase::RecordShaderPrecisionFormatForStudy(
                           .GetToken();
 
   blink::IdentifiabilityMetricBuilder(ukm_params.source_id)
-      .Set(blink::IdentifiableSurface::FromTypeAndToken(
+      .Add(blink::IdentifiableSurface::FromTypeAndToken(
                blink::IdentifiableSurface::Type::kWebGLShaderPrecisionFormat,
                surface_token),
            sample_token)

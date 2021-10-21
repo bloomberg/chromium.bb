@@ -206,10 +206,7 @@ static void convert_mask_to_strength_mask(uint8_t *data, int linesize,
 static int query_formats(AVFilterContext *ctx)
 {
     static const enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int load_mask(uint8_t **mask, int *w, int *h,
@@ -562,7 +559,6 @@ static const AVFilterPad removelogo_inputs[] = {
         .config_props = config_props_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad removelogo_outputs[] = {
@@ -570,7 +566,6 @@ static const AVFilterPad removelogo_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_removelogo = {
@@ -580,8 +575,8 @@ const AVFilter ff_vf_removelogo = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = removelogo_inputs,
-    .outputs       = removelogo_outputs,
+    FILTER_INPUTS(removelogo_inputs),
+    FILTER_OUTPUTS(removelogo_outputs),
     .priv_class    = &removelogo_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

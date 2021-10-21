@@ -81,9 +81,6 @@ class ASH_EXPORT QuickAnswersControllerImpl
   // Handle user consent result.
   void OnUserConsentResult(bool consented);
 
-  // Open Quick-Answers dogfood URL.
-  void OpenQuickAnswersDogfoodLink();
-
   // Open Quick-Answers settings.
   void OpenQuickAnswersSettings();
 
@@ -95,22 +92,12 @@ class ASH_EXPORT QuickAnswersControllerImpl
     return notice_controller_.get();
   }
 
-  void SetVisibilityForTesting(QuickAnswersVisibility visibility) {
-    visibility_ = visibility;
-  }
-
  private:
   void MaybeDismissQuickAnswersNotice();
   void MaybeDismissQuickAnswersConsent();
 
   void HandleQuickAnswerRequest(
       const quick_answers::QuickAnswersRequest& request);
-
-  bool ShouldShowUserNotice() const;
-  // Show the user notice view. Does nothing if the view is already
-  // visible.
-  void ShowUserNotice(const std::u16string& intent_type,
-                      const std::u16string& intent_text);
 
   // Show the user consent view. Does nothing if the view is already
   // visible.

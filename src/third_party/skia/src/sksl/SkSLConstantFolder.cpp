@@ -12,13 +12,11 @@
 #include "include/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
-#include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariable.h"
@@ -29,8 +27,7 @@ namespace SkSL {
 static std::unique_ptr<Expression> eliminate_no_op_boolean(const Expression& left,
                                                            Operator op,
                                                            const Expression& right) {
-    SkASSERT(right.is<BoolLiteral>());
-    bool rightVal = right.as<BoolLiteral>().value();
+    bool rightVal = right.as<Literal>().boolValue();
 
     // Detect no-op Boolean expressions and optimize them away.
     if ((op.kind() == Token::Kind::TK_LOGICALAND && rightVal)  ||  // (expr && true)  -> (expr)
@@ -48,8 +45,7 @@ static std::unique_ptr<Expression> eliminate_no_op_boolean(const Expression& lef
 static std::unique_ptr<Expression> short_circuit_boolean(const Expression& left,
                                                          Operator op,
                                                          const Expression& right) {
-    SkASSERT(left.is<BoolLiteral>());
-    bool leftVal = left.as<BoolLiteral>().value();
+    bool leftVal = left.as<Literal>().boolValue();
 
     // When the literal is on the left, we can sometimes eliminate the other expression entirely.
     if ((op.kind() == Token::Kind::TK_LOGICALAND && !leftVal) ||  // (false && expr) -> (false)
@@ -76,7 +72,7 @@ static std::unique_ptr<Expression> simplify_vector_equality(const Context& conte
                 [[fallthrough]];
 
             case Expression::ComparisonResult::kEqual:
-                return BoolLiteral::Make(context, left.fOffset, equality);
+                return Literal::MakeBool(context, left.fLine, equality);
 
             case Expression::ComparisonResult::kUnknown:
                 break;
@@ -85,11 +81,6 @@ static std::unique_ptr<Expression> simplify_vector_equality(const Context& conte
     return nullptr;
 }
 
-// 'T' is the actual stored type of the literal data (SKSL_FLOAT or SKSL_INT).
-// 'U' is an unsigned version of that, used to perform addition, subtraction, and multiplication,
-// to avoid signed-integer overflow errors. This mimics the use of URESULT vs. RESULT when doing
-// scalar folding in Simplify, later in this file.
-template <typename T, typename U = T>
 static std::unique_ptr<Expression> simplify_vector(const Context& context,
                                                    const Expression& left,
                                                    Operator op,
@@ -104,26 +95,26 @@ static std::unique_ptr<Expression> simplify_vector(const Context& context,
     }
 
     // Handle floating-point arithmetic: + - * /
-    const auto vectorComponentwiseFold = [&](auto foldFn) -> std::unique_ptr<Expression> {
-        const Type& componentType = type.componentType();
-        ExpressionArray args;
-        args.reserve_back(type.columns());
-        for (int i = 0; i < type.columns(); i++) {
-            U value = foldFn(left.getConstantSubexpression(i)->as<Literal<T>>().value(),
-                             right.getConstantSubexpression(i)->as<Literal<T>>().value());
-            args.push_back(Literal<T>::Make(left.fOffset, value, &componentType));
-        }
-        return ConstructorCompound::Make(context, left.fOffset, type, std::move(args));
-    };
-
+    using FoldFn = double (*)(double, double);
+    FoldFn foldFn;
     switch (op.kind()) {
-        case Token::Kind::TK_PLUS:  return vectorComponentwiseFold([](U a, U b) { return a + b; });
-        case Token::Kind::TK_MINUS: return vectorComponentwiseFold([](U a, U b) { return a - b; });
-        case Token::Kind::TK_STAR:  return vectorComponentwiseFold([](U a, U b) { return a * b; });
-        case Token::Kind::TK_SLASH: return vectorComponentwiseFold([](T a, T b) { return a / b; });
+        case Token::Kind::TK_PLUS:  foldFn = +[](double a, double b) { return a + b; }; break;
+        case Token::Kind::TK_MINUS: foldFn = +[](double a, double b) { return a - b; }; break;
+        case Token::Kind::TK_STAR:  foldFn = +[](double a, double b) { return a * b; }; break;
+        case Token::Kind::TK_SLASH: foldFn = +[](double a, double b) { return a / b; }; break;
         default:
             return nullptr;
     }
+
+    const Type& componentType = type.componentType();
+    ExpressionArray args;
+    args.reserve_back(type.columns());
+    for (int i = 0; i < type.columns(); i++) {
+        double value = foldFn(left.getConstantSubexpression(i)->as<Literal>().value(),
+                              right.getConstantSubexpression(i)->as<Literal>().value());
+        args.push_back(Literal::Make(left.fLine, value, &componentType));
+    }
+    return ConstructorCompound::Make(context, left.fLine, type, std::move(args));
 }
 
 static std::unique_ptr<Expression> cast_expression(const Context& context,
@@ -131,7 +122,7 @@ static std::unique_ptr<Expression> cast_expression(const Context& context,
                                                    const Type& type) {
     ExpressionArray ctorArgs;
     ctorArgs.push_back(expr.clone());
-    std::unique_ptr<Expression> ctor = Constructor::Convert(context, expr.fOffset, type,
+    std::unique_ptr<Expression> ctor = Constructor::Convert(context, expr.fLine, type,
                                                             std::move(ctorArgs));
     SkASSERT(ctor);
     return ctor;
@@ -142,45 +133,44 @@ static ConstructorSplat splat_scalar(const Expression& scalar, const Type& type)
     SkASSERT(type.componentType() == scalar.type());
 
     // Use a constructor to splat the scalar expression across a vector.
-    return ConstructorSplat{scalar.fOffset, type, scalar.clone()};
+    return ConstructorSplat{scalar.fLine, type, scalar.clone()};
 }
 
 bool ConstantFolder::GetConstantInt(const Expression& value, SKSL_INT* out) {
     const Expression* expr = GetConstantValueForVariable(value);
-    if (!expr->is<IntLiteral>()) {
+    if (!expr->isIntLiteral()) {
         return false;
     }
-    *out = expr->as<IntLiteral>().value();
+    *out = expr->as<Literal>().intValue();
     return true;
 }
 
-bool ConstantFolder::GetConstantFloat(const Expression& value, SKSL_FLOAT* out) {
+bool ConstantFolder::GetConstantValue(const Expression& value, double* out) {
     const Expression* expr = GetConstantValueForVariable(value);
-    if (!expr->is<FloatLiteral>()) {
+    if (!expr->is<Literal>()) {
         return false;
     }
-    *out = expr->as<FloatLiteral>().value();
+    *out = expr->as<Literal>().value();
     return true;
 }
 
-static bool is_constant_scalar_value(const Expression& inExpr, float match) {
+static bool is_constant_scalar_value(const Expression& inExpr, double match) {
     const Expression* expr = ConstantFolder::GetConstantValueForVariable(inExpr);
-    return (expr->is<IntLiteral>()   && expr->as<IntLiteral>().value()   == match) ||
-           (expr->is<FloatLiteral>() && expr->as<FloatLiteral>().value() == match);
+    return (expr->is<Literal>() && expr->as<Literal>().value() == match);
 }
 
 static bool contains_constant_zero(const Expression& expr) {
     int numSlots = expr.type().slotCount();
     for (int index = 0; index < numSlots; ++index) {
         const Expression* subexpr = expr.getConstantSubexpression(index);
-        if (subexpr && is_constant_scalar_value(*subexpr, 0.0f)) {
+        if (subexpr && is_constant_scalar_value(*subexpr, 0.0)) {
             return true;
         }
     }
     return false;
 }
 
-static bool is_constant_value(const Expression& expr, float value) {
+static bool is_constant_value(const Expression& expr, double value) {
     int numSlots = expr.type().slotCount();
     for (int index = 0; index < numSlots; ++index) {
         const Expression* subexpr = expr.getConstantSubexpression(index);
@@ -191,7 +181,7 @@ static bool is_constant_value(const Expression& expr, float value) {
     return true;
 }
 
-bool ConstantFolder::ErrorOnDivideByZero(const Context& context, int offset, Operator op,
+bool ConstantFolder::ErrorOnDivideByZero(const Context& context, int line, Operator op,
                                          const Expression& right) {
     switch (op.kind()) {
         case Token::Kind::TK_SLASH:
@@ -199,7 +189,7 @@ bool ConstantFolder::ErrorOnDivideByZero(const Context& context, int offset, Ope
         case Token::Kind::TK_PERCENT:
         case Token::Kind::TK_PERCENTEQ:
             if (contains_constant_zero(right)) {
-                context.fErrors->error(offset, "division by zero");
+                context.fErrors->error(line, "division by zero");
                 return true;
             }
             return false;
@@ -315,7 +305,7 @@ static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& cont
 }
 
 template <typename T>
-static std::unique_ptr<Expression> fold_float_expression(int offset,
+static std::unique_ptr<Expression> fold_float_expression(int line,
                                                          T result,
                                                          const Type* resultType) {
     // If constant-folding this expression would generate a NaN/infinite result, leave it as-is.
@@ -325,11 +315,11 @@ static std::unique_ptr<Expression> fold_float_expression(int offset,
         }
     }
 
-    return Literal<T>::Make(offset, result, resultType);
+    return Literal::Make(line, result, resultType);
 }
 
 template <typename T>
-static std::unique_ptr<Expression> fold_int_expression(int offset,
+static std::unique_ptr<Expression> fold_int_expression(int line,
                                                        T result,
                                                        const Type* resultType) {
     // If constant-folding this expression would overflow the result type, leave it as-is.
@@ -339,11 +329,11 @@ static std::unique_ptr<Expression> fold_int_expression(int offset,
         }
     }
 
-    return Literal<T>::Make(offset, result, resultType);
+    return Literal::Make(line, result, resultType);
 }
 
 std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
-                                                     int offset,
+                                                     int line,
                                                      const Expression& leftExpr,
                                                      Operator op,
                                                      const Expression& rightExpr,
@@ -373,9 +363,9 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     }
 
     // Simplify the expression when both sides are constant Boolean literals.
-    if (left->is<BoolLiteral>() && right->is<BoolLiteral>()) {
-        bool leftVal  = left->as<BoolLiteral>().value();
-        bool rightVal = right->as<BoolLiteral>().value();
+    if (left->isBoolLiteral() && right->isBoolLiteral()) {
+        bool leftVal  = left->as<Literal>().boolValue();
+        bool rightVal = right->as<Literal>().boolValue();
         bool result;
         switch (op.kind()) {
             case Token::Kind::TK_LOGICALAND: result = leftVal && rightVal; break;
@@ -385,16 +375,16 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
             case Token::Kind::TK_NEQ:        result = leftVal != rightVal; break;
             default: return nullptr;
         }
-        return BoolLiteral::Make(context, offset, result);
+        return Literal::MakeBool(context, line, result);
     }
 
     // If the left side is a Boolean literal, apply short-circuit optimizations.
-    if (left->is<BoolLiteral>()) {
+    if (left->isBoolLiteral()) {
         return short_circuit_boolean(*left, op, *right);
     }
 
     // If the right side is a Boolean literal...
-    if (right->is<BoolLiteral>()) {
+    if (right->isBoolLiteral()) {
         // ... and the left side has no side effects...
         if (!left->hasSideEffects()) {
             // We can reverse the expressions and short-circuit optimizations are still valid.
@@ -408,16 +398,16 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     if (op.kind() == Token::Kind::TK_EQEQ && Analysis::IsSameExpressionTree(*left, *right)) {
         // With == comparison, if both sides are the same trivial expression, this is self-
         // comparison and is always true. (We are not concerned with NaN.)
-        return BoolLiteral::Make(context, leftExpr.fOffset, /*value=*/true);
+        return Literal::MakeBool(context, leftExpr.fLine, /*value=*/true);
     }
 
     if (op.kind() == Token::Kind::TK_NEQ && Analysis::IsSameExpressionTree(*left, *right)) {
         // With != comparison, if both sides are the same trivial expression, this is self-
         // comparison and is always false. (We are not concerned with NaN.)
-        return BoolLiteral::Make(context, leftExpr.fOffset, /*value=*/false);
+        return Literal::MakeBool(context, leftExpr.fLine, /*value=*/false);
     }
 
-    if (ErrorOnDivideByZero(context, offset, op, *right)) {
+    if (ErrorOnDivideByZero(context, line, op, *right)) {
         return nullptr;
     }
 
@@ -442,13 +432,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // precision to calculate the results and hope the result makes sense.
     // TODO(skia:10932): detect and handle integer overflow properly.
     using SKSL_UINT = uint64_t;
-    if (left->is<IntLiteral>() && right->is<IntLiteral>()) {
-        SKSL_INT leftVal  = left->as<IntLiteral>().value();
-        SKSL_INT rightVal = right->as<IntLiteral>().value();
+    if (left->isIntLiteral() && right->isIntLiteral()) {
+        SKSL_INT leftVal  = left->as<Literal>().intValue();
+        SKSL_INT rightVal = right->as<Literal>().intValue();
 
-        #define RESULT(Op)   fold_int_expression(offset, \
+        #define RESULT(Op)   fold_int_expression(line, \
                                         (SKSL_INT)(leftVal) Op (SKSL_INT)(rightVal), &resultType)
-        #define URESULT(Op)  fold_int_expression(offset, \
+        #define URESULT(Op)  fold_int_expression(line, \
                              (SKSL_INT)((SKSL_UINT)(leftVal) Op (SKSL_UINT)(rightVal)), &resultType)
         switch (op.kind()) {
             case Token::Kind::TK_PLUS:       return URESULT(+);
@@ -456,13 +446,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
             case Token::Kind::TK_STAR:       return URESULT(*);
             case Token::Kind::TK_SLASH:
                 if (leftVal == std::numeric_limits<SKSL_INT>::min() && rightVal == -1) {
-                    context.fErrors->error(offset, "arithmetic overflow");
+                    context.fErrors->error(line, "arithmetic overflow");
                     return nullptr;
                 }
                 return RESULT(/);
             case Token::Kind::TK_PERCENT:
                 if (leftVal == std::numeric_limits<SKSL_INT>::min() && rightVal == -1) {
-                    context.fErrors->error(offset, "arithmetic overflow");
+                    context.fErrors->error(line, "arithmetic overflow");
                     return nullptr;
                 }
                 return RESULT(%);
@@ -481,13 +471,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
                     // in C++, but not GLSL. Do the shift on unsigned values, to avoid UBSAN.
                     return URESULT(<<);
                 }
-                context.fErrors->error(offset, "shift value out of range");
+                context.fErrors->error(line, "shift value out of range");
                 return nullptr;
             case Token::Kind::TK_SHR:
                 if (rightVal >= 0 && rightVal <= 31) {
                     return RESULT(>>);
                 }
-                context.fErrors->error(offset, "shift value out of range");
+                context.fErrors->error(line, "shift value out of range");
                 return nullptr;
 
             default:
@@ -498,11 +488,11 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     }
 
     // Perform constant folding on pairs of floating-point literals.
-    if (left->is<FloatLiteral>() && right->is<FloatLiteral>()) {
-        SKSL_FLOAT leftVal  = left->as<FloatLiteral>().value();
-        SKSL_FLOAT rightVal = right->as<FloatLiteral>().value();
+    if (left->isFloatLiteral() && right->isFloatLiteral()) {
+        SKSL_FLOAT leftVal  = left->as<Literal>().floatValue();
+        SKSL_FLOAT rightVal = right->as<Literal>().floatValue();
 
-        #define RESULT(Op) fold_float_expression(offset, leftVal Op rightVal, &resultType)
+        #define RESULT(Op) fold_float_expression(line, leftVal Op rightVal, &resultType)
         switch (op.kind()) {
             case Token::Kind::TK_PLUS:  return RESULT(+);
             case Token::Kind::TK_MINUS: return RESULT(-);
@@ -522,10 +512,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Perform constant folding on pairs of vectors.
     if (leftType.isVector() && leftType == rightType) {
         if (leftType.componentType().isFloat()) {
-            return simplify_vector<SKSL_FLOAT>(context, *left, op, *right);
+            return simplify_vector(context, *left, op, *right);
         }
         if (leftType.componentType().isInteger()) {
-            return simplify_vector<SKSL_INT, SKSL_UINT>(context, *left, op, *right);
+            return simplify_vector(context, *left, op, *right);
         }
         if (leftType.componentType().isBoolean()) {
             return simplify_vector_equality(context, *left, op, *right);
@@ -536,12 +526,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Perform constant folding on vectors against scalars, e.g.: half4(2) + 2
     if (leftType.isVector() && leftType.componentType() == rightType) {
         if (rightType.isFloat()) {
-            return simplify_vector<SKSL_FLOAT>(context, *left, op,
-                                               splat_scalar(*right, left->type()));
+            return simplify_vector(context, *left, op, splat_scalar(*right, left->type()));
         }
         if (rightType.isInteger()) {
-            return simplify_vector<SKSL_INT, SKSL_UINT>(context, *left, op,
-                                                        splat_scalar(*right, left->type()));
+            return simplify_vector(context, *left, op, splat_scalar(*right, left->type()));
         }
         if (rightType.isBoolean()) {
             return simplify_vector_equality(context, *left, op,
@@ -553,12 +541,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Perform constant folding on scalars against vectors, e.g.: 2 + half4(2)
     if (rightType.isVector() && rightType.componentType() == leftType) {
         if (leftType.isFloat()) {
-            return simplify_vector<SKSL_FLOAT>(context, splat_scalar(*left, right->type()), op,
-                                               *right);
+            return simplify_vector(context, splat_scalar(*left, right->type()), op, *right);
         }
         if (leftType.isInteger()) {
-            return simplify_vector<SKSL_INT, SKSL_UINT>(context, splat_scalar(*left, right->type()),
-                                                        op, *right);
+            return simplify_vector(context, splat_scalar(*left, right->type()), op, *right);
         }
         if (leftType.isBoolean()) {
             return simplify_vector_equality(context, splat_scalar(*left, right->type()),
@@ -588,7 +574,7 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
                 [[fallthrough]];
 
             case Expression::ComparisonResult::kEqual:
-                return BoolLiteral::Make(context, offset, equality);
+                return Literal::MakeBool(context, line, equality);
 
             case Expression::ComparisonResult::kUnknown:
                 return nullptr;

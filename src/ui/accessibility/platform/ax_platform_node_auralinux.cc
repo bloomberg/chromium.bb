@@ -598,7 +598,7 @@ namespace atk_action {
 
 gboolean DoAction(AtkAction* atk_action, gint index) {
   g_return_val_if_fail(ATK_IS_ACTION(atk_action), FALSE);
-  g_return_val_if_fail(!index, FALSE);
+  g_return_val_if_fail(index >= 0, FALSE);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
   AXPlatformNodeAuraLinux* obj =
@@ -606,7 +606,16 @@ gboolean DoAction(AtkAction* atk_action, gint index) {
   if (!obj)
     return FALSE;
 
-  return obj->DoDefaultAction();
+  const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
+  g_return_val_if_fail(index < static_cast<gint>(actions.size()), FALSE);
+
+  if (index == 0) {
+    // The action at index 0 is always the default action.
+    return obj->DoDefaultAction();
+  }
+  AXActionData data;
+  data.action = actions[index];
+  return obj->GetDelegate()->AccessibilityPerformAction(data);
 }
 
 gint GetNActions(AtkAction* atk_action) {
@@ -618,7 +627,7 @@ gint GetNActions(AtkAction* atk_action) {
   if (!obj)
     return 0;
 
-  return 1;
+  return static_cast<gint>(obj->GetSupportedActions().size());
 }
 
 const gchar* GetDescription(AtkAction*, gint) {
@@ -629,7 +638,6 @@ const gchar* GetDescription(AtkAction*, gint) {
 
 const gchar* GetName(AtkAction* atk_action, gint index) {
   g_return_val_if_fail(ATK_IS_ACTION(atk_action), nullptr);
-  g_return_val_if_fail(!index, nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
   AXPlatformNodeAuraLinux* obj =
@@ -637,12 +645,18 @@ const gchar* GetName(AtkAction* atk_action, gint index) {
   if (!obj)
     return nullptr;
 
-  return obj->GetDefaultActionName();
+  const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
+  g_return_val_if_fail(index < static_cast<gint>(actions.size()), nullptr);
+
+  if (index == 0) {
+    // The action at index 0 is always the default action.
+    return obj->GetDefaultActionName();
+  }
+  return ToString(actions[index]);
 }
 
 const gchar* GetKeybinding(AtkAction* atk_action, gint index) {
   g_return_val_if_fail(ATK_IS_ACTION(atk_action), nullptr);
-  g_return_val_if_fail(!index, nullptr);
 
   AtkObject* atk_object = ATK_OBJECT(atk_action);
   AXPlatformNodeAuraLinux* obj =
@@ -650,8 +664,15 @@ const gchar* GetKeybinding(AtkAction* atk_action, gint index) {
   if (!obj)
     return nullptr;
 
-  return obj->GetStringAttribute(ax::mojom::StringAttribute::kAccessKey)
-      .c_str();
+  const std::vector<ax::mojom::Action> actions = obj->GetSupportedActions();
+  g_return_val_if_fail(index < static_cast<gint>(actions.size()), nullptr);
+
+  if (index == 0) {
+    // The action at index 0 is always the default action.
+    return obj->GetStringAttribute(ax::mojom::StringAttribute::kAccessKey)
+        .c_str();
+  }
+  return nullptr;
 }
 
 void Init(AtkActionIface* iface) {
@@ -2039,7 +2060,7 @@ const gchar* GetName(AtkObject* atk_object) {
   if (!obj->IsNameExposed())
     return nullptr;
 
-  ax::mojom::NameFrom name_from = obj->GetData().GetNameFrom();
+  ax::mojom::NameFrom name_from = obj->GetNameFrom();
   if (obj->GetName().empty() &&
       name_from != ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
     return nullptr;
@@ -3684,9 +3705,9 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
     }
   }
 
-  // TODO(accessibility): GetSelectionContainer returns nullptr when the current
-  // object is a descendant of a select element with a size of 1. Intentional?
-  // For now, handle that scenario here.
+  // TODO(accessibility): `GetSelectionContainer()` returns nullptr when the
+  // current object is a descendant of a select element with a size of 1.
+  // Intentional? For now, handle that scenario here.
   //
   // If the selection is changing on a collapsed select element, focus remains
   // on the select element and not the newly-selected descendant.
@@ -5110,6 +5131,24 @@ std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
     GetSelectionOffsets(&selection.first, &selection.second);
   }
   return selection;
+}
+
+std::vector<ax::mojom::Action> AXPlatformNodeAuraLinux::GetSupportedActions()
+    const {
+  static const base::NoDestructor<std::vector<ax::mojom::Action>>
+      kActionsThatCanBeExposedViaAtkAction{
+          {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement}};
+
+  // The default action is always included and exposed at the first index.
+  std::vector<ax::mojom::Action> supported_actions = {
+      ax::mojom::Action::kDoDefault};
+
+  for (const auto& item : *kActionsThatCanBeExposedViaAtkAction) {
+    if (HasAction(item))
+      supported_actions.push_back(item);
+  }
+
+  return supported_actions;
 }
 
 }  // namespace ui

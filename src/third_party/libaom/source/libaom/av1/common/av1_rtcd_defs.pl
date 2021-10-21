@@ -275,6 +275,49 @@ specialize qw/av1_resize_and_extend_frame ssse3 neon/;
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   # ENCODEMB INVOKE
+  add_proto qw/void aom_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                          const MV *const mv, uint8_t *comp_pred, int width, int height, int subpel_x_q3,
+                                          int subpel_y_q3, const uint8_t *ref, int ref_stride, int subpel_search";
+  specialize qw/aom_upsampled_pred sse2/;
+  #
+  #
+  #
+  add_proto qw/void aom_comp_avg_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                   const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+                                                   int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+                                                   int ref_stride, int subpel_search";
+  specialize qw/aom_comp_avg_upsampled_pred sse2/;
+
+  add_proto qw/void aom_dist_wtd_comp_avg_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                       const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+                                                       int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+                                                       int ref_stride, const DIST_WTD_COMP_PARAMS *jcp_param, int subpel_search";
+  specialize qw/aom_dist_wtd_comp_avg_upsampled_pred ssse3/;
+
+  add_proto qw/void aom_comp_mask_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                       const MV *const mv, uint8_t *comp_pred, const uint8_t *pred, int width,
+                                                       int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+                                                       int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask,
+                                                       int subpel_search";
+  specialize qw/aom_comp_mask_upsampled_pred sse2/;
+
+  if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
+    add_proto qw/void aom_highbd_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                   const MV *const mv, uint8_t *comp_pred8, int width, int height, int subpel_x_q3,
+                                                   int subpel_y_q3, const uint8_t *ref8, int ref_stride, int bd, int subpel_search";
+    specialize qw/aom_highbd_upsampled_pred sse2/;
+
+    add_proto qw/void aom_highbd_comp_avg_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                            const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
+                                                            int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride, int bd, int subpel_search";
+    specialize qw/aom_highbd_comp_avg_upsampled_pred sse2/;
+
+    add_proto qw/void aom_highbd_dist_wtd_comp_avg_upsampled_pred/, "MACROBLOCKD *xd, const struct AV1Common *const cm, int mi_row, int mi_col,
+                                                                const MV *const mv, uint8_t *comp_pred8, const uint8_t *pred8, int width,
+                                                                int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8,
+                                                                int ref_stride, int bd, const DIST_WTD_COMP_PARAMS *jcp_param, int subpel_search";
+    specialize qw/aom_highbd_dist_wtd_comp_avg_upsampled_pred sse2/;
+  }
 
   # the transform coefficients are held in 32-bit
   # values, so the assembler code for  av1_block_error can no longer be used.
@@ -282,14 +325,14 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/av1_block_error sse2 avx2 neon/;
 
   add_proto qw/int64_t av1_block_error_lp/, "const int16_t *coeff, const int16_t *dqcoeff, intptr_t block_size";
-  specialize qw/av1_block_error_lp avx2 neon/;
+  specialize qw/av1_block_error_lp sse2 avx2 neon/;
 
   add_proto qw/void av1_quantize_fp/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
   specialize qw/av1_quantize_fp sse2 avx2 neon/;
 
-  add_proto qw/void av1_quantize_lp/, "const int16_t *coeff_ptr, intptr_t n_coeffs, const int16_t *round_ptr, const int16_t *quant_ptr, int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan";
-  specialize qw/av1_quantize_lp avx2 neon/;
-
+  # TODO(any): need to fix the bug in neon optimization and re-enable it.
+  add_proto qw/void av1_quantize_lp/, "const int16_t *coeff_ptr, intptr_t n_coeffs, const int16_t *round_ptr, const int16_t *quant_ptr, int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
+  specialize qw/av1_quantize_lp sse2 avx2/;
 
   add_proto qw/void av1_quantize_fp_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
   specialize qw/av1_quantize_fp_32x32 neon avx2/;

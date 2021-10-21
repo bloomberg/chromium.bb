@@ -46,8 +46,10 @@
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -462,7 +464,7 @@ base::TimeDelta GetConditionalFocusWindow() {
   if (!custom_window.empty()) {
     int64_t ms;
     if (base::StringToInt64(custom_window, &ms) && ms >= 0) {
-      return base::TimeDelta::FromMilliseconds(ms);
+      return base::Milliseconds(ms);
     } else {
       LOG(ERROR) << "Could not parse custom conditional focus window.";
     }
@@ -470,7 +472,7 @@ base::TimeDelta GetConditionalFocusWindow() {
 
   // If this value is changed, some of the histograms associated with
   // Conditional Focus should also change.
-  return base::TimeDelta::FromSeconds(1);
+  return base::Seconds(1);
 }
 #endif
 }  // namespace
@@ -893,9 +895,9 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
       render_process_id, render_frame_id, requester_id, page_request_id,
       false /* user gesture */, std::move(audio_stream_selection_info_ptr),
       blink::MEDIA_DEVICE_ACCESS, controls,
-      MediaDeviceSaltAndOrigin{std::string() /* salt */,
-                               std::string() /* group_id_salt */,
-                               security_origin, true /* has_focus */});
+      MediaDeviceSaltAndOrigin{
+          std::string() /* salt */, std::string() /* group_id_salt */,
+          security_origin, true /* has_focus */, false /* is_background */});
 
   request->media_access_request_cb = std::move(callback);
   const std::string& label = AddRequest(std::move(request));
@@ -2730,11 +2732,11 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
 
 void MediaStreamManager::ActivateTabOnUIThread(const DesktopMediaID source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(source.web_contents_id.render_process_id,
-                              source.web_contents_id.main_render_frame_id);
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(source.web_contents_id.render_process_id,
+                                  source.web_contents_id.main_render_frame_id);
   if (rfh)
-    rfh->GetRenderViewHost()->GetDelegate()->Activate();
+    rfh->render_view_host()->GetDelegate()->Activate();
 }
 
 void MediaStreamManager::OnStreamStarted(const std::string& label) {

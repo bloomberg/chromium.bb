@@ -87,6 +87,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
+  BackgroundFetchDataManager(const BackgroundFetchDataManager&) = delete;
+  BackgroundFetchDataManager& operator=(const BackgroundFetchDataManager&) =
+      delete;
+
   ~BackgroundFetchDataManager() override;
 
   // Grabs a reference to CacheStorageManager.
@@ -98,7 +102,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Gets the required data to initialize BackgroundFetchContext with the
   // appropriate JobControllers. This will be called when BackgroundFetchContext
-  // is being initialized on the service worker core thread.
+  // is being initialized.
   void GetInitializationData(GetInitializationDataCallback callback);
 
   // Creates and stores a new registration with the given properties. Will
@@ -273,8 +277,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDataManager);
 };
 
 }  // namespace content

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "Context.hpp"
+
 #include "Vulkan/VkBuffer.hpp"
 #include "Vulkan/VkDevice.hpp"
 #include "Vulkan/VkImageView.hpp"
@@ -137,7 +138,7 @@ void IndexBuffer::getIndexBuffers(VkPrimitiveTopology topology, uint32_t count, 
 
 bool Attachments::isColorClamped(int index) const
 {
-	if(renderTarget[index] && renderTarget[index]->getFormat().isFloatFormat())
+	if(colorBuffer[index] && colorBuffer[index]->getFormat().isFloatFormat())
 	{
 		return false;
 	}
@@ -145,13 +146,25 @@ bool Attachments::isColorClamped(int index) const
 	return true;
 }
 
-VkFormat Attachments::renderTargetInternalFormat(int index) const
+VkFormat Attachments::colorFormat(int index) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
-	if(renderTarget[index])
+	if(colorBuffer[index])
 	{
-		return renderTarget[index]->getFormat();
+		return colorBuffer[index]->getFormat();
+	}
+	else
+	{
+		return VK_FORMAT_UNDEFINED;
+	}
+}
+
+VkFormat Attachments::depthFormat() const
+{
+	if(depthBuffer)
+	{
+		return depthBuffer->getFormat();
 	}
 	else
 	{
@@ -453,7 +466,7 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 		const vk::RenderPass *renderPass = vk::Cast(pCreateInfo->renderPass);
 		const VkSubpassDescription &subpass = renderPass->getSubpass(pCreateInfo->subpass);
 
-		//  Ignore pDepthStencilState when "the subpass of the render pass the pipeline is created against does not use a depth/stencil attachment"
+		// Ignore pDepthStencilState when "the subpass of the render pass the pipeline is created against does not use a depth/stencil attachment"
 		if(subpass.pDepthStencilAttachment && subpass.pDepthStencilAttachment->attachment != VK_ATTACHMENT_UNUSED)
 		{
 			if(depthStencilState->flags != 0)
@@ -466,7 +479,7 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 			minDepthBounds = depthStencilState->minDepthBounds;
 			maxDepthBounds = depthStencilState->maxDepthBounds;
 
-			depthBufferEnable = (depthStencilState->depthTestEnable != VK_FALSE);
+			depthTestEnable = (depthStencilState->depthTestEnable != VK_FALSE);
 			depthWriteEnable = (depthStencilState->depthWriteEnable != VK_FALSE);
 			depthCompareMode = depthStencilState->depthCompareOp;
 
@@ -510,7 +523,7 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 				blendConstants.w = colorBlendState->blendConstants[3];
 			}
 
-			ASSERT(colorBlendState->attachmentCount <= sw::RENDERTARGETS);
+			ASSERT(colorBlendState->attachmentCount <= sw::MAX_COLOR_BUFFERS);
 			for(auto i = 0u; i < colorBlendState->attachmentCount; i++)
 			{
 				const VkPipelineColorBlendAttachmentState &attachment = colorBlendState->pAttachments[i];
@@ -581,14 +594,13 @@ bool GraphicsState::isDrawTriangle(bool polygonModeAware) const
 
 bool GraphicsState::depthWriteActive(const Attachments &attachments) const
 {
-	if(!depthBufferActive(attachments)) return false;
-
-	return depthWriteEnable;
+	// "Depth writes are always disabled when depthTestEnable is VK_FALSE."
+	return depthTestActive(attachments) && depthWriteEnable;
 }
 
-bool GraphicsState::depthBufferActive(const Attachments &attachments) const
+bool GraphicsState::depthTestActive(const Attachments &attachments) const
 {
-	return attachments.depthBuffer && depthBufferEnable;
+	return attachments.depthBuffer && depthTestEnable;
 }
 
 bool GraphicsState::stencilActive(const Attachments &attachments) const
@@ -596,9 +608,9 @@ bool GraphicsState::stencilActive(const Attachments &attachments) const
 	return attachments.stencilBuffer && stencilEnable;
 }
 
-bool GraphicsState::depthBoundsTestActive() const
+bool GraphicsState::depthBoundsTestActive(const Attachments &attachments) const
 {
-	return depthBoundsTestEnable;
+	return attachments.depthBuffer && depthBoundsTestEnable;
 }
 
 const GraphicsState GraphicsState::combineStates(const DynamicState &dynamicState) const
@@ -657,7 +669,7 @@ const GraphicsState GraphicsState::combineStates(const DynamicState &dynamicStat
 
 BlendState GraphicsState::getBlendState(int index, const Attachments &attachments, bool fragmentContainsKill) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	BlendState activeBlendState;
 	activeBlendState.alphaBlendEnable = alphaBlendActive(index, attachments, fragmentContainsKill);
@@ -672,7 +684,7 @@ BlendState GraphicsState::getBlendState(int index, const Attachments &attachment
 
 bool GraphicsState::alphaBlendActive(int index, const Attachments &attachments, bool fragmentContainsKill) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	if(!blendState[index].alphaBlendEnable)
 	{
@@ -694,7 +706,7 @@ bool GraphicsState::alphaBlendActive(int index, const Attachments &attachments, 
 
 VkBlendFactor GraphicsState::sourceBlendFactor(int index) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	if(!blendState[index].alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
 
@@ -717,7 +729,7 @@ VkBlendFactor GraphicsState::sourceBlendFactor(int index) const
 
 VkBlendFactor GraphicsState::destBlendFactor(int index) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	if(!blendState[index].alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
 
@@ -740,7 +752,7 @@ VkBlendFactor GraphicsState::destBlendFactor(int index) const
 
 VkBlendOp GraphicsState::blendOperation(int index, const Attachments &attachments) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	if(!blendState[index].alphaBlendEnable) return VK_BLEND_OP_SRC_EXT;
 
@@ -854,7 +866,7 @@ VkBlendOp GraphicsState::blendOperation(int index, const Attachments &attachment
 
 VkBlendFactor GraphicsState::sourceBlendFactorAlpha(int index) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	switch(blendState[index].blendOperationAlpha)
 	{
@@ -875,7 +887,7 @@ VkBlendFactor GraphicsState::sourceBlendFactorAlpha(int index) const
 
 VkBlendFactor GraphicsState::destBlendFactorAlpha(int index) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	switch(blendState[index].blendOperationAlpha)
 	{
@@ -896,7 +908,7 @@ VkBlendFactor GraphicsState::destBlendFactorAlpha(int index) const
 
 VkBlendOp GraphicsState::blendOperationAlpha(int index, const Attachments &attachments) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
 	switch(blendState[index].blendOperationAlpha)
 	{
@@ -1008,7 +1020,7 @@ VkBlendOp GraphicsState::blendOperationAlpha(int index, const Attachments &attac
 
 bool GraphicsState::colorWriteActive(const Attachments &attachments) const
 {
-	for(int i = 0; i < sw::RENDERTARGETS; i++)
+	for(int i = 0; i < sw::MAX_COLOR_BUFFERS; i++)
 	{
 		if(colorWriteActive(i, attachments))
 		{
@@ -1021,9 +1033,9 @@ bool GraphicsState::colorWriteActive(const Attachments &attachments) const
 
 int GraphicsState::colorWriteActive(int index, const Attachments &attachments) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
-	if(!attachments.renderTarget[index] || attachments.renderTarget[index]->getFormat() == VK_FORMAT_UNDEFINED)
+	if(!attachments.colorBuffer[index] || attachments.colorBuffer[index]->getFormat() == VK_FORMAT_UNDEFINED)
 	{
 		return 0;
 	}

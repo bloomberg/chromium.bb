@@ -9,8 +9,8 @@
 #include "ash/constants/ash_features.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
-#include "chrome/browser/chromeos/android_sms/fake_android_sms_app_manager.h"
+#include "chrome/browser/ash/android_sms/android_sms_urls.h"
+#include "chrome/browser/ash/android_sms/fake_android_sms_app_manager.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,7 +18,9 @@
 #include "chromeos/components/phonehub/fake_notification_access_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
@@ -161,11 +163,20 @@ void VerifyPageContentDict(
                                     &is_nearby_share_disallowed_by_policy));
   EXPECT_EQ(expected_is_nearby_share_disallowed_by_policy_,
             is_nearby_share_disallowed_by_policy);
+
+  bool is_phone_hub_apps_access_granted;
+  EXPECT_TRUE(
+      page_content_dict->GetBoolean("isPhoneHubAppsAccessGranted",
+                                    &is_phone_hub_apps_access_granted));
 }
 
 }  // namespace
 
 class MultideviceHandlerTest : public testing::Test {
+ public:
+  MultideviceHandlerTest(const MultideviceHandlerTest&) = delete;
+  MultideviceHandlerTest& operator=(const MultideviceHandlerTest&) = delete;
+
  protected:
   MultideviceHandlerTest()
       : test_device_(multidevice::CreateRemoteDeviceRefForTest()) {}
@@ -189,6 +200,10 @@ class MultideviceHandlerTest : public testing::Test {
     prefs_->SetBoolean(::prefs::kNearbySharingEnabledPrefName, true);
     NearbySharingServiceFactory::
         SetIsNearbyShareSupportedForBrowserContextForTesting(true);
+
+    prefs_->registry()->RegisterBooleanPref(
+        multidevice_setup::kInstantTetheringAllowedPrefName,
+        /*default_value=*/true);
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
@@ -497,8 +512,6 @@ class MultideviceHandlerTest : public testing::Test {
   std::unique_ptr<TestMultideviceHandler> handler_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultideviceHandlerTest);
 };
 
 TEST_F(MultideviceHandlerTest, NotificationSetupFlow) {

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace ash {
 namespace diagnostics {
@@ -117,6 +118,12 @@ mojom::SecurityType ConvertSecurityType(network_mojom::SecurityType type) {
                           network_mojom::SecurityType>::ToMojom(type);
 }
 
+mojom::AuthenticationType ConvertAuthenticationType(
+    network_mojom::AuthenticationType type) {
+  return mojo::EnumTraits<mojom::AuthenticationType,
+                          network_mojom::AuthenticationType>::ToMojom(type);
+}
+
 mojom::IPConfigPropertiesPtr CreateIPConfigProperties(
     const network_mojom::IPConfigPropertiesPtr& ip_config_props) {
   mojom::IPConfigPropertiesPtr ip_config = mojom::IPConfigProperties::New();
@@ -139,10 +146,12 @@ mojom::WiFiStatePropertiesPtr CreateWiFiStateProperties(
   return wifi_props;
 }
 
-// TODO(michaelcheco): Add Ethernet properties.
 mojom::EthernetStatePropertiesPtr CreateEthernetStateProperties(
     const network_mojom::NetworkTypeStateProperties& network_type_props) {
-  return mojom::EthernetStateProperties::New();
+  auto ethernet_props = mojom::EthernetStateProperties::New();
+  ethernet_props->authentication = ConvertAuthenticationType(
+      network_type_props.get_ethernet()->authentication);
+  return ethernet_props;
 }
 
 mojom::CellularStatePropertiesPtr CreateCellularStateProperties(
@@ -634,6 +643,10 @@ void NetworkHealthProvider::NotifyNetworkListObservers() {
   for (auto& observer : network_list_observers_) {
     observer->OnNetworkListChanged(mojo::Clone(observer_guids), active_guid_);
   }
+
+  if (IsLoggingEnabled()) {
+    networking_log_ptr_->UpdateNetworkList(observer_guids, active_guid_);
+  }
 }
 
 void NetworkHealthProvider::NotifyNetworkStateObserver(
@@ -645,9 +658,8 @@ void NetworkHealthProvider::NotifyNetworkStateObserver(
   network_info.observer->OnNetworkStateChanged(
       mojo::Clone(network_info.network));
 
-  if (IsLoggingEnabled() &&
-      network_info.network->observer_guid == active_guid_) {
-    networking_log_ptr_->UpdateContents(network_info.network.Clone());
+  if (IsLoggingEnabled()) {
+    networking_log_ptr_->UpdateNetworkState(network_info.network.Clone());
   }
 }
 

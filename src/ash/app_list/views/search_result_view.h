@@ -20,12 +20,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/views/context_menu_controller.h"
 
-namespace gfx {
-class RenderText;
-}
-
 namespace views {
 class ImageView;
+class StyledLabel;
+class Label;
 }  // namespace views
 
 namespace ash {
@@ -61,6 +59,10 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   SearchResultView(SearchResultListView* list_view,
                    AppListViewDelegate* view_delegate,
                    SearchResultViewType view_type);
+
+  SearchResultView(const SearchResultView&) = delete;
+  SearchResultView& operator=(const SearchResultView&) = delete;
+
   ~SearchResultView() override;
 
   // Sets/gets SearchResult displayed by this view.
@@ -79,9 +81,8 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void UpdateTitleText();
   void UpdateDetailsText();
 
-  // Creates title/details render text.
-  void CreateTitleRenderText();
-  void CreateDetailsRenderText();
+  void StyleTitleLabel();
+  void StyleDetailsLabel();
 
   // Callback for query suggstion removal confirmation.
   void OnQueryRemovalAccepted(bool accepted);
@@ -96,6 +97,7 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -135,10 +137,11 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
 
   AppListViewDelegate* view_delegate_;
 
-  MaskedImageView* icon_;         // Owned by views hierarchy.
-  views::ImageView* badge_icon_;  // Owned by views hierarchy.
-  std::unique_ptr<gfx::RenderText> title_text_;
-  std::unique_ptr<gfx::RenderText> details_text_;
+  MaskedImageView* icon_ = nullptr;              // Owned by views hierarchy.
+  views::ImageView* badge_icon_ = nullptr;       // Owned by views hierarchy.
+  views::StyledLabel* title_label_ = nullptr;    // Owned by view hierarchy.
+  views::StyledLabel* details_label_ = nullptr;  // Owned by view hierarchy.
+  views::Label* separator_label_ = nullptr;      // Owned by view hierarchy.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
@@ -148,8 +151,6 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   SearchResultViewType view_type_;
 
   base::WeakPtrFactory<SearchResultView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };
 
 }  // namespace ash

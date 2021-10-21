@@ -82,6 +82,10 @@ namespace {
 class MoveLoopMouseWatcher {
  public:
   MoveLoopMouseWatcher(HWNDMessageHandler* host, bool hide_on_escape);
+
+  MoveLoopMouseWatcher(const MoveLoopMouseWatcher&) = delete;
+  MoveLoopMouseWatcher& operator=(const MoveLoopMouseWatcher&) = delete;
+
   ~MoveLoopMouseWatcher();
 
   // Returns true if the mouse is up, or if we couldn't install the hook.
@@ -110,8 +114,6 @@ class MoveLoopMouseWatcher {
   // Hook identifiers.
   HHOOK mouse_hook_;
   HHOOK key_hook_;
-
-  DISALLOW_COPY_AND_ASSIGN(MoveLoopMouseWatcher);
 };
 
 // static
@@ -295,8 +297,7 @@ int GetFlagsFromRawInputMessage(RAWINPUT* input) {
   return ui::GetModifiersFromKeyState() | flags;
 }
 
-constexpr auto kTouchDownContextResetTimeout =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr auto kTouchDownContextResetTimeout = base::Milliseconds(500);
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
 // cases. This causes us grief as we don't want to process touch and mouse
@@ -364,6 +365,9 @@ class HWNDMessageHandler::ScopedRedrawLock {
       owner_->LockUpdates();
   }
 
+  ScopedRedrawLock(const ScopedRedrawLock&) = delete;
+  ScopedRedrawLock& operator=(const ScopedRedrawLock&) = delete;
+
   ~ScopedRedrawLock() {
     if (!cancel_unlock_ && should_lock_ && ::IsWindow(hwnd_))
       owner_->UnlockUpdates();
@@ -381,8 +385,6 @@ class HWNDMessageHandler::ScopedRedrawLock {
   bool cancel_unlock_;
   // If false, don't use redraw lock.
   const bool should_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
 };
 
 // static HWNDMessageHandler member initialization.
@@ -1544,7 +1546,7 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::ForceRedrawWindow,
                        msg_handler_weak_factory_.GetWeakPtr(), attempts),
-        base::TimeDelta::FromMilliseconds(500));
+        base::Milliseconds(500));
     return;
   }
   InvalidateRect(hwnd(), nullptr, FALSE);
@@ -1646,8 +1648,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       std::make_unique<ui::SessionChangeObserver>(base::BindRepeating(
           &HWNDMessageHandler::OnSessionChange, base::Unretained(this)));
 
-  dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
-
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
@@ -1738,8 +1738,12 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
   // initialization. We don't want to propagate this as the client is already
   // set at the current scale factor and may cause the window to display too
   // soon. See http://crbug.com/625076.
-  if (dpi_ == dpi)
+  if (dpi_ == 0) {
+    // See https://crbug.com/1252564 for why we need to ignore the first
+    // OnDpiChanged message in this way.
+    dpi_ = dpi;
     return 0;
+  }
 
   dpi_ = dpi;
   SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);

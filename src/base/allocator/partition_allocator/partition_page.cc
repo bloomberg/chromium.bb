@@ -27,7 +27,7 @@ namespace {
 
 void UnmapNow(void* reservation_start,
               size_t reservation_size,
-              pool_handle giga_cage_pool);
+              pool_handle pool);
 
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionDirectUnmap(
@@ -73,7 +73,8 @@ ALWAYS_INLINE void PartitionDirectUnmap(
   // expected to be very rare though, and likely preferable to holding the lock
   // while releasing the address space.
   ScopedUnlockGuard<thread_safe> unlock{root->lock_};
-  UnmapNow(reservation_start, reservation_size, root->ChooseGigaCagePool());
+  ScopedSyscallTimer<thread_safe> timer{root};
+  UnmapNow(reservation_start, reservation_size, root->ChoosePool());
 }
 
 template <bool thread_safe>
@@ -83,6 +84,9 @@ ALWAYS_INLINE void PartitionRegisterEmptySlotSpan(
   PartitionRoot<thread_safe>* root =
       PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
   root->lock_.AssertAcquired();
+
+  root->empty_slot_spans_dirty_bytes +=
+      base::bits::AlignUp(slot_span->GetProvisionedSize(), SystemPageSize());
 
   slot_span->ToSuperPageExtent()->DecrementNumberOfNonemptySlotSpans();
 
@@ -194,10 +198,12 @@ void SlotSpanMetadata<thread_safe>::Decommit(PartitionRoot<thread_safe>* root) {
   PA_DCHECK(!bucket->is_direct_mapped());
   void* slot_span_start = SlotSpanMetadata::ToSlotSpanStartPtr(this);
   // If lazy commit is enabled, only provisioned slots are committed.
+  size_t dirty_size = bits::AlignUp(GetProvisionedSize(), SystemPageSize());
   size_t size_to_decommit =
-      root->use_lazy_commit
-          ? bits::AlignUp(GetProvisionedSize(), SystemPageSize())
-          : bucket->get_bytes_per_span();
+      root->use_lazy_commit ? dirty_size : bucket->get_bytes_per_span();
+
+  PA_DCHECK(root->empty_slot_spans_dirty_bytes >= dirty_size);
+  root->empty_slot_spans_dirty_bytes -= dirty_size;
 
   // Not decommitted slot span must've had at least 1 allocation.
   PA_DCHECK(size_to_decommit > 0);
@@ -230,12 +236,12 @@ void SlotSpanMetadata<thread_safe>::DecommitIfPossible(
 namespace {
 void UnmapNow(void* reservation_start,
               size_t reservation_size,
-              pool_handle giga_cage_pool) {
+              pool_handle pool) {
   PA_DCHECK(reservation_start && reservation_size > 0);
 #if DCHECK_IS_ON()
   // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  if (giga_cage_pool == GetBRPPool()) {
+  if (pool == GetBRPPool()) {
     // In 32-bit mode, the beginning of a reservation may be excluded from the
     // BRP pool, so shift the pointer. Non-BRP pool doesn't have logic.
     PA_DCHECK(IsManagedByPartitionAllocBRPPool(
@@ -250,9 +256,11 @@ void UnmapNow(void* reservation_start,
   } else
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   {
-    PA_DCHECK(giga_cage_pool == GetNonBRPPool());
-    // Non-BRP pool doesn't need adjustment that BRP needs in 32-bit mode.
-    PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(reservation_start));
+    PA_DCHECK(pool == GetNonBRPPool() ||
+              (IsConfigurablePoolAvailable() && pool == GetConfigurablePool()));
+    // Non-BRP pools don't need adjustment that BRP needs in 32-bit mode.
+    PA_DCHECK(IsManagedByPartitionAllocNonBRPPool(reservation_start) ||
+              IsManagedByPartitionAllocConfigurablePool(reservation_start));
   }
 #endif  // DCHECK_IS_ON()
 
@@ -274,13 +282,13 @@ void UnmapNow(void* reservation_start,
   }
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
-  AddressPoolManager::GetInstance()->MarkUnused(
-      giga_cage_pool, reservation_start, reservation_size);
+  AddressPoolManager::GetInstance()->MarkUnused(pool, reservation_start,
+                                                reservation_size);
 #endif
 
   // After resetting the table entries, unreserve and decommit the memory.
   AddressPoolManager::GetInstance()->UnreserveAndDecommit(
-      giga_cage_pool, reservation_start, reservation_size);
+      pool, reservation_start, reservation_size);
 }
 }  // namespace
 

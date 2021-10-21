@@ -127,8 +127,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableNotifications(bool);
   BLINK_PLATFORM_EXPORT static void EnableOverlayScrollbars(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
-  BLINK_PLATFORM_EXPORT static void EnablePaymentHandlerMinimalUI(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
+  BLINK_PLATFORM_EXPORT static void EnablePaymentRequestBasicCard(bool);
   BLINK_PLATFORM_EXPORT static void EnablePercentBasedScrolling(bool);
   BLINK_PLATFORM_EXPORT static void EnablePerformanceManagerInstrumentation(
       bool);
@@ -161,7 +161,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableSharedStorageAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentAnchor(bool);
-  BLINK_PLATFORM_EXPORT static void EnableTextFragmentColorChange(bool);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollUnification(bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationSameOriginVisibility(
@@ -219,8 +218,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMediaControlsExpandGesture(bool);
   BLINK_PLATFORM_EXPORT static void EnableGetDisplayMedia(bool);
   BLINK_PLATFORM_EXPORT static void EnableAllowSyncXHRInPageDismissal(bool);
-  BLINK_PLATFORM_EXPORT static void
-  EnableSignedExchangePrefetchCacheForNavigations(bool);
   BLINK_PLATFORM_EXPORT static void EnableSignedExchangeSubresourcePrefetch(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableSubresourceWebBundles(bool);

@@ -39,7 +39,10 @@ buildflag_header("buildflags") {
 
 # External-facing config for dependent code.
 config("skia_config") {
-  defines = [ "SK_UNTIL_CRBUG_1187654_IS_FIXED" ]
+  defines = [
+    "SK_UNTIL_CRBUG_1187654_IS_FIXED",
+    "SK_WIN_FONTMGR_NO_SIMULATIONS",
+  ]
   include_dirs = [ "//third_party/skia" ]
 
   if (!is_ios) {
@@ -80,10 +83,7 @@ config("skia_config") {
     }
   }
   if (enable_vulkan) {
-    defines += [
-      "SK_VULKAN_HEADER=\"../../skia/config/SkVulkanConfig.h\"",
-      "SK_VULKAN=1",
-    ]
+    defines += [ "SK_VULKAN=1" ]
   }
   if (skia_use_dawn) {
     defines += [ "SK_DAWN" ]

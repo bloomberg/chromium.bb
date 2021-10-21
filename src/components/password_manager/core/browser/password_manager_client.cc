@@ -66,16 +66,6 @@ void PasswordManagerClient::TriggerReauthForPrimaryAccount(
 
 void PasswordManagerClient::TriggerSignIn(signin_metrics::AccessPoint) {}
 
-PasswordStoreInterface*
-PasswordManagerClient::GetProfilePasswordStoreInterface() const {
-  return GetProfilePasswordStore();
-}
-
-PasswordStoreInterface*
-PasswordManagerClient::GetAccountPasswordStoreInterface() const {
-  return GetAccountPasswordStore();
-}
-
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return SyncState::kNotSyncing;
 }
@@ -164,8 +154,8 @@ network::mojom::NetworkContext* PasswordManagerClient::GetNetworkContext()
   return nullptr;
 }
 
-bool PasswordManagerClient::IsWebAuthnAutofillEnabled() const {
-  return false;
+WebAuthnCredentialsDelegate*
+PasswordManagerClient::GetWebAuthnCredentialsDelegate() {
+  return nullptr;
 }
-
 }  // namespace password_manager

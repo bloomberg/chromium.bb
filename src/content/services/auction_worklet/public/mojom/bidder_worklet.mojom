@@ -6,6 +6,7 @@ module auction_worklet.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/interest_group/interest_group_types.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -56,6 +57,16 @@ struct BidderWorkletBid {
   // Render URL of the bid.
   url.mojom.Url render_url;
 
+  // Ad components associated with bid, if any. These allow a single ad to be
+  // composed of multiple smaller ads. The `render_url` is the main URL, and
+  // is responsible for laying out these ads URLs in its subframes.
+  //
+  // May only contain URLs matching the `render_url`s of the `ad_components`
+  // of the InterestGroup that made this bid. May have at most 20 URLs. Must
+  // be null if the InterestGroup making this bid has a null `ad_components`
+  // field.
+  array<url.mojom.Url>? ad_components;
+
   // How long it took to run the generateBid() script.
   mojo_base.mojom.TimeDelta bid_duration;
 };
@@ -95,4 +106,7 @@ interface BidderWorklet {
             double browser_signal_bid) => (
                 url.mojom.Url? report_url,
                 array<string> errors);
+
+  // Establishes a debugger connection to the worklet.
+  ConnectDevToolsAgent(pending_receiver<blink.mojom.DevToolsAgent> agent);
 };

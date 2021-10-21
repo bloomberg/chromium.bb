@@ -6,6 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS window.cached_appHistory.canGoBack is false
 PASS window.cached_appHistory.canGoForward is false
 PASS window.cached_appHistory.current is null
+PASS window.cached_appHistory.oncurrentchange is null
 PASS window.cached_appHistory.onnavigate is null
 PASS window.cached_appHistory.onnavigateerror is null
 PASS window.cached_appHistory.onnavigatesuccess is null
@@ -143,6 +144,7 @@ PASS window.cached_visualViewport.onscroll is null
 PASS window.cached_visualViewport.pageLeft is 0
 PASS window.cached_visualViewport.pageTop is 0
 PASS window.cached_visualViewport.scale is 0
+PASS window.cached_visualViewport.segments is null
 PASS window.cached_visualViewport.width is 0
 PASS successfullyParsed is true
 

@@ -23,6 +23,74 @@
 namespace blink {
 namespace {
 
+// Returns the nearest non-inclusive ancestor of |node| that is display
+// locked.
+Element* NearestLockedExclusiveAncestor(const Node& node) {
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
+      !node.isConnected() ||
+      node.GetDocument()
+              .GetDisplayLockDocumentState()
+              .LockedDisplayLockCount() == 0 ||
+      node.IsShadowRoot()) {
+    return nullptr;
+  }
+  // TODO(crbug.com/924550): Once we figure out a more efficient way to
+  // determine whether we're inside a locked subtree or not, change this.
+  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(node)) {
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
+      if (context->IsLocked())
+        return ancestor_element;
+    }
+  }
+  return nullptr;
+}
+
+const Element* NearestLockedInclusiveAncestor(const Node& node) {
+  auto* element = DynamicTo<Element>(node);
+  if (!element)
+    return NearestLockedExclusiveAncestor(node);
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
+      !node.isConnected() ||
+      node.GetDocument()
+              .GetDisplayLockDocumentState()
+              .LockedDisplayLockCount() == 0 ||
+      node.IsShadowRoot()) {
+    return nullptr;
+  }
+  if (auto* context = element->GetDisplayLockContext()) {
+    if (context->IsLocked())
+      return element;
+  }
+  return NearestLockedExclusiveAncestor(node);
+}
+
+Element* NearestLockedInclusiveAncestor(Node& node) {
+  return const_cast<Element*>(
+      NearestLockedInclusiveAncestor(static_cast<const Node&>(node)));
+}
+
+Element* NearestLockedInclusiveAncestor(const LayoutObject& object) {
+  auto* node = object.GetNode();
+  auto* ancestor = object.Parent();
+  while (ancestor && !node) {
+    node = ancestor->GetNode();
+    ancestor = ancestor->Parent();
+  }
+  return node ? NearestLockedInclusiveAncestor(*node) : nullptr;
+}
+
+Element* NearestLockedExclusiveAncestor(const LayoutObject& object) {
+  if (auto* node = object.GetNode())
+    return NearestLockedExclusiveAncestor(*node);
+  // Since we now navigate to an ancestor, use the inclusive version.
+  if (auto* parent = object.Parent())
+    return NearestLockedInclusiveAncestor(*parent);
+  return nullptr;
+}
+
 // Returns the frame owner node for the frame that contains the given child, if
 // one exists. Returns nullptr otherwise.
 Node* GetFrameOwnerNode(const Node* child) {
@@ -48,11 +116,8 @@ void PopulateAncestorContexts(Node* node,
 template <typename Lambda>
 Element* LockedAncestorPreventingUpdate(const Node& node,
                                         Lambda update_is_prevented) {
-  for (auto* ancestor =
-           DisplayLockUtilities::NearestLockedExclusiveAncestor(node);
-       ancestor;
-       ancestor =
-           DisplayLockUtilities::NearestLockedExclusiveAncestor(*ancestor)) {
+  for (auto* ancestor = NearestLockedExclusiveAncestor(node); ancestor;
+       ancestor = NearestLockedExclusiveAncestor(*ancestor)) {
     DCHECK(ancestor->GetDisplayLockContext());
     if (update_is_prevented(ancestor->GetDisplayLockContext()))
       return ancestor;
@@ -61,10 +126,33 @@ Element* LockedAncestorPreventingUpdate(const Node& node,
 }
 
 template <typename Lambda>
+const Element* LockedInclusiveAncestorPreventingUpdate(
+    const Node& node,
+    Lambda update_is_prevented) {
+  if (auto* element = DynamicTo<Element>(node)) {
+    if (auto* context = element->GetDisplayLockContext()) {
+      if (update_is_prevented(context))
+        return element;
+    }
+  }
+  return LockedAncestorPreventingUpdate(node, std::move(update_is_prevented));
+}
+
+template <typename Lambda>
 Element* LockedAncestorPreventingUpdate(const LayoutObject& object,
                                         Lambda update_is_prevented) {
-  if (auto* ancestor =
-          DisplayLockUtilities::NearestLockedExclusiveAncestor(object)) {
+  if (auto* ancestor = NearestLockedExclusiveAncestor(object)) {
+    if (update_is_prevented(ancestor->GetDisplayLockContext()))
+      return ancestor;
+    return LockedAncestorPreventingUpdate(*ancestor, update_is_prevented);
+  }
+  return nullptr;
+}
+
+template <typename Lambda>
+Element* LockedInclusiveAncestorPreventingUpdate(const LayoutObject& object,
+                                                 Lambda update_is_prevented) {
+  if (auto* ancestor = NearestLockedInclusiveAncestor(object)) {
     if (update_is_prevented(ancestor->GetDisplayLockContext()))
       return ancestor;
     return LockedAncestorPreventingUpdate(*ancestor, update_is_prevented);
@@ -105,36 +193,6 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
       DisplayLockActivationReason::kFindInPage);
 }
 
-bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
-    const EphemeralRangeInFlatTree& range) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .LockedDisplayLockCount() ==
-          range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .DisplayLockBlockingAllActivationCount())
-    return false;
-  UpdateStyleAndLayoutForRangeIfNeeded(range,
-                                       DisplayLockActivationReason::kSelection);
-  HeapHashSet<Member<Element>> elements_to_activate;
-  for (Node& node : range.Nodes()) {
-    DCHECK(!node.GetDocument().NeedsLayoutTreeUpdateForNode(node));
-    const ComputedStyle* style = node.GetComputedStyle();
-    if (!style || style->UserSelect() == EUserSelect::kNone)
-      continue;
-    if (auto* nearest_locked_ancestor = NearestLockedExclusiveAncestor(node))
-      elements_to_activate.insert(nearest_locked_ancestor);
-  }
-  for (Element* element : elements_to_activate) {
-    element->ActivateDisplayLockIfNeeded(
-        DisplayLockActivationReason::kSelection);
-  }
-  return !elements_to_activate.IsEmpty();
-}
-
 const HeapVector<Member<Element>>
 DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
     const Node& node,
@@ -168,9 +226,75 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
   return elements_to_activate;
 }
 
-DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(const Node* node,
-                                                     bool include_self)
-    : node_(node) {
+DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(
+    const Range* range,
+    DisplayLockContext::ForcedPhase phase)
+    : node_(range->FirstNode()), phase_(phase) {
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
+    return;
+  if (!node_)
+    return;
+
+  // Selection doesn't span frames, so we don't need to worry about including
+  // subframes inside the Range or multiple parent frames.
+  auto* owner_node = GetFrameOwnerNode(node_);
+  if (owner_node)
+    parent_frame_impl_ = MakeGarbageCollected<Impl>(owner_node, phase, true);
+
+  range->OwnerDocument().GetDisplayLockDocumentState().BeginRangeForcedScope(
+      range, this);
+
+  if (node_->GetDocument()
+          .GetDisplayLockDocumentState()
+          .LockedDisplayLockCount() == 0)
+    return;
+
+  // TODO(crbug.com/1256849): Move this loop to a shared iterator class so we
+  //   can combine it with the one in DisplayLockDocumentState.
+  // Ranges use NodeTraversal::Next to go in between their start and end nodes,
+  // and will access the layout information of each of those nodes. In order to
+  // ensure that each of these nodes has unlocked layout information, we have to
+  // do a scoped unlock for each of those nodes by unlocking all of their flat
+  // tree ancestors.
+  for (Node* node = range->FirstNode(); node != range->PastLastNode();
+       node = NodeTraversal::Next(*node)) {
+    if (node->IsChildOfShadowHost()) {
+      // This node may be slotted into another place in the flat tree, so we
+      // have to do a flat tree parent traversal for it.
+      for (Node* ancestor = node; ancestor;
+           ancestor = FlatTreeTraversal::Parent(*ancestor)) {
+        if (Element* element = DynamicTo<Element>(ancestor)) {
+          if (DisplayLockContext* context = element->GetDisplayLockContext()) {
+            forced_context_set_.insert(context);
+          }
+        }
+      }
+    } else {
+      if (Element* element = DynamicTo<Element>(node)) {
+        if (DisplayLockContext* context = element->GetDisplayLockContext()) {
+          forced_context_set_.insert(context);
+        }
+      }
+    }
+  }
+  for (Node* node = range->FirstNode(); node;
+       node = FlatTreeTraversal::Parent(*node)) {
+    if (Element* element = DynamicTo<Element>(node)) {
+      if (DisplayLockContext* context = element->GetDisplayLockContext()) {
+        forced_context_set_.insert(context);
+      }
+    }
+  }
+  for (DisplayLockContext* context : forced_context_set_) {
+    context->NotifyForcedUpdateScopeStarted(phase_);
+  }
+}
+
+DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(
+    const Node* node,
+    DisplayLockContext::ForcedPhase phase,
+    bool include_self)
+    : node_(node), phase_(phase) {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return;
 
@@ -179,7 +303,7 @@ DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(const Node* node,
 
   auto* owner_node = GetFrameOwnerNode(node);
   if (owner_node)
-    parent_frame_impl_ = MakeGarbageCollected<Impl>(owner_node, true);
+    parent_frame_impl_ = MakeGarbageCollected<Impl>(owner_node, phase, true);
 
   node->GetDocument().GetDisplayLockDocumentState().BeginNodeForcedScope(
       node, include_self, this);
@@ -212,7 +336,7 @@ DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(const Node* node,
     if (!ancestor_node)
       continue;
     if (auto* context = ancestor_node->GetDisplayLockContext()) {
-      context->NotifyForcedUpdateScopeStarted();
+      context->NotifyForcedUpdateScopeStarted(phase_);
       forced_context_set_.insert(context);
     }
   }
@@ -222,11 +346,11 @@ void DisplayLockUtilities::ScopedForcedUpdate::Impl::Destroy() {
   if (!node_)
     return;
   if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
-    node_->GetDocument().GetDisplayLockDocumentState().EndNodeForcedScope(this);
+    node_->GetDocument().GetDisplayLockDocumentState().EndForcedScope(this);
   if (parent_frame_impl_)
     parent_frame_impl_->Destroy();
   for (auto context : forced_context_set_) {
-    context->NotifyForcedUpdateScopeEnded();
+    context->NotifyForcedUpdateScopeEnded(phase_);
   }
 }
 
@@ -234,32 +358,7 @@ void DisplayLockUtilities::ScopedForcedUpdate::Impl::
     AddForcedUpdateScopeForContext(DisplayLockContext* context) {
   auto result = forced_context_set_.insert(context);
   if (result.is_new_entry)
-    context->NotifyForcedUpdateScopeStarted();
-}
-
-const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
-    const Node& node) {
-  auto* element = DynamicTo<Element>(node);
-  if (!element)
-    return NearestLockedExclusiveAncestor(node);
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      !node.isConnected() ||
-      node.GetDocument()
-              .GetDisplayLockDocumentState()
-              .LockedDisplayLockCount() == 0 ||
-      node.IsShadowRoot()) {
-    return nullptr;
-  }
-  if (auto* context = element->GetDisplayLockContext()) {
-    if (context->IsLocked())
-      return element;
-  }
-  return NearestLockedExclusiveAncestor(node);
-}
-
-Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
-  return const_cast<Element*>(
-      NearestLockedInclusiveAncestor(static_cast<const Node&>(node)));
+    context->NotifyForcedUpdateScopeStarted(phase_);
 }
 
 Element* DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
@@ -294,31 +393,8 @@ Element* DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
   return nullptr;
 }
 
-Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
-    const Node& node) {
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      !node.isConnected() ||
-      node.GetDocument()
-              .GetDisplayLockDocumentState()
-              .LockedDisplayLockCount() == 0 ||
-      node.IsShadowRoot()) {
-    return nullptr;
-  }
-  // TODO(crbug.com/924550): Once we figure out a more efficient way to
-  // determine whether we're inside a locked subtree or not, change this.
-  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(node)) {
-    auto* ancestor_element = DynamicTo<Element>(ancestor);
-    if (!ancestor_element)
-      continue;
-    if (auto* context = ancestor_element->GetDisplayLockContext()) {
-      if (context->IsLocked())
-        return ancestor_element;
-    }
-  }
-  return nullptr;
-}
-
-Element* DisplayLockUtilities::NearestLockedInclusiveAncestorWithinTreeScope(
+Element*
+DisplayLockUtilities::LockedInclusiveAncestorPreventingStyleWithinTreeScope(
     const Node& node) {
   if (!node.isConnected() || node.GetDocument()
                                      .GetDisplayLockDocumentState()
@@ -333,11 +409,35 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestorWithinTreeScope(
       continue;
     if (DisplayLockContext* context =
             ancestor_element->GetDisplayLockContext()) {
-      if (context->IsLocked())
+      if (!context->ShouldStyleChildren())
         return ancestor_element;
     }
   }
   return nullptr;
+}
+
+const Element* DisplayLockUtilities::LockedInclusiveAncestorPreventingLayout(
+    const Node& node) {
+  return LockedInclusiveAncestorPreventingUpdate(
+      node, [](DisplayLockContext* context) {
+        return !context->ShouldLayoutChildren();
+      });
+}
+
+const Element* DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
+    const Node& node) {
+  return LockedInclusiveAncestorPreventingUpdate(
+      node, [](DisplayLockContext* context) {
+        return !context->ShouldPaintChildren();
+      });
+}
+
+const Element* DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
+    const LayoutObject& object) {
+  return LockedInclusiveAncestorPreventingUpdate(
+      object, [](DisplayLockContext* context) {
+        return !context->ShouldPaintChildren();
+      });
 }
 
 Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
@@ -385,27 +485,6 @@ Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
       parent = GetFrameOwnerNode(last_node);
   }
   return locked_ancestor;
-}
-
-Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
-    const LayoutObject& object) {
-  auto* node = object.GetNode();
-  auto* ancestor = object.Parent();
-  while (ancestor && !node) {
-    node = ancestor->GetNode();
-    ancestor = ancestor->Parent();
-  }
-  return node ? NearestLockedInclusiveAncestor(*node) : nullptr;
-}
-
-Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
-    const LayoutObject& object) {
-  if (auto* node = object.GetNode())
-    return NearestLockedExclusiveAncestor(*node);
-  // Since we now navigate to an ancestor, use the inclusive version.
-  if (auto* parent = object.Parent())
-    return NearestLockedInclusiveAncestor(*parent);
-  return nullptr;
 }
 
 bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
@@ -558,6 +637,20 @@ void DisplayLockUtilities::SelectionRemovedFromDocument(Document& document) {
   document.GetDisplayLockDocumentState().NotifySelectionRemoved();
 }
 
+Element* DisplayLockUtilities::LockedAncestorPreventingPaint(
+    const LayoutObject& object) {
+  return LockedAncestorPreventingUpdate(
+      object, [](DisplayLockContext* context) {
+        return !context->ShouldPaintChildren();
+      });
+}
+
+Element* DisplayLockUtilities::LockedAncestorPreventingPaint(const Node& node) {
+  return LockedAncestorPreventingUpdate(node, [](DisplayLockContext* context) {
+    return !context->ShouldPaintChildren();
+  });
+}
+
 Element* DisplayLockUtilities::LockedAncestorPreventingPrePaint(
     const LayoutObject& object) {
   return LockedAncestorPreventingUpdate(
@@ -574,47 +667,17 @@ Element* DisplayLockUtilities::LockedAncestorPreventingLayout(
       });
 }
 
+Element* DisplayLockUtilities::LockedAncestorPreventingLayout(
+    const Node& node) {
+  return LockedAncestorPreventingUpdate(node, [](DisplayLockContext* context) {
+    return !context->ShouldLayoutChildren();
+  });
+}
+
 Element* DisplayLockUtilities::LockedAncestorPreventingStyle(const Node& node) {
   return LockedAncestorPreventingUpdate(node, [](DisplayLockContext* context) {
     return !context->ShouldStyleChildren();
   });
-}
-
-bool DisplayLockUtilities::UpdateStyleAndLayoutForRangeIfNeeded(
-    const EphemeralRangeInFlatTree& range,
-    DisplayLockActivationReason reason) {
-  if (range.IsNull() || range.IsCollapsed())
-    return false;
-  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
-      range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .LockedDisplayLockCount() ==
-          range.GetDocument()
-              .GetDisplayLockDocumentState()
-              .DisplayLockBlockingAllActivationCount())
-    return false;
-  HeapVector<Member<DisplayLockContext>> forced_context_list_;
-  for (Node& node : range.Nodes()) {
-    for (Element* locked_activatable_ancestor :
-         DisplayLockUtilities::ActivatableLockedInclusiveAncestors(node,
-                                                                   reason)) {
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext());
-      DCHECK(locked_activatable_ancestor->GetDisplayLockContext()->IsLocked());
-      auto* context = locked_activatable_ancestor->GetDisplayLockContext();
-      // TODO(vmpstr): Clean this up not to call
-      // |NotifyForcedUpdateScopeStarted()| directly.
-      context->NotifyForcedUpdateScopeStarted();
-      forced_context_list_.push_back(context);
-    }
-  }
-  if (!forced_context_list_.IsEmpty()) {
-    range.GetDocument().UpdateStyleAndLayout(
-        DocumentUpdateReason::kDisplayLock);
-  }
-  for (auto context : forced_context_list_) {
-    context->NotifyForcedUpdateScopeEnded();
-  }
-  return !forced_context_list_.IsEmpty();
 }
 
 bool DisplayLockUtilities::PrePaintBlockedInParentFrame(LayoutView* view) {
@@ -637,6 +700,32 @@ bool DisplayLockUtilities::IsAutoWithoutLayout(const LayoutObject& object) {
     return false;
   return !context->IsLocked() && context->IsAuto() &&
          !context->HadLifecycleUpdateSinceLastUnlock();
+}
+
+bool DisplayLockUtilities::RevealHiddenUntilFoundAncestors(const Node& node) {
+  // Since setting the open attribute fires mutation events which could mess
+  // with the FlatTreeTraversal iterator, we should first iterate details
+  // elements to open and then open them all.
+  VectorOf<HTMLElement> elements_to_reveal;
+
+  for (Node& parent : FlatTreeTraversal::AncestorsOf(node)) {
+    if (HTMLElement* element = DynamicTo<HTMLElement>(parent)) {
+      if (EqualIgnoringASCIICase(
+              element->FastGetAttribute(html_names::kHiddenAttr),
+              "until-found")) {
+        elements_to_reveal.push_back(element);
+      }
+    }
+  }
+
+  for (HTMLElement* element : elements_to_reveal) {
+    element->removeAttribute(html_names::kHiddenAttr);
+  }
+
+  // TODO(crbug.com/1055002): Fire the beforematch event here on all
+  //   |elements_to_reveal|.
+
+  return elements_to_reveal.size();
 }
 
 }  // namespace blink

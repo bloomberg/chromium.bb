@@ -199,12 +199,17 @@ inline RuleIndexList* ElementRuleCollector::EnsureRuleList() {
 
 void ElementRuleCollector::AddElementStyleProperties(
     const CSSPropertyValueSet* property_set,
-    bool is_cacheable) {
+    bool is_cacheable,
+    bool is_inline_style) {
   if (!property_set)
     return;
   auto link_match_type = static_cast<unsigned>(CSSSelector::kMatchAll);
   result_.AddMatchedProperties(
-      property_set, AdjustLinkMatchType(inside_link_, link_match_type));
+      property_set,
+      AddMatchedPropertiesOptions::Builder()
+          .SetLinkMatchType(AdjustLinkMatchType(inside_link_, link_match_type))
+          .SetIsInlineStyle(is_inline_style)
+          .Build());
   if (!is_cacheable)
     result_.SetIsCacheable(false);
 }
@@ -283,16 +288,26 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       continue;
     }
     if (auto* container_query = rule_data->GetContainerQuery()) {
-      result_.SetDependsOnContainerQueries();
+      // If we are matching pseudo elements like a ::before rule when computing
+      // the styles of the originating element, we don't know whether the
+      // container will be the originating element or not. There is not enough
+      // information to evaluate the container query for the existence of the
+      // pseudo element, so skip the evaluation and have false positives for
+      // HasPseudoElementStyles() instead to make sure we create such pseudo
+      // elements when they depend on the originating element.
+      if (pseudo_style_request_.pseudo_id != kPseudoIdNone ||
+          result.dynamic_pseudo == kPseudoIdNone) {
+        result_.SetDependsOnContainerQueries();
 
-      auto* evaluator = FindContainerQueryEvaluator(container_query->Name(),
-                                                    style_recalc_context_);
+        auto* evaluator = FindContainerQueryEvaluator(container_query->Name(),
+                                                      style_recalc_context_);
 
-      if (!evaluator || !evaluator->EvalAndAdd(*container_query)) {
-        rejected++;
-        if (AffectsAnimations(*rule_data))
-          result_.SetConditionallyAffectsAnimations();
-        continue;
+        if (!evaluator || !evaluator->EvalAndAdd(*container_query)) {
+          rejected++;
+          if (AffectsAnimations(*rule_data))
+            result_.SetConditionallyAffectsAnimations();
+          continue;
+        }
       }
     }
 
@@ -481,9 +496,13 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
     const RuleData* rule_data = matched_rule.GetRuleData();
     result_.AddMatchedProperties(
         &rule_data->Rule()->Properties(),
-        AdjustLinkMatchType(inside_link_, rule_data->LinkMatchType()),
-        rule_data->GetValidPropertyFilter(matching_ua_rules_),
-        matched_rule.LayerOrder());
+        AddMatchedPropertiesOptions::Builder()
+            .SetLinkMatchType(
+                AdjustLinkMatchType(inside_link_, rule_data->LinkMatchType()))
+            .SetValidPropertyFilter(
+                rule_data->GetValidPropertyFilter(matching_ua_rules_))
+            .SetLayerOrder(matched_rule.LayerOrder())
+            .Build());
   }
 }
 

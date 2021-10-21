@@ -43,15 +43,16 @@ gfx::Range ClampRange(gfx::Range range, uint32_t max) {
 class PreferredSizeLabel : public Label {
  public:
   PreferredSizeLabel() = default;
+
+  PreferredSizeLabel(const PreferredSizeLabel&) = delete;
+  PreferredSizeLabel& operator=(const PreferredSizeLabel&) = delete;
+
   ~PreferredSizeLabel() override = default;
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(50, Label::CalculatePreferredSize().height());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PreferredSizeLabel);
 };
 
 }  // namespace
@@ -67,6 +68,9 @@ class MultilineExample::RenderTextView : public View {
     render_text_->SetMultiline(true);
     SetBorder(CreateSolidBorder(2, SK_ColorGRAY));
   }
+
+  RenderTextView(const RenderTextView&) = delete;
+  RenderTextView& operator=(const RenderTextView&) = delete;
 
   void OnPaint(gfx::Canvas* canvas) override {
     View::OnPaint(canvas);
@@ -125,8 +129,6 @@ class MultilineExample::RenderTextView : public View {
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderTextView);
 };
 
 MultilineExample::MultilineExample()

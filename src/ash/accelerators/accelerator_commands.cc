@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/components/audio/cras_audio_handler.h"
 #include "ash/constants/ash_features.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/focus_cycler.h"
@@ -14,6 +15,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
@@ -108,6 +110,18 @@ void MediaStop() {
   Shell::Get()->media_controller()->HandleMediaStop();
 }
 
+void MicrophoneMuteToggle() {
+  auto* const audio_handler = CrasAudioHandler::Get();
+  const bool mute = !audio_handler->IsInputMuted();
+
+  if (mute)
+    base::RecordAction(base::UserMetricsAction("Keyboard_Microphone_Muted"));
+  else
+    base::RecordAction(base::UserMetricsAction("Keyboard_Microphone_Unmuted"));
+
+  audio_handler->SetInputMute(mute);
+}
+
 void NewIncognitoWindow() {
   NewWindowDelegate::GetPrimary()->NewWindow(
       /*is_incognito=*/true,
@@ -192,8 +206,7 @@ void ToggleFloating() {
   aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window)
     return;
-  WMEvent event(WM_EVENT_TOGGLE_FLOATING);
-  WindowState::Get(active_window)->OnWMEvent(&event);
+  Shell::Get()->float_controller()->ToggleFloatCurrentWindow(active_window);
 }
 
 void ToggleFullscreen() {

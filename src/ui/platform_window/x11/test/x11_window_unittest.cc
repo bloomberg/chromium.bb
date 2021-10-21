@@ -18,8 +18,8 @@
 #include "ui/events/event.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -155,7 +155,9 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 
 class TestScreen : public display::ScreenBase {
  public:
-  TestScreen() { ProcessDisplayChanged({}, true); }
+  TestScreen() {
+    ProcessDisplayChanged(display::Display(display::kDefaultDisplayId), true);
+  }
   ~TestScreen() override = default;
   TestScreen(const TestScreen& screen) = delete;
   TestScreen& operator=(const TestScreen& screen) = delete;

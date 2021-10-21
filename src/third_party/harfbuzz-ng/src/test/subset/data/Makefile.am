@@ -34,6 +34,8 @@ EXTRA_DIST += \
 	expected/layout.gdef-varstore \
 	expected/layout.gdef-attachlist \
 	expected/layout.notonastaliqurdu \
+	expected/layout.tinos \
+	expected/layout.duplicate_features \
 	expected/cmap \
 	expected/cmap14 \
 	expected/sbix \
@@ -42,6 +44,7 @@ EXTRA_DIST += \
 	expected/cbdt \
 	expected/variable \
 	expected/glyph_names \
+	expected/math \
 	fonts \
 	profiles \
 	$(NULL)

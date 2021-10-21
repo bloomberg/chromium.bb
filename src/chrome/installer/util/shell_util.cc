@@ -138,14 +138,16 @@ class UserSpecificRegistrySuffix {
   // LazyInstance.
   UserSpecificRegistrySuffix();
 
+  UserSpecificRegistrySuffix(const UserSpecificRegistrySuffix&) = delete;
+  UserSpecificRegistrySuffix& operator=(const UserSpecificRegistrySuffix&) =
+      delete;
+
   // Sets |suffix| to the pre-computed suffix cached in this object.
   // Returns true unless the initialization originally failed.
   bool GetSuffix(std::wstring* suffix);
 
  private:
   std::wstring suffix_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserSpecificRegistrySuffix);
 };  // class UserSpecificRegistrySuffix
 
 UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
@@ -2611,8 +2613,7 @@ bool ShellUtil::AddFileAssociations(
 
   std::vector<std::wstring> handled_file_extensions;
 
-  // Associate each extension that the app can handle with the class. Set this
-  // app as the default handler if and only if there is no existing default.
+  // Associate each extension that the app can handle with the class.
   for (const auto& file_extension : file_extensions) {
     // Do not allow empty file extensions, or extensions beginning with a '.'.
     DCHECK(!file_extension.empty());
@@ -2620,12 +2621,6 @@ bool ShellUtil::AddFileAssociations(
     std::wstring ext(1, L'.');
     ext += file_extension;
     GetAppExtRegistrationEntries(prog_id, ext, &entries);
-
-    // Registering as the default will have no effect on Windows 8 (see
-    // documentation for GetAppDefaultRegistrationEntries). However, if our app
-    // is the only handler, it will automatically become the default, so the
-    // same effect is achieved.
-    GetAppDefaultRegistrationEntries(prog_id, ext, false, &entries);
 
     handled_file_extensions.push_back(std::move(ext));
   }
@@ -2661,13 +2656,6 @@ bool ShellUtil::DeleteFileAssociations(const std::wstring& prog_id) {
       std::wstring extension_path =
           base::StrCat({kRegClasses, kFilePathSeparator, file_extension});
 
-      // Delete the default value at
-      // HKEY_CURRENT_USER\Software\Classes\.<extension> if set to |prog_id|;
-      // this unregisters |prog_id| as the default handler for |file_extension|.
-      InstallUtil::DeleteRegistryValueIf(
-          HKEY_CURRENT_USER, extension_path.c_str(), WorkItem::kWow64Default,
-          L"", InstallUtil::ValueEquals(prog_id));
-
       // Delete value |prog_id| at
       // HKEY_CURRENT_USER\Software\Classes\.<extension>\OpenWithProgids;
       // this removes |prog_id| from the list of handlers for |file_extension|.
@@ -2701,9 +2689,8 @@ bool ShellUtil::AddAppProtocolAssociations(
     return false;
   }
 
-  if (!RegisterApplicationForProtocols(protocols, prog_id, chrome_exe)) {
+  if (!RegisterApplicationForProtocols(protocols, prog_id, chrome_exe))
     return false;
-  }
 
   bool success = true;
   for (const auto& protocol : protocols) {
@@ -2754,14 +2741,6 @@ bool ShellUtil::RemoveAppProtocolAssociations(const std::wstring& prog_id) {
 
   return InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER, app_key_path,
                                         WorkItem::kWow64Default);
-}
-
-// static
-std::wstring ShellUtil::GetProgIdForBrowser(const base::FilePath& chrome_exe) {
-  std::wstring prog_id =
-      base::StrCat({install_static::GetProgIdPrefix(),
-                    GetCurrentInstallationSuffix(chrome_exe)});
-  return prog_id;
 }
 
 // static
@@ -2881,7 +2860,7 @@ ShellUtil::FileAssociationsAndAppName ShellUtil::GetFileAssociationsAndAppName(
     return file_associations_and_app_name;
   }
 
-  // If present, Get list of handled file extensions from value FileExtensions
+  // If present, get list of handled file extensions from value FileExtensions
   // at HKEY_CURRENT_USER\Software\Classes\|prog_id|.
   RegKey file_extensions_key(HKEY_CURRENT_USER, prog_id_path.c_str(),
                              KEY_QUERY_VALUE);

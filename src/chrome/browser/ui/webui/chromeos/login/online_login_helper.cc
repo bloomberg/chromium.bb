@@ -27,7 +27,7 @@ namespace {
 const char kGAPSCookie[] = "GAPS";
 const char kOAUTHCodeCookie[] = "oauth_code";
 const char kRAPTCookie[] = "RAPT";
-constexpr base::TimeDelta kCookieDelay = base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kCookieDelay = base::Seconds(20);
 
 }  // namespace
 
@@ -208,6 +208,7 @@ void OnlineLoginHelper::RequestCookiesAndCompleteAuthentication() {
       net::CookieOptions::MakeAllInclusive();
   cookie_manager->GetCookieList(
       GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      net::CookiePartitionKeychain::Todo(),
       base::BindOnce(&OnlineLoginHelper::OnGetCookiesForCompleteAuthentication,
                      weak_factory_.GetWeakPtr()));
 }

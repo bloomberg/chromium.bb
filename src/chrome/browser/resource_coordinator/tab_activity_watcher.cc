@@ -66,6 +66,9 @@ class TabActivityWatcher::WebContentsData
       public content::WebContentsUserData<WebContentsData>,
       public content::RenderWidgetHost::InputEventObserver {
  public:
+  WebContentsData(const WebContentsData&) = delete;
+  WebContentsData& operator=(const WebContentsData&) = delete;
+
   ~WebContentsData() override = default;
 
   // Calculates the tab reactivation score for a background tab. Returns nullopt
@@ -482,11 +485,9 @@ class TabActivityWatcher::WebContentsData
   FrecencyScore frecency_score_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData);
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),

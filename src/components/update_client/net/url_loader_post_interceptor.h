@@ -61,6 +61,9 @@ class URLLoaderPostInterceptor {
   URLLoaderPostInterceptor(std::vector<GURL> supported_urls,
                            net::test_server::EmbeddedTestServer*);
 
+  URLLoaderPostInterceptor(const URLLoaderPostInterceptor&) = delete;
+  URLLoaderPostInterceptor& operator=(const URLLoaderPostInterceptor&) = delete;
+
   ~URLLoaderPostInterceptor();
 
   // Sets an expection for the body of the POST request and optionally,
@@ -152,28 +155,29 @@ class URLLoaderPostInterceptor {
   std::vector<GURL> filtered_urls_;
 
   UrlJobRequestReadyCallback url_job_request_ready_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderPostInterceptor);
 };
 
 class PartialMatch : public URLLoaderPostInterceptor::RequestMatcher {
  public:
   explicit PartialMatch(const std::string& expected) : expected_(expected) {}
+
+  PartialMatch(const PartialMatch&) = delete;
+  PartialMatch& operator=(const PartialMatch&) = delete;
+
   bool Match(const std::string& actual) const override;
 
  private:
   const std::string expected_;
-
-  DISALLOW_COPY_AND_ASSIGN(PartialMatch);
 };
 
 class AnyMatch : public URLLoaderPostInterceptor::RequestMatcher {
  public:
   AnyMatch() = default;
-  bool Match(const std::string& actual) const override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AnyMatch);
+  AnyMatch(const AnyMatch&) = delete;
+  AnyMatch& operator=(const AnyMatch&) = delete;
+
+  bool Match(const std::string& actual) const override;
 };
 
 }  // namespace update_client

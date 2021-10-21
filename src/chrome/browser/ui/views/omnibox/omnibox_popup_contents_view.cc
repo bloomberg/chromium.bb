@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/omnibox/webui_omnibox_popup_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
+#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_popup_handler.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -43,6 +45,10 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
   // from NativeTheme.
   explicit AutocompletePopupWidget(views::Widget* role_model)
       : ThemeCopyingWidget(role_model) {}
+
+  AutocompletePopupWidget(const AutocompletePopupWidget&) = delete;
+  AutocompletePopupWidget& operator=(const AutocompletePopupWidget&) = delete;
+
   ~AutocompletePopupWidget() override {}
 
   void InitOmniboxPopup(views::Widget* parent_widget) {
@@ -135,7 +141,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     settings->SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
     constexpr base::TimeDelta kPopupOpacityAnimationDuration =
-        base::TimeDelta::FromMilliseconds(82);
+        base::Milliseconds(82);
     settings->SetTransitionDuration(kPopupOpacityAnimationDuration);
 
     return settings;
@@ -146,8 +152,6 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
   // True if the popup's bounds are currently being set.
   bool is_setting_popup_bounds_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
 OmniboxPopupContentsView::OmniboxPopupContentsView(
@@ -203,14 +207,10 @@ void OmniboxPopupContentsView::OpenMatch(
                            match_selection_timestamp);
 }
 
-OmniboxPopupModel* OmniboxPopupContentsView::model() const {
-  return edit_model_->popup_model();
-}
-
 void OmniboxPopupContentsView::OpenMatch(
     WindowOpenDisposition disposition,
     base::TimeTicks match_selection_timestamp) {
-  OpenMatch(model()->selected_line(), disposition, match_selection_timestamp);
+  OpenMatch(GetSelection().line, disposition, match_selection_timestamp);
 }
 
 gfx::Image OmniboxPopupContentsView::GetMatchIcon(
@@ -223,16 +223,22 @@ void OmniboxPopupContentsView::SetSelectedIndex(size_t index) {
   DCHECK(HasMatchAt(index));
 
   OmniboxPopupSelection::LineState line_state = OmniboxPopupSelection::NORMAL;
-  model()->SetSelection(OmniboxPopupSelection(index, line_state));
-  OnPropertyChanged(model(), views::kPropertyEffectsNone);
+  edit_model_->SetPopupSelection(OmniboxPopupSelection(index, line_state));
+  OnPropertyChanged(edit_model_, views::kPropertyEffectsNone);
 }
 
 size_t OmniboxPopupContentsView::GetSelectedIndex() const {
-  return model()->selected_line();
+  return GetSelection().line;
+}
+
+OmniboxPopupSelection OmniboxPopupContentsView::GetSelection() const {
+  return edit_model_->GetPopupSelection();
 }
 
 void OmniboxPopupContentsView::UnselectButton() {
-  model()->SetSelectedLineState(OmniboxPopupSelection::NORMAL);
+  OmniboxPopupSelection selection = edit_model_->GetPopupSelection();
+  selection.state = OmniboxPopupSelection::NORMAL;
+  edit_model_->SetPopupSelection(selection);
 }
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
@@ -258,7 +264,7 @@ OmniboxResultView* OmniboxPopupContentsView::GetSelectedResultView() {
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
     return nullptr;
 
-  size_t selected_line = model()->selected_line();
+  size_t selected_line = GetSelection().line;
   if (selected_line == OmniboxPopupSelection::kNoMatch)
     return nullptr;
   return result_view_at(selected_line);
@@ -352,7 +358,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   }
 
   // Fix-up any matches due to tail suggestions, before display below.
-  model()->autocomplete_controller()->InlineTailPrefixes();
+  edit_model_->autocomplete_controller()->InlineTailPrefixes();
 
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
@@ -371,7 +377,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       // memory during browser startup. https://crbug.com/1021323
       if (children().size() == i) {
         AddChildView(std::make_unique<OmniboxRowView>(
-            i, model(), std::make_unique<OmniboxResultView>(this, i),
+            i, edit_model_,
+            std::make_unique<OmniboxResultView>(this, edit_model_, i),
             pref_service));
       }
 
@@ -401,7 +408,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
                               pref_service, match.suggestion_group_id.value());
       result_view->SetVisible(!match_hidden);
 
-      const SkBitmap* bitmap = model()->RichSuggestionBitmapAt(i);
+      const SkBitmap* bitmap = edit_model_->GetPopupRichSuggestionBitmap(i);
       if (bitmap) {
         result_view->SetRichSuggestionImage(
             gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
@@ -424,12 +431,20 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
         result_view_at(0)) {
       FireAXEventsForNewActiveDescendant(result_view_at(0));
     }
+
+#if defined(OS_MAC)
+    // It's not great for promos to overlap the omnibox if the user opens the
+    // drop-down after showing the promo. This especially causes issues on Mac
+    // due to z-order/rendering issues, see crbug.com/1225046 for examples.
+    FeaturePromoControllerViews::GetForView(omnibox_view_)
+        ->DismissNonCriticalBubbleInRegion(omnibox_view_->GetBoundsInScreen());
+#endif
   }
   InvalidateLayout();
 }
 
 void OmniboxPopupContentsView::ProvideButtonFocusHint(size_t line) {
-  DCHECK(model()->selection().IsButtonFocused());
+  DCHECK(GetSelection().IsButtonFocused());
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
     return;  // TODO(tommycli): Not implemented yet for WebUI.
 

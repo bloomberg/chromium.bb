@@ -73,14 +73,28 @@ void AutofillClient::ShowOfferNotificationIfApplicable(
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
 }
 
-void AutofillClient::OnVirtualCardDataAvailable(const CreditCard* credit_card,
-                                                const std::u16string& cvc,
-                                                const gfx::Image& card_image) {
+void AutofillClient::OnVirtualCardDataAvailable(
+    const std::u16string& masked_card_identifier_string,
+    const CreditCard* credit_card,
+    const std::u16string& cvc,
+    const gfx::Image& card_image) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }
 
 void AutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this.
+}
+
+void AutofillClient::ShowAutofillProgressDialog(
+    base::OnceClosure cancel_callback) {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop & Android) implements this.
+}
+
+void AutofillClient::CloseAutofillProgressDialog(
+    bool show_confirmation_before_closing) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
 }

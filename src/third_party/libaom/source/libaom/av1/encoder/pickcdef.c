@@ -28,9 +28,11 @@ static INLINE void get_cdef_filter_strengths(CDEF_PICK_METHOD pick_method,
                                              int *pri_strength,
                                              int *sec_strength,
                                              int strength_idx) {
-  const int tot_sec_filter = (pick_method >= CDEF_FAST_SEARCH_LVL3)
-                                 ? REDUCED_SEC_STRENGTHS_LVL3
-                                 : CDEF_SEC_STRENGTHS;
+  const int tot_sec_filter =
+      (pick_method == CDEF_FAST_SEARCH_LVL5)
+          ? REDUCED_SEC_STRENGTHS_LVL5
+          : ((pick_method >= CDEF_FAST_SEARCH_LVL3) ? REDUCED_SEC_STRENGTHS_LVL3
+                                                    : CDEF_SEC_STRENGTHS);
   const int pri_idx = strength_idx / tot_sec_filter;
   const int sec_idx = strength_idx % tot_sec_filter;
   *pri_strength = pri_idx;
@@ -47,6 +49,10 @@ static INLINE void get_cdef_filter_strengths(CDEF_PICK_METHOD pick_method,
     case CDEF_FAST_SEARCH_LVL4:
       *pri_strength = priconv_lvl4[pri_idx];
       *sec_strength = secconv_lvl3[sec_idx];
+      break;
+    case CDEF_FAST_SEARCH_LVL5:
+      *pri_strength = priconv_lvl5[pri_idx];
+      *sec_strength = secconv_lvl5[sec_idx];
       break;
     default: assert(0 && "Invalid CDEF search method");
   }
@@ -153,7 +159,7 @@ static uint64_t joint_strength_search(int *best_lev, int nb_strengths,
                                       CDEF_PICK_METHOD pick_method) {
   uint64_t best_tot_mse;
   int fast = (pick_method >= CDEF_FAST_SEARCH_LVL1 &&
-              pick_method <= CDEF_FAST_SEARCH_LVL4);
+              pick_method <= CDEF_FAST_SEARCH_LVL5);
   int i;
   best_tot_mse = (uint64_t)1 << 63;
   /* Greedy search: add one strength options at a time. */
@@ -574,7 +580,7 @@ void av1_cdef_search(MultiThreadInfo *mt_info, const YV12_BUFFER_CONFIG *frame,
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   const int damping = 3 + (cm->quant_params.base_qindex >> 6);
   const int fast = (pick_method >= CDEF_FAST_SEARCH_LVL1 &&
-                    pick_method <= CDEF_FAST_SEARCH_LVL4);
+                    pick_method <= CDEF_FAST_SEARCH_LVL5);
   const int num_planes = av1_num_planes(cm);
   CdefSearchCtx cdef_search_ctx;
   // Initialize parameters related to CDEF search context.
@@ -642,7 +648,6 @@ void av1_cdef_search(MultiThreadInfo *mt_info, const YV12_BUFFER_CONFIG *frame,
     mi_params->mi_grid_base[cdef_search_ctx.sb_index[i]]->cdef_strength =
         best_gi;
   }
-
   if (fast) {
     for (int j = 0; j < cdef_info->nb_cdef_strengths; j++) {
       const int luma_strength = cdef_info->cdef_strengths[j];

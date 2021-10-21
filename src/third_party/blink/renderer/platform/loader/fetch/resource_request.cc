@@ -94,12 +94,12 @@ ResourceRequestHead::ResourceRequestHead(const KURL& url)
       download_to_blob_(false),
       use_stream_on_response_(false),
       keepalive_(false),
-      should_reset_app_cache_(false),
       allow_stale_response_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
       download_to_cache_only_(false),
       site_for_cookies_set_(false),
+      initial_priority_(ResourceLoadPriority::kUnresolved),
       priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       previews_state_(PreviewsTypes::kPreviewsUnspecified),
@@ -198,7 +198,6 @@ std::unique_ptr<ResourceRequest> ResourceRequestHead::CreateRedirectRequest(
   request->SetDownloadToBlob(DownloadToBlob());
   request->SetUseStreamOnResponse(UseStreamOnResponse());
   request->SetRequestContext(GetRequestContext());
-  request->SetShouldResetAppCache(ShouldResetAppCache());
   request->SetMode(GetMode());
   request->SetCredentialsMode(GetCredentialsMode());
   request->SetKeepalive(GetKeepalive());
@@ -346,6 +345,10 @@ void ResourceRequestHead::SetAllowStoredCredentials(bool allow_credentials) {
   allow_stored_credentials_ = allow_credentials;
 }
 
+ResourceLoadPriority ResourceRequestHead::InitialPriority() const {
+  return initial_priority_;
+}
+
 ResourceLoadPriority ResourceRequestHead::Priority() const {
   return priority_;
 }
@@ -360,6 +363,8 @@ bool ResourceRequestHead::PriorityHasBeenSet() const {
 
 void ResourceRequestHead::SetPriority(ResourceLoadPriority priority,
                                       int intra_priority_value) {
+  if (!PriorityHasBeenSet())
+    initial_priority_ = priority;
   priority_ = priority;
   intra_priority_value_ = intra_priority_value;
 }

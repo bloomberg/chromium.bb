@@ -9,8 +9,9 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace {
@@ -43,7 +44,7 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback,
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
                   GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
 
-  constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(350);
+  constexpr auto kAnimationDuration = base::Milliseconds(350);
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
   animation_->SetSlideDuration(kAnimationDuration);
 
@@ -53,13 +54,13 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback,
 OmniboxChipButton::~OmniboxChipButton() = default;
 
 void OmniboxChipButton::AnimateCollapse() {
-  constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(250);
+  constexpr auto kAnimationDuration = base::Milliseconds(250);
   animation_->SetSlideDuration(kAnimationDuration);
   animation_->Hide();
 }
 
 void OmniboxChipButton::AnimateExpand() {
-  constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(350);
+  constexpr auto kAnimationDuration = base::Milliseconds(350);
   animation_->SetSlideDuration(kAnimationDuration);
   animation_->Show();
 }
@@ -127,11 +128,9 @@ void OmniboxChipButton::UpdateIconAndColors() {
 SkColor OmniboxChipButton::GetMainColor() {
   switch (theme_) {
     case Theme::kBlue:
-      // TODO(crbug.com/1003612): ui::NativeTheme::kColorId_ProminentButtonColor
-      // does not always represent the blue color we need, but it is OK to use
-      // for now.
-      return GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ProminentButtonColor);
+      // TODO(crbug.com/1003612): ui::kColorButtonBackgroundProminent does not
+      // always represent the blue color we need, but it is OK to use for now.
+      return GetColorProvider()->GetColor(ui::kColorButtonBackgroundProminent);
     case Theme::kGray:
       return GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED);

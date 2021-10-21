@@ -854,7 +854,7 @@ dawn_native::Adapter DawnTestBase::GetAdapter() const {
     return mBackendAdapter;
 }
 
-std::vector<const char*> DawnTestBase::GetRequiredExtensions() {
+std::vector<const char*> DawnTestBase::GetRequiredFeatures() {
     return {};
 }
 
@@ -862,15 +862,15 @@ const wgpu::AdapterProperties& DawnTestBase::GetAdapterProperties() const {
     return mParam.adapterProperties;
 }
 
-bool DawnTestBase::SupportsExtensions(const std::vector<const char*>& extensions) {
+bool DawnTestBase::SupportsFeatures(const std::vector<const char*>& features) {
     ASSERT(mBackendAdapter);
-    std::set<std::string> supportedExtensionsSet;
-    for (const char* supportedExtensionName : mBackendAdapter.GetSupportedExtensions()) {
-        supportedExtensionsSet.insert(supportedExtensionName);
+    std::set<std::string> supportedFeaturesSet;
+    for (const char* supportedFeatureName : mBackendAdapter.GetSupportedFeatures()) {
+        supportedFeaturesSet.insert(supportedFeatureName);
     }
 
-    for (const char* extensionName : extensions) {
-        if (supportedExtensionsSet.find(extensionName) == supportedExtensionsSet.end()) {
+    for (const char* featureName : features) {
+        if (supportedFeaturesSet.find(featureName) == supportedFeaturesSet.end()) {
             return false;
         }
     }
@@ -909,10 +909,10 @@ void DawnTestBase::SetUp() {
     for (const char* forceDisabledWorkaround : mParam.forceDisabledWorkarounds) {
         ASSERT(gTestEnv->GetInstance()->GetToggleInfo(forceDisabledWorkaround) != nullptr);
     }
-    dawn_native::DeviceDescriptor deviceDescriptor;
+    dawn_native::DeviceDescriptor deviceDescriptor = {};
     deviceDescriptor.forceEnabledToggles = mParam.forceEnabledWorkarounds;
     deviceDescriptor.forceDisabledToggles = mParam.forceDisabledWorkarounds;
-    deviceDescriptor.requiredExtensions = GetRequiredExtensions();
+    deviceDescriptor.requiredFeatures = GetRequiredFeatures();
 
     // Disabled disallowing unsafe APIs so we can test them.
     deviceDescriptor.forceDisabledToggles.push_back("disallow_unsafe_apis");
@@ -1010,7 +1010,7 @@ void DawnTestBase::OnDeviceError(WGPUErrorType type, const char* message, void* 
     self->mError = true;
 }
 
-void DawnTestBase::OnDeviceLost(const char* message, void* userdata) {
+void DawnTestBase::OnDeviceLost(WGPUDeviceLostReason reason, const char* message, void* userdata) {
     // Using ADD_FAILURE + ASSERT instead of FAIL to prevent the current test from continuing with a
     // corrupt state.
     ADD_FAILURE() << "Device Lost during test: " << message;

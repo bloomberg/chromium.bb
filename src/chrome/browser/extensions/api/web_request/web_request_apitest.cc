@@ -152,6 +152,9 @@ class CancelLoginDialog : public content::NotificationObserver {
                    content::NotificationService::AllSources());
   }
 
+  CancelLoginDialog(const CancelLoginDialog&) = delete;
+  CancelLoginDialog& operator=(const CancelLoginDialog&) = delete;
+
   ~CancelLoginDialog() override {}
 
   void Observe(int type,
@@ -164,8 +167,6 @@ class CancelLoginDialog : public content::NotificationObserver {
 
  private:
   content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
 };
 
 // Observer that listens for messages from chrome.test.sendMessage to allow them
@@ -1063,50 +1064,45 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       ExtensionActionRunner::GetForWebContents(web_contents);
   ASSERT_TRUE(runner);
 
-  // The extension shouldn't have currently received any webRequest events,
-  // since it doesn't have any permissions.
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
-
-  auto get_main_and_child_frame = [](content::WebContents* web_contents,
-                                     content::RenderFrameHost** main_frame,
-                                     content::RenderFrameHost** child_frame) {
-    *child_frame = nullptr;
-    *main_frame = web_contents->GetMainFrame();
-    std::vector<content::RenderFrameHost*> all_frames =
-        web_contents->GetAllFrames();
-    ASSERT_EQ(3u, all_frames.size());
-    *child_frame = all_frames[0] == *main_frame ? all_frames[1] : all_frames[0];
-    ASSERT_TRUE(*child_frame);
-  };
-
-  content::RenderFrameHost* main_frame = nullptr;
-  content::RenderFrameHost* child_frame = nullptr;
-  get_main_and_child_frame(web_contents, &main_frame, &child_frame);
-  const std::string kMainHost = main_frame->GetLastCommittedURL().host();
-  const std::string kChildHost = child_frame->GetLastCommittedURL().host();
-
   int port = embedded_test_server()->port();
   const std::string kXhrPath = "simple.html";
 
-  // The extension shouldn't be able to intercept the xhr requests since it
-  // doesn't have any permissions.
-  PerformXhrInFrame(main_frame, kHost, port, kXhrPath);
-  PerformXhrInFrame(child_frame, kChildHost, port, kXhrPath);
-  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
-  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+  // The extension shouldn't have currently received any webRequest events,
+  // since it doesn't have any permissions.
+  {
+    EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
-  // Grant activeTab permission.
-  runner->set_default_bubble_close_action_for_testing(
-      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
-          ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
-  runner->RunAction(extension, true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+    content::RenderFrameHostWrapper main_frame(web_contents->GetMainFrame());
+    content::RenderFrameHostWrapper child_frame(
+        ChildFrameAt(main_frame.get(), 0));
+    ASSERT_TRUE(child_frame);
+    const std::string kChildHost = child_frame->GetLastCommittedURL().host();
+
+    // The extension shouldn't be able to intercept the xhr requests since it
+    // doesn't have any permissions.
+    PerformXhrInFrame(main_frame.get(), kHost, port, kXhrPath);
+    PerformXhrInFrame(child_frame.get(), kChildHost, port, kXhrPath);
+    EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+    EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+
+    // Grant activeTab permission.
+    runner->set_default_bubble_close_action_for_testing(
+        base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
+            ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
+    runner->RunAction(extension, true);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  }
 
   // The runner will have refreshed the page, and the extension will have
   // received access to the main-frame ("a.com"). It should still not be able to
   // intercept the cross-origin sub-frame requests to "b.com" and "c.com".
-  get_main_and_child_frame(web_contents, &main_frame, &child_frame);
+  content::RenderFrameHostWrapper main_frame(web_contents->GetMainFrame());
+  content::RenderFrameHostWrapper child_frame(
+      ChildFrameAt(main_frame.get(), 0));
+  const std::string kChildHost = child_frame->GetLastCommittedURL().host();
+
+  ASSERT_TRUE(child_frame);
   EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "a.com"));
   EXPECT_FALSE(
       HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
@@ -1120,14 +1116,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       GetWebRequestCountFromBackgroundPage(extension, profile());
 
   // ... and the extension should receive future events.
-  PerformXhrInFrame(main_frame, kHost, port, kXhrPath);
+  PerformXhrInFrame(main_frame.get(), kHost, port, kXhrPath);
   ++request_count;
   EXPECT_EQ(request_count,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
 
   // However, activeTab only grants access to the main frame, not to child
   // frames. As such, trying to XHR in the child frame should still fail.
-  PerformXhrInFrame(child_frame, kChildHost, port, kXhrPath);
+  PerformXhrInFrame(child_frame.get(), kChildHost, port, kXhrPath);
   EXPECT_EQ(request_count,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
   // But since there's no way for the user to currently grant access to child
@@ -1146,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // badge UI.
   TestExtensionActionAPIObserver action_updated_waiter(profile(),
                                                        extension->id());
-  PerformXhrInFrame(main_frame, kHost, port, kXhrPath);
+  PerformXhrInFrame(main_frame.get(), kHost, port, kXhrPath);
   action_updated_waiter.Wait();
   EXPECT_EQ(web_contents, action_updated_waiter.last_web_contents());
 
@@ -1938,6 +1934,11 @@ class NTPInterceptionWebRequestAPITest : public ExtensionApiTest {
   NTPInterceptionWebRequestAPITest()
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
+  NTPInterceptionWebRequestAPITest(const NTPInterceptionWebRequestAPITest&) =
+      delete;
+  NTPInterceptionWebRequestAPITest& operator=(
+      const NTPInterceptionWebRequestAPITest&) = delete;
+
   // ExtensionApiTest override:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -1957,7 +1958,6 @@ class NTPInterceptionWebRequestAPITest : public ExtensionApiTest {
 
  private:
   net::EmbeddedTestServer https_test_server_;
-  DISALLOW_COPY_AND_ASSIGN(NTPInterceptionWebRequestAPITest);
 };
 
 // Ensures that requests made by the NTP Instant renderer are hidden from the
@@ -2028,6 +2028,11 @@ class WebUiNtpInterceptionWebRequestAPITest
   WebUiNtpInterceptionWebRequestAPITest()
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
+  WebUiNtpInterceptionWebRequestAPITest(
+      const WebUiNtpInterceptionWebRequestAPITest&) = delete;
+  WebUiNtpInterceptionWebRequestAPITest& operator=(
+      const WebUiNtpInterceptionWebRequestAPITest&) = delete;
+
   // ExtensionApiTest override:
   void SetUp() override {
     https_test_server_.RegisterRequestMonitor(base::BindRepeating(
@@ -2097,8 +2102,6 @@ class WebUiNtpInterceptionWebRequestAPITest
   bool one_google_bar_request_seen_ = false;
 
   base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUiNtpInterceptionWebRequestAPITest);
 };
 
 IN_PROC_BROWSER_TEST_F(WebUiNtpInterceptionWebRequestAPITest,
@@ -2363,15 +2366,19 @@ class ExtensionWebRequestMockedClockTest : public ExtensionWebRequestApiTest {
                                     nullptr,
                                     nullptr) {}
 
+  ExtensionWebRequestMockedClockTest(
+      const ExtensionWebRequestMockedClockTest&) = delete;
+  ExtensionWebRequestMockedClockTest& operator=(
+      const ExtensionWebRequestMockedClockTest&) = delete;
+
  private:
   static base::Time Now() {
     static base::Time now_time = base::Time::UnixEpoch();
-    now_time += base::TimeDelta::FromMilliseconds(1);
+    now_time += base::Milliseconds(1);
     return now_time;
   }
 
   base::subtle::ScopedTimeClockOverrides scoped_time_clock_override_;
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestMockedClockTest);
 };
 
 // Tests that we correctly dispatch the OnActionIgnored event on an extension
@@ -3273,8 +3280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   base::RunLoop run_loop;
   partition->GetNetworkContext()->AddHSTS(
       https_test_server.host_port_pair().host(),
-      base::Time::Now() + base::TimeDelta::FromDays(100), true,
-      run_loop.QuitClosure());
+      base::Time::Now() + base::Days(100), true, run_loop.QuitClosure());
   run_loop.Run();
 
   PerformXhrInFrame(
@@ -3340,9 +3346,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HSTSUpgradeAfterRedirect) {
   content::StoragePartition* partition =
       profile()->GetDefaultStoragePartition();
   base::RunLoop run_loop;
-  partition->GetNetworkContext()->AddHSTS(
-      "hsts.com", base::Time::Now() + base::TimeDelta::FromDays(100), true,
-      run_loop.QuitClosure());
+  partition->GetNetworkContext()->AddHSTS("hsts.com",
+                                          base::Time::Now() + base::Days(100),
+                                          true, run_loop.QuitClosure());
   run_loop.Run();
 
   GURL final_url = https_test_server.GetURL("hsts.com", "/echo");
@@ -4264,14 +4270,13 @@ IN_PROC_BROWSER_TEST_P(RedirectInfoWebRequestApiTest,
   ASSERT_TRUE(web_contents);
   EXPECT_EQ(page_with_iframe_url, web_contents->GetLastCommittedURL());
 
-  // Since frames are returned in breadth first order, and there's only one
-  // iframe, the iframe should be the second frame in this vector.
-  std::vector<content::RenderFrameHost*> all_frames =
-      web_contents->GetAllFrames();
-  ASSERT_EQ(2u, all_frames.size());
+  content::RenderFrameHostWrapper child_frame(
+      ChildFrameAt(web_contents->GetMainFrame(), 0));
+  ASSERT_TRUE(child_frame);
+
   GURL redirected_url =
       embedded_test_server()->GetURL("redirected.test", "/hello.html");
-  ASSERT_EQ(redirected_url, all_frames[1]->GetLastCommittedURL());
+  ASSERT_EQ(redirected_url, child_frame->GetLastCommittedURL());
 
   // Check the parameters passed to the URLLoaderFactory.
   absl::optional<network::ResourceRequest> resource_request =

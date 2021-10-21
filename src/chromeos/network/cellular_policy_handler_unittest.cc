@@ -38,13 +38,16 @@ const char kTestEuiccPath2[] = "/org/chromium/Hermes/Euicc/1";
 const char kTestEid[] = "12345678901234567890123456789012";
 const char kTestEid2[] = "12345678901234567890123456789000";
 const char kCellularGuid[] = "cellular_guid";
-const char kEntryPath[] = "service_path_for_cellular_guid";
 const char kICCID[] = "1000000000000000002";
 
 void CheckShillConfiguration(bool is_installed) {
+  std::string service_path =
+      ShillServiceClient::Get()->GetTestInterface()->FindServiceMatchingGUID(
+          kCellularGuid);
   const base::Value* properties =
       ShillServiceClient::Get()->GetTestInterface()->GetServiceProperties(
-          kEntryPath);
+          service_path);
+
   if (!is_installed) {
     EXPECT_EQ(properties, nullptr);
     return;
@@ -100,7 +103,8 @@ class CellularPolicyHandlerTest : public testing::Test {
     cellular_esim_installer_ = std::make_unique<CellularESimInstaller>();
     cellular_esim_installer_->Init(
         cellular_connection_handler_.get(), cellular_inhibitor_.get(),
-        network_connection_handler_.get(), network_state_handler_.get());
+        network_connection_handler_.get(), network_profile_handler_.get(),
+        network_state_handler_.get());
     network_configuration_handler_ =
         base::WrapUnique<NetworkConfigurationHandler>(
             NetworkConfigurationHandler::InitializeForTest(
@@ -165,7 +169,7 @@ class CellularPolicyHandlerTest : public testing::Test {
 
   void FastForwardProfileRefreshDelay() {
     const base::TimeDelta kProfileRefreshCallbackDelay =
-        base::TimeDelta::FromMilliseconds(150);
+        base::Milliseconds(150);
     // Connect can result in two profile refresh calls before and after
     // enabling profile. Fast forward by delay after refresh.
     task_environment_.FastForwardBy(2 * kProfileRefreshCallbackDelay);
@@ -251,6 +255,25 @@ TEST_F(CellularPolicyHandlerTest, InstallNoEUICCAvailable) {
                         ->GenerateFakeActivationCode(),
                     /*expect_install_success=*/false);
   CheckShillConfiguration(/*is_installed=*/false);
+}
+
+TEST_F(CellularPolicyHandlerTest, UpdateSMDPAddress) {
+  // Verify that the first request should be invalidated when the second
+  // request is queued.
+  std::string policy = GenerateCellularPolicy("000");
+  InstallESimPolicy(policy,
+                    /*activation_code=*/"000",
+                    /*expect_install_success=*/false);
+  policy = GenerateCellularPolicy(HermesEuiccClient::Get()
+                                      ->GetTestInterface()
+                                      ->GenerateFakeActivationCode());
+
+  InstallESimPolicy(policy,
+                    HermesEuiccClient::Get()
+                        ->GetTestInterface()
+                        ->GenerateFakeActivationCode(),
+                    /*expect_install_success=*/true);
+  CheckShillConfiguration(/*is_installed=*/true);
 }
 
 }  // namespace chromeos

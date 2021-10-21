@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -724,8 +725,9 @@ IN_PROC_BROWSER_TEST_F(CaptureHandleBrowserTest,
   EXPECT_EQ(capturing_tab.ReadCaptureHandle(), kNoCaptureHandle);
 }
 
+// TODO(crbug/1248619): Disabled because of flakiness.
 IN_PROC_BROWSER_TEST_F(CaptureHandleBrowserTest,
-                       IncognitoTabCannotReadRegularTabCaptureHandle) {
+                       DISABLED_IncognitoTabCannotReadRegularTabCaptureHandle) {
   TabInfo captured_tab =
       SetUpCapturedPage(/*expose_origin=*/true, "handle", {"*"},
                         /*self_capture=*/false, BrowserType::kRegular);

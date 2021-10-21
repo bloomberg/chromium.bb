@@ -20,6 +20,8 @@
 #include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/linux/test/mock_gbm_device.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/overlay_plane_data.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
@@ -73,23 +75,6 @@ class FakeGLImageNativePixmap : public gl::GLImageEGL {
 
   // Overridden from GLImage:
   void Flush() override {}
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                            int z_order,
-                            gfx::OverlayTransform transform,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
-    // The GLImage must be set busy as it has been scheduled before when
-    // GbmSurfacelessWayland::ScheduleOverlayPlane was called.
-    DCHECK(busy_);
-    std::vector<gfx::GpuFence> acquire_fences;
-    if (gpu_fence)
-      acquire_fences.push_back(std::move(*gpu_fence));
-    return pixmap_->ScheduleOverlayPlane(
-        widget, z_order, transform, bounds_rect, crop_rect, enable_blend,
-        gfx::Rect(pixmap_->GetBufferSize()), 1.0f, std::move(acquire_fences), {});
-  }
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override {
     return pixmap_;
   }
@@ -179,6 +164,11 @@ class CallbacksHelper {
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
   WaylandSurfaceFactoryTest() = default;
+
+  WaylandSurfaceFactoryTest(const WaylandSurfaceFactoryTest&) = delete;
+  WaylandSurfaceFactoryTest& operator=(const WaylandSurfaceFactoryTest&) =
+      delete;
+
   ~WaylandSurfaceFactoryTest() override = default;
 
   void SetUp() override {
@@ -187,6 +177,9 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
             {gfx::BufferFormat::BGRA_8888, {DRM_FORMAT_MOD_LINEAR}}};
 
     WaylandTest::SetUp();
+
+    window_->set_update_visual_size_immediately(false);
+    window_->set_apply_pending_state_on_update_visual_size(false);
 
     auto manager_ptr = connection_->buffer_manager_host()->BindInterface();
     buffer_manager_gpu_->Initialize(std::move(manager_ptr),
@@ -213,9 +206,6 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
 
     return canvas;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactoryTest);
 };
 
 TEST_P(WaylandSurfaceFactoryTest,
@@ -279,9 +269,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[0].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[0].get(), nullptr,
+        gfx::OverlayPlaneData(0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     std::vector<scoped_refptr<FakeGLImageNativePixmap>> gl_images;
     gl_images.push_back(fake_gl_image[0]);
@@ -343,9 +335,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[1].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[1].get(), nullptr,
+        gfx::OverlayPlaneData(0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     std::vector<scoped_refptr<FakeGLImageNativePixmap>> gl_images;
     gl_images.push_back(fake_gl_image[1]);
@@ -395,9 +389,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        -1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[2].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[2].get(), nullptr,
+        gfx::OverlayPlaneData(-1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     // Associate the image with the next swap id so that we can easily track if
     // it became free to reuse.
@@ -407,9 +403,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[3].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[3].get(), nullptr,
+        gfx::OverlayPlaneData(1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     std::vector<scoped_refptr<FakeGLImageNativePixmap>> gl_images;
     gl_images.push_back(fake_gl_image[2]);
@@ -533,9 +531,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[0].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[0].get(), nullptr,
+        gfx::OverlayPlaneData(0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     // Associate the image with the next swap id so that we can easily track if
     // it became free to reuse.
@@ -545,9 +545,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[1].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[1].get(), nullptr,
+        gfx::OverlayPlaneData(1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     std::vector<scoped_refptr<FakeGLImageNativePixmap>> gl_images;
     gl_images.push_back(fake_gl_image[0]);
@@ -613,9 +615,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[2].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[2].get(), nullptr,
+        gfx::OverlayPlaneData(0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     // Associate the image with the next swap id so that we can easily track if
     // it became free to reuse.
@@ -625,9 +629,11 @@ TEST_P(WaylandSurfaceFactoryTest,
 
     // Prepare overlay plane.
     gl_surface->ScheduleOverlayPlane(
-        1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
-        fake_gl_image[3].get(), window_->GetBounds(), {}, false,
-        gfx::Rect(window_->GetBounds().size()), 1.0f, nullptr);
+        fake_gl_image[3].get(), nullptr,
+        gfx::OverlayPlaneData(1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+                              window_->GetBounds(), {}, false,
+                              gfx::Rect(window_->GetBounds().size()), 1.0f,
+                              gfx::OverlayPriorityHint::kNone));
 
     std::vector<scoped_refptr<FakeGLImageNativePixmap>> gl_images;
     gl_images.push_back(fake_gl_image[2]);
@@ -743,6 +749,10 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
     ASSERT_TRUE(buffer);
     EXPECT_EQ(wl_shm_buffer_get_width(buffer), bounds_px.width());
     EXPECT_EQ(wl_shm_buffer_get_height(buffer), bounds_px.height());
+
+    // Release the buffer immediately as the test always attaches the same
+    // buffer.
+    surface_->ReleaseBufferFenced(buffer_resource, {});
 
     surface_->SendFrameCallback();
 

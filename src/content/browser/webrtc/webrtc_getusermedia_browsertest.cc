@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -511,14 +512,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ASSERT_EQ("w=640:h=480",
             ExecuteJavascriptAndReturnResult(gum_with_vga_constraints));
 }
-
-#if defined(OS_ANDROID) && defined(NDEBUG)
-#define MAYBE_TraceVideoCaptureControllerPerformanceDuringGetUserMedia \
-  DISABLED_TraceVideoCaptureControllerPerformanceDuringGetUserMedia
-#else
-#define MAYBE_TraceVideoCaptureControllerPerformanceDuringGetUserMedia \
-  TraceVideoCaptureControllerPerformanceDuringGetUserMedia
-#endif
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,

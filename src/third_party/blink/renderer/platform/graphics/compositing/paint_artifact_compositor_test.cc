@@ -64,7 +64,7 @@ class MockScrollCallbacks : public CompositorScrollCallbacks {
  public:
   MOCK_METHOD3(DidCompositorScroll,
                void(CompositorElementId,
-                    const gfx::ScrollOffset&,
+                    const gfx::Vector2dF&,
                     const absl::optional<cc::TargetSnapAreaElementIds>&));
   MOCK_METHOD2(DidChangeScrollbarsHidden, void(CompositorElementId, bool));
 
@@ -836,7 +836,7 @@ TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
   for (auto it = clips.rbegin(); it != clips.rend(); ++it) {
     const ClipPaintPropertyNode* paint_clip_node = it->get();
     EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clip_node->clip_type);
-    EXPECT_EQ(paint_clip_node->UnsnappedClipRect().Rect(), clip_node->clip);
+    EXPECT_EQ(paint_clip_node->PaintClipRect().Rect(), clip_node->clip);
     clip_node = GetPropertyTrees().clip_tree.Node(clip_node->parent_id);
   }
 }
@@ -1020,8 +1020,8 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
 // Returns a ScrollPaintPropertyNode::State with some arbitrary values.
 static ScrollPaintPropertyNode::State ScrollState1() {
   ScrollPaintPropertyNode::State state;
-  state.container_rect = IntRect(3, 5, 11, 13);
-  state.contents_size = IntSize(27, 31);
+  state.container_rect = gfx::Rect(3, 5, 11, 13);
+  state.contents_size = gfx::Size(27, 31);
   state.user_scrollable_horizontal = true;
   return state;
 }
@@ -1029,8 +1029,8 @@ static ScrollPaintPropertyNode::State ScrollState1() {
 // Returns a ScrollPaintPropertyNode::State with another set arbitrary values.
 static ScrollPaintPropertyNode::State ScrollState2() {
   ScrollPaintPropertyNode::State state;
-  state.container_rect = IntRect(0, 0, 19, 23);
-  state.contents_size = IntSize(29, 31);
+  state.container_rect = gfx::Rect(0, 0, 19, 23);
+  state.contents_size = gfx::Size(29, 31);
   state.user_scrollable_horizontal = true;
   return state;
 }
@@ -1050,10 +1050,8 @@ static scoped_refptr<ScrollPaintPropertyNode> CreateScroll(
 static void CheckCcScrollNode(const ScrollPaintPropertyNode& blink_scroll,
                               const cc::ScrollNode& cc_scroll) {
   EXPECT_TRUE(cc_scroll.scrollable);
-  EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContainerRect().Size()),
-            cc_scroll.container_bounds);
-  EXPECT_EQ(static_cast<gfx::Size>(blink_scroll.ContentsSize()),
-            cc_scroll.bounds);
+  EXPECT_EQ(blink_scroll.ContainerRect().size(), cc_scroll.container_bounds);
+  EXPECT_EQ(blink_scroll.ContentsSize(), cc_scroll.bounds);
   EXPECT_EQ(blink_scroll.UserScrollableHorizontal(),
             cc_scroll.user_scrollable_horizontal);
   EXPECT_EQ(blink_scroll.UserScrollableVertical(),
@@ -1091,7 +1089,7 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNodeComposited) {
   const cc::TransformNode& transform_node =
       *transform_tree.Node(scroll_node.transform_id);
   EXPECT_TRUE(transform_node.local.IsIdentity());
-  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node.scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-7, -9), transform_node.scroll_offset);
   EXPECT_EQ(kNotScrollingOnMain, scroll_node.main_thread_scrolling_reasons);
 
   auto* layer = NonScrollableLayerAt(0);
@@ -1116,10 +1114,10 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNodeComposited) {
 
   absl::optional<cc::TargetSnapAreaElementIds> targets;
   EXPECT_CALL(ScrollCallbacks(),
-              DidCompositorScroll(scroll_node.element_id,
-                                  gfx::ScrollOffset(1, 2), targets));
+              DidCompositorScroll(scroll_node.element_id, gfx::Vector2dF(1, 2),
+                                  targets));
   GetPropertyTrees().scroll_tree.NotifyDidCompositorScroll(
-      scroll_node.element_id, gfx::ScrollOffset(1, 2), targets);
+      scroll_node.element_id, gfx::Vector2dF(1, 2), targets);
 
   EXPECT_CALL(ScrollCallbacks(),
               DidChangeScrollbarsHidden(scroll_node.element_id, true));
@@ -1230,7 +1228,7 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
   const cc::TransformNode& transform_node_a =
       *transform_tree.Node(scroll_node_a.transform_id);
   EXPECT_TRUE(transform_node_a.local.IsIdentity());
-  EXPECT_EQ(gfx::ScrollOffset(-11, -13), transform_node_a.scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-11, -13), transform_node_a.scroll_offset);
 
   const cc::ScrollNode& scroll_node_b = *scroll_tree.Node(3);
   CheckCcScrollNode(*scroll_b, scroll_node_b);
@@ -1241,7 +1239,7 @@ TEST_P(PaintArtifactCompositorTest, NestedScrollNodes) {
   const cc::TransformNode& transform_node_b =
       *transform_tree.Node(scroll_node_b.transform_id);
   EXPECT_TRUE(transform_node_b.local.IsIdentity());
-  EXPECT_EQ(gfx::ScrollOffset(-37, -41), transform_node_b.scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-37, -41), transform_node_b.scroll_offset);
 }
 
 TEST_P(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
@@ -1379,7 +1377,7 @@ TEST_P(PaintArtifactCompositorTest, AncestorScrollNodes) {
   const cc::TransformNode& transform_node_a =
       *transform_tree.Node(scroll_node_a.transform_id);
   EXPECT_TRUE(transform_node_a.local.IsIdentity());
-  EXPECT_EQ(gfx::ScrollOffset(-11, -13), transform_node_a.scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-11, -13), transform_node_a.scroll_offset);
 }
 
 TEST_P(PaintArtifactCompositorTest, MergeSimpleChunks) {
@@ -3854,8 +3852,8 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
   // Create a viewport scroll node with container size 20x10 and contents size
   // 27x32.
   ScrollPaintPropertyNode::State scroll_state;
-  scroll_state.container_rect = IntRect(5, 5, 20, 10);
-  scroll_state.contents_size = IntSize(27, 32);
+  scroll_state.container_rect = gfx::Rect(5, 5, 20, 10);
+  scroll_state.contents_size = gfx::Size(27, 32);
   scroll_state.user_scrollable_vertical = true;
   scroll_state.max_scroll_offset_affected_by_page_scale = true;
   scroll_state.compositor_element_id = ScrollElementId(2);
@@ -3880,7 +3878,7 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
   // The max scroll offset should be scaled by the page scale factor (see:
   // |ScrollTree::MaxScrollOffset|). This adjustment scales the contents from
   // 27x32 to 54x64 so the max scroll offset becomes (54-20)/2 x (64-10)/2.
-  EXPECT_EQ(gfx::ScrollOffset(17, 27), max_scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(17, 27), max_scroll_offset);
 }
 
 enum {
@@ -4319,13 +4317,19 @@ TEST_P(PaintArtifactCompositorTest,
   EXPECT_EQ(cc_effect->clip_id, cc_clip->parent_id);
 }
 
+static TransformPaintPropertyNode::State Transform3dState(
+    TransformPaintPropertyNode::TransformAndOrigin&& transform) {
+  TransformPaintPropertyNode::State state{std::move(transform)};
+  state.direct_compositing_reasons = CompositingReason::k3DTransform;
+  return state;
+}
+
 TEST_P(PaintArtifactCompositorTest, TransformChange) {
   auto t1 = Create2DTranslation(t0(), 10, 20);
-  TransformPaintPropertyNode::State t2_state{TransformationMatrix().Rotate(45)};
-  t2_state.direct_compositing_reasons = CompositingReason::k3DTransform;
-  auto t2 = TransformPaintPropertyNode::Create(*t1, std::move(t2_state));
-
-  FakeDisplayItemClient client;
+  auto t2 = TransformPaintPropertyNode::Create(
+      *t1, Transform3dState(TransformationMatrix().Rotate(45)));
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
   client.Validate();
   Update(TestPaintArtifact()
              .Chunk(1)
@@ -4339,7 +4343,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   // Change t1 but not t2.
   layer->ClearSubtreePropertyChangedForTesting();
   t2->ClearChangedToRoot();
-  t1->Update(t0(), TransformPaintPropertyNode::State{FloatSize(20, 30)});
+  t1->Update(t0(), TransformPaintPropertyNode::State{gfx::Vector2dF(20, 30)});
   EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
             t1->NodeChanged());
   EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t2->NodeChanged());
@@ -4353,7 +4357,6 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   ASSERT_EQ(layer, LayerAt(0));
   EXPECT_EQ(display_item_list.get(),
             layer->client()->PaintContentsToDisplayList().get());
-  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(layer->subtree_property_changed());
   // This is set by cc when propagating ancestor change flag to descendants.
   EXPECT_TRUE(GetTransformNode(layer).transform_changed);
@@ -4365,8 +4368,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   // Change t2 but not t1.
   layer->ClearSubtreePropertyChangedForTesting();
   t2->ClearChangedToRoot();
-  t2_state.transform_and_origin = TransformationMatrix().Rotate(135);
-  t2->Update(*t1, std::move(t2_state));
+  t2->Update(*t1, Transform3dState(TransformationMatrix().Rotate(135)));
   EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t1->NodeChanged());
   EXPECT_EQ(PaintPropertyChangeType::kChangedOnlySimpleValues,
             t2->NodeChanged());
@@ -4380,7 +4382,6 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   ASSERT_EQ(layer, LayerAt(0));
   EXPECT_EQ(display_item_list.get(),
             layer->client()->PaintContentsToDisplayList().get());
-  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(layer->subtree_property_changed());
   EXPECT_TRUE(GetTransformNode(layer).transform_changed);
   EXPECT_FALSE(GetPropertyTrees()
@@ -4390,8 +4391,7 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   // Change t2 to be 2d translation which will be decomposited.
   layer->ClearSubtreePropertyChangedForTesting();
   t2->ClearChangedToRoot();
-  t2_state.transform_and_origin = FloatSize(20, 30);
-  t2->Update(*t1, std::move(t2_state));
+  t2->Update(*t1, Transform3dState(gfx::Vector2dF(20, 30)));
   EXPECT_EQ(PaintPropertyChangeType::kUnchanged, t1->NodeChanged());
   EXPECT_EQ(PaintPropertyChangeType::kChangedOnlyValues, t2->NodeChanged());
   Update(TestPaintArtifact()
@@ -4513,9 +4513,9 @@ TEST_P(PaintArtifactCompositorTest, DirectlySetScrollOffset) {
   EXPECT_EQ(scroll_element_id, scroll_node->element_id);
   EXPECT_EQ(scroll_element_id, scroll_layer->element_id());
   EXPECT_EQ(scroll_node->id, scroll_layer->scroll_tree_index());
-  EXPECT_EQ(gfx::ScrollOffset(-7, -9),
+  EXPECT_EQ(gfx::Vector2dF(-7, -9),
             scroll_tree.current_scroll_offset(scroll_element_id));
-  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node->scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-7, -9), transform_node->scroll_offset);
 
   auto& host = GetLayerTreeHost();
   host.CompositeForTest(base::TimeTicks::Now(), true);
@@ -4527,10 +4527,10 @@ TEST_P(PaintArtifactCompositorTest, DirectlySetScrollOffset) {
       scroll_element_id, FloatPoint(-10, -20)));
   EXPECT_TRUE(host.LayersThatShouldPushProperties().contains(scroll_layer));
   EXPECT_TRUE(host.proxy()->CommitRequested());
-  EXPECT_EQ(gfx::ScrollOffset(-10, -20),
+  EXPECT_EQ(gfx::Vector2dF(-10, -20),
             scroll_tree.current_scroll_offset(scroll_element_id));
   // DirectlySetScrollOffset doesn't update transform node.
-  EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node->scroll_offset);
+  EXPECT_EQ(gfx::Vector2dF(-7, -9), transform_node->scroll_offset);
   EXPECT_FALSE(transform_tree.needs_update());
 }
 
@@ -4566,13 +4566,13 @@ TEST_P(PaintArtifactCompositorTest, PreCompositedLayerNonCompositedScrolling) {
   FakeGraphicsLayerClient client;
   GraphicsLayer graphics_layer(client);
   auto parent_scroll_translation = CreateScrollTranslation(
-      t0(), 10, 20, IntRect(0, 0, 100, 100), IntSize(200, 200),
+      t0(), 10, 20, gfx::Rect(0, 0, 100, 100), gfx::Size(200, 200),
       CompositingReason::kRootScroller);
   PropertyTreeState layer_state(*parent_scroll_translation, c0(), e0());
   graphics_layer.SetLayerState(layer_state, IntPoint());
   auto scroll_translation = CreateScrollTranslation(
-      *parent_scroll_translation, 10, 20, IntRect(0, 0, 150, 150),
-      IntSize(200, 200), CompositingReason::kNone);
+      *parent_scroll_translation, 10, 20, gfx::Rect(0, 0, 150, 150),
+      gfx::Size(200, 200), CompositingReason::kNone);
 
   TestPaintArtifact artifact;
   CreateScrollableChunk(artifact, *scroll_translation, c0(), e0());

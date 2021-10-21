@@ -26,7 +26,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/origin.h"
 
 namespace storage {
 
@@ -39,15 +38,6 @@ static const FileSystemType kTemporaryAndPersistent[] = {
 static const FileSystemType kTemporary[] = {kFileSystemTypeTemporary};
 static const FileSystemType kPersistent[] = {kFileSystemTypePersistent};
 static const FileSystemType kSyncable[] = {kFileSystemTypeSyncable};
-
-std::vector<blink::StorageKey> ToStorageKeys(
-    const std::vector<url::Origin>& origins) {
-  std::vector<blink::StorageKey> storage_keys;
-  storage_keys.reserve(origins.size());
-  for (const url::Origin& origin : origins)
-    storage_keys.emplace_back(blink::StorageKey(origin));
-  return storage_keys;
-}
 
 template <typename T>
 std::vector<T> MergeWithoutDuplicates(const std::vector<std::vector<T>>& tss) {
@@ -99,7 +89,7 @@ std::vector<blink::StorageKey> GetStorageKeysForTypeOnFileTaskRunner(
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return {};
-  return ToStorageKeys(quota_util->GetOriginsForTypeOnFileTaskRunner(type));
+  return quota_util->GetStorageKeysForTypeOnFileTaskRunner(type);
 }
 
 std::vector<blink::StorageKey> GetStorageKeysForHostOnFileTaskRunner(
@@ -109,8 +99,7 @@ std::vector<blink::StorageKey> GetStorageKeysForHostOnFileTaskRunner(
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return {};
-  return ToStorageKeys(
-      quota_util->GetOriginsForHostOnFileTaskRunner(type, host));
+  return quota_util->GetStorageKeysForHostOnFileTaskRunner(type, host);
 }
 
 blink::mojom::QuotaStatusCode DeleteStorageKeyOnFileTaskRunner(
@@ -121,8 +110,8 @@ blink::mojom::QuotaStatusCode DeleteStorageKeyOnFileTaskRunner(
   if (!provider || !provider->GetQuotaUtil())
     return blink::mojom::QuotaStatusCode::kErrorNotSupported;
   base::File::Error result =
-      provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
-          context, context->quota_manager_proxy(), storage_key.origin(), type);
+      provider->GetQuotaUtil()->DeleteStorageKeyDataOnFileTaskRunner(
+          context, context->quota_manager_proxy(), storage_key, type);
   if (result == base::File::FILE_OK)
     return blink::mojom::QuotaStatusCode::kOk;
   return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
@@ -173,10 +162,10 @@ void FileSystemQuotaClient::GetStorageKeyUsage(
       file_task_runner()->PostTaskAndReplyWithResult(
           FROM_HERE,
           // It is safe to pass Unretained(quota_util) since context owns it.
-          base::BindOnce(&FileSystemQuotaUtil::GetOriginUsageOnFileTaskRunner,
-                         base::Unretained(quota_util),
-                         base::RetainedRef(file_system_context_),
-                         storage_key.origin(), type),
+          base::BindOnce(
+              &FileSystemQuotaUtil::GetStorageKeyUsageOnFileTaskRunner,
+              base::Unretained(quota_util),
+              base::RetainedRef(file_system_context_), storage_key, type),
           barrier);
     } else {
       barrier.Run(0);

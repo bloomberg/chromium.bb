@@ -109,6 +109,22 @@ def CheckChangeWasUploaded(input_api, output_api):
   return []
 
 
+def CheckDescriptionUsesColonInsteadOfEquals(input_api, output_api):
+  """Checks that the CL description uses a colon after 'Bug' and 'Fixed' tags
+  instead of equals.
+
+  crbug.com only interprets the lines "Bug: xyz" and "Fixed: xyz" but not
+  "Bug=xyz" or "Fixed=xyz".
+  """
+  text = input_api.change.DescriptionText()
+  if input_api.re.search(r'^(Bug|Fixed)=',
+                         text,
+                         flags=input_api.re.IGNORECASE
+                         | input_api.re.MULTILINE):
+    return [output_api.PresubmitError('Use Bug:/Fixed: instead of Bug=/Fixed=')]
+  return []
+
+
 ### Content checks
 
 

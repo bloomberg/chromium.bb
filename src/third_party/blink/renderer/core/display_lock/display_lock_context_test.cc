@@ -169,7 +169,7 @@ class DisplayLockContextTest
   }
 
   bool ReattachWasBlocked(DisplayLockContext* context) {
-    return context->reattach_layout_tree_was_blocked_;
+    return context->blocked_child_recalc_change_.ReattachLayoutTree();
   }
 
   const int FAKE_FIND_ID = 1;
@@ -2012,8 +2012,9 @@ class DisplayLockContextRenderingTest
   }
   DisplayLockUtilities::ScopedForcedUpdate GetScopedForcedUpdate(
       const Node* node,
+      DisplayLockContext::ForcedPhase phase,
       bool include_self = false) {
-    return DisplayLockUtilities::ScopedForcedUpdate(node, include_self);
+    return DisplayLockUtilities::ScopedForcedUpdate(node, phase, include_self);
   }
 };
 
@@ -2175,7 +2176,9 @@ TEST_F(DisplayLockContextRenderingTest,
 
   ASSERT_TRUE(lockable->GetDisplayLockContext());
   {
-    auto scope = GetScopedForcedUpdate(lockable, true /* include self */);
+    auto scope = GetScopedForcedUpdate(
+        lockable, DisplayLockContext::ForcedPhase::kPrePaint,
+        true /* include self */);
 
     // The following should not crash/DCHECK.
     UpdateAllLifecyclePhasesForTest();
@@ -2803,7 +2806,9 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_TRUE(new_parent->GetLayoutObject()->NeedsLayout());
 
   {
-    auto scope = GetScopedForcedUpdate(hide, true /* include self */);
+    auto scope =
+        GetScopedForcedUpdate(hide, DisplayLockContext::ForcedPhase::kLayout,
+                              true /* include self */);
 
     // Updating the lifecycle should update target and new_parent, since it is
     // in a locked but forced subtree.
@@ -2994,7 +2999,9 @@ TEST_F(DisplayLockContextPreCAPRenderingTest,
   EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
 
   {
-    auto scope = GetScopedForcedUpdate(hide, true /* include self */);
+    auto scope =
+        GetScopedForcedUpdate(hide, DisplayLockContext::ForcedPhase::kPrePaint,
+                              true /* include self */);
     UpdateAllLifecyclePhasesForTest();
   }
 
@@ -3032,7 +3039,9 @@ TEST_F(DisplayLockContextRenderingTest,
   auto* target = GetDocument().getElementById("target");
   target->classList().Add("backface_hidden");
 
-  auto scope = GetScopedForcedUpdate(hide, true /* include self */);
+  auto scope =
+      GetScopedForcedUpdate(hide, DisplayLockContext::ForcedPhase::kPrePaint,
+                            true /* include self */);
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*target));
 }
 
@@ -3541,4 +3550,26 @@ TEST_F(DisplayLockContextTest, CullRectUpdate) {
             target->FirstFragment().GetCullRect().Rect());
 }
 
+TEST_F(DisplayLockContextTest, DisconnectedElementIsUnlocked) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .locked { content-visibility: hidden; }
+    </style>
+    <div id="container" class="locked"></div>
+  )HTML");
+
+  // Check if the result is correct if we update the contents.
+  auto* container = GetDocument().getElementById("container");
+  auto* context = container->GetDisplayLockContext();
+  ASSERT_TRUE(context);
+  EXPECT_TRUE(context->IsLocked());
+  EXPECT_EQ(context->GetState(), EContentVisibility::kHidden);
+
+  container->remove();
+
+  EXPECT_FALSE(container->GetComputedStyle());
+  EXPECT_FALSE(context->IsLocked());
+  EXPECT_EQ(context->GetState(), EContentVisibility::kVisible);
+}
 }  // namespace blink

@@ -981,6 +981,40 @@ namespace dawn_native { namespace d3d12 {
                     break;
                 }
 
+                case Command::SetValidatedBufferLocationsInternal:
+                    DoNextSetValidatedBufferLocationsInternal();
+                    break;
+
+                case Command::WriteBuffer: {
+                    WriteBufferCmd* write = mCommands.NextCommand<WriteBufferCmd>();
+                    const uint64_t offset = write->offset;
+                    const uint64_t size = write->size;
+                    if (size == 0) {
+                        continue;
+                    }
+
+                    Buffer* dstBuffer = ToBackend(write->buffer.Get());
+                    uint8_t* data = mCommands.NextData<uint8_t>(size);
+                    Device* device = ToBackend(GetDevice());
+
+                    UploadHandle uploadHandle;
+                    DAWN_TRY_ASSIGN(uploadHandle, device->GetDynamicUploader()->Allocate(
+                                                      size, device->GetPendingCommandSerial(),
+                                                      kCopyBufferToBufferOffsetAlignment));
+                    ASSERT(uploadHandle.mappedBuffer != nullptr);
+                    memcpy(uploadHandle.mappedBuffer, data, size);
+
+                    DAWN_TRY(dstBuffer->EnsureDataInitializedAsDestination(commandContext, offset,
+                                                                           size));
+                    dstBuffer->TrackUsageAndTransitionNow(commandContext,
+                                                          wgpu::BufferUsage::CopyDst);
+                    commandList->CopyBufferRegion(
+                        dstBuffer->GetD3D12Resource(), offset,
+                        ToBackend(uploadHandle.stagingBuffer)->GetResource(),
+                        uploadHandle.startOffset, size);
+                    break;
+                }
+
                 default:
                     UNREACHABLE();
             }
@@ -1353,14 +1387,16 @@ namespace dawn_native { namespace d3d12 {
 
                 case Command::DrawIndexedIndirect: {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
+                    ASSERT(!draw->indirectBufferLocation->IsNull());
 
                     DAWN_TRY(bindingTracker->Apply(commandContext));
                     vertexBufferTracker.Apply(commandList, lastPipeline);
-                    Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
+                    Buffer* buffer = ToBackend(draw->indirectBufferLocation->GetBuffer());
                     ComPtr<ID3D12CommandSignature> signature =
                         ToBackend(GetDevice())->GetDrawIndexedIndirectSignature();
                     commandList->ExecuteIndirect(signature.Get(), 1, buffer->GetD3D12Resource(),
-                                                 draw->indirectOffset, nullptr, 0);
+                                                 draw->indirectBufferLocation->GetOffset(), nullptr,
+                                                 0);
                     break;
                 }
 

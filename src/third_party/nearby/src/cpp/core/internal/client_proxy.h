@@ -16,15 +16,18 @@
 #define CORE_INTERNAL_CLIENT_PROXY_H_
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
+#include "analytics/analytics_recorder.h"
 #include "core/listeners.h"
 #include "core/options.h"
 #include "core/status.h"
 #include "core/strategy.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/cancellation_flag.h"
+#include "platform/base/error_code_recorder.h"
 #include "platform/base/prng.h"
 #include "platform/public/cancelable_alarm.h"
 #include "platform/public/mutex.h"
@@ -46,7 +49,7 @@ class ClientProxy final {
   static constexpr absl::Duration
       kHighPowerAdvertisementEndpointIdCacheTimeout = absl::Seconds(30);
 
-  ClientProxy();
+  explicit ClientProxy(analytics::EventLogger* event_logger = nullptr);
   ~ClientProxy();
   ClientProxy(ClientProxy&&) = default;
   ClientProxy& operator=(ClientProxy&&) = default;
@@ -54,6 +57,12 @@ class ClientProxy final {
   std::int64_t GetClientId() const;
 
   std::string GetLocalEndpointId();
+
+  analytics::AnalyticsRecorder& GetAnalyticsRecorder() const {
+    return *analytics_recorder_;
+  }
+
+  std::string GetConnectionToken(const std::string& endpoint_id);
 
   // Clears all the runtime state of this client.
   void Reset();
@@ -98,7 +107,8 @@ class ClientProxy final {
   void OnConnectionInitiated(const std::string& endpoint_id,
                              const ConnectionResponseInfo& info,
                              const ConnectionOptions& options,
-                             const ConnectionListener& listener);
+                             const ConnectionListener& listener,
+                             const std::string& connection_token);
 
   // Proxies to the client's ConnectionListener::OnAccepted() callback.
   void OnConnectionAccepted(const std::string& endpoint_id);
@@ -205,6 +215,7 @@ class ClientProxy final {
     ConnectionListener connection_listener;
     PayloadListener payload_listener;
     ConnectionOptions connection_options;
+    std::string connection_token;
   };
 
   struct AdvertisingInfo {
@@ -298,6 +309,11 @@ class ClientProxy final {
   // A default cancellation flag with isCancelled set be true.
   std::unique_ptr<CancellationFlag> default_cancellation_flag_ =
       std::make_unique<CancellationFlag>(true);
+
+  // An analytics logger with |EventLogger| provided by client, which is default
+  // nullptr as no-op.
+  std::unique_ptr<analytics::AnalyticsRecorder> analytics_recorder_;
+  std::unique_ptr<ErrorCodeRecorder> error_code_recorder_;
 };
 
 }  // namespace connections

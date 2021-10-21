@@ -30,11 +30,19 @@ enum MessageType {
   SHOW_NOTIFICATION_ACCESS_SETUP_RESPONSE = 14;
   FETCH_CAMERA_ROLL_ITEMS_REQUEST = 15;
   FETCH_CAMERA_ROLL_ITEMS_RESPONSE = 16;
+  FETCH_CAMERA_ROLL_ITEM_DATA_REQUEST = 17;
+  FETCH_CAMERA_ROLL_ITEM_DATA_RESPONSE = 18;
+  INITIATE_CAMERA_ROLL_ITEM_TRANSFER_REQUEST = 19;
 }
 
 enum NotificationSetting {
   NOTIFICATIONS_OFF = 0;
   NOTIFICATIONS_ON = 1;
+}
+
+enum CameraRollSetting {
+  CAMERA_ROLL_OFF = 0;
+  CAMERA_ROLL_ON = 1;
 }
 
 enum ChargingState {
@@ -159,6 +167,7 @@ message App {
 
 message CrosState {
   NotificationSetting notification_setting = 1;
+  CameraRollSetting camera_roll_setting = 2;
 }
 
 message Action {
@@ -242,12 +251,16 @@ message ShowNotificationAccessSetupRequest {}
 
 message ShowNotificationAccessSetupResponse {}
 
+// When adding new fields to this message, update CameraRollItem#operator==
+// Located in /chromeos/components/phonehub/camera_roll_item.cc
 message CameraRollItemMetadata {
   // A unique and stable identifier for camera roll items on the Android device.
   string key = 1;
+  string file_name = 5;
   string mime_type = 2;
   int64 last_modified_millis = 3;
   int64 file_size_bytes = 4;
+  // Next ID: 6
 }
 
 // Contains data needed to display the thumbnail of a camera roll item.
@@ -292,7 +305,9 @@ message FetchCameraRollItemDataRequest {
   CameraRollItemMetadata metadata = 1;
 }
 
+// Next ID: 4
 message FetchCameraRollItemDataResponse {
+  CameraRollItemMetadata metadata = 3;
   enum FileAvailability {
     UNKNOWN = 0;
     AVAILABLE = 1;

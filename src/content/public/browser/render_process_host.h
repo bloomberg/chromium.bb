@@ -387,7 +387,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // "Keep alive ref count" represents the number of the customers of this
   // render process who wish the renderer process to be alive. While the ref
   // count is positive, |this| object will keep the renderer process alive,
-  // unless DisableRefCounts() is called.
+  // unless DisableRefCounts() is called. |handle_id| is a unique identifier
+  // associated with each keep-alive request.
+  // TODO(wjmaclean): Remove |handle_id| once the causes behind
+  // https://crbug.com/1148542 are known.
   //
   // Here is the list of users:
   //  - Keepalive request (if the KeepAliveRendererForKeepaliveRequests
@@ -402,8 +405,23 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //  - Process reuse timer (experimental):
   //    Keeps the process alive for a set period of time in case it can be
   //    reused for the same site. See https://crbug.com/894253.
-  virtual void IncrementKeepAliveRefCount() = 0;
-  virtual void DecrementKeepAliveRefCount() = 0;
+  virtual void IncrementKeepAliveRefCount(uint64_t handle_id) = 0;
+  virtual void DecrementKeepAliveRefCount(uint64_t handle_id) = 0;
+  // Returns a list of durations for active KeepAlive requests.
+  // For debugging only. TODO(wjmaclean): Remove once the causes behind
+  // https://crbug.com/1148542 are known.
+  virtual std::string GetKeepAliveDurations() const = 0;
+
+  // Returns the number of active Shutdown-Delay requests.
+  // For debugging only. TODO(wjmaclean): Remove once the causes behind
+  // https://crbug.com/1148542 are known.
+  virtual size_t GetShutdownDelayRefCount() const = 0;
+  // Diagnostic code for https://crbug/1148542. This will be removed prior to
+  // resolving that issue. They're included to allow MockRenderProcessHost to
+  // override them, and should not be called from outside of content/.
+  virtual void IncrementRfhCount() = 0;
+  virtual void DecrementRfhCount() = 0;
+  virtual int GetRfhCount() const = 0;
 
   // "Worker ref count" is similar to "Keep alive ref count", but is specific to
   // workers since they do not have pre-defined timeouts. Also affected by
@@ -513,7 +531,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
           receiver) = 0;
   virtual void BindVideoDecodePerfHistory(

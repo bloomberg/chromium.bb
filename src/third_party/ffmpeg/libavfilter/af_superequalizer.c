@@ -272,27 +272,18 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_FLTP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_set_common_formats(ctx, formats)) < 0)
+    if ((ret = ff_set_common_formats_from_list(ctx, sample_fmts)) < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -335,7 +326,6 @@ static const AVFilterPad superequalizer_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad superequalizer_outputs[] = {
@@ -344,7 +334,6 @@ static const AVFilterPad superequalizer_outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 #define AF AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
@@ -383,6 +372,6 @@ const AVFilter ff_af_superequalizer = {
     .init          = init,
     .activate      = activate,
     .uninit        = uninit,
-    .inputs        = superequalizer_inputs,
-    .outputs       = superequalizer_outputs,
+    FILTER_INPUTS(superequalizer_inputs),
+    FILTER_OUTPUTS(superequalizer_outputs),
 };

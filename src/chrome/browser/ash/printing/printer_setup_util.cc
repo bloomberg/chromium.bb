@@ -20,14 +20,19 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
-#include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/browser/browser_thread.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/printing_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+#include "chrome/browser/printing/print_backend_service_manager.h"
+#endif
+
+namespace ash {
 namespace printing {
 
 namespace {
@@ -85,10 +90,10 @@ void LogPrinterSetup(const chromeos::Printer& printer,
 }
 
 // This runs on a ThreadPoolForegroundWorker and not the UI thread.
-absl::optional<PrinterSemanticCapsAndDefaults>
+absl::optional<::printing::PrinterSemanticCapsAndDefaults>
 FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id,
                                       const std::string& locale) {
-  auto print_backend = PrintBackend::CreateInstance(locale);
+  auto print_backend = ::printing::PrintBackend::CreateInstance(locale);
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -96,9 +101,9 @@ FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id,
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(printer_id));
 
-  auto caps = absl::make_optional<PrinterSemanticCapsAndDefaults>();
+  auto caps = absl::make_optional<::printing::PrinterSemanticCapsAndDefaults>();
   if (print_backend->GetPrinterSemanticCapsAndDefaults(printer_id, &*caps) !=
-      mojom::ResultCode::kSuccess) {
+      ::printing::mojom::ResultCode::kSuccess) {
     // Failed to get capabilities, but proceed to assemble the settings to
     // return what information we do have.
     LOG(WARNING) << "Failed to get capabilities for " << printer_id;
@@ -107,11 +112,12 @@ FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id,
   return caps;
 }
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 void CapabilitiesFetchedFromService(
     const std::string& printer_id,
     bool elevated_privileges,
     GetPrinterCapabilitiesCallback cb,
-    mojom::PrinterSemanticCapsAndDefaultsResultPtr printer_caps) {
+    ::printing::mojom::PrinterSemanticCapsAndDefaultsResultPtr printer_caps) {
   if (printer_caps->is_result_code()) {
     LOG(WARNING) << "Failure fetching printer capabilities from service for "
                  << printer_id << " - error "
@@ -119,11 +125,12 @@ void CapabilitiesFetchedFromService(
 
     // If we failed because of access denied then we could retry at an elevated
     // privilege (if not already elevated).
-    if (printer_caps->get_result_code() == mojom::ResultCode::kAccessDenied &&
+    if (printer_caps->get_result_code() ==
+            ::printing::mojom::ResultCode::kAccessDenied &&
         !elevated_privileges) {
       // Register that this printer requires elevated privileges.
-      PrintBackendServiceManager& service_mgr =
-          PrintBackendServiceManager::GetInstance();
+      ::printing::PrintBackendServiceManager& service_mgr =
+          ::printing::PrintBackendServiceManager::GetInstance();
       service_mgr.SetPrinterDriverRequiresElevatedPrivilege(printer_id);
 
       // Retry the operation which should now happen at a higher privilege
@@ -144,37 +151,42 @@ void CapabilitiesFetchedFromService(
           << printer_id;
   std::move(cb).Run(printer_caps->get_printer_caps());
 }
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 void FetchCapabilities(const std::string& printer_id,
                        GetPrinterCapabilitiesCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  if (base::FeatureList::IsEnabled(
+          ::printing::features::kEnableOopPrintDrivers)) {
     VLOG(1) << "Fetching printer capabilities via service";
-    PrintBackendServiceManager& service_mgr =
-        PrintBackendServiceManager::GetInstance();
+    ::printing::PrintBackendServiceManager& service_mgr =
+        ::printing::PrintBackendServiceManager::GetInstance();
     service_mgr.GetPrinterSemanticCapsAndDefaults(
         printer_id,
         base::BindOnce(
             &CapabilitiesFetchedFromService, printer_id,
             service_mgr.PrinterDriverRequiresElevatedPrivilege(printer_id),
             std::move(cb)));
-  } else {
-    VLOG(1) << "Fetching printer capabilities in-process";
-    // USER_VISIBLE because the result is displayed in the print preview dialog.
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(FetchCapabilitiesOnBlockingTaskRunner, printer_id,
-                       g_browser_process->GetApplicationLocale()),
-        std::move(cb));
+    return;
   }
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
+
+  VLOG(1) << "Fetching printer capabilities in-process";
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(FetchCapabilitiesOnBlockingTaskRunner, printer_id,
+                     g_browser_process->GetApplicationLocale()),
+      std::move(cb));
 }
 
 void OnPrinterInstalled(
     chromeos::CupsPrintersManager* printers_manager,
     const chromeos::Printer& printer,
-    base::OnceCallback<
-        void(const absl::optional<PrinterSemanticCapsAndDefaults>&)> cb,
+    base::OnceCallback<void(
+        const absl::optional<::printing::PrinterSemanticCapsAndDefaults>&)> cb,
     chromeos::PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -214,3 +226,4 @@ void SetUpPrinter(chromeos::CupsPrintersManager* printers_manager,
 }
 
 }  // namespace printing
+}  // namespace ash

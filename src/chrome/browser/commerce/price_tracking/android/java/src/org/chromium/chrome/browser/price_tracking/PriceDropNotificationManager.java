@@ -36,12 +36,14 @@ import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSu
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.SubscriptionManagementType;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.TrackingIdType;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
+import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.subscriptions.SubscriptionsManagerImpl;
 import org.chromium.chrome.browser.tasks.tab_management.PriceTrackingUtilities;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 
+import java.util.Locale;
 /**
  * Manage price drop notifications.
  */
@@ -206,7 +208,14 @@ public class PriceDropNotificationManager {
             subscriptionsManager.unsubscribe(
                     new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK, offerId,
                             SubscriptionManagementType.CHROME_MANAGED, TrackingIdType.OFFER_ID),
-                    (didSucceed) -> { assert didSucceed : "Failed to remove subscriptions."; });
+                    (status) -> {
+                        assert status
+                                == SubscriptionsManager.StatusCode.OK
+                            : "Failed to remove subscriptions.";
+                        Log.e(TAG,
+                                String.format(Locale.US,
+                                        "Failed to remove subscriptions. Status: %d", status));
+                    });
             if (recordMetrics) {
                 NotificationUmaTracker.getInstance().onNotificationActionClick(
                         NotificationUmaTracker.ActionType.PRICE_DROP_TURN_OFF_ALERT,
@@ -214,15 +223,6 @@ public class PriceDropNotificationManager {
                         NotificationIntentInterceptor.INVALID_CREATE_TIME);
             }
         }
-    }
-
-    /**
-     * @See {@link #onNotificationActionClicked(String, String, String, boolean)}.
-     */
-    @Deprecated
-    public void onNotificationActionClicked(String actionId, String url, @Nullable String offerId) {
-        // TODO(xingliu): Change download stream callsite and remove this.
-        onNotificationActionClicked(actionId, url, offerId, /*recordMetrics=*/true);
     }
 
     /**
@@ -261,15 +261,6 @@ public class PriceDropNotificationManager {
             return intent;
         }
         return null;
-    }
-
-    /**
-     * See {@link #getNotificationActionClickIntent(String, String)}, without an offer id.
-     */
-    @Deprecated
-    public Intent getNotificationActionClickIntent(String actionId, String url) {
-        // TODO(xingliu): Make changes in downstream and delete this function. OfferId is needed.
-        return getNotificationActionClickIntent(actionId, url, /*offerId=*/null);
     }
 
     /**

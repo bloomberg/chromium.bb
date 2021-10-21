@@ -34,9 +34,9 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
-#include "ui/gfx/geometry/scroll_offset.h"
-#include "ui/gfx/rrect_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace viz {
 class CopyOutputRequest;
@@ -387,16 +387,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // position of its subtree, as well as other layers for which this layer is
   // their scroll parent, and their subtrees) is moved up by the amount of
   // offset specified here.
-  void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  gfx::ScrollOffset scroll_offset() const {
+  void SetScrollOffset(const gfx::Vector2dF& scroll_offset);
+  gfx::Vector2dF scroll_offset() const {
     return layer_tree_inputs() ? layer_tree_inputs()->scroll_offset
-                               : gfx::ScrollOffset();
+                               : gfx::Vector2dF();
   }
 
   // For layer tree mode only.
   // Called internally during commit to update the layer with state from the
   // compositor thread. Not to be called externally by users of this class.
-  void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
+  void SetScrollOffsetFromImplSide(const gfx::Vector2dF& scroll_offset);
 
   // For layer tree mode only.
   // Marks this layer as being scrollable and needing an associated scroll node,
@@ -465,8 +465,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // main thread in single-thread mode). It may be set to a null callback, in
   // which case nothing is called. This is for layer tree mode only. Should use
   // ScrollTree::SetScrollCallbacks() in layer list mode.
-  void SetDidScrollCallback(base::RepeatingCallback<
-                            void(const gfx::ScrollOffset&, const ElementId&)>);
+  void SetDidScrollCallback(
+      base::RepeatingCallback<void(const gfx::Vector2dF&, const ElementId&)>);
 
   // For layer tree mode only.
   // Sets the given |subtree_id| on this layer, so that the layer subtree rooted
@@ -769,10 +769,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void AddDrawableDescendants(int num);
 
   // For debugging. Returns false if the LayerTreeHost this layer is attached to
-  // is in the process of updating layers for a BeginMainFrame. Layer properties
-  // should be changed by the client before the BeginMainFrame, and should not
-  // be changed while the frame is being generated for commit.
+  // is in the process of updating layers or performing commit for a
+  // BeginMainFrame. Layer properties should be changed by the client before the
+  // BeginMainFrame, and should not be changed while the frame is being
+  // generated or committed.
   bool IsPropertyChangeAllowed() const;
+
+  // For debugging. This is less restrictive than IsPropertyChangeAllowed().
+  // It is intended for layer attributes that can be modified during layer
+  // update, but not during commit.
+  bool IsMutationAllowed() const;
 
   void IncreasePaintCount() {
     if (debug_info_)
@@ -918,7 +924,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     int mirror_count = 0;
 
-    gfx::ScrollOffset scroll_offset;
+    gfx::Vector2dF scroll_offset;
     // Size of the scroll container that this layer scrolls in.
     gfx::Size scroll_container_bounds;
 
@@ -926,7 +932,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     //     top left, top right, bottom right, bottom left
     gfx::RoundedCornersF corner_radii;
 
-    base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
+    base::RepeatingCallback<void(const gfx::Vector2dF&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
   };

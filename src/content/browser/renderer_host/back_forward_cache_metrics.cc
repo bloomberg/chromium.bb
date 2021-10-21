@@ -33,13 +33,13 @@ base::TickClock* g_mock_time_clock_for_testing = nullptr;
 
 // Reduce the resolution of the longer intervals due to privacy considerations.
 base::TimeDelta ClampTime(base::TimeDelta time) {
-  if (time < base::TimeDelta::FromSeconds(5))
-    return base::TimeDelta::FromMilliseconds(time.InMilliseconds());
-  if (time < base::TimeDelta::FromMinutes(3))
-    return base::TimeDelta::FromSeconds(time.InSeconds());
-  if (time < base::TimeDelta::FromHours(3))
-    return base::TimeDelta::FromMinutes(time.InMinutes());
-  return base::TimeDelta::FromHours(time.InHours());
+  if (time < base::Seconds(5))
+    return base::Milliseconds(time.InMilliseconds());
+  if (time < base::Minutes(3))
+    return base::Seconds(time.InSeconds());
+  if (time < base::Hours(3))
+    return base::Minutes(time.InMinutes());
+  return base::Hours(time.InHours());
 }
 
 base::TimeTicks Now() {
@@ -114,9 +114,8 @@ void BackForwardCacheMetrics::MainFrameDidStartNavigationToDocument() {
 void BackForwardCacheMetrics::DidCommitNavigation(
     NavigationRequest* navigation,
     bool back_forward_cache_allowed) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
+  // "Back-forward cache in enabled only for primary frame trees, so we need to
+  // record metrics only for primary main frame navigations".
   if (!navigation->IsInPrimaryMainFrame() || navigation->IsSameDocument())
     return;
 
@@ -247,6 +246,14 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUkm(
         rfh_reason_builder(source_id);
     rfh_reason_builder.SetReason2(MetricValue(reason));
     rfh_reason_builder.Record(ukm::UkmRecorder::Get());
+  }
+
+  for (const uint64_t reason :
+       page_store_result_->disallow_activation_reasons()) {
+    ukm::builders::BackForwardCacheDisallowActivationReason reason_builder(
+        source_id);
+    reason_builder.SetReason(reason);
+    reason_builder.Record(ukm::UkmRecorder::Get());
   }
 }
 
@@ -409,6 +416,14 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
         "BackForwardCache.HistoryNavigationOutcome."
         "DisabledForRenderFrameHostReason2",
         MetricValue(reason));
+  }
+
+  for (const uint64_t reason :
+       page_store_result_->disallow_activation_reasons()) {
+    base::UmaHistogramSparse(
+        "BackForwardCache.HistoryNavigationOutcome."
+        "DisallowActivationReason",
+        reason);
   }
 
   if (!DidSwapBrowsingInstance()) {

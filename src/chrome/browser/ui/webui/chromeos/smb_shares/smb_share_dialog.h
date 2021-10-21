@@ -14,6 +14,9 @@ namespace smb_dialog {
 
 class SmbShareDialog : public SystemWebDialogDelegate {
  public:
+  SmbShareDialog(const SmbShareDialog&) = delete;
+  SmbShareDialog& operator=(const SmbShareDialog&) = delete;
+
   // Shows the dialog.
   static void Show();
 
@@ -24,16 +27,16 @@ class SmbShareDialog : public SystemWebDialogDelegate {
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   bool ShouldShowCloseButton() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(SmbShareDialog);
 };
 
 class SmbShareDialogUI : public ui::WebDialogUI {
  public:
   explicit SmbShareDialogUI(content::WebUI* web_ui);
-  ~SmbShareDialogUI() override;
 
-  DISALLOW_COPY_AND_ASSIGN(SmbShareDialogUI);
+  SmbShareDialogUI(const SmbShareDialogUI&) = delete;
+  SmbShareDialogUI& operator=(const SmbShareDialogUI&) = delete;
+
+  ~SmbShareDialogUI() override;
 };
 
 }  // namespace smb_dialog

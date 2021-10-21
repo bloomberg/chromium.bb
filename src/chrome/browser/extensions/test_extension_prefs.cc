@@ -50,17 +50,18 @@ class TestExtensionPrefs::IncrementalClock : public base::Clock {
  public:
   IncrementalClock() : current_time_(base::Time::Now()) {}
 
+  IncrementalClock(const IncrementalClock&) = delete;
+  IncrementalClock& operator=(const IncrementalClock&) = delete;
+
   ~IncrementalClock() override {}
 
   base::Time Now() const override {
-    current_time_ += base::TimeDelta::FromSeconds(10);
+    current_time_ += base::Seconds(10);
     return current_time_;
   }
 
  private:
   mutable base::Time current_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(IncrementalClock);
 };
 
 TestExtensionPrefs::TestExtensionPrefs(

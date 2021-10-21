@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -375,15 +376,20 @@ TEST(ParsedCookieTest, EnforceSizeConstraintsLegacy) {
   base::test::ScopedFeatureList scope_feature_list;
   scope_feature_list.InitWithFeatureState(features::kExtraCookieValidityChecks,
                                           false);
+  CookieInclusionStatus status;
 
   std::string maxstr;
   maxstr.resize(ParsedCookie::kMaxCookieSize, 'a');
 
-  ParsedCookie pc1(maxstr);
+  ParsedCookie pc1(maxstr, &status);
   EXPECT_TRUE(pc1.IsValid());
+  EXPECT_TRUE(status.IsInclude());
 
-  ParsedCookie pc2(maxstr + "A");
+  ParsedCookie pc2(maxstr + "A", &status);
   EXPECT_FALSE(pc2.IsValid());
+  EXPECT_TRUE(status.HasOnlyExclusionReason(
+      CookieInclusionStatus::ExclusionReason::
+          EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE));
 }
 
 TEST(ParsedCookieTest, EnforceSizeConstraints) {
@@ -392,6 +398,7 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   base::test::ScopedFeatureList scope_feature_list;
   scope_feature_list.InitWithFeatureState(features::kExtraCookieValidityChecks,
                                           true);
+  CookieInclusionStatus status;
 
   // Create maximum size and one-less-than-maximum size name and value
   // strings for testing.
@@ -409,8 +416,11 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   EXPECT_TRUE(pc2.IsValid());
   EXPECT_EQ(max_name, pc2.Name());
 
-  ParsedCookie pc3(max_name + "X=");
+  ParsedCookie pc3(max_name + "X=", &status);
   EXPECT_FALSE(pc3.IsValid());
+  EXPECT_TRUE(status.HasOnlyExclusionReason(
+      CookieInclusionStatus::ExclusionReason::
+          EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE));
 
   ParsedCookie pc4("=" + max_value);
   EXPECT_TRUE(pc4.IsValid());
@@ -420,8 +430,11 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   EXPECT_TRUE(pc5.IsValid());
   EXPECT_EQ(max_value, pc5.Value());
 
-  ParsedCookie pc6("=" + max_value + "X");
+  ParsedCookie pc6("=" + max_value + "X", &status);
   EXPECT_FALSE(pc6.IsValid());
+  EXPECT_TRUE(status.HasOnlyExclusionReason(
+      CookieInclusionStatus::ExclusionReason::
+          EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE));
 
   ParsedCookie pc7(almost_max_name + "=x");
   EXPECT_TRUE(pc7.IsValid());
@@ -433,8 +446,11 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   EXPECT_EQ(almost_max_name, pc8.Name());
   EXPECT_EQ("x", pc8.Value());
 
-  ParsedCookie pc9(almost_max_name + "=xX");
+  ParsedCookie pc9(almost_max_name + "=xX", &status);
   EXPECT_FALSE(pc9.IsValid());
+  EXPECT_TRUE(status.HasOnlyExclusionReason(
+      CookieInclusionStatus::ExclusionReason::
+          EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE));
 
   ParsedCookie pc10("x=" + almost_max_value);
   EXPECT_TRUE(pc10.IsValid());
@@ -446,8 +462,11 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   EXPECT_EQ("x", pc11.Name());
   EXPECT_EQ(almost_max_value, pc11.Value());
 
-  ParsedCookie pc12("xX=" + almost_max_value);
+  ParsedCookie pc12("xX=" + almost_max_value, &status);
   EXPECT_FALSE(pc12.IsValid());
+  EXPECT_TRUE(status.HasOnlyExclusionReason(
+      CookieInclusionStatus::ExclusionReason::
+          EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE));
 
   // Test attribute value size limits enforced by the constructor.
   std::string almost_max_path(ParsedCookie::kMaxCookieAttributeValueSize - 1,
@@ -460,9 +479,11 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   EXPECT_TRUE(pc20.HasPath());
   EXPECT_EQ("/" + almost_max_path, pc20.Path());
 
-  ParsedCookie pc21("name=value; path=" + too_long_path);
+  ParsedCookie pc21("name=value; path=" + too_long_path, &status);
   EXPECT_TRUE(pc21.IsValid());
   EXPECT_FALSE(pc21.HasPath());
+  EXPECT_TRUE(status.HasWarningReason(
+      CookieInclusionStatus::WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE));
 
   // NOTE: max_domain is based on the max attribute value as defined in
   // RFC6525bis, but this is larger than what is recommended by RFC1123.
@@ -480,6 +501,8 @@ TEST(ParsedCookieTest, EnforceSizeConstraints) {
   ParsedCookie pc31("name=value; domain=" + too_long_domain);
   EXPECT_TRUE(pc31.IsValid());
   EXPECT_FALSE(pc31.HasDomain());
+  EXPECT_TRUE(status.HasWarningReason(
+      CookieInclusionStatus::WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE));
 
   std::string pc40_suffix = "; domain=example.com";
 
@@ -1332,6 +1355,54 @@ TEST(ParsedCookieTest, TruncatedNameOrValue) {
     EXPECT_FALSE(not_truncated_attribute_parsing.IsHttpOnly());
     EXPECT_FALSE(not_truncated_attribute_parsing.HasTruncatedNameOrValue());
   }
+}
+
+TEST(ParsedCookieTest, TruncatingCharInCookieLine) {
+  using std::string_literals::operator""s;
+
+  // Test scenarios where a control char may appear at start, middle and end of
+  // a cookie line. Control char array with NULL (\x0), CR (\xD), LF (xA),
+  // HT (\x9) and BS (\x1B).
+  const struct {
+    const char ctlChar;
+    const TruncatingCharacterInCookieStringType
+        expectedTruncatingCharInCookieStringType;
+  } kTests[] = {
+      {'\x0', TruncatingCharacterInCookieStringType::kTruncatingCharNull},
+      {'\xD', TruncatingCharacterInCookieStringType::kTruncatingCharNewline},
+      {'\xA', TruncatingCharacterInCookieStringType::kTruncatingCharLineFeed},
+      {'\x9', TruncatingCharacterInCookieStringType::kTruncatingCharNone},
+      {'\x1B', TruncatingCharacterInCookieStringType::kTruncatingCharNone}};
+
+  for (const auto& test : kTests) {
+    std::string ctl_string(1, test.ctlChar);
+    std::string ctl_at_start_cookie_string = ctl_string + "foo=bar"s;
+    ParsedCookie ctl_at_start_cookie(ctl_at_start_cookie_string);
+    EXPECT_EQ(ctl_at_start_cookie.GetTruncatingCharacterInCookieStringType(),
+              test.expectedTruncatingCharInCookieStringType);
+
+    std::string ctl_at_middle_cookie_string =
+        "foo=bar;"s + ctl_string + "secure"s;
+    ParsedCookie ctl_at_middle_cookie(ctl_at_start_cookie_string);
+    EXPECT_EQ(ctl_at_middle_cookie.GetTruncatingCharacterInCookieStringType(),
+              test.expectedTruncatingCharInCookieStringType);
+
+    std::string ctl_at_end_cookie_string =
+        "foo=bar;"s + "secure;"s + ctl_string;
+    ParsedCookie ctl_at_end_cookie(ctl_at_start_cookie_string);
+    EXPECT_EQ(ctl_at_end_cookie.GetTruncatingCharacterInCookieStringType(),
+              test.expectedTruncatingCharInCookieStringType);
+  }
+  // Test if there are multiple control characters that terminate.
+  std::string ctls_cookie_string = "foo=bar;\xA\xD"s;
+  ParsedCookie ctls_cookie(ctls_cookie_string);
+  EXPECT_EQ(ctls_cookie.GetTruncatingCharacterInCookieStringType(),
+            TruncatingCharacterInCookieStringType::kTruncatingCharLineFeed);
+  // Test with no control characters.
+  std::string cookie_string = "foo=bar;"s;
+  ParsedCookie cookie(cookie_string);
+  EXPECT_EQ(cookie.GetTruncatingCharacterInCookieStringType(),
+            TruncatingCharacterInCookieStringType::kTruncatingCharNone);
 }
 
 }  // namespace net

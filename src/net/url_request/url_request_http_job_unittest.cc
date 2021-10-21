@@ -27,6 +27,8 @@
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/request_priority.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
@@ -105,6 +107,9 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
                           request->context()->http_user_agent_settings()),
         use_null_source_stream_(false) {}
 
+  TestURLRequestHttpJob(const TestURLRequestHttpJob&) = delete;
+  TestURLRequestHttpJob& operator=(const TestURLRequestHttpJob&) = delete;
+
   ~TestURLRequestHttpJob() override = default;
 
   // URLRequestJob implementation:
@@ -125,8 +130,6 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
 
  private:
   bool use_null_source_stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLRequestHttpJob);
 };
 
 class URLRequestHttpJobSetUpSourceTest : public TestWithTaskEnvironment {
@@ -206,13 +209,14 @@ class URLRequestHttpJobWithProxy {
     context_->Init();
   }
 
+  URLRequestHttpJobWithProxy(const URLRequestHttpJobWithProxy&) = delete;
+  URLRequestHttpJobWithProxy& operator=(const URLRequestHttpJobWithProxy&) =
+      delete;
+
   MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<TestURLRequestContext> context_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(URLRequestHttpJobWithProxy);
 };
 
 // Tests that when proxy is not used, the proxy server is set correctly on the
@@ -255,11 +259,12 @@ TEST_F(URLRequestHttpJobWithProxyTest, TestSuccessfulWithOneProxy) {
       "Accept-Language: en-us,fr\r\n\r\n";
 
   const ProxyServer proxy_server =
-      ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
+      ProxyUriToProxyServer("http://origin.net:80", ProxyServer::SCHEME_HTTP);
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
-          proxy_server.ToPacString(), TRAFFIC_ANNOTATION_FOR_TESTS);
+          ProxyServerToPacResultElement(proxy_server),
+          TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockWrite writes[] = {MockWrite(kSimpleProxyGetMockWrite)};
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET)};
@@ -294,14 +299,13 @@ TEST_F(URLRequestHttpJobWithProxyTest, TestSuccessfulWithOneProxy) {
 TEST_F(URLRequestHttpJobWithProxyTest,
        TestContentLengthSuccessfulRequestWithTwoProxies) {
   const ProxyServer proxy_server =
-      ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
+      ProxyUriToProxyServer("http://origin.net:80", ProxyServer::SCHEME_HTTP);
 
   // Connection to |proxy_server| would fail. Request should be fetched over
   // DIRECT.
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ConfiguredProxyResolutionService::CreateFixedFromPacResult(
-          proxy_server.ToPacString() + "; " +
-              ProxyServer::Direct().ToPacString(),
+          ProxyServerToPacResultElement(proxy_server) + "; DIRECT",
           TRAFFIC_ANNOTATION_FOR_TESTS);
 
   MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
@@ -1239,8 +1243,7 @@ TEST_F(URLRequestHttpJobTest, SetTransactionPriority) {
 TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
   // Setup HSTS state.
   context_.transport_security_state()->AddHSTS(
-      "upgrade.test", base::Time::Now() + base::TimeDelta::FromSeconds(10),
-      true);
+      "upgrade.test", base::Time::Now() + base::Seconds(10), true);
   ASSERT_TRUE(
       context_.transport_security_state()->ShouldUpgradeToSSL("upgrade.test"));
   ASSERT_FALSE(context_.transport_security_state()->ShouldUpgradeToSSL(
@@ -1306,7 +1309,7 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectCallback) {
 
   TestURLRequestContext context;
   context.transport_security_state()->AddHSTS(
-      "127.0.0.1", base::Time::Now() + base::TimeDelta::FromSeconds(10), true);
+      "127.0.0.1", base::Time::Now() + base::Seconds(10), true);
   ASSERT_TRUE(
       context.transport_security_state()->ShouldUpgradeToSSL("127.0.0.1"));
 
@@ -1944,50 +1947,59 @@ INSTANTIATE_TEST_SUITE_P(/* no label */,
 
 TEST_P(PartitionedCookiesURLRequestHttpJobTest, SetPartitionedCookie) {
   EmbeddedTestServer https_test(EmbeddedTestServer::TYPE_HTTPS);
+  https_test.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(https_test.Start());
+
+  TestURLRequestContext context;
+  CookieMonster cookie_monster(nullptr, nullptr);
+  context.set_cookie_store(&cookie_monster);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> req(context.CreateRequest(
+      https_test.GetURL("/set-cookie?__Host-foo=bar;SameSite=None;Secure;Path=/"
+                        ";Partitioned;"),
+      DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+
   const url::Origin kTopFrameOrigin =
       url::Origin::Create(GURL("https://www.toplevelsite.com"));
   const IsolationInfo kTestIsolationInfo =
       IsolationInfo::CreateForInternalRequest(kTopFrameOrigin);
 
-  https_test.AddDefaultHandlers(base::FilePath());
-  ASSERT_TRUE(https_test.Start());
-  TestURLRequestContext context;
-
-  CookieMonster cookie_monster(nullptr, nullptr);
-  context.set_cookie_store(&cookie_monster);
-
-  GURL test_url = https_test.GetURL(
-      "/set-cookie?__Host-foo=bar;SameSite=None;Secure;Path=/;Partitioned;");
-
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request = context.CreateRequest(
-      test_url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  request->set_isolation_info(kTestIsolationInfo);
-  request->Start();
-  ASSERT_TRUE(request->is_pending());
+  req->set_isolation_info(kTestIsolationInfo);
+  req->Start();
+  ASSERT_TRUE(req->is_pending());
   delegate.RunUntilComplete();
 
-  base::RunLoop run_loop;
-  bool partitioned_cookies_enabled = PartitionedCookiesEnabled();
-  cookie_monster.GetAllCookiesAsync(base::BindLambdaForTesting(
-      [&partitioned_cookies_enabled, &run_loop](const CookieList& cookies) {
-        EXPECT_EQ(1u, cookies.size());
-        EXPECT_EQ(partitioned_cookies_enabled, cookies[0].IsPartitioned());
-        if (partitioned_cookies_enabled) {
-          EXPECT_EQ(CookiePartitionKey::FromURLForTesting(
-                        GURL("https://toplevelsite.com")),
-                    cookies[0].PartitionKey().value());
-        } else {
-          EXPECT_FALSE(cookies[0].PartitionKey());
-        }
-        run_loop.Quit();
-      }));
-  run_loop.Run();
+  {  // Test request from the same top-level site.
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_test.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_isolation_info(kTestIsolationInfo);
+    req->Start();
+    delegate.RunUntilComplete();
+    EXPECT_EQ("__Host-foo=bar", delegate.data_received());
+  }
 
-  // TODO(crbug.com/1225444) Test that the cookie is available in a cross-site
-  // context on a different top-level site only when partitioned cookies are
-  // disabled.
+  {  // Test request from a different top-level site.
+    const url::Origin kOtherTopFrameOrigin =
+        url::Origin::Create(GURL("https://www.anothertoplevelsite.com"));
+    const IsolationInfo kOtherTestIsolationInfo =
+        IsolationInfo::CreateForInternalRequest(kOtherTopFrameOrigin);
+
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_test.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &delegate,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_isolation_info(kOtherTestIsolationInfo);
+    req->Start();
+    delegate.RunUntilComplete();
+    if (PartitionedCookiesEnabled()) {
+      EXPECT_EQ("None", delegate.data_received());
+    } else {
+      EXPECT_EQ("__Host-foo=bar", delegate.data_received());
+    }
+  }
 }
 
 }  // namespace net

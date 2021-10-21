@@ -50,6 +50,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
       const absl::optional<std::string>& allow_headers_header,
       const absl::optional<std::string>& max_age_header,
       absl::optional<mojom::CorsError>* detected_error);
+
+  PreflightResult(const PreflightResult&) = delete;
+  PreflightResult& operator=(const PreflightResult&) = delete;
+
   ~PreflightResult();
 
   // Checks if the given |method| is allowed by the CORS-preflight response.
@@ -93,6 +97,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
   // Refers the cache expiry time.
   base::TimeTicks absolute_expiry_time() const { return absolute_expiry_time_; }
 
+  // Create a param for NetLog.
+  base::Value NetLogParams();
+
  protected:
   explicit PreflightResult(const mojom::CredentialsMode credentials_mode);
 
@@ -122,8 +129,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
   bool credentials_;
   base::flat_set<std::string> methods_;
   base::flat_set<std::string> headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreflightResult);
 };
 
 }  // namespace cors

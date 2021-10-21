@@ -24,6 +24,7 @@
 #include "chrome/browser/ash/login/test/scoped_help_app_for_test.h"
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_display_host_common.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
@@ -47,10 +48,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using ::testing::ElementsAre;
-
-namespace chromeos {
+namespace ash {
 namespace {
+
+using ::testing::ElementsAre;
 
 const test::UIPath kEulaWebview = {"oobe-eula-md", "crosEulaFrame"};
 const test::UIPath kAcceptEulaButton = {"oobe-eula-md", "acceptButton"};
@@ -66,6 +67,11 @@ class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
  public:
   explicit WebContentsLoadFinishedWaiter(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
+
+  WebContentsLoadFinishedWaiter(const WebContentsLoadFinishedWaiter&) = delete;
+  WebContentsLoadFinishedWaiter& operator=(
+      const WebContentsLoadFinishedWaiter&) = delete;
+
   ~WebContentsLoadFinishedWaiter() override = default;
 
   void Wait() {
@@ -86,8 +92,6 @@ class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadFinishedWaiter);
 };
 
 // Helper invoked by GuestViewManager::ForEachGuest to collect WebContents of
@@ -104,6 +108,10 @@ bool AddNamedWebContentsToSet(std::set<content::WebContents*>* frame_set,
 class EulaTest : public OobeBaseTest {
  public:
   EulaTest() = default;
+
+  EulaTest(const EulaTest&) = delete;
+  EulaTest& operator=(const EulaTest&) = delete;
+
   ~EulaTest() override = default;
 
   void ShowEulaScreen() {
@@ -112,6 +120,12 @@ class EulaTest : public OobeBaseTest {
   }
 
  protected:
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
+  }
+
   content::WebContents* FindEulaContents() {
     // Tag the Eula webview in use with a unique name.
     constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
@@ -189,9 +203,6 @@ class EulaTest : public OobeBaseTest {
   }
 
   FakeEulaMixin fake_eula_{&mixin_host_, embedded_test_server()};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };
 
 // When testing the offline fallback mechanism, the requests reaching the
@@ -224,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
   WebContentsLoadFinishedWaiter(eula_contents).Wait();
 
   // Wait until the Accept button on the EULA frame becomes enabled.
-  chromeos::test::OobeJS().CreateEnabledWaiter(true, kAcceptEulaButton)->Wait();
+  test::OobeJS().CreateEnabledWaiter(true, kAcceptEulaButton)->Wait();
 
   const std::string webview_contents = test::GetWebViewContents(kEulaWebview);
   EXPECT_TRUE(webview_contents.find(FakeEulaMixin::kFakeOnlineEula) !=
@@ -413,5 +424,4 @@ IN_PROC_BROWSER_TEST_F(EulaTest, SkippedEula) {
 }
 
 }  // namespace
-
-}  // namespace chromeos
+}  // namespace ash

@@ -30,8 +30,8 @@ extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
 extern const base::Feature kPageTextExtraction;
-extern const base::Feature kLoadModelFileForEachExecution;
 extern const base::Feature kPushNotifications;
+extern const base::Feature kOptimizationGuideMetadataValidation;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -187,6 +187,10 @@ bool IsPageContentAnnotationEnabled();
 // Returns the max size that should be requested for a page content text dump.
 uint64_t MaxSizeForPageContentTextDump();
 
+// Returns whether the title should always be annotated instead of a page
+// content text dump.
+bool ShouldAnnotateTitleInsteadOfPageContent();
+
 // Whether we should write content annotations to History Service.
 bool ShouldWriteContentAnnotationsToHistoryService();
 
@@ -207,13 +211,20 @@ bool ShouldExtractRelatedSearches();
 std::vector<optimization_guide::proto::OptimizationTarget>
 GetPageContentModelsToExecute();
 
-// Whether the model files that use |OptimizationTargetModelExecutor| should be
-// loaded for each execution, and then unloaded once complete.
-bool LoadModelFileForEachExecution();
-
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.
 base::TimeDelta GetOnloadDelayForHintsFetching();
+
+// The number of bits used for RAPPOR-style metrics reporting on content
+// annotation models. Must be at least 1 bit.
+int NumBitsForRAPPORMetrics();
+
+// The probability of a bit flip a score with RAPPOR-style metrics reporting.
+// Must be between 0 and 1.
+double NoiseProbabilityForRAPPORMetrics();
+
+// Returns whether the metadata validation fetch feature is host keyed.
+bool ShouldMetadataValidationFetchHostKeyed();
 
 }  // namespace features
 }  // namespace optimization_guide

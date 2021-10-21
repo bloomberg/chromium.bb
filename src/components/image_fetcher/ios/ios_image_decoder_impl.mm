@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#import "base/ios/ios_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
@@ -28,6 +29,10 @@ namespace image_fetcher {
 class IOSImageDecoderImpl : public ImageDecoder {
  public:
   explicit IOSImageDecoderImpl();
+
+  IOSImageDecoderImpl(const IOSImageDecoderImpl&) = delete;
+  IOSImageDecoderImpl& operator=(const IOSImageDecoderImpl&) = delete;
+
   ~IOSImageDecoderImpl() override;
 
   // Note, that |desired_image_frame_size| is not supported
@@ -49,8 +54,6 @@ class IOSImageDecoderImpl : public ImageDecoder {
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is
   // destroyed during WebP decoding.
   base::WeakPtrFactory<IOSImageDecoderImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSImageDecoderImpl);
 };
 
 IOSImageDecoderImpl::IOSImageDecoderImpl() : weak_factory_(this) {
@@ -71,7 +74,10 @@ void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
   // The WebP image format is not supported by iOS natively. Therefore WebP
   // images need to be decoded explicitly,
   NSData* (^decodeBlock)();
-  if (webp_transcode::WebpDecoder::IsWebpImage(image_data)) {
+  // TODO(crbug.com/1129484): Remove once minimum supported version is at least
+  // 14 for all consumers of ios/web_view
+  if (!base::ios::IsRunningOnIOS14OrLater() &&
+      webp_transcode::WebpDecoder::IsWebpImage(image_data)) {
     decodeBlock = ^NSData*() {
       return webp_transcode::WebpDecoder::DecodeWebpImage(data);
     };

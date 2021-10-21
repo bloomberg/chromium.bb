@@ -11,7 +11,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_uninstaller_notification.h"
-#include "chrome/browser/chromeos/vm_starting_observer.h"
+#include "chrome/browser/ash/vm_starting_observer.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
@@ -47,6 +47,10 @@ class PluginVmManagerImpl
   using LaunchPluginVmCallback = base::OnceCallback<void(bool success)>;
 
   explicit PluginVmManagerImpl(Profile* profile);
+
+  PluginVmManagerImpl(const PluginVmManagerImpl&) = delete;
+  PluginVmManagerImpl& operator=(const PluginVmManagerImpl&) = delete;
+
   ~PluginVmManagerImpl() override;
 
   void OnPrimaryUserSessionStarted() override;
@@ -186,8 +190,6 @@ class PluginVmManagerImpl
   bool pending_destroy_disk_image_ = false;
 
   base::WeakPtrFactory<PluginVmManagerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PluginVmManagerImpl);
 };
 
 }  // namespace plugin_vm

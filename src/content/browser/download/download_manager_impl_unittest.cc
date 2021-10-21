@@ -112,6 +112,10 @@ class MockDownloadItemFactory
       public base::SupportsWeakPtr<MockDownloadItemFactory> {
  public:
   MockDownloadItemFactory();
+
+  MockDownloadItemFactory(const MockDownloadItemFactory&) = delete;
+  MockDownloadItemFactory& operator=(const MockDownloadItemFactory&) = delete;
+
   ~MockDownloadItemFactory() override;
 
   // Access to map of created items.
@@ -180,8 +184,6 @@ class MockDownloadItemFactory
   std::map<uint32_t, download::MockDownloadItemImpl*> items_;
   download::DownloadItemImplDelegate item_delegate_;
   bool is_download_persistent_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDownloadItemFactory);
 };
 
 MockDownloadItemFactory::MockDownloadItemFactory()
@@ -410,6 +412,9 @@ class DownloadManagerTest : public testing::Test {
         interrupt_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
         next_download_id_(0) {}
 
+  DownloadManagerTest(const DownloadManagerTest&) = delete;
+  DownloadManagerTest& operator=(const DownloadManagerTest&) = delete;
+
   // We tear down everything in TearDown().
   ~DownloadManagerTest() override {}
 
@@ -587,8 +592,6 @@ class DownloadManagerTest : public testing::Test {
   std::unique_ptr<MockDownloadManagerObserver> observer_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   uint32_t next_download_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);
 };
 
 // Confirm the appropriate invocations occur when you start a download.
@@ -828,7 +831,7 @@ class DownloadManagerWithExpirationTest : public DownloadManagerTest {
 TEST_F(DownloadManagerWithExpirationTest, DeleteExpiredDownload) {
   std::vector<GURL> url_chain;
   url_chain.emplace_back("http://example.com/1.zip");
-  auto expired_start_time = base::Time::Now() - base::TimeDelta::FromDays(10);
+  auto expired_start_time = base::Time::Now() - base::Days(10);
   download::DownloadItem* download_item = CreateDownloadItem(
       expired_start_time, url_chain, download::DownloadItem::INTERRUPTED);
   EXPECT_FALSE(download_item)

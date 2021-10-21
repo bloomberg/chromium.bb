@@ -190,9 +190,6 @@ crbug.com/angleproject/6358 conformance/programs/program-test.html [ Failure ]
 
 crbug.com/1219015 [ win intel ] conformance/textures/misc/video-rotation.html [ Failure ]
 
-crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/video/* [ RetryOnFailure ]
-crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 crbug.com/angleproject/4417 [ win angle-d3d11 ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
 crbug.com/1127867 [ win angle-d3d11 ] conformance2/textures/image_data/tex-3d-rgb565-rgb-unsigned_byte.html [ RetryOnFailure ]
@@ -288,10 +285,17 @@ crbug.com/1159539 [ win amd-0x7340 angle-d3d11 passthrough ] deqp/functional/gle
 
 # Flaky on AMD Win7
 crbug.com/989050 [ angle-d3d11 win7 amd ] conformance2/textures/misc/tex-unpack-params-imagedata.html [ RetryOnFailure ]
+crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/video/* [ RetryOnFailure ]
+crbug.com/1204224 [ win7 angle-d3d11 amd passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1249006 [ win7 angle-d3d11 amd passthrough ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 
 # Win D3D11 / Passthrough / Intel+AMD
 crbug.com/1215624 [ win angle-d3d11 passthrough intel ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/1215624 [ win angle-d3d11 passthrough amd   ] conformance2/textures/video/* [ RetryOnFailure ]
+
+crbug.com/1254375 [ win7 angle-d3d11 amd passthrough ] conformance2/textures/canvas/tex-2d-srgb8-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1254375 [ win7 angle-d3d11 amd passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb9_e5-rgb-half_float.html [ RetryOnFailure ]
+crbug.com/1254375 [ win7 angle-d3d11 amd passthrough ] conformance2/textures/misc/copy-texture-image-webgl-specific.html [ RetryOnFailure ]
 
 ####################
 # Mac failures     #
@@ -456,7 +460,7 @@ crbug.com/1227762 [ bigsur amd-0x6821 angle-disabled no-passthrough skia-rendere
 # Mac Intel
 crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
 crbug.com/678526 [ mac intel ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
-crbug.com/679692 [ mac no-passthrough intel ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
+crbug.com/679692 [ mac intel ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
 crbug.com/641209 [ mac intel ] deqp/functional/gles3/fbomultisample* [ Failure ]
 crbug.com/606074 [ mac intel ] deqp/functional/gles3/texturefiltering/2d_combinations_01.html [ Failure ]
 crbug.com/606074 [ mac intel ] deqp/functional/gles3/texturefiltering/cube_combinations_01.html [ Failure ]
@@ -665,6 +669,9 @@ crbug.com/1152588 [ linux amd-0x7340 ] conformance2/rendering/multisampling-frag
 crbug.com/1152590 [ linux amd-0x7340 no-passthrough ] conformance2/state/gl-get-calls.html [ Failure ]
 crbug.com/1152590 [ linux amd-0x7340 no-passthrough ] deqp/functional/gles3/integerstatequery.html [ Failure ]
 
+# Linux Intel
+crbug.com/1255288 [ linux intel ] conformance/textures/misc/texture-size-limit.html [ Skip ]
+
 ####################
 # Android failures #
 ####################
@@ -725,6 +732,7 @@ crbug.com/695742 [ android qualcomm angle-disabled ] deqp/functional/gles3/multi
 crbug.com/695742 [ android qualcomm angle-disabled ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
 
 # Pixel 4
+crbug.com/1254008 [ android android-pixel-4 angle-opengles passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ RetryOnFailure ]
 crbug.com/1175226 [ android android-pixel-4 angle-opengles passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1175229 [ android android-pixel-4 angle-opengles passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1175229 [ android android-pixel-4 angle-opengles passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ Failure ]
@@ -901,7 +909,6 @@ crbug.com/1219024 [ chromeos chromeos-board-kevin no-passthrough ] conformance/g
 crbug.com/1219024 [ chromeos chromeos-board-kevin no-passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
 crbug.com/1219024 [ chromeos chromeos-board-kevin no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1219024 [ chromeos chromeos-board-kevin no-passthrough ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
-crbug.com/1219055 [ chromeos chromeos-board-kevin no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/1219057 [ chromeos chromeos-board-kevin no-passthrough ] conformance2/buffers/uniform-buffers.html [ Failure ]
 crbug.com/1212917 [ chromeos chromeos-board-kevin no-passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
 crbug.com/1212917 [ chromeos chromeos-board-kevin no-passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]

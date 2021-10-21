@@ -19,6 +19,7 @@ class AppListBubbleView;
 class AppListControllerImpl;
 class AppListFolderView;
 class AppListView;
+class AppsContainerView;
 class ContinueSectionView;
 class PagedAppsGridView;
 class RecentAppsView;
@@ -29,6 +30,10 @@ enum class AppListViewState;
 class AppListTestHelper {
  public:
   AppListTestHelper();
+
+  AppListTestHelper(const AppListTestHelper&) = delete;
+  AppListTestHelper& operator=(const AppListTestHelper&) = delete;
+
   ~AppListTestHelper();
 
   // Shows the app list on the default display.
@@ -83,7 +88,9 @@ class AppListTestHelper {
 
   // Fullscreen/peeking launcher helpers.
   AppListView* GetAppListView();
+  AppsContainerView* GetAppsContainerView();
   AppListFolderView* GetFullscreenFolderView();
+  RecentAppsView* GetFullscreenRecentAppsView();
 
   // Paged launcher helpers.
   PagedAppsGridView* GetRootPagedAppsGridView();
@@ -104,8 +111,6 @@ class AppListTestHelper {
  private:
   AppListControllerImpl* app_list_controller_ = nullptr;
   std::unique_ptr<TestAppListClient> app_list_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListTestHelper);
 };
 
 }  // namespace ash

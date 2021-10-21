@@ -44,6 +44,10 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 class MirrorOnBootTest : public AshTestBase {
  public:
   MirrorOnBootTest() = default;
+
+  MirrorOnBootTest(const MirrorOnBootTest&) = delete;
+  MirrorOnBootTest& operator=(const MirrorOnBootTest&) = delete;
+
   ~MirrorOnBootTest() override = default;
 
   void SetUp() override {
@@ -53,9 +57,6 @@ class MirrorOnBootTest : public AshTestBase {
         ::switches::kEnableSoftwareMirroring);
     AshTestBase::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);
 };
 
 }  // namespace
@@ -69,9 +70,9 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
   const int64_t external_id = 2;
 
   const display::ManagedDisplayInfo internal_display_info =
-      CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
+      CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 400, 500));
   const display::ManagedDisplayInfo external_display_info =
-      CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
+      CreateDisplayInfo(external_id, gfx::Rect(1, 1, 200, 100));
   std::vector<display::ManagedDisplayInfo> display_info_list;
 
   // software mirroring.

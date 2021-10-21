@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
@@ -422,20 +423,20 @@ void SVGImage::DrawPatternForContainer(const DrawInfo& draw_info,
   pattern_transform.setTranslate(tiling_info.phase.X() + spaced_tile.X(),
                                  tiling_info.phase.Y() + spaced_tile.Y());
 
-  PaintRecordBuilder builder(context);
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>(context);
   {
-    DrawingRecorder recorder(builder.Context(), builder,
+    DrawingRecorder recorder(builder->Context(), *builder,
                              DisplayItem::Type::kSVGImage);
     // When generating an expanded tile, make sure we don't draw into the
     // spacing area.
     if (!tiling_info.spacing.IsZero())
-      builder.Context().Clip(tile);
-    DrawForContainer(draw_info, builder.Context().Canvas(), PaintFlags(), tile,
+      builder->Context().Clip(tile);
+    DrawForContainer(draw_info, builder->Context().Canvas(), PaintFlags(), tile,
                      tiling_info.image_rect);
   }
 
   sk_sp<PaintShader> tile_shader = PaintShader::MakePaintRecord(
-      builder.EndRecording(), spaced_tile, SkTileMode::kRepeat,
+      builder->EndRecording(), spaced_tile, SkTileMode::kRepeat,
       SkTileMode::kRepeat, &pattern_transform);
 
   // If the shader could not be instantiated (e.g. non-invertible matrix),
@@ -447,7 +448,9 @@ void SVGImage::DrawPatternForContainer(const DrawInfo& draw_info,
   // Reset filter quality.
   flags.setFilterQuality(cc::PaintFlags::FilterQuality::kNone);
 
-  context.DrawRect(dst_rect, flags);
+  context.DrawRect(dst_rect, flags,
+                   PaintAutoDarkMode(DarkModeFilter::ElementRole::kSVG,
+                                     draw_info.IsDarkModeEnabled()));
 
   StartAnimation();
 }
@@ -490,8 +493,11 @@ bool SVGImage::ApplyShaderInternal(const DrawInfo& draw_info,
   return true;
 }
 
-bool SVGImage::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
-  const DrawInfo draw_info(FloatSize(intrinsic_size_), 1, NullURL(), false);
+bool SVGImage::ApplyShader(PaintFlags& flags,
+                           const SkMatrix& local_matrix,
+                           const ImageDrawOptions& draw_options) {
+  const DrawInfo draw_info(FloatSize(intrinsic_size_), 1, NullURL(),
+                           draw_options.apply_dark_mode);
   return ApplyShaderInternal(draw_info, flags, local_matrix);
 }
 
@@ -543,8 +549,9 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
+  page_->GetSettings().SetForceDarkModeEnabled(draw_info.IsDarkModeEnabled());
+
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    page_->GetSettings().SetForceDarkModeEnabled(draw_info.IsDarkModeEnabled());
     view->UpdateAllLifecyclePhases(DocumentUpdateReason::kSVGImage);
     return view->GetPaintRecord();
   }
@@ -557,10 +564,10 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
   view->UpdateAllLifecyclePhasesExceptPaint(DocumentUpdateReason::kSVGImage);
   PaintController::CycleScope cycle_scope(*paint_controller_,
                                           view->PaintDebugInfoEnabled());
-  PaintRecordBuilder builder(*paint_controller_);
-  builder.Context().SetDarkModeEnabled(draw_info.IsDarkModeEnabled());
-  view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);
-  return builder.EndRecording();
+
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>(*paint_controller_);
+  view->PaintOutsideOfLifecycle(builder->Context(), kGlobalPaintNormalPhase);
+  return builder->EndRecording();
 }
 
 static bool DrawNeedsLayer(const PaintFlags& flags) {
@@ -720,7 +727,7 @@ void SVGImage::AdvanceAnimationForTesting() {
       root_element->TimeContainer()->ResetDocumentTime();
     page_->Animator().ServiceScriptedAnimations(
         root_element->GetDocument().Timeline().CalculateZeroTime() +
-        base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
+        base::Seconds(root_element->getCurrentTime()));
     GetImageObserver()->Changed(this);
     page_->Animator().Clock().ResetTimeForTesting();
     page_->Animator().Clock().UpdateTime(current_animation_time);

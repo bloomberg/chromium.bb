@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
+#include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -106,7 +107,7 @@ static inline bool ParseSimpleLength(const CharacterType* characters,
   number = CharactersToDouble(characters, length, &ok);
   if (!ok)
     return false;
-  number = clampTo<double>(number, -std::numeric_limits<float>::max(),
+  number = ClampTo<double>(number, -std::numeric_limits<float>::max(),
                            std::numeric_limits<float>::max());
   return true;
 }
@@ -923,6 +924,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kFontSynthesisStyle:
       DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
+    case CSSPropertyID::kFontSynthesisSmallCaps:
+      DCHECK(RuntimeEnabledFeatures::FontSynthesisEnabled());
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
     case CSSPropertyID::kWebkitFontSmoothing:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kAntialiased ||
@@ -1101,6 +1105,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kFontOpticalSizing:
     case CSSPropertyID::kFontSynthesisWeight:
     case CSSPropertyID::kFontSynthesisStyle:
+    case CSSPropertyID::kFontSynthesisSmallCaps:
     case CSSPropertyID::kWebkitFontSmoothing:
     case CSSPropertyID::kLineBreak:
     case CSSPropertyID::kWebkitLineBreak:
@@ -1211,7 +1216,8 @@ static bool ParseTransformNumberArguments(CharType*& pos,
       return false;
     unsigned argument_length = static_cast<unsigned>(delimiter);
     bool ok;
-    double number = CharactersToDouble(pos, argument_length, &ok);
+    double number = CSSValueClampingUtils::ClampDouble(
+        CharactersToDouble(pos, argument_length, &ok));
     if (!ok)
       return false;
     transform_value->Append(*CSSNumericLiteralValue::Create(

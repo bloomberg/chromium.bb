@@ -69,8 +69,8 @@ class SystemMetricsTest : public testing::Test {
  public:
   SystemMetricsTest() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemMetricsTest);
+  SystemMetricsTest(const SystemMetricsTest&) = delete;
+  SystemMetricsTest& operator=(const SystemMetricsTest&) = delete;
 };
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -543,23 +543,19 @@ TEST(ProcessMetricsTest, ParseProcTimeInState) {
   EXPECT_EQ(time_in_state[0].thread_id, 123);
   EXPECT_EQ(time_in_state[0].cluster_core_index, 0u);
   EXPECT_EQ(time_in_state[0].core_frequency_khz, 100000u);
-  EXPECT_EQ(time_in_state[0].cumulative_cpu_time,
-            base::TimeDelta::FromMilliseconds(40));
+  EXPECT_EQ(time_in_state[0].cumulative_cpu_time, base::Milliseconds(40));
   EXPECT_EQ(time_in_state[1].thread_id, 123);
   EXPECT_EQ(time_in_state[1].cluster_core_index, 0u);
   EXPECT_EQ(time_in_state[1].core_frequency_khz, 200000u);
-  EXPECT_EQ(time_in_state[1].cumulative_cpu_time,
-            base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(time_in_state[1].cumulative_cpu_time, base::Milliseconds(50));
   EXPECT_EQ(time_in_state[2].thread_id, 123);
   EXPECT_EQ(time_in_state[2].cluster_core_index, 4u);
   EXPECT_EQ(time_in_state[2].core_frequency_khz, 400000u);
-  EXPECT_EQ(time_in_state[2].cumulative_cpu_time,
-            base::TimeDelta::FromMilliseconds(30));
+  EXPECT_EQ(time_in_state[2].cumulative_cpu_time, base::Milliseconds(30));
   EXPECT_EQ(time_in_state[3].thread_id, 123);
   EXPECT_EQ(time_in_state[3].cluster_core_index, 4u);
   EXPECT_EQ(time_in_state[3].core_frequency_khz, 500000u);
-  EXPECT_EQ(time_in_state[3].cumulative_cpu_time,
-            base::TimeDelta::FromMilliseconds(20));
+  EXPECT_EQ(time_in_state[3].cumulative_cpu_time, base::Milliseconds(20));
 
   // Calling ParseProcTimeInState again adds to the vector.
   const char kStatThread456[] =
@@ -573,8 +569,7 @@ TEST(ProcessMetricsTest, ParseProcTimeInState) {
   EXPECT_EQ(time_in_state[4].thread_id, 456);
   EXPECT_EQ(time_in_state[4].cluster_core_index, 0u);
   EXPECT_EQ(time_in_state[4].core_frequency_khz, 1000000u);
-  EXPECT_EQ(time_in_state[4].cumulative_cpu_time,
-            base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(time_in_state[4].cumulative_cpu_time, base::Milliseconds(100));
 
   // Calling ParseProcTimeInState with invalid data returns false.
   EXPECT_FALSE(
@@ -654,7 +649,7 @@ bool CheckEvent(const FilePath& signal_dir, const char* signal_file) {
 // Busy-wait for an event to be signaled.
 void WaitForEvent(const FilePath& signal_dir, const char* signal_file) {
   while (!CheckEvent(signal_dir, signal_file))
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
+    PlatformThread::Sleep(Milliseconds(10));
 }
 
 // Subprocess to test the number of open file descriptors.
@@ -681,7 +676,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
 
   // Wait to be terminated.
   while (true)
-    PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+    PlatformThread::Sleep(Seconds(1));
 }
 
 }  // namespace

@@ -329,6 +329,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     TrackbarExtraParams trackbar;
   };
 
+  NativeTheme(const NativeTheme&) = delete;
+  NativeTheme& operator=(const NativeTheme&) = delete;
+
   // Return the size of the part.
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
@@ -346,16 +349,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
                      const ExtraParams& extra,
                      ColorScheme color_scheme = ColorScheme::kDefault,
                      const absl::optional<SkColor>& accent_color = 0) const = 0;
-
-  // Paint part during state transition, used for overlay scrollbar state
-  // transition animation.
-  virtual void PaintStateTransition(cc::PaintCanvas* canvas,
-                                    Part part,
-                                    State startState,
-                                    State endState,
-                                    double progress,
-                                    const gfx::Rect& rect,
-                                    ScrollbarOverlayColorTheme theme) const {}
 
   // Returns whether the theme uses a nine-patch resource for the given part.
   // If true, calling code should always paint into a canvas the size of which
@@ -553,6 +546,12 @@ class NATIVE_THEME_EXPORT NativeTheme {
       : public NativeThemeObserver {
    public:
     ColorSchemeNativeThemeObserver(NativeTheme* theme_to_update);
+
+    ColorSchemeNativeThemeObserver(const ColorSchemeNativeThemeObserver&) =
+        delete;
+    ColorSchemeNativeThemeObserver& operator=(
+        const ColorSchemeNativeThemeObserver&) = delete;
+
     ~ColorSchemeNativeThemeObserver() override;
 
    private:
@@ -561,8 +560,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
     // The theme that gets updated when OnNativeThemeUpdated() is called.
     NativeTheme* const theme_to_update_;
-
-    DISALLOW_COPY_AND_ASSIGN(ColorSchemeNativeThemeObserver);
   };
 
   mutable std::map<SystemThemeColor, SkColor> system_colors_;
@@ -582,8 +579,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   PreferredContrast preferred_contrast_ = PreferredContrast::kNoPreference;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };
 
 }  // namespace ui

@@ -59,6 +59,8 @@ source_set("crosapi") {
     "file_manager_ash.h",
     "geolocation_service_ash.cc",
     "geolocation_service_ash.h",
+    "identity_manager_ash.cc",
+    "identity_manager_ash.h",
     "idle_service_ash.cc",
     "idle_service_ash.h",
     "image_writer_ash.cc",
@@ -67,6 +69,8 @@ source_set("crosapi") {
     "keystore_service_ash.h",
     "keystore_service_factory_ash.cc",
     "keystore_service_factory_ash.h",
+    "kiosk_session_service_ash.cc",
+    "kiosk_session_service_ash.h",
     "local_printer_ash.cc",
     "local_printer_ash.h",
     "message_center_ash.cc",
@@ -77,6 +81,7 @@ source_set("crosapi") {
     "native_theme_service_ash.h",
     "network_settings_service_ash.cc",
     "network_settings_service_ash.h",
+    "network_settings_translation.h",
     "networking_attributes_ash.cc",
     "networking_attributes_ash.h",
     "power_ash.cc",
@@ -91,16 +96,20 @@ source_set("crosapi") {
     "screen_manager_ash.h",
     "select_file_ash.cc",
     "select_file_ash.h",
+    "structured_metrics_service_ash.cc",
+    "structured_metrics_service_ash.h",
     "system_display_ash.cc",
     "system_display_ash.h",
     "task_manager_ash.cc",
     "task_manager_ash.h",
-    "test_controller_ash.cc",
-    "test_controller_ash.h",
     "test_mojo_connection_manager.cc",
     "test_mojo_connection_manager.h",
+    "translate_crosapi_to_proxy_config.cc",
+    "translate_proxy_config_to_crosapi.cc",
     "url_handler_ash.cc",
     "url_handler_ash.h",
+    "user_data_stats_recorder.cc",
+    "user_data_stats_recorder.h",
     "video_capture_device_ash.cc",
     "video_capture_device_ash.h",
     "video_capture_device_factory_ash.cc",
@@ -149,6 +158,7 @@ source_set("crosapi") {
     "//components/exo",
     "//components/keyed_service/content",
     "//components/metrics",
+    "//components/metrics/structured",
     "//components/policy/core/common:common_constants",
     "//components/prefs",
     "//components/printing/browser",
@@ -157,8 +167,9 @@ source_set("crosapi") {
     "//extensions/browser/api",
     "//extensions/browser/api/automation_internal",
     "//extensions/common",
-    "//printing:printing",
-    "//printing:printing_base",
+    "//media/mojo/services:services",
+    "//printing",
+    "//printing/backend",
     "//remoting/host/chromeos:remoting_service",
     "//services/device/wake_lock/power_save_blocker",
     "//services/video_capture/public/cpp:cpp",
@@ -168,6 +179,31 @@ source_set("crosapi") {
     "//ui/shell_dialogs",
     "//ui/snapshot",
     "//ui/views",
+  ]
+
+  # local_printer_ash.cc includes
+  # chrome/browser/ash/printing/print_management/printing_manager.h, which in
+  # turn requires //ash/webui/print_management/mojom to generate the Mojo
+  # headers referenced by printing_manager.h.
+  # Ideally, //chrome/browser/chromeos can just make
+  # //ash/webui/print_management/mojom a public_deps entry, and this target can
+  # depend on //chrome/browser/chromeos. However, that creates a circular
+  # dependency, so add this indirect dependency to make it work as intended.
+  deps += [ "//ash/webui/print_management/mojom" ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_controller_ash.cc",
+    "test_controller_ash.h",
+  ]
+
+  deps = [
+    ":crosapi",
+    "//ash",
+    "//chromeos/crosapi/mojom",
   ]
 }
 
@@ -180,6 +216,7 @@ source_set("unit_tests") {
     "browser_manager_unittest.cc",
     "browser_util_unittest.cc",
     "browser_version_service_ash_unittest.cc",
+    "chrome_app_window_tracker_ash_unittest.cc",
     "download_controller_ash_unittest.cc",
     "field_trial_service_ash_unittest.cc",
     "geolocation_service_ash_unittest.cc",
@@ -187,11 +224,13 @@ source_set("unit_tests") {
     "local_printer_ash_unittest.cc",
     "message_center_ash_unittest.cc",
     "metrics_reporting_ash_unittest.cc",
+    "network_settings_translation_unittest.cc",
     "networking_attributes_ash_unittest.cc",
     "prefs_ash_unittest.cc",
     "test_local_printer_ash.cc",
     "test_local_printer_ash.h",
     "test_mojo_connection_manager_unittest.cc",
+    "user_data_stats_recorder_unittest.cc",
   ]
 
   deps = [
@@ -210,6 +249,7 @@ source_set("unit_tests") {
     "//chromeos/login/login_state",
     "//chromeos/startup:constants",
     "//components/component_updater:test_support",
+    "//printing/backend",
     "//printing/backend:test_support",
     "//testing/gtest:gtest",
   ]

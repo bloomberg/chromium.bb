@@ -58,7 +58,6 @@
 #include "url/gurl.h"
 
 using base::Time;
-using base::TimeDelta;
 using base::TimeTicks;
 using content::Referrer;
 
@@ -102,6 +101,11 @@ class TestNetworkBytesChangedObserver
  public:
   TestNetworkBytesChangedObserver() : network_bytes_changed_(false) {}
 
+  TestNetworkBytesChangedObserver(const TestNetworkBytesChangedObserver&) =
+      delete;
+  TestNetworkBytesChangedObserver& operator=(
+      const TestNetworkBytesChangedObserver&) = delete;
+
   // prerender::NoStatePrefetchHandle::Observer
   void OnPrefetchStop(
       NoStatePrefetchHandle* no_state_prefetch_handle) override {}
@@ -114,8 +118,6 @@ class TestNetworkBytesChangedObserver
 
  private:
   bool network_bytes_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkBytesChangedObserver);
 };
 
 int DummyNoStatePrefetchContents::g_next_route_id_ = 0;
@@ -666,7 +668,7 @@ TEST_F(PrerenderTest, FoundTest) {
   EXPECT_EQ(prerender::FINAL_STATUS_UNKNOWN, final_status);
   EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
 
-  const base::TimeDelta advance_duration = TimeDelta::FromSeconds(1);
+  const base::TimeDelta advance_duration = base::Seconds(1);
   tick_clock()->Advance(advance_duration);
   EXPECT_TRUE(no_state_prefetch_manager()->GetPrefetchInformation(
       url, &prefetch_age, &final_status, &origin));
@@ -718,7 +720,7 @@ TEST_F(PrerenderTest, ExpireTest) {
   EXPECT_FALSE(no_state_prefetch_manager()->next_no_state_prefetch_contents());
   EXPECT_TRUE(no_state_prefetch_contents->prerendering_has_started());
   tick_clock()->Advance(no_state_prefetch_manager()->config().time_to_live +
-                        TimeDelta::FromSeconds(1));
+                        base::Seconds(1));
   ASSERT_FALSE(no_state_prefetch_manager()->FindEntry(url));
 }
 
@@ -739,9 +741,9 @@ TEST_F(PrerenderTest, BadURLTest) {
 // have their time to expiry shortened from the default time to live.
 TEST_F(PrerenderTest, LinkManagerNavigateAwayExpire) {
   no_state_prefetch_manager()->SetTickClockForTesting(tick_clock());
-  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
-  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
-  const TimeDelta test_advance = TimeDelta::FromSeconds(22);
+  const base::TimeDelta time_to_live = base::Seconds(300);
+  const base::TimeDelta abandon_time_to_live = base::Seconds(20);
+  const base::TimeDelta test_advance = base::Seconds(22);
   ASSERT_LT(test_advance, time_to_live);
   ASSERT_LT(abandon_time_to_live, test_advance);
 
@@ -771,15 +773,15 @@ TEST_F(PrerenderTest, LinkManagerNavigateAwayExpire) {
 // we shouldn't expect it to be extended.
 TEST_F(PrerenderTest, LinkManagerNavigateAwayNearExpiry) {
   no_state_prefetch_manager()->SetTickClockForTesting(tick_clock());
-  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
-  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
+  const base::TimeDelta time_to_live = base::Seconds(300);
+  const base::TimeDelta abandon_time_to_live = base::Seconds(20);
 
   // We will expect the prerender to still be alive after advancing the clock
   // by first_advance. But, after second_advance, we expect it to have timed
   // out, demonstrating that you can't extend a prerender by navigating away
   // from its launcher.
-  const TimeDelta first_advance = TimeDelta::FromSeconds(298);
-  const TimeDelta second_advance = TimeDelta::FromSeconds(4);
+  const base::TimeDelta first_advance = base::Seconds(298);
+  const base::TimeDelta second_advance = base::Seconds(4);
   ASSERT_LT(first_advance, time_to_live);
   ASSERT_LT(time_to_live - first_advance, abandon_time_to_live);
   ASSERT_LT(time_to_live, first_advance + second_advance);
@@ -817,9 +819,9 @@ TEST_F(PrerenderTest, LinkManagerNavigateAwayNearExpiry) {
 // abandoned prerender hasn't expired.
 TEST_F(PrerenderTest, LinkManagerNavigateAwayLaunchAnother) {
   no_state_prefetch_manager()->SetTickClockForTesting(tick_clock());
-  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
-  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
-  const TimeDelta test_advance = TimeDelta::FromSeconds(5);
+  const base::TimeDelta time_to_live = base::Seconds(300);
+  const base::TimeDelta abandon_time_to_live = base::Seconds(20);
+  const base::TimeDelta test_advance = base::Seconds(5);
   ASSERT_LT(test_advance, time_to_live);
   ASSERT_GT(abandon_time_to_live, test_advance);
 
@@ -870,15 +872,14 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
       kUrl, absl::nullopt, ORIGIN_OMNIBOX, FINAL_STATUS_PROFILE_DESTROYED);
 
   // Prefetching again before time_to_live aborts, because it is a duplicate.
-  tick_clock()->Advance(base::TimeDelta::FromSeconds(1));
+  tick_clock()->Advance(base::Seconds(1));
   EXPECT_FALSE(no_state_prefetch_manager()->AddPrerenderFromOmnibox(
       kUrl, nullptr, gfx::Size()));
   histogram_tester().ExpectBucketCount("Prerender.FinalStatus",
                                        FINAL_STATUS_DUPLICATE, 1);
 
   // Prefetching after time_to_live succeeds.
-  tick_clock()->Advance(
-      base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins));
+  tick_clock()->Advance(base::Minutes(net::HttpCache::kPrefetchReuseMins));
   EXPECT_TRUE(no_state_prefetch_manager()->AddPrerenderFromOmnibox(
       kUrl, nullptr, gfx::Size()));
 }
@@ -1056,7 +1057,7 @@ TEST_F(PrerenderTest, NotSoRecentlyVisited) {
   GURL url("http://www.google.com/");
 
   no_state_prefetch_manager()->RecordNavigation(url);
-  tick_clock()->Advance(TimeDelta::FromMilliseconds(
+  tick_clock()->Advance(base::Milliseconds(
       UnitTestNoStatePrefetchManager::kNavigationRecordWindowMs + 500));
 
   DummyNoStatePrefetchContents* no_state_prefetch_contents =
@@ -1591,7 +1592,7 @@ TEST_F(PrerenderTest, LinkManagerExpireThenCancel) {
   ASSERT_EQ(no_state_prefetch_contents,
             no_state_prefetch_manager()->FindEntry(url));
   tick_clock()->Advance(no_state_prefetch_manager()->config().time_to_live +
-                        TimeDelta::FromSeconds(1));
+                        base::Seconds(1));
 
   EXPECT_FALSE(IsEmptyNoStatePrefetchLinkManager());
 
@@ -1616,7 +1617,7 @@ TEST_F(PrerenderTest, LinkManagerExpireThenAddAgain) {
   ASSERT_EQ(first_no_state_prefetch_contents,
             no_state_prefetch_manager()->FindEntry(url));
   tick_clock()->Advance(no_state_prefetch_manager()->config().time_to_live +
-                        TimeDelta::FromSeconds(1));
+                        base::Seconds(1));
 
   ASSERT_FALSE(no_state_prefetch_manager()->FindEntry(url));
   DummyNoStatePrefetchContents* second_no_state_prefetch_contents =
@@ -1684,7 +1685,7 @@ TEST_F(PrerenderTest, DISABLED_LinkManagerAbandonInactivePrerender) {
 
   tick_clock()->Advance(
       no_state_prefetch_manager()->config().abandon_time_to_live +
-      TimeDelta::FromSeconds(1));
+      base::Seconds(1));
   EXPECT_FALSE(no_state_prefetch_manager()->FindEntry(first_url));
   EXPECT_FALSE(no_state_prefetch_manager()->FindEntry(second_url));
   EXPECT_TRUE(IsEmptyNoStatePrefetchLinkManager());
@@ -1715,7 +1716,7 @@ TEST_F(PrerenderTest, LinkManagerWaitToLaunchNotLaunched) {
 
   tick_clock()->Advance(
       no_state_prefetch_manager()->config().max_wait_to_launch +
-      TimeDelta::FromSeconds(1));
+      base::Seconds(1));
   EXPECT_EQ(no_state_prefetch_contents,
             no_state_prefetch_manager()->FindEntry(first_url));
   EXPECT_FALSE(no_state_prefetch_manager()->FindEntry(second_url));
@@ -1746,13 +1747,13 @@ TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
 
   // Insert the second prerender so it will be still be launchable when the
   // first expires.
-  const TimeDelta wait_to_launch_second_prerender =
+  const base::TimeDelta wait_to_launch_second_prerender =
       no_state_prefetch_manager()->config().time_to_live -
       no_state_prefetch_manager()->config().max_wait_to_launch +
-      TimeDelta::FromSeconds(2);
-  const TimeDelta wait_for_first_prerender_to_expire =
+      base::Seconds(2);
+  const base::TimeDelta wait_for_first_prerender_to_expire =
       no_state_prefetch_manager()->config().time_to_live -
-      wait_to_launch_second_prerender + TimeDelta::FromSeconds(1);
+      wait_to_launch_second_prerender + base::Seconds(1);
   ASSERT_LT(
       no_state_prefetch_manager()->config().time_to_live,
       wait_to_launch_second_prerender + wait_for_first_prerender_to_expire);

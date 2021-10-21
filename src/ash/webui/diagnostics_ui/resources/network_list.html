@@ -33,8 +33,8 @@
     padding-bottom: 40px;
   }
 </style>
-<div id="networkListContainer">
-  <div class="diagnostics-cards-container">
+<div id="networkListContainer" tabindex="0">
+  <div class="diagnostics-cards-container-nav">
     <template is="dom-if" if="[[activeGuid_]]" restamp>
       <connectivity-card class="card-width" active-guid="[[activeGuid_]]"
           test-suite-status="{{testSuiteStatus}}"

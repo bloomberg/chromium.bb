@@ -25,7 +25,6 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_reuse_manager.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/browser/password_store_impl.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
@@ -126,23 +125,10 @@ void SyncEnabledOrDisabled(Profile* profile) {
       base::BindOnce(&UpdateAllFormManagersAndPasswordReuseManager, profile));
 #endif  // defined(OS_ANDROID)
 }
-
-// TODO(crbug.com/1218413): Delete this method when the migration to
-// PasswordStoreInterface is complete and rename the method below to
-// GetForProfile.
-// static
-scoped_refptr<PasswordStore> AccountPasswordStoreFactory::GetForProfile(
-    Profile* profile,
-    ServiceAccessType access_type) {
-  return base::WrapRefCounted(static_cast<PasswordStore*>(
-      GetInterfaceForProfile(profile, access_type).get()));
-}
-
 // static
 scoped_refptr<PasswordStoreInterface>
-AccountPasswordStoreFactory::GetInterfaceForProfile(
-    Profile* profile,
-    ServiceAccessType access_type) {
+AccountPasswordStoreFactory::GetForProfile(Profile* profile,
+                                           ServiceAccessType access_type) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordsAccountStorage)) {
     return nullptr;
@@ -186,12 +172,16 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
           profile->GetPath()));
 
   scoped_refptr<password_manager::PasswordStore> ps =
-#if !defined(OS_ANDROID)
-      new password_manager::PasswordStoreImpl(
-          std::move(login_db),
-          std::make_unique<UnsyncedCredentialsDeletionNotifierImpl>(profile));
+#if defined(OS_ANDROID)
+      new password_manager::PasswordStore(
+          std::make_unique<password_manager::PasswordStoreImpl>(
+              std::move(login_db)));
 #else
-      new password_manager::PasswordStoreImpl(std::move(login_db));
+      new password_manager::PasswordStore(
+          std::make_unique<password_manager::PasswordStoreImpl>(
+              std::move(login_db),
+              std::make_unique<UnsyncedCredentialsDeletionNotifierImpl>(
+                  profile)));
 #endif
 
   if (!ps->Init(profile->GetPrefs(),
@@ -211,8 +201,7 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
       profile);
   password_manager_util::RemoveUselessCredentials(
       CredentialsCleanerRunnerFactory::GetForProfile(profile), ps,
-      profile->GetPrefs(), base::TimeDelta::FromSeconds(60),
-      network_context_getter);
+      profile->GetPrefs(), base::Seconds(60), network_context_getter);
 
   return ps;
 }

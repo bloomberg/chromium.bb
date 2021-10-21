@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11.0 Win Win7 Win10.1909 Win10.20h2 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11.0 Win Win7 Win10.20h2 ]
 # tags: [ Release Debug ]
 # results: [ Slow ]
 
@@ -164,9 +164,8 @@ crbug.com/726075 [ Linux ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
 crbug.com/726075 [ Mac ] css3/filters/effect-reference-zoom-hw.html [ Slow ]
 
 # Slow oopr canvas tests
+crbug.com/1152496 virtual/oopr-canvas2d/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite.html [ Slow ]
-crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-alpha.html [ Slow ]
-crbug.com/1081534 [ Linux ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video-shadow.html [ Slow ]
 crbug.com/1081534 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-video.html [ Slow ]
@@ -499,7 +498,7 @@ crbug.com/983642 [ Win ] virtual/gpu/fast/canvas/color-space/canvas-createImageB
 
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
-crbug.com/626703 virtual/coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
+crbug.com/626703 virtual/without-coep-for-shared-worker/external/wpt/html/cross-origin-embedder-policy/multi-globals/workers-coep-report.https.html [ Slow ]
 
 # Slow when using Vulkan.
 crbug.com/994331 compositing/lots-of-img-layers.html [ Slow ]
@@ -549,19 +548,12 @@ crbug.com/1134580 virtual/eye-dropper/http/tests/eye-dropper/color-picker-show-e
 crbug.com/1145716 fast/forms/calendar-picker/datetimelocal-picker-open-to-focused-field.html [ Slow ]
 
 # These began to hit timeouts when moving from Windows-10-15063 to Windows-10-18363
-crbug.com/1142023 [ Win10.1909 ] external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] external/wpt/web-animations/animation-model/animation-types/interpolation-per-property-002.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] external/wpt/web-animations/animation-model/animation-types/interpolation-per-property-002.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] fast/dom/HTMLScriptElement/script-sync-load-failure.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] fast/dom/HTMLScriptElement/script-sync-load-failure.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] http/tests/eventsource/eventsource-cors-no-server.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] http/tests/eventsource/eventsource-cors-no-server.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] http/tests/eventsource/workers/eventsource-cors-no-server.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] http/tests/eventsource/workers/eventsource-cors-no-server.html [ Slow ]
-crbug.com/1142023 [ Win10.1909 ] http/tests/security/document-domain-canonicalizes-iframe.html [ Slow ]
 crbug.com/1142023 [ Win10.20h2 ] http/tests/security/document-domain-canonicalizes-iframe.html [ Slow ]
 
 # crbug.com/1095379: These were all added here in an attempt to reduce flakiness.
@@ -591,7 +583,6 @@ crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.
 crbug.com/1064522 external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Slow ]
 crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Slow ]
 crbug.com/869364 http/tests/devtools/console/console-correct-suggestions.js [ Slow ]
-crbug.com/886566 [ Win10.1909 ] http/tests/csspaint/invalidation-background-image.html [ Slow ]
 crbug.com/886566 [ Mac ] http/tests/csspaint/invalidation-background-image.html [ Slow ]
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Slow ]
 crbug.com/888609 http/tests/devtools/coverage/gutter-css.js [ Slow ]
@@ -615,14 +606,11 @@ crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ 
 crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Slow ]
 crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Slow ]
 crbug.com/946700 [ Win ] http/tests/devtools/coverage/decorations-after-script-formatter.js [ Slow ]
-crbug.com/978254 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-4.js [ Slow ]
-crbug.com/977015 [ Win ] http/tests/devtools/elements/shadow/shadow-distribution.js [ Slow ]
+crbug.com/977015 [ Win ] http/tests/devtools/elements/shadow/shadow-slot-assignment.js [ Slow ]
 crbug.com/978304 http/tests/devtools/elements/styles-4/undo-add-property.js [ Slow ]
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Slow ]
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Slow ]
 crbug.com/982290 [ Win ] http/tests/devtools/elements/styles-4/styles-do-not-detach-sourcemap-on-edits.js [ Slow ]
-crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Slow ]
-crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Slow ]
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Slow ]
 crbug.com/989014 [ Debug Linux ] external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_single_subscription.tentative.https.any.serviceworker.html [ Slow ]
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Slow ]
@@ -656,7 +644,6 @@ crbug.com/1043285 [ Release ] http/tests/devtools/elements/styles/selector-line.
 crbug.com/1043398 [ Release Win ] http/tests/devtools/tracing-browser-thread.js [ Slow ]
 crbug.com/1043398 [ Mac Release ] http/tests/devtools/tracing-browser-thread.js [ Slow ]
 crbug.com/1043434 [ Release ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Slow ]
-crbug.com/1043449 [ Release ] http/tests/devtools/elements/edit/edit-dom-actions-3.js [ Slow ]
 crbug.com/1043453 [ Release Win ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Slow ]
 crbug.com/1043453 [ Mac Release ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Slow ]
 crbug.com/1043454 [ Release ] http/tests/devtools/console-xhr-logging-async.js [ Slow ]
@@ -738,7 +725,6 @@ crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-i
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Slow ]
 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Slow ]
 crbug.com/1041847 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Slow ]
-crbug.com/848799 [ Win10.1909 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Slow ]
 crbug.com/1048597 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Slow ]
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Slow ]
 crbug.com/1042694 fast/forms/form-control-with-state-eager-tracing-crashTest.html [ Slow ]
@@ -750,7 +736,6 @@ crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/permissions-policy/exp
 crbug.com/1176802 [ Debug ] external/wpt/feature-policy/feature-policy-frame-policy-timing.https.sub.html [ Slow ]
 crbug.com/1176802 [ Debug ] external/wpt/permissions-policy/permissions-policy-frame-policy-timing.https.sub.html [ Slow ]
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Slow ]
-crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Slow ]
 crbug.com/1097810 [ Debug Mac10.13 ] external/wpt/editing/other/white-spaces-after-execCommand-delete.tentative.html [ Slow ]
 crbug.com/1105270 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Slow ]
 crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Slow ]
@@ -808,4 +793,3 @@ crbug.com/1195814 [ Mac11.0 ] external/wpt/IndexedDB/keypath-special-identifiers
 crbug.com/1195814 [ Mac11.0 ] storage/indexeddb/dispatch-events.html [ Slow ]
 crbug.com/1195814 [ Mac11.0 ] storage/indexeddb/key-generator.html [ Slow ]
 crbug.com/1195814 [ Mac11.0 ] storage/indexeddb/odd-strings.html [ Slow ]
-crbug.com/1092092 [ Mac ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-windowless-body.html [ Slow ]

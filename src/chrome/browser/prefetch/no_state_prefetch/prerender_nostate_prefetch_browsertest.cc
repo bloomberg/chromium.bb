@@ -45,7 +45,6 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -77,7 +76,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::TestPrerender;
@@ -102,7 +100,6 @@ static constexpr char kOriginTrialPublicKeyForTesting[] =
 namespace prerender {
 
 const char k302RedirectPage[] = "/prerender/302_redirect.html";
-const char kPrefetchAppcache[] = "/prerender/prefetch_appcache.html";
 const char kPrefetchCookiePage[] = "/prerender/cookie.html";
 const char kPrefetchFromSubframe[] = "/prerender/prefetch_from_subframe.html";
 const char kPrefetchImagePage[] = "/prerender/prefetch_image.html";
@@ -227,6 +224,11 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
       browser->tab_strip_model()->AddObserver(this);
   }
 
+  NewTabNavigationOrSwapObserver(const NewTabNavigationOrSwapObserver&) =
+      delete;
+  NewTabNavigationOrSwapObserver& operator=(
+      const NewTabNavigationOrSwapObserver&) = delete;
+
   ~NewTabNavigationOrSwapObserver() override {
     BrowserList::RemoveObserver(this);
   }
@@ -260,14 +262,16 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
  private:
   base::RunLoop new_tab_run_loop_;
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabNavigationOrSwapObserver);
 };
 
 class NoStatePrefetchBrowserTest
     : public test_utils::PrerenderInProcessBrowserTest {
  public:
   NoStatePrefetchBrowserTest() {}
+
+  NoStatePrefetchBrowserTest(const NoStatePrefetchBrowserTest&) = delete;
+  NoStatePrefetchBrowserTest& operator=(const NoStatePrefetchBrowserTest&) =
+      delete;
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     test_utils::PrerenderInProcessBrowserTest::SetUpDefaultCommandLine(
@@ -285,7 +289,7 @@ class NoStatePrefetchBrowserTest
 
   void OverrideNoStatePrefetchManagerTimeTicks() {
     // The default zero time causes the prerender manager to do strange things.
-    clock_.Advance(base::TimeDelta::FromSeconds(1));
+    clock_.Advance(base::Seconds(1));
     GetNoStatePrefetchManager()->SetTickClockForTesting(&clock_);
   }
 
@@ -422,8 +426,6 @@ class NoStatePrefetchBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchBrowserTest);
 };
 
 class NoStatePrefetchBrowserTestHttpCache
@@ -784,7 +786,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-      url, options, base::BindOnce(GetCookieCallback, loop.QuitClosure()));
+      url, options, net::CookiePartitionKeychain(),
+      base::BindOnce(GetCookieCallback, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -806,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-      cross_domain_url, options,
+      cross_domain_url, options, net::CookiePartitionKeychain(),
       base::BindOnce(GetCookieCallback, loop.QuitClosure()));
   loop.Run();
 }
@@ -1432,13 +1435,6 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 1);
 }
 
-// Checks that prefetching happens if an appcache is mentioned in the html tag
-// but is uninitialized.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlUninitialized) {
-  PrefetchFromFile(kPrefetchAppcache, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
-  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 1);
-}
-
 class NoStatePrefetchIncognitoBrowserTest : public NoStatePrefetchBrowserTest {
  public:
   void SetUpOnMainThread() override {
@@ -1754,7 +1750,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
       content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   UseHttpsSrcServer();
   GetNoStatePrefetchManager()->mutable_config().abandon_time_to_live =
-      base::TimeDelta::FromMilliseconds(500);
+      base::Milliseconds(500);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       current_browser(), src_server()->GetURL("/defaultresponse?landing")));
   InsertSpeculation(src_server()->GetURL("/hung"), FINAL_STATUS_TIMED_OUT,

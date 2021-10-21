@@ -43,6 +43,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   PasswordAutofillManager(PasswordManagerDriver* password_manager_driver,
                           autofill::AutofillClient* autofill_client,
                           PasswordManagerClient* password_client);
+
+  PasswordAutofillManager(const PasswordAutofillManager&) = delete;
+  PasswordAutofillManager& operator=(const PasswordAutofillManager&) = delete;
+
   virtual ~PasswordAutofillManager();
 
   // AutofillPopupDelegate implementation.
@@ -122,6 +126,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   using ShowAllPasswords = base::StrongAlias<class ShowAllPasswordsTag, bool>;
   using ShowPasswordSuggestions =
       base::StrongAlias<class ShowPasswordSuggestionsTag, bool>;
+  using ShowWebAuthnCredentials =
+      base::StrongAlias<class ShowWebAuthnCredentialsTag, bool>;
 
   // Builds the suggestions used to show or update the autofill popup.
   std::vector<autofill::Suggestion> BuildSuggestions(
@@ -129,7 +135,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
       ForPasswordField for_password_field,
       ShowAllPasswords show_all_passwords,
       OffersGeneration for_generation,
-      ShowPasswordSuggestions show_password_suggestions);
+      ShowPasswordSuggestions show_password_suggestions,
+      ShowWebAuthnCredentials show_webauthn_credentials);
 
   // Called just before showing a popup to log which |suggestions| were shown.
   void LogMetricsForSuggestions(
@@ -221,8 +228,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   scoped_refptr<device_reauth::BiometricAuthenticator> authenticator_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };
 
 }  // namespace password_manager

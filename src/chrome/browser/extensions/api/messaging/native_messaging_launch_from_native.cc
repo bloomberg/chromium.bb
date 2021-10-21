@@ -38,8 +38,7 @@ namespace {
 ScopedAllowNativeAppConnectionForTest* g_allow_native_app_connection_for_test =
     nullptr;
 
-constexpr base::TimeDelta kNativeMessagingHostErrorTimeout =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kNativeMessagingHostErrorTimeout = base::Seconds(10);
 
 ScopedNativeMessagingErrorTimeoutOverrideForTest*
     g_native_messaging_host_timeout_override = nullptr;
@@ -55,6 +54,11 @@ class NativeMessagingHostErrorReporter : public NativeMessageHost::Client {
   using MovableScopedKeepAlive =
       std::unique_ptr<ScopedKeepAlive,
                       content::BrowserThread::DeleteOnUIThread>;
+
+  NativeMessagingHostErrorReporter(const NativeMessagingHostErrorReporter&) =
+      delete;
+  NativeMessagingHostErrorReporter& operator=(
+      const NativeMessagingHostErrorReporter&) = delete;
 
   static void Report(const std::string& extension_id,
                      const std::string& host_id,
@@ -116,8 +120,6 @@ class NativeMessagingHostErrorReporter : public NativeMessageHost::Client {
   MovableScopedKeepAlive keep_alive_;
   std::unique_ptr<NativeMessageHost> process_;
   base::OneShotTimer timeout_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeMessagingHostErrorReporter);
 };
 
 }  // namespace

@@ -16,6 +16,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -194,6 +196,10 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     quic::QuicEnableVersion(version_);
   }
 
+  QuicProxyClientSocketTest(const QuicProxyClientSocketTest&) = delete;
+  QuicProxyClientSocketTest& operator=(const QuicProxyClientSocketTest&) =
+      delete;
+
   void SetUp() override {}
 
   void TearDown() override {
@@ -250,7 +256,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
 
     base::TimeTicks dns_end = base::TimeTicks::Now();
-    base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
+    base::TimeTicks dns_start = dns_end - base::Milliseconds(1);
 
     session_ = std::make_unique<QuicChromiumClientSession>(
         connection, std::move(socket),
@@ -647,8 +653,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   TestCompletionCallback write_callback_;
 
   quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicProxyClientSocketTest);
 };
 
 TEST_P(QuicProxyClientSocketTest, ConnectSendsCorrectRequest) {
@@ -691,12 +695,12 @@ TEST_P(QuicProxyClientSocketTest, ProxyDelegateExtraHeaders) {
     mock_quic_data_.AddWrite(SYNCHRONOUS,
                              ConstructSettingsPacket(packet_number++));
   }
-  mock_quic_data_.AddWrite(
-      SYNCHRONOUS,
-      ConstructConnectRequestPacketWithExtraHeaders(
-          packet_number++,
-          // Order matters! Keep these alphabetical.
-          {{"foo", proxy_server.ToURI()}, {"user-agent", kUserAgent}}));
+  mock_quic_data_.AddWrite(SYNCHRONOUS,
+                           ConstructConnectRequestPacketWithExtraHeaders(
+                               packet_number++,
+                               // Order matters! Keep these alphabetical.
+                               {{"foo", ProxyServerToProxyUri(proxy_server)},
+                                {"user-agent", kUserAgent}}));
   mock_quic_data_.AddRead(
       ASYNC, ConstructServerConnectReplyPacketWithExtraHeaders(
                  1, !kFin, {{kResponseHeaderName, kResponseHeaderValue}}));
@@ -1084,8 +1088,8 @@ TEST_P(QuicProxyClientSocketTest, WriteSplitsLargeDataIntoMultiplePackets) {
         !kIncludeDiversificationNonce, quic::PACKET_8BYTE_CONNECTION_ID,
         quic::PACKET_1BYTE_PACKET_NUMBER, offset);
     if (version_.HasIetfQuicFrames() && i == 0) {
-      // 3973 is the data frame length from packet length.
-      std::string header2 = ConstructDataHeader(3973);
+      // 3673 is the data frame length from packet length.
+      std::string header2 = ConstructDataHeader(3673);
       mock_quic_data_.AddWrite(
           SYNCHRONOUS,
           ConstructDataPacket(
@@ -1991,6 +1995,9 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
   explicit DeleteSockCallback(std::unique_ptr<QuicProxyClientSocket>* sock)
       : sock_(sock) {}
 
+  DeleteSockCallback(const DeleteSockCallback&) = delete;
+  DeleteSockCallback& operator=(const DeleteSockCallback&) = delete;
+
   ~DeleteSockCallback() override {}
 
   CompletionOnceCallback callback() {
@@ -2005,8 +2012,6 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
   }
 
   std::unique_ptr<QuicProxyClientSocket>* sock_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteSockCallback);
 };
 
 // If the socket is reset when both a read and write are pending, and the

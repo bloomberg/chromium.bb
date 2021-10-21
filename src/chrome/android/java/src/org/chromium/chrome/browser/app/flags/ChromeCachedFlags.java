@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.lens.LensFeature;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceConfig;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.PriceTrackingUtilities;
@@ -75,9 +74,9 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY);
                 add(ChromeFeatureList.CCT_REMOVE_REMOTE_VIEW_IDS);
                 add(ChromeFeatureList.CCT_RESIZABLE_90_MAXIMUM_HEIGHT);
+                add(ChromeFeatureList.CCT_RESIZABLE_ALLOW_RESIZE_BY_USER_GESTURE);
                 add(ChromeFeatureList.CCT_RESIZABLE_FOR_FIRST_PARTIES);
                 add(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES);
-                add(ChromeFeatureList.CLIPBOARD_SUGGESTION_CONTENT_HIDDEN);
                 add(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS);
                 add(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA);
                 add(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
@@ -86,6 +85,9 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.DYNAMIC_COLOR_ANDROID);
                 add(ChromeFeatureList.EARLY_LIBRARY_LOAD);
                 add(ChromeFeatureList.ELASTIC_OVERSCROLL);
+                add(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP);
+                add(ChromeFeatureList
+                                .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY);
                 add(ChromeFeatureList.IMMERSIVE_UI_MODE);
                 add(ChromeFeatureList.INSTANT_START);
                 add(ChromeFeatureList.INSTANCE_SWITCHER);
@@ -148,8 +150,6 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.USER_CLICK_THRESHOLD);
                         add(StartSurfaceConfiguration.WARM_UP_RENDERER);
                         add(StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM);
-                        add(CommerceSubscriptionsServiceConfig.STALE_TAB_LOWER_BOUND_SECONDS);
-                        add(CommerceSubscriptionsServiceConfig.SUBSCRIPTIONS_SERVICE_BASE_URL);
                         add(PriceTrackingUtilities.ENABLE_PRICE_NOTIFICATION);
                         add(PriceTrackingUtilities.ENABLE_PRICE_TRACKING);
                         add(TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION);

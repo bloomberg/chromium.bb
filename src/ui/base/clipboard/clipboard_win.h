@@ -40,6 +40,9 @@ class ClipboardWin : public Clipboard {
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
   const ClipboardSequenceNumberToken& GetSequenceNumber(
       ClipboardBuffer buffer) const override;
+  std::vector<std::u16string> GetStandardFormats(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -47,9 +50,6 @@ class ClipboardWin : public Clipboard {
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
                           std::vector<std::u16string>* types) const override;
-  std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const override;
   void ReadText(ClipboardBuffer buffer,
                 const DataTransferEndpoint* data_dst,
                 std::u16string* result) const override;
@@ -71,9 +71,6 @@ class ClipboardWin : public Clipboard {
   void ReadPng(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                ReadPngCallback callback) const override;
-  void ReadImage(ClipboardBuffer buffer,
-                 const DataTransferEndpoint* data_dst,
-                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const std::u16string& type,
                       const DataTransferEndpoint* data_dst,
@@ -110,7 +107,7 @@ class ClipboardWin : public Clipboard {
                  const char* data_data,
                  size_t data_len) override;
   std::vector<uint8_t> ReadPngInternal(ClipboardBuffer buffer) const;
-  SkBitmap ReadImageInternal(ClipboardBuffer buffer) const;
+  SkBitmap ReadBitmapInternal(ClipboardBuffer buffer) const;
 
   // Safely write to system clipboard. Free |handle| on failure.
   // This function takes ownership of the given handle's memory.
@@ -119,16 +116,6 @@ class ClipboardWin : public Clipboard {
   // Return the window that should be the clipboard owner, creating it
   // if necessary.  Marked const for lazily initialization by const methods.
   HWND GetClipboardWindow() const;
-
-  // Returns all the standard MIME types if it's present in the clipboard.
-  // The standard MIME types are the formats that are well defined by the OS.
-  // Currently we support text/html, text/plain, text/rtf, image/png &
-  // text/uri-list.
-  // TODO(snianu): Create a more generalized function for standard formats that
-  // can be shared by all platforms.
-  std::vector<std::u16string> GetStandardFormats(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const;
 
   // Mark this as mutable so const methods can still do lazy initialization.
   mutable std::unique_ptr<base::win::MessageWindow> clipboard_owner_;

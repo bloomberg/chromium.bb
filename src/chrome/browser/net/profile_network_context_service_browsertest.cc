@@ -98,7 +98,7 @@ class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
     do {
       content::FetchHistogramsFromChildProcesses();
       metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
+      base::PlatformThread::Sleep(base::Milliseconds(5));
       all_metrics = histograms_.GetAllHistogramsRecorded();
     } while (std::string::npos ==
              all_metrics.find("HttpCache.MaxFileSizeOnInit"));
@@ -233,7 +233,7 @@ void CheckCacheResetStatus(base::HistogramTester* histograms, bool reset) {
   while (!histograms->GetBucketCount("HttpCache.HardReset", reset)) {
     content::FetchHistogramsFromChildProcesses();
     metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
+    base::PlatformThread::Sleep(base::Milliseconds(5));
   }
 
   if (reset) {
@@ -439,13 +439,7 @@ class AmbientAuthenticationTestWithPolicy : public policy::PolicyTest {
   policy::PolicyMap policies_;
 };
 
-// TODO(crbug/1242432): Flaky on Mac.
-#if defined(OS_MAC)
-#define MAYBE_RegularOnly DISABLED_RegularOnly
-#else
-#define MAYBE_RegularOnly RegularOnly
-#endif
-IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTestWithPolicy, MAYBE_RegularOnly) {
+IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTestWithPolicy, RegularOnly) {
   EnablePolicyWithValue(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY);
   IsAmbientAuthAllowedForProfilesTest();
 }
@@ -612,9 +606,15 @@ class ProfileNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest
       test_cert_verifier_service_factory_;
 };
 
+// https://crbug.com/1257679 -- This test is failing on several Mac builders.
+#if defined(OS_MAC)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
 IN_PROC_BROWSER_TEST_P(
     ProfileNetworkContextServiceCertVerifierBuiltinPermissionsPolicyTest,
-    Test) {
+    MAYBE_Test) {
   {
     CreateNewProfile()->GetDefaultStoragePartition()->GetNetworkContext();
 

@@ -305,13 +305,13 @@ bool CStretchEngine::ContinueStretchHorz(PauseIndicatorIface* pPause) {
       rows_to_go = kStrechPauseRows;
     }
 
-    const uint8_t* src_scan = m_pSource->GetScanline(m_CurRow);
+    const uint8_t* src_scan = m_pSource->GetScanline(m_CurRow).data();
     uint8_t* dest_scan =
         m_InterBuf.data() + (m_CurRow - m_SrcClip.top) * m_InterPitch;
     const uint8_t* src_scan_mask = nullptr;
     uint8_t* dest_scan_mask = nullptr;
     if (!m_ExtraAlphaBuf.empty()) {
-      src_scan_mask = m_pSource->GetAlphaMaskScanline(m_CurRow);
+      src_scan_mask = m_pSource->GetAlphaMaskScanline(m_CurRow).data();
       dest_scan_mask = m_ExtraAlphaBuf.data() +
                        (m_CurRow - m_SrcClip.top) * m_ExtraMaskPitch;
     }
@@ -588,7 +588,7 @@ void CStretchEngine::StretchVert() {
         break;
       }
     }
-    m_pDestBitmap->ComposeScanline(row - m_DestClip.top, m_DestScanline.data(),
-                                   m_DestMaskScanline.data());
+    m_pDestBitmap->ComposeScanline(row - m_DestClip.top, m_DestScanline,
+                                   m_DestMaskScanline);
   }
 }

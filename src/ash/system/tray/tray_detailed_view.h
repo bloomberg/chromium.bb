@@ -25,7 +25,6 @@ class ImageView;
 class Label;
 class ProgressBar;
 class ScrollView;
-class Separator;
 }  // namespace views
 
 namespace ash {
@@ -39,6 +38,10 @@ class ASH_EXPORT TrayDetailedView : public views::View,
                                     public ViewClickListener {
  public:
   explicit TrayDetailedView(DetailedViewDelegate* delegate);
+
+  TrayDetailedView(const TrayDetailedView&) = delete;
+  TrayDetailedView& operator=(const TrayDetailedView&) = delete;
+
   ~TrayDetailedView() override;
 
   // ViewClickListener:
@@ -109,16 +112,13 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // Helper functions which create and return the settings and help buttons,
   // respectively, used in the material design top-most header row. The caller
   // assumes ownership of the returned buttons.
-  views::Button* CreateInfoButton(views::Button::PressedCallback callback,
-                                  int info_accessible_name_id);
+  virtual views::Button* CreateInfoButton(
+      views::Button::PressedCallback callback,
+      int info_accessible_name_id);
+
   views::Button* CreateSettingsButton(views::Button::PressedCallback callback,
                                       int setting_accessible_name_id);
   views::Button* CreateHelpButton(views::Button::PressedCallback callback);
-
-  // Create a horizontal separator line to be drawn between rows in a detailed
-  // view above the sub-header rows. Caller takes ownership of the returned
-  // view.
-  views::Separator* CreateListSubHeaderSeparator();
 
   // Closes the bubble that contains the detailed view.
   void CloseBubble();
@@ -156,8 +156,6 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   views::Label* sub_header_label_ = nullptr;
   views::ImageView* sub_header_image_view_ = nullptr;
   const gfx::VectorIcon* sub_header_icon_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayDetailedView);
 };
 
 }  // namespace ash

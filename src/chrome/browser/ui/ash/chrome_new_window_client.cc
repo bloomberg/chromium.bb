@@ -13,6 +13,7 @@
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -21,8 +22,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
-#include "chrome/browser/ash/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -79,6 +81,7 @@
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/aura/window.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/url_constants.h"
@@ -155,7 +158,7 @@ bool IsIncognitoAllowed() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   return profile && !profile->IsGuestSession() &&
          IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-             IncognitoModePrefs::DISABLED;
+             IncognitoModePrefs::Availability::kDisabled;
 }
 
 // Converts the given ARC URL to an external file URL to read it via ARC content
@@ -273,6 +276,9 @@ class ChromeNewWindowClient::TabRestoreHelper
     tab_restore_service_->AddObserver(this);
   }
 
+  TabRestoreHelper(const TabRestoreHelper&) = delete;
+  TabRestoreHelper& operator=(const TabRestoreHelper&) = delete;
+
   ~TabRestoreHelper() override { tab_restore_service_->RemoveObserver(this); }
 
   sessions::TabRestoreService* tab_restore_service() {
@@ -298,8 +304,6 @@ class ChromeNewWindowClient::TabRestoreHelper
   ChromeNewWindowClient* delegate_;
   Profile* profile_;
   sessions::TabRestoreService* tab_restore_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabRestoreHelper);
 };
 
 void ChromeNewWindowClient::NewTab() {
@@ -333,6 +337,53 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito,
       is_incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
                    : profile,
       should_trigger_session_restore);
+}
+
+void ChromeNewWindowClient::NewWindowForWebUITabDrop(
+    aura::Window* source_window,
+    const ui::OSExchangeData& drop_data,
+    NewWindowForWebUITabDropCallback closure) {
+  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
+
+  BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
+      source_window->GetToplevelWindow());
+  if (!source_view) {
+    std::move(closure).Run(/*new_window=*/nullptr);
+    return;
+  }
+
+  Browser::CreateParams params = source_view->browser()->create_params();
+  params.user_gesture = true;
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = Browser::Create(params);
+  if (!browser) {
+    std::move(closure).Run(/*new_window=*/nullptr);
+    return;
+  }
+
+  if (!tab_strip_ui::DropTabsInNewBrowser(browser, drop_data)) {
+    browser->window()->Close();
+    std::move(closure).Run(/*new_window=*/nullptr);
+    return;
+  }
+
+  // TODO(https://crbug.com/1069869): evaluate whether the above
+  // failures can happen in valid states, and if so whether we need to
+  // reflect failure in UX.
+
+  // TODO(crbug.com/1225667): Loosen restriction for SplitViewController to be
+  // able to snap a window without calling Show(). It will simplify the logic
+  // without having to set and clear ash::kIsDraggingTabsKey by calling Show()
+  // after snapping the window to the right place.
+
+  // We need to mark the newly created window with |ash::kIsDraggingTabsKey|
+  // and clear it afterwards in order to prevent
+  // SplitViewController::AutoSnapController from snapping it on Show().
+  aura::Window* window = browser->window()->GetNativeWindow();
+  window->SetProperty(ash::kIsDraggingTabsKey, true);
+  browser->window()->Show();
+  window->ClearProperty(ash::kIsDraggingTabsKey);
+  std::move(closure).Run(window);
 }
 
 void ChromeNewWindowClient::OpenUrl(const GURL& url,

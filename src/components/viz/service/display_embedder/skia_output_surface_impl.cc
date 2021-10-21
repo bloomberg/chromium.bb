@@ -28,15 +28,17 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/single_task_sequence.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 
@@ -181,6 +183,13 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
       gpu_task_scheduler_(
           display_compositor_controller_->gpu_task_scheduler()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (features::IsUsingRawDraw()) {
+    auto* manager = dependency_->GetSharedImageManager();
+    DCHECK(manager->is_thread_safe());
+    representation_factory_ =
+        std::make_unique<gpu::SharedImageRepresentationFactory>(manager,
+                                                                nullptr);
+  }
 }
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
@@ -376,6 +385,23 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
   images_in_current_paint_.push_back(
       static_cast<ImageContextImpl*>(image_context));
 
+  const auto& mailbox_holder = image_context->mailbox_holder();
+
+  if (representation_factory_) {
+    auto* sync_point_manager = dependency_->GetSyncPointManager();
+    auto const& sync_token = mailbox_holder.sync_token;
+    if (sync_token.HasData() &&
+        !sync_point_manager->IsSyncTokenReleased(sync_token)) {
+      gpu_task_sync_tokens_.push_back(sync_token);
+      FlushGpuTasks(/*wait_for_finish=*/true);
+      image_context->mutable_mailbox_holder()->sync_token.Clear();
+    }
+
+    auto* impl = static_cast<ImageContextImpl*>(image_context);
+    if (impl->BeginRasterAccess(representation_factory_.get()))
+      return;
+  }
+
   if (image_context->has_image())
     return;
 
@@ -394,8 +420,8 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
           nullptr /* releaseProc */, image_context /* context */),
       backend_format);
 
-  if (image_context->mailbox_holder().sync_token.HasData()) {
-    resource_sync_tokens_.push_back(image_context->mailbox_holder().sync_token);
+  if (mailbox_holder.sync_token.HasData()) {
+    resource_sync_tokens_.push_back(mailbox_holder.sync_token);
     image_context->mutable_mailbox_holder()->sync_token.Clear();
   }
 }
@@ -924,7 +950,9 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
         capabilities_.uses_default_gl_framebuffer, false /* isTextureable */,
         GrProtected::kNo, false /* vkRTSupportsInputAttachment */,
         capabilities_.root_is_vulkan_secondary_command_buffer);
+#if BUILDFLAG(ENABLE_VULKAN)
     VkFormat vk_format = VK_FORMAT_UNDEFINED;
+#endif
     LOG_IF(DFATAL, !characterization.isValid())
         << "\n  surface_size=" << surface_size.ToString()
         << "\n  format=" << static_cast<int>(format)
@@ -934,10 +962,12 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
         << static_cast<int>(backend_format.backend())
         << "\n  backend_format.asGLFormat()="
         << static_cast<int>(backend_format.asGLFormat())
+#if BUILDFLAG(ENABLE_VULKAN)
         << "\n  backend_format.asVkFormat()="
         << static_cast<int>(backend_format.asVkFormat(&vk_format))
         << "\n  backend_format.asVkFormat() vk_format="
         << static_cast<int>(vk_format)
+#endif
         << "\n  surface_origin=" << static_cast<int>(surface_origin)
         << "\n  willGlFBO0=" << capabilities_.uses_default_gl_framebuffer;
     return characterization;
@@ -1206,8 +1236,7 @@ void SkiaOutputSurfaceImpl::OnObservingBeginFrameSourceChanged(bool observing) {
   if (num_allocated_buffers_ <= 1)
     return;
 
-  constexpr base::TimeDelta kDropFrameBufferDelay =
-      base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kDropFrameBufferDelay = base::Seconds(5);
   idle_drop_frame_buffer_timer_.Start(
       FROM_HERE, kDropFrameBufferDelay,
       base::BindOnce(

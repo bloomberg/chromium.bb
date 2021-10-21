@@ -181,6 +181,10 @@ class DownloadItemActivatedData
         start_offset_(start_offset),
         has_user_gesture_(has_user_gesture) {}
 
+  DownloadItemActivatedData(const DownloadItemActivatedData&) = delete;
+  DownloadItemActivatedData& operator=(const DownloadItemActivatedData&) =
+      delete;
+
   ~DownloadItemActivatedData() override = default;
 
   void AppendAsTraceFormat(std::string* out) const override {
@@ -217,7 +221,6 @@ class DownloadItemActivatedData
   DownloadDangerType danger_type_;
   int64_t start_offset_;
   bool has_user_gesture_;
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemActivatedData);
 };
 
 }  // namespace
@@ -238,7 +241,8 @@ DownloadItemImpl::RequestInfo::RequestInfo(
     bool has_user_gesture,
     const std::string& remote_address,
     base::Time start_time,
-    ::network::mojom::CredentialsMode credentials_mode)
+    ::network::mojom::CredentialsMode credentials_mode,
+    const absl::optional<net::IsolationInfo>& isolation_info)
     : url_chain(url_chain),
       referrer_url(referrer_url),
       site_url(site_url),
@@ -251,7 +255,8 @@ DownloadItemImpl::RequestInfo::RequestInfo(
       has_user_gesture(has_user_gesture),
       remote_address(remote_address),
       start_time(start_time),
-      credentials_mode(credentials_mode) {}
+      credentials_mode(credentials_mode),
+      isolation_info(isolation_info) {}
 
 DownloadItemImpl::RequestInfo::RequestInfo(const GURL& url)
     : url_chain(std::vector<GURL>(1, url)), start_time(base::Time::Now()) {}
@@ -335,7 +340,8 @@ DownloadItemImpl::DownloadItemImpl(
                     false,
                     std::string(),
                     start_time,
-                    ::network::mojom::CredentialsMode::kInclude),
+                    ::network::mojom::CredentialsMode::kInclude,
+                    absl::nullopt),
       guid_(guid),
       download_id_(download_id),
       mime_type_(mime_type),
@@ -398,7 +404,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                     info.has_user_gesture,
                     info.remote_address,
                     info.start_time,
-                    info.credentials_mode),
+                    info.credentials_mode,
+                    info.isolation_info),
       guid_(info.guid.empty() ? base::GenerateGUID() : info.guid),
       download_id_(download_id),
       response_headers_(info.response_headers),
@@ -526,6 +533,23 @@ void DownloadItemImpl::ValidateMixedContentDownload() {
   DVLOG(20) << __func__ << "() download=" << DebugString(true);
 
   mixed_content_status_ = MixedContentStatus::VALIDATED;
+
+  UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
+                      // may not be in a consistent state or around at all after
+                      // invoking observers, but we keep it here because it is
+                      // used in ValidateDangerousDownload(), too.
+                      // http://crbug.com/586610
+
+  MaybeCompleteDownload();
+}
+
+void DownloadItemImpl::AcceptIncognitoWarning() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!incognito_warning_accepted_);
+
+  DVLOG(20) << __func__ << "() download=" << DebugString(true);
+
+  incognito_warning_accepted_ = true;
 
   UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
                       // may not be in a consistent state or around at all after
@@ -1025,6 +1049,11 @@ bool DownloadItemImpl::IsMixedContent() const {
          mixed_content_status_ == MixedContentStatus::SILENT_BLOCK;
 }
 
+bool DownloadItemImpl::ShouldShowIncognitoWarning() const {
+  return base::FeatureList::IsEnabled(features::kIncognitoDownloadsWarning) &&
+         delegate_->IsOffTheRecord() && !incognito_warning_accepted_;
+}
+
 DownloadDangerType DownloadItemImpl::GetDangerType() const {
   return danger_type_;
 }
@@ -1042,8 +1071,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
   if (speed == 0)
     return false;
 
-  *remaining =
-      base::TimeDelta::FromSeconds((total_bytes_ - GetReceivedBytes()) / speed);
+  *remaining = base::Seconds((total_bytes_ - GetReceivedBytes()) / speed);
   return true;
 }
 
@@ -1150,10 +1178,15 @@ const absl::optional<DownloadSchedule>& DownloadItemImpl::GetDownloadSchedule()
   return request_info_.credentials_mode;
 }
 
+const absl::optional<net::IsolationInfo>& DownloadItemImpl::GetIsolationInfo()
+    const {
+  return request_info_.isolation_info;
+}
+
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
                                                DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(AllDataSaved());
+  DCHECK(AllDataSaved() || IsSavePackageDownload());
 
   // Danger type is only allowed to be set on an active download after all data
   // has been saved. This excludes all other states. In particular,
@@ -1175,7 +1208,7 @@ void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
 void DownloadItemImpl::OnAsyncScanningCompleted(
     DownloadDangerType danger_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(AllDataSaved());
+  DCHECK(AllDataSaved() || IsSavePackageDownload());
 
   DVLOG(20) << __func__ << "() danger_type=" << danger_type
             << " download=" << DebugString(true);
@@ -1942,7 +1975,6 @@ void DownloadItemImpl::SwapDownloadSchedule(
 // mark downloads complete.
 void DownloadItemImpl::MaybeCompleteDownload() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!IsSavePackageDownload());
 
   if (!IsDownloadReadyForCompletion(
           base::BindRepeating(&DownloadItemImpl::MaybeCompleteDownload,
@@ -2376,6 +2408,10 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
   if (IsMixedContent())
     return false;
 
+  if (ShouldShowIncognitoWarning()) {
+    return false;
+  }
+
   // Check for consistency before invoking delegate. Since there are no pending
   // target determination calls and the download is in progress, both the target
   // and current paths should be non-empty and they should point to the same
@@ -2746,7 +2782,8 @@ bool DownloadItemImpl::IsValidSavePackageStateTransition(
       return false;
 
     case IN_PROGRESS_INTERNAL:
-      return to == CANCELLED_INTERNAL || to == COMPLETE_INTERNAL;
+      return to == CANCELLED_INTERNAL || to == COMPLETE_INTERNAL ||
+             to == INTERRUPTED_INTERNAL;
 
     case MAX_DOWNLOAD_INTERNAL_STATE:
       NOTREACHED();

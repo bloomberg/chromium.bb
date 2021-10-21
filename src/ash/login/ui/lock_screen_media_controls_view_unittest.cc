@@ -60,6 +60,10 @@ class AnimationWaiter : public ui::LayerAnimationObserver {
       : animator_(host->layer()->GetAnimator()) {
     animator_->AddObserver(this);
   }
+
+  AnimationWaiter(const AnimationWaiter&) = delete;
+  AnimationWaiter& operator=(const AnimationWaiter&) = delete;
+
   ~AnimationWaiter() override { animator_->RemoveObserver(this); }
 
   // ui::LayerAnimationObserver:
@@ -78,8 +82,6 @@ class AnimationWaiter : public ui::LayerAnimationObserver {
  private:
   ui::LayerAnimator* animator_;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationWaiter);
 };
 
 }  // namespace
@@ -87,6 +89,12 @@ class AnimationWaiter : public ui::LayerAnimationObserver {
 class LockScreenMediaControlsViewTest : public LoginTestBase {
  public:
   LockScreenMediaControlsViewTest() = default;
+
+  LockScreenMediaControlsViewTest(const LockScreenMediaControlsViewTest&) =
+      delete;
+  LockScreenMediaControlsViewTest& operator=(
+      const LockScreenMediaControlsViewTest&) = delete;
+
   ~LockScreenMediaControlsViewTest() override = default;
 
   void SetUp() override {
@@ -265,8 +273,6 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockContentsView* lock_contents_view_ = nullptr;
   std::unique_ptr<TestMediaController> media_controller_;
   std::set<MediaSessionAction> actions_;
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
 
 TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateMetadataBetweenSessions) {
@@ -439,8 +445,8 @@ TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
   EXPECT_FALSE(progress_view()->GetVisible());
 
   media_session::MediaPosition media_position(
-      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
-      /*position=*/base::TimeDelta::FromSeconds(300), /*end_of_media=*/false);
+      /*playback_rate=*/1, /*duration=*/base::Seconds(600),
+      /*position=*/base::Seconds(300), /*end_of_media=*/false);
 
   // Simulate position changing.
   media_controls_view_->MediaSessionPositionChanged(media_position);
@@ -855,7 +861,7 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
   // Simulate scroll with velocity past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(scroll_start, scroll_end,
-                                   base::TimeDelta::FromMilliseconds(100), 3);
+                                   base::Milliseconds(100), 3);
 
   animation_waiter_->Wait();
 
@@ -874,8 +880,8 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsDistance) {
 
   // Simulate scroll with distance past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureScrollSequence(scroll_start, scroll_end,
-                                   base::TimeDelta::FromSeconds(3), 3);
+  generator->GestureScrollSequence(scroll_start, scroll_end, base::Seconds(3),
+                                   3);
 
   animation_waiter_->Wait();
 
@@ -898,8 +904,8 @@ TEST_F(LockScreenMediaControlsViewTest, DragReset) {
 
   // Simulate scroll with neither distance nor velocity past the thresholds.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureScrollSequence(scroll_start, scroll_end,
-                                   base::TimeDelta::FromSeconds(3), 3);
+  generator->GestureScrollSequence(scroll_start, scroll_end, base::Seconds(3),
+                                   3);
 
   animation_waiter_->Wait();
 
@@ -924,8 +930,8 @@ TEST_F(LockScreenMediaControlsViewTest, DragBounds) {
 
   // Simulate scroll that attempts to go below the view bounds.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureScrollSequence(scroll_start, scroll_end,
-                                   base::TimeDelta::FromSeconds(3), 3);
+  generator->GestureScrollSequence(scroll_start, scroll_end, base::Seconds(3),
+                                   3);
 
   animation_waiter_->Wait();
 
@@ -944,8 +950,8 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToClick) {
   EXPECT_EQ(0, media_controller()->seek_to_count());
 
   media_session::MediaPosition media_position(
-      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
-      /*position=*/base::TimeDelta::FromSeconds(100), /*end_of_media=*/false);
+      /*playback_rate=*/1, /*duration=*/base::Seconds(600),
+      /*position=*/base::Seconds(100), /*end_of_media=*/false);
 
   // Simulate initial position change.
   media_controls_view_->MediaSessionPositionChanged(media_position);
@@ -958,8 +964,7 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToClick) {
   // Verify the media was seeked to its halfway point.
   media_controls_view_->FlushForTesting();
   EXPECT_EQ(1, media_controller()->seek_to_count());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(300),
-            media_controller()->seek_to_time());
+  EXPECT_EQ(base::Seconds(300), media_controller()->seek_to_time());
 
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsUserActionHistogramName,
@@ -975,8 +980,8 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToTouch) {
   EXPECT_EQ(0, media_controller()->seek_to_count());
 
   media_session::MediaPosition media_position(
-      /*playback_rate=*/1, /*duration=*/base::TimeDelta::FromSeconds(600),
-      /*position=*/base::TimeDelta::FromSeconds(100), /*end_of_media=*/false);
+      /*playback_rate=*/1, /*duration=*/base::Seconds(600),
+      /*position=*/base::Seconds(100), /*end_of_media=*/false);
 
   // Simulate initial position change.
   media_controls_view_->MediaSessionPositionChanged(media_position);
@@ -988,8 +993,7 @@ TEST_F(LockScreenMediaControlsViewTest, SeekToTouch) {
   // Verify the media was seeked to its halfway point.
   media_controls_view_->FlushForTesting();
   EXPECT_EQ(1, media_controller()->seek_to_count());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(300),
-            media_controller()->seek_to_time());
+  EXPECT_EQ(base::Seconds(300), media_controller()->seek_to_time());
 
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsUserActionHistogramName,

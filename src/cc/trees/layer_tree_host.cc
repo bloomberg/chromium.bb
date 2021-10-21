@@ -271,6 +271,7 @@ int LayerTreeHost::GetId() const {
 }
 
 int LayerTreeHost::SourceFrameNumber() const {
+  DCHECK(task_runner_provider_->IsMainThread());
   return source_frame_number_;
 }
 
@@ -347,7 +348,9 @@ void LayerTreeHost::RequestMainFrameUpdate(bool report_cc_metrics) {
 // code that is logically a main thread operation, e.g. deletion of a Layer,
 // should be delayed until the LayerTreeHost::CommitComplete, which will run
 // after the commit, but on the main thread.
-void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
+void LayerTreeHost::FinishCommitOnImplThread(
+    LayerTreeHostImpl* host_impl,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
   DCHECK(task_runner_provider_->IsImplThread());
 
   TRACE_EVENT0("cc,benchmark", "LayerTreeHost::FinishCommitOnImplThread");
@@ -364,7 +367,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     next_commit_forces_recalculate_raster_scales_ = false;
   }
 
-  sync_tree->set_source_frame_number(SourceFrameNumber());
   if (!pending_presentation_time_callbacks_.empty()) {
     sync_tree->AddPresentationCallbacks(
         std::move(pending_presentation_time_callbacks_));
@@ -394,7 +396,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     PushLayerTreePropertiesTo(sync_tree);
     PushLayerTreeHostPropertiesTo(host_impl);
 
-    sync_tree->PassSwapPromises(swap_promise_manager_.TakeSwapPromises());
+    sync_tree->PassSwapPromises(std::move(swap_promises));
     sync_tree->AppendEventsMetricsFromMainThread(
         events_metrics_manager_.TakeSavedEventsMetrics());
 
@@ -437,6 +439,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+
+  SetImplCommitFinishTime(base::TimeTicks::Now());
 
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
@@ -502,9 +506,18 @@ void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
   tree_impl->SetPropertyTrees(&property_trees_);
 }
 
-void LayerTreeHost::WillCommit() {
+void LayerTreeHost::WillCommit(std::unique_ptr<CompletionEvent> completion) {
+  DCHECK(!commit_completion_event_);
+  commit_completion_event_ = std::move(completion);
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
+}
+
+void LayerTreeHost::WaitForCommitCompletion() {
+  if (commit_completion_event_) {
+    commit_completion_event_->Wait();
+    commit_completion_event_ = nullptr;
+  }
 }
 
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
@@ -517,9 +530,12 @@ bool LayerTreeHost::IsUsingLayerLists() const {
 }
 
 void LayerTreeHost::CommitComplete() {
+  // This DCHECK ensures that WaitForCommitCompletion() will not block.
+  DCHECK(!in_commit());
+  WaitForCommitCompletion();
   source_frame_number_++;
-  client_->DidCommit(impl_commit_start_time_);
-  impl_commit_start_time_ = base::TimeTicks();
+  client_->DidCommit(impl_commit_start_time_, impl_commit_finish_time_);
+  impl_commit_start_time_ = impl_commit_finish_time_ = base::TimeTicks();
   if (did_complete_scale_animation_) {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;
@@ -924,7 +940,7 @@ bool LayerTreeHost::DoUpdateLayers() {
 
 void LayerTreeHost::ApplyViewportChanges(
     const CompositorCommitData& commit_data) {
-  gfx::ScrollOffset inner_viewport_scroll_delta;
+  gfx::Vector2dF inner_viewport_scroll_delta;
   if (commit_data.inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta =
         commit_data.inner_viewport_scroll.scroll_delta;
@@ -982,7 +998,7 @@ void LayerTreeHost::ApplyViewportChanges(
 
 void LayerTreeHost::UpdateScrollOffsetFromImpl(
     const ElementId& id,
-    const gfx::ScrollOffset& delta,
+    const gfx::Vector2dF& delta,
     const absl::optional<TargetSnapAreaElementIds>& snap_target_ids) {
   if (IsUsingLayerLists()) {
     auto& scroll_tree = property_trees()->scroll_tree;
@@ -1281,8 +1297,8 @@ void LayerTreeHost::SetViewportRectAndScale(
       local_surface_id_from_parent_;
   SetLocalSurfaceIdFromParent(local_surface_id_from_parent);
 
-  TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "LayerTreeHostSize",
-                                  TRACE_ID_LOCAL(this));
+  TRACE_EVENT_NESTABLE_ASYNC_END1("cc", "LayerTreeHostSize",
+                                  TRACE_ID_LOCAL(this), "id", id_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("cc", "LayerTreeHostSize",
                                     TRACE_ID_LOCAL(this), "size",
                                     device_viewport_rect.ToString(), "lsid",
@@ -1909,7 +1925,7 @@ void LayerTreeHost::SetElementTransformMutated(
 void LayerTreeHost::SetElementScrollOffsetMutated(
     ElementId element_id,
     ElementListType list_type,
-    const gfx::ScrollOffset& scroll_offset) {
+    const gfx::Vector2dF& scroll_offset) {
   // Do nothing. Scroll deltas will be sent from the compositor thread back
   // to the main thread in the same manner as during non-animated
   // compositor-driven scrolling.
@@ -1932,7 +1948,7 @@ void LayerTreeHost::MaximumScaleChanged(ElementId element_id,
   property_trees()->MaximumAnimationScaleChanged(element_id, maximum_scale);
 }
 
-gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
+gfx::Vector2dF LayerTreeHost::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   return property_trees()->scroll_tree.current_scroll_offset(element_id);
 }

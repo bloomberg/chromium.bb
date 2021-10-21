@@ -83,10 +83,7 @@ static int query_formats(AVFilterContext *ctx)
     // TODO: we can probably add way more pixel formats without any other
     // changes; anything with 8-bit luma in first plane should be working
     static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE};
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int clip_line(int *sx, int *sy, int *ex, int *ey, int maxx)
@@ -303,11 +300,10 @@ static const AVFilterPad codecview_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = filter_frame,
         .config_props   = config_input,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad codecview_outputs[] = {
@@ -315,7 +311,6 @@ static const AVFilterPad codecview_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_codecview = {
@@ -323,8 +318,8 @@ const AVFilter ff_vf_codecview = {
     .description   = NULL_IF_CONFIG_SMALL("Visualize information about some codecs."),
     .priv_size     = sizeof(CodecViewContext),
     .query_formats = query_formats,
-    .inputs        = codecview_inputs,
-    .outputs       = codecview_outputs,
+    FILTER_INPUTS(codecview_inputs),
+    FILTER_OUTPUTS(codecview_outputs),
     .priv_class    = &codecview_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

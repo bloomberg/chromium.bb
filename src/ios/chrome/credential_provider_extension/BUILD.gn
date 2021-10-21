@@ -91,13 +91,12 @@ ios_appex_bundle("credential_provider_extension") {
   extra_substitutions = [
     "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
-    "CREDENTIAL_PROVIDER_EXTENSION_BUNDLE_ID=$chromium_bundle_id.CredentialProviderExtension",
     "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
   ]
 
   entitlements_target = ":entitlements"
   info_plist_target = ":tweak_info_plist"
-  xcode_product_bundle_id = "$chromium_bundle_id.CredentialProviderExtension"
+  bundle_identifier = "$chromium_bundle_id.CredentialProviderExtension"
 }
 
 generate_localizable_strings("system_strings") {
@@ -115,18 +114,11 @@ generate_localizable_strings("system_strings") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "metrics_util_unittest.mm",
-    "password_spec_fetcher_unittest.mm",
-    "password_util_unittest.mm",
-  ]
+  sources = [ "metrics_util_unittest.mm" ]
   deps = [
     ":metrics_util",
-    ":password_spec_fetcher",
-    ":password_util",
     "//base",
     "//base/test:test_support",
-    "//components/autofill/core/browser/proto",
     "//ios/chrome/common/app_group",
     "//testing/gtest",
   ]
@@ -152,21 +144,6 @@ buildflag_header("password_spec_fetcher_buildflags") {
   flags = [ "GOOGLE_API_KEY=@\"$ios_credential_provider_extension_api_key\"" ]
 }
 
-source_set("password_spec_fetcher") {
-  sources = [
-    "password_spec_fetcher.h",
-    "password_spec_fetcher.mm",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  deps = [
-    ":password_spec_fetcher_buildflags",
-    "//base",
-    "//components/autofill/core/browser/proto",
-    "//components/password_manager/core/browser:password_generator",
-  ]
-  frameworks = [ "Foundation.framework" ]
-}
-
 source_set("password_util") {
   sources = [
     "password_util.h",
@@ -177,11 +154,9 @@ source_set("password_util") {
     "//base",
     "//ios/chrome/common/app_group",
     "//ios/chrome/credential_provider_extension:metrics_util",
+    "//ios/components/credential_provider_extension:password_util",
   ]
-  frameworks = [
-    "Security.framework",
-    "Foundation.framework",
-  ]
+  frameworks = [ "Foundation.framework" ]
 }
 
 source_set("metrics_util") {

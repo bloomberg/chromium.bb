@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/ranking/mrfu_cache.pb.h"
@@ -16,9 +17,10 @@
 namespace app_list {
 
 // The most-recently-frequently-used cache stores a mapping from strings -
-// called items - to scores that is persisted to disk. The cache has two
+// called items - to scores that is persisted to disk. The cache has two main
 // operations: |Use| boosts the score of an item, and |Get| returns the score
-// of an item.
+// of an item. |GetNormalized| returns the score of an item divided by the
+// sum of all scores.
 //
 // THEORY
 //
@@ -79,7 +81,7 @@ class MrfuCache {
     // Items below min_score may be deleted.
     float min_score = 0.01f;
     // How long to wait until writing any updates to disk.
-    base::TimeDelta write_delay = base::TimeDelta::FromSeconds(30);
+    base::TimeDelta write_delay = base::Seconds(30);
   };
 
   MrfuCache(const base::FilePath& path, const Params& params);
@@ -88,9 +90,14 @@ class MrfuCache {
   MrfuCache(const MrfuCache&) = delete;
   MrfuCache& operator=(const MrfuCache&) = delete;
 
+  // Records the use of |item|, increasing its score and decaying other scores.
   void Use(const std::string& item);
 
+  // Returns the score of |item|.
   float Get(const std::string& item);
+
+  // Returns the score of |item| divided by the sum of all scores.
+  float GetNormalized(const std::string& item);
 
  private:
   friend class MrfuCacheTest;

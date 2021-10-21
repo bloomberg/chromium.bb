@@ -22,6 +22,9 @@ class TestShelfModelObserver : public ShelfModelObserver {
  public:
   TestShelfModelObserver() = default;
 
+  TestShelfModelObserver(const TestShelfModelObserver&) = delete;
+  TestShelfModelObserver& operator=(const TestShelfModelObserver&) = delete;
+
   // Returns a string description of the changes that have occurred since this
   // was last invoked. Resets state to initial state.
   std::string StateStringAndClear() {
@@ -61,8 +64,6 @@ class TestShelfModelObserver : public ShelfModelObserver {
   int changed_count_ = 0;
   int moved_count_ = 0;
   int delegate_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };
 
 }  // namespace
@@ -70,6 +71,10 @@ class TestShelfModelObserver : public ShelfModelObserver {
 class ShelfModelTest : public testing::Test {
  public:
   ShelfModelTest() = default;
+
+  ShelfModelTest(const ShelfModelTest&) = delete;
+  ShelfModelTest& operator=(const ShelfModelTest&) = delete;
+
   ~ShelfModelTest() override = default;
 
   void SetUp() override {
@@ -95,9 +100,6 @@ class ShelfModelTest : public testing::Test {
 
   std::unique_ptr<ShelfModel> model_;
   std::unique_ptr<TestShelfModelObserver> observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfModelTest);
 };
 
 TEST_F(ShelfModelTest, BasicAssertions) {

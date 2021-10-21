@@ -17,8 +17,10 @@
 
 namespace version_info {
 
-std::string GetProductNameAndVersionForUserAgent() {
-  return "Chrome/" + GetVersionNumber();
+const std::string& GetProductNameAndVersionForUserAgent() {
+  static const base::NoDestructor<std::string> product_and_version(
+      "Chrome/" + GetVersionNumber());
+  return *product_and_version;
 }
 
 std::string GetProductName() {
@@ -30,8 +32,8 @@ std::string GetVersionNumber() {
 }
 
 std::string GetMajorVersionNumber() {
-  DCHECK(version_info::GetVersion().IsValid());
-  return base::NumberToString(version_info::GetVersion().components()[0]);
+  DCHECK(GetVersion().IsValid());
+  return base::NumberToString(GetVersion().components()[0]);
 }
 
 const base::Version& GetVersion() {

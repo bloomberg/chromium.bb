@@ -154,6 +154,11 @@
       implied_by: ["CorsRFC1918"],
     },
     {
+      name: "AdInterestGroupAPI",
+      origin_trial_feature_name: "AdInterestGroupAPI",
+      implied_by: ["Fledge", "Parakeet"],
+    },
+    {
       name: "AdTagging",
       status: "test",
     },
@@ -199,6 +204,7 @@
     },
     {
       name: "AppHistory",
+      origin_trial_feature_name: "AppHistory",
       status: "experimental",
     },
     {
@@ -216,6 +222,7 @@
     },
     {
       name: "AutoExpandDetailsElement",
+      status: "experimental",
     },
     {
       name: "AutofillShadowDOM",
@@ -349,10 +356,6 @@
       status: "experimental",
     },
     {
-      name: "CanvasHitRegion",
-      status: "experimental",
-    },
-    {
       name: "CanvasImageSmoothing",
       status: "experimental",
     },
@@ -388,11 +391,11 @@
       status: "experimental",
     },
     {
-      name: "ClipboardReadPng",
+      name: "ClipboardSvg",
       status: "experimental",
     },
     {
-      name: "ClipboardSvg",
+      name: "CloseWatcher",
       status: "experimental",
     },
     {
@@ -410,6 +413,9 @@
     {
       name: "CompositeBGColorAnimation",
       status: "experimental",
+    },
+    {
+      name: "CompositeBoxShadowAnimation",
     },
     {
       name: "CompositeClipPathAnimation",
@@ -435,6 +441,7 @@
     },
     {
       name: "ConditionalFocus",
+      origin_trial_feature_name: "ConditionalFocus",
       depends_on: ["GetDisplayMedia"],
       status: {"Android": "", "default": "experimental"},
     },
@@ -520,10 +527,7 @@
     },
     {
       // https://drafts.csswg.org/css-counter-styles/#counter-style-speak-as
-      name: "CSSAtRuleCounterStyleSpeakAsDescriptor"
-    },
-    {
-      name: "CSSCalcAsInt",
+      name: "CSSAtRuleCounterStyleSpeakAsDescriptor",
       status: "test",
     },
     {
@@ -556,7 +560,7 @@
       // elements have any containment applied.
       // https://drafts.csswg.org/css-contain-2/#contain-property
       name: "CSSContainedBodyPropagation",
-      status: "test",
+      status: "stable",
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-queries
@@ -710,6 +714,12 @@
       status: "experimental",
     },
     {
+      // Match input elements which have been autofilled by user agent.
+      // https://html.spec.whatwg.org/multipage/semantics-other.html#selector-autofill
+      name: "CSSPseudoAutofill",
+      status: "experimental",
+    },
+    {
       name: "CSSPseudoDir",
       status: "experimental",
     },
@@ -796,10 +806,6 @@
     },
     {
       name: "Database",
-      status: "stable",
-    },
-    {
-      name: "DeclarativeShadowDOM",
       status: "stable",
     },
     {
@@ -929,8 +935,7 @@
     },
     {
       name: "EditContext",
-      settable_from_internals: true,
-      status: "test",
+      status: "experimental",
     },
     {
       // http://crbug.com/707656 content editable in LayoutNG.
@@ -939,7 +944,7 @@
     },
     {
       name: "EncryptedMediaSessionClosedReason",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EnterKeyHintAttribute",
@@ -1062,8 +1067,8 @@
       status: "experimental",
     },
     {
-      name: "FledgeInterestGroupAPI",
-      origin_trial_feature_name: "FledgeInterestGroupAPI",
+      name: "Fledge",
+      origin_trial_feature_name: "Fledge",
     },
     {
       name: "FocuslessSpatialNavigation",
@@ -1115,7 +1120,7 @@
     },
     {
       name: "FractionalLineHeight",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FractionalScrollOffsets",
@@ -1156,6 +1161,9 @@
       status: "experimental",
     },
     {
+      name: "HighlightInheritance",
+    },
+    {
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
@@ -1169,14 +1177,6 @@
     {
       name: "HTMLSelectMenuElement",
       status: "experimental",
-    },
-    {
-      name: "IDBPutAll",
-      status: "experimental",
-    },
-    {
-      name: "IDBRelaxedDurability",
-      status: "stable",
     },
     {
       name: "IdleDetection",
@@ -1198,6 +1198,10 @@
     },
     {
       name: "InstalledApp",
+      status: "stable",
+    },
+    {
+      name: "InteractionId",
       status: "stable",
     },
     {
@@ -1226,10 +1230,6 @@
       settable_from_internals: true,
     },
     {
-      name: "LangClientHintHeader",
-      status: "experimental",
-    },
-    {
       // LayoutNG has been enabled in M76, but we still keep this flag for
       // testing. See web_tests/FlagExpectations/disable-layout-ng for more
       // details about running web tests with LayoutNG disabled. This flag also
@@ -1241,7 +1241,7 @@
     },
     {
       name: "LayoutNGBlockFragmentation",
-      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGPrinting"],
+      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting"],
     },
     {
       name: "LayoutNGBlockInInline",
@@ -1278,9 +1278,10 @@
       status: "stable"
     },
     {
-      name: "LayoutNGLayoutOverflowRecalc",
+      // Block fragmentation support in the grid layout algorithm.
+      // https://drafts.csswg.org/css-grid-1/#pagination
+      name: "LayoutNGGridFragmentation",
       depends_on: ["LayoutNG"],
-      status: "stable",
     },
     {
       name: "LayoutNGPrinting",
@@ -1456,10 +1457,6 @@
     {
 
       name: "MobileLayoutTheme",
-    },
-    {
-      name: "ModalCloseWatcher",
-      status: "experimental",
     },
     {
       name: "ModuleServiceWorker",
@@ -1655,6 +1652,10 @@
       settable_from_internals: true,
     },
     {
+      name: "Parakeet",
+      origin_trial_feature_name: "Parakeet",
+    },
+    {
       // This flag enables the Manifest parser to handle URL Protocols.
       // Also enabled when blink::features::kWebAppEnableProtocolHandlers is
       // overridden on the command line (or via chrome://flags).
@@ -1683,10 +1684,6 @@
       status: "stable",
     },
     {
-      name: "PaymentHandlerMinimalUI",
-      status: "experimental",
-    },
-    {
       name: "PaymentMethodChangeEvent",
       status: "stable",
     },
@@ -1694,6 +1691,11 @@
     {
       name: "PaymentRequest",
       status: "experimental",
+    },
+    // TODO(crbug.com/1209835): this feature is getting deprecated.
+    {
+      name: "PaymentRequestBasicCard",
+      status: "stable",
     },
     {
       name: "PaymentRequestMerchantValidationEvent",
@@ -1793,6 +1795,7 @@
     {
       name: "PrefersContrast",
       depends_on: ["ForcedColors"],
+      status: "stable",
     },
     {
       name: "PrefersReducedData",
@@ -1815,7 +1818,7 @@
     },
     {
       name: "PriorityHints",
-      origin_trial_feature_name: "PriorityHints",
+      origin_trial_feature_name: "PriorityHintsAPI",
       status: "experimental",
     },
     {
@@ -1835,6 +1838,10 @@
     },
     {
       name: "QuotaChange",
+      status: "experimental",
+    },
+    {
+      name: "RegionCapture",
       status: "experimental",
     },
     {
@@ -1960,7 +1967,7 @@
     },
     {
       name: "ScriptElementSupports",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ScrollbarGutter",
@@ -2055,10 +2062,6 @@
       status: "experimental",
     },
     {
-      name: "SignedExchangePrefetchCacheForNavigations",
-      status: "experimental",
-    },
-    {
       name: "SignedExchangeSubresourcePrefetch",
       origin_trial_feature_name: "SignedExchangeSubresourcePrefetch",
       status: "experimental",
@@ -2124,7 +2127,8 @@
     },
     {
       name: "SVGTextNG",
-      status: "experimental"
+      depends_on: ["LayoutNG"],
+      status: "stable"
     },
     {
       // Synchronously load web fonts inlined as data urls (crbug.com/1236283)
@@ -2157,10 +2161,6 @@
     {
       name: "TextDetector",
       status: "experimental",
-    },
-    {
-      name: "TextFragmentColorChange",
-      status: "test",
     },
     {
       name: "TextFragmentIdentifiers",
@@ -2317,6 +2317,10 @@
       status: "experimental",
     },
     {
+      name: "ViewportSegments",
+      status: "experimental",
+    },
+    {
       name: "VirtualKeyboard",
       status: "stable",
     },
@@ -2388,6 +2392,11 @@
       name: "WebAssemblyCSP",
     },
     {
+      name: "WebAssemblyDynamicTiering",
+      origin_trial_feature_name: "WebAssemblyDynamicTiering",
+      status: "test",
+    },
+    {
       name: "WebAssemblyExceptions",
       origin_trial_feature_name: "WebAssemblyExceptions",
       status: "test",
@@ -2397,6 +2406,12 @@
     {
       name: "WebAuth",
       status: "stable",
+    },
+    // When enabled adds the authenticator attachment used for registration and
+    // authentication to the public key credential response.
+    {
+      name: "WebAuthAuthenticatorAttachment",
+      status: "test"
     },
     // A more subtle UI for WebAuthn that is web exposed. Under development.
     // It's controlled by the corresponding Chromium feature which needs to
@@ -2618,10 +2633,6 @@
     {
       name: "WindowPlacement",
       origin_trial_feature_name: "WindowPlacementOT2",
-      status: "experimental",
-    },
-    {
-      name: "WindowSegments",
       status: "experimental",
     },
     {

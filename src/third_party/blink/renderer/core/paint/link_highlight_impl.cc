@@ -185,8 +185,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
 
   is_animating_ = true;
   // FIXME: Should duration be configurable?
-  constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(100);
-  constexpr auto kMinPreFadeDuration = base::TimeDelta::FromMilliseconds(100);
+  constexpr auto kFadeDuration = base::Milliseconds(100);
+  constexpr auto kMinPreFadeDuration = base::Milliseconds(100);
 
   auto curve = std::make_unique<CompositorFloatAnimationCurve>();
 
@@ -224,7 +224,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 }
 
-void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
+void LinkHighlightImpl::NotifyAnimationFinished(base::TimeDelta, int) {
   // Since WebViewImpl may hang on to us for a while, make sure we
   // release resources as soon as possible.
   ReleaseResources();
@@ -329,12 +329,13 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
       layer->SetNeedsDisplay();
     }
 
-    DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
-                        ("LinkHighlight"));
+    DEFINE_STATIC_LOCAL(
+        Persistent<LiteralDebugNameClient>, debug_name_client,
+        (MakeGarbageCollected<LiteralDebugNameClient>("LinkHighlight")));
 
     auto property_tree_state = fragment->LocalBorderBoxProperties().Unalias();
     property_tree_state.SetEffect(Effect());
-    RecordForeignLayer(context, debug_name_client,
+    RecordForeignLayer(context, *debug_name_client,
                        DisplayItem::kForeignLayerLinkHighlight, layer,
                        bounding_rect.Location(), &property_tree_state);
   }

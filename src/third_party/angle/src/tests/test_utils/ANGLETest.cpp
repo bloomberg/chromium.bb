@@ -713,8 +713,8 @@ void ANGLETestBase::ANGLETestSetUp()
             FAIL() << "Internal parameter conflict error.";
         }
 
-        if (!mFixture->eglWindow->initializeSurface(mFixture->osWindow, driverLib,
-                                                    mFixture->configParams))
+        if (mFixture->eglWindow->initializeSurface(
+                mFixture->osWindow, driverLib, mFixture->configParams) != GLWindowResult::NoError)
         {
             FAIL() << "egl surface init failed.";
         }
@@ -1227,7 +1227,7 @@ bool ANGLETestBase::platformSupportsMultithreading() const
 
 void ANGLETestBase::checkD3D11SDKLayersMessages()
 {
-#if defined(ANGLE_PLATFORM_WINDOWS)
+#if defined(ANGLE_ENABLE_D3D11)
     // On Windows D3D11, check ID3D11InfoQueue to see if any D3D11 SDK Layers messages
     // were outputted by the test. We enable the Debug layers in Release tests as well.
     if (mIgnoreD3D11SDKLayersWarnings ||
@@ -1295,7 +1295,7 @@ void ANGLETestBase::checkD3D11SDKLayersMessages()
     }
 
     SafeRelease(infoQueue);
-#endif  // defined(ANGLE_PLATFORM_WINDOWS)
+#endif  // defined(ANGLE_ENABLE_D3D11)
 }
 
 void ANGLETestBase::setWindowWidth(int width)

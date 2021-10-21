@@ -8,6 +8,7 @@ window.onload = () => {
   let messageSource;
 
   const content = document.querySelector('#content');
+  let contentUrl;
 
   window.addEventListener('message', event => {
     if (event.origin !== FILES_APP_ORIGIN) {
@@ -15,12 +16,33 @@ window.onload = () => {
       return;
     }
 
+    // Release Object URLs generated with URL.createObjectURL.
+    URL.revokeObjectURL(contentUrl);
+    contentUrl = '';
+
+    /** @type {!UntrustedPreviewData} */
+    const data = event.data;
+
     messageSource = event.source;
-    switch (event.data.type) {
+
+    const sourceContent = data.sourceContent;
+    switch (sourceContent.dataType) {
+      case 'url':
+        contentUrl = /** @type {string} */ (sourceContent.data);
+        break;
+      case 'blob':
+        contentUrl =
+            URL.createObjectURL(/** @type {!Blob} */ (sourceContent.data));
+        break;
+      default:
+        contentUrl = '';
+    }
+
+    switch (data.type) {
       case 'html':
         content.textContent = '';
         contentChanged(null);
-        fetch(event.data.src)
+        fetch(contentUrl)
             .then((response) => {
               return response.text();
             })
@@ -32,7 +54,7 @@ window.onload = () => {
       case 'audio':
       case 'video':
         content.onloadeddata = (e) => contentChanged(e.target.src);
-        content.src = event.data.src;
+        content.src = contentUrl;
         break;
       case 'image':
         content.remove();
@@ -49,11 +71,11 @@ window.onload = () => {
           contentDecodeFailed();
         };
 
-        image.src = event.data.src;
+        image.src = contentUrl;
         break;
       default:
         content.onload = (e) => contentChanged(e.target.src);
-        content.src = event.data.src;
+        content.src = contentUrl;
         break;
     }
   });

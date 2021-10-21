@@ -276,13 +276,11 @@ void JavaScriptIsolatedWorldRequest::Completed(
 }
 
 HitTestResult HitTestResultForRootFramePos(
-    LocalFrame* main_frame,
+    LocalFrame* frame,
     const PhysicalOffset& pos_in_root_frame) {
-  DCHECK(main_frame->IsMainFrame());
-
   HitTestLocation location(
-      main_frame->View()->ConvertFromRootFrame(pos_in_root_frame));
-  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtLocation(
+      frame->View()->ConvertFromRootFrame(pos_in_root_frame));
+  HitTestResult result = frame->GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
@@ -319,9 +317,9 @@ void ActiveURLMessageFilter::DidDispatchOrReject(mojo::Message* message,
 
 LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
     : frame_(frame),
-      loading_power_mode_voter_(
+      script_execution_power_mode_voter_(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.LocalFrameMojoHandler")) {
+              "PowerModeVoter.ScriptExecutionVoter")) {
   frame.GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       back_forward_cache_controller_host_remote_.BindNewEndpointAndPassReceiver(
           frame.GetTaskRunner(TaskType::kInternalDefault)));
@@ -769,7 +767,7 @@ void LocalFrameMojoHandler::ReportContentSecurityPolicyViolation(
       violation->directive, directive_type, violation->console_message,
       violation->blocked_url, violation->report_endpoints,
       violation->use_reporting_api, violation->header, violation->type,
-      ContentSecurityPolicy::ContentSecurityPolicyViolationType::kURLViolation,
+      ContentSecurityPolicyViolationType::kURLViolation,
       std::move(source_location), context_frame,
       violation->after_redirect ? RedirectStatus::kFollowedRedirect
                                 : RedirectStatus::kNoRedirect,
@@ -782,13 +780,6 @@ void LocalFrameMojoHandler::DidUpdateFramePolicy(
   // policy for frames with a remote owner.
   SECURITY_CHECK(IsA<RemoteFrameOwner>(frame_->Owner()));
   To<RemoteFrameOwner>(frame_->Owner())->SetFramePolicy(frame_policy);
-}
-
-void LocalFrameMojoHandler::OnScreensChange() {
-  if (RuntimeEnabledFeatures::WindowPlacementEnabled(DomWindow())) {
-    // Allow fullscreen requests shortly after user-generated screens changes.
-    frame_->transient_allow_fullscreen_.Activate();
-  }
 }
 
 void LocalFrameMojoHandler::OnPostureChanged(
@@ -828,7 +819,8 @@ void LocalFrameMojoHandler::JavaScriptMethodExecuteRequest(
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result;
-  loading_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kLoading);
+  script_execution_power_mode_voter_->VoteFor(
+      power_scheduler::PowerMode::kScriptExecution);
   if (!CallMethodOnFrame(frame_, object_name, method_name, std::move(arguments),
                          converter.get())
            .ToLocal(&result)) {
@@ -840,8 +832,8 @@ void LocalFrameMojoHandler::JavaScriptMethodExecuteRequest(
     std::move(callback).Run({});
   }
 
-  loading_power_mode_voter_->ResetVoteAfterTimeout(
-      power_scheduler::PowerModeVoter::kLoadingTimeout);
+  script_execution_power_mode_voter_->ResetVoteAfterTimeout(
+      power_scheduler::PowerModeVoter::kScriptExecutionTimeout);
 }
 
 void LocalFrameMojoHandler::JavaScriptExecuteRequest(
@@ -851,7 +843,8 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequest(
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequest",
                        TRACE_EVENT_SCOPE_THREAD);
 
-  loading_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kLoading);
+  script_execution_power_mode_voter_->VoteFor(
+      power_scheduler::PowerMode::kScriptExecution);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
@@ -870,8 +863,8 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequest(
     std::move(callback).Run({});
   }
 
-  loading_power_mode_voter_->ResetVoteAfterTimeout(
-      power_scheduler::PowerModeVoter::kLoadingTimeout);
+  script_execution_power_mode_voter_->ResetVoteAfterTimeout(
+      power_scheduler::PowerModeVoter::kScriptExecutionTimeout);
 }
 
 void LocalFrameMojoHandler::JavaScriptExecuteRequestForTests(
@@ -935,7 +928,8 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
     return;
   }
 
-  loading_power_mode_voter_->VoteFor(power_scheduler::PowerMode::kLoading);
+  script_execution_power_mode_voter_->VoteFor(
+      power_scheduler::PowerMode::kScriptExecution);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   scoped_refptr<DOMWrapperWorld> isolated_world =
@@ -949,8 +943,8 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
           frame_, wants_result, std::move(callback)));
   executor->Run();
 
-  loading_power_mode_voter_->ResetVoteAfterTimeout(
-      power_scheduler::PowerModeVoter::kLoadingTimeout);
+  script_execution_power_mode_voter_->ResetVoteAfterTimeout(
+      power_scheduler::PowerModeVoter::kScriptExecutionTimeout);
 }
 
 #if defined(OS_MAC)
@@ -1137,8 +1131,6 @@ void LocalFrameMojoHandler::ClosePage(
 void LocalFrameMojoHandler::PluginActionAt(
     const gfx::Point& location,
     mojom::blink::PluginActionType action) {
-  SECURITY_CHECK(frame_->IsMainFrame());
-
   // TODO(bokan): Location is probably in viewport coordinates
   HitTestResult result =
       HitTestResultForRootFramePos(frame_, PhysicalOffset(IntPoint(location)));

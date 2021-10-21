@@ -633,7 +633,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     if (role == ROLE_SYSTEM_MENUITEM) {
       event_type = ax::mojom::Event::kFocus;
     } else if (role == ROLE_SYSTEM_LISTITEM) {
-      if (AXPlatformNodeBase* container = GetSelectionContainer()) {
+      if (const AXPlatformNodeBase* container = GetSelectionContainer()) {
         if (container->GetRole() == ax::mojom::Role::kListBox &&
             !container->HasState(ax::mojom::State::kMultiselectable) &&
             GetDelegate()->GetFocus() == GetNativeViewAccessible()) {
@@ -4300,8 +4300,8 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
         V_VT(result) = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kPlaceholder,
                                  &V_BSTR(result));
-      } else if (GetData().GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
-                 GetData().GetNameFrom() == ax::mojom::NameFrom::kTitle) {
+      } else if (GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
+                 GetNameFrom() == ax::mojom::NameFrom::kTitle) {
         V_VT(result) = VT_BSTR;
         GetNameAsBstr(&V_BSTR(result));
       } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
@@ -4844,8 +4844,7 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(
       result->Insert<VT_BOOL>(IsInvisibleOrIgnored());
       break;
     case UIA_IsItalicAttributeId:
-      result->Insert<VT_BOOL>(
-          GetData().HasTextStyle(ax::mojom::TextStyle::kItalic));
+      result->Insert<VT_BOOL>(HasTextStyle(ax::mojom::TextStyle::kItalic));
       break;
     case UIA_IsReadOnlyAttributeId: {
       // If inside a text field, the text field's readonly state rules.
@@ -4940,19 +4939,22 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     const absl::optional<int>& end_offset,
     base::win::VariantVector* result) {
   base::win::VariantVector variant_vector;
-
   MarkerTypeRangeResult grammar_result = MarkerTypeRangeResult::kNone;
   MarkerTypeRangeResult spelling_result = MarkerTypeRangeResult::kNone;
+  MarkerTypeRangeResult highlight_result = MarkerTypeRangeResult::kNone;
 
   if (IsText() || IsAtomicTextField()) {
     grammar_result = GetMarkerTypeFromRange(start_offset, end_offset,
                                             ax::mojom::MarkerType::kGrammar);
     spelling_result = GetMarkerTypeFromRange(start_offset, end_offset,
                                              ax::mojom::MarkerType::kSpelling);
+    highlight_result = GetMarkerTypeFromRange(
+        start_offset, end_offset, ax::mojom::MarkerType::kHighlight);
   }
 
   if (grammar_result == MarkerTypeRangeResult::kMixed ||
-      spelling_result == MarkerTypeRangeResult::kMixed) {
+      spelling_result == MarkerTypeRangeResult::kMixed ||
+      highlight_result == MarkerTypeRangeResult::kMixed) {
     Microsoft::WRL::ComPtr<IUnknown> mixed_attribute_value;
     HRESULT hr = ::UiaGetReservedMixedAttributeValue(&mixed_attribute_value);
     if (SUCCEEDED(hr))
@@ -4964,6 +4966,8 @@ HRESULT AXPlatformNodeWin::GetAnnotationTypesAttribute(
     result->Insert<VT_I4>(AnnotationType_SpellingError);
   if (grammar_result == MarkerTypeRangeResult::kMatch)
     result->Insert<VT_I4>(AnnotationType_GrammarError);
+  if (highlight_result == MarkerTypeRangeResult::kMatch)
+    result->Insert<VT_I4>(AnnotationType_Highlighted);
 
   return S_OK;
 }
@@ -7238,8 +7242,8 @@ AXPlatformNodeWin* AXPlatformNodeWin::ComputeUIALabeledBy() {
 
   // This property only accepts static text elements to be returned. Find the
   // first static text used to label this node.
-  for (int32_t id : GetData().GetIntListAttribute(
-           ax::mojom::IntListAttribute::kLabelledbyIds)) {
+  for (int32_t id :
+       GetIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds)) {
     auto* node_win =
         static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(id));
     if (!node_win)
@@ -7363,8 +7367,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       // If the author provides an explicitly empty alt text attribute then
       // the image is decorational and should not be considered as a control.
       if (GetRole() == ax::mojom::Role::kImage &&
-          GetData().GetNameFrom() ==
-              ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
+          GetNameFrom() == ax::mojom::NameFrom::kAttributeExplicitlyEmpty) {
         return false;
       }
       return true;
@@ -8227,6 +8230,11 @@ void AXPlatformNodeWin::SanitizeTextAttributeValue(const std::string& input,
 
 void AXPlatformNodeWin::NotifyAPIObserverForPatternRequest(
     PATTERNID pattern_id) const {
+  // Non-web content is always enabled, if a client isn't looking for web
+  // content, don't enable.
+  if (!GetDelegate() || !GetDelegate()->IsWebContent())
+    return;
+
   bool probable_advanced_client_detected = false;
   bool text_pattern_support_needed = false;
   switch (pattern_id) {
@@ -8252,16 +8260,21 @@ void AXPlatformNodeWin::NotifyAPIObserverForPatternRequest(
       observer.OnTextPatternRequested();
   }
 }
+
 void AXPlatformNodeWin::NotifyAPIObserverForPropertyRequest(
     PROPERTYID property_id) const {
+  // Non-web content is always enabled, if a client isn't looking for web
+  // content, don't enable.
+  if (!GetDelegate() || !GetDelegate()->IsWebContent())
+    return;
+
   bool probable_advanced_client_detected = false;
   bool probable_screen_reader_detected = false;
+  bool uiautomation_id_requested = false;
   switch (property_id) {
     // These properties are used by non-screenreader UIA clients. They should
     // not cause additional enablement.
-    case UIA_ControlTypePropertyId:
     case UIA_HasKeyboardFocusPropertyId:
-    case UIA_IsControlElementPropertyId:
     case UIA_FrameworkIdPropertyId:
     case UIA_IsEnabledPropertyId:
       break;
@@ -8297,6 +8310,11 @@ void AXPlatformNodeWin::NotifyAPIObserverForPropertyRequest(
       probable_screen_reader_detected = true;
       probable_advanced_client_detected = true;
       break;
+    case UIA_AutomationIdPropertyId:
+      uiautomation_id_requested = true;
+      probable_screen_reader_detected = true;
+      probable_advanced_client_detected = true;
+      break;
     default:
       // All other properties should cause us to enable.
       probable_advanced_client_detected = true;
@@ -8308,6 +8326,8 @@ void AXPlatformNodeWin::NotifyAPIObserverForPropertyRequest(
       observer.OnAdvancedUIAutomationUsed();
     if (probable_screen_reader_detected)
       observer.OnProbableUIAutomationScreenReaderDetected();
+    if (uiautomation_id_requested)
+      observer.OnUIAutomationIdRequested();
   }
 }
 

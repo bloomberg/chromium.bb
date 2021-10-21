@@ -117,7 +117,7 @@
 
 ## Life of a Change List
 
-### Getting started with Gerrit for ANGLE
+### <a name="getting-started-with-gerrit"></a>Getting started with Gerrit for ANGLE
 
 1. Go to [https://chromium-review.googlesource.com/new-password][CR-passwd]
 2. Log in with the email you use for your git commits.
@@ -263,6 +263,7 @@ See also:
 * [Chromium Projects: Contributing Code][Contributing-code]
 * [depot_tools tutorial][depot-tools-tutorial]
 * [angle_perftests README][Perftest-README]
+* [ANGLE Testing and Processes](TestingAndProcesses.md)
 
 [Committer-status]: https://dev.chromium.org/getting-involved/become-a-committer
 [Contributing-code]: http://www.chromium.org/developers/contributing-code/

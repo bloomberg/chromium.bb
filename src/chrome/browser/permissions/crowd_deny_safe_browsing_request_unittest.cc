@@ -30,6 +30,12 @@ class CrowdDenySafeBrowsingRequestTest : public testing::Test {
   CrowdDenySafeBrowsingRequestTest()
       : fake_database_manager_(
             base::MakeRefCounted<CrowdDenyFakeSafeBrowsingDatabaseManager>()) {}
+
+  CrowdDenySafeBrowsingRequestTest(const CrowdDenySafeBrowsingRequestTest&) =
+      delete;
+  CrowdDenySafeBrowsingRequestTest& operator=(
+      const CrowdDenySafeBrowsingRequestTest&) = delete;
+
   ~CrowdDenySafeBrowsingRequestTest() override = default;
 
  protected:
@@ -65,8 +71,6 @@ class CrowdDenySafeBrowsingRequestTest : public testing::Test {
 
   scoped_refptr<CrowdDenyFakeSafeBrowsingDatabaseManager>
       fake_database_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrowdDenySafeBrowsingRequestTest);
 };
 
 TEST_F(CrowdDenySafeBrowsingRequestTest, Acceptable_SynchronousCompletion) {
@@ -120,7 +124,7 @@ TEST_F(CrowdDenySafeBrowsingRequestTest, Timeout) {
 
   // Verify the request doesn't time out unreasonably fast.
   EXPECT_CALL(mock_callback_receiver, Run(testing::_)).Times(0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   testing::Mock::VerifyAndClearExpectations(&mock_callback_receiver);
 
   // But that it eventually does.
@@ -164,7 +168,7 @@ TEST_F(CrowdDenySafeBrowsingRequestTest, AbandonedWhileCheckPending) {
       fake_database_manager(), test_clock(),
       url::Origin::Create(GURL(kTestOriginFoo)), mock_callback_receiver.Get());
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  task_environment()->FastForwardBy(base::Milliseconds(100));
   EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix("Permissions."),
               testing::IsEmpty());
 }

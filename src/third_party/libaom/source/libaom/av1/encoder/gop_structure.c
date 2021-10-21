@@ -61,10 +61,12 @@ static void set_src_offset(GF_GROUP *const gf_group, int *first_frame_index,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
 // Sets the GF_GROUP params for LF_UPDATE frames.
 static AOM_INLINE void set_params_for_leaf_frames(
+    const TWO_PASS *twopass, const TWO_PASS_FRAME *twopass_frame,
+    const PRIMARY_RATE_CONTROL *p_rc, FRAME_INFO *frame_info,
     GF_GROUP *const gf_group, int *cur_frame_idx, int *frame_ind,
     int *parallel_frame_count, int max_parallel_frames,
     int do_frame_parallel_encode, int *first_frame_index, int *cur_disp_index,
-    int layer_depth) {
+    int layer_depth, int start, int end) {
   gf_group->update_type[*frame_ind] = LF_UPDATE;
   gf_group->arf_src_offset[*frame_ind] = 0;
   gf_group->cur_frame_idx[*frame_ind] = *cur_frame_idx;
@@ -73,6 +75,9 @@ static AOM_INLINE void set_params_for_leaf_frames(
   gf_group->refbuf_state[*frame_ind] = REFBUF_UPDATE;
   gf_group->max_layer_depth = AOMMAX(gf_group->max_layer_depth, layer_depth);
   gf_group->display_idx[*frame_ind] = (*cur_disp_index);
+  gf_group->arf_boost[*frame_ind] =
+      av1_calc_arf_boost(twopass, twopass_frame, p_rc, frame_info, start,
+                         end - start, 0, NULL, NULL, 0);
   ++(*cur_disp_index);
 
   // Set the level of parallelism for the LF_UPDATE frame.
@@ -108,10 +113,13 @@ static AOM_INLINE void set_params_for_intnl_overlay_frames(
 
 // Sets the GF_GROUP params for INTNL_ARF_UPDATE frames.
 static AOM_INLINE void set_params_for_internal_arfs(
+    const TWO_PASS *twopass, const TWO_PASS_FRAME *twopass_frame,
+    const PRIMARY_RATE_CONTROL *p_rc, FRAME_INFO *frame_info,
     GF_GROUP *const gf_group, int *cur_frame_idx, int *frame_ind,
     int *parallel_frame_count, int max_parallel_frames,
     int do_frame_parallel_encode, int *first_frame_index, int depth_thr,
-    int *cur_disp_idx, int layer_depth, int arf_src_offset) {
+    int *cur_disp_idx, int layer_depth, int arf_src_offset, int offset,
+    int f_frames, int b_frames) {
   gf_group->update_type[*frame_ind] = INTNL_ARF_UPDATE;
   gf_group->arf_src_offset[*frame_ind] = arf_src_offset;
   gf_group->cur_frame_idx[*frame_ind] = *cur_frame_idx;
@@ -120,6 +128,9 @@ static AOM_INLINE void set_params_for_internal_arfs(
   gf_group->refbuf_state[*frame_ind] = REFBUF_UPDATE;
   gf_group->display_idx[*frame_ind] =
       (*cur_disp_idx) + gf_group->arf_src_offset[*frame_ind];
+  gf_group->arf_boost[*frame_ind] =
+      av1_calc_arf_boost(twopass, twopass_frame, p_rc, frame_info, offset,
+                         f_frames, b_frames, NULL, NULL, 0);
 
   if (do_frame_parallel_encode) {
     if (depth_thr != INT_MAX) {
@@ -147,11 +158,12 @@ static AOM_INLINE void set_params_for_internal_arfs(
             gf_group->display_idx[(*frame_ind) - 1];
       }
     }
-    // If max_parallel_frames is not exceeded, encode the next internal ARF
-    // frame in parallel.
+    // If max_parallel_frames is not exceeded and if the frame will not be
+    // temporally filtered, encode the next internal ARF frame in parallel.
     if (*parallel_frame_count > 1 &&
         *parallel_frame_count <= max_parallel_frames) {
-      gf_group->frame_parallel_level[*frame_ind] = 2;
+      if (gf_group->arf_src_offset[*frame_ind] < TF_LOOKAHEAD_IDX_THR)
+        gf_group->frame_parallel_level[*frame_ind] = 2;
       *parallel_frame_count = 1;
     }
   }
@@ -161,12 +173,12 @@ static AOM_INLINE void set_params_for_internal_arfs(
 
 // Set parameters for frames between 'start' and 'end' (excluding both).
 static void set_multi_layer_params_for_fp(
-    const TWO_PASS *twopass, GF_GROUP *const gf_group,
-    const PRIMARY_RATE_CONTROL *p_rc, RATE_CONTROL *rc, FRAME_INFO *frame_info,
-    int start, int end, int *cur_frame_idx, int *frame_ind,
-    int *parallel_frame_count, int max_parallel_frames,
-    int do_frame_parallel_encode, int *first_frame_index, int depth_thr,
-    int *cur_disp_idx, int layer_depth) {
+    const TWO_PASS *twopass, const TWO_PASS_FRAME *twopass_frame,
+    GF_GROUP *const gf_group, const PRIMARY_RATE_CONTROL *p_rc,
+    RATE_CONTROL *rc, FRAME_INFO *frame_info, int start, int end,
+    int *cur_frame_idx, int *frame_ind, int *parallel_frame_count,
+    int max_parallel_frames, int do_frame_parallel_encode,
+    int *first_frame_index, int depth_thr, int *cur_disp_idx, int layer_depth) {
   const int num_frames_to_process = end - start;
 
   // Either we are at the last level of the pyramid, or we don't have enough
@@ -175,10 +187,11 @@ static void set_multi_layer_params_for_fp(
       num_frames_to_process < 3) {
     // Leaf nodes.
     while (start < end) {
-      set_params_for_leaf_frames(gf_group, cur_frame_idx, frame_ind,
+      set_params_for_leaf_frames(twopass, twopass_frame, p_rc, frame_info,
+                                 gf_group, cur_frame_idx, frame_ind,
                                  parallel_frame_count, max_parallel_frames,
                                  do_frame_parallel_encode, first_frame_index,
-                                 cur_disp_idx, layer_depth);
+                                 cur_disp_idx, layer_depth, start, end);
       ++start;
     }
   } else {
@@ -187,9 +200,10 @@ static void set_multi_layer_params_for_fp(
     // Internal ARF.
     int arf_src_offset = m - start;
     set_params_for_internal_arfs(
-        gf_group, cur_frame_idx, frame_ind, parallel_frame_count,
-        max_parallel_frames, do_frame_parallel_encode, first_frame_index,
-        INT_MAX, cur_disp_idx, layer_depth, arf_src_offset);
+        twopass, twopass_frame, p_rc, frame_info, gf_group, cur_frame_idx,
+        frame_ind, parallel_frame_count, max_parallel_frames,
+        do_frame_parallel_encode, first_frame_index, INT_MAX, cur_disp_idx,
+        layer_depth, arf_src_offset, m, end - m, m - start);
 
     // If encode reordering is enabled, configure the multi-layers accordingly
     // and return. For e.g., the encode order for gf-interval 16 after
@@ -199,13 +213,19 @@ static void set_multi_layer_params_for_fp(
       int m1 = (m + start - 1) / 2;
       int m2 = (m + 1 + end) / 2;
       int arf_src_offsets[2] = { m1 - start, m2 - start };
+      // Parameters to compute arf_boost.
+      int offset[2] = { m1, m2 };
+      int f_frames[2] = { m - m1, end - m2 };
+      int b_frames[2] = { m1 - start, m2 - (m + 1) };
 
       // Set GF_GROUP params for INTNL_ARF_UPDATE frames which are reordered.
       for (int i = 0; i < 2; i++) {
         set_params_for_internal_arfs(
-            gf_group, cur_frame_idx, frame_ind, parallel_frame_count,
-            max_parallel_frames, do_frame_parallel_encode, first_frame_index,
-            depth_thr, cur_disp_idx, layer_depth + 1, arf_src_offsets[i]);
+            twopass, twopass_frame, p_rc, frame_info, gf_group, cur_frame_idx,
+            frame_ind, parallel_frame_count, max_parallel_frames,
+            do_frame_parallel_encode, first_frame_index, depth_thr,
+            cur_disp_idx, layer_depth + 1, arf_src_offsets[i], offset[i],
+            f_frames[i], b_frames[i]);
       }
 
       // Initialize the start and end indices to configure LF_UPDATE frames.
@@ -218,10 +238,10 @@ static void set_multi_layer_params_for_fp(
       // frames after reordering.
       for (int i = 0; i < 4; i++) {
         set_multi_layer_params_for_fp(
-            twopass, gf_group, p_rc, rc, frame_info, start_idx[i], end_idx[i],
-            cur_frame_idx, frame_ind, parallel_frame_count, max_parallel_frames,
-            do_frame_parallel_encode, first_frame_index, depth_thr,
-            cur_disp_idx, layer_depth + 2);
+            twopass, twopass_frame, gf_group, p_rc, rc, frame_info,
+            start_idx[i], end_idx[i], cur_frame_idx, frame_ind,
+            parallel_frame_count, max_parallel_frames, do_frame_parallel_encode,
+            first_frame_index, depth_thr, cur_disp_idx, layer_depth + 2);
         if (layer_depth_for_intnl_overlay[i] != INVALID_IDX)
           set_params_for_intnl_overlay_frames(
               gf_group, cur_frame_idx, frame_ind, first_frame_index,
@@ -231,11 +251,11 @@ static void set_multi_layer_params_for_fp(
     }
 
     // Frames displayed before this internal ARF.
-    set_multi_layer_params_for_fp(twopass, gf_group, p_rc, rc, frame_info,
-                                  start, m, cur_frame_idx, frame_ind,
-                                  parallel_frame_count, max_parallel_frames,
-                                  do_frame_parallel_encode, first_frame_index,
-                                  depth_thr, cur_disp_idx, layer_depth + 1);
+    set_multi_layer_params_for_fp(
+        twopass, twopass_frame, gf_group, p_rc, rc, frame_info, start, m,
+        cur_frame_idx, frame_ind, parallel_frame_count, max_parallel_frames,
+        do_frame_parallel_encode, first_frame_index, depth_thr, cur_disp_idx,
+        layer_depth + 1);
 
     // Overlay for internal ARF.
     set_params_for_intnl_overlay_frames(gf_group, cur_frame_idx, frame_ind,
@@ -243,11 +263,11 @@ static void set_multi_layer_params_for_fp(
                                         layer_depth);
 
     // Frames displayed after this internal ARF.
-    set_multi_layer_params_for_fp(twopass, gf_group, p_rc, rc, frame_info,
-                                  m + 1, end, cur_frame_idx, frame_ind,
-                                  parallel_frame_count, max_parallel_frames,
-                                  do_frame_parallel_encode, first_frame_index,
-                                  depth_thr, cur_disp_idx, layer_depth + 1);
+    set_multi_layer_params_for_fp(
+        twopass, twopass_frame, gf_group, p_rc, rc, frame_info, m + 1, end,
+        cur_frame_idx, frame_ind, parallel_frame_count, max_parallel_frames,
+        do_frame_parallel_encode, first_frame_index, depth_thr, cur_disp_idx,
+        layer_depth + 1);
   }
 }
 
@@ -355,6 +375,8 @@ static AOM_INLINE void set_params_for_cur_layer_frames(
 // Configures multi-layers of the GF_GROUP when consecutive encode of frames in
 // the same layer depth is enbaled.
 static AOM_INLINE void set_multi_layer_params_for_gf14(
+    const TWO_PASS *twopass, const TWO_PASS_FRAME *twopass_frame,
+    const PRIMARY_RATE_CONTROL *p_rc, FRAME_INFO *frame_info,
     GF_GROUP *const gf_group, FRAME_REORDER_INFO *arf_frame_stats,
     int *cur_frame_idx, int *frame_ind, int *count_arf_frames,
     int *doh_gf_index_map, int *parallel_frame_count, int *first_frame_index,
@@ -390,9 +412,13 @@ static AOM_INLINE void set_multi_layer_params_for_gf14(
     // LF_UPDATE frame.
     if (doh_gf_index_map[i] == INVALID_IDX) {
       // LF_UPDATE frames.
-      set_params_for_leaf_frames(gf_group, cur_frame_idx, frame_ind,
-                                 parallel_frame_count, max_parallel_frames, 1,
-                                 first_frame_index, cur_disp_index, layer);
+      // TODO(Remya): Correct start and end parameters passed to
+      // set_params_for_leaf_frames() once encode reordering for gf-interval 14
+      // is enbaled for parallel encode of lower layer frames.
+      set_params_for_leaf_frames(
+          twopass, twopass_frame, p_rc, frame_info, gf_group, cur_frame_idx,
+          frame_ind, parallel_frame_count, max_parallel_frames, 1,
+          first_frame_index, cur_disp_index, layer, 0, 0);
     } else {
       // In order to obtain the layer depths of INTNL_OVERLAY_UPDATE frames, get
       // the gf index of corresponding INTNL_ARF_UPDATE frames.
@@ -464,11 +490,12 @@ static void set_multi_layer_params(
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
     if (do_frame_parallel_encode) {
-      // If max_parallel_frames is not exceeded, encode the next internal ARF
-      // frame in parallel.
+      // If max_parallel_frames is not exceeded and if the frame will not be
+      // temporally filtered, encode the next internal ARF frame in parallel.
       if (*parallel_frame_count > 1 &&
           *parallel_frame_count <= max_parallel_frames) {
-        gf_group->frame_parallel_level[*frame_ind] = 2;
+        if (gf_group->arf_src_offset[*frame_ind] < TF_LOOKAHEAD_IDX_THR)
+          gf_group->frame_parallel_level[*frame_ind] = 2;
         *parallel_frame_count = 1;
       }
     }
@@ -527,7 +554,9 @@ static int construct_multi_layer_gf_structure(
 #if CONFIG_FRAME_PARALLEL_ENCODE
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
   // Set the display order hint for the first frame in the GF_GROUP.
-  int cur_disp_index = cpi->common.current_frame.frame_number;
+  int cur_disp_index = (first_frame_update_type == KF_UPDATE)
+                           ? 0
+                           : cpi->common.current_frame.frame_number;
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
@@ -656,11 +685,15 @@ static int construct_multi_layer_gf_structure(
 
     // In order to facilitate parallel encoding of frames in lower layer depths,
     // encode reordering is done. Currently encode reordering is enabled only
-    // for gf-intervals 14, 16 and 32. NOTE: Since the buffer holding the
+    // for gf-intervals 16 and 32. NOTE: Since the buffer holding the
     // reference frames is of size 8 (ref_frame_map[REF_FRAMES]), there is a
     // limitation on the number of hidden frames possible at any given point and
-    // hence the reordering is enabled only for gf-intervals 14, 16 and 32.
-    if (actual_gf_length == 14) {
+    // hence the reordering is enabled only for gf-intervals 16 and 32.
+    // Disabling encode reordering for gf-interval 14 since some cross-frame
+    // dependencies related to temporal filtering for FPMT is currently not
+    // handled.
+    int disable_gf14_reorder = 1;
+    if (actual_gf_length == 14 && !disable_gf14_reorder) {
       // This array holds the gf index of INTNL_ARF_UPDATE frames in the slot
       // corresponding to their display order hint. This is used while
       // configuring the LF_UPDATE frames and INTNL_OVERLAY_UPDATE frames.
@@ -680,9 +713,10 @@ static int construct_multi_layer_gf_structure(
       // 7-> 3-> 10-> 5-> 12-> 1-> 2-> 4-> 6-> 8-> 9-> 11-> 13.
       // TODO(Remya): Set GF_GROUP param 'arf_boost' for all frames.
       set_multi_layer_params_for_gf14(
-          gf_group, arf_frame_stats, &cur_frame_index, &frame_index,
-          &count_arf_frames, doh_gf_index_map, &parallel_frame_count,
-          &first_frame_index, &cur_disp_index, actual_gf_length, use_altref + 1,
+          twopass, &cpi->twopass_frame, p_rc, frame_info, gf_group,
+          arf_frame_stats, &cur_frame_index, &frame_index, &count_arf_frames,
+          doh_gf_index_map, &parallel_frame_count, &first_frame_index,
+          &cur_disp_index, actual_gf_length, use_altref + 1,
           cpi->ppi->num_fp_contexts);
 
       // Set gf_group->skip_frame_refresh.
@@ -705,12 +739,12 @@ static int construct_multi_layer_gf_structure(
       int depth_thr =
           (actual_gf_length == 16) ? 3 : (actual_gf_length == 32) ? 4 : INT_MAX;
 
-      // TODO(Remya): Set GF_GROUP param 'arf_boost' for all frames.
       set_multi_layer_params_for_fp(
-          twopass, gf_group, p_rc, rc, frame_info, cur_frame_index, gf_interval,
-          &cur_frame_index, &frame_index, &parallel_frame_count,
-          cpi->ppi->num_fp_contexts, do_frame_parallel_encode,
-          &first_frame_index, depth_thr, &cur_disp_index, use_altref + 1);
+          twopass, &cpi->twopass_frame, gf_group, p_rc, rc, frame_info,
+          cur_frame_index, gf_interval, &cur_frame_index, &frame_index,
+          &parallel_frame_count, cpi->ppi->num_fp_contexts,
+          do_frame_parallel_encode, &first_frame_index, depth_thr,
+          &cur_disp_index, use_altref + 1);
     }
     is_multi_layer_configured = 1;
   }
@@ -766,6 +800,25 @@ static int construct_multi_layer_gf_structure(
   }
 #if CONFIG_FRAME_PARALLEL_ENCODE
   if (do_frame_parallel_encode) {
+    // Iterate through the gf_group and reset frame_parallel_level to 0 in case
+    // a frame is marked as frame_parallel_level 1 with no subsequent
+    // frame_parallel_level 2 frame(s).
+    int level1_frame_idx = INT_MAX;
+    int level2_frame_count = 0;
+    for (int frame_idx = 0; frame_idx < frame_index; frame_idx++) {
+      if (gf_group->frame_parallel_level[frame_idx] == 1) {
+        // Set frame_parallel_level to 0 if only one frame is present in a
+        // parallel encode set.
+        if (level1_frame_idx != INT_MAX && !level2_frame_count)
+          gf_group->frame_parallel_level[level1_frame_idx] = 0;
+        // Book-keep frame_idx of frame_parallel_level 1 frame and reset the
+        // count of frame_parallel_level 2 frames in the corresponding parallel
+        // encode set.
+        level1_frame_idx = frame_idx;
+        level2_frame_count = 0;
+      }
+      if (gf_group->frame_parallel_level[frame_idx] == 2) level2_frame_count++;
+    }
     // If frame_parallel_level is set to 1 for the last LF_UPDATE
     // frame in the gf_group, reset it to zero since there are no subsequent
     // frames in the gf_group.
@@ -791,6 +844,22 @@ static int construct_multi_layer_gf_structure(
   return frame_index;
 }
 
+static void set_ld_layer_depth(GF_GROUP *gf_group, int gop_length) {
+  int log_gop_length = 0;
+  while ((1 << log_gop_length) < gop_length) {
+    ++log_gop_length;
+  }
+
+  for (int gf_index = 0; gf_index < gf_group->size; ++gf_index) {
+    int count = 0;
+    // Find the trailing zeros
+    for (; count < MAX_ARF_LAYERS; ++count) {
+      if ((gf_index >> count) & 0x01) break;
+    }
+    gf_group->layer_depth[gf_index] = AOMMAX(log_gop_length - count, 0);
+  }
+}
+
 void av1_gop_setup_structure(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
@@ -808,4 +877,7 @@ void av1_gop_setup_structure(AV1_COMP *cpi) {
   gf_group->size = construct_multi_layer_gf_structure(
       cpi, twopass, gf_group, rc, frame_info, p_rc->baseline_gf_interval - 1,
       first_frame_update_type);
+
+  if (gf_group->max_layer_depth_allowed == 0)
+    set_ld_layer_depth(gf_group, p_rc->baseline_gf_interval);
 }

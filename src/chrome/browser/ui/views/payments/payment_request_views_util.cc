@@ -33,6 +33,8 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -65,7 +67,7 @@ class ThemeTrackingLabel : public views::Label {
   explicit ThemeTrackingLabel(const std::u16string& text) : Label(text) {}
   ~ThemeTrackingLabel() override = default;
 
-  void set_enabled_color_id(ui::NativeTheme::ColorId enabled_color_id) {
+  void set_enabled_color_id(ui::ColorId enabled_color_id) {
     enabled_color_id_ = enabled_color_id;
   }
 
@@ -73,11 +75,11 @@ class ThemeTrackingLabel : public views::Label {
   void OnThemeChanged() override {
     Label::OnThemeChanged();
     if (enabled_color_id_.has_value())
-      SetEnabledColor(GetNativeTheme()->GetSystemColor(*enabled_color_id_));
+      SetEnabledColor(GetColorProvider()->GetColor(*enabled_color_id_));
   }
 
  private:
-  absl::optional<ui::NativeTheme::ColorId> enabled_color_id_;
+  absl::optional<ui::ColorId> enabled_color_id_;
 };
 
 BEGIN_METADATA(ThemeTrackingLabel, views::Label)
@@ -135,7 +137,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled)
-      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
+      label->set_enabled_color_id(ui::kColorLabelForegroundDisabled);
     container->AddChildView(std::move(label));
   }
 
@@ -144,7 +146,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled)
-      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
+      label->set_enabled_color_id(ui::kColorLabelForegroundDisabled);
     container->AddChildView(std::move(label));
   }
 
@@ -153,7 +155,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
     label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!enabled)
-      label->set_enabled_color_id(ui::NativeTheme::kColorId_LabelDisabledColor);
+      label->set_enabled_color_id(ui::kColorLabelForegroundDisabled);
     container->AddChildView(std::move(label));
   }
 
@@ -190,7 +192,7 @@ std::unique_ptr<views::Label> GetLabelForMissingInformation(
   label->SetTextContext(CONTEXT_DIALOG_BODY_TEXT_SMALL);
   label->SetID(static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   // Missing information typically has a nice shade of blue.
-  label->set_enabled_color_id(ui::NativeTheme::kColorId_LinkEnabled);
+  label->set_enabled_color_id(ui::kColorLinkForeground);
   return label;
 }
 
@@ -199,6 +201,12 @@ std::unique_ptr<views::Label> GetLabelForMissingInformation(
 class PaymentRequestRowBorderPainter : public views::Painter {
  public:
   explicit PaymentRequestRowBorderPainter(SkColor color) : color_(color) {}
+
+  PaymentRequestRowBorderPainter(const PaymentRequestRowBorderPainter&) =
+      delete;
+  PaymentRequestRowBorderPainter& operator=(
+      const PaymentRequestRowBorderPainter&) = delete;
+
   ~PaymentRequestRowBorderPainter() override {}
 
   // views::Painter:
@@ -217,7 +225,6 @@ class PaymentRequestRowBorderPainter : public views::Painter {
 
  private:
   SkColor color_;
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowBorderPainter);
 };
 
 }  // namespace
@@ -486,10 +493,9 @@ std::unique_ptr<views::View> CreateWarningView(const std::u16string& message,
     auto warning_icon = std::make_unique<views::ImageView>();
     warning_icon->SetCanProcessEventsWithinSubtree(false);
     warning_icon->SetImage(ui::ImageModel::FromVectorIcon(
-        vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
-        16));
+        vector_icons::kWarningIcon, ui::kColorAlertHighSeverity, 16));
     header_view->AddChildView(std::move(warning_icon));
-    label->set_enabled_color_id(ui::NativeTheme::kColorId_AlertSeverityHigh);
+    label->set_enabled_color_id(ui::kColorAlertHighSeverity);
   }
 
   header_view->AddChildView(std::move(label));

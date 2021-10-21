@@ -80,6 +80,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     end_margin_strut_ = end_margin_strut;
   }
 
+  void SetMayHaveDescendantAboveBlockStart(bool b) {
+#if DCHECK_IS_ON()
+    is_may_have_descendant_above_block_start_explicitly_set_ = true;
+#endif
+    may_have_descendant_above_block_start_ = b;
+  }
+
   void SetExclusionSpace(NGExclusionSpace&& exclusion_space) {
     exclusion_space_ = std::move(exclusion_space);
   }
@@ -211,8 +218,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // position OOF candidates yet, (as a containing box may be split over
   // multiple lines), instead we bubble all the descendants up to the parent
   // block layout algorithm, to perform the final OOF layout and positioning.
-  void MoveOutOfFlowDescendantCandidatesToDescendants(
-      LogicalOffset relative_offset);
+  void MoveOutOfFlowDescendantCandidatesToDescendants();
 
   // Propagate the OOF descendants from a fragment to the builder. Since the OOF
   // descendants on the fragment are NGPhysicalOutOfFlowPositionedNodes, we
@@ -390,12 +396,17 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool has_floating_descendants_for_paint_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
+  bool may_have_descendant_above_block_start_ = false;
   bool has_block_fragmentation_ = false;
   bool is_fragmentation_context_root_ = false;
   bool has_column_spanner_ = false;
   bool is_empty_spanner_parent_ = false;
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
+
+#if DCHECK_IS_ON()
+  bool is_may_have_descendant_above_block_start_explicitly_set_ = false;
+#endif
 };
 
 }  // namespace blink

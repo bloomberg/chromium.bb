@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "build/os_buildflags.h"
 #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/optimization_guide/model_validator_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/page_info/about_this_site_service_factory.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_memory_tracker_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -70,8 +72,8 @@
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
+#include "chrome/browser/privacy/privacy_metrics_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
-#include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/renderer_updater_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
@@ -138,6 +140,8 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/commerce/coupons/coupon_db_content.pb.h"
+#include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
@@ -146,13 +150,22 @@
 #include "chrome/browser/storage/storage_notification_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
+#include "chrome/browser/ui/user_education/tutorial/tutorial_service_manager.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/browser_context_keyed_service_factories.h"
+#include "chrome/browser/ash/browser_context_keyed_service_factories.h"
+#include "chrome/browser/ash/login/security_token_session_controller_factory.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "chrome/browser/profiles/gaia_info_update_service_factory.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/policy/messaging_layer/util/heartbeat_event_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -183,6 +196,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/exit_type_service_factory.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
@@ -198,21 +212,9 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/security_token_session_controller_factory.h"
-#include "chrome/browser/ash/system_extensions/system_extensions_provider_factory.h"
-#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
-#include "chrome/browser/policy/messaging_layer/util/heartbeat_event_factory.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/profile_account_manager_factory.h"
 #include "chrome/browser/lacros/cert_db_initializer_factory.h"
-#endif
-
-#if defined(OS_MAC)
-#include "chrome/browser/ui/cocoa/screentime/history_bridge_factory.h"
-#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif
 
 namespace chrome {
@@ -250,11 +252,12 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::login::SecurityTokenSessionControllerFactory::GetInstance();
+  ash::login::SecurityTokenSessionControllerFactory::GetInstance();
   chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 
   AboutSigninInternalsFactory::GetInstance();
+  AboutThisSiteServiceFactory::GetInstance();
   AccessContextAuditServiceFactory::GetInstance();
   AccountConsistencyModeManagerFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();
@@ -306,6 +309,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   ConsentAuditorFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  CouponServiceFactory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DiceWebSigninInterceptorFactory::GetInstance();
 #endif
@@ -313,6 +319,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   BackgroundDownloadServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  ExitTypeServiceFactory::GetInstance();
+#endif
 #if defined(OS_ANDROID)
   explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
@@ -322,7 +331,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   feedback::FeedbackUploaderFactoryChrome::GetInstance();
 #endif
   FindBarStateFactory::GetInstance();
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   GAIAInfoUpdateServiceFactory::GetInstance();
+#endif
 #if !defined(OS_ANDROID)
   GlobalErrorServiceFactory::GetInstance();
 #endif
@@ -393,6 +404,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   PrefsTabHelper::GetServiceInstance();
 #if !defined(OS_ANDROID)
   ProfileProtoDBFactory<cart_db::ChromeCartContentProto>::GetInstance();
+  ProfileProtoDBFactory<coupon_db::CouponContentProto>::GetInstance();
 #endif
 #if defined(OS_ANDROID)
   ProfileProtoDBFactory<commerce_subscription_db::
@@ -411,6 +423,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   predictors::PredictorDatabaseFactory::GetInstance();
   prerender::NoStatePrefetchLinkManagerFactory::GetInstance();
   prerender::NoStatePrefetchManagerFactory::GetInstance();
+  PrivacyMetricsServiceFactory::GetInstance();
   PrivacySandboxSettingsFactory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   ProfileAccountManagerFactory::GetInstance();
@@ -432,7 +445,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 
   RendererUpdaterFactory::GetInstance();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   reporting::HeartbeatEventFactory::GetInstance();
 #endif
 
@@ -441,10 +454,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
-#endif
-#if defined(OS_MAC)
-  if (screentime::IsScreenTimeEnabled())
-    screentime::HistoryBridgeFactory::GetInstance();
 #endif
   SCTReportingServiceFactory::GetInstance();
 #if defined(OS_ANDROID)
@@ -500,6 +509,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   UnifiedConsentServiceFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
 #if !defined(OS_ANDROID)
+  TutorialServiceManager::GetInstance();
   UsbChooserContextFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)

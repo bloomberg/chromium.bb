@@ -43,14 +43,14 @@ suite(destination_dialog_cros_interactive_test.suiteName, function() {
 
     // Create destinations.
     nativeLayer = new NativeLayerStub();
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.setInstance(nativeLayer);
     setNativeLayerCrosInstance();
     const localDestinations = [];
     const destinations = getDestinations(localDestinations);
     const recentDestinations = [makeRecentDestination(destinations[4])];
     nativeLayer.setLocalDestinations(localDestinations);
     const cloudPrintInterface = new CloudPrintInterfaceStub();
-    CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
+    CloudPrintInterfaceImpl.setInstance(cloudPrintInterface);
     cloudPrintInterface.configure();
 
     const model = document.createElement('print-preview-model');

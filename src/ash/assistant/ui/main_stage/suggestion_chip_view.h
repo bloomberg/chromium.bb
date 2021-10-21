@@ -38,11 +38,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildVisibilityChanged(views::View* child) override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnThemeChanged() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   void SetIcon(const gfx::ImageSkia& icon);
   gfx::ImageSkia GetIcon() const;
@@ -55,7 +55,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  private:
   void InitLayout(const AssistantSuggestion& suggestion);
 
+  SkColor GetStrokeColor() const;
+
   AssistantViewDelegate* const delegate_;
+
+  // Whether to use dark/light mode colors, which default to dark.
+  const bool use_dark_light_mode_colors_;
 
   const base::UnguessableToken suggestion_id_;
 

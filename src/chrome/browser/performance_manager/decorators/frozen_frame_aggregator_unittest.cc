@@ -23,12 +23,15 @@ using LifecycleState = PageNodeImpl::LifecycleState;
 class LenientMockProcessNodeObserver : public ProcessNode::ObserverDefaultImpl {
  public:
   LenientMockProcessNodeObserver() = default;
+
+  LenientMockProcessNodeObserver(const LenientMockProcessNodeObserver&) =
+      delete;
+  LenientMockProcessNodeObserver& operator=(
+      const LenientMockProcessNodeObserver&) = delete;
+
   ~LenientMockProcessNodeObserver() override = default;
 
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LenientMockProcessNodeObserver);
 };
 
 using MockProcessNodeObserver =
@@ -37,6 +40,11 @@ using MockProcessNodeObserver =
 }  // namespace
 
 class FrozenFrameAggregatorTest : public GraphTestHarness {
+ public:
+  FrozenFrameAggregatorTest(const FrozenFrameAggregatorTest&) = delete;
+  FrozenFrameAggregatorTest& operator=(const FrozenFrameAggregatorTest&) =
+      delete;
+
  protected:
   using Super = GraphTestHarness;
 
@@ -92,9 +100,6 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
   FrozenFrameAggregator* ffa_;
   TestNodeWrapper<ProcessNodeImpl> process_node_;
   TestNodeWrapper<PageNodeImpl> page_node_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrozenFrameAggregatorTest);
 };
 
 TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {

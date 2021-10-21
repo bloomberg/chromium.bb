@@ -1691,8 +1691,7 @@ TEST_P(SimpleStateChangeTest, DrawArraysThenDrawElements)
 {
     // http://anglebug.com/4121
     ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGLES());
-    // http://anglebug.com/4177
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsMetal());
+
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
     glUseProgram(program);
 
@@ -2096,8 +2095,6 @@ TEST_P(SimpleStateChangeTest, DrawRepeatUnalignedVboChange)
 {
     // http://anglebug.com/4470
     ANGLE_SKIP_TEST_IF(isSwiftshader() && (IsWindows() || IsLinux()));
-    // http://anglebug.com/6171
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
 
     const int kRepeat = 2;
 
@@ -5384,9 +5381,6 @@ TEST_P(WebGL2ValidationStateChangeTest, MultiAttachmentDrawFramebufferNegativeAP
     // Crashes on 64-bit Android.  http://anglebug.com/3878
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
 
-    // http://anglebug.com/5233
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     // Set up a program that writes to two outputs: one int and one float.
     constexpr char kVS[] = R"(#version 300 es
 layout(location = 0) in vec2 position;
@@ -6477,9 +6471,9 @@ TEST_P(ImageRespecificationTest, ImageTarget2DOESSwitch)
         EGL_TRUE,
         EGL_NONE,
     };
-    EGLImageKHR firstEGLImage =
-        eglCreateImageKHR(window->getDisplay(), window->getContext(), EGL_GL_TEXTURE_2D_KHR,
-                          reinterpret_cast<EGLClientBuffer>(firstTexture.get()), attribs);
+    EGLImageKHR firstEGLImage = eglCreateImageKHR(
+        window->getDisplay(), window->getContext(), EGL_GL_TEXTURE_2D_KHR,
+        reinterpret_cast<EGLClientBuffer>(static_cast<uintptr_t>(firstTexture.get())), attribs);
     ASSERT_EGL_SUCCESS();
 
     // Create the target texture and attach it to the framebuffer
@@ -6520,9 +6514,9 @@ TEST_P(ImageRespecificationTest, ImageTarget2DOESSwitch)
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    EGLImageKHR secondEGLImage =
-        eglCreateImageKHR(window->getDisplay(), window->getContext(), EGL_GL_TEXTURE_2D_KHR,
-                          reinterpret_cast<EGLClientBuffer>(secondTexture.get()), attribs);
+    EGLImageKHR secondEGLImage = eglCreateImageKHR(
+        window->getDisplay(), window->getContext(), EGL_GL_TEXTURE_2D_KHR,
+        reinterpret_cast<EGLClientBuffer>(static_cast<uintptr_t>(secondTexture.get())), attribs);
     ASSERT_EGL_SUCCESS();
 
     glBindTexture(GL_TEXTURE_2D, mTargetTexture);
@@ -6948,6 +6942,98 @@ TEST_P(SimpleStateChangeTestES31, PrimitiveBoundingBoxNegativeTest)
     GLfloat boundingBox[8] = {0};
     glGetFloatv(GL_PRIMITIVE_BOUNDING_BOX_EXT, boundingBox);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
+}
+
+// Update an element array buffer that is already in use.
+TEST_P(SimpleStateChangeTest, UpdateBoundElementArrayBuffer)
+{
+    constexpr char kVS[] = R"(attribute vec4 position;
+attribute float color;
+varying float colorVarying;
+void main()
+{
+    gl_Position = position;
+    colorVarying = color;
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying float colorVarying;
+void main()
+{
+    if (colorVarying == 1.0)
+    {
+        gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+    }
+    else
+    {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+})";
+
+    ANGLE_GL_PROGRAM(testProgram, kVS, kFS);
+    glUseProgram(testProgram);
+
+    GLint posLoc = glGetAttribLocation(testProgram, "position");
+    ASSERT_NE(-1, posLoc);
+    GLint colorLoc = glGetAttribLocation(testProgram, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    std::array<GLushort, 6> quadIndices = GetQuadIndices();
+
+    std::vector<GLubyte> indices;
+    for (GLushort index : quadIndices)
+    {
+        indices.push_back(static_cast<GLubyte>(index));
+    }
+
+    GLBuffer indexBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(indices[0]), indices.data(),
+                 GL_STATIC_DRAW);
+
+    std::array<Vector3, 4> quadVertices = GetIndexedQuadVertices();
+
+    std::vector<Vector3> positionVertices;
+    for (Vector3 vertex : quadVertices)
+    {
+        positionVertices.push_back(vertex);
+    }
+    for (Vector3 vertex : quadVertices)
+    {
+        positionVertices.push_back(vertex);
+    }
+
+    GLBuffer positionVertexBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, positionVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, positionVertices.size() * sizeof(positionVertices[0]),
+                 positionVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    std::vector<float> colorVertices = {1, 1, 1, 1, 0, 0, 0, 0};
+
+    GLBuffer colorVertexBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, colorVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, colorVertices.size() * sizeof(colorVertices[0]),
+                 colorVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(colorLoc, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(colorLoc);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    indices.clear();
+    for (GLushort index : quadIndices)
+    {
+        indices.push_back(static_cast<GLubyte>(index + 4));
+    }
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(indices[0]),
+                    indices.data());
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
 }
 }  // anonymous namespace
 

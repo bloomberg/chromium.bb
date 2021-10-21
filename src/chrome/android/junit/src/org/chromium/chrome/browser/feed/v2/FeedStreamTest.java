@@ -4,23 +4,32 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
+import android.util.ArrayMap;
 import android.util.TypedValue;
-import android.widget.TextView;
+import android.widget.FrameLayout;
 
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.SmallTest;
 
@@ -42,16 +51,20 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
+import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MetricsUtils;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.feed.FeedReliabilityLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.NtpListContentManager;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -67,7 +80,9 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.feed.proto.FeedUiProto;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
+import org.chromium.url.ShadowGURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +91,8 @@ import java.util.Map;
 
 /** Unit tests for {@link FeedStream}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowPostTask.class, ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE,
+        shadows = {ShadowPostTask.class, ShadowRecordHistogram.class, ShadowGURL.class})
 // TODO(crbug.com/1210371): Rewrite using paused loop. See crbug for details.
 @LooperMode(LooperMode.Mode.LEGACY)
 public class FeedStreamTest {
@@ -125,6 +141,8 @@ public class FeedStreamTest {
     private RecyclerView.Adapter mAdapter;
     @Mock
     private FeedLaunchReliabilityLogger mLaunchReliabilityLogger;
+    @Mock
+    private BookmarkBridge mBookmarkBridge;
 
     @Captor
     private ArgumentCaptor<Map<String, String>> mMapCaptor;
@@ -135,6 +153,13 @@ public class FeedStreamTest {
     // without crashing.
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+
+    private void setFeatureOverrides(boolean feedLoadingPlaceholderOn) {
+        Map<String, Boolean> overrides = new ArrayMap<>();
+        overrides.put(ChromeFeatureList.FEED_LOADING_PLACEHOLDER, feedLoadingPlaceholderOn);
+        overrides.put(ChromeFeatureList.INTEREST_FEED_SPINNER_ALWAYS_ANIMATE, false);
+        FeatureList.setTestFeatures(overrides);
+    }
 
     @Before
     public void setUp() {
@@ -153,13 +178,24 @@ public class FeedStreamTest {
                 .thenReturn(LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP);
         mFeedStream = new FeedStream(mActivity, mSnackbarManager, mPageNavigationDelegate,
                 mBottomSheetController, /* isPlaceholderShown= */ false, mWindowAndroid,
-                mShareDelegateSupplier, /* isInterestFeed= */ true);
+                mShareDelegateSupplier, /* isInterestFeed= */ true,
+                /* FeedAutoplaySettingsDelegate= */ null, mBookmarkBridge);
         mFeedStream.mMakeGURL = url -> JUnitTestGURLs.getGURL(url);
         mRecyclerView = new RecyclerView(mActivity);
         mRecyclerView.setAdapter(mAdapter);
         mContentManager = new NtpListContentManager();
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        doAnswer((invocation) -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        })
+                .when(mBookmarkBridge)
+                .finishLoadingBookmarkModel(any());
+        doReturn(true).when(mBookmarkBridge).isBookmarkModelLoaded();
+
+        setFeatureOverrides(true);
 
         // Print logs to stdout.
         ShadowLog.stream = System.out;
@@ -285,6 +321,21 @@ public class FeedStreamTest {
         verify(mFeedStreamJniMock).surfaceClosed(anyLong(), any(FeedStream.class));
         // Unset handlers in contentmanager.
         assertEquals(0, mContentManager.getContextValues(0).size());
+    }
+
+    @Test
+    public void testUnbindDismissesSnackbars() {
+        bindToView();
+
+        FeedStream.FeedActionsHandlerImpl handler =
+                (FeedStream.FeedActionsHandlerImpl) mContentManager.getContextValues(0).get(
+                        FeedActionsHandler.KEY);
+
+        handler.showSnackbar(
+                "message", "Undo", FeedActionsHandler.SnackbarDuration.SHORT, mSnackbarController);
+        verify(mSnackbarManager).showSnackbar(any());
+        mFeedStream.unbind(false);
+        verify(mSnackbarManager, times(1)).dismissSnackbars(any());
     }
 
     @Test
@@ -585,7 +636,7 @@ public class FeedStreamTest {
                 (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
                         SurfaceActionsHandler.KEY);
 
-        handler.showBottomSheet(new TextView(mActivity), null);
+        handler.showBottomSheet(new AppCompatTextView(mActivity), null);
         verify(mBottomSheetController).requestShowContent(any(), anyBoolean());
     }
 
@@ -597,9 +648,25 @@ public class FeedStreamTest {
                 (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
                         SurfaceActionsHandler.KEY);
 
-        handler.showBottomSheet(new TextView(mActivity), null);
+        handler.showBottomSheet(new AppCompatTextView(mActivity), null);
         mFeedStream.dismissBottomSheet();
         verify(mBottomSheetController).hideContent(any(), anyBoolean());
+    }
+
+    @Test
+    @SmallTest
+    public void testAddToReadingList() {
+        bindToView();
+        FeedStream.FeedSurfaceActionsHandler handler =
+                (FeedStream.FeedSurfaceActionsHandler) mContentManager.getContextValues(0).get(
+                        SurfaceActionsHandler.KEY);
+        handler.addToReadingList("title", TEST_URL);
+
+        verify(mFeedStreamJniMock)
+                .reportOtherUserAction(anyLong(), any(FeedStream.class),
+                        eq(FeedUserActionType.TAPPED_ADD_TO_READING_LIST));
+        verify(mBookmarkBridge).finishLoadingBookmarkModel(any());
+        verify(mBookmarkBridge).addToReadingList(eq("title"), eq(new GURL(TEST_URL)));
     }
 
     @Test
@@ -702,6 +769,55 @@ public class FeedStreamTest {
         verify(mFeedStreamJniMock).reportStreamScrolled(anyLong(), any(FeedStream.class), eq(100));
     }
 
+    @Test
+    @SmallTest
+    public void testShowPlaceholder() {
+        createHeaderContent(1);
+        bindToView();
+        FeedUiProto.StreamUpdate update =
+                FeedUiProto.StreamUpdate.newBuilder()
+                        .addUpdatedSlices(createSliceUpdateForLoadingSpinnerSlice("a", true))
+                        .build();
+        mFeedStream.onStreamUpdated(update.toByteArray());
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals("a", mContentManager.getContent(1).getKey());
+        NtpListContentManager.FeedContent content = mContentManager.getContent(1);
+        assertThat(mContentManager.getContent(1),
+                instanceOf(NtpListContentManager.NativeViewContent.class));
+        NtpListContentManager.NativeViewContent nativeViewContent =
+                (NtpListContentManager.NativeViewContent) mContentManager.getContent(1);
+
+        FrameLayout layout = new FrameLayout(mActivity);
+
+        assertThat(nativeViewContent.getNativeView(layout),
+                hasDescendant(instanceOf(FeedPlaceholderLayout.class)));
+    }
+
+    @Test
+    @SmallTest
+    public void testShowSpinner_PlaceholderDisabled() {
+        setFeatureOverrides(false);
+        createHeaderContent(1);
+        bindToView();
+        FeedUiProto.StreamUpdate update =
+                FeedUiProto.StreamUpdate.newBuilder()
+                        .addUpdatedSlices(createSliceUpdateForLoadingSpinnerSlice("a", true))
+                        .build();
+        mFeedStream.onStreamUpdated(update.toByteArray());
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals("a", mContentManager.getContent(1).getKey());
+        NtpListContentManager.FeedContent content = mContentManager.getContent(1);
+        assertThat(mContentManager.getContent(1),
+                instanceOf(NtpListContentManager.NativeViewContent.class));
+        NtpListContentManager.NativeViewContent nativeViewContent =
+                (NtpListContentManager.NativeViewContent) mContentManager.getContent(1);
+
+        FrameLayout layout = new FrameLayout(mActivity);
+
+        assertThat(nativeViewContent.getNativeView(layout),
+                not(hasDescendant(instanceOf(FeedPlaceholderLayout.class))));
+    }
+
     private int getLoadMoreTriggerScrollDistance() {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP,
@@ -728,11 +844,26 @@ public class FeedStreamTest {
                 .build();
     }
 
+    private FeedUiProto.StreamUpdate.SliceUpdate createSliceUpdateForLoadingSpinnerSlice(
+            String sliceId, boolean isAtTop) {
+        return FeedUiProto.StreamUpdate.SliceUpdate.newBuilder()
+                .setSlice(createLoadingSpinnerSlice(sliceId, isAtTop))
+                .build();
+    }
+
+    private FeedUiProto.Slice createLoadingSpinnerSlice(String sliceId, boolean isAtTop) {
+        return FeedUiProto.Slice.newBuilder()
+                .setSliceId(sliceId)
+                .setLoadingSpinnerSlice(
+                        FeedUiProto.LoadingSpinnerSlice.newBuilder().setIsAtTop(isAtTop).build())
+                .build();
+    }
+
     private void createHeaderContent(int number) {
         List<NtpListContentManager.FeedContent> contentList = new ArrayList<>();
         for (int i = 0; i < number; i++) {
             contentList.add(new NtpListContentManager.NativeViewContent(
-                    HEADER_PREFIX + i, new TextView(mActivity)));
+                    0, HEADER_PREFIX + i, new AppCompatTextView(mActivity)));
         }
         mContentManager.addContents(0, contentList);
     }

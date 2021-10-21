@@ -36,6 +36,11 @@ ScreenPositionController* GetScreenPositionController() {
 class ScreenPositionControllerTest : public AshTestBase {
  public:
   ScreenPositionControllerTest() = default;
+
+  ScreenPositionControllerTest(const ScreenPositionControllerTest&) = delete;
+  ScreenPositionControllerTest& operator=(const ScreenPositionControllerTest&) =
+      delete;
+
   ~ScreenPositionControllerTest() override = default;
 
   void SetUp() override {
@@ -71,9 +76,6 @@ class ScreenPositionControllerTest : public AshTestBase {
  protected:
   std::unique_ptr<aura::Window> window_;
   aura::test::TestWindowDelegate window_delegate_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenPositionControllerTest);
 };
 
 }  // namespace
@@ -277,6 +279,11 @@ class ConvertToScreenEventHandler : public ui::EventHandler {
   ConvertToScreenEventHandler() : could_convert_to_screen_(true) {
     aura::Env::GetInstance()->AddPreTargetHandler(this);
   }
+
+  ConvertToScreenEventHandler(const ConvertToScreenEventHandler&) = delete;
+  ConvertToScreenEventHandler& operator=(const ConvertToScreenEventHandler&) =
+      delete;
+
   ~ConvertToScreenEventHandler() override {
     aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
@@ -295,8 +302,6 @@ class ConvertToScreenEventHandler : public ui::EventHandler {
   }
 
   bool could_convert_to_screen_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConvertToScreenEventHandler);
 };
 
 }  // namespace
@@ -307,7 +312,7 @@ class ConvertToScreenEventHandler : public ui::EventHandler {
 // that no events are dispatched at this time.
 TEST_F(ScreenPositionControllerTest,
        ConvertToScreenWhileRemovingSecondaryDisplay) {
-  UpdateDisplay("600x600,600x600");
+  UpdateDisplay("600x500,600x500");
   base::RunLoop().RunUntilIdle();
 
   // Create a window on the secondary display.
@@ -331,7 +336,7 @@ TEST_F(ScreenPositionControllerTest,
       new ConvertToScreenEventHandler);
 
   // Remove the secondary monitor.
-  UpdateDisplay("600x600");
+  UpdateDisplay("600x500");
 
   // The secondary root window is not immediately destroyed.
   EXPECT_TRUE(tracker.Contains(root_windows[1]));

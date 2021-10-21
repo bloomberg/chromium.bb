@@ -71,7 +71,7 @@ void AdsBlockedMessageDelegate::ShowMessage() {
   // activity is being recreated or destroyed, ads blocked message will not be
   // displayed.
   message_dispatcher_bridge->EnqueueMessage(
-      message.get(), web_contents(), messages::MessageScopeType::WEB_CONTENTS,
+      message.get(), web_contents(), messages::MessageScopeType::NAVIGATION,
       messages::MessagePriority::kNormal);
 
   message_ = std::move(message);
@@ -160,6 +160,6 @@ void AdsBlockedMessageDelegate::ShowDialog() {
   ads_blocked_dialog_->Show();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AdsBlockedMessageDelegate)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AdsBlockedMessageDelegate);
 
 }  // namespace subresource_filter

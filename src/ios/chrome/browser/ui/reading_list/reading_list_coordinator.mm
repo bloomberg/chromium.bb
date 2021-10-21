@@ -127,9 +127,7 @@
   self.tableViewController.audience = self;
   self.tableViewController.dataSource = self.mediator;
 
-  if (@available(iOS 13.0, *)) {
-    self.tableViewController.menuProvider = self;
-  }
+  self.tableViewController.menuProvider = self;
 
   itemFactory.accessibilityDelegate = self.tableViewController;
 
@@ -389,7 +387,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
            incognito:(BOOL)incognito {
   // Only open a new incognito tab when incognito is authenticated. Prompt for
   // auth otherwise.
-  if (base::FeatureList::IsEnabled(kIncognitoAuthentication) && incognito) {
+  if (incognito) {
     IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
         agentFromScene:SceneStateBrowserAgent::FromBrowser(self.browser)
                            ->GetSceneState()];

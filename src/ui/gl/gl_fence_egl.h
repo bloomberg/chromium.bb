@@ -14,6 +14,9 @@ namespace gl {
 
 class GL_EXPORT GLFenceEGL : public GLFence {
  public:
+  GLFenceEGL(const GLFenceEGL&) = delete;
+  GLFenceEGL& operator=(const GLFenceEGL&) = delete;
+
   ~GLFenceEGL() override;
 
   // Factory method using default initialization.
@@ -21,6 +24,12 @@ class GL_EXPORT GLFenceEGL : public GLFence {
 
   // Factory method using custom initialization.
   static std::unique_ptr<GLFenceEGL> Create(EGLenum type, EGLint* attribs);
+
+  // On i965, passing an already signalled fence has a large performance
+  // cost. See crbug.com/1246254. This function should be called at
+  // initialization to enable checking the fence before waiting on
+  // i965 platforms. TODO(crbug.com/1246254): Remove this.
+  static void CheckEGLFenceBeforeWait();
 
   // GLFence implementation:
   bool HasCompleted() override;
@@ -37,9 +46,6 @@ class GL_EXPORT GLFenceEGL : public GLFence {
 
   EGLSyncKHR sync_;
   EGLDisplay display_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLFenceEGL);
 };
 
 }  // namespace gl

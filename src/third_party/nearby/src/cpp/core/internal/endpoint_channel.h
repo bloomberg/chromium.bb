@@ -20,6 +20,7 @@
 
 #include "securegcm/d2d_connection_context_v1.h"
 #include "absl/time/clock.h"
+#include "analytics/analytics_recorder.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/exception.h"
 #include "platform/public/mutex.h"
@@ -79,6 +80,15 @@ class EndpointChannel {
   // Returns the timestamp of the last read from this endpoint, or -1 if no
   // reads have occurred.
   virtual absl::Time GetLastReadTimestamp() const = 0;
+
+  // Returns the timestamp of the last write to this endpoint, or -1 if no
+  // writes have occurred.
+  virtual absl::Time GetLastWriteTimestamp() const = 0;
+
+  // Sets the AnalyticsRecorder instance for analytics.
+  virtual void SetAnalyticsRecorder(
+      analytics::AnalyticsRecorder* analytics_recorder,
+      const std::string& endpoint_id) = 0;
 };
 
 inline bool operator==(const EndpointChannel& lhs, const EndpointChannel& rhs) {

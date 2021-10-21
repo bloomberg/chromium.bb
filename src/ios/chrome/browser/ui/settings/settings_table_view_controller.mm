@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -432,29 +433,17 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 
   // Defaults section.
   TableViewModel<TableViewItem*>* model = self.tableViewModel;
-  if (@available(iOS 14, *)) {
-    [model addSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-    [model addItem:[self defaultBrowserCellItem]
-        toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-  }
+  [model addSectionWithIdentifier:SettingsSectionIdentifierDefaults];
+  [model addItem:[self defaultBrowserCellItem]
+      toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
 
   // Show managed UI if default search engine is managed by policy.
   if ([self isDefaultSearchEngineManagedByPolicy]) {
-    if (@available(iOS 14, *)) {
-      [model addItem:[self managedSearchEngineItem]
-          toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-    } else {
-      [model addItem:[self managedSearchEngineItem]
-          toSectionWithIdentifier:SettingsSectionIdentifierBasics];
-    }
+    [model addItem:[self managedSearchEngineItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
   } else {
-    if (@available(iOS 14, *)) {
-      [model addItem:[self searchEngineDetailItem]
-          toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
-    } else {
-      [model addItem:[self searchEngineDetailItem]
-          toSectionWithIdentifier:SettingsSectionIdentifierBasics];
-    }
+    [model addItem:[self searchEngineDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
   }
 
   // Basics section
@@ -571,6 +560,8 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
   } else if (signin::IsSigninAllowed(_browserState->GetPrefs()) &&
              !authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     item = [self accountSignInItem];
+    [_signinPromoViewMediator disconnect];
+    _signinPromoViewMediator = nil;
   } else {
     [self.tableViewModel
         removeSectionWithIdentifier:SettingsSectionIdentifierSignIn];
@@ -678,8 +669,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
       initWithType:SettingsItemTypeSigninDisabled];
   signinDisabledItem.text =
       l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE);
-  signinDisabledItem.detailText =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_SIGNIN_DISABLED);
+  signinDisabledItem.statusText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   signinDisabledItem.accessibilityHint =
       l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
   signinDisabledItem.tintColor = [UIColor colorNamed:kGrey300Color];
@@ -1043,7 +1033,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
         base::mac::ObjCCastStrict<TableViewDetailIconCell>(cell);
     if (itemType == SettingsItemTypePasswords) {
       scoped_refptr<password_manager::PasswordStoreInterface> passwordStore =
-          IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
+          IOSChromePasswordStoreFactory::GetForBrowserState(
               _browserState, ServiceAccessType::EXPLICIT_ACCESS);
       if (!passwordStore) {
         // The password store factory returns a NULL password store if something

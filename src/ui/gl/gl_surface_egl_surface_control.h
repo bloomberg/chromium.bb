@@ -46,15 +46,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   gfx::Size GetSize() override;
   bool OnMakeCurrent(GLContext* context) override;
-  bool ScheduleOverlayPlane(int z_order,
-                            gfx::OverlayTransform transform,
-                            GLImage* image,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            const gfx::Rect& damage_rect,
-                            float opacity,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
+  bool ScheduleOverlayPlane(
+      GLImage* image,
+      std::unique_ptr<gfx::GpuFence> gpu_fence,
+      const gfx::OverlayPlaneData& overlay_plane_data) override;
   bool IsSurfaceless() const override;
   void* GetHandle() override;
   void PreserveChildSurfaceControls() override;
@@ -161,6 +156,11 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
    public:
     TransactionAckTimeoutManager(
         scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+    TransactionAckTimeoutManager(const TransactionAckTimeoutManager&) = delete;
+    TransactionAckTimeoutManager& operator=(
+        const TransactionAckTimeoutManager&) = delete;
+
     ~TransactionAckTimeoutManager();
 
     void ScheduleHangDetection();
@@ -173,8 +173,6 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     TransactionId current_transaction_id_ = 0;
     TransactionId last_acked_transaction_id_ = 0;
     base::CancelableOnceClosure hang_detection_cb_;
-
-    DISALLOW_COPY_AND_ASSIGN(TransactionAckTimeoutManager);
   };
 
   void CommitPendingTransaction(const gfx::Rect& damage_rect,

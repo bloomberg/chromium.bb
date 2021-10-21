@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "components/exo/wayland/clients/client_helper.h"
+#include "linux-dmabuf-unstable-v1-client-protocol.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
@@ -116,6 +117,9 @@ class ClientBase {
     sk_sp<SkSurface> sk_surface;
   };
 
+  ClientBase(const ClientBase&) = delete;
+  ClientBase& operator=(const ClientBase&) = delete;
+
   bool Init(const InitParams& params);
 
  protected:
@@ -185,6 +189,18 @@ class ClientBase {
                                  int32_t id,
                                  wl_fixed_t orientation);
 
+  // zwp_linux_dmabuf_v1_listener
+  virtual void HandleDmabufFormat(
+      void* data,
+      struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1,
+      uint32_t format);
+  virtual void HandleDmabufModifier(
+      void* data,
+      struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf_v1,
+      uint32_t format,
+      uint32_t modifier_hi,
+      uint32_t modifier_lo);
+
   gfx::Size size_ = gfx::Size(256, 256);
   int scale_ = 1;
   int transform_ = WL_OUTPUT_TRANSFORM_NORMAL;
@@ -225,7 +241,6 @@ class ClientBase {
   base::flat_set<uint32_t> bug_fix_ids_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ClientBase);
   void SetupAuraShellIfAvailable();
 };
 

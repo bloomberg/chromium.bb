@@ -34,8 +34,8 @@
 #include "third_party/blink/renderer/platform/widget/input/event_with_callback.h"
 #include "third_party/blink/renderer/platform/widget/input/scroll_predictor.h"
 #include "ui/events/types/scroll_input_type.h"
-#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/latency/latency_info.h"
 
 using cc::InputHandler;
@@ -138,11 +138,11 @@ class MockInputHandler : public cc::InputHandler {
   void DestroyScrollElasticityHelper() override {}
 
   bool GetScrollOffsetForLayer(cc::ElementId element_id,
-                               gfx::ScrollOffset* offset) override {
+                               gfx::Vector2dF* offset) override {
     return false;
   }
   bool ScrollLayerTo(cc::ElementId element_id,
-                     const gfx::ScrollOffset& offset) override {
+                     const gfx::Vector2dF& offset) override {
     return false;
   }
 
@@ -168,7 +168,7 @@ class MockInputHandler : public cc::InputHandler {
 
   MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
   MOCK_METHOD1(SetSynchronousInputHandlerRootScrollOffset,
-               void(const gfx::ScrollOffset& root_offset));
+               void(const gfx::Vector2dF& root_offset));
 
   bool IsCurrentlyScrollingViewport() const override {
     return is_scrolling_root_;
@@ -192,8 +192,8 @@ class MockInputHandler : public cc::InputHandler {
 class MockSynchronousInputHandler : public SynchronousInputHandler {
  public:
   MOCK_METHOD6(UpdateRootLayerState,
-               void(const gfx::ScrollOffset& total_scroll_offset,
-                    const gfx::ScrollOffset& max_scroll_offset,
+               void(const gfx::Vector2dF& total_scroll_offset,
+                    const gfx::Vector2dF& max_scroll_offset,
                     const gfx::SizeF& scrollable_size,
                     float page_scale_factor,
                     float min_page_scale_factor,
@@ -528,7 +528,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   }
 
   void DeliverInputForBeginFrame() {
-    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    constexpr base::TimeDelta interval = base::Milliseconds(16);
     base::TimeTicks frame_time =
         WebInputEvent::GetStaticTimeStampForTests() +
         (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
@@ -618,7 +618,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrollsDifferentSourceDevice) {
 
   cc::InputHandlerPointerResult pointer_down_result;
   pointer_down_result.type = cc::PointerResultType::kScrollbarScroll;
-  pointer_down_result.scroll_offset = gfx::ScrollOffset(0, 1);
+  pointer_down_result.scroll_offset = gfx::Vector2dF(0, 1);
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(pointer_down_result.type));
   EXPECT_CALL(mock_input_handler_, MouseDown(_, _))
@@ -791,7 +791,7 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
   mouse_event.button = WebMouseEvent::Button::kLeft;
   cc::InputHandlerPointerResult pointer_down_result;
   pointer_down_result.type = cc::PointerResultType::kScrollbarScroll;
-  pointer_down_result.scroll_offset = gfx::ScrollOffset(0, 1);
+  pointer_down_result.scroll_offset = gfx::Vector2dF(0, 1);
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(pointer_down_result.type));
   EXPECT_CALL(mock_input_handler_, MouseDown(_, _))
@@ -1473,7 +1473,7 @@ TEST_F(InputHandlerProxyEventQueueTest,
 
   cc::InputHandlerPointerResult pointer_down_result;
   pointer_down_result.type = cc::PointerResultType::kScrollbarScroll;
-  pointer_down_result.scroll_offset = gfx::ScrollOffset(0, 1);
+  pointer_down_result.scroll_offset = gfx::Vector2dF(0, 1);
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(pointer_down_result.type));
   EXPECT_CALL(mock_input_handler_, MouseDown(_, _))
@@ -2026,7 +2026,7 @@ class UnifiedScrollingInputHandlerProxyTest : public testing::Test {
   }
 
   void BeginFrame() {
-    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    constexpr base::TimeDelta interval = base::Milliseconds(16);
     base::TimeTicks frame_time =
         TimeForInputEvents() +
         (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
@@ -2470,14 +2470,12 @@ TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
 
   // When adding a SynchronousInputHandler, immediately request an
   // UpdateRootLayerStateForSynchronousInputHandler() call.
-  EXPECT_CALL(
-      mock_synchronous_input_handler,
-      UpdateRootLayerState(gfx::ScrollOffset(1, 2), gfx::ScrollOffset(3, 4),
-                           gfx::SizeF(5, 6), 7, 8, 9))
+  EXPECT_CALL(mock_synchronous_input_handler,
+              UpdateRootLayerState(gfx::Vector2dF(1, 2), gfx::Vector2dF(3, 4),
+                                   gfx::SizeF(5, 6), 7, 8, 9))
       .Times(1);
   proxy.UpdateRootLayerStateForSynchronousInputHandler(
-      gfx::ScrollOffset(1, 2), gfx::ScrollOffset(3, 4), gfx::SizeF(5, 6), 7, 8,
-      9);
+      gfx::Vector2dF(1, 2), gfx::Vector2dF(3, 4), gfx::SizeF(5, 6), 7, 8, 9);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
   testing::Mock::VerifyAndClearExpectations(&mock_client);
@@ -2493,9 +2491,9 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
 
   proxy.SetSynchronousInputHandler(&mock_synchronous_input_handler);
 
-  EXPECT_CALL(mock_input_handler, SetSynchronousInputHandlerRootScrollOffset(
-                                      gfx::ScrollOffset(5, 6)));
-  proxy.SynchronouslySetRootScrollOffset(gfx::ScrollOffset(5, 6));
+  EXPECT_CALL(mock_input_handler,
+              SetSynchronousInputHandlerRootScrollOffset(gfx::Vector2dF(5, 6)));
+  proxy.SynchronouslySetRootScrollOffset(gfx::Vector2dF(5, 6));
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler);
   testing::Mock::VerifyAndClearExpectations(&mock_client);
@@ -2512,7 +2510,7 @@ TEST_F(InputHandlerProxyEventQueueTest,
   // Test mousedown on the scrollbar. Expect to get GSB and GSU.
   cc::InputHandlerPointerResult pointer_down_result;
   pointer_down_result.type = cc::PointerResultType::kScrollbarScroll;
-  pointer_down_result.scroll_offset = gfx::ScrollOffset(0, 1);
+  pointer_down_result.scroll_offset = gfx::Vector2dF(0, 1);
   EXPECT_CALL(mock_input_handler_, HitTest(_))
       .WillOnce(testing::Return(pointer_down_result.type));
   EXPECT_CALL(mock_input_handler_, MouseDown(_, _))
@@ -2744,17 +2742,17 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
 
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollBegin);
-  tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+  tick_clock.Advance(base::Microseconds(10));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollUpdate, -20);
-  tick_clock.Advance(base::TimeDelta::FromMicroseconds(40));
+  tick_clock.Advance(base::Microseconds(40));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollUpdate, -40);
-  tick_clock.Advance(base::TimeDelta::FromMicroseconds(20));
+  tick_clock.Advance(base::Microseconds(20));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollUpdate, -10);
-  tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+  tick_clock.Advance(base::Microseconds(10));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollEnd);
 
   // Dispatch all queued events.
-  tick_clock.Advance(base::TimeDelta::FromMicroseconds(70));
+  tick_clock.Advance(base::Microseconds(70));
   DeliverInputForBeginFrame();
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(5ul, event_disposition_recorder_.size());
@@ -3181,15 +3179,15 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
       .WillOnce(testing::Return(scroll_result_did_scroll_));
 
   // No prediction when start with a GSB
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
+  tick_clock.Advance(base::Milliseconds(8));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollBegin);
   DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable());
 
   // Test predictor returns last GSU delta.
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
+  tick_clock.Advance(base::Milliseconds(8));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollUpdate, -20);
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
+  tick_clock.Advance(base::Milliseconds(8));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollUpdate, -15);
   DeliverInputForBeginFrame();
   auto result = GestureScrollEventPredictionAvailable();
@@ -3212,7 +3210,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
       mock_input_handler_,
       RecordScrollBegin(_, cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(1);
-  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
+  tick_clock.Advance(base::Milliseconds(8));
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollBegin);
   DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable());
@@ -3839,7 +3837,7 @@ TEST_P(InputHandlerProxyTouchScrollbarTest,
   SetupEvents();
   cc::InputHandlerPointerResult pointer_down_result;
   pointer_down_result.type = cc::PointerResultType::kScrollbarScroll;
-  pointer_down_result.scroll_offset = gfx::ScrollOffset(0, 1);
+  pointer_down_result.scroll_offset = gfx::Vector2dF(0, 1);
   cc::InputHandlerPointerResult pointer_up_result;
   pointer_up_result.type = cc::PointerResultType::kScrollbarScroll;
 
@@ -3934,7 +3932,7 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
   }
 
   void AdvanceClock(uint32_t milliseconds) {
-    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(milliseconds));
+    tick_clock_.Advance(base::Milliseconds(milliseconds));
   }
 
   void AddNonJankyEvents(uint32_t count) {
@@ -3946,7 +3944,7 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
   }
 
   void DeliverInputForBeginFrame() {
-    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    constexpr base::TimeDelta interval = base::Milliseconds(16);
     base::TimeTicks frame_time =
         base::TimeTicks() +
         (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *

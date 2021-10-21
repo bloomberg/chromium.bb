@@ -70,7 +70,6 @@ ScriptExecutor::ScriptExecutor(
     const std::string& global_payload,
     const std::string& script_payload,
     ScriptExecutor::Listener* listener,
-    std::map<std::string, ScriptStatus>* scripts_state,
     const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
     ScriptExecutorDelegate* delegate)
     : script_path_(script_path),
@@ -81,7 +80,6 @@ ScriptExecutor::ScriptExecutor(
       listener_(listener),
       delegate_(delegate),
       ordered_interrupts_(ordered_interrupts),
-      scripts_state_(scripts_state),
       element_store_(
           std::make_unique<ElementStore>(delegate->GetWebContents())) {
   DCHECK(delegate_);
@@ -103,7 +101,6 @@ void ScriptExecutor::Run(const UserData* user_data,
 #else
   DVLOG(2) << "Starting script " << script_path_;
 #endif
-  (*scripts_state_)[script_path_] = ScriptStatus::RUNNING;
 
   DCHECK(user_data);
   user_data_ = user_data;
@@ -650,10 +647,6 @@ std::string ScriptExecutor::GetEmailAddressForAccessTokenAccount() const {
   return delegate_->GetEmailAddressForAccessTokenAccount();
 }
 
-std::string ScriptExecutor::GetLocale() const {
-  return delegate_->GetLocale();
-}
-
 void ScriptExecutor::SetDetails(std::unique_ptr<Details> details,
                                 base::TimeDelta delay) {
   return delegate_->SetDetails(std::move(details), delay);
@@ -774,7 +767,7 @@ void ScriptExecutor::MaybeShowSlowConnectionWarning() {
   bool should_show_warning =
       !delegate_->GetSettings().only_show_connection_warning_once ||
       !connection_warning_already_shown_;
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(0);
+  base::TimeDelta delay = base::Milliseconds(0);
   // MaybeShowSlowWarning is only called if should_sown_warning is true.
   bool warning_was_shown =
       should_show_warning &&
@@ -921,8 +914,6 @@ void ScriptExecutor::RunCallback(bool success) {
 
 void ScriptExecutor::RunCallbackWithResult(const Result& result) {
   DCHECK(callback_);
-  (*scripts_state_)[script_path_] =
-      result.success ? ScriptStatus::SUCCESS : ScriptStatus::FAILURE;
   std::move(callback_).Run(result);
 }
 
@@ -951,7 +942,7 @@ void ScriptExecutor::ProcessNextAction() {
         FROM_HERE,
         base::BindOnce(&ScriptExecutor::ProcessAction,
                        weak_ptr_factory_.GetWeakPtr(), action),
-        base::TimeDelta::FromMilliseconds(delay_ms));
+        base::Milliseconds(delay_ms));
   } else {
     ProcessAction(action);
   }
@@ -1025,7 +1016,7 @@ void ScriptExecutor::CheckElementMatches(
     BatchElementChecker* checker,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   checker->AddElementCheck(
-      selector,
+      selector, /* strict= */ false,
       base::BindOnce(&ScriptExecutor::CheckElementMatchesCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1179,7 +1170,7 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
   wait_time_total_ =
       (wait_time_stopwatch_.TotalElapsed() < retry_timer_.period())
           // It's the first run of the checks, set the total time waited to 0.
-          ? base::TimeDelta::FromSeconds(0)
+          ? base::Seconds(0)
           // If this is not the first run of the checks, in order to estimate
           // the real cost of periodic checks, half the duration of the retry
           // timer period is removed from the total wait time. This is to
@@ -1270,8 +1261,7 @@ void ScriptExecutor::WaitForDomOperation::RunInterrupt(
       std::make_unique<TriggerContext>(std::vector<const TriggerContext*>{
           main_script_->additional_context_.get()}),
       main_script_->last_global_payload_, main_script_->initial_script_payload_,
-      /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
-      delegate_);
+      /* listener= */ this, &no_interrupts_, delegate_);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   delegate_->SetUserActions(nullptr);
   interrupt_executor_->Run(

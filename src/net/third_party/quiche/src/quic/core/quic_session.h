@@ -20,6 +20,8 @@
 #include "absl/types/span.h"
 #include "quic/core/crypto/tls_connection.h"
 #include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/frames/quic_stop_sending_frame.h"
+#include "quic/core/frames/quic_window_update_frame.h"
 #include "quic/core/handshaker_delegate_interface.h"
 #include "quic/core/legacy_quic_stream_id_manager.h"
 #include "quic/core/quic_connection.h"
@@ -97,13 +99,11 @@ class QUIC_EXPORT_PRIVATE QuicSession
   };
 
   // Does not take ownership of |connection| or |visitor|.
-  QuicSession(QuicConnection* connection,
-              Visitor* owner,
+  QuicSession(QuicConnection* connection, Visitor* owner,
               const QuicConfig& config,
               const ParsedQuicVersionVector& supported_versions,
               QuicStreamCount num_expected_unidirectional_static_streams);
-  QuicSession(QuicConnection* connection,
-              Visitor* owner,
+  QuicSession(QuicConnection* connection, Visitor* owner,
               const QuicConfig& config,
               const ParsedQuicVersionVector& supported_versions,
               QuicStreamCount num_expected_unidirectional_static_streams,
@@ -183,14 +183,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                         QuicStreamOffset offset,
                                         QuicByteCount data_length,
                                         QuicDataWriter* writer) override;
-  bool WriteCryptoData(EncryptionLevel level,
-                       QuicStreamOffset offset,
+  bool WriteCryptoData(EncryptionLevel level, QuicStreamOffset offset,
                        QuicByteCount data_length,
                        QuicDataWriter* writer) override;
 
   // SessionNotifierInterface methods:
-  bool OnFrameAcked(const QuicFrame& frame,
-                    QuicTime::Delta ack_delay_time,
+  bool OnFrameAcked(const QuicFrame& frame, QuicTime::Delta ack_delay_time,
                     QuicTime receive_timestamp) override;
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
   void OnFrameLost(const QuicFrame& frame) override;
@@ -299,8 +297,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                                    bool set_alternative_decrypter,
                                    bool latch_once_used) override;
   void OnNewEncryptionKeyAvailable(
-      EncryptionLevel level,
-      std::unique_ptr<QuicEncrypter> encrypter) override;
+      EncryptionLevel level, std::unique_ptr<QuicEncrypter> encrypter) override;
   void SetDefaultEncryptionLevel(EncryptionLevel level) override;
   void OnTlsHandshakeComplete() override;
   void DiscardOldDecryptionKey(EncryptionLevel level) override;
@@ -323,8 +320,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                      std::string error_details) override;
   // Sets priority in the write blocked list.
   void RegisterStreamPriority(
-      QuicStreamId id,
-      bool is_static,
+      QuicStreamId id, bool is_static,
       const spdy::SpdyStreamPrecedence& precedence) override;
   // Clears priority from the write blocked list.
   void UnregisterStreamPriority(QuicStreamId id, bool is_static) override;
@@ -343,8 +339,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
                               TransmissionType type,
                               EncryptionLevel level) override;
 
-  size_t SendCryptoData(EncryptionLevel level,
-                        size_t write_length,
+  size_t SendCryptoData(EncryptionLevel level, size_t write_length,
                         QuicStreamOffset offset,
                         TransmissionType type) override;
 
@@ -466,8 +461,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Switch to the path described in |context| without validating the path.
   bool MigratePath(const QuicSocketAddress& self_address,
                    const QuicSocketAddress& peer_address,
-                   QuicPacketWriter* writer,
-                   bool owns_writer);
+                   QuicPacketWriter* writer, bool owns_writer);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   // Because overhead can vary during a connection, this method should be
@@ -588,12 +582,12 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Does actual work of sending RESET_STREAM, if the stream type allows.
   // Also informs the connection so that pending stream frames can be flushed.
   virtual void MaybeSendRstStreamFrame(QuicStreamId id,
-                                       QuicRstStreamErrorCode error,
+                                       QuicResetStreamError error,
                                        QuicStreamOffset bytes_written);
 
   // Sends a STOP_SENDING frame if the stream type allows.
   virtual void MaybeSendStopSendingFrame(QuicStreamId id,
-                                         QuicRstStreamErrorCode error);
+                                         QuicResetStreamError error);
 
   // Returns the encryption level to send application data.
   EncryptionLevel GetEncryptionLevelToSendApplicationData() const;
@@ -627,6 +621,9 @@ class QUIC_EXPORT_PRIVATE QuicSession
   bool quic_tls_disable_resumption_refactor() const {
     return quic_tls_disable_resumption_refactor_;
   }
+
+  // Try converting all pending streams to normal streams.
+  void ProcessAllPendingStreams();
 
  protected:
   using StreamMap =
@@ -680,11 +677,17 @@ class QUIC_EXPORT_PRIVATE QuicSession
   virtual void OnFinalByteOffsetReceived(QuicStreamId id,
                                          QuicStreamOffset final_byte_offset);
 
-  // Returns true if incoming unidirectional streams should be buffered until
-  // the first byte of the stream arrives.
-  // If a subclass returns true here, it should make sure to implement
-  // ProcessPendingStream().
-  virtual bool UsesPendingStreams() const { return false; }
+  // Returns true if a frame with the given type and id can be prcoessed by a
+  // PendingStream. However, the frame will always be processed by a QuicStream
+  // if one exists with the given stream_id.
+  virtual bool UsesPendingStreamForFrame(QuicFrameType /*type*/,
+                                         QuicStreamId /*stream_id*/) const {
+    return false;
+  }
+
+  // Returns true if a pending stream should be converted to a real stream after
+  // a corresponding STREAM_FRAME is received.
+  virtual bool ShouldProcessPendingStreamImmediately() const { return true; }
 
   spdy::SpdyPriority GetSpdyPriorityofStream(QuicStreamId stream_id) const {
     return write_blocked_streams_.GetSpdyPriorityofStream(stream_id);
@@ -830,6 +833,7 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // closed.
   QuicStream* GetStream(QuicStreamId id) const;
 
+  // Can return NULL, e.g., if the stream has been closed before.
   PendingStream* GetOrCreatePendingStream(QuicStreamId stream_id);
 
   // Let streams and control frame managers retransmit lost data, returns true
@@ -842,13 +846,29 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Closes the pending stream |stream_id| before it has been created.
   void ClosePendingStream(QuicStreamId stream_id);
 
-  // Creates or gets pending stream, feeds it with |frame|, and processes the
-  // pending stream.
-  void PendingStreamOnStreamFrame(const QuicStreamFrame& frame);
+  // Whether the frame with given type and id should be feed to a pending
+  // stream.
+  bool ShouldProcessFrameByPendingStream(QuicFrameType type,
+                                         QuicStreamId id) const;
+
+  // Process the pending stream if possible.
+  void MaybeProcessPendingStream(PendingStream* pending);
+
+  // Creates or gets pending stream, feeds it with |frame|, and returns the
+  // pending stream. Can return NULL, e.g., if the stream ID is invalid.
+  PendingStream* PendingStreamOnStreamFrame(const QuicStreamFrame& frame);
 
   // Creates or gets pending strea, feed it with |frame|, and closes the pending
   // stream.
   void PendingStreamOnRstStream(const QuicRstStreamFrame& frame);
+
+  // Creates or gets pending stream, feeds it with |frame|, and records the
+  // max_data in the pending stream.
+  void PendingStreamOnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+
+  // Creates or gets pending stream, feeds it with |frame|, and records the
+  // ietf_error_code in the pending stream.
+  void PendingStreamOnStopSendingFrame(const QuicStopSendingFrame& frame);
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.

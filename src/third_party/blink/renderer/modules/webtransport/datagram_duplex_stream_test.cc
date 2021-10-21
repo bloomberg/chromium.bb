@@ -82,6 +82,8 @@ class StubWebTransport final : public network::mojom::blink::WebTransport {
     outgoing_datagram_expiration_duration_value_ = value;
   }
 
+  void Close(network::mojom::blink::WebTransportCloseInfoPtr) override {}
+
  private:
   base::OnceCallback<void(uint32_t,
                           mojo::ScopedDataPipeConsumerHandle,
@@ -183,16 +185,14 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
   test::RunPendingTasks();
   auto expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
   ASSERT_TRUE(expiration_duration.has_value());
-  EXPECT_EQ(expiration_duration.value(),
-            base::TimeDelta::FromMillisecondsD(1.0));
+  EXPECT_EQ(expiration_duration.value(), base::Milliseconds(1.0));
 
   duplex->setOutgoingMaxAge(absl::nullopt);
   ASSERT_FALSE(duplex->outgoingMaxAge().has_value());
   test::RunPendingTasks();
   expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
   ASSERT_TRUE(expiration_duration.has_value());
-  EXPECT_EQ(expiration_duration.value(),
-            base::TimeDelta::FromMillisecondsD(0.0));
+  EXPECT_EQ(expiration_duration.value(), base::Milliseconds(0.0));
 
   duplex->setOutgoingMaxAge(0.5);
   ASSERT_TRUE(duplex->outgoingMaxAge().has_value());
@@ -200,8 +200,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
   test::RunPendingTasks();
   expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
   ASSERT_TRUE(expiration_duration.has_value());
-  EXPECT_EQ(expiration_duration.value(),
-            base::TimeDelta::FromMillisecondsD(0.5));
+  EXPECT_EQ(expiration_duration.value(), base::Milliseconds(0.5));
 
   duplex->setOutgoingMaxAge(0.0);
   ASSERT_TRUE(duplex->outgoingMaxAge().has_value());
@@ -210,7 +209,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
   expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
   ASSERT_TRUE(expiration_duration.has_value());
   EXPECT_EQ(expiration_duration.value(),
-            base::TimeDelta::FromMillisecondsD(0.5));  // Unchanged
+            base::Milliseconds(0.5));  // Unchanged
 
   duplex->setOutgoingMaxAge(-1.0);
   ASSERT_TRUE(duplex->outgoingMaxAge().has_value());
@@ -219,7 +218,7 @@ TEST(DatagramDuplexStreamTest, SetOutgoingMaxAge) {
   expiration_duration = stub->OutgoingDatagramExpirationDurationValue();
   ASSERT_TRUE(expiration_duration.has_value());
   EXPECT_EQ(expiration_duration.value(),
-            base::TimeDelta::FromMillisecondsD(0.5));  // Unchanged
+            base::Milliseconds(0.5));  // Unchanged
 }
 
 TEST(DatagramDuplexStreamTest, SetIncomingHighWaterMark) {
@@ -248,6 +247,13 @@ TEST(DatagramDuplexStreamTest, SetOutgoingHighWaterMark) {
 
   duplex->setOutgoingHighWaterMark(-1);
   EXPECT_EQ(duplex->outgoingHighWaterMark(), 0);
+}
+
+TEST(DatagramDuplexStreamTest, InitialMaxDatagramSize) {
+  ScopedDatagramDuplexStream scope;
+  auto* duplex = scope.Duplex();
+
+  EXPECT_EQ(duplex->maxDatagramSize(), 1024u);
 }
 
 }  // namespace

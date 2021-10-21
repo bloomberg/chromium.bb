@@ -40,8 +40,7 @@ namespace {
 void WaitForMilliseconds(int milliseconds) {
   base::RunLoop loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(milliseconds));
+      FROM_HERE, loop.QuitClosure(), base::Milliseconds(milliseconds));
   loop.Run();
 }
 
@@ -321,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, InvalidDownloadsPath) {
   // by Capture Mode.
   EXPECT_EQ(invalid_path, download_prefs->DownloadPath());
   EXPECT_NE(invalid_path,
-            ChromeCaptureModeDelegate::Get()->GetScreenCaptureDir());
+            ChromeCaptureModeDelegate::Get()->GetUserDefaultDownloadsFolder());
   ash::CaptureModeTestApi test_api;
   test_api.StartForFullscreen(/*for_video=*/true);
   FinishVideoRecordingTest(&test_api);

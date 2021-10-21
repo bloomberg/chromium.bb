@@ -104,6 +104,10 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
 class UserImageChangeWaiter : public user_manager::UserManager::Observer {
  public:
   UserImageChangeWaiter() {}
+
+  UserImageChangeWaiter(const UserImageChangeWaiter&) = delete;
+  UserImageChangeWaiter& operator=(const UserImageChangeWaiter&) = delete;
+
   ~UserImageChangeWaiter() override {}
 
   void Wait() {
@@ -121,8 +125,6 @@ class UserImageChangeWaiter : public user_manager::UserManager::Observer {
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserImageChangeWaiter);
 };
 
 }  // namespace
@@ -130,6 +132,9 @@ class UserImageChangeWaiter : public user_manager::UserManager::Observer {
 class UserImageManagerTestBase : public LoginManagerTest,
                                  public user_manager::UserManager::Observer {
  public:
+  UserImageManagerTestBase(const UserImageManagerTestBase&) = delete;
+  UserImageManagerTestBase& operator=(const UserImageManagerTestBase&) = delete;
+
   std::unique_ptr<net::test_server::BasicHttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (request.relative_url.find("/avatar.jpg") == std::string::npos)
@@ -315,10 +320,7 @@ class UserImageManagerTestBase : public LoginManagerTest,
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_http_response_;
 
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UserImageManagerTestBase);
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 };
 
 class UserImageManagerTest : public UserImageManagerTestBase {
@@ -539,6 +541,11 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
 
 class UserImageManagerPolicyTest : public UserImageManagerTestBase,
                                    public policy::CloudPolicyStore::Observer {
+ public:
+  UserImageManagerPolicyTest(const UserImageManagerPolicyTest&) = delete;
+  UserImageManagerPolicyTest& operator=(const UserImageManagerPolicyTest&) =
+      delete;
+
  protected:
   UserImageManagerPolicyTest()
       : owner_key_util_(new ownership::MockOwnerKeyUtil()) {
@@ -627,9 +634,6 @@ class UserImageManagerPolicyTest : public UserImageManagerTestBase,
   cryptohome::AccountIdentifier cryptohome_id_ =
       cryptohome::CreateAccountIdentifierFromAccountId(enterprise_account_id_);
   LoginManagerMixin login_manager_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UserImageManagerPolicyTest);
 };
 
 // Verifies that the user image can be set through policy. Also verifies that

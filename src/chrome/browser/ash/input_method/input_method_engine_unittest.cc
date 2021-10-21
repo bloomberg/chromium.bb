@@ -22,11 +22,11 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
-#include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
-#include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_engine_handler_interface.h"
+#include "ui/base/ime/ash/mock_component_extension_ime_manager_delegate.h"
+#include "ui/base/ime/ash/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -82,6 +82,10 @@ void InitInputMethod() {
 class TestObserver : public InputMethodEngineBase::Observer {
  public:
   TestObserver() : calls_bitmap_(NONE) {}
+
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   ~TestObserver() override = default;
 
   void OnActivate(const std::string& engine_id) override {
@@ -148,8 +152,6 @@ class TestObserver : public InputMethodEngineBase::Observer {
  private:
   unsigned char calls_bitmap_;
   std::string engine_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class InputMethodEngineTest : public testing::Test {
@@ -167,6 +169,10 @@ class InputMethodEngineTest : public testing::Test {
     chrome_keyboard_controller_client_test_helper_ =
         ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
   }
+
+  InputMethodEngineTest(const InputMethodEngineTest&) = delete;
+  InputMethodEngineTest& operator=(const InputMethodEngineTest&) = delete;
+
   ~InputMethodEngineTest() override {
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
     engine_.reset();
@@ -206,9 +212,6 @@ class InputMethodEngineTest : public testing::Test {
       mock_ime_input_context_handler_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputMethodEngineTest);
 };
 
 }  // namespace

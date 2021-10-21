@@ -43,15 +43,15 @@ int Tile::GetPaletteCache(const Block& block, PlaneType plane_type,
           : 0;
   if (left_size == 0 && top_size == 0) return 0;
   // Merge the left and top colors in sorted order and store them in |cache|.
-  uint16_t dummy[1];
+  uint16_t empty_palette[1];
   const uint16_t* top =
       (top_size > 0) ? block.top_context
                            ->palette_color[block.top_context_index][plane_type]
-                     : dummy;
+                     : empty_palette;
   const uint16_t* left =
       (left_size > 0)
           ? left_context_.palette_color[block.left_context_index][plane_type]
-          : dummy;
+          : empty_palette;
   std::merge(top, top + top_size, left, left + left_size, cache);
   // Deduplicate the entries in |cache| and return the number of unique
   // entries.

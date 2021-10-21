@@ -23,6 +23,12 @@ class CFX_RenderDevice;
 class CPDF_AnnotList;
 class CPDF_RenderOptions;
 class CPDFSDK_FormFillEnvironment;
+class CPDFSDK_InteractiveForm;
+
+#ifdef PDF_ENABLE_XFA
+class CPDFXFA_Page;
+class CXFA_FFWidget;
+#endif  // PDF_ENABLE_XFA
 
 class CPDFSDK_PageView final : public CPDF_Page::View {
  public:
@@ -36,6 +42,10 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
 
   void LoadFXAnnots();
   CPDFSDK_Annot* GetFocusAnnot();
+  CPDFSDK_Annot* GetNextAnnot(CPDFSDK_Annot* pAnnot);
+  CPDFSDK_Annot* GetPrevAnnot(CPDFSDK_Annot* pAnnot);
+  CPDFSDK_Annot* GetFirstFocusableAnnot();
+  CPDFSDK_Annot* GetLastFocusableAnnot();
   bool IsValidAnnot(const CPDF_Annot* p) const;
   bool IsValidSDKAnnot(const CPDFSDK_Annot* p) const;
 
@@ -53,6 +63,7 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
 
   CPDF_Page* GetPDFPage() const;
   CPDF_Document* GetPDFDocument();
+  CPDFSDK_InteractiveForm* GetInteractiveForm() const;
   CPDFSDK_FormFillEnvironment* GetFormFillEnv() const {
     return m_pFormFillEnv.Get();
   }
@@ -98,13 +109,17 @@ class CPDFSDK_PageView final : public CPDF_Page::View {
   void TakePageOwnership() { m_pOwnsPage.Reset(ToPDFPage(m_page)); }
 
  private:
+#ifdef PDF_ENABLE_XFA
+  CPDFXFA_Page* XFAPageIfNotBackedByPDFPage();
+#endif
+
   CPDFSDK_Annot* GetFXAnnotAtPoint(const CFX_PointF& point);
   CPDFSDK_Annot* GetFXWidgetAtPoint(const CFX_PointF& point);
 
   int GetPageIndexForStaticPDF() const;
 
   void EnterWidget(CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr,
-                   ObservedPtr<CPDFSDK_Annot>* pAnnot,
+                   ObservedPtr<CPDFSDK_Annot>& pAnnot,
                    Mask<FWL_EVENTFLAG> nFlag);
   void ExitWidget(CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr,
                   bool callExitCallback,

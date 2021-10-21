@@ -7,22 +7,23 @@
 
 #include "base/macros.h"
 
-namespace chromeos {
+namespace ash {
 namespace test {
 
 // Generic class for conditions that can be awaited it test.
 class TestConditionWaiter {
  public:
+  TestConditionWaiter(const TestConditionWaiter&) = delete;
+  TestConditionWaiter& operator=(const TestConditionWaiter&) = delete;
+
   virtual ~TestConditionWaiter() = default;
   virtual void Wait() = 0;
 
  protected:
   TestConditionWaiter() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConditionWaiter);
 };
 
 }  // namespace test
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_TEST_CONDITION_WAITER_H_

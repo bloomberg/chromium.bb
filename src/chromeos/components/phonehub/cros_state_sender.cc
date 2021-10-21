@@ -16,8 +16,7 @@ namespace {
 // The minimum time to wait before checking whether the phone has responded to
 // status messages sent by CrosStateSender, and re-sending the status messages
 // if there was no response (no phone status model exists).
-constexpr base::TimeDelta kMinimumRetryDelay =
-    base::TimeDelta::FromSeconds(15u);
+constexpr base::TimeDelta kMinimumRetryDelay = base::Seconds(15u);
 
 // The amount the previous delay is multiplied by to determine the new amount
 // of time to wait before determining whether CrosStateSender should resend the
@@ -89,10 +88,16 @@ void CrosStateSender::PerformUpdateCrosState() {
   bool are_notifications_enabled =
       multidevice_setup_client_->GetFeatureState(
           Feature::kPhoneHubNotifications) == FeatureState::kEnabledByUser;
+  bool is_camera_roll_enabled =
+      multidevice_setup_client_->GetFeatureState(
+          Feature::kPhoneHubCameraRoll) == FeatureState::kEnabledByUser;
 
   PA_LOG(INFO) << "Attempting to send cros state with notifications enabled "
-               << "state as: " << are_notifications_enabled;
-  message_sender_->SendCrosState(are_notifications_enabled);
+               << "state as: " << are_notifications_enabled
+               << " and camera roll enabled state as: "
+               << is_camera_roll_enabled;
+  message_sender_->SendCrosState(are_notifications_enabled,
+                                 is_camera_roll_enabled);
 
   retry_timer_->Start(FROM_HERE, retry_delay_,
                       base::BindOnce(&CrosStateSender::OnRetryTimerFired,

@@ -20,10 +20,16 @@ namespace ash {
 class TestAccessibilityControllerClient : public AccessibilityControllerClient {
  public:
   TestAccessibilityControllerClient();
+
+  TestAccessibilityControllerClient(const TestAccessibilityControllerClient&) =
+      delete;
+  TestAccessibilityControllerClient& operator=(
+      const TestAccessibilityControllerClient&) = delete;
+
   ~TestAccessibilityControllerClient();
 
   static constexpr base::TimeDelta kShutdownSoundDuration =
-      base::TimeDelta::FromMilliseconds(1000);
+      base::Milliseconds(1000);
 
   // AccessibilityControllerClient:
   void TriggerAccessibilityAlert(AccessibilityAlert alert) override;
@@ -75,8 +81,6 @@ class TestAccessibilityControllerClient : public AccessibilityControllerClient {
   ax::mojom::Gesture last_a11y_gesture_ = ax::mojom::Gesture::kNone;
 
   int select_to_speak_state_change_requests_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAccessibilityControllerClient);
 };
 
 }  // namespace ash

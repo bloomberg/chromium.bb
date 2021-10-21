@@ -19,6 +19,7 @@
 
 namespace content {
 
+// Lives on the UI thread.
 class PaymentAppInfoFetcher {
  public:
   struct PaymentAppInfo {
@@ -33,32 +34,26 @@ class PaymentAppInfoFetcher {
   using PaymentAppInfoFetchCallback =
       base::OnceCallback<void(std::unique_ptr<PaymentAppInfo> app_info)>;
 
-  // Only accessed on the service worker core thread.
   static void Start(
       const GURL& context_url,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       PaymentAppInfoFetchCallback callback);
 
  private:
-  // Only accessed on the UI thread.
-  static void StartOnUI(
-      const GURL& context_url,
-      const std::unique_ptr<std::vector<GlobalRenderFrameHostId>>&
-          frame_routing_ids,
-      PaymentAppInfoFetchCallback callback);
-
   // Keeps track of the web contents.
-  // Only accessed on the UI thread.
   class WebContentsHelper : public WebContentsObserver {
    public:
     explicit WebContentsHelper(WebContents* web_contents);
     ~WebContentsHelper() override;
   };
 
-  // Only accessed on the UI thread.
   class SelfDeleteFetcher {
    public:
     explicit SelfDeleteFetcher(PaymentAppInfoFetchCallback callback);
+
+    SelfDeleteFetcher(const SelfDeleteFetcher&) = delete;
+    SelfDeleteFetcher& operator=(const SelfDeleteFetcher&) = delete;
+
     ~SelfDeleteFetcher();
 
     void Start(const GURL& context_url,
@@ -85,8 +80,6 @@ class PaymentAppInfoFetcher {
     std::unique_ptr<PaymentAppInfo> fetched_payment_app_info_;
     PaymentAppInfoFetchCallback callback_;
     base::WeakPtrFactory<SelfDeleteFetcher> weak_ptr_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(SelfDeleteFetcher);
   };
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PaymentAppInfoFetcher);

@@ -600,6 +600,9 @@ declare namespace Protocol {
     }
   }
 
+  /**
+   * The domain is deprecated as AppCache is being removed (see crbug.com/582750).
+   */
   export namespace ApplicationCache {
 
     /**
@@ -1067,6 +1070,21 @@ declare namespace Protocol {
       isWarning: boolean;
     }
 
+    export const enum GenericIssueErrorType {
+      CrossOriginPortalPostMessageError = 'CrossOriginPortalPostMessageError',
+    }
+
+    /**
+     * Depending on the concrete errorType, different properties are set.
+     */
+    export interface GenericIssueDetails {
+      /**
+       * Issues with the same errorType are aggregated in the frontend.
+       */
+      errorType: GenericIssueErrorType;
+      frameId?: Page.FrameId;
+    }
+
     /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
@@ -1086,6 +1104,7 @@ declare namespace Protocol {
       QuirksModeIssue = 'QuirksModeIssue',
       NavigatorUserAgentIssue = 'NavigatorUserAgentIssue',
       WasmCrossOriginModuleSharingIssue = 'WasmCrossOriginModuleSharingIssue',
+      GenericIssue = 'GenericIssue',
     }
 
     /**
@@ -1107,6 +1126,7 @@ declare namespace Protocol {
       quirksModeIssueDetails?: QuirksModeIssueDetails;
       navigatorUserAgentIssueDetails?: NavigatorUserAgentIssueDetails;
       wasmCrossOriginModuleSharingIssue?: WasmCrossOriginModuleSharingIssueDetails;
+      genericIssueDetails?: GenericIssueDetails;
     }
 
     /**
@@ -7174,6 +7194,7 @@ declare namespace Protocol {
       HeaderDisallowedByPreflightResponse = 'HeaderDisallowedByPreflightResponse',
       RedirectContainsCredentials = 'RedirectContainsCredentials',
       InsecurePrivateNetwork = 'InsecurePrivateNetwork',
+      InvalidPrivateNetworkAccess = 'InvalidPrivateNetworkAccess',
       NoCorsRedirectModeNotFollow = 'NoCorsRedirectModeNotFollow',
     }
 
@@ -7528,6 +7549,7 @@ declare namespace Protocol {
       SchemefulSameSiteUnspecifiedTreatedAsLax = 'SchemefulSameSiteUnspecifiedTreatedAsLax',
       SamePartyFromCrossPartyContext = 'SamePartyFromCrossPartyContext',
       SamePartyConflictsWithOtherAttributes = 'SamePartyConflictsWithOtherAttributes',
+      NameValuePairExceedsMaxSize = 'NameValuePairExceedsMaxSize',
     }
 
     /**
@@ -7547,6 +7569,7 @@ declare namespace Protocol {
       SchemefulSameSiteLax = 'SchemefulSameSiteLax',
       SchemefulSameSiteUnspecifiedTreatedAsLax = 'SchemefulSameSiteUnspecifiedTreatedAsLax',
       SamePartyFromCrossPartyContext = 'SamePartyFromCrossPartyContext',
+      NameValuePairExceedsMaxSize = 'NameValuePairExceedsMaxSize',
     }
 
     /**
@@ -9460,6 +9483,32 @@ declare namespace Protocol {
       descendantBorder?: LineStyle;
     }
 
+    export interface IsolatedElementHighlightConfig {
+      /**
+       * A descriptor for the highlight appearance of an element in isolation mode.
+       */
+      isolationModeHighlightConfig: IsolationModeHighlightConfig;
+      /**
+       * Identifier of the isolated element to highlight.
+       */
+      nodeId: DOM.NodeId;
+    }
+
+    export interface IsolationModeHighlightConfig {
+      /**
+       * The fill color of the resizers (default: transparent).
+       */
+      resizerColor?: DOM.RGBA;
+      /**
+       * The fill color for resizer handles (default: transparent).
+       */
+      resizerHandleColor?: DOM.RGBA;
+      /**
+       * The fill color for the mask covering non-isolated elements (default: transparent).
+       */
+      maskColor?: DOM.RGBA;
+    }
+
     export const enum InspectMode {
       SearchForNode = 'searchForNode',
       SearchForUAShadowDOM = 'searchForUAShadowDOM',
@@ -9739,6 +9788,13 @@ declare namespace Protocol {
       hingeConfig?: HingeConfig;
     }
 
+    export interface SetShowIsolatedElementsRequest {
+      /**
+       * An array of node identifiers and descriptors for the highlight appearance.
+       */
+      isolatedElementHighlightConfigs: IsolatedElementHighlightConfig[];
+    }
+
     /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
@@ -9841,7 +9897,6 @@ declare namespace Protocol {
       ChDeviceMemory = 'ch-device-memory',
       ChDownlink = 'ch-downlink',
       ChEct = 'ch-ect',
-      ChLang = 'ch-lang',
       ChPrefersColorScheme = 'ch-prefers-color-scheme',
       ChRtt = 'ch-rtt',
       ChUa = 'ch-ua',
@@ -9929,6 +9984,7 @@ declare namespace Protocol {
       FeatureDisabled = 'FeatureDisabled',
       TokenDisabled = 'TokenDisabled',
       FeatureDisabledForUser = 'FeatureDisabledForUser',
+      UnknownTrial = 'UnknownTrial',
     }
 
     /**
@@ -10552,6 +10608,8 @@ declare namespace Protocol {
       ContentWebBluetooth = 'ContentWebBluetooth',
       ContentWebUSB = 'ContentWebUSB',
       ContentMediaSession = 'ContentMediaSession',
+      ContentMediaSessionService = 'ContentMediaSessionService',
+      ContentMediaPlay = 'ContentMediaPlay',
       EmbedderPopupBlockerTabHelper = 'EmbedderPopupBlockerTabHelper',
       EmbedderSafeBrowsingTriggeredPopupBlocker = 'EmbedderSafeBrowsingTriggeredPopupBlocker',
       EmbedderSafeBrowsingThreatDetails = 'EmbedderSafeBrowsingThreatDetails',
@@ -10737,9 +10795,13 @@ declare namespace Protocol {
 
     export interface GetAppIdResponse extends ProtocolResponseWithError {
       /**
-       * Only returns a value if the feature flag 'WebAppEnableManifestId' is enabled
+       * App id, either from manifest's id attribute or computed from start_url
        */
       appId?: string;
+      /**
+       * Recommendation for manifest's id attribute to match current id computed from start_url
+       */
+      recommendedId?: string;
     }
 
     export interface GetCookiesResponse extends ProtocolResponseWithError {
@@ -15332,38 +15394,6 @@ declare namespace Protocol {
       entries: TypeProfileEntry[];
     }
 
-    /**
-     * Collected counter information.
-     */
-    export interface CounterInfo {
-      /**
-       * Counter name.
-       */
-      name: string;
-      /**
-       * Counter value.
-       */
-      value: integer;
-    }
-
-    /**
-     * Runtime call counter information.
-     */
-    export interface RuntimeCallCounterInfo {
-      /**
-       * Counter name.
-       */
-      name: string;
-      /**
-       * Counter value.
-       */
-      value: number;
-      /**
-       * Counter time in seconds.
-       */
-      time: number;
-    }
-
     export interface GetBestEffortCoverageResponse extends ProtocolResponseWithError {
       /**
        * Coverage data for the current isolate.
@@ -15423,20 +15453,6 @@ declare namespace Protocol {
        * Type profile for all scripts since startTypeProfile() was turned on.
        */
       result: ScriptTypeProfile[];
-    }
-
-    export interface GetCountersResponse extends ProtocolResponseWithError {
-      /**
-       * Collected counters information.
-       */
-      result: CounterInfo[];
-    }
-
-    export interface GetRuntimeCallStatsResponse extends ProtocolResponseWithError {
-      /**
-       * Collected runtime call counter information.
-       */
-      result: RuntimeCallCounterInfo[];
     }
 
     export interface ConsoleProfileFinishedEvent {

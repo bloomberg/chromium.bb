@@ -99,6 +99,8 @@ namespace dawn_native { namespace opengl {
         SetToggle(Toggle::DisableDepthStencilRead, !supportsDepthStencilRead);
         SetToggle(Toggle::DisableSampleVariables, !supportsSampleVariables);
         SetToggle(Toggle::FlushBeforeClientWaitSync, gl.GetVersion().IsES());
+        // For OpenGL ES, we must use dummy fragment shader for vertex-only render pipeline.
+        SetToggle(Toggle::UseDummyFragmentInVertexOnlyPipeline, gl.GetVersion().IsES());
     }
 
     const GLFormat& Device::GetGLFormat(const Format& format) {
@@ -140,9 +142,9 @@ namespace dawn_native { namespace opengl {
         const QuerySetDescriptor* descriptor) {
         return AcquireRef(new QuerySet(this, descriptor));
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
-        return RenderPipeline::Create(this, descriptor);
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return AcquireRef(new Sampler(this, descriptor));

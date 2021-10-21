@@ -134,6 +134,10 @@ bool SharedImageBackingOzone::ProduceLegacyMailbox(
   return false;
 }
 
+scoped_refptr<gfx::NativePixmap> SharedImageBackingOzone::GetNativePixmap() {
+  return pixmap_;
+}
+
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker,
@@ -155,16 +159,16 @@ SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBackingOzone::ProduceGLTexture(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
-  return SharedImageRepresentationGLOzone::Create(manager, this, tracker,
-                                                  pixmap_, format());
+  return SharedImageRepresentationGLTextureOzone::Create(manager, this, tracker,
+                                                         pixmap_, format());
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
 SharedImageBackingOzone::ProduceGLTexturePassthrough(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
+  return SharedImageRepresentationGLTexturePassthroughOzone::Create(
+      manager, this, tracker, pixmap_, format());
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -199,6 +203,7 @@ SharedImageBackingOzone::ProduceOverlay(SharedImageManager* manager,
   gfx::BufferFormat buffer_format = viz::BufferFormat(format());
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(
       pixmap_->GetBufferSize(), buffer_format);
+  image->Initialize(std::move(pixmap_));
   return std::make_unique<SharedImageRepresentationOverlayOzone>(
       manager, this, tracker, image);
 }
@@ -341,8 +346,7 @@ void SharedImageBackingOzone::BeginAccess(
 
 void SharedImageBackingOzone::EndAccess(bool readonly,
                                         gfx::GpuFenceHandle fence) {
-  if (NeedsSynchronization()) {
-    DCHECK(!fence.is_null());
+  if (NeedsSynchronization() && !fence.is_null()) {
     if (readonly) {
       read_fences_.push_back(std::move(fence));
     } else {

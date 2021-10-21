@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SettingsPrivacyReviewPageElement} from 'chrome://settings/lazy_load.js';
-import {Route, Router, routes} from 'chrome://settings/settings.js';
+import {PrivacyReviewHistorySyncFragmentElement, SettingsPrivacyReviewPageElement} from 'chrome://settings/lazy_load.js';
+import {Route, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
 
 import {assertEquals} from '../chai_assert.js';
 import {flushTasks, isChildVisible} from '../test_util.js';
 
 // clang-format on
+
+/* Maximum number of steps in the privacy review, excluding the welcome step. */
+const PRIVACY_REVIEW_STEPS = 3;
 
 suite('PrivacyReviewPage', function() {
   /** @type {!SettingsPrivacyReviewPageElement} */
@@ -29,7 +34,6 @@ suite('PrivacyReviewPage', function() {
     // the Settings tree. This would always navigate to Settings "/" instead of
     // to the parent of the current subpage.
     Router.getInstance().navigateTo(routes.PRIVACY);
-    Router.getInstance().navigateTo(routes.PRIVACY_REVIEW);
 
     return flushTasks();
   });
@@ -74,6 +78,20 @@ suite('PrivacyReviewPage', function() {
     assertEquals(step, Router.getInstance().getQueryParameters().get('step'));
   }
 
+
+  /**
+   * Fire a sync status changed event and flush the UI.
+   * @param {boolean} syncOn
+   */
+  function setSyncEnabled(syncOn) {
+    const event = {
+      signedIn: syncOn,
+      hasError: false,
+    };
+    webUIListenerCallback('sync-status-changed', event);
+    flush();
+  }
+
   /**
    * @param {!{
    *   headerTextExpected: (string|undefined),
@@ -83,9 +101,10 @@ suite('PrivacyReviewPage', function() {
    *   isCompletionFragmentVisibleExpected: (boolean|undefined),
    *   isMsbbFragmentVisibleExpected: (boolean|undefined),
    *   isClearOnExitFragmentVisibleExpected: (boolean|undefined),
+   *   isHistorySyncFragmentVisibleExpected: (boolean|undefined),
    * }} destructured1
    */
-  function assertCardVisibility({
+  function assertCardComponentsVisible({
     headerTextExpected,
     isSettingFooterVisibleExpected,
     isBackButtonVisibleExpected,
@@ -93,6 +112,7 @@ suite('PrivacyReviewPage', function() {
     isCompletionFragmentVisibleExpected,
     isMsbbFragmentVisibleExpected,
     isClearOnExitFragmentVisibleExpected,
+    isHistorySyncFragmentVisibleExpected,
   }) {
     assertEquals(!!headerTextExpected, isChildVisible(page, '#header'));
     if (headerTextExpected) {
@@ -122,61 +142,150 @@ suite('PrivacyReviewPage', function() {
     assertEquals(
         !!isClearOnExitFragmentVisibleExpected,
         isChildVisible(page, '#clearOnExitFragment'));
+    assertEquals(
+        !!isHistorySyncFragmentVisibleExpected,
+        isChildVisible(page, '#historySyncFragment'));
+  }
+
+  /**
+   * @param {number} activeIndex
+   * @param {number} stepCount
+   */
+  function assertStepIndicatorModel(activeIndex, stepCount) {
+    const model = page.computeStepIndicatorModel_();
+    assertEquals(activeIndex, model.active);
+    assertEquals(stepCount, model.total);
   }
 
   function assertWelcomeCardVisible() {
     assertQueryParameter('welcome');
-    assertCardVisibility({
+    assertCardComponentsVisible({
       isWelcomeFragmentVisibleExpected: true,
     });
   }
 
-  function assertCompletionCardVisible() {
+  /** @param {boolean|undefined} opt_isSyncOn */
+  function assertCompletionCardVisible(opt_isSyncOn) {
     assertQueryParameter('completion');
-    assertCardVisibility({
+    assertCardComponentsVisible({
       isCompletionFragmentVisibleExpected: true,
     });
+    assertStepIndicatorModel(
+        opt_isSyncOn ? PRIVACY_REVIEW_STEPS - 1 : PRIVACY_REVIEW_STEPS - 2,
+        opt_isSyncOn ? PRIVACY_REVIEW_STEPS : PRIVACY_REVIEW_STEPS - 1);
   }
 
-  function assertMsbbCardVisible() {
+  /** @param {boolean|undefined} opt_isSyncOn */
+  function assertMsbbCardVisible(opt_isSyncOn) {
     assertQueryParameter('msbb');
-    assertCardVisibility({
+    assertCardComponentsVisible({
       headerTextExpected: page.i18n('privacyReviewMsbbCardHeader'),
       isSettingFooterVisibleExpected: true,
       isMsbbFragmentVisibleExpected: true,
     });
+    assertStepIndicatorModel(
+        0, opt_isSyncOn ? PRIVACY_REVIEW_STEPS : PRIVACY_REVIEW_STEPS - 1);
   }
 
-  function assertClearOnExitCardVisible() {
+  /** @param {boolean|undefined} opt_isSyncOn */
+  function assertClearOnExitCardVisible(opt_isSyncOn) {
     assertQueryParameter('clearOnExit');
-    assertCardVisibility({
+    assertCardComponentsVisible({
       headerTextExpected: page.i18n('privacyReviewClearOnExitCardHeader'),
       isSettingFooterVisibleExpected: true,
       isBackButtonVisibleExpected: true,
       isClearOnExitFragmentVisibleExpected: true,
     });
+    assertStepIndicatorModel(
+        1, opt_isSyncOn ? PRIVACY_REVIEW_STEPS : PRIVACY_REVIEW_STEPS - 1);
   }
 
-  test('testForwardNavigation', function() {
-    // The review starts with the welcome card.
+  function assertHistorySyncCardVisible() {
+    assertQueryParameter('historySync');
+    assertCardComponentsVisible({
+      headerTextExpected: page.i18n('privacyReviewHistorySyncCardHeader'),
+      isSettingFooterVisibleExpected: true,
+      isBackButtonVisibleExpected: true,
+      isHistorySyncFragmentVisibleExpected: true,
+    });
+    assertStepIndicatorModel(1, PRIVACY_REVIEW_STEPS);
+  }
+
+  test('welcomeForwardNavigation', function() {
+    // Navigating to the privacy review without a step parameter navigates to
+    // the welcome card.
+    Router.getInstance().navigateTo(routes.PRIVACY_REVIEW);
     assertWelcomeCardVisible();
 
-    // Advance to the MSBB card.
-    page.shadowRoot.querySelector('#startButton').click();
+    const welcomeFragment = page.shadowRoot.querySelector('#welcomeFragment');
+    welcomeFragment.shadowRoot.querySelector('#startButton').click();
     flush();
     assertMsbbCardVisible();
 
-    // Advance to the clear on exit card.
+    setSyncEnabled(true);
+    assertMsbbCardVisible(true);
+  });
+
+  test('msbbForwardNavigationSyncOn', function() {
+    navigateToStep('msbb');
+    setSyncEnabled(true);
+    assertMsbbCardVisible(true);
+
     page.shadowRoot.querySelector('#nextButton').click();
     flush();
-    assertClearOnExitCardVisible();
+    assertHistorySyncCardVisible();
+  });
 
-    // Advance to the completion card.
+  test('msbbForwardNavigationSyncOff', function() {
+    navigateToStep('msbb');
+    setSyncEnabled(false);
+    assertMsbbCardVisible();
+
     page.shadowRoot.querySelector('#nextButton').click();
     flush();
     assertCompletionCardVisible();
+  });
 
-    // Back to privacy settings
+  test('historySyncBackNavigation', function() {
+    navigateToStep('historySync');
+    setSyncEnabled(true);
+    assertHistorySyncCardVisible();
+
+    page.shadowRoot.querySelector('#backButton').click();
+    flush();
+    assertMsbbCardVisible(true);
+  });
+
+  test('historySyncCardForwardNavigation', function() {
+    navigateToStep('historySync');
+    setSyncEnabled(true);
+    assertHistorySyncCardVisible();
+
+    page.shadowRoot.querySelector('#nextButton').click();
+    flush();
+    assertCompletionCardVisible(true);
+  });
+
+  test('historySyncNavigatesAwayOnSyncOff', function() {
+    navigateToStep('historySync');
+    setSyncEnabled(true);
+    assertHistorySyncCardVisible();
+
+    // User disables sync while history sync card is shown.
+    setSyncEnabled(false);
+    assertCompletionCardVisible();
+  });
+
+  test('historySyncNotReachableWhenSyncOff', function() {
+    navigateToStep('historySync');
+    setSyncEnabled(false);
+    assertCompletionCardVisible();
+  });
+
+  test('completionCardBackToSettingsNavigation', function() {
+    navigateToStep('completion');
+    assertCompletionCardVisible();
+
     return whenPopState(function() {
              page.shadowRoot.querySelector('#completeButton').click();
            })
@@ -184,14 +293,67 @@ suite('PrivacyReviewPage', function() {
           assertEquals(routes.PRIVACY, Router.getInstance().getCurrentRoute());
         });
   });
+});
 
-  test('testBackNavigation', function() {
-    navigateToStep('clearOnExit');
-    assertClearOnExitCardVisible();
+suite('HistorySyncFragment', function() {
+  /** @type {!PrivacyReviewHistorySyncFragmentElement} */
+  let page;
+  /** @type {!SyncBrowserProxy} */
+  let syncBrowserProxy;
 
-    // Back to the MSBB card.
-    page.shadowRoot.querySelector('#backButton').click();
+  setup(function() {
+    syncBrowserProxy = new TestSyncBrowserProxy();
+    SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
+
+    document.body.innerHTML = '';
+    page = /** @type {!PrivacyReviewHistorySyncFragmentElement} */
+        (document.createElement('privacy-review-history-sync-fragment'));
+    document.body.appendChild(page);
+    return flushTasks();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  /**
+   * @param {boolean} syncAllOnBefore If sync-all is on before the click.
+   * @param {boolean} historySyncOnBefore If history sync is on before the
+   *     click.
+   * @param {boolean} historySyncOnAfter If history sync is expected to be on
+   *     after the click.
+   */
+  async function assertBrowserProxyCallOnToggleClicked(
+      syncAllOnBefore, historySyncOnBefore, historySyncOnAfterwardsExpected) {
+    const event = {
+      syncAllDataTypes: syncAllOnBefore,
+      typedUrlsSynced: historySyncOnBefore,
+    };
+    webUIListenerCallback('sync-prefs-changed', event);
     flush();
-    assertMsbbCardVisible();
+
+    page.shadowRoot.querySelector('#historyToggle').click();
+
+    const syncPrefs = await syncBrowserProxy.whenCalled('setSyncDatatypes');
+    assertFalse(syncPrefs.syncAllDataTypes);
+    assertEquals(historySyncOnAfterwardsExpected, syncPrefs.typedUrlsSynced);
+  }
+
+  test('syncAllOnDisableHistorySync', async function() {
+    assertBrowserProxyCallOnToggleClicked(
+        /*syncAllOnBefore=*/ true, /*historySyncOnBefore=*/ true,
+        /*historySyncOnAfterwardsExpected=*/ false);
+  });
+
+  test('syncAllOffDisableHistorySync', async function() {
+    assertBrowserProxyCallOnToggleClicked(
+        /*syncAllOnBefore=*/ false, /*historySyncOnBefore=*/ true,
+        /*historySyncOnAfterwardsExpected=*/ false);
+  });
+
+  test('syncAllOffEnableHistorySync', async function() {
+    assertBrowserProxyCallOnToggleClicked(
+        /*syncAllOnBefore=*/ false, /*historySyncOnBefore=*/ false,
+        /*historySyncOnAfterwardsExpected=*/ true);
   });
 });

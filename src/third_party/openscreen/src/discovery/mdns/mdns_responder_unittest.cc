@@ -15,6 +15,7 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "platform/test/fake_udp_socket.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -23,10 +24,9 @@ namespace {
 constexpr Clock::duration kMaximumSharedRecordResponseDelayMs(120 * 1000);
 
 bool ContainsRecordType(const std::vector<MdnsRecord>& records, DnsType type) {
-  return std::find_if(records.begin(), records.end(),
-                      [type](const MdnsRecord& record) {
-                        return record.dns_type() == type;
-                      }) != records.end();
+  return ContainsIf(records, [type](const MdnsRecord& record) {
+    return record.dns_type() == type;
+  });
 }
 
 void CheckSingleNsecRecordType(const MdnsMessage& message, DnsType type) {
@@ -49,17 +49,14 @@ void CheckPtrDomain(const MdnsRecord& record, const DomainName& domain) {
 
 void ExpectContainsNsecRecordType(const std::vector<MdnsRecord>& records,
                                   DnsType type) {
-  auto it = std::find_if(
-      records.begin(), records.end(), [type](const MdnsRecord& record) {
-        if (record.dns_type() != DnsType::kNSEC) {
-          return false;
-        }
+  EXPECT_TRUE(ContainsIf(records, [type](const MdnsRecord& record) {
+    if (record.dns_type() != DnsType::kNSEC) {
+      return false;
+    }
 
-        const NsecRecordRdata& rdata =
-            absl::get<NsecRecordRdata>(record.rdata());
-        return rdata.types().size() == 1 && rdata.types()[0] == type;
-      });
-  EXPECT_TRUE(it != records.end());
+    const NsecRecordRdata& rdata = absl::get<NsecRecordRdata>(record.rdata());
+    return rdata.types().size() == 1 && rdata.types()[0] == type;
+  }));
 }
 
 }  // namespace

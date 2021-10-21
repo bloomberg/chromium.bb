@@ -18,6 +18,8 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/commerce/shopping_list/shopping_data_provider.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
@@ -40,6 +42,8 @@
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
@@ -60,6 +64,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/trigger_creator.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
@@ -122,6 +127,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -145,7 +151,6 @@
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/accuracy_tips/accuracy_web_contents_observer.h"
-#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
 #endif  // defined(OS_ANDROID)
@@ -166,10 +171,6 @@
 #include "chrome/browser/ui/hats/hats_helper.h"
 #endif
 
-#if defined(OS_MAC)
-#include "chrome/browser/ui/cocoa/screentime/tab_helper.h"
-#endif
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
@@ -180,6 +181,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_tab_helper.h"
+#include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "extensions/browser/view_type_utils.h"
@@ -190,6 +192,10 @@
 #include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -204,6 +210,11 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 using content::WebContents;
 
@@ -296,7 +307,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
           PageContentAnnotationsServiceFactory::GetForProfile(profile);
   if (page_content_annotations_service) {
     optimization_guide::PageContentAnnotationsWebContentsObserver::
-        CreateForWebContents(web_contents, page_content_annotations_service);
+        CreateForWebContents(web_contents, page_content_annotations_service,
+                             TemplateURLServiceFactory::GetForProfile(profile));
   }
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
@@ -331,6 +343,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ReputationWebContentsObserver::CreateForWebContents(web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(commerce::kShoppingList)) {
+    shopping_list::ShoppingDataProvider::CreateForWebContents(
+        web_contents,
+        OptimizationGuideKeyedServiceFactory::GetForProfile(profile));
+  }
   if (site_engagement::SiteEngagementService::IsEnabled()) {
     site_engagement::SiteEngagementService::Helper::CreateForWebContents(
         web_contents,
@@ -400,8 +417,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
   }
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   SadTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
@@ -413,11 +428,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
 #endif
 
-#if defined(OS_MAC)
-  if (screentime::TabHelper::IsScreentimeEnabledForProfile(profile))
-    screentime::TabHelper::CreateForWebContents(web_contents);
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
   ash::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
@@ -427,6 +437,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   WebContentsCanGoBackObserver::CreateForWebContents(web_contents);
+#endif
+
+#if defined(OS_CHROMEOS)
+  webapps::PreRedirectionURLObserver::CreateForWebContents(web_contents);
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -479,6 +493,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #endif
 
+#if BUILDFLAG(ENABLE_PDF)
+  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
+      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   HungPluginTabHelper::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
@@ -491,6 +510,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  if (IsSideSearchEnabled(profile))
+    SideSearchTabContentsHelper::CreateForWebContents(web_contents);
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   // --- Section 4: The warning ---
 

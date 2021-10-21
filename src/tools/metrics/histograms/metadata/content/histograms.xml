@@ -183,12 +183,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
-    expires_after="2021-12-29">
+    expires_after="2022-04-03">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
     Measures how long a sync call to ContentSettingsManager::AllowStorageAccess
     takes. Logged each time a sync call is made that is not cached.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultAutoDarkWebContetntSetting"
+    enum="ContentSetting" expires_after="2022-06-19">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    The default auto dark web content setting at profile open. Recorded for
+    Android only.
   </summary>
 </histogram>
 
@@ -282,6 +292,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default popups setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultRequestDesktopSiteSetting"
+    enum="ContentSetting" expires_after="2022-04-01">
+  <owner>shuyng@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The request desktop site content setting at profile open. Recorded for
+    Android only.
+  </summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultSoundSetting" enum="ContentSetting"
@@ -401,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.ExtensionNonEmbeddedSettingSet"
-    enum="ContentType" expires_after="M100">
+    enum="ContentType" expires_after="2022-05-01">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -422,7 +442,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="M100">
+    expires_after="2022-04-24">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -432,7 +452,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.PermissionRequested" enum="PermissionType"
-    expires_after="M100">
+    expires_after="2022-04-17">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -528,7 +548,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.BlockerActions"
-    enum="PopupBlockerAction" expires_after="2021-10-31">
+    enum="PopupBlockerAction" expires_after="M101">
   <owner>csharrison@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -594,7 +614,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2022-02-20">
+    enum="StrongPopupBlockerAction" expires_after="2022-04-24">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -603,7 +623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ActivityLoggingEnabled" enum="Boolean"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>rogerm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -704,7 +724,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh"
-    units="ms" expires_after="2022-03-01">
+    units="ms" expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -718,7 +738,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed"
-    units="ms" expires_after="2022-03-01">
+    units="ms" expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -737,7 +757,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
-  <owner>src/chrome/browser/android/feed/OWNERS</owner>
+  <owner>src/components/feed/OWNERS</owner>
   <summary>Actions related to the feed controls.</summary>
 </histogram>
 
@@ -756,7 +776,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.DisplayStatusOnOpen"
-    enum="ContentSuggestionsDisplayStatus" expires_after="2021-10-25">
+    enum="ContentSuggestionsDisplayStatus" expires_after="2022-04-24">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -878,7 +898,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ContentSuggestions.Feed.LoadStepLatency"
-    units="ms" expires_after="2022-03-01">
+    units="ms" expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -892,7 +912,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.LoadMore"
-    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
+    enum="FeedLoadStreamStatus" expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -916,7 +936,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.CompressedResponseSizeKB"
-    units="KB" expires_after="2022-03-01">
+    units="KB" expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -928,7 +948,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.Duration" units="ms"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -979,7 +999,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.ResponseSizeKB" units="KB"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -990,7 +1010,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.ResponseStatus"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-03-01">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1013,7 +1033,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.TokenFetchStatus"
-    enum="GoogleServiceAuthError" expires_after="2022-03-01">
+    enum="GoogleServiceAuthError" expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1024,7 +1044,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled" enum="Boolean"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1035,7 +1055,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1228,7 +1248,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.TimeSpentInFeed" units="ms"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1276,7 +1296,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadActionsBatchStatus"
-    enum="FeedUploadActionsBatchStatus" expires_after="2021-12-01">
+    enum="FeedUploadActionsBatchStatus" expires_after="2022-04-03">
   <owner>iwells@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1286,7 +1306,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadActionsStatus"
-    enum="FeedUploadActionsStatus" expires_after="2022-01-30">
+    enum="FeedUploadActionsStatus" expires_after="2022-04-03">
   <owner>iwells@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1307,7 +1327,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions" enum="FeedUserActionType"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1318,7 +1338,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions.Commands"
-    enum="FeedUserCommandType" expires_after="2022-03-01">
+    enum="FeedUserCommandType" expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1330,7 +1350,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.FailureDuration"
-    units="ms" expires_after="2022-03-01">
+    units="ms" expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1341,7 +1361,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.SuccessDuration"
-    units="ms" expires_after="2022-03-01">
+    units="ms" expires_after="2022-05-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1406,7 +1426,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisitDuration" units="ms"
-    expires_after="2022-01-09">
+    expires_after="2022-04-10">
   <owner>harringtond@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1519,7 +1539,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Engaged"
         summary="after the user has been recorded as FeedEngagementType
                  'Engaged', reported at most once per day when the user
-                 interacts with the Following Feed."/>
+                 interacts with either the For-You or Following Feeds."/>
     <variant name="NoContentShown"
         summary="after the Following Feed is shown, and no content is
                  available for display."/>
@@ -1534,6 +1554,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Android: The result of following a WebFeed when the Web Feed ID is NOT
     known. Reported when the follow is attempted, once per request. Triggered by
     a user's request to follow a Web Feed.
+  </summary>
+</histogram>
+
+<histogram
+    name="ContentSuggestions.Feed.WebFeed.LoadedCardCount.{ContentOrder}"
+    units="index" expires_after="2022-07-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: Reports the total number of {ContentOrder} cards in the Following
+    feed when data is successfully loaded to be presented to the user. Reported
+    after an initial load. Only one of 'Grouped' or 'ReverseChron' is reported
+    for each stream load.
+  </summary>
+  <token key="ContentOrder">
+    <variant name="Grouped" summary="Grouped"/>
+    <variant name="ReverseChron" summary="ReverseChron"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended"
+    enum="Boolean" expires_after="2022-09-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Whether the followed web feed was recommended by the server.
+
+    Reported upon successfully following a web feed. Reported as 'true' if the
+    web feed was recommended, even if the user did not see or interact with
+    recommendation UI.
   </summary>
 </histogram>
 
@@ -1563,6 +1613,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Android: Reports which presentation of the post-follow dialog is shown.
     Reported when the post-follow dialog is displayed, after the user follows a
     Web Feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.RefreshContentOrder"
+    enum="FeedContentOrder" expires_after="2022-09-01">
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    The content order requested when refreshing content on the Following feed.
+    Reported before sending a refresh request to the server. Not reported for
+    NextPage requests.
   </summary>
 </histogram>
 

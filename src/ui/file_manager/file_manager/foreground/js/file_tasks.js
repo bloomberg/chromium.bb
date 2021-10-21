@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {AsyncUtil} from '../../common/js/async_util.js';
@@ -30,8 +28,6 @@ import {ComboButton} from './ui/combobutton.js';
 import {DefaultTaskDialog} from './ui/default_task_dialog.js';
 import {FileManagerUI} from './ui/file_manager_ui.js';
 import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
-import {FilesMenuItem} from './ui/files_menu.js';
-import {MultiMenuButton} from './ui/multi_menu_button.js';
 
 /**
  * Represents a collection of available tasks to execute for a specific list
@@ -185,14 +181,6 @@ export class FileTasks {
    */
   getOpenTaskItems() {
     return this.tasks_.filter(FileTasks.isOpenTask);
-  }
-
-  /**
-   * Gets tasks which are not categorized as OPEN tasks.
-   * @return {!Array<!chrome.fileManagerPrivate.FileTask>}
-   */
-  getNonOpenTaskItems() {
-    return this.tasks_.filter(task => !FileTasks.isOpenTask(task));
   }
 
   /**
@@ -634,7 +622,7 @@ export class FileTasks {
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
     if (FileTasks.isShareTask(task)) {
       FileTasks.recordSharingActionUMA_(
-          FileTasks.SharingActionSourceForUMA.SHARE_BUTTON, this.entries_);
+          FileTasks.SharingActionSourceForUMA.SHARE_SHEET, this.entries_);
     }
     this.executeInternal_(task);
   }
@@ -971,26 +959,20 @@ export class FileTasks {
   }
 
   /**
-   * Displays the list of tasks in a open task picker combobutton and a share
-   * options menu.
+   * Displays the list of tasks in a open task picker combobutton..
    *
    * @param {!ComboButton} openCombobutton The open task picker
    *     combobutton.
-   * @param {!MultiMenuButton} shareMenuButton Button for share options.
    * @public
    */
-  display(openCombobutton, shareMenuButton) {
+  display(openCombobutton) {
     const openTasks = [];
-    const otherTasks = [];
     for (const task of this.tasks_) {
       if (FileTasks.isOpenTask(task)) {
         openTasks.push(task);
-      } else {
-        otherTasks.push(task);
       }
     }
     this.updateOpenComboButton_(openCombobutton, openTasks);
-    this.updateShareMenuButton_(shareMenuButton, otherTasks);
   }
 
   /**
@@ -1041,85 +1023,6 @@ export class FileTasks {
         changeDefaultMenuItem.classList.add('change-default');
       }
     }
-  }
-
-  /**
-   * Setup a menu button for sharing options based on the given tasks.
-   * @param {!MultiMenuButton} shareMenuButton
-   * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
-   */
-  updateShareMenuButton_(shareMenuButton, tasks) {
-    const driveShareCommand =
-        shareMenuButton.menu.querySelector('cr-menu-item[command="#share"]');
-    const driveShareCommandSeparator =
-        shareMenuButton.menu.querySelector('#drive-share-separator');
-    const moreActionsSeparator =
-        shareMenuButton.menu.querySelector('#more-actions-separator');
-
-    // Update share command.
-    driveShareCommand.command.canExecuteChange(
-        this.ui_.listContainer.currentList);
-
-    // Hide share icon for New Folder creation.  See https://crbug.com/571355.
-    shareMenuButton.hidden =
-        (driveShareCommand.disabled && tasks.length == 0) ||
-        this.namingController_.isRenamingInProgress() ||
-        util.isSharesheetEnabled();
-    moreActionsSeparator.hidden = true;
-
-    // Show the separator if Drive share command is enabled and there is at
-    // least one other share actions.
-    driveShareCommandSeparator.hidden =
-        driveShareCommand.disabled || tasks.length == 0;
-
-    // Temporarily remove the more actions item while the rest of the menu
-    // items are being cleared out so we don't lose it and make it hidden for
-    // now
-    const moreActions = shareMenuButton.menu.querySelector(
-        'cr-menu-item[command="#show-submenu"]');
-    moreActions.remove();
-    moreActions.setAttribute('hidden', '');
-    // Remove the separator as well
-    moreActionsSeparator.remove();
-
-    // Clear menu items except for drive share menu and a separator for it.
-    // As querySelectorAll() returns live NodeList, we need to copy elements to
-    // Array object to modify DOM in the for loop.
-    const itemsToRemove = [].slice.call(shareMenuButton.menu.querySelectorAll(
-        'cr-menu-item:not([command="#share"])'));
-    for (const item of itemsToRemove) {
-      item.parentNode.removeChild(item);
-    }
-    // Clear menu items in the overflow sub-menu since we'll repopulate it
-    // with any relevant items below.
-    if (shareMenuButton.overflow !== null) {
-      while (shareMenuButton.overflow.firstChild !== null) {
-        shareMenuButton.overflow.removeChild(
-            shareMenuButton.overflow.firstChild);
-      }
-    }
-
-    // Add menu items for the new tasks.
-    const items = this.createItems_(tasks);
-    let menu = /** @type {!Menu} */ (shareMenuButton.menu);
-    for (let i = 0; i < items.length; i++) {
-      // If we have at least 10 entries, split off into a sub-menu
-      if (i == NUM_TOP_LEVEL_ENTRIES && MAX_NON_SPLIT_ENTRIES <= items.length) {
-        moreActions.removeAttribute('hidden');
-        moreActionsSeparator.hidden = false;
-        menu = shareMenuButton.overflow;
-      }
-      const menuitem = menu.addMenuItem(items[i]);
-      decorate(menuitem, FilesMenuItem);
-      menuitem.data = items[i];
-      if (items[i].iconType) {
-        menuitem.style.backgroundImage = '';
-        menuitem.setAttribute('file-type-icon', items[i].iconType);
-      }
-    }
-    // Replace the more actions menu item and separator
-    shareMenuButton.menu.appendChild(moreActionsSeparator);
-    shareMenuButton.menu.appendChild(moreActions);
   }
 
   /**
@@ -1203,10 +1106,7 @@ export class FileTasks {
    * @param {FileTasks.TaskPickerType} pickerType Task picker type.
    */
   showTaskPicker(taskDialog, title, message, onSuccess, pickerType) {
-    const tasks = pickerType == FileTasks.TaskPickerType.MoreActions ?
-        this.getNonOpenTaskItems() :
-        this.getOpenTaskItems();
-    let items = this.createItems_(tasks);
+    let items = this.createItems_(this.getOpenTaskItems());
     if (pickerType == FileTasks.TaskPickerType.ChangeDefault) {
       items = items.filter(item => !item.isGenericFileHandler);
     }
@@ -1290,12 +1190,6 @@ FileTasks.INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR = {
 };
 
 /**
- * The app ID of the video player app.
- * @const {string}
- */
-FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
-
-/**
  * Available tasks in task menu button.
  * @enum {string}
  */
@@ -1312,7 +1206,6 @@ FileTasks.TaskMenuButtonItemType = {
 FileTasks.TaskPickerType = {
   ChangeDefault: 'ChangeDefault',
   OpenWith: 'OpenWith',
-  MoreActions: 'MoreActions'
 };
 
 /**
@@ -1362,7 +1255,6 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
 FileTasks.SharingActionSourceForUMA = {
   UNKNOWN: 'Unknown',
   CONTEXT_MENU: 'Context Menu',
-  SHARE_BUTTON: 'Share Button',
   SHARE_SHEET: 'Share Sheet',
 };
 
@@ -1373,13 +1265,12 @@ FileTasks.SharingActionSourceForUMA = {
 FileTasks.ValidSharingActionSource = Object.freeze([
   FileTasks.SharingActionSourceForUMA.UNKNOWN,
   FileTasks.SharingActionSourceForUMA.CONTEXT_MENU,
-  FileTasks.SharingActionSourceForUMA.SHARE_BUTTON,
+  null,  // SHARE_BUTTON replaced by share sheet.
   FileTasks.SharingActionSourceForUMA.SHARE_SHEET,
 ]);
 
 /**
- * The number of menu-item entries in the top level menu
- * before we split and show the 'More actions' option
+ * The number of menu-item entries in the top level menu.
  * @const {number}
  */
 const NUM_TOP_LEVEL_ENTRIES = 6;

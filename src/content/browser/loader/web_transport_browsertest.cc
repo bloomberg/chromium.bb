@@ -72,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, Echo) {
     async function run() {
       const transport = new WebTransport('https://localhost:%d/echo');
 
-      const writer = transport.datagramWritable.getWriter();
-      const reader = transport.datagramReadable.getReader();
+      const writer = transport.datagrams.writable.getWriter();
+      const reader = transport.datagrams.readable.getReader();
 
       const data = new Uint8Array([65, 66, 67]);
       const id = setInterval(() => {
@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, EchoViaWebTransport) {
     async function run() {
       const transport = new WebTransport('https://localhost:%d/echo');
 
-      const writer = transport.datagramWritable.getWriter();
-      const reader = transport.datagramReadable.getReader();
+      const writer = transport.datagrams.writable.getWriter();
+      const reader = transport.datagrams.readable.getReader();
 
       const data = new Uint8Array([65, 66, 67]);
       const id = setInterval(() => {
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, CreateSendStream) {
       await transport.ready;
 
       const sendStream = await transport.createUnidirectionalStream();
-      const writer = sendStream.writable.getWriter();
+      const writer = sendStream.getWriter();
       await writer.write(new Uint8Array([65, 66, 67]));
       await writer.close();
     }
@@ -249,6 +249,8 @@ IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, MAYBE_ReceiveStream) {
   ASSERT_TRUE(WaitForTitle(u"PASS", {u"FAIL"}));
 }
 
+// This is flaky on all platforms. https://crbug.com/1254667
+// TODO(ricea): Fix it and re-enable.
 IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, BidirectionalStream) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(
@@ -306,14 +308,14 @@ IN_PROC_BROWSER_TEST_F(WebTransportBrowserTest, CertificateFingerprint) {
   ASSERT_TRUE(
       ExecJs(shell(), base::StringPrintf(R"JS(
     async function run() {
+      const hashValue = new Uint8Array(32);
       // The connection fails because the fingerprint does not match.
       const transport = new WebTransport(
           'https://localhost:%d/echo', {
-            serverCertificateFingerprints: [
+            serverCertificateHashes: [
               {
                 algorithm: "sha-256",
-                value: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
-                       "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+                value: hashValue,
               },
             ],
           });

@@ -335,6 +335,10 @@ bool ConfigChangeDetector::is_vp9_resilient_mode() const {
 class H264ConfigChangeDetector : public ConfigChangeDetector {
  public:
   H264ConfigChangeDetector() {}
+
+  H264ConfigChangeDetector(const H264ConfigChangeDetector&) = delete;
+  H264ConfigChangeDetector& operator=(const H264ConfigChangeDetector&) = delete;
+
   ~H264ConfigChangeDetector() override {}
 
   // Detects stream configuration changes.
@@ -360,8 +364,6 @@ class H264ConfigChangeDetector : public ConfigChangeDetector {
   bool pending_config_changed_ = false;
 
   std::unique_ptr<H264Parser> parser_;
-
-  DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
 };
 
 bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
@@ -1281,7 +1283,7 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
         FROM_HERE,
         base::BindOnce(&DXVAVideoDecodeAccelerator::WaitForOutputBuffer,
                        weak_ptr_, picture_buffer_id, count + 1),
-        base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+        base::Milliseconds(kFlushDecoderSurfaceTimeoutMs));
     return;
   }
   RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer->ReusePictureBuffer(),
@@ -2639,7 +2641,7 @@ void DXVAVideoDecodeAccelerator::CopySurface(
                      base::Unretained(this), 0, base::Unretained(src_surface),
                      base::Unretained(dest_surface), picture_buffer_id,
                      input_buffer_id),
-      base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+      base::Milliseconds(kFlushDecoderSurfaceTimeoutMs));
 }
 
 void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
@@ -2975,7 +2977,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
         base::BindOnce(&DXVAVideoDecodeAccelerator::FlushDecoder,
                        base::Unretained(this), 0, nullptr, nullptr,
                        picture_buffer_id, input_buffer_id),
-        base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+        base::Milliseconds(kFlushDecoderSurfaceTimeoutMs));
   }
 }
 
@@ -3019,7 +3021,7 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
             &DXVAVideoDecodeAccelerator::FlushDecoder, base::Unretained(this),
             iterations, base::Unretained(src_surface),
             base::Unretained(dest_surface), picture_buffer_id, input_buffer_id),
-        base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
+        base::Milliseconds(kFlushDecoderSurfaceTimeoutMs));
     return;
   }
 

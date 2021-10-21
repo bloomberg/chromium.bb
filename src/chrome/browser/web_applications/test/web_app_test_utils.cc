@@ -68,8 +68,11 @@ apps::FileHandlers CreateRandomFileHandlers(uint32_t suffix) {
     file_handler.action = GURL("https://example.com/open-" + suffix_str);
     file_handler.accept.push_back(std::move(accept_entry1));
     file_handler.accept.push_back(std::move(accept_entry2));
-    file_handler.icons.emplace_back(GURL("https://example.com/image.png"), 16);
-    file_handler.icons.emplace_back(GURL("https://example.com/image2.png"), 48);
+    file_handler.downloaded_icons.emplace_back(
+        GURL("https://example.com/image.png"), 16);
+    file_handler.downloaded_icons.emplace_back(
+        GURL("https://example.com/image2.png"), 48);
+    file_handler.display_name = base::ASCIIToUTF16(suffix_str) + u" file";
 
     file_handlers.push_back(std::move(file_handler));
   }
@@ -217,16 +220,15 @@ std::vector<IconSizes> CreateRandomDownloadedShortcutsMenuIconsSizes(
 
 }  // namespace
 
-std::unique_ptr<WebApp> CreateMinimalWebApp() {
-  const GURL app_url("https://example.com/path");
-  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, app_url);
+std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
+                                     Source::Type source_type) {
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
-  web_app->AddSource(Source::kSync);
-  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetStartUrl(start_url);
+  web_app->AddSource(source_type);
   web_app->SetUserDisplayMode(DisplayMode::kStandalone);
   web_app->SetName("Name");
-  web_app->SetStartUrl(app_url);
 
   return web_app;
 }
@@ -246,6 +248,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   const std::string name = "Name" + seed_str;
   const std::string description = "Description" + seed_str;
   const absl::optional<SkColor> theme_color = random.next_uint();
+  absl::optional<SkColor> dark_mode_theme_color;
   const absl::optional<SkColor> background_color = random.next_uint();
   const absl::optional<SkColor> synced_theme_color = random.next_uint();
   auto app = std::make_unique<WebApp>(app_id);
@@ -265,12 +268,17 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   if (!app->HasAnySources())
     app->AddSource(Source::kSync);
 
+  if (random.next_bool()) {
+    dark_mode_theme_color = SkColorSetA(random.next_uint(), SK_AlphaOPAQUE);
+  }
+
   app->SetName(name);
   app->SetDescription(description);
   app->SetManifestId(manifest_id);
   app->SetStartUrl(GURL(start_url));
   app->SetScope(GURL(scope));
   app->SetThemeColor(theme_color);
+  app->SetDarkModeThemeColor(dark_mode_theme_color);
   app->SetBackgroundColor(background_color);
   app->SetIsLocallyInstalled(random.next_bool());
   app->SetIsFromSyncAndPendingInstallation(random.next_bool());
@@ -280,18 +288,15 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   app->SetUserDisplayMode(user_display_modes[random.next_uint(3)]);
 
   const base::Time last_badging_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(random.next_uint());
+      base::Time::UnixEpoch() + base::Milliseconds(random.next_uint());
   app->SetLastBadgingTime(last_badging_time);
 
   const base::Time last_launch_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(random.next_uint());
+      base::Time::UnixEpoch() + base::Milliseconds(random.next_uint());
   app->SetLastLaunchTime(last_launch_time);
 
   const base::Time install_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(random.next_uint());
+      base::Time::UnixEpoch() + base::Milliseconds(random.next_uint());
   app->SetInstallTime(install_time);
 
   const DisplayMode display_modes[4] = {
@@ -314,7 +319,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   const SquareSizePx size = 256;
   const int num_icons = random.next_uint(10);
-  std::vector<apps::IconInfo> icon_infos(num_icons);
+  std::vector<apps::IconInfo> manifest_icons(num_icons);
   for (int i = 0; i < num_icons; i++) {
     apps::IconInfo icon;
     icon.url =
@@ -331,9 +336,9 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
       icon.purpose = apps::IconInfo::Purpose::kMonochrome;
     // if (purpose == 3), leave purpose unset. Should default to ANY.
 
-    icon_infos[i] = icon;
+    manifest_icons[i] = icon;
   }
-  app->SetIconInfos(icon_infos);
+  app->SetManifestIcons(manifest_icons);
   if (random.next_bool())
     app->SetDownloadedIconSizes(IconPurpose::ANY, {size});
   if (random.next_bool())
@@ -367,14 +372,23 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
       CreateRandomDownloadedShortcutsMenuIconsSizes(random));
   app->SetManifestUrl(base_url.Resolve("/manifest" + seed_str + ".json"));
 
-  const int num_approved_launch_protocols = random.next_uint(8);
-  std::vector<std::string> approved_launch_protocols(
-      num_approved_launch_protocols);
-  for (int i = 0; i < num_approved_launch_protocols; ++i) {
-    approved_launch_protocols[i] =
+  const int num_allowed_launch_protocols = random.next_uint(8);
+  std::vector<std::string> allowed_launch_protocols(
+      num_allowed_launch_protocols);
+  for (int i = 0; i < num_allowed_launch_protocols; ++i) {
+    allowed_launch_protocols[i] =
         "web+test_" + seed_str + "_" + base::NumberToString(i);
   }
-  app->SetApprovedLaunchProtocols(std::move(approved_launch_protocols));
+  app->SetAllowedLaunchProtocols(std::move(allowed_launch_protocols));
+
+  const int num_disallowed_launch_protocols = random.next_uint(8);
+  std::vector<std::string> disallowed_launch_protocols(
+      num_disallowed_launch_protocols);
+  for (int i = 0; i < num_disallowed_launch_protocols; ++i) {
+    disallowed_launch_protocols[i] =
+        "web+disallowed_" + seed_str + "_" + base::NumberToString(i);
+  }
+  app->SetDisallowedLaunchProtocols(std::move(disallowed_launch_protocols));
 
   app->SetStorageIsolated(random.next_bool());
 
@@ -386,7 +400,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   sync_fallback_data.name = "Sync" + name;
   sync_fallback_data.theme_color = synced_theme_color;
   sync_fallback_data.scope = app->scope();
-  sync_fallback_data.icon_infos = app->icon_infos();
+  sync_fallback_data.icon_infos = app->manifest_icons();
   app->SetSyncFallbackData(std::move(sync_fallback_data));
 
   if (random.next_bool()) {
@@ -398,8 +412,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   }
 
   const base::Time manifest_update_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(random.next_uint());
+      base::Time::UnixEpoch() + base::Milliseconds(random.next_uint());
   app->SetManifestUpdateTime(manifest_update_time);
 
   // `random` should not be used after the chromeos block if the result

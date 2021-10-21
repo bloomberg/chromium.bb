@@ -69,11 +69,11 @@ void ChromeAppListModelUpdater::AddItem(
   std::unique_ptr<ash::AppListItemMetadata> item_data =
       app_item->CloneMetadata();
 
-  // If removing launcher space is enabled, ignore page break items because
-  // empty slots only exist on the last launcher page. Therefore syncing on page
-  // break items is unnecessary.
+  // With ProductivityLauncher, ignore page break items because empty slots
+  // only exist on the last launcher page. Therefore syncing on page break items
+  // is unnecessary.
   if (item_data->is_page_break &&
-      ash::features::IsLauncherRemoveEmptySpaceEnabled()) {
+      ash::features::IsProductivityLauncherEnabled()) {
     return;
   }
 
@@ -115,14 +115,6 @@ void ChromeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
   RemoveChromeItem(id_copy);
   if (app_list_controller_)
     app_list_controller_->RemoveUninstalledItem(id_copy);
-}
-
-void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
-                                                 const std::string& folder_id) {
-  if (app_list_controller_)
-    app_list_controller_->MoveItemToFolder(id, folder_id);
-  else
-    MoveChromeItemToFolder(id, folder_id);
 }
 
 void ChromeAppListModelUpdater::SetStatus(ash::AppListModelStatus status) {
@@ -192,15 +184,6 @@ void ChromeAppListModelUpdater::RemoveChromeItem(const std::string& id) {
   items_.erase(id);
 }
 
-void ChromeAppListModelUpdater::MoveChromeItemToFolder(
-    const std::string& id,
-    const std::string& folder_id) {
-  ChromeAppListItem* item = FindItem(id);
-  if (!item)
-    return;
-  item->SetChromeFolderId(folder_id);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Methods only used by ChromeAppListItem that talk to ash directly.
 
@@ -266,9 +249,13 @@ void ChromeAppListModelUpdater::SetItemPosition(
   ChromeAppListItem* item = FindItem(id);
   if (!item)
     return;
-  std::unique_ptr<ash::AppListItemMetadata> data = item->CloneMetadata();
-  data->position = new_position;
-  app_list_controller_->SetItemMetadata(id, std::move(data));
+
+  DCHECK(new_position.IsValid());
+  if (item->position().IsValid() && item->position().Equals(new_position))
+    return;
+
+  item->SetPosition(new_position);
+  app_list_controller_->SetItemMetadata(id, item->CloneMetadata());
 }
 
 void ChromeAppListModelUpdater::SetItemIsPersistent(const std::string& id,
@@ -285,11 +272,15 @@ void ChromeAppListModelUpdater::SetItemIsPersistent(const std::string& id,
 
 void ChromeAppListModelUpdater::SetItemFolderId(const std::string& id,
                                                 const std::string& folder_id) {
-  if (!app_list_controller_)
-    return;
   ChromeAppListItem* item = FindItem(id);
   if (!item)
     return;
+
+  if (!app_list_controller_) {
+    item->SetChromeFolderId(folder_id);
+    return;
+  }
+
   std::unique_ptr<ash::AppListItemMetadata> data = item->CloneMetadata();
   data->folder_id = folder_id;
   app_list_controller_->SetItemMetadata(id, std::move(data));
@@ -480,18 +471,18 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
       (!chrome_item->position().IsValid() ||
        !chrome_item->position().Equals(sync_item->item_ordinal))) {
     // This updates the position in both chrome and ash:
-    chrome_item->SetPosition(sync_item->item_ordinal);
+    SetItemPosition(chrome_item->id(), sync_item->item_ordinal);
   }
   // Only update the item name if it is a Folder or the name is empty.
   if (update_name && sync_item->item_name != chrome_item->name() &&
       (chrome_item->is_folder() || chrome_item->name().empty())) {
     // This updates the name in both chrome and ash:
-    chrome_item->SetName(sync_item->item_name);
+    SetItemName(chrome_item->id(), sync_item->item_name);
   }
   if (update_folder && chrome_item->folder_id() != sync_item->parent_id) {
     VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     // This updates the folder in both chrome and ash:
-    MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
+    SetItemFolderId(chrome_item->id(), sync_item->parent_id);
   }
 }
 
@@ -529,8 +520,8 @@ void ChromeAppListModelUpdater::OnItemAdded(
   }
 
   // Do not propagate the addition of page break items from Ash side to remote
-  // side if removing launcher space is enabled. Because:
-  // (1) If a remote device enables removing launcher space as well, it will
+  // side if ProductivityLauncher feature is enabled. Because:
+  // (1) If a remote device enables ProductivityLauncher as well, it will
   // generate a page break item by its own when the current launcher page has no
   // space for extra icons. In other words, it does not need to sync on page
   // break items with other devices.
@@ -543,7 +534,7 @@ void ChromeAppListModelUpdater::OnItemAdded(
   // TODO(crbug.com/1234588): Ideally we should not send page breaks from/to the
   // app list controller if the feature to remove spaces is enabled.
   if (chrome_item->is_page_break() &&
-      ash::features::IsLauncherRemoveEmptySpaceEnabled()) {
+      ash::features::IsProductivityLauncherEnabled()) {
     return;
   }
 

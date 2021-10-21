@@ -3560,6 +3560,7 @@ interface HTMLQuoteElement : HTMLElement
     method constructor
     setter cite
 interface HTMLScriptElement : HTMLElement
+    static method supports
     attribute @@toStringTag
     getter async
     getter charset
@@ -5249,6 +5250,7 @@ interface PerformanceEntry
 interface PerformanceEventTiming : PerformanceEntry
     attribute @@toStringTag
     getter cancelable
+    getter interactionId
     getter processingEnd
     getter processingStart
     getter target

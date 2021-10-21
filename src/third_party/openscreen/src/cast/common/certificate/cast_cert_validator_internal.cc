@@ -238,8 +238,8 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
 
     // Check that we don't have any unhandled extensions marked as critical.
     int extension_count = X509_get_ext_count(issuer);
-    for (int i = 0; i < extension_count; ++i) {
-      X509_EXTENSION* extension = X509_get_ext(issuer, i);
+    for (int j = 0; j < extension_count; ++j) {
+      X509_EXTENSION* extension = X509_get_ext(issuer, j);
       if (X509_EXTENSION_get_critical(extension)) {
         const int nid = OBJ_obj2nid(X509_EXTENSION_get_object(extension));
         if (nid != NID_name_constraints && nid != NID_basic_constraints &&

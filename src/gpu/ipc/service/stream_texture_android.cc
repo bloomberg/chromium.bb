@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/ref_counted_lock.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/scheduler_task_runner.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -68,6 +69,8 @@ scoped_refptr<StreamTexture> StreamTexture::Create(
   if (result != ContextResult::kSuccess)
     return nullptr;
   auto scoped_make_current = MakeCurrent(context_state.get());
+  if (scoped_make_current && !scoped_make_current->IsContextCurrent())
+    return nullptr;
   return new StreamTexture(channel, stream_id, std::move(receiver),
                            std::move(context_state));
 }
@@ -272,10 +275,10 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
 
   // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
   // colorspace and wire it here.
-  auto shared_image = std::make_unique<SharedImageVideo>(
+  auto shared_image = SharedImageVideo::Create(
       mailbox, coded_size, gfx::ColorSpace::CreateSRGB(),
       kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, this, context_state_,
-      /*is_thread_safe=*/true, /*lock=*/nullptr);
+      /*lock=*/nullptr);
   channel_->shared_image_stub()->factory()->RegisterBacking(
       std::move(shared_image), /*allow_legacy_mailbox=*/false);
 
@@ -311,18 +314,6 @@ void StreamTexture::ReleaseTexImage(unsigned target) {
 bool StreamTexture::CopyTexSubImage(unsigned target,
                                     const gfx::Point& offset,
                                     const gfx::Rect& rect) {
-  return false;
-}
-
-bool StreamTexture::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget,
-    int z_order,
-    gfx::OverlayTransform transform,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect,
-    bool enable_blend,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  NOTREACHED();
   return false;
 }
 

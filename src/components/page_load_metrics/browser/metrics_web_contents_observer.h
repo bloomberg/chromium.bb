@@ -60,6 +60,10 @@ class MetricsWebContentsObserver
   class TestingObserver {
    public:
     explicit TestingObserver(content::WebContents* web_contents);
+
+    TestingObserver(const TestingObserver&) = delete;
+    TestingObserver& operator=(const TestingObserver&) = delete;
+
     virtual ~TestingObserver();
 
     void OnGoingAway();
@@ -84,8 +88,6 @@ class MetricsWebContentsObserver
 
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestingObserver);
   };
 
   // Record a set of WebFeatures directly from the browser process. This
@@ -101,6 +103,11 @@ class MetricsWebContentsObserver
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
+
+  MetricsWebContentsObserver(const MetricsWebContentsObserver&) = delete;
+  MetricsWebContentsObserver& operator=(const MetricsWebContentsObserver&) =
+      delete;
+
   ~MetricsWebContentsObserver() override;
 
   // Binds a Mojo receiver to the instance associated with the RenderFrameHost.
@@ -359,8 +366,6 @@ class MetricsWebContentsObserver
   bool web_contents_will_soon_be_destroyed_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };
 
 }  // namespace page_load_metrics

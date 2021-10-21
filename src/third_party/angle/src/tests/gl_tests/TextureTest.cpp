@@ -2698,9 +2698,6 @@ TEST_P(Texture2DTestES3, TexImageWithDepthPBO)
     // http://anglebug.com/5315
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
 
-    // http://anglebug.com/5316
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsOSX());
-
     constexpr GLsizei kSize = 4;
 
     // Set up the framebuffer.
@@ -2766,9 +2763,6 @@ TEST_P(Texture2DTestES3, TexImageWithStencilPBO)
 
     // http://anglebug.com/5315
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
-
-    // http://anglebug.com/5316
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsOSX());
 
     // http://anglebug.com/5317
     ANGLE_SKIP_TEST_IF(IsWindows() && IsD3D());
@@ -2844,9 +2838,6 @@ TEST_P(Texture2DTestES3, TexImageWithDepthStencilPBO)
 
     // http://anglebug.com/5315
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
-
-    // http://anglebug.com/5316
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsOSX());
 
     // http://anglebug.com/5317
     ANGLE_SKIP_TEST_IF(IsWindows() && IsD3D());
@@ -3319,9 +3310,6 @@ void FillLevel(GLint level,
 // conformance/textures/misc/texture-size.html does
 void Texture2DTest::testTextureSize(int testCaseIndex)
 {
-    // http://anglebug.com/6296
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     std::array<GLColor, 6> kNewMipColors = {
         GLColor::green,  GLColor::red,     GLColor::blue,
         GLColor::yellow, GLColor::magenta, GLColor::cyan,
@@ -4501,15 +4489,12 @@ TEST_P(Texture2DBaseMaxTestES3, RedefineIncompatibleLevelBeyondMaxLevel)
 }
 
 // Port test from web_gl/conformance2/textures/misc/fuzz-545-immutable-tex-render-feedback.html.
-// What this try to do is create a renderer feedback loop and ensure it is not crashing.
+// What this tries to do is create a render feedback loop and ensure it is not crashing.
 TEST_P(Texture2DBaseMaxTestES3, Fuzz545ImmutableTexRenderFeedback)
 {
-    // http://crbug.com/1212206
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
 
-    constexpr uint32_t MIPS = 3;
+    constexpr uint32_t MIPS = 2;
     constexpr uint32_t SIZE = 10;
 
     GLTexture immutTex;
@@ -5841,9 +5826,6 @@ TEST_P(Texture2DTestES3, TextureCOMPRESSEDRGB8ETC2ImplicitAlpha1)
     // ETC texture formats are not supported on Mac OpenGL. http://anglebug.com/3853
     ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
 
-    // http://anglebug.com/5187
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsMetal());
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB8_ETC2, 1, 1, 0, 8, nullptr);
@@ -5860,9 +5842,6 @@ TEST_P(Texture2DTestES3, TextureCOMPRESSEDSRGB8ETC2ImplicitAlpha1)
 {
     // ETC texture formats are not supported on Mac OpenGL. http://anglebug.com/3853
     ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
-
-    // http://anglebug.com/5187
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsMetal());
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
@@ -7050,15 +7029,16 @@ class Texture2DNorm16TestES3 : public Texture2DTestES3
 
         char errorInfo[200];
 
-        for (GLuint y = 0; y < height; ++y)
+        for (GLuint row = 0; row < height; ++row)
         {
             GLushort *curPixel = pixelRowStart;
-            for (GLuint x = 0, len = (y == height - 1) ? width : std::min(l, width); x < len; ++x)
+            for (GLuint col = 0, len = (row == height - 1) ? width : std::min(l, width); col < len;
+                 ++col)
             {
                 snprintf(errorInfo, sizeof(errorInfo),
                          "extent: {%u, %u}, coord: (%u, %u), rowLength: %d, alignment: %d, "
                          "skipPixels: %d, skipRows: %d\n",
-                         width, height, x, y, packRowLength, packAlignment, packSkipPixels,
+                         width, height, col, row, packRowLength, packAlignment, packSkipPixels,
                          packSkipRows);
                 EXPECT_EQ(color.R, curPixel[0]) << errorInfo;
                 EXPECT_EQ(color.G, curPixel[1]) << errorInfo;
@@ -7745,7 +7725,7 @@ TEST_P(Texture2DFloatTestES2, TextureHalfFloatSampleLegacyTest)
 TEST_P(Texture2DFloatTestES3, TextureFloatLinearTest)
 {
     // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL() || IsMetal()));
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL()));
 
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float_linear"));
 
@@ -7756,7 +7736,7 @@ TEST_P(Texture2DFloatTestES3, TextureFloatLinearTest)
 TEST_P(Texture2DFloatTestES2, TextureFloatLinearTest)
 {
     // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL() || IsMetal()));
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL()));
 
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float_linear"));
 
@@ -7784,7 +7764,7 @@ TEST_P(Texture2DFloatTestES2, TextureHalfFloatLinearTest)
 TEST_P(Texture2DFloatTestES3, TextureFloatLinearLegacyTest)
 {
     // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL() || IsMetal()));
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL()));
 
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float_linear"));
@@ -7804,7 +7784,7 @@ TEST_P(Texture2DFloatTestES3, TextureFloatLinearLegacyTest)
 TEST_P(Texture2DFloatTestES2, TextureFloatLinearLegacyTest)
 {
     // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL() || IsMetal()));
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && (IsDesktopOpenGL()));
 
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float_linear"));
@@ -8233,9 +8213,6 @@ TEST_P(Texture2DDepthTest, DepthTextureES2Compatibility)
     // http://anglebug.com/4092
     ANGLE_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
     ANGLE_SKIP_TEST_IF(IsARM64() && IsWindows() && IsD3D());
-
-    // http://anglebug.com/4908
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsMetal());
 
     // When the depth texture is specified with unsized internalformat implementations follow
     // OES_depth_texture behavior. Otherwise they follow GLES 3.0 behavior.
@@ -9657,6 +9634,66 @@ void main()
 
     // Make sure both draw calls succeed
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::cyan);
+}
+
+// Test that mapping a texture buffer with GL_MAP_INVALIDATE_BUFFER_BIT and writing to it works
+// correctly.
+TEST_P(TextureBufferTestES31, MapTextureBufferInvalidateThenWrite)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_buffer"));
+
+    // TODO(http://anglebug.com/5832): Claims to support GL_OES_texture_buffer, but fails
+    // compilation of shader because "extension 'GL_OES_texture_buffer' is not supported".
+    ANGLE_SKIP_TEST_IF(IsQualcomm() && IsOpenGLES());
+    // TODO(http://anglebug.com/6396): The OpenGL backend doesn't correctly handle texture buffers
+    // being invalidated when mapped.
+    ANGLE_SKIP_TEST_IF(IsOpenGL());
+
+    const std::array<GLColor, 4> kInitialData = {GLColor::red, GLColor::red, GLColor::red,
+                                                 GLColor::red};
+    const std::array<GLColor, 4> kUpdateData  = {GLColor::blue, GLColor::blue, GLColor::blue,
+                                                GLColor::blue};
+
+    GLBuffer buffer;
+    glBindBuffer(GL_TEXTURE_BUFFER, buffer);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(kInitialData), kInitialData.data(), GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer);
+    EXPECT_GL_NO_ERROR();
+
+    // Bind as texture buffer
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_BUFFER, texture);
+    glTexBufferEXT(GL_TEXTURE_BUFFER, GL_RGBA8, buffer);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr char kSamplerBuffer[] = R"(#version 310 es
+#extension GL_OES_texture_buffer : require
+precision mediump float;
+uniform highp samplerBuffer s;
+out vec4 colorOut;
+void main()
+{
+    colorOut = texelFetch(s, 0);
+})";
+
+    ANGLE_GL_PROGRAM(initialSamplerBuffer, essl31_shaders::vs::Simple(), kSamplerBuffer);
+    drawQuad(initialSamplerBuffer, essl31_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    // Don't read back, so we don't break the render pass.
+
+    // Map the buffer and update it.
+    void *mappedBuffer = glMapBufferRange(GL_TEXTURE_BUFFER, 0, sizeof(kInitialData),
+                                          GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    memcpy(mappedBuffer, kUpdateData.data(), sizeof(kInitialData));
+
+    // Draw with the updated buffer data.
+    ANGLE_GL_PROGRAM(updateSamplerBuffer, essl31_shaders::vs::Simple(), kSamplerBuffer);
+    drawQuad(updateSamplerBuffer, essl31_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
+
+    // Make sure both draw calls succeed
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
 }
 
 // Test that the correct error is generated if texture buffer support used anyway when not enabled.

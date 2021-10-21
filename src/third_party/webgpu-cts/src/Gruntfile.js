@@ -26,7 +26,7 @@ module.exports = function (grunt) {
       },
       unittest: {
         cmd: 'node',
-        args: ['tools/run', 'unittests:*'],
+        args: ['tools/run_node', 'unittests:*'],
       },
       'build-out': {
         cmd: 'node',

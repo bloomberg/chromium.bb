@@ -9,6 +9,7 @@ import unittest
 
 from presubmit_canned_checks_test_mocks import MockFile, MockAffectedFile
 from presubmit_canned_checks_test_mocks import MockInputApi, MockOutputApi
+from presubmit_canned_checks_test_mocks import MockChange
 
 import presubmit_canned_checks
 
@@ -198,6 +199,46 @@ class InclusiveLanguageCheckTest(unittest.TestCase):
     errors = presubmit_canned_checks.CheckInclusiveLanguage(input_api,
                                                             MockOutputApi())
     self.assertEqual([], errors)
+
+
+class DescriptionChecksTest(unittest.TestCase):
+  def testCheckDescriptionUsesColonInsteadOfEquals(self):
+    input_api = MockInputApi()
+    input_api.change.RepositoryRoot = lambda: ''
+    input_api.presubmit_local_path = ''
+
+    # Verify error in case of the attempt to use "Bug=".
+    input_api.change = MockChange([], 'Broken description\nBug=123')
+    errors = presubmit_canned_checks.CheckDescriptionUsesColonInsteadOfEquals(
+        input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('Bug=' in errors[0].message)
+
+    # Verify error in case of the attempt to use "Fixed=".
+    input_api.change = MockChange([], 'Broken description\nFixed=123')
+    errors = presubmit_canned_checks.CheckDescriptionUsesColonInsteadOfEquals(
+        input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('Fixed=' in errors[0].message)
+
+    # Verify error in case of the attempt to use the lower case "bug=".
+    input_api.change = MockChange([], 'Broken description lowercase\nbug=123')
+    errors = presubmit_canned_checks.CheckDescriptionUsesColonInsteadOfEquals(
+        input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('Bug=' in errors[0].message)
+
+    # Verify no error in case of "Bug:"
+    input_api.change = MockChange([], 'Correct description\nBug: 123')
+    errors = presubmit_canned_checks.CheckDescriptionUsesColonInsteadOfEquals(
+        input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
+
+    # Verify no error in case of "Fixed:"
+    input_api.change = MockChange([], 'Correct description\nFixed: 123')
+    errors = presubmit_canned_checks.CheckDescriptionUsesColonInsteadOfEquals(
+        input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
 
 
 if __name__ == '__main__':

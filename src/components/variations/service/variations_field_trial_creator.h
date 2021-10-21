@@ -85,6 +85,11 @@ class VariationsFieldTrialCreator {
   VariationsFieldTrialCreator(VariationsServiceClient* client,
                               std::unique_ptr<VariationsSeedStore> seed_store,
                               const UIStringOverrider& ui_string_overrider);
+
+  VariationsFieldTrialCreator(const VariationsFieldTrialCreator&) = delete;
+  VariationsFieldTrialCreator& operator=(const VariationsFieldTrialCreator&) =
+      delete;
+
   virtual ~VariationsFieldTrialCreator();
 
   // Returns what variations will consider to be the latest country. Returns
@@ -96,22 +101,21 @@ class VariationsFieldTrialCreator {
   // Sets up field trials based on stored variations seed data. Returns whether
   // setup completed successfully.
   //
-  // |kEnableGpuBenchmarking|, |kEnableFeatures|, |kDisableFeatures| are
-  // feature-controlling flags not directly accessible from variations.
   // |variation_ids| allows for forcing ids selected in chrome://flags and/or
   // specified using the command-line flag.
   // |extra_overrides| gives a list of feature overrides that should be applied
   // after the features explicitly disabled/enabled from the command line via
   // --disable-features and --enable-features, but before field trials.
-  // |low_entropy_provider| allows for field trial randomization.
+  // |low_entropy_provider| allows for field trial randomization. May be null.
   // |feature_list| contains the list of all active features for this client.
+  // Must not be null.
   // |metrics_state_manager| facilitates signaling that Chrome has not yet
-  // exited cleanly.
-  // |platform_field_trials| provides the platform-specific field trial set up
-  // for Chrome.
+  // exited cleanly. Must not be null.
+  // |platform_field_trials| provides the platform-specific field trial setup
+  // for Chrome. Must not be null.
   // |safe_seed_manager| should be notified of the combined server and client
   // state that was activated to create the field trials (only when the return
-  // value is true).
+  // value is true). Must not be null.
   // |low_entropy_source_value| contains the low entropy source value that was
   // used for client-side randomization of variations.
   // |extend_variations_safe_mode| indicates whether the client should
@@ -125,9 +129,6 @@ class VariationsFieldTrialCreator {
   // take precedence over |extra_overrides|, which takes precedence over the
   // field trials.
   bool SetupFieldTrials(
-      const char* kEnableGpuBenchmarking,
-      const char* kEnableFeatures,
-      const char* kDisableFeatures,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
@@ -247,9 +248,11 @@ class VariationsFieldTrialCreator {
   std::unordered_map<int, std::u16string> overridden_strings_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsFieldTrialCreator);
 };
+
+// A testing feature that forces a crash during field trial creation
+// on developer and test builds.
+extern const base::Feature kForceFieldTrialSetupCrashForTesting;
 
 }  // namespace variations
 

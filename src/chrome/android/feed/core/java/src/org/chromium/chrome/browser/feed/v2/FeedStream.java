@@ -8,12 +8,14 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,13 +32,22 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
+import org.chromium.chrome.browser.feed.CardMenuBottomSheetContent;
+import org.chromium.chrome.browser.feed.FeedAutoplaySettingsDelegate;
 import org.chromium.chrome.browser.feed.FeedReliabilityLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
+import org.chromium.chrome.browser.feed.FeedSliceViewTracker;
 import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
 import org.chromium.chrome.browser.feed.FeedUma;
 import org.chromium.chrome.browser.feed.NtpListContentManager;
 import org.chromium.chrome.browser.feed.shared.ScrollTracker;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.feed.sort_ui.SortChipProperties;
+import org.chromium.chrome.browser.feed.sort_ui.SortView;
+import org.chromium.chrome.browser.feed.sort_ui.SortViewBinder;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -72,6 +83,9 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModelChangeProcessor;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -141,6 +155,19 @@ public class FeedStream implements Stream {
             RequestCoordinatorBridge.getForProfile(Profile.getLastUsedRegularProfile())
                     .savePageLater(url, OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE,
                             true /* user requested*/);
+        }
+
+        @Override
+        public void addToReadingList(String title, String url) {
+            assert ThreadUtils.runningOnUiThread();
+            FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
+                    FeedUserActionType.TAPPED_ADD_TO_READING_LIST);
+
+            mBookmarkBridge.finishLoadingBookmarkModel(() -> {
+                assert ThreadUtils.runningOnUiThread();
+                BookmarkUtils.addToReadingList(
+                        new GURL(url), title, mSnackManager, mBookmarkBridge, mActivity);
+            });
         }
 
         @Override
@@ -300,28 +327,29 @@ public class FeedStream implements Stream {
 
         @Override
         public void showSnackbar(String text, String actionLabel, SnackbarDuration duration,
-                SnackbarController controller) {
+                SnackbarController delegateController) {
             assert ThreadUtils.runningOnUiThread();
             int durationMs = SNACKBAR_DURATION_MS_SHORT;
             if (duration == FeedActionsHandler.SnackbarDuration.LONG) {
                 durationMs = SNACKBAR_DURATION_MS_LONG;
             }
+            SnackbarManager.SnackbarController controller =
+                    new SnackbarManager.SnackbarController() {
+                        @Override
+                        public void onAction(Object actionData) {
+                            delegateController.onAction();
+                        }
+                        @Override
+                        public void onDismissNoAction(Object actionData) {
+                            delegateController.onDismissNoAction();
+                        }
+                    };
 
-            mSnackManager.showSnackbar(
-                    Snackbar.make(text,
-                                    new SnackbarManager.SnackbarController() {
-                                        @Override
-                                        public void onAction(Object actionData) {
-                                            controller.onAction();
-                                        }
-                                        @Override
-                                        public void onDismissNoAction(Object actionData) {
-                                            controller.onDismissNoAction();
-                                        }
-                                    },
-                                    Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
-                            .setAction(actionLabel, /*actionData=*/null)
-                            .setDuration(durationMs));
+            mSnackbarControllers.add(controller);
+            mSnackManager.showSnackbar(Snackbar.make(text, controller, Snackbar.TYPE_ACTION,
+                                                       Snackbar.UMA_FEED_NTP_STREAM)
+                                               .setAction(actionLabel, /*actionData=*/null)
+                                               .setDuration(durationMs));
         }
 
         @Override
@@ -330,6 +358,14 @@ public class FeedStream implements Stream {
             mShareHelper.share(url, title);
             FeedStreamJni.get().reportOtherUserAction(
                     mNativeFeedStream, FeedStream.this, FeedUserActionType.SHARE);
+        }
+
+        @Override
+        public void openAutoplaySettings() {
+            assert ThreadUtils.runningOnUiThread();
+            FeedStreamJni.get().reportOtherUserAction(
+                    mNativeFeedStream, FeedStream.this, FeedUserActionType.OPENED_CONTEXT_MENU);
+            mFeedAutoplaySettingsDelegate.launchAutoplaySettings();
         }
 
         // Since the XSurface client strings are slightly different than the Feed strings, convert
@@ -391,7 +427,9 @@ public class FeedStream implements Stream {
     private SnackbarManager mSnackManager;
     private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
     private WindowAndroid mWindowAndroid;
+    private final FeedAutoplaySettingsDelegate mFeedAutoplaySettingsDelegate;
     private UnreadContentObserver mUnreadContentObserver;
+    private BookmarkBridge mBookmarkBridge;
 
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
@@ -416,6 +454,7 @@ public class FeedStream implements Stream {
     private int mHeaderCount;
     private boolean mIsPlaceholderShown;
     private long mLastFetchTimeMs;
+    private ArrayList<SnackbarManager.SnackbarController> mSnackbarControllers = new ArrayList<>();
 
     // Placeholder view that simply takes up space.
     private NtpListContentManager.NativeViewContent mSpacerViewContent;
@@ -424,6 +463,9 @@ public class FeedStream implements Stream {
     private final BottomSheetController mBottomSheetController;
     private BottomSheetContent mBottomSheetContent;
     private String mBottomSheetOriginatingSliceId;
+
+    // Sort options drawer.
+    private View mSortView;
 
     /**
      * Creates a new Feed Stream.
@@ -435,12 +477,15 @@ public class FeedStream implements Stream {
      * @param windowAndroid The {@link WindowAndroid} this is shown on.
      * @param shareDelegateSupplier The supplier for {@link ShareDelegate} for sharing actions.
      * @param isInterestFeed Whether this stream is for interest feed (true) or web feed (false).
+     * @param feedAutoplaySettingsDelegate The delegate to invoke autoplay settings.
+     * @param bookmarkBridge Used to add feed items to the reading list.
      */
     public FeedStream(Activity activity, SnackbarManager snackbarManager,
             NativePageNavigationDelegate nativePageNavigationDelegate,
             BottomSheetController bottomSheetController, boolean isPlaceholderShown,
             WindowAndroid windowAndroid, Supplier<ShareDelegate> shareDelegateSupplier,
-            boolean isInterestFeed) {
+            boolean isInterestFeed, FeedAutoplaySettingsDelegate feedAutoplaySettingsDelegate,
+            BookmarkBridge bookmarkBridge) {
         this.mActivity = activity;
         mIsInterestFeed = isInterestFeed;
         mReliabilityLoggingBridge = new FeedReliabilityLoggingBridge();
@@ -454,7 +499,9 @@ public class FeedStream implements Stream {
         mHelpAndFeedbackLauncher = HelpAndFeedbackLauncherImpl.getInstance();
         mIsPlaceholderShown = isPlaceholderShown;
         mWindowAndroid = windowAndroid;
+        mFeedAutoplaySettingsDelegate = feedAutoplaySettingsDelegate;
         mRotationObserver = new RotationObserver();
+        mBookmarkBridge = bookmarkBridge;
 
         mHandlersMap = new HashMap<>();
         mHandlersMap.put(SurfaceActionsHandler.KEY, new FeedSurfaceActionsHandler());
@@ -485,9 +532,42 @@ public class FeedStream implements Stream {
             }
         };
         // Only watch for unread content on the web feed, not for-you feed.
-        if (!isInterestFeed) {
+        // Sort options only available for web feed right now.
+        if (!isInterestFeed && ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)) {
             mUnreadContentObserver = new UnreadContentObserver(/*isWebFeed=*/true);
+
+            @ContentOrder
+            int currentSort = FeedServiceBridge.getContentOrderForWebFeed();
+
+            mSortView = LayoutInflater.from(activity).inflate(R.layout.feed_options_panel, null);
+            SortView chipView = mSortView.findViewById(R.id.button_bar);
+            ListModel<PropertyModel> sortModel = new ListModel<>();
+            ListModelChangeProcessor<ListModel<PropertyModel>, SortView, Void> processor =
+                    new ListModelChangeProcessor<>(sortModel, chipView, new SortViewBinder());
+            sortModel.addObserver(processor);
+
+            sortModel.add(
+                    createSortModel(ContentOrder.REVERSE_CHRON, R.string.latest, currentSort));
+
+            sortModel.add(createSortModel(
+                    ContentOrder.GROUPED, R.string.feed_sort_publisher, currentSort));
         }
+    }
+
+    private PropertyModel createSortModel(
+            @ContentOrder int order, @StringRes int stringResource, @ContentOrder int currentSort) {
+        return new PropertyModel.Builder(SortChipProperties.ALL_KEYS)
+                .with(SortChipProperties.NAME_KEY,
+                        mActivity.getResources().getString(stringResource))
+                .with(SortChipProperties.ON_SELECT_CALLBACK_KEY,
+                        () -> FeedServiceBridge.setContentOrderForWebFeed(order))
+                .with(SortChipProperties.IS_INITIALLY_SELECTED_KEY, currentSort == order)
+                .build();
+    }
+
+    @Override
+    public View getOptionsView() {
+        return mSortView;
     }
 
     @Override
@@ -496,6 +576,7 @@ public class FeedStream implements Stream {
             mUnreadContentObserver.destroy();
         }
         mReliabilityLoggingBridge.destroy();
+        mBookmarkBridge.destroy();
     }
 
     @Override
@@ -555,6 +636,13 @@ public class FeedStream implements Stream {
 
     @Override
     public void unbind(boolean shouldPlaceSpacer) {
+        // Dismiss any snackbars. It's important we do this now so that xsurface can respond to
+        // these events before the content is removed.
+        for (SnackbarManager.SnackbarController controller : mSnackbarControllers) {
+            mSnackManager.dismissSnackbars(controller);
+        }
+        mSnackbarControllers.clear();
+
         mSliceViewTracker.destroy();
         mSliceViewTracker = null;
         mSurfaceScope = null;
@@ -566,8 +654,8 @@ public class FeedStream implements Stream {
         if (shouldPlaceSpacer) {
             if (mSpacerViewContent == null) {
                 FrameLayout spacerView = new FrameLayout(mActivity);
-                mSpacerViewContent =
-                        new NtpListContentManager.NativeViewContent("Spacer", spacerView);
+                mSpacerViewContent = new NtpListContentManager.NativeViewContent(
+                        getLateralPaddingsPx(), "Spacer", spacerView);
                 spacerView.setLayoutParams(new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
@@ -860,17 +948,22 @@ public class FeedStream implements Stream {
             if (mIsPlaceholderShown) {
                 return null;
             }
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_LOADING_PLACEHOLDER)
+                    && slice.getLoadingSpinnerSlice().getIsAtTop()) {
+                return new NtpListContentManager.NativeViewContent(
+                        getLateralPaddingsPx(), sliceId, R.layout.feed_placeholder_layout);
+            }
             return new NtpListContentManager.NativeViewContent(
-                    sliceId, org.chromium.chrome.R.layout.feed_spinner);
+                    getLateralPaddingsPx(), sliceId, org.chromium.chrome.R.layout.feed_spinner);
         }
         assert slice.hasZeroStateSlice();
         if (!mIsInterestFeed) {
-            return new NtpListContentManager.NativeViewContent(
-                    sliceId, org.chromium.chrome.R.layout.following_empty_state);
+            return new NtpListContentManager.NativeViewContent(getLateralPaddingsPx(), sliceId,
+                    org.chromium.chrome.R.layout.following_empty_state);
         }
         if (slice.getZeroStateSlice().getType() == FeedUiProto.ZeroStateSlice.Type.CANT_REFRESH) {
             return new NtpListContentManager.NativeViewContent(
-                    sliceId, org.chromium.chrome.R.layout.no_connection);
+                    getLateralPaddingsPx(), sliceId, org.chromium.chrome.R.layout.no_connection);
         }
         // TODO(crbug/1152592): Add new UI for NO_WEB_FEED_SUBSCRIPTIONS.
         assert slice.getZeroStateSlice().getType()
@@ -878,7 +971,7 @@ public class FeedStream implements Stream {
                 || slice.getZeroStateSlice().getType()
                         == FeedUiProto.ZeroStateSlice.Type.NO_WEB_FEED_SUBSCRIPTIONS;
         return new NtpListContentManager.NativeViewContent(
-                sliceId, org.chromium.chrome.R.layout.no_content_v2);
+                getLateralPaddingsPx(), sliceId, org.chromium.chrome.R.layout.no_content_v2);
     }
 
     private void updateContentsInPlace(
@@ -1099,6 +1192,11 @@ public class FeedStream implements Stream {
         public void hasUnreadContentChanged(boolean hasUnreadContent) {
             mHasUnreadContent.set(hasUnreadContent);
         }
+    }
+
+    private int getLateralPaddingsPx() {
+        return mActivity.getResources().getDimensionPixelSize(
+                R.dimen.ntp_header_lateral_paddings_v2);
     }
 
     @NativeMethods

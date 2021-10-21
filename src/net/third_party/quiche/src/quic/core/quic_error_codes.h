@@ -599,8 +599,11 @@ enum QuicErrorCode {
   QUIC_TLS_UNRECOGNIZED_NAME = 201,
   QUIC_TLS_CERTIFICATE_REQUIRED = 202,
 
+  // An HTTP field value containing an invalid character has been received.
+  QUIC_INVALID_CHARACTER_IN_FIELD_VALUE = 206,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 206,
+  QUIC_LAST_ERROR = 207,
 };
 // QuicErrorCodes is encoded as four octets on-the-wire when doing Google QUIC,
 // or a varint62 when doing IETF QUIC. Ensure that its value does not exceed
@@ -608,6 +611,45 @@ enum QuicErrorCode {
 static_assert(static_cast<uint64_t>(QUIC_LAST_ERROR) <=
                   static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()),
               "QuicErrorCode exceeds four octets");
+
+// Represents a reason for resetting a stream in both gQUIC and IETF error code
+// space.  Both error codes have to be present.
+class QUIC_EXPORT_PRIVATE QuicResetStreamError {
+ public:
+  // Constructs a QuicResetStreamError from QuicRstStreamErrorCode; the IETF
+  // error code is inferred.
+  static QuicResetStreamError FromInternal(QuicRstStreamErrorCode code);
+  // Constructs a QuicResetStreamError from an IETF error code; the internal
+  // error code is inferred.
+  static QuicResetStreamError FromIetf(uint64_t code);
+  // Constructs a QuicResetStreamError with no error.
+  static QuicResetStreamError NoError() {
+    return FromInternal(QUIC_STREAM_NO_ERROR);
+  }
+
+  QuicResetStreamError(QuicRstStreamErrorCode internal_code,
+                       uint64_t ietf_application_code)
+      : internal_code_(internal_code),
+        ietf_application_code_(ietf_application_code) {}
+
+  QuicRstStreamErrorCode internal_code() const { return internal_code_; }
+  uint64_t ietf_application_code() const { return ietf_application_code_; }
+
+  bool operator==(const QuicResetStreamError& other) const {
+    return internal_code() == other.internal_code() &&
+           ietf_application_code() == other.ietf_application_code();
+  }
+
+  // Returns true if the object holds no error.
+  bool ok() const { return internal_code() == QUIC_STREAM_NO_ERROR; }
+
+ private:
+  // Error code used in gQUIC.  Even when IETF QUIC is in use, this needs to be
+  // populated as we use those internally.
+  QuicRstStreamErrorCode internal_code_;
+  // Application error code used in IETF QUIC.
+  uint64_t ietf_application_code_;
+};
 
 // Convert TLS alert code to QuicErrorCode.
 QUIC_EXPORT_PRIVATE QuicErrorCode TlsAlertToQuicErrorCode(uint8_t desc);
@@ -645,8 +687,7 @@ QUIC_EXPORT_PRIVATE std::string QuicIetfTransportErrorCodeString(
     QuicIetfTransportErrorCodes c);
 
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const QuicIetfTransportErrorCodes& c);
+    std::ostream& os, const QuicIetfTransportErrorCodes& c);
 
 // A transport error code (if is_transport_close is true) or application error
 // code (if is_transport_close is false) to be used in CONNECTION_CLOSE frames.
@@ -678,6 +719,7 @@ enum class QuicHttp3ErrorCode {
   REQUEST_REJECTED = 0x10B,
   REQUEST_CANCELLED = 0x10C,
   REQUEST_INCOMPLETE = 0x10D,
+  MESSAGE_ERROR = 0x10E,
   CONNECT_ERROR = 0x10F,
   VERSION_FALLBACK = 0x110,
 };

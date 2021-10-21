@@ -54,6 +54,8 @@ const char* GetDirectionDigest(const int bitdepth, const int num_runs) {
   return kDigest[bitdepth_index][run_index];
 }
 
+// The 'int' parameter is unused but required to allow for instantiations of C,
+// NEON, etc.
 template <int bitdepth, typename Pixel>
 class CdefDirectionTest : public testing::TestWithParam<int> {
  public:
@@ -170,21 +172,12 @@ const char* GetDigest8bpp(int id) {
       "b6fe1a1f5bbb23e35197160ce57d90bd", "8aed39871b19184f1d381b145779bc33",
       "82653dd66072e8ebd967083a0413ab03", "421c048396bc66ffaa6aafa016c7bc54",
       "1f70ba51091e8c6034c3f0974af241c3", "8f700997452a24091136ca58890a5be4",
-      "9deaaf07db25ca1d96ea8762925372d3", "7edadd9ad058be518430e64f78fe34a2",
-      "862362a654edb2562609895395eb69cd", "3b4dae4d353b75f652ce67f96b2fd718",
-      "65c51f49e4fd848d9fef23a346702b17", "f93b3fa86764e53e4c206ef01d5ee9db",
-      "202e36551bc147c30b76ae359d5f7646", "3de677a2b6fe4aa6fc29a5e5f2d63063",
-      "ab860362809e878f7b47dacc6087bce3", "c0d991affc8aeb45d91ae36e7b3d77d8",
-      "27f19fffabfb79104b4be3c272723f62", "a54b981f562e2cf10a4fb037d0181e2d",
-      "9a65933d02867a1e8fc1f29097d4d0db", "c068b21d232145c61db8ef9298447bfa",
-      "8db1948c23648372509e4f3577e8eaa0", "c08a3b192ab0a47abe22f7f0ae78a5d7",
-      "4ff9bd4ae06f2cc2d2660df41cf1baca", "a0a634e48c55a2ca340cf5cac7f74cb6",
-      "f9f631985b42214f8b059c8f119d4401", "5fb136073300a45d74145649473970da",
-      "33624aab8ba0264657fa9304dbdcf72c", "e6a15775d451a3c4803a7c0604deb0ea",
-      "4c28b63022cdc5ea0e49b492c187d53d", "c5fa9792ee292d29c5a864e376ddacc0",
-      "fcdf7319978b64f03ca3b9d4d83a0c2a", "394931c89bd5065308b0633d12370b19",
-      "9e702d68000c1b02759001e9a8876df2", "c844919f0114e83960dd329b1aa7146f",
-      "499248c675884db3ef57018d0a0868b5", "4a9041ed183f9add717e5ddcdb280799",
+      "9e3dea21ee4246172121f0420eccd899", "0848bdeffa74145758ef47992e1035c4",
+      "0bb55818de986e9d988b0c1cc6883887", "9b558a7eefc934f90cd09ca26b998bfd",
+      "3a38670f8c5f0c61cc47c9c79da728d2", "ed18fe91180e78008ccb98e9019bed69",
+      "2aa4bbcb6fb088ad42bde76be014dff0", "88f746f0d6c079ab8e9ecc7ff67524c7",
+      "7cffa948f5ddbccc7c6b07d15ca9eb69", "5e22c1c89735965dda935d1249129548",
+      "e765133d133b94e1578c8c5616248a96", "da95d47cad74eb4a075893ca98e658ab",
   };
   return kDigest[id];
 }
@@ -195,21 +188,12 @@ const char* GetDigest10bpp(int id) {
       "0a9630b39974850998db653b07e09ab4", "97a924661d931b23ee57893da617ae70",
       "0d79516b9a491ce5112eb00bbae5eb80", "d5801fd96029a7509cf66dde61e8e2d8",
       "5bf5c0ea5a85e9b6c1e6991619c34ebc", "e2f1c08a8b3cd93b3a85511493a0ee31",
-      "18910f422e386c71ffde8680176d61c0", "3255afe8b3db5be4c17299420ae9b4b3",
-      "ccac34de92891d4ef25820737e7a4f06", "5c2109c4142867c15bc6bb81e19b8058",
-      "86e8300e2ad292bfce95185530ef06c8", "21c06ed6d62b8fbef1363cd177386cd0",
-      "fd6687987dbff6f15210c2cc61570daa", "7cb246cb65a9cf9b2f829ab086f7c45a",
-      "3a38dc3c89f7e400383b1b7ce3e73008", "7b23b520e41ad510b9608b47f9c5f87e",
-      "f9ca24b57fc06d7b8dc4151bbc4d2840", "070ef8fa64dcdc45701428ee6ef0ca79",
-      "0e7e3ca3cf8546972d01fc262b2b9cfb", "9ac81b7cf93173f33d195927b0a3685a",
-      "1f964b6959774651a79d961e5a2a6a56", "64d5f88995a918a85df317d4240f0862",
-      "55c94ec09facda30fac677d205beb708", "2c010b256f4dabf42ef78bf5a3851b2c",
-      "c7d18d0e287fa8658b94131603e378db", "4f7696fe2c8dbedd0c8e8a53b9dec0fc",
-      "b3483dc32665a4bb0606d78dfb3d285c", "0bcb4acd4090f5798c2d260df73b2c46",
-      "4f574c782f3b28fb9c85cdb70dfcb46a", "14bd700a88be0107e9ef2fe54f75cee6",
-      "5d3b2698c9ffa4a6aed45a9adbddb8bf", "eff870414f80897cf8958ebeea84f0a6",
-      "e042843275f82271a9f540bc3e4ef35c", "26e3ff3d661dac25861a0f5bab522340",
-      "239844e66b07796003f9315166b9e29e", "44b8e6884215a1793cc7f8f7ce40bcee",
+      "45c047d2be5e2dcf6094937780a3f88a", "346caf437c1ad85862de72a622e29845",
+      "0e9cb69d24d9badbe956da779d912b05", "81803dcb00971237b3fe6372564a842f",
+      "17681ad2ed4a2456d70760852af6c6fd", "5312f8049a08a5f9b1708fda936f7a55",
+      "3f0f522f3a33e4ff2a97bdc1e614c5c4", "3818a50be7fe16aa0c636a7392d1eceb",
+      "c6849b8cd77a076dc7e3c26e8cd55b9e", "223c0dd685bbc74aec1d088356708433",
+      "90992957cb8103222aa2fb43c6cd2fc4", "a4ba6edcefe4130851c4c2607b147f95",
   };
   return kDigest[id];
 }
@@ -286,10 +270,8 @@ class CdefFilteringTest : public testing::TestWithParam<CdefTestParam> {
 
 template <int bitdepth, typename Pixel>
 void CdefFilteringTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
-  const int id = (static_cast<int>(param_.rows4x4 < 4) +
-                  static_cast<int>(param_.rows4x4 < 2)) *
-                     3 +
-                 param_.subsampling_x * 9 + param_.subsampling_y * 18;
+  const int id = static_cast<int>(param_.rows4x4 < 4) * 3 +
+                 (param_.subsampling_x + param_.subsampling_y) * 6;
   absl::Duration elapsed_time;
   for (int num_tests = 0; num_tests < num_runs; ++num_tests) {
     for (int plane = kPlaneY; plane < kMaxPlanes; ++plane) {
@@ -367,7 +349,6 @@ void CdefFilteringTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
 const CdefTestParam cdef_test_param[] = {
     CdefTestParam(0, 0, 4, 4), CdefTestParam(0, 0, 2, 2),
     CdefTestParam(1, 0, 4, 4), CdefTestParam(1, 0, 2, 2),
-    CdefTestParam(0, 1, 4, 4), CdefTestParam(0, 1, 2, 2),
     CdefTestParam(1, 1, 4, 4), CdefTestParam(1, 1, 2, 2),
 };
 

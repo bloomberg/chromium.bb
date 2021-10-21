@@ -51,6 +51,12 @@ class TestQuietNotificationPermissionUiSelector
   explicit TestQuietNotificationPermissionUiSelector(
       QuietUiReason simulated_reason_for_quiet_ui)
       : simulated_reason_for_quiet_ui_(simulated_reason_for_quiet_ui) {}
+
+  TestQuietNotificationPermissionUiSelector(
+      const TestQuietNotificationPermissionUiSelector&) = delete;
+  TestQuietNotificationPermissionUiSelector& operator=(
+      const TestQuietNotificationPermissionUiSelector&) = delete;
+
   ~TestQuietNotificationPermissionUiSelector() override = default;
 
  protected:
@@ -68,8 +74,6 @@ class TestQuietNotificationPermissionUiSelector
 
  private:
   QuietUiReason simulated_reason_for_quiet_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestQuietNotificationPermissionUiSelector);
 };
 
 }  // namespace
@@ -84,6 +88,11 @@ class ContentSettingBubbleDialogTest : public DialogBrowserTest {
         {permissions::features::kPermissionQuietChip});
   }
 
+  ContentSettingBubbleDialogTest(const ContentSettingBubbleDialogTest&) =
+      delete;
+  ContentSettingBubbleDialogTest& operator=(
+      const ContentSettingBubbleDialogTest&) = delete;
+
   void ApplyMediastreamSettings(bool mic_accessed, bool camera_accessed);
   void ApplyContentSettingsForType(ContentSettingsType content_type);
   void TriggerQuietNotificationPermissionRequest(
@@ -97,8 +106,6 @@ class ContentSettingBubbleDialogTest : public DialogBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   absl::optional<permissions::MockPermissionRequest>
       notification_permission_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleDialogTest);
 };
 
 void ContentSettingBubbleDialogTest::ApplyMediastreamSettings(

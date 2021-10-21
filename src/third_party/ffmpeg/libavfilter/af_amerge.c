@@ -60,8 +60,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     AMergeContext *s = ctx->priv;
 
     av_freep(&s->in);
-    for (unsigned i = 0; i < ctx->nb_inputs; i++)
-        av_freep(&ctx->input_pads[i].name);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -76,7 +74,6 @@ static int query_formats(AVFilterContext *ctx)
     };
     AMergeContext *s = ctx->priv;
     int64_t inlayout[SWR_CH_MAX], outlayout = 0;
-    AVFilterFormats *formats;
     AVFilterChannelLayouts *layouts;
     int i, ret, overlap = 0, nb_ch = 0;
 
@@ -129,8 +126,7 @@ static int query_formats(AVFilterContext *ctx)
                 if ((inlayout[i] >> c) & 1)
                     *(route[i]++) = out_ch_number++;
     }
-    formats = ff_make_format_list(packed_sample_fmts);
-    if ((ret = ff_set_common_formats(ctx, formats)) < 0)
+    if ((ret = ff_set_common_formats_from_list(ctx, packed_sample_fmts)) < 0)
         return ret;
     for (i = 0; i < s->nb_inputs; i++) {
         layouts = NULL;
@@ -145,7 +141,7 @@ static int query_formats(AVFilterContext *ctx)
     if ((ret = ff_channel_layouts_ref(layouts, &ctx->outputs[0]->incfg.channel_layouts)) < 0)
         return ret;
 
-    return ff_set_common_samplerates(ctx, ff_all_samplerates());
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -330,10 +326,8 @@ static av_cold int init(AVFilterContext *ctx)
         };
         if (!name)
             return AVERROR(ENOMEM);
-        if ((ret = ff_insert_inpad(ctx, i, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_inpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
     return 0;
 }
@@ -344,7 +338,6 @@ static const AVFilterPad amerge_outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_amerge = {
@@ -357,7 +350,7 @@ const AVFilter ff_af_amerge = {
     .query_formats = query_formats,
     .activate      = activate,
     .inputs        = NULL,
-    .outputs       = amerge_outputs,
+    FILTER_OUTPUTS(amerge_outputs),
     .priv_class    = &amerge_class,
     .flags         = AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

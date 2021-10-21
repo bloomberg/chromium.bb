@@ -14,6 +14,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.EntryManager;
 import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.LongScreenshotsEntry;
 import org.chromium.chrome.browser.share.long_screenshots.bitmap_generation.LongScreenshotsEntry.EntryStatus;
@@ -69,6 +72,14 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
     private static final int MINIMUM_VERTICAL_SELECTION_DP = 50;
     // Minimum height for mask views; should scale with ImageView margins.
     private static final int MINIMUM_MASK_HEIGHT_DP = 20;
+    // Distance from top/bottom edge dragging will scroll the view.
+    private static final int EDGE_DRAG_THRESHOLD_DP = 15;
+    // Distance for each auto-scroll-at-edge step.
+    private static final int EDGE_DRAG_STEP_DP = 5;
+
+    // Experimental flag feature variations for autoscrolling.
+    private static final String AUTOSCROLL_EXPERIMENT_PARAM_NAME = "autoscroll";
+    private int mAutoScrollExperimentArm;
 
     private static final String TAG = "long_screenshots";
 
@@ -76,26 +87,45 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
         mActivity = activity;
         mEntryManager = entryManager;
         mDisplayDensity = activity.getResources().getDisplayMetrics().density;
+
+        mAutoScrollExperimentArm = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT, AUTOSCROLL_EXPERIMENT_PARAM_NAME,
+                0);
     }
 
     private void displayInitialScreenshot() {
-        // TODO(skare): If testing does not hit memory limits, simplify EntryManager.
-        LongScreenshotsEntry entry = mEntryManager.generateInitialEntry();
-        entry.setListener(new LongScreenshotsEntry.EntryListener() {
+        mEntryManager.addBitmapGeneratorObserver(new EntryManager.BitmapGeneratorObserver() {
             @Override
-            public void onResult(@EntryStatus int status) {
-                if (status == EntryStatus.BITMAP_GENERATED) {
-                    showAreaSelectionDialog(entry.getBitmap());
-                    return;
-                }
+            public void onStatusChange(int status) {
+                if (status == EntryStatus.CAPTURE_IN_PROGRESS) return;
 
-                if (status == EntryStatus.BITMAP_GENERATION_IN_PROGRESS) {
-                    return;
+                if (status != EntryStatus.CAPTURE_COMPLETE) {
+                    mEntryManager.removeBitmapGeneratorObserver(this);
                 }
+            }
 
-                Toast.makeText(mActivity, R.string.sharing_long_screenshot_unknown_error,
-                             Toast.LENGTH_LONG)
-                        .show();
+            @Override
+            public void onCompositorReady(Size size, Point offset) {
+                mEntryManager.removeBitmapGeneratorObserver(this);
+                // TODO(skare): If testing does not hit memory limits, simplify EntryManager.
+                LongScreenshotsEntry entry = mEntryManager.generateInitialEntry();
+                entry.setListener(new LongScreenshotsEntry.EntryListener() {
+                    @Override
+                    public void onResult(@EntryStatus int status) {
+                        if (status == EntryStatus.BITMAP_GENERATED) {
+                            showAreaSelectionDialog(entry.getBitmap());
+                            return;
+                        }
+
+                        if (status == EntryStatus.BITMAP_GENERATION_IN_PROGRESS) {
+                            return;
+                        }
+
+                        Toast.makeText(mActivity, R.string.sharing_long_screenshot_unknown_error,
+                                     Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
             }
         });
     }
@@ -114,7 +144,7 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
         PropertyModelChangeProcessor.create(
                 mModel, mDialogView, LongScreenshotsAreaSelectionDialogViewBinder::bind);
 
-        mDialog = new Dialog(mActivity, R.style.Theme_Chromium_Fullscreen);
+        mDialog = new Dialog(mActivity, R.style.ThemeOverlay_BrowserUI_Fullscreen);
         mDialog.addContentView(mDialogView,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.MATCH_PARENT));
@@ -274,7 +304,8 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
         return mDone;
     }
 
-    // Called by host after the dialog is canceled; invalidates |mFullBitmap|.
+    // Called by host after the dialog is canceled to obtain screenshot data.
+    // Invalidates |mFullBitmap|.
     @Override
     public Bitmap getScreenshot() {
         // Extract bitmap data from the bottom of the top mask to the top of the bottom mask.
@@ -303,6 +334,7 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
         Bitmap cropped =
                 Bitmap.createBitmap(mFullBitmap, 0, startY, mFullBitmap.getWidth(), endY - startY);
         mFullBitmap = null;
+        LongScreenshotsMetrics.logBitmapSelectedHeightPx(endY - startY);
         return cropped;
     }
 
@@ -343,7 +375,7 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
                 int bottomMaskY = getBottomMaskY();
                 int layoutHeight = ((View) mBottomAreaMaskView.getParent()).getHeight();
                 int minimumVerticalSelectionPx = dpToPx(MINIMUM_VERTICAL_SELECTION_DP);
-                // Ensure masks don't overlap and are separacted by a minimum distance.
+                // Ensure masks don't overlap and are separated by a minimum distance.
                 if (isTop && params.height + minimumVerticalSelectionPx > bottomMaskY) {
                     params.height = bottomMaskY - minimumVerticalSelectionPx;
                 }
@@ -355,6 +387,29 @@ public class LongScreenshotsMediator implements LongScreenshotsEntry.EntryListen
                 int minimumMaskHeightPx = dpToPx(MINIMUM_MASK_HEIGHT_DP);
                 if (params.height < minimumMaskHeightPx) {
                     params.height = minimumMaskHeightPx;
+                }
+
+                // Auto-scroll at edges.
+                if (mAutoScrollExperimentArm > 0) {
+                    int amount = EDGE_DRAG_STEP_DP;
+                    // Arms may be adjusted during development and teamfood:
+                    //   - Arm 0 disables autoscrolling.
+                    //   - Arm 1 enables the baseline.
+                    //   - Arm 2 (placeholder) uses a bigger step size.
+                    //   - Additional timer-based arms may be added.
+                    if (mAutoScrollExperimentArm == 2) {
+                        amount *= 10;
+                    }
+                    int scrollY = mScrollView.getScrollY();
+                    int edgeDragThresholdPx = dpToPx(EDGE_DRAG_THRESHOLD_DP);
+                    if (isTop && Math.abs(topMaskY - scrollY) < edgeDragThresholdPx) {
+                        mScrollView.smoothScrollBy(0, dpToPx(-amount));
+                    }
+                    if (!isTop
+                            && Math.abs(scrollY + mScrollView.getHeight() - bottomMaskY)
+                                    < edgeDragThresholdPx) {
+                        mScrollView.smoothScrollBy(0, dpToPx(amount));
+                    }
                 }
 
                 maskView.setLayoutParams(params);

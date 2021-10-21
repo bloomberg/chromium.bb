@@ -200,6 +200,11 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
     if (!old_style.HasPseudoElementStyle(pseudo_id) &&
         !new_style.HasPseudoElementStyle(pseudo_id))
       continue;
+    // Highlight pseudo styles are stored in StyleHighlightData, and compared
+    // like any other inherited field, yielding Difference::kInherited.
+    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        IsHighlightPseudoElement(pseudo_id))
+      continue;
     const ComputedStyle* new_pseudo_style =
         new_style.GetCachedPseudoElementStyle(pseudo_id);
     if (!new_pseudo_style)
@@ -606,6 +611,15 @@ const CSSBitset* ComputedStyle::GetBaseImportantSet() const {
   if (auto* base_data = BaseData().get())
     return base_data->GetBaseImportantSet();
   return nullptr;
+}
+
+StyleHighlightData& ComputedStyle::MutableHighlightData() {
+  scoped_refptr<StyleHighlightData>& data = MutableHighlightDataInternal();
+  if (!data)
+    data = StyleHighlightData::Create();
+  else if (!data->HasOneRef())
+    data = data->Copy();
+  return *data;
 }
 
 bool ComputedStyle::InheritedEqual(const ComputedStyle& other) const {
@@ -1339,10 +1353,10 @@ void ComputedStyle::ApplyMotionPathTransform(
     // TODO(ericwilligers): crbug.com/641245 Support <size> for ray paths.
     float float_distance = FloatValueForLength(distance, 0);
 
-    // Use clampTo() to convert infinite values to min/max finite ones.
+    // Use ClampTo() to convert infinite values to min/max finite ones.
     path_position.tangent_in_degrees =
-        clampTo<float, float>(To<StyleRay>(*path).Angle() - 90);
-    float tangent_in_radians = deg2rad(path_position.tangent_in_degrees);
+        ClampTo<float, float>(To<StyleRay>(*path).Angle() - 90);
+    float tangent_in_radians = Deg2rad(path_position.tangent_in_degrees);
     path_position.point.SetX(float_distance * cos(tangent_in_radians));
     path_position.point.SetY(float_distance * sin(tangent_in_radians));
   } else {
@@ -1357,7 +1371,7 @@ void ComputedStyle::ApplyMotionPathTransform(
       if (computed_distance < 0)
         computed_distance += path_length;
     } else {
-      computed_distance = clampTo<float>(float_distance, 0, path_length);
+      computed_distance = ClampTo<float>(float_distance, 0, path_length);
     }
 
     path_position =
@@ -1406,7 +1420,7 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
 bool ComputedStyle::SetEffectiveZoom(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
   // enough) range, to avoid overflow in derived computations.
-  float clamped_effective_zoom = clampTo<float>(f, 1e-6, 1e6);
+  float clamped_effective_zoom = ClampTo<float>(f, 1e-6, 1e6);
   if (EffectiveZoom() == clamped_effective_zoom)
     return false;
   SetEffectiveZoomInternal(clamped_effective_zoom);
@@ -2073,7 +2087,7 @@ Length ComputedStyle::LineHeight() const {
   return lh;
 }
 
-int ComputedStyle::ComputedLineHeight() const {
+float ComputedStyle::ComputedLineHeight() const {
   const Length& lh = LineHeight();
 
   // Negative value means the line height is not set. Use the font's built-in
@@ -2081,10 +2095,18 @@ int ComputedStyle::ComputedLineHeight() const {
   if (lh.IsNegative() && GetFont().PrimaryFont())
     return GetFont().PrimaryFont()->GetFontMetrics().LineSpacing();
 
-  if (lh.IsPercentOrCalc())
-    return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize())).ToInt();
+  if (RuntimeEnabledFeatures::FractionalLineHeightEnabled()) {
+    if (lh.IsPercentOrCalc()) {
+      return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize()));
+    }
 
-  return std::min(lh.Value(), LayoutUnit::Max().ToFloat());
+    return lh.Value();
+  } else {
+    if (lh.IsPercentOrCalc())
+      return MinimumValueForLength(lh, LayoutUnit(ComputedFontSize())).ToInt();
+
+    return static_cast<int>(std::min(lh.Value(), LayoutUnit::Max().ToFloat()));
+  }
 }
 
 LayoutUnit ComputedStyle::ComputedLineHeightAsFixed(const Font& font) const {
@@ -2586,7 +2608,8 @@ bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
   if (Display() == EDisplay::kInline)
     return false;
   if ((ContainsInlineSize() || ContainsBlockSize()) &&
-      (!IsDisplayTableType() || Display() == EDisplay::kTableCaption)) {
+      (!IsDisplayTableType() || Display() == EDisplay::kTableCaption ||
+       ShouldUseContentDataForElement(GetContentData()))) {
     return true;
   }
   return (ContainsLayout() || ContainsPaint()) &&

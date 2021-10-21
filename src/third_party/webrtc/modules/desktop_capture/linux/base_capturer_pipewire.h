@@ -19,6 +19,7 @@
 #include "absl/types/optional.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 #include "modules/desktop_capture/desktop_capturer.h"
+#include "modules/desktop_capture/linux/egl_dmabuf.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/synchronization/mutex.h"
 
@@ -88,18 +89,21 @@ class BaseCapturerPipeWire : public DesktopCapturer {
   guint sources_request_signal_id_ = 0;
   guint start_request_signal_id_ = 0;
 
+  int64_t modifier_;
   DesktopSize video_size_;
   DesktopSize desktop_size_ = {};
   DesktopCaptureOptions options_ = {};
 
   webrtc::Mutex current_frame_lock_;
-  std::unique_ptr<uint8_t[]> current_frame_;
+  std::unique_ptr<BasicDesktopFrame> current_frame_;
   Callback* callback_ = nullptr;
 
   bool portal_init_failed_ = false;
 
+  std::unique_ptr<EglDmaBuf> egl_dmabuf_;
+
+  void Init();
   void InitPortal();
-  void InitPipeWire();
   void InitPipeWireTypes();
 
   pw_stream* CreateReceivingStream();

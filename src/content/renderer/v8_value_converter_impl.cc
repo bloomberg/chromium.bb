@@ -18,7 +18,15 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-array-buffer.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-date.h"
+#include "v8/include/v8-exception.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-local-handle.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 
 namespace content {
 
@@ -152,6 +160,10 @@ class V8ValueConverterImpl::ScopedUniquenessGuard {
       : state_(state),
         value_(value),
         is_valid_(state_->AddToUniquenessCheck(value_)) {}
+
+  ScopedUniquenessGuard(const ScopedUniquenessGuard&) = delete;
+  ScopedUniquenessGuard& operator=(const ScopedUniquenessGuard&) = delete;
+
   ~ScopedUniquenessGuard() {
     if (is_valid_) {
       bool removed = state_->RemoveFromUniquenessCheck(value_);
@@ -166,8 +178,6 @@ class V8ValueConverterImpl::ScopedUniquenessGuard {
   V8ValueConverterImpl::FromV8ValueState* state_;
   v8::Local<v8::Object> value_;
   bool is_valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUniquenessGuard);
 };
 
 std::unique_ptr<V8ValueConverter> V8ValueConverter::Create() {

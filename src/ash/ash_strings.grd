@@ -524,6 +524,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_LABEL" desc="The label used to show the battery percentage when a bluetooth device is connected.">
         <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_BATTERY_PERCENTAGE_ONLY_LABEL" desc="The label used to show only the battery percentage when a bluetooth device is connected.">
+        <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>%
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL_LEGACY" desc="The header label to notify that multiple bluetooth devices are connected. [CHAR_LIMIT=14]">
         Devices
       </message>
@@ -533,11 +536,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE" desc="The sub-header label for the button to pair a new device.">
         Pair new device
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CURRENTLY_CONNECTED_DEVICES" desc="The sub-header label for currently connected devices in Bluetooth device list.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CURRENTLY_CONNECTED_DEVICES" desc="The sub-header label for currently connected devices in the Bluetooth device list.">
         Currently connected
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PREVIOUSLY_CONNECTED_DEVICES" desc="The sub-header label for previously connected devices in Bluetooth device list.">
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PREVIOUSLY_CONNECTED_DEVICES" desc="The sub-header label for previously connected devices in the Bluetooth device list.">
         Previously connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE_CONNECTED" desc="The sub-header label for no devices connected in the Bluetooth device list.">
+        No device connected
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -1089,7 +1095,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE" desc="Title of the screen captures area in the holding space bubble.">
         Screen captures
       </message>
-      <message name="IDS_ASH_HOLDING_SPACE_CHIP_A11Y_NAME_AND_TOOLTIP" desc="The accessible name and tooltip for a chip representing a holding space item. The first placeholder, the PRIMARY_TEXT, is the filename of the holding space item's backing file. The second placeholder, the SECONDARY_TEXT, is the backing file's in-progress state. The in-progress state indicates if progress is paused as well as the number of received bytes and total bytes expected for the backing file.">
+      <message name="IDS_ASH_HOLDING_SPACE_ITEM_A11Y_NAME_AND_TOOLTIP" desc="The accessible name and tooltip for a view representing a holding space item. The first placeholder, the PRIMARY_TEXT, is the filename of the holding space item's backing file. The second placeholder, the SECONDARY_TEXT, is the backing file's in-progress state. The in-progress state indicates if progress is paused as well as the number of received bytes and total bytes expected for the backing file.">
         <ph name="PRIMARY_TEXT">$1<ex>filename.txt</ex></ph>, <ph name="SECONDARY_TEXT">$2<ex>Paused, 10/100 MB</ex></ph>
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL" desc="Title of the cancel option in the holding space item context menu.">
@@ -1121,6 +1127,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_UNPIN" desc="Title of the unpin option in the holding space item context menu.">
         Unpin
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME" desc="The accessible name for a view representing an in-progress download holding space item. The placeholder, FILENAME, is the filename of the holding space item's backing file.">
+        Downloading <ph name="FILENAME">$1<ex>example.txt</ex></ph>
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_DANGEROUS" desc="The accessible name for a view representing an in-progress download holding space item which is dangerous. The placeholder, FILENAME, is the filename of the holding space item's backing file.">
+        Download dangerous <ph name="FILENAME">$1<ex>example.txt</ex></ph>
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_PAUSED" desc="The accessible name for a view representing an in-progress download holding space item which is paused. The placeholder, FILENAME, is the filename of the holding space item's backing file.">
+        Download paused <ph name="FILENAME">$1<ex>example.txt</ex></ph>
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_DANGEROUS_FILE" desc="Text displayed in a holding space download chip to indicate the underlying download is a dangerous file.">
         Dangerous file
@@ -1313,6 +1328,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_ENABLE_HOTSPOT_NO_RECEPTION_STATE_TOOLTIP" desc="Tooltip message that indicates to the user that the Enable Hotspot feature is disabled because their phone does not have mobile data.">
         Your phone must have mobile data to provide a hotspot
       </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_TITLE" desc="Title of the camera roll section (where users access recently taken photos and videos) in phone hub bubble.">
+        Recent photos
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_MENU_DOWNLOAD_LABEL" desc="Label for the option to download a camera roll item from the phone hub bubble.">
+        Download
+      </message>
       <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
       </message>
@@ -1399,9 +1420,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
         search
       </message>
-  <message name="IDS_ASH_SEARCH_RESULT_HYPHEN" desc="Concatenation of title and details text for ash search result view.">
-    <ph name="TITLE">$1<ex>Screen Saver</ex></ph> - <ph name="DETAILS">$2<ex>Personalization</ex></ph>
-  </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_BEST_MATCH" desc="Category title for the list of search result shown in launcher search that are a best match for the query in the search box.">
+        Best Match
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
+        ''' - '''
+      </message>
       <message name="IDS_ASH_ALTGR_KEY" desc="Name of [AltGr] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         altgr
       </message>
@@ -1856,6 +1880,9 @@ This file contains the strings for ash.
       </message>
 
       <!-- Status tray Live Caption strings. -->
+      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION" desc="The label used in the accessibility menu of the system tray to toggle on/off Live Caption feature.">
+        Live Caption
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Live Caption feature on or off.">
         Toggle Live Caption. <ph name="STATE_TEXT">$1<ex>Live Caption is on.</ex></ph>
       </message>
@@ -2414,6 +2441,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SPLIT_VIEW_CANNOT_SNAP" desc="Message that shows up on overview mode telling users the window they are trying to drag cannot be snapped and thus cannot be used in split view mode. Also shows up on a toast when a user tries to enter split view mode with an application that cannot be used in split view mode.">
         App does not support split-screen.
       </message>
+      <message name="IDS_ASH_SPLIT_VIEW_HOLD_TO_MAXIMIZE" desc="Message that shows up when users drag window to snap top or maximize in portrait display.">
+        Hold to maximize
+      </message>
 
       <!-- Login screen strings -->
       <message name="IDS_ASH_LOGIN_SCREEN_ACCESSIBLE_NAME" desc="Text that is spoken when requesting the login screen name.">
@@ -2909,11 +2939,14 @@ This file contains the strings for ash.
       </if>
 
       <!-- Notification -->
-      <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification">
+      <message name="IDS_ASH_NOTIFICATION_EXPAND_TOOLTIP" desc="The tooltip for the expand button, indicating action to expand the notification.">
         Expand notification
       </message>
-      <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification">
+      <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification.">
         Collapse notification
+      </message>
+      <message name="IDS_ASH_NOTIFICATION_INLINE_REPLY_PLACEHOLDER" desc="The placeholder string for the textfield of an in-line reply notification.">
+        Reply
       </message>
 
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
@@ -2943,10 +2976,59 @@ This file contains the strings for ash.
 
       <!-- Calendar  -->
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
+      Calendar, <ph name="current_month_year">$1<ex>August 2021</ex></ph>
       </message>
 
       <message name="IDS_ASH_CALENDAR_TITLE" desc="The label used as the title of the unified system tray calendar view.">
         Calendar
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar up button.">
+      Show previous month
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar down button.">
+      Show next month
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar today's button.">
+        Today <ph name="today_date">$1<ex>August 31, 2021</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDA_INFO_BUTTON" desc="The text for the calendar info button.">
+        Today
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_SETTINGS" desc="The label used in the settings entry in the calendar view system settings.">
+        Open settings
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_MON" desc="The single character designator for Monday, which is used in the calendar weekday label.">
+        M
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_TUE" desc="The single character designator for Tuesday, which is used in the calendar weekday label.">
+        T
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_WED" desc="The single character designator for Wednesday, which is used in the calendar weekday label.">
+        W
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_THU" desc="The single character designator for Thursday, which is used in the calendar weekday label.">
+        T
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_FRI" desc="The single character designator for Friday, which is used in the calendar weekday label.">
+        F
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_SAT" desc="The single character designator for Saturday, which is used in the calendar weekday label.">
+        S
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_SUN" desc="The single character designator for Sunday, which is used in the calendar weekday label.">
+        S
       </message>
 
       <!-- Power off menu  -->
@@ -3196,9 +3278,6 @@ Here are some things you can try to get started.
       </message>
 
       <!-- Assistant Quick Answers -->
-      <message name="IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT" desc="Tooltip text for the dogfood-button within Quick-Answers related views to help users file bugs easily.">
-        File feedback
-      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the settings-button in Quick-Answers related views.">
         Quick answers settings
       </message>
@@ -3262,17 +3341,11 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_RETRY" desc="Display text when the Quick Answers view is retry.">
         Retry
       </message>
-      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT" desc="Display text when the Quick Answers view receives no result.">
-        See result in Assistant
-      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_NO_RESULT_V2" desc="Display text when the Quick Answers view receives no result (V2 version).">
         See result in Google Search
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_ALERT_TEXT" desc="A11y alert text for the Quick Answers view.">
         Info related to your selection available. Use Up arrow key to access.
-      </message>
-      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE" desc="A11y description template for the Quick Answers view.">
-        <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Assistant.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2" desc="A11y description template for the Quick Answers view (V2 version).">
         <ph name="QUERY_TEXT">$1<ex>interested</ex></ph>; <ph name="RESULT_TEXT">$2<ex>showing curiosity or concern about something or someone; having a feeling of interest.</ex></ph>; Press Search plus Space to see result in Google Search.
@@ -3606,6 +3679,24 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_MICROPHONE" desc="The capture label message for toggling microphone recording, found in the settings menu.">
         Record microphone
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT" desc="The label of the audio input menu group header in capture mode settings.">
+        Audio input
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT_OFF" desc="The label of the menu option button for no audio input.">
+        Off
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT_MICROPHONE" desc="The label of the menu option button for microphone audio input.">
+        Microphone
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO" desc="The label of the save to menu group header in capture mode settings.">
+        Save to
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_DOWNLOADS" desc="The label of the menu option button to select the downloads folder.">
+        Downloads
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_SELECT_FOLDER" desc="The label of the menu item button for selecting a folder to store the captured images and videos.">
+        Select folder...
+      </message>
 
       <!-- Switch Between TABLET/LAPTOP MODE-->
       <message name="IDS_ASH_SWITCH_TO_TABLET_MODE" desc="Alert of switching to tablet mode.">
@@ -3865,6 +3956,54 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_DEBUG_STOP_PACKET_CAPTURE_BUTTON" desc="The label on notification button for user to stop the ongoing packet capture operation.">
         Stop
+      </message>
+
+      <!-- Smart Lock strings shown on the lock screen -->
+      <message name="IDS_SMART_LOCK_LABEL_LOOKING_FOR_PHONE" desc="Label for the Smart Lock spinner icon on user's lock screen while Chromebook is looking for paired phone.">
+        To unlock your Chromebook, turn on your phone's Bluetooth
+      </message>
+      <message name="IDS_SMART_LOCK_LABEL_PHONE_LOCKED" desc="Label for the Smart Lock icon on user's lock screen when a phone eligible to unlock the Chromebook is detected, but it's locked and thus not allowed to unlock the Chromebook.">
+        To unlock your Chromebook, first unlock your phone
+      </message>
+      <message name="IDS_SMART_LOCK_LABEL_NO_PHONE" desc="Label for the Smart Lock icon on user's lock screen when a phone eligible to unlock the Chromebook cannot be found after 15 seconds.">
+        Can’t find your phone. Make sure your phone’s Bluetooth is on.
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_UNLOCK_METHOD_SELECTION" desc="Label for the Smart Lock and Fingerprint icons on user's lock screen to select unlock method.">
+        To unlock your Chromebook, use your fingerprint or unlock your phone
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_USE_FINGERPRINT" desc="Label on user's lock screen to use their fingerprint to unlock Chromebook.">
+        To unlock your Chromebook, use your fingerprint
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_CANNOT_UNLOCK" desc="Label on user's lock screen when unlock authentication methods fail.">
+        Can't unlock your Chromebook
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_UNLOCK_PASSWORD" desc="Label on user's lock screen prompting user to enter password after other unlock authentication methods fail.">
+        To unlock your Chromebook, enter password
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_CANNOT_SIGN_IN" desc="Label on user's lock screen when sign in authentication methods fail.">
+        Can't sign in to your Chromebook
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_SIGN_IN_PASSWORD" desc="Label on user's lock screen prompting user to enter password after other sign in authentication methods fail.">
+        To sign in to your Chromebook, enter password
+      </message>
+      <message name="IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER" desc="Label on user's lock screen when a user is successfully authenticated and may click to enter Chromebook.">
+        Tap or click to enter
+      </message>
+
+      <!-- Fingerprint strings shown on the lock screen -->
+      <message name="IDS_AUTH_FACTOR_LABEL_UNLOCKED" desc="Label on user's lock screen when a Chromebook is successfully unlocked.">
+        Unlocked
+      </message>
+      <message name="IDS_FINGERPRINT_LABEL_NOT_AUTHENTICATED" desc="Label for the Fingerprint icon on user's lock screen after too many failed attempts to authenticate a fingerprint.">
+        Too many fingerprint attempts
+      </message>
+
+      <!-- Continue Section strings -->
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_OPEN" desc="Context menu option title to open a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
+        Open
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
+        Remove Suggestion
       </message>
     </messages>
   </release>

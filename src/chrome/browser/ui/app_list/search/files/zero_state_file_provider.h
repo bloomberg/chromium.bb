@@ -42,6 +42,10 @@ class ZeroStateFileProvider : public SearchProvider,
                               file_manager::file_tasks::FileTasksObserver {
  public:
   explicit ZeroStateFileProvider(Profile* profile);
+
+  ZeroStateFileProvider(const ZeroStateFileProvider&) = delete;
+  ZeroStateFileProvider& operator=(const ZeroStateFileProvider&) = delete;
+
   ~ZeroStateFileProvider() override;
 
   // SearchProvider:
@@ -56,6 +60,10 @@ class ZeroStateFileProvider : public SearchProvider,
   // valid paths to ZeroStatFilesResults and sets them as this provider's
   // results. The invalid paths are removed from the model.
   void SetSearchResults(const internal::ValidAndInvalidResults& results);
+
+  // TODO(crbug.com/1216084): Remove this after finishing developing Continue
+  // Section. Appends mock results to the driver provider.
+  void AppendFakeSearchResults(Results* results);
 
   // The reference to profile to get ZeroStateFileProvider service.
   Profile* const profile_;
@@ -76,8 +84,6 @@ class ZeroStateFileProvider : public SearchProvider,
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<ZeroStateFileProvider> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ZeroStateFileProvider);
 };
 
 }  // namespace app_list

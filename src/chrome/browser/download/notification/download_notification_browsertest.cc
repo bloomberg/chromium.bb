@@ -134,6 +134,9 @@ class SlowDownloadInterceptor {
         : params_(std::move(params)),
           task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
+    PendingRequest(const PendingRequest&) = delete;
+    PendingRequest& operator=(const PendingRequest&) = delete;
+
     void Complete(net::Error error_code) {
       task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&PendingRequest::CompleteOnOriginalSequence,
@@ -150,8 +153,6 @@ class SlowDownloadInterceptor {
 
     content::URLLoaderInterceptor::RequestParams params_;
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(PendingRequest);
   };
 
   // Can be called on the UI or IO thread depending on which factory we hooked.
@@ -288,6 +289,10 @@ class DownloadNotificationTestBase
         IsHoldingSpaceInProgressDownloadsIntegrationEnabled());
   }
 
+  DownloadNotificationTestBase(const DownloadNotificationTestBase&) = delete;
+  DownloadNotificationTestBase& operator=(const DownloadNotificationTestBase&) =
+      delete;
+
   ~DownloadNotificationTestBase() override = default;
 
   void SetUpOnMainThread() override {
@@ -330,9 +335,6 @@ class DownloadNotificationTestBase
   std::unique_ptr<NotificationDisplayServiceTester> incognito_display_service_;
   std::unique_ptr<SlowDownloadInterceptor> interceptor_;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationTestBase);
-
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -343,6 +345,10 @@ class DownloadNotificationTestBase
 class DownloadNotificationTest : public DownloadNotificationTestBase {
  public:
   DownloadNotificationTest() = default;
+
+  DownloadNotificationTest(const DownloadNotificationTest&) = delete;
+  DownloadNotificationTest& operator=(const DownloadNotificationTest&) = delete;
+
   ~DownloadNotificationTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -506,8 +512,6 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
   download::DownloadItem* download_item_ = nullptr;
   Browser* incognito_browser_ = nullptr;
   std::string notification_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1137,6 +1141,12 @@ class MultiProfileDownloadNotificationTest
     : public DownloadNotificationTestBase {
  public:
   MultiProfileDownloadNotificationTest() = default;
+
+  MultiProfileDownloadNotificationTest(
+      const MultiProfileDownloadNotificationTest&) = delete;
+  MultiProfileDownloadNotificationTest& operator=(
+      const MultiProfileDownloadNotificationTest&) = delete;
+
   ~MultiProfileDownloadNotificationTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1202,9 +1212,6 @@ class MultiProfileDownloadNotificationTest
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service2_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MultiProfileDownloadNotificationTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(

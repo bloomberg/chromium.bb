@@ -15,10 +15,6 @@ namespace signin {
 class IdentityManager;
 }
 
-namespace ntp_snippets {
-class ContentSuggestionsService;
-}
-
 namespace web {
 class WebState;
 }
@@ -31,10 +27,8 @@ class ChromeAccountManagerService;
 @protocol ContentSuggestionsCollectionControlling;
 @class ContentSuggestionsHeaderSynchronizer;
 @class ContentSuggestionsMediator;
-@class ContentSuggestionsMetricsRecorder;
 @class ContentSuggestionsViewController;
 @protocol LogoVendor;
-@protocol NewTabPageFeedDelegate;
 @class NewTabPageViewController;
 @protocol NTPHomeConsumer;
 @class NTPHomeMetrics;
@@ -69,11 +63,6 @@ class VoiceSearchAvailability;
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxCommands, SnackbarCommands>
         dispatcher;
-// Suggestions service used to get the suggestions.
-@property(nonatomic, assign)
-    ntp_snippets::ContentSuggestionsService* suggestionsService;
-// Recorder for the metrics related to ContentSuggestions.
-@property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
 // Recorder for the metrics related to the NTP.
 @property(nonatomic, strong) NTPHomeMetrics* NTPMetrics;
 // Recorder for the metrics related to the Discover feed.
@@ -105,9 +94,6 @@ class VoiceSearchAvailability;
 @property(nonatomic, weak) id<NTPHomeConsumer> consumer;
 // The browser.
 @property(nonatomic, assign) Browser* browser;
-
-// Delegate for providing information relating to the feed.
-@property(nonatomic, weak) id<NewTabPageFeedDelegate> ntpFeedDelegate;
 
 // Inits the mediator.
 - (void)setUp;

@@ -78,6 +78,11 @@ class PluginInfoHostImplShutdownNotifierFactory
     return base::Singleton<PluginInfoHostImplShutdownNotifierFactory>::get();
   }
 
+  PluginInfoHostImplShutdownNotifierFactory(
+      const PluginInfoHostImplShutdownNotifierFactory&) = delete;
+  PluginInfoHostImplShutdownNotifierFactory& operator=(
+      const PluginInfoHostImplShutdownNotifierFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<
       PluginInfoHostImplShutdownNotifierFactory>;
@@ -87,8 +92,6 @@ class PluginInfoHostImplShutdownNotifierFactory
             "PluginInfoHostImpl") {}
 
   ~PluginInfoHostImplShutdownNotifierFactory() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(PluginInfoHostImplShutdownNotifierFactory);
 };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -239,14 +242,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
       &is_managed);
 
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
-
-  if (*status == chrome::mojom::PluginStatus::kFlashHiddenPreferHtml) {
-    if (plugin_setting == CONTENT_SETTING_BLOCK) {
-      *status = is_managed ? chrome::mojom::PluginStatus::kBlockedByPolicy
-                           : chrome::mojom::PluginStatus::kBlockedNoLoading;
-    }
-    return;
-  }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Check if the plugin is outdated.

@@ -84,6 +84,7 @@ export interface CounterDetails {
   value?: number;
   delta?: number;
   duration?: number;
+  name?: string;
 }
 
 export interface ThreadStateDetails {
@@ -96,7 +97,7 @@ export interface ThreadStateDetails {
   blockedFunction?: string;
 }
 
-export interface HeapProfileDetails {
+export interface FlamegraphDetails {
   type?: string;
   id?: number;
   ts?: number;
@@ -176,7 +177,7 @@ class Globals {
   private _selectedFlows?: Flow[] = undefined;
   private _visibleFlowCategories?: Map<string, boolean> = undefined;
   private _counterDetails?: CounterDetails = undefined;
-  private _heapProfileDetails?: HeapProfileDetails = undefined;
+  private _flamegraphDetails?: FlamegraphDetails = undefined;
   private _cpuProfileDetails?: CpuProfileDetails = undefined;
   private _numQueriesQueued = 0;
   private _bufferUsage?: number = undefined;
@@ -229,7 +230,7 @@ class Globals {
     this._visibleFlowCategories = new Map<string, boolean>();
     this._counterDetails = {};
     this._threadStateDetails = {};
-    this._heapProfileDetails = {};
+    this._flamegraphDetails = {};
     this._cpuProfileDetails = {};
   }
 
@@ -346,12 +347,12 @@ class Globals {
     return assertExists(this._aggregateDataStore);
   }
 
-  get heapProfileDetails() {
-    return assertExists(this._heapProfileDetails);
+  get flamegraphDetails() {
+    return assertExists(this._flamegraphDetails);
   }
 
-  set heapProfileDetails(click: HeapProfileDetails) {
-    this._heapProfileDetails = assertExists(click);
+  set flamegraphDetails(click: FlamegraphDetails) {
+    this._flamegraphDetails = assertExists(click);
   }
 
   get traceErrors() {

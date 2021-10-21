@@ -41,6 +41,11 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
  public:
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
+
+  SecurityStyleTestObserver(const SecurityStyleTestObserver&) = delete;
+  SecurityStyleTestObserver& operator=(const SecurityStyleTestObserver&) =
+      delete;
+
   ~SecurityStyleTestObserver() override {}
 
   void DidChangeVisibleSecurityState() override { run_loop_.Quit(); }
@@ -49,12 +54,17 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
 
  private:
   base::RunLoop run_loop_;
-  DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
 
 class SecurityStatePageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
   SecurityStatePageLoadMetricsBrowserTest() {}
+
+  SecurityStatePageLoadMetricsBrowserTest(
+      const SecurityStatePageLoadMetricsBrowserTest&) = delete;
+  SecurityStatePageLoadMetricsBrowserTest& operator=(
+      const SecurityStatePageLoadMetricsBrowserTest&) = delete;
+
   ~SecurityStatePageLoadMetricsBrowserTest() override {}
 
   void PreRunTestOnMainThread() override {
@@ -130,8 +140,6 @@ class SecurityStatePageLoadMetricsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<net::EmbeddedTestServer> https_test_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_test_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecurityStatePageLoadMetricsBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Https) {
@@ -559,8 +567,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
   GURL https_url = https_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), https_url));
 
-  const base::TimeDelta kMinForegroundTime =
-      base::TimeDelta::FromMilliseconds(10);
+  const base::TimeDelta kMinForegroundTime = base::Milliseconds(10);
 
   // Ensure that the tab is open for more than 0 ms, even in the face of bots
   // with bad clocks.

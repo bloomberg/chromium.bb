@@ -188,6 +188,11 @@ class ReadErrorUploadDataStream : public UploadDataStream {
 
   explicit ReadErrorUploadDataStream(FailureMode mode)
       : UploadDataStream(true, 0), async_(mode) {}
+
+  ReadErrorUploadDataStream(const ReadErrorUploadDataStream&) = delete;
+  ReadErrorUploadDataStream& operator=(const ReadErrorUploadDataStream&) =
+      delete;
+
   ~ReadErrorUploadDataStream() override {}
 
  private:
@@ -211,8 +216,6 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   const FailureMode async_;
 
   base::WeakPtrFactory<ReadErrorUploadDataStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };
 
 // A helper class that will delete |stream| when the callback is invoked.
@@ -393,7 +396,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
 
     base::TimeTicks dns_end = base::TimeTicks::Now();
-    base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
+    base::TimeTicks dns_start = dns_end - base::Milliseconds(1);
     session_ = std::make_unique<QuicChromiumClientSession>(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,

@@ -59,29 +59,27 @@ const base::Feature kForceSpectreVariant2Mitigation{
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
-bool IsNetworkServiceSandboxLPACSupported() {
-  // Since some APIs used for LPAC are unsupported below Windows 10, place a
-  // check here in a central place.
-  if (base::win::GetVersion() < base::win::Version::WIN10)
+bool IsWinNetworkServiceSandboxSupported() {
+  // Since some APIs used for LPAC are unsupported below Windows 10 RS2 (1703
+  // build 15063) so place a check here in a central place.
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
     return false;
   return true;
 }
-
-bool IsNetworkServiceSandboxLPACEnabled() {
-  // Use LPAC for network sandbox instead of restricted token. Relies on
-  // NetworkServiceSandbox being also enabled.
-  const base::Feature kNetworkServiceSandboxLPAC{
-      "NetworkServiceSandboxLPAC", base::FEATURE_DISABLED_BY_DEFAULT};
-
-  // Check platform support.
-  if (!IsNetworkServiceSandboxLPACSupported())
-    return false;
-
-  // Check feature status.
-  return base::FeatureList::IsEnabled(kNetworkServiceSandbox) &&
-         base::FeatureList::IsEnabled(kNetworkServiceSandboxLPAC);
-}
 #endif  // defined(OS_WIN)
+
+bool IsNetworkSandboxEnabled() {
+#if defined(OS_MAC) || defined(OS_FUCHSIA)
+  return true;
+#else
+#if defined(OS_WIN)
+  if (!IsWinNetworkServiceSandboxSupported())
+    return false;
+#endif  // defined(OS_WIN)
+  // Check feature status.
+  return base::FeatureList::IsEnabled(kNetworkServiceSandbox);
+#endif  // defined(OS_MAC) || defined(OS_FUCHSIA)
+}
 
 }  // namespace features
 }  // namespace policy

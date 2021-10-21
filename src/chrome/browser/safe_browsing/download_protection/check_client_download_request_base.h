@@ -53,6 +53,12 @@ class CheckClientDownloadRequestBase {
       DownloadProtectionService* service,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       std::unique_ptr<DownloadRequestMaker> download_request_maker);
+
+  CheckClientDownloadRequestBase(const CheckClientDownloadRequestBase&) =
+      delete;
+  CheckClientDownloadRequestBase& operator=(
+      const CheckClientDownloadRequestBase&) = delete;
+
   virtual ~CheckClientDownloadRequestBase();
 
   void Start();
@@ -114,6 +120,7 @@ class CheckClientDownloadRequestBase {
   // If ShouldUploadBinary returns settings, actually performs the upload to
   // Safe Browsing for deep scanning.
   virtual void UploadBinary(
+      DownloadCheckResult result,
       DownloadCheckResultReason reason,
       enterprise_connectors::AnalysisSettings settings) = 0;
 
@@ -177,8 +184,6 @@ class CheckClientDownloadRequestBase {
 
   // Used to create the download request proto.
   std::unique_ptr<DownloadRequestMaker> download_request_maker_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequestBase);
 };  // namespace safe_browsing
 
 }  // namespace safe_browsing

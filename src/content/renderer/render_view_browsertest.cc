@@ -143,7 +143,6 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
-using base::TimeDelta;
 using blink::TestWebFrameContentDumper;
 using blink::WebFrame;
 using blink::WebGestureEvent;
@@ -226,7 +225,7 @@ blink::mojom::FrameReplicationStatePtr ReconstructReplicationStateForTesting(
 // Returns mojom::CommonNavigationParams for a normal navigation to a data: url,
 // with navigation_start set to Now() plus the given offset.
 blink::mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
-    TimeDelta navigation_start_offset) {
+    base::TimeDelta navigation_start_offset) {
   auto params = blink::CreateCommonNavigationParams();
   params->url = GURL("data:text/html,<div>Page</div>");
   params->navigation_start = base::TimeTicks::Now() + navigation_start_offset;
@@ -821,7 +820,6 @@ TEST_F(RenderViewImplUpdateTitleTest, MAYBE_OnNavigationLoadDataWithBaseURL) {
       blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
   common_params->base_url_for_data_url = GURL("about:blank");
-  common_params->history_url_for_data_url = GURL("about:blank");
   auto commit_params = DummyCommitNavigationParams();
   commit_params->data_url_as_string =
       "data:text/html,<html><head><title>Data page</title></head></html>";
@@ -1498,7 +1496,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "document.body.focus();editContext.inputPanelPolicy=\"auto\";"
       "const control_bound = new DOMRect(10, 20, 30, 40);"
       "const selection_bound = new DOMRect(10, 20, 1, 5);"
-      "editContext.updateLayout(control_bound, selection_bound);");
+      "editContext.updateBounds(control_bound, selection_bound);");
   // This RunLoop is waiting for EditContext to be created and layout bounds
   // to be updated in the EditContext.
   base::RunLoop().RunUntilIdle();
@@ -1541,7 +1539,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "document.body.focus();editContext.inputPanelPolicy=\"auto\";"
       "const control_bound = new DOMRect(10.14, 20.25, 30.15, 40.50);"
       "const selection_bound = new DOMRect(10, 20, 1, 5);"
-      "editContext.updateLayout(control_bound, selection_bound);");
+      "editContext.updateBounds(control_bound, selection_bound);");
   // This RunLoop is waiting for EditContext to be created and layout bounds
   // to be updated in the EditContext.
   base::RunLoop().RunUntilIdle();
@@ -1585,7 +1583,7 @@ TEST_F(RenderViewImplTextInputStateChanged,
       "const control_bound = new DOMRect(-3964254814208.000000,"
       "-60129542144.000000, 674309865472.000000, 64424509440.000000);"
       "const selection_bound = new DOMRect(10, 20, 1, 5);"
-      "editContext.updateLayout(control_bound, selection_bound);");
+      "editContext.updateBounds(control_bound, selection_bound);");
   // This RunLoop is waiting for EditContext to be created and layout bounds
   // to be updated in the EditContext.
   base::RunLoop().RunUntilIdle();
@@ -2707,7 +2705,7 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
 // This test assumes that |frame()| contains an unaccessed initial document at
 // start.
 TEST_F(RenderViewImplTest, BrowserNavigationStart) {
-  auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
+  auto common_params = MakeCommonNavigationParams(-base::Seconds(1));
 
   FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
@@ -2725,13 +2723,12 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSanitized) {
   // Verify that a navigation that claims to have started in the future - 42
   // days from now is *not* reported as one that starts in the future; as we
   // sanitize the override allowing a maximum of ::Now().
-  auto late_common_params = MakeCommonNavigationParams(TimeDelta::FromDays(42));
+  auto late_common_params = MakeCommonNavigationParams(base::Days(42));
   late_common_params->method = "POST";
 
   frame()->Navigate(late_common_params.Clone(), DummyCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
-  base::Time after_navigation =
-      base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time after_navigation = base::Time::Now() + base::Days(1);
 
   base::Time late_nav_reported_start =
       base::Time::FromDoubleT(GetMainFrame()->Performance().NavigationStart());
@@ -2746,7 +2743,7 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   // Trigger a didAccessInitialDocument notification.
   ExecuteJavaScriptForTests("document.title = 'Hi!';");
 
-  auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
+  auto common_params = MakeCommonNavigationParams(-base::Seconds(1));
   FrameLoadWaiter waiter(frame());
   frame()->Navigate(common_params.Clone(), DummyCommitNavigationParams());
   waiter.Wait();
@@ -2823,7 +2820,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
-  auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
+  auto common_params = MakeCommonNavigationParams(-base::Seconds(1));
   common_params->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   common_params->navigation_type =
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;

@@ -59,17 +59,21 @@ class ChildStatusCollector : public StatusCollector,
                        chromeos::system::StatisticsProvider* provider,
                        const AndroidStatusFetcher& android_status_fetcher,
                        base::TimeDelta activity_day_start);
+
+  ChildStatusCollector(const ChildStatusCollector&) = delete;
+  ChildStatusCollector& operator=(const ChildStatusCollector&) = delete;
+
   ~ChildStatusCollector() override;
 
   // StatusCollector:
   void GetStatusAsync(StatusCollectorCallback response) override;
   void OnSubmittedSuccessfully() override;
-  bool ShouldReportActivityTimes() const override;
-  bool ShouldReportNetworkInterfaces() const override;
-  bool ShouldReportUsers() const override;
-  bool ShouldReportHardwareStatus() const override;
-  bool ShouldReportCrashReportInfo() const override;
-  bool ShouldReportAppInfoAndActivity() const override;
+  bool IsReportingActivityTimes() const override;
+  bool IsReportingNetworkData() const override;
+  bool IsReportingHardwareData() const override;
+  bool IsReportingUsers() const override;
+  bool IsReportingCrashReportInfo() const override;
+  bool IsReportingAppInfoAndActivity() const override;
 
   // Returns the amount of time the child has used so far today. If there is no
   // user logged in, it returns 0.
@@ -150,8 +154,6 @@ class ChildStatusCollector : public StatusCollector,
   std::unique_ptr<ChildActivityStorage> activity_storage_;
 
   base::WeakPtrFactory<ChildStatusCollector> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChildStatusCollector);
 };
 
 }  // namespace policy

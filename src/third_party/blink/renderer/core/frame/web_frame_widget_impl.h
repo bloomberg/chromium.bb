@@ -43,9 +43,9 @@
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom-blink.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
-#include "third_party/blink/public/mojom/page/drag.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
@@ -623,7 +623,8 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // WidgetBaseClient overrides.
   void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+  void EndCommitCompositorFrame(base::TimeTicks commit_start_time,
+                                base::TimeTicks commit_finish_time) override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordDispatchRafAlignedInputTime(
       base::TimeTicks raf_aligned_input_start_time) override;
@@ -664,7 +665,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                          const gfx::Rect& window_screen_rect) override;
   void OrientationChanged() override;
   void DidUpdateSurfaceAndScreen(
-      const display::ScreenInfo& previous_original_screen_info) override;
+      const display::ScreenInfos& previous_original_screen_infos) override;
   gfx::Rect ViewportVisibleRect() override;
   absl::optional<display::mojom::blink::ScreenOrientation>
   ScreenOrientationOverride() override;

@@ -52,7 +52,7 @@ import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 
 import networkLogViewStyles from './networkLogView.css.js';
 
-import type {NetworkLogViewInterface, NetworkNode} from './NetworkDataGridNode.js';
+import type {NetworkLogViewInterface, NetworkNode, EventTypes} from './NetworkDataGridNode.js';
 import {Events, NetworkGroupNode, NetworkRequestNode} from './NetworkDataGridNode.js';
 import {NetworkFrameGrouper} from './NetworkFrameGrouper.js';
 import {NetworkLogViewColumns} from './NetworkLogViewColumns.js';
@@ -351,8 +351,8 @@ const enum FetchStyle {
   NodeJs = 1,
 }
 
-export class NetworkLogView extends UI.Widget.VBox implements
-    SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager>, NetworkLogViewInterface {
+export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.VBox>(UI.Widget.VBox)
+    implements SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager>, NetworkLogViewInterface {
   private readonly networkInvertFilterSetting: Common.Settings.Setting<boolean>;
   private readonly networkHideDataURLSetting: Common.Settings.Setting<boolean>;
   private readonly networkShowIssuesOnlySetting: Common.Settings.Setting<boolean>;
@@ -748,12 +748,10 @@ export class NetworkLogView extends UI.Widget.VBox implements
     if (!items.length) {
       return;
     }
-    const entry = items[0].webkitGetAsEntry();
-    if (entry.isDirectory) {
-      return;
+    const file = items[0].getAsFile();
+    if (file) {
+      this.onLoadFromFile(file);
     }
-
-    entry.file(this.onLoadFromFile.bind(this));
   }
 
   async onLoadFromFile(file: File): Promise<void> {
@@ -866,7 +864,7 @@ export class NetworkLogView extends UI.Widget.VBox implements
     this.textFilterUI.setSuggestionProvider(this.suggestionBuilder.completions.bind(this.suggestionBuilder));
   }
 
-  private filterChanged(_event: Common.EventTarget.EventTargetEvent): void {
+  private filterChanged(): void {
     this.removeAllNodeHighlights();
     this.parseFilterQuery(this.textFilterUI.value(), this.invertFilterUI.checked());
     this.filterRequests();
@@ -1719,6 +1717,15 @@ export class NetworkLogView extends UI.Widget.VBox implements
     return true;
   }
 
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   private parseFilterQuery(query: string, invert: boolean): void {
     // A query string can have multiple filters, some of them regular
     // expressions, some not. Each one of those filters can be negated with a
@@ -1736,6 +1743,8 @@ export class NetworkLogView extends UI.Widget.VBox implements
             NetworkLogView.requestPathFilter.bind(null, new RegExp(defaultText, 'i'));
       } else if (descriptor.regex) {
         filter = NetworkLogView.requestPathFilter.bind(null, (regex as RegExp));
+      } else if (this.isValidUrl(text)) {
+        filter = NetworkLogView.requestUrlFilter.bind(null, text);
       } else {
         filter = NetworkLogView.requestPathFilter.bind(
             null, new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i'));

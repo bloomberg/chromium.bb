@@ -5,21 +5,36 @@
 #ifndef CONTENT_TEST_TEST_AGGREGATION_SERVICE_IMPL_H_
 #define CONTENT_TEST_TEST_AGGREGATION_SERVICE_IMPL_H_
 
-#include "base/callback.h"
+#include <memory>
+#include <vector>
+
+#include "base/callback_forward.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/aggregation_service/aggregatable_report_manager.h"
 #include "content/browser/aggregation_service/aggregation_service_key_storage.h"
-#include "content/browser/aggregation_service/public_key.h"
 #include "content/public/test/test_aggregation_service.h"
-#include "url/origin.h"
+
+namespace base {
+class Clock;
+}  // namespace base
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
+
+class AggregatableReportSender;
+
+struct PublicKey;
 
 // Implementation class of a test aggregation service.
 class TestAggregationServiceImpl : public AggregatableReportManager,
                                    public TestAggregationService {
  public:
-  TestAggregationServiceImpl();
+  // `clock` must be a non-null pointer to TestAggregationServiceImpl that is
+  // valid as long as this object.
+  explicit TestAggregationServiceImpl(const base::Clock* clock);
   TestAggregationServiceImpl(const TestAggregationServiceImpl& other) = delete;
   TestAggregationServiceImpl& operator=(
       const TestAggregationServiceImpl& other) = delete;
@@ -33,13 +48,21 @@ class TestAggregationServiceImpl : public AggregatableReportManager,
   void SetPublicKeys(const url::Origin& origin,
                      const std::string& json_string,
                      base::OnceCallback<void(bool)> callback) override;
+  void SetURLLoaderFactory(scoped_refptr<network::SharedURLLoaderFactory>
+                               url_loader_factory) override;
+  void SendReport(const GURL& url,
+                  const base::Value& contents,
+                  base::OnceCallback<void(bool)> callback) override;
 
   void GetPublicKeys(
       const url::Origin& origin,
-      base::OnceCallback<void(PublicKeysForOrigin)> callback) const;
+      base::OnceCallback<void(std::vector<PublicKey>)> callback) const;
 
  private:
+  const base::Clock& clock_;
+
   base::SequenceBound<AggregationServiceKeyStorage> storage_;
+  std::unique_ptr<AggregatableReportSender> sender_;
 };
 
 }  // namespace content

@@ -17,9 +17,8 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_shortcut_mac.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/filename_util.h"
@@ -36,6 +35,51 @@ constexpr int kMaxApplicationDockMenuItems = 10;
 web_app::BrowserAppLauncherForTesting& GetBrowserAppLauncherForTesting() {
   static base::NoDestructor<web_app::BrowserAppLauncherForTesting> instance;
   return *instance;
+}
+
+// Launches the app specified by `params` in the given `profile`.
+void LaunchAppWithParams(Profile* profile, apps::AppLaunchParams params) {
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      ->LaunchAppWithParams(std::move(params));
+}
+
+// Cancels the launch of the app for the given `app_id`, potentially resulting
+// in the app shim exiting.
+void CancelAppLaunch(Profile* profile, const web_app::AppId& app_id) {
+  apps::AppShimManager::Get()->OnAppLaunchCancelled(profile, app_id);
+}
+
+// Called after the user's preference has been persisted, and the OS
+// has been notified of the change.
+void OnPersistProtocolHandlersUserChoiceCompleted(apps::AppLaunchParams params,
+                                                  Profile* profile,
+                                                  bool allowed) {
+  if (allowed) {
+    LaunchAppWithParams(profile, std::move(params));
+  } else {
+    CancelAppLaunch(profile, params.app_id);
+  }
+}
+
+// Called after the user has dismissed the WebAppProtocolHandlerIntentPicker
+// dialog.
+void OnProtocolHandlerDialogCompleted(apps::AppLaunchParams params,
+                                      Profile* profile,
+                                      bool allowed,
+                                      bool remember_user_choice) {
+  GURL protocol_url = params.protocol_handler_launch_url.value();
+  web_app::AppId app_id = params.app_id;
+  auto launch_callback =
+      base::BindOnce(&OnPersistProtocolHandlersUserChoiceCompleted,
+                     std::move(params), profile, allowed);
+
+  if (remember_user_choice) {
+    PersistProtocolHandlersUserChoice(profile, app_id, protocol_url, allowed,
+                                      std::move(launch_callback));
+  } else {
+    std::move(launch_callback).Run();
+  }
 }
 
 }  // namespace
@@ -181,6 +225,7 @@ void WebAppShimManagerDelegate::LaunchApp(
     }
 
     params.protocol_handler_launch_url = url;
+    params.source = apps::mojom::AppLaunchSource::kSourceProtocolHandler;
   }
 
   if (GetBrowserAppLauncherForTesting()) {
@@ -192,37 +237,18 @@ void WebAppShimManagerDelegate::LaunchApp(
     GURL protocol_url = params.protocol_handler_launch_url.value();
 
     // Protocol handlers should prompt the user before launching the app,
-    // unless the user has granted permission to this protocol scheme
+    // unless the user has granted or denied permission to this protocol scheme
     // previously.
-    if (!WebAppProvider::GetForWebApps(profile)
-             ->registrar()
-             .IsApprovedLaunchProtocol(app_id, protocol_url.scheme())) {
-      auto launch_callback = base::BindOnce(
-          [](apps::AppLaunchParams params, Profile* profile, bool allowed,
-             bool remember_user_choice) {
-            if (allowed) {
-              if (remember_user_choice) {
-                web_app::WebAppProvider* provider =
-                    web_app::WebAppProvider::GetForWebApps(profile);
-                web_app::ScopedRegistryUpdate update(&provider->sync_bridge());
-                web_app::WebApp* app_to_update =
-                    update->UpdateApp(params.app_id);
-                std::vector<std::string> protocol_handlers(
-                    app_to_update->approved_launch_protocols());
-                protocol_handlers.push_back(
-                    params.protocol_handler_launch_url.value().scheme());
-                app_to_update->SetApprovedLaunchProtocols(
-                    std::move(protocol_handlers));
-              }
-              apps::AppServiceProxyFactory::GetForProfile(profile)
-                  ->BrowserAppLauncher()
-                  ->LaunchAppWithParams(std::move(params));
-            } else {
-              apps::AppShimManager::Get()->OnAppLaunchCancelled(profile,
-                                                                params.app_id);
-            }
-          },
-          std::move(params), profile);
+    web_app::WebAppRegistrar& registrar =
+        WebAppProvider::GetForWebApps(profile)->registrar();
+    if (registrar.IsDisallowedLaunchProtocol(app_id, protocol_url.scheme())) {
+      CancelAppLaunch(profile, app_id);
+      return;
+    }
+
+    if (!registrar.IsAllowedLaunchProtocol(app_id, protocol_url.scheme())) {
+      auto launch_callback = base::BindOnce(&OnProtocolHandlerDialogCompleted,
+                                            std::move(params), profile);
 
       // ShowWebAppProtocolHandlerIntentPicker keeps the `profile` alive through
       // running of `launch_callback`.
@@ -232,9 +258,7 @@ void WebAppShimManagerDelegate::LaunchApp(
     }
   }
 
-  apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
+  LaunchAppWithParams(profile, std::move(params));
 }
 
 void WebAppShimManagerDelegate::LaunchShim(

@@ -32,8 +32,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scrollbar_size.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace {
@@ -244,8 +244,7 @@ void ThumbnailTabHelper::StoreThumbnailForTabSwitch(base::TimeTicks start_time,
                                                     const SkBitmap& bitmap) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Preview.TimeToStoreAfterTabSwitch",
                              base::TimeTicks::Now() - start_time,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromSeconds(1), 50);
+                             base::Milliseconds(1), base::Seconds(1), 50);
   StoreThumbnail(CaptureType::kCopyFromView, bitmap, absl::nullopt);
 }
 
@@ -354,4 +353,4 @@ ThumbnailCaptureInfo ThumbnailTabHelper::GetInitialCaptureInfo(
   return capture_info;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ThumbnailTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ThumbnailTabHelper);

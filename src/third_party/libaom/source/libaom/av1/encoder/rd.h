@@ -239,7 +239,11 @@ void av1_set_rd_speed_thresholds(struct AV1_COMP *cpi);
 
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*fact)[MAX_MODES], int rd_thresh,
-                               BLOCK_SIZE bsize, THR_MODES best_mode_index);
+                               BLOCK_SIZE bsize, THR_MODES best_mode_index,
+                               THR_MODES inter_mode_start,
+                               THR_MODES inter_mode_end,
+                               THR_MODES intra_mode_start,
+                               THR_MODES intra_mode_end);
 
 static INLINE void reset_thresh_freq_fact(MACROBLOCK *const x) {
   for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
@@ -295,37 +299,8 @@ static INLINE void get_rd_opt_coeff_thresh(
 }
 
 // Used to reset the state of tx/mb rd hash information
-static INLINE void reset_hash_records(TxfmSearchInfo *const txfm_info,
-                                      int use_inter_txb_hash) {
-  int32_t record_idx;
+static INLINE void reset_hash_records(TxfmSearchInfo *const txfm_info) {
   if (!txfm_info->txb_rd_records) return;
-  // Reset the state for use_inter_txb_hash
-  if (use_inter_txb_hash) {
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].index_start =
-              0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx]
-              .index_start = 0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx]
-              .index_start = 0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx]
-              .index_start = 0;
-  }
-
-  // Reset the state for use_intra_txb_hash
-  txfm_info->txb_rd_records->txb_rd_record_intra.num =
-      txfm_info->txb_rd_records->txb_rd_record_intra.index_start = 0;
 
   // Reset the state for use_mb_rd_hash
   txfm_info->txb_rd_records->mb_rd_record.num =

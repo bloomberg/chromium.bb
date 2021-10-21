@@ -1986,7 +1986,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
   EXPECT_TRUE(iframe_doc->GetActiveElement());
 
   // The active will cancel after 15ms.
-  test::RunDelayedTasks(base::TimeDelta::FromSecondsD(0.2));
+  test::RunDelayedTasks(base::Seconds(0.2));
   EXPECT_FALSE(GetDocument().GetActiveElement());
   EXPECT_FALSE(iframe_doc->GetActiveElement());
 }
@@ -2044,7 +2044,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewport()->DidCompositorScroll(FloatPoint(0, 500));
   WebView().MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false, 0, 0,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false, 0, 0,
        cc::BrowserControlsState::kBoth, true});
   ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
   EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());

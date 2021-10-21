@@ -139,6 +139,10 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_emulateAbsIntCaps = Factory::EmulateAbsIntFunction();
                     *caps = s_emulateAbsIntCaps.get();
                 }
+                if (settingsText.consumeSuffix(" FramebufferFetchSupport")) {
+                    static auto s_fbFetchSupport = Factory::FramebufferFetchSupport();
+                    *caps = s_fbFetchSupport.get();
+                }
                 if (settingsText.consumeSuffix(" IncompleteShortIntPrecision")) {
                     static auto s_incompleteShortIntCaps = Factory::IncompleteShortIntPrecision();
                     *caps = s_incompleteShortIntCaps.get();
@@ -163,6 +167,10 @@ static bool detect_shader_settings(const SkSL::String& text,
                 if (settingsText.consumeSuffix(" RewriteDoWhileLoops")) {
                     static auto s_rewriteLoopCaps = Factory::RewriteDoWhileLoops();
                     *caps = s_rewriteLoopCaps.get();
+                }
+                if (settingsText.consumeSuffix(" RewriteSwitchStatements")) {
+                    static auto s_rewriteSwitchCaps = Factory::RewriteSwitchStatements();
+                    *caps = s_rewriteSwitchCaps.get();
                 }
                 if (settingsText.consumeSuffix(" RewriteMatrixVectorMultiply")) {
                     static auto s_rewriteMatVecMulCaps = Factory::RewriteMatrixVectorMultiply();
@@ -398,6 +406,10 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                                             const char* body,
                                             bool /*isMain*/) override {
                             fOutput += String(decl) + "{" + body + "}";
+                        }
+
+                        void declareFunction(const char* decl) override {
+                            fOutput += String(decl) + ";";
                         }
 
                         void defineStruct(const char* definition) override {

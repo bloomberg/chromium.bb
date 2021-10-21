@@ -36,6 +36,10 @@ class DomainReliabilityBrowserTest : public InProcessBrowserTest {
     net::URLRequestFailedJob::AddUrlHandler();
   }
 
+  DomainReliabilityBrowserTest(const DomainReliabilityBrowserTest&) = delete;
+  DomainReliabilityBrowserTest& operator=(const DomainReliabilityBrowserTest&) =
+      delete;
+
   ~DomainReliabilityBrowserTest() override {}
 
   // Note: In an ideal world, instead of appending the command-line switch and
@@ -69,12 +73,16 @@ class DomainReliabilityBrowserTest : public InProcessBrowserTest {
 
  private:
   net::EmbeddedTestServer test_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityBrowserTest);
 };
 
 class DomainReliabilityDisabledBrowserTest
     : public DomainReliabilityBrowserTest {
+ public:
+  DomainReliabilityDisabledBrowserTest(
+      const DomainReliabilityDisabledBrowserTest&) = delete;
+  DomainReliabilityDisabledBrowserTest& operator=(
+      const DomainReliabilityDisabledBrowserTest&) = delete;
+
  protected:
   DomainReliabilityDisabledBrowserTest() {}
 
@@ -83,9 +91,6 @@ class DomainReliabilityDisabledBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableDomainReliability);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityDisabledBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityDisabledBrowserTest,

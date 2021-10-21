@@ -17,9 +17,9 @@
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
+#include "chrome/browser/ash/set_time_dialog.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
-#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -47,6 +47,10 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
                               public system::TimezoneSettings::Observer {
  public:
   SetTimeMessageHandler() : weak_factory_(this) {}
+
+  SetTimeMessageHandler(const SetTimeMessageHandler&) = delete;
+  SetTimeMessageHandler& operator=(const SetTimeMessageHandler&) = delete;
+
   ~SetTimeMessageHandler() override = default;
 
   // WebUIMessageHandler:
@@ -108,11 +112,11 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   // selects a new time zone. Expects the time zone ID as a string, as it
   // appears in the time zone option values.
   void OnSetTimezone(const base::ListValue* args) {
-    std::string timezone_id;
-    if (!args->GetString(0, &timezone_id)) {
+    if (args->GetList().empty() || !args->GetList()[0].is_string()) {
       NOTREACHED();
       return;
     }
+    std::string timezone_id = args->GetList()[0].GetString();
 
     Profile* profile = Profile::FromWebUI(web_ui());
     DCHECK(profile);
@@ -153,8 +157,6 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
                           system::TimezoneSettings::Observer>
       timezone_observation_{this};
   base::WeakPtrFactory<SetTimeMessageHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SetTimeMessageHandler);
 };
 
 }  // namespace

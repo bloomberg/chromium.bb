@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace cc {
 class Layer;
@@ -38,6 +38,10 @@ class DecorationTitle {
                   int favicon_end_padding,
                   bool is_incognito,
                   bool is_rtl);
+
+  DecorationTitle(const DecorationTitle&) = delete;
+  DecorationTitle& operator=(const DecorationTitle&) = delete;
+
   virtual ~DecorationTitle();
 
   void SetResourceManager(ui::ResourceManager* resource_manager);
@@ -83,8 +87,6 @@ class DecorationTitle {
   std::unique_ptr<gfx::Transform> transform_;
 
   ui::ResourceManager* resource_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecorationTitle);
 };
 
 }  // namespace android

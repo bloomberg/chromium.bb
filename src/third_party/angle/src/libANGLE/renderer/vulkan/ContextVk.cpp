@@ -442,7 +442,6 @@ ContextVk::ContextVk(const gl::State &state, gl::ErrorSet *errorSet, RendererVk 
       mRenderPassCommands(nullptr),
       mQueryEventType(GraphicsEventCmdBuf::NotInQueryCmd),
       mGpuEventsEnabled(false),
-      mEGLSyncObjectPendingFlush(false),
       mHasDeferredFlush(false),
       mLastProgramUsesFramebufferFetch(false),
       mGpuClockSync{std::numeric_limits<double>::max(), std::numeric_limits<double>::max()},
@@ -627,10 +626,8 @@ void ContextVk::onDestroy(const gl::Context *context)
     }
 
     // Recycle current commands buffers.
-    mRenderer->recycleCommandBufferHelper(mOutsideRenderPassCommands);
-    mRenderer->recycleCommandBufferHelper(mRenderPassCommands);
-    mOutsideRenderPassCommands = nullptr;
-    mRenderPassCommands        = nullptr;
+    mRenderer->recycleCommandBufferHelper(device, &mOutsideRenderPassCommands);
+    mRenderer->recycleCommandBufferHelper(device, &mRenderPassCommands);
 
     mRenderer->releaseSharedResources(&mResourceUseList);
 
@@ -752,8 +749,11 @@ angle::Result ContextVk::initialize()
     mEmulateSeamfulCubeMapSampling = shouldEmulateSeamfulCubeMapSampling();
 
     // Assign initial command buffers from queue
-    mOutsideRenderPassCommands = mRenderer->getCommandBufferHelper(false);
-    mRenderPassCommands        = mRenderer->getCommandBufferHelper(true);
+    ANGLE_TRY(vk::CommandBuffer::InitializeCommandPool(
+        this, &mCommandPool, mRenderer->getDeviceQueueIndex(), hasProtectedContent()));
+    ANGLE_TRY(
+        mRenderer->getCommandBufferHelper(this, false, &mCommandPool, &mOutsideRenderPassCommands));
+    ANGLE_TRY(mRenderer->getCommandBufferHelper(this, true, &mCommandPool, &mRenderPassCommands));
 
     if (mGpuEventsEnabled)
     {
@@ -809,28 +809,7 @@ angle::Result ContextVk::initialize()
 
 angle::Result ContextVk::flush(const gl::Context *context)
 {
-    // If a sync object has been used or this is a shared context, then we need to flush the
-    // commands and end the render pass to make sure the sync object (and any preceding commands)
-    // lands in the correct place within the command stream.
-    // EGL sync objects can span across context share groups, so don't defer flushes if there's one
-    // pending a flush.
-    if (getShareGroupVk()->isSyncObjectPendingFlush() && context->isShared() &&
-        !mEGLSyncObjectPendingFlush)
-    {
-        // Flush the commands to create a sync point in the command stream.
-        ANGLE_TRY(flushCommandsAndEndRenderPass());
-        // Move the resources to the share group, so they are released during the next vkQueueSubmit
-        // performed by any context in the share group. Note that this relies heavily on the global
-        // mutex to guarantee that no two contexts are modifying the lists at the same time.
-        getShareGroupVk()->acquireResourceUseList(std::move(mResourceUseList));
-        mHasDeferredFlush = true;
-        return angle::Result::Continue;
-    }
-
-    // EGL sync objects can span across context share groups, so don't defer flushes if there's one
-    // pending a flush.
-    if (!mEGLSyncObjectPendingFlush &&
-        mRenderer->getFeatures().deferFlushUntilEndRenderPass.enabled && hasStartedRenderPass())
+    if (mRenderer->getFeatures().deferFlushUntilEndRenderPass.enabled && hasStartedRenderPass())
     {
         mHasDeferredFlush = true;
         return angle::Result::Continue;
@@ -1334,9 +1313,17 @@ angle::Result ContextVk::handleDirtyEventLogImpl(vk::CommandBuffer *commandBuffe
     // ---vkCmdEndDebugUtilsLabelEXT() #2 for "OpenGL ES Commands"
     // --VK SetupDraw & Draw-related commands will be embedded here under glDraw #1
     // --vkCmdEndDebugUtilsLabelEXT() #1 is called after each vkDraw* or vkDispatch* call
+
+    // AGI desires no parameters on the top-level of the hierarchy.
+    std::string topLevelCommand = mEventLog.back();
+    size_t startOfParameters    = topLevelCommand.find("(");
+    if (startOfParameters != std::string::npos)
+    {
+        topLevelCommand = topLevelCommand.substr(0, startOfParameters);
+    }
     VkDebugUtilsLabelEXT label = {VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
                                   nullptr,
-                                  mEventLog.back().c_str(),
+                                  topLevelCommand.c_str(),
                                   {0.0f, 0.0f, 0.0f, 0.0f}};
     // This is #1 from comment above
     commandBuffer->beginDebugUtilsLabelEXT(label);
@@ -1947,13 +1934,18 @@ angle::Result ContextVk::handleDirtyGraphicsTransformFeedbackBuffersExtension(
 
     // Issue necessary barriers for the transform feedback counter buffer.  Note that the barrier is
     // issued only on the first buffer (which uses a global memory barrier), as all the counter
-    // buffers of the transform feedback object are used together.
+    // buffers of the transform feedback object are used together.  The rest of the buffers are
+    // simply retained so they don't get deleted too early.
     ASSERT(counterBuffers[0].valid());
     mRenderPassCommands->bufferWrite(this,
                                      VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT |
                                          VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT,
                                      vk::PipelineStage::TransformFeedback,
                                      vk::AliasingMode::Disallowed, &counterBuffers[0]);
+    for (size_t bufferIndex = 1; bufferIndex < bufferCount; ++bufferIndex)
+    {
+        counterBuffers[bufferIndex].retainReadWrite(&getResourceUseList());
+    }
 
     const gl::TransformFeedbackBuffersArray<VkBuffer> &bufferHandles =
         transformFeedbackVk->getBufferHandles();
@@ -2521,8 +2513,8 @@ void ContextVk::clearAllGarbage()
 
 void ContextVk::handleDeviceLost()
 {
-    mOutsideRenderPassCommands->reset();
-    mRenderPassCommands->reset();
+    (void)mOutsideRenderPassCommands->reset(this);
+    (void)mRenderPassCommands->reset(this);
     mRenderer->handleDeviceLost();
     clearAllGarbage();
 
@@ -2996,35 +2988,23 @@ angle::Result ContextVk::insertEventMarker(GLsizei length, const char *marker)
 
     VkDebugUtilsLabelEXT label;
     vk::MakeDebugUtilsLabel(GL_DEBUG_SOURCE_APPLICATION, marker, &label);
-    mOutsideRenderPassCommands->getCommandBuffer().insertDebugUtilsLabelEXT(label);
+
+    vk::CommandBuffer *commandBuffer = hasStartedRenderPass()
+                                           ? mRenderPassCommandBuffer
+                                           : &mOutsideRenderPassCommands->getCommandBuffer();
+    commandBuffer->insertDebugUtilsLabelEXT(label);
 
     return angle::Result::Continue;
 }
 
 angle::Result ContextVk::pushGroupMarker(GLsizei length, const char *marker)
 {
-    if (!mRenderer->enableDebugUtils() && !mRenderer->angleDebuggerMode())
-    {
-        return angle::Result::Continue;
-    }
-
-    VkDebugUtilsLabelEXT label;
-    vk::MakeDebugUtilsLabel(GL_DEBUG_SOURCE_APPLICATION, marker, &label);
-    mOutsideRenderPassCommands->getCommandBuffer().beginDebugUtilsLabelEXT(label);
-
-    return angle::Result::Continue;
+    return pushDebugGroupImpl(GL_DEBUG_SOURCE_APPLICATION, 0, marker);
 }
 
 angle::Result ContextVk::popGroupMarker()
 {
-    if (!mRenderer->enableDebugUtils() && !mRenderer->angleDebuggerMode())
-    {
-        return angle::Result::Continue;
-    }
-
-    mOutsideRenderPassCommands->getCommandBuffer().endDebugUtilsLabelEXT();
-
-    return angle::Result::Continue;
+    return popDebugGroupImpl();
 }
 
 angle::Result ContextVk::pushDebugGroup(const gl::Context *context,
@@ -3032,26 +3012,43 @@ angle::Result ContextVk::pushDebugGroup(const gl::Context *context,
                                         GLuint id,
                                         const std::string &message)
 {
-    if (!mRenderer->enableDebugUtils() && !mRenderer->angleDebuggerMode())
-    {
-        return angle::Result::Continue;
-    }
-
-    VkDebugUtilsLabelEXT label;
-    vk::MakeDebugUtilsLabel(source, message.c_str(), &label);
-    mOutsideRenderPassCommands->getCommandBuffer().beginDebugUtilsLabelEXT(label);
-
-    return angle::Result::Continue;
+    return pushDebugGroupImpl(source, id, message.c_str());
 }
 
 angle::Result ContextVk::popDebugGroup(const gl::Context *context)
+{
+    return popDebugGroupImpl();
+}
+
+angle::Result ContextVk::pushDebugGroupImpl(GLenum source, GLuint id, const char *message)
 {
     if (!mRenderer->enableDebugUtils() && !mRenderer->angleDebuggerMode())
     {
         return angle::Result::Continue;
     }
 
-    mOutsideRenderPassCommands->getCommandBuffer().endDebugUtilsLabelEXT();
+    VkDebugUtilsLabelEXT label;
+    vk::MakeDebugUtilsLabel(source, message, &label);
+
+    vk::CommandBuffer *commandBuffer = hasStartedRenderPass()
+                                           ? mRenderPassCommandBuffer
+                                           : &mOutsideRenderPassCommands->getCommandBuffer();
+    commandBuffer->beginDebugUtilsLabelEXT(label);
+
+    return angle::Result::Continue;
+}
+
+angle::Result ContextVk::popDebugGroupImpl()
+{
+    if (!mRenderer->enableDebugUtils() && !mRenderer->angleDebuggerMode())
+    {
+        return angle::Result::Continue;
+    }
+
+    vk::CommandBuffer *commandBuffer = hasStartedRenderPass()
+                                           ? mRenderPassCommandBuffer
+                                           : &mOutsideRenderPassCommands->getCommandBuffer();
+    commandBuffer->endDebugUtilsLabelEXT();
 
     return angle::Result::Continue;
 }
@@ -3130,7 +3127,7 @@ angle::Result ContextVk::handleNoopDrawEvent()
 
 angle::Result ContextVk::handleGraphicsEventLog(GraphicsEventCmdBuf queryEventType)
 {
-    ASSERT(mQueryEventType == GraphicsEventCmdBuf::NotInQueryCmd);
+    ASSERT(mQueryEventType == GraphicsEventCmdBuf::NotInQueryCmd || mEventLog.empty());
     if (!mRenderer->angleDebuggerMode())
     {
         return angle::Result::Continue;
@@ -5086,6 +5083,17 @@ angle::Result ContextVk::updateActiveTextures(const gl::Context *context)
             ANGLE_TRY(textureVk->ensureMutable(this));
         }
 
+        if (textureVk->getImage().hasEmulatedImageFormat())
+        {
+            char stringBuffer[100];
+            snprintf(
+                stringBuffer, sizeof(stringBuffer),
+                "The Vulkan driver does not support texture format 0x%04X, emulating with 0x%04X",
+                textureVk->getImage().getIntendedFormat().glInternalFormat,
+                textureVk->getImage().getActualFormat().glInternalFormat);
+            ANGLE_PERF_WARNING(getDebug(), GL_DEBUG_SEVERITY_LOW, stringBuffer);
+        }
+
         vk::ImageOrBufferViewSubresourceSerial imageViewSerial =
             textureVk->getImageViewSubresourceSerial(samplerState);
         mActiveTexturesDesc.update(textureUnit, imageViewSerial, samplerHelper.getSamplerSerial());
@@ -5254,7 +5262,6 @@ angle::Result ContextVk::flushImpl(const vk::Semaphore *signalSemaphore)
     // We must set this to false before calling flushCommandsAndEndRenderPass to prevent it from
     // calling back to flushImpl.
     mHasDeferredFlush = false;
-    getShareGroupVk()->clearSyncObjectPendingFlush();
 
     ANGLE_TRY(flushCommandsAndEndRenderPass());
 
@@ -5551,12 +5558,10 @@ angle::Result ContextVk::beginNewRenderPass(
     // Next end any currently outstanding renderPass
     ANGLE_TRY(flushCommandsAndEndRenderPass());
 
-    mRenderPassCommands->beginRenderPass(
-        framebuffer, renderArea, renderPassDesc, renderPassAttachmentOps, colorAttachmentCount,
-        depthStencilAttachmentIndex, clearValues, commandBufferOut);
     mPerfCounters.renderPasses++;
-
-    return angle::Result::Continue;
+    return mRenderPassCommands->beginRenderPass(
+        this, framebuffer, renderArea, renderPassDesc, renderPassAttachmentOps,
+        colorAttachmentCount, depthStencilAttachmentIndex, clearValues, commandBufferOut);
 }
 
 angle::Result ContextVk::startRenderPass(gl::Rectangle renderArea,
@@ -5671,7 +5676,7 @@ angle::Result ContextVk::flushCommandsAndEndRenderPassImpl()
 
     pauseTransformFeedbackIfActiveUnpaused();
 
-    mRenderPassCommands->endRenderPass(this);
+    ANGLE_TRY(mRenderPassCommands->endRenderPass(this));
 
     if (vk::CommandBufferHelper::kEnableCommandStreamDiagnostics)
     {
@@ -5852,12 +5857,12 @@ angle::Result ContextVk::beginRenderPassQuery(QueryVk *queryVk)
     if (mRenderPassCommandBuffer)
     {
         ANGLE_TRY(queryVk->getQueryHelper()->beginRenderPassQuery(this));
+    }
 
-        // Update rasterizer discard emulation with primitives generated query if necessary.
-        if (queryVk->getType() == gl::QueryType::PrimitivesGenerated)
-        {
-            updateRasterizerDiscardEnabled(true);
-        }
+    // Update rasterizer discard emulation with primitives generated query if necessary.
+    if (queryVk->getType() == gl::QueryType::PrimitivesGenerated)
+    {
+        updateRasterizerDiscardEnabled(true);
     }
 
     gl::QueryType type = queryVk->getType();
@@ -6126,12 +6131,14 @@ angle::Result ContextVk::onResourceAccess(const vk::CommandBufferAccess &access)
 {
     ANGLE_TRY(flushCommandBuffersIfNecessary(access));
 
+    vk::CommandBuffer *commandBuffer = &mOutsideRenderPassCommands->getCommandBuffer();
+
     for (const vk::CommandBufferImageAccess &imageAccess : access.getReadImages())
     {
         ASSERT(!IsRenderPassStartedAndUsesImage(*mRenderPassCommands, *imageAccess.image));
 
         imageAccess.image->recordReadBarrier(this, imageAccess.aspectFlags, imageAccess.imageLayout,
-                                             &mOutsideRenderPassCommands->getCommandBuffer());
+                                             commandBuffer);
         imageAccess.image->retain(&mResourceUseList);
     }
 
@@ -6139,9 +6146,8 @@ angle::Result ContextVk::onResourceAccess(const vk::CommandBufferAccess &access)
     {
         ASSERT(!IsRenderPassStartedAndUsesImage(*mRenderPassCommands, *imageWrite.access.image));
 
-        imageWrite.access.image->recordWriteBarrier(
-            this, imageWrite.access.aspectFlags, imageWrite.access.imageLayout,
-            &mOutsideRenderPassCommands->getCommandBuffer());
+        imageWrite.access.image->recordWriteBarrier(this, imageWrite.access.aspectFlags,
+                                                    imageWrite.access.imageLayout, commandBuffer);
         imageWrite.access.image->retain(&mResourceUseList);
         imageWrite.access.image->onWrite(imageWrite.levelStart, imageWrite.levelCount,
                                          imageWrite.layerStart, imageWrite.layerCount,

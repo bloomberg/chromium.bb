@@ -5,7 +5,7 @@
 #ifndef GPU_VULKAN_VULKAN_INSTANCE_H_
 #define GPU_VULKAN_VULKAN_INSTANCE_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <memory>
 
 #include "base/check_op.h"
@@ -19,6 +19,9 @@ namespace gpu {
 class COMPONENT_EXPORT(VULKAN) VulkanInstance {
  public:
   VulkanInstance();
+
+  VulkanInstance(const VulkanInstance&) = delete;
+  VulkanInstance& operator=(const VulkanInstance&) = delete;
 
   ~VulkanInstance();
 
@@ -46,8 +49,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanInstance {
   VkDebugReportCallbackEXT error_callback_ = VK_NULL_HANDLE;
   VkDebugReportCallbackEXT warning_callback_ = VK_NULL_HANDLE;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(VulkanInstance);
 };
 
 }  // namespace gpu

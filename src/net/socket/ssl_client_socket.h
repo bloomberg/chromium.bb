@@ -66,7 +66,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
  private:
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocket, SerializeNextProtos);
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
-  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketVersionTest,
                            ConnectSignedCertTimestampsTLSExtension);
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketVersionTest,
                            ConnectSignedCertTimestampsEnablesOCSP);
@@ -105,6 +105,10 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
                    CTPolicyEnforcer* ct_policy_enforcer,
                    SSLClientSessionCache* ssl_client_session_cache,
                    SCTAuditingDelegate* sct_auditing_delegate);
+
+  SSLClientContext(const SSLClientContext&) = delete;
+  SSLClientContext& operator=(const SSLClientContext&) = delete;
+
   ~SSLClientContext() override;
 
   const SSLContextConfig& config() { return config_; }
@@ -188,8 +192,6 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   SSLClientAuthCache ssl_client_auth_cache_;
 
   base::ObserverList<Observer, true /* check_empty */> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLClientContext);
 };
 
 }  // namespace net

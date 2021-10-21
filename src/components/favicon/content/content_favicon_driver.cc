@@ -64,7 +64,8 @@ ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
 ContentFaviconDriver::~ContentFaviconDriver() = default;
 
 ContentFaviconDriver::DocumentManifestData::DocumentManifestData(
-    content::RenderFrameHost* render_frame_host) {}
+    content::RenderFrameHost* rfh)
+    : content::RenderDocumentHostUserData<DocumentManifestData>(rfh) {}
 ContentFaviconDriver::DocumentManifestData::~DocumentManifestData() = default;
 
 ContentFaviconDriver::NavigationManifestData::NavigationManifestData(
@@ -99,9 +100,10 @@ int ContentFaviconDriver::DownloadImage(const GURL& url,
   bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
   bypass_cache_page_url_ = GURL();
 
-  return web_contents()->DownloadImage(
-      url, true, /*preferred_size=*/max_image_size,
-      /*max_bitmap_size=*/max_image_size, bypass_cache, std::move(callback));
+  const gfx::Size preferred_size(max_image_size, max_image_size);
+  return web_contents()->DownloadImage(url, true, preferred_size,
+                                       /*max_bitmap_size=*/max_image_size,
+                                       bypass_cache, std::move(callback));
 }
 
 void ContentFaviconDriver::DownloadManifest(const GURL& url,
@@ -258,9 +260,9 @@ void ContentFaviconDriver::DidFinishNavigation(
 }
 
 NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::NavigationManifestData)
+    ContentFaviconDriver::NavigationManifestData);
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(
-    ContentFaviconDriver::DocumentManifestData)
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver)
+    ContentFaviconDriver::DocumentManifestData);
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver);
 
 }  // namespace favicon

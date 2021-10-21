@@ -30,14 +30,16 @@ class HSTSStateManager {
   HSTSStateManager(net::TransportSecurityState* state,
                    bool is_hsts,
                    std::string host);
+
+  HSTSStateManager(const HSTSStateManager&) = delete;
+  HSTSStateManager& operator=(const HSTSStateManager&) = delete;
+
   ~HSTSStateManager();
 
  private:
   net::TransportSecurityState* state_;
   const bool is_hsts_;
   const std::string host_;
-
-  DISALLOW_COPY_AND_ASSIGN(HSTSStateManager);
 };
 
 HSTSStateManager::HSTSStateManager(net::TransportSecurityState* state,
@@ -69,6 +71,9 @@ class HSTSQueryTest : public testing::Test {
             request_context_->GetURLRequestContext(),
             /*cors_exempt_header_list=*/std::vector<std::string>())) {}
 
+  HSTSQueryTest(const HSTSQueryTest&) = delete;
+  HSTSQueryTest& operator=(const HSTSQueryTest&) = delete;
+
   network::NetworkContext* network_context() { return network_context_.get(); }
 
  private:
@@ -77,8 +82,6 @@ class HSTSQueryTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<network::NetworkContext> network_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(HSTSQueryTest);
 };
 
 TEST_F(HSTSQueryTest, TestPostHSTSQueryForHostAndRequestContext) {

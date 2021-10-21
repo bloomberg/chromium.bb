@@ -33,6 +33,12 @@ class UrlKeyedDataCollectionConsentHelper;
 class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
   explicit ChromeAutocompleteProviderClient(Profile* profile);
+
+  ChromeAutocompleteProviderClient(const ChromeAutocompleteProviderClient&) =
+      delete;
+  ChromeAutocompleteProviderClient& operator=(
+      const ChromeAutocompleteProviderClient&) = delete;
+
   ~ChromeAutocompleteProviderClient() override;
 
   // AutocompleteProviderClient:
@@ -96,6 +102,13 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) override;
 
+  // OmniboxAction::Client:
+  void OpenSharingHub() override;
+  void NewIncognitoWindow() override;
+  void OpenIncognitoClearBrowsingDataDialog() override;
+  void CloseIncognitoWindows() override;
+  void PromptPageTranslation() override;
+
   // For testing.
   void set_storage_partition(content::StoragePartition* storage_partition) {
     storage_partition_ = storage_partition;
@@ -142,8 +155,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   std::unique_ptr<OmniboxTriggeredFeatureService>
       omnibox_triggered_feature_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAutocompleteProviderClient);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_

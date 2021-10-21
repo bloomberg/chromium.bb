@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "ash/public/cpp/desk_template.h"
-#include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/account_id/account_id.h"
@@ -74,17 +74,6 @@ const base::GUID kTestUuid1 =
 const base::GUID kTestUuid2 =
     base::GUID::ParseCaseInsensitive(base::StringPrintf(kUuidFormat, 2));
 
-WorkspaceDeskSpecifics CreateWorkspaceDeskSpecifics(
-    int templateIndex,
-    base::Time created_time = base::Time::Now()) {
-  WorkspaceDeskSpecifics specifics;
-  specifics.set_uuid(base::StringPrintf(kUuidFormat, templateIndex));
-  specifics.set_name(base::StringPrintf(kNameFormat, templateIndex));
-  specifics.set_created_time_usec(
-      created_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  return specifics;
-}
-
 void FillExampleBrowserAppWindow(WorkspaceDeskSpecifics_App* app) {
   BrowserAppWindow* app_window =
       app->mutable_app()->mutable_browser_app_window();
@@ -143,10 +132,12 @@ void FillExampleChromeAppWindow(WorkspaceDeskSpecifics_App* app) {
 }
 
 WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
+    const std::string uuid,
+    const std::string template_name,
     base::Time created_time = base::Time::Now()) {
   WorkspaceDeskSpecifics specifics;
-  specifics.set_uuid("cf815b86-36cd-4cf9-ad90-15d2232325a6");
-  specifics.set_name("Test Workspace Desk Template");
+  specifics.set_uuid(uuid);
+  specifics.set_name(template_name);
   specifics.set_created_time_usec(
       created_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   Desk* desk = specifics.mutable_desk();
@@ -154,6 +145,14 @@ WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
   FillExampleChromeAppWindow(desk->add_apps());
   FillExampleProgressiveWebAppWindow(desk->add_apps());
   return specifics;
+}
+
+WorkspaceDeskSpecifics CreateWorkspaceDeskSpecifics(
+    int templateIndex,
+    base::Time created_time = base::Time::Now()) {
+  return ExampleWorkspaceDeskSpecifics(
+      base::StringPrintf(kUuidFormat, templateIndex),
+      base::StringPrintf(kNameFormat, templateIndex), created_time);
 }
 
 ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
@@ -175,6 +174,7 @@ apps::mojom::AppPtr MakeApp(const char* app_id,
 
 class MockDeskModelObserver : public DeskModelObserver {
  public:
+  MOCK_METHOD0(DeskModelLoaded, void());
   MOCK_METHOD1(EntriesAddedOrUpdatedRemotely,
                void(const std::vector<const DeskTemplate*>&));
   MOCK_METHOD1(EntriesRemovedRemotely, void(const std::vector<std::string>&));
@@ -203,20 +203,6 @@ class DeskSyncBridgeTest : public testing::Test {
   DeskSyncBridgeTest& operator=(const DeskSyncBridgeTest&) = delete;
 
  protected:
-  static void VerifyAddOrUpdateEntrySuccess(
-      DeskModel::AddOrUpdateEntryStatus status) {
-    EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
-  }
-
-  static void VerifyAddOrUpdateEntryFailure(
-      DeskModel::AddOrUpdateEntryStatus status) {
-    EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
-  }
-
-  static void VerifyDeleteEntrySuccess(DeskModel::DeleteEntryStatus status) {
-    EXPECT_EQ(status, DeskModel::DeleteEntryStatus::kOk);
-  }
-
   DeskSyncBridgeTest()
       : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
         cache_(std::make_unique<apps::AppRegistryCache>()),
@@ -303,6 +289,7 @@ class DeskSyncBridgeTest : public testing::Test {
     EntityData entity_data;
 
     *entity_data.specifics.mutable_workspace_desk() = workspace_desk_specifics;
+
     entity_data.name = workspace_desk_specifics.name();
     return entity_data;
   }
@@ -324,21 +311,38 @@ class DeskSyncBridgeTest : public testing::Test {
     return changes;
   }
 
-  base::Time AdvanceAndGetTime(
-      base::TimeDelta delta = base::TimeDelta::FromMilliseconds(10)) {
+  base::Time AdvanceAndGetTime(base::TimeDelta delta = base::Milliseconds(10)) {
     clock_.Advance(delta);
     return clock_.Now();
   }
 
   void AddTwoTemplates() {
-    bridge_->AddOrUpdateEntry(
-        std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
-                                       "template 1", AdvanceAndGetTime()),
-        base::BindOnce(DeskSyncBridgeTest::VerifyAddOrUpdateEntrySuccess));
-    bridge_->AddOrUpdateEntry(
-        std::make_unique<DeskTemplate>(kTestUuid2.AsLowercaseString(),
-                                       "template 2", AdvanceAndGetTime()),
-        base::BindOnce(DeskSyncBridgeTest::VerifyAddOrUpdateEntrySuccess));
+    auto desk_template1 =
+        DeskSyncBridge::FromSyncProto(ExampleWorkspaceDeskSpecifics(
+            kTestUuid1.AsLowercaseString(), "template 1", AdvanceAndGetTime()));
+    auto desk_template2 =
+        DeskSyncBridge::FromSyncProto(ExampleWorkspaceDeskSpecifics(
+            kTestUuid2.AsLowercaseString(), "template 2", AdvanceAndGetTime()));
+
+    base::RunLoop loop1;
+    bridge()->AddOrUpdateEntry(
+        std::move(desk_template1),
+        base::BindLambdaForTesting(
+            [&](DeskModel::AddOrUpdateEntryStatus status) {
+              EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+              loop1.Quit();
+            }));
+    loop1.Run();
+
+    base::RunLoop loop2;
+    bridge()->AddOrUpdateEntry(
+        std::move(desk_template2),
+        base::BindLambdaForTesting(
+            [&](DeskModel::AddOrUpdateEntryStatus status) {
+              EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+              loop2.Quit();
+            }));
+    loop2.Run();
   }
 
   MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
@@ -371,7 +375,8 @@ class DeskSyncBridgeTest : public testing::Test {
 TEST_F(DeskSyncBridgeTest, DeskTemplateConversionShouldBeLossless) {
   CreateBridge();
 
-  WorkspaceDeskSpecifics desk_proto = ExampleWorkspaceDeskSpecifics();
+  WorkspaceDeskSpecifics desk_proto = ExampleWorkspaceDeskSpecifics(
+      kTestUuid1.AsLowercaseString(), "template 1");
 
   std::unique_ptr<DeskTemplate> desk_template =
       DeskSyncBridge::FromSyncProto(desk_proto);
@@ -409,7 +414,7 @@ TEST_F(DeskSyncBridgeTest, InitializationWithLocalDataAndMetadata) {
 
   InitializeBridge();
 
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Verify both local specifics are loaded correctly.
   EXPECT_EQ(bridge()
@@ -431,11 +436,43 @@ TEST_F(DeskSyncBridgeTest, AddEntriesLocally) {
   EXPECT_CALL(*mock_observer(), EntriesAddedOrUpdatedRemotely(_)).Times(0);
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(_)).Times(0);
 
-  EXPECT_EQ(0ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(0ul, bridge()->GetAllEntryUuids().size());
 
-  AddTwoTemplates();
+  auto specifics1 = ExampleWorkspaceDeskSpecifics(
+      kTestUuid1.AsLowercaseString(), "template 1", AdvanceAndGetTime());
+  auto specifics2 = ExampleWorkspaceDeskSpecifics(
+      kTestUuid2.AsLowercaseString(), "template 2", AdvanceAndGetTime());
 
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  base::RunLoop loop1;
+  bridge()->AddOrUpdateEntry(
+      DeskSyncBridge::FromSyncProto(specifics1),
+      base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+        loop1.Quit();
+      }));
+  loop1.Run();
+
+  base::RunLoop loop2;
+  bridge()->AddOrUpdateEntry(
+      DeskSyncBridge::FromSyncProto(specifics2),
+      base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+        loop2.Quit();
+      }));
+  loop2.Run();
+
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
+
+  // Verify the added desk template content.
+  EXPECT_EQ(bridge()
+                ->ToSyncProto(bridge()->GetEntryByUUID(kTestUuid1))
+                .SerializeAsString(),
+            specifics1.SerializeAsString());
+
+  EXPECT_EQ(bridge()
+                ->ToSyncProto(bridge()->GetEntryByUUID(kTestUuid2))
+                .SerializeAsString(),
+            specifics2.SerializeAsString());
 }
 
 TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWheSyncIsDisabled) {
@@ -447,10 +484,16 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWheSyncIsDisabled) {
 
   // Add entry should fail when the sync bridge is not ready.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(1);
+
+  base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
       std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
                                      "template 1", AdvanceAndGetTime()),
-      base::BindOnce(DeskSyncBridgeTest::VerifyAddOrUpdateEntrySuccess));
+      base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 TEST_F(DeskSyncBridgeTest, AddEntryShouldFailWhenBridgeIsNotReady) {
@@ -462,10 +505,71 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldFailWhenBridgeIsNotReady) {
 
   // Add entry should fail when the sync bridge is not ready.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
+
+  base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
       std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
                                      "template 1", AdvanceAndGetTime()),
-      base::BindOnce(DeskSyncBridgeTest::VerifyAddOrUpdateEntryFailure));
+      base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(DeskSyncBridgeTest, GetEntryByUUIDShouldSucceed) {
+  InitializeBridge();
+
+  AddTwoTemplates();
+
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
+
+  base::RunLoop loop;
+  bridge()->GetEntryByUUID(
+      kTestUuid1.AsLowercaseString(),
+      base::BindLambdaForTesting([&](DeskModel::GetEntryByUuidStatus status,
+                                     std::unique_ptr<ash::DeskTemplate> entry) {
+        EXPECT_EQ(status, DeskModel::GetEntryByUuidStatus::kOk);
+        EXPECT_TRUE(entry);
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(DeskSyncBridgeTest, GetEntryByUUIDShouldFailWhenUuidIsNotFound) {
+  InitializeBridge();
+
+  AddTwoTemplates();
+
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
+
+  const std::string nonExistingUuid = base::StringPrintf(kUuidFormat, 5);
+
+  base::RunLoop loop;
+  bridge()->GetEntryByUUID(
+      nonExistingUuid,
+      base::BindLambdaForTesting([&](DeskModel::GetEntryByUuidStatus status,
+                                     std::unique_ptr<ash::DeskTemplate> entry) {
+        EXPECT_EQ(status, DeskModel::GetEntryByUuidStatus::kNotFound);
+        EXPECT_FALSE(entry);
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(DeskSyncBridgeTest, GetEntryByUUIDShouldFailWhenUuidIsInvalid) {
+  InitializeBridge();
+
+  base::RunLoop loop;
+  bridge()->GetEntryByUUID(
+      "invalid uuid",
+      base::BindLambdaForTesting([&](DeskModel::GetEntryByUuidStatus status,
+                                     std::unique_ptr<ash::DeskTemplate> entry) {
+        EXPECT_EQ(status, DeskModel::GetEntryByUuidStatus::kInvalidUuid);
+        EXPECT_FALSE(entry);
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 TEST_F(DeskSyncBridgeTest, UpdateEntryLocally) {
@@ -474,23 +578,29 @@ TEST_F(DeskSyncBridgeTest, UpdateEntryLocally) {
   EXPECT_CALL(*mock_observer(), EntriesAddedOrUpdatedRemotely(_)).Times(0);
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(_)).Times(0);
 
-  EXPECT_EQ(0ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(0ul, bridge()->GetAllEntryUuids().size());
 
   // Seed two templates.
   AddTwoTemplates();
 
   // We should have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Update template 1
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(1);
+
+  base::RunLoop loop;
   bridge()->AddOrUpdateEntry(
       std::make_unique<DeskTemplate>(kTestUuid1.AsLowercaseString(),
                                      "updated template 1", AdvanceAndGetTime()),
-      base::BindOnce(DeskSyncBridgeTest::VerifyAddOrUpdateEntrySuccess));
+      base::BindLambdaForTesting([&](DeskModel::AddOrUpdateEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kOk);
+        loop.Quit();
+      }));
+  loop.Run();
 
   // We should still have both templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
   // Template 1 should be updated.
   EXPECT_EQ(
       base::UTF16ToUTF8(bridge()->GetEntryByUUID(kTestUuid1)->template_name()),
@@ -508,21 +618,26 @@ TEST_F(DeskSyncBridgeTest, DeleteEntryLocally) {
   EXPECT_CALL(*mock_observer(), EntriesAddedOrUpdatedRemotely(_)).Times(0);
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(_)).Times(0);
 
-  EXPECT_EQ(0ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(0ul, bridge()->GetAllEntryUuids().size());
 
   // Seed two templates.
   AddTwoTemplates();
 
   // We should have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Delete template 1.
+  base::RunLoop loop;
   bridge()->DeleteEntry(
       kTestUuid1.AsLowercaseString(),
-      base::BindOnce(DeskSyncBridgeTest::VerifyDeleteEntrySuccess));
+      base::BindLambdaForTesting([&](DeskModel::DeleteEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::DeleteEntryStatus::kOk);
+        loop.Quit();
+      }));
+  loop.Run();
 
   // We should have only 1 template.
-  EXPECT_EQ(1ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(1ul, bridge()->GetAllEntryUuids().size());
   // Template 2 should be unchanged.
   EXPECT_EQ(
       base::UTF16ToUTF8(bridge()->GetEntryByUUID(kTestUuid2)->template_name()),
@@ -535,20 +650,25 @@ TEST_F(DeskSyncBridgeTest, DeleteAllEntriesLocally) {
   EXPECT_CALL(*mock_observer(), EntriesAddedOrUpdatedRemotely(_)).Times(0);
   EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(_)).Times(0);
 
-  EXPECT_EQ(0ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(0ul, bridge()->GetAllEntryUuids().size());
 
   // Seed two templates.
   AddTwoTemplates();
 
   // We should have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Delete all templates.
+  base::RunLoop loop;
   bridge()->DeleteAllEntries(
-      base::BindOnce(DeskSyncBridgeTest::VerifyDeleteEntrySuccess));
+      base::BindLambdaForTesting([&](DeskModel::DeleteEntryStatus status) {
+        EXPECT_EQ(status, DeskModel::DeleteEntryStatus::kOk);
+        loop.Quit();
+      }));
+  loop.Run();
 
   // We should have no templates.
-  EXPECT_EQ(0ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(0ul, bridge()->GetAllEntryUuids().size());
 }
 
 TEST_F(DeskSyncBridgeTest, ApplySyncChangesEmpty) {
@@ -574,7 +694,7 @@ TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithTwoAdditions) {
   EXPECT_FALSE(error);
 
   // We should have two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 }
 
 TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithOneUpdate) {
@@ -588,7 +708,7 @@ TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithOneUpdate) {
                              EntityAddList({template1, template2}));
 
   // We should have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Now update template 1 with a new content.
   WorkspaceDeskSpecifics updated_template1 = CreateWorkspaceDeskSpecifics(1);
@@ -602,7 +722,7 @@ TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithOneUpdate) {
   bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                              std::move(update_changes));
   // We should still have both templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
   // Template 1 should be updated to new content.
   EXPECT_EQ(bridge()
                 ->ToSyncProto(bridge()->GetEntryByUUID(
@@ -628,7 +748,7 @@ TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithOneDeletion) {
                              EntityAddList({template1, template2}));
 
   // Verify that we have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Now delete template 1.
   EntityChangeList delete_changes;
@@ -639,7 +759,7 @@ TEST_F(DeskSyncBridgeTest, ApplySyncChangesWithOneDeletion) {
                              std::move(delete_changes));
 
   // Verify that we only have template 2.
-  EXPECT_EQ(1ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(1ul, bridge()->GetAllEntryUuids().size());
   EXPECT_EQ(bridge()
                 ->ToSyncProto(bridge()->GetEntryByUUID(
                     base::GUID::ParseCaseInsensitive(template2.uuid())))
@@ -673,7 +793,7 @@ TEST_F(DeskSyncBridgeTest, MergeSyncDataWithTwoEntries) {
   EXPECT_CALL(*mock_observer(), EntriesAddedOrUpdatedRemotely(SizeIs(2)));
   bridge()->MergeSyncData(std::move(metadata_change_list),
                           EntityAddList({template1, template2}));
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 }
 
 TEST_F(DeskSyncBridgeTest, MergeSyncDataUploadsLocalOnlyEntries) {
@@ -684,7 +804,7 @@ TEST_F(DeskSyncBridgeTest, MergeSyncDataUploadsLocalOnlyEntries) {
   AddTwoTemplates();
 
   // We should have seeded two templates.
-  EXPECT_EQ(2ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(2ul, bridge()->GetAllEntryUuids().size());
 
   // Create server-side templates "template 2" and "template 3".
   const WorkspaceDeskSpecifics template1 = CreateWorkspaceDeskSpecifics(2);
@@ -701,7 +821,7 @@ TEST_F(DeskSyncBridgeTest, MergeSyncDataUploadsLocalOnlyEntries) {
                           EntityAddList({template1, template2}));
 
   // Merged data should contain 3 templtes.
-  EXPECT_EQ(3ul, bridge()->GetAllUuids().size());
+  EXPECT_EQ(3ul, bridge()->GetAllEntryUuids().size());
 }
 
 }  // namespace

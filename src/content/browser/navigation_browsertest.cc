@@ -42,6 +42,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -89,6 +90,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -1566,6 +1568,11 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
         determine_allowed_previews_called_(false),
         determine_committed_previews_called_(false) {}
 
+  PreviewsStateContentBrowserClient(const PreviewsStateContentBrowserClient&) =
+      delete;
+  PreviewsStateContentBrowserClient& operator=(
+      const PreviewsStateContentBrowserClient&) = delete;
+
   ~PreviewsStateContentBrowserClient() override {}
 
   blink::PreviewsState DetermineAllowedPreviews(
@@ -1617,8 +1624,6 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
   blink::PreviewsState previews_state_;
   bool determine_allowed_previews_called_;
   bool determine_committed_previews_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreviewsStateContentBrowserClient);
 };
 
 }  // namespace
@@ -3530,10 +3535,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     // will be the navigation to `url2` started below.
     TestNavigationObserver nav_observer(wc, 2);
 
-    // Start a same-document navigation to url2, but it's racing with the
-    // renderer's history.pushState(). It will return false, as the navigation
-    // is restarted.
-    EXPECT_FALSE(NavigateToURL(shell(), url2));
+    // Start a same-document navigation to url2 that is racing with the
+    // renderer's history.pushState().
+    shell()->LoadURL(url2);
 
     nav_observer.Wait();
   }
@@ -3703,8 +3707,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       handler_method, BrowserURLHandler::null_handler());
 
   TestNavigationObserver observer(web_contents());
-  EXPECT_TRUE(NavigateToURL(
-      shell(), GURL(embedded_test_server()->GetURL("/virtual-url.html"))));
+  shell()->LoadURL(embedded_test_server()->GetURL("/virtual-url.html"));
+  observer.Wait();
   EXPECT_EQ("/title2.html", observer.last_navigation_url().path());
   EXPECT_EQ(2, rewrite_count);
 }
@@ -4307,7 +4311,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromCspSandboxResponse) {
 
   // An error page committed. It doesn't have any sandbox flags, despite the
   // original response headers.
-  EXPECT_TRUE(current_frame_host()->is_error_page());
+  EXPECT_TRUE(current_frame_host()->IsErrorDocument());
   EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             current_frame_host()->active_sandbox_flags());
 
@@ -4446,7 +4450,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, ErrorPageFromInSandboxedIframe) {
   // An error page committed. Apparently, the error page inherited sandbox flags
   // from its parent.
   // TODO(https://crbug.com/1158370): Reconsider this.
-  EXPECT_TRUE(child_rfh->is_error_page());
+  EXPECT_TRUE(child_rfh->IsErrorDocument());
   EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
                 ~network::mojom::WebSandboxFlags::kOrientationLock,
             child_rfh->active_sandbox_flags());
@@ -4691,12 +4695,13 @@ class SubresourceLoadingTest : public NavigationBrowserTest {
         break;
       visited_contents.insert(current_contents);
 
-      // Flush all the frames in the `current_frame`'s frame tree.
-      for (RenderFrameHost* frame_to_flush : current_contents->GetAllFrames()) {
-        constexpr bool kDoNothingIfNoNetworkServiceConnection = true;
-        frame_to_flush->FlushNetworkAndNavigationInterfacesForTesting(
-            kDoNothingIfNoNetworkServiceConnection);
-      }
+      // Flush all the frames in the `current_contents's active page.
+      current_contents->GetMainFrame()->ForEachRenderFrameHost(
+          base::BindRepeating([](RenderFrameHost* frame_to_flush) {
+            constexpr bool kDoNothingIfNoNetworkServiceConnection = true;
+            frame_to_flush->FlushNetworkAndNavigationInterfacesForTesting(
+                kDoNothingIfNoNetworkServiceConnection);
+          }));
 
       // Traverse the `current_frame`'s opener chain.
       if (FrameTreeNode* opener_node =
@@ -5837,9 +5842,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, MAYBE_Bug1210234) {
   // Since we committed a navigation, the next cross-origin navigation will
   // create a speculative RenderFrameHost.
 
-  NavigateToURLBlockUntilNavigationsComplete(
-      web_contents(), initial_url, /*number_of_navigations=*/1,
-      /*ignore_uncommitted_navigations=*/true);
+  EXPECT_TRUE(NavigateToURL(web_contents(), initial_url,
+                            /*expected_commit_url=*/redirection_url));
+
   EXPECT_TRUE(IsLastCommittedEntryOfPageType(web_contents(), PAGE_TYPE_NORMAL));
   EXPECT_EQ(redirection_url, web_contents()->GetLastCommittedURL());
 }
@@ -6004,6 +6009,61 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   EXPECT_NE(anonymous_nonce, anonymous_nonce_b);
   EXPECT_EQ(anonymous_nonce_b,
             child_b->current_frame_host()->storage_key().nonce().value());
+}
+
+// Ensures that OpenURLParams::FromNavigationHandle translates navigation params
+// correctly when used to initiate a navigation in another WebContents.
+IN_PROC_BROWSER_TEST_F(
+    NavigationBrowserTest,
+    FromNavigationHandleTranslatesNavigationParamsCorrectly) {
+  // Test that the params are translated correctly for a redirected navigation.
+  const GURL kRedirectedURL(
+      embedded_test_server()->GetURL("/server-redirect?/simple_page.html"));
+  NavigationController::LoadURLParams load_params(kRedirectedURL);
+  TestNavigationManager first_tab_manager(web_contents(), kRedirectedURL);
+  web_contents()->GetController().LoadURLWithParams(load_params);
+
+  // Wait for response to allow the navigation to resolve the redirect.
+  EXPECT_TRUE(first_tab_manager.WaitForResponse());
+
+  // Create LoadURLParams from the navigation after redirection.
+  NavigationController::LoadURLParams load_url_params(
+      OpenURLParams::FromNavigationHandle(
+          first_tab_manager.GetNavigationHandle()));
+  Shell* second_tab = CreateBrowser();
+  TestNavigationManager second_tab_manager(second_tab->web_contents(),
+                                           load_url_params.url);
+  second_tab->web_contents()->GetController().LoadURLWithParams(
+      load_url_params);
+
+  EXPECT_TRUE(second_tab_manager.WaitForResponse());
+
+  // Ensure params from the navigation in the first tab are translated to the
+  // navigation in the second tab as expected.
+  auto* first_tab_handle = first_tab_manager.GetNavigationHandle();
+  auto* second_tab_handle = second_tab_manager.GetNavigationHandle();
+  EXPECT_EQ(embedded_test_server()->GetURL("/simple_page.html"),
+            second_tab_handle->GetURL());
+  EXPECT_EQ(first_tab_handle->GetReferrer(), second_tab_handle->GetReferrer());
+  EXPECT_TRUE(
+      ui::PageTransitionCoreTypeIs(first_tab_handle->GetPageTransition(),
+                                   second_tab_handle->GetPageTransition()));
+  EXPECT_EQ(first_tab_handle->IsRendererInitiated(),
+            second_tab_handle->IsRendererInitiated());
+  EXPECT_EQ(first_tab_handle->GetInitiatorOrigin(),
+            second_tab_handle->GetInitiatorOrigin());
+  EXPECT_EQ(first_tab_handle->GetSourceSiteInstance(),
+            second_tab_handle->GetSourceSiteInstance());
+  EXPECT_EQ(first_tab_handle->HasUserGesture(),
+            second_tab_handle->HasUserGesture());
+  EXPECT_EQ(first_tab_handle->WasStartedFromContextMenu(),
+            second_tab_handle->WasStartedFromContextMenu());
+  EXPECT_EQ(first_tab_handle->GetHrefTranslate(),
+            second_tab_handle->GetHrefTranslate());
+  EXPECT_EQ(first_tab_handle->GetReloadType(),
+            second_tab_handle->GetReloadType());
+  EXPECT_EQ(first_tab_handle->GetRedirectChain(),
+            second_tab_handle->GetRedirectChain());
 }
 
 }  // namespace content

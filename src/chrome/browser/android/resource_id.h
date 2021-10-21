@@ -41,12 +41,14 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAFETYTIP_SHIELD,
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAVE_PASSWORD,
                     R.drawable.ic_vpn_key_blue)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MOBILE_FRIENDLY,
+                    R.drawable.infobar_mobile_friendly)
 LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER,
                  R.drawable.google_pay_with_divider)
 
-// Android only messages (an alternative ui to infobars)
-DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_MULTIPLE,
-                    R.drawable.ic_tune_24dp)
+// Android only messages (an alternative UI to infobars)
+DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_VIDEOCAM,
+                    R.drawable.ic_videocam_24dp)
 DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_STORAGE,
                     R.drawable.ic_storage)
 DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_CAMERA,

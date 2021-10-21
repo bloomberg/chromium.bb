@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterfaceImpl, DestinationStore, NativeLayer, NativeLayerImpl} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceImpl, DestinationStore, NativeLayerImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
@@ -41,12 +41,12 @@ suite('UserManagerTest', function() {
 
     // Create data classes
     nativeLayer = new NativeLayerStub();
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.setInstance(nativeLayer);
     // <if expr="chromeos or lacros">
     setNativeLayerCrosInstance();
     // </if>
     cloudPrintInterface = new CloudPrintInterfaceStub();
-    CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
+    CloudPrintInterfaceImpl.setInstance(cloudPrintInterface);
     cloudPrintInterface.setPrinter(
         getCloudDestination('FooCloud', 'FooCloudName', account1));
 

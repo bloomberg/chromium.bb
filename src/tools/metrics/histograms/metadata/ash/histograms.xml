@@ -109,7 +109,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Accelerators.WindowSnap"
-    enum="WindowSnapAcceleratorAction" expires_after="2021-12-12">
+    enum="WindowSnapAcceleratorAction" expires_after="2022-04-10">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>Captures usage of Alt+[ and Alt+].</summary>
@@ -204,7 +204,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.AppNotificationBadgingPref" enum="Boolean"
-    expires_after="2022-01-30">
+    expires_after="2022-04-10">
   <owner>mmourgos@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -271,6 +271,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.BrowserDataMigrator.AshDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to belong to ash-chrome i.e. the
+    total size of files that are under profile data directory of ash-chrome that
+    should remain in the same directory.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.CommonDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is duplicated in both ash and lacros data
+    directory.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.CommonDataTimeTakenMS" units="ms"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The time taken for copying common data shared with lacros and ash.
+  </summary>
+</histogram>
+
 <histogram name="Ash.BrowserDataMigrator.CopiedDataSizeMB" units="MB"
     expires_after="M101">
   <owner>ythjkt@chromium.org</owner>
@@ -298,6 +328,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     The final status of browser data migration. It is collected to monitor if
     migration is working and if not used to determine which step is failing.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.LacrosDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to belong to lacros-chrome i.e.
+    the total size of files that are under profile data directory of ash-chrome
+    that should move to lacros data directory.
+  </summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.LacrosDataTimeTakenMS" units="ms"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>The time taken for copying lacros data.</summary>
+</histogram>
+
+<histogram name="Ash.BrowserDataMigrator.NoCopyDataSizeMB" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    The size of profile data that is identified to be deletable such as cache.
   </summary>
 </histogram>
 
@@ -453,7 +510,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Clipboard.ConsecutivePastes" units="times"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>newcomer@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -475,7 +532,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatDeleted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-01-02">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -485,7 +542,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatPasted"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-01-02">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -495,7 +552,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.DisplayFormatShown"
-    enum="ClipboardHistoryDisplayFormat" expires_after="2022-01-02">
+    enum="ClipboardHistoryDisplayFormat" expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -505,7 +562,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.MenuOptionSelected"
-    units="index" expires_after="2022-01-02">
+    units="index" expires_after="2022-04-03">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -515,7 +572,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.NumberOfItemsShown"
-    units="Items Shown" expires_after="2022-01-02">
+    units="Items Shown" expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -526,7 +583,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.ShowMenu"
-    enum="ClipboardHistoryTriggerType" expires_after="2022-01-02">
+    enum="ClipboardHistoryTriggerType" expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -536,7 +593,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.ShowPlaceholderString"
-    enum="ClipboardHistoryPlaceholderStringType" expires_after="2022-01-02">
+    enum="ClipboardHistoryPlaceholderStringType" expires_after="2022-04-10">
   <owner>newcomer@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -547,7 +604,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ContextMenu.UserJourneyTime" units="ms"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>andrewxu@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -608,7 +665,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ControlToVDelay" units="ms"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>gzadina@google.com</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -623,7 +680,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.Lifetime" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>newcomer@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -633,7 +690,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.Runtime" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>newcomer@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -643,7 +700,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.ClipboardHistory.ImageModelRequest.StopReason"
-    enum="RequestStopReason" expires_after="2022-02-20">
+    enum="RequestStopReason" expires_after="2022-04-24">
   <owner>newcomer@chromium.org</owner>
   <owner>multipaste@google.com</owner>
   <summary>
@@ -764,7 +821,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.AnimationSmoothness.DeskActivation" units="%"
-    expires_after="2022-01-30">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>mukai@chromium.org</owner>
@@ -789,7 +846,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.AnimationSmoothness.DeskRemoval" units="%"
-    expires_after="2021-11-29">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>mukai@chromium.org</owner>
@@ -812,8 +869,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desks.BentoBarIsVisible" enum="Boolean"
+    expires_after="2022-05-19">
+  <owner>minch@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emits true when the bento bar is created for the user. Will not emit false
+    if the bento bar has never been created for the user. This will be used to
+    count the number of users who saw the bento bar.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Desks.ConsecutiveDailyVisits" units="days"
-    expires_after="2022-02-19">
+    expires_after="2022-04-24">
   <owner>chinsenj@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -867,7 +935,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.DesksCount3" units="units"
-    expires_after="2021-11-29">
+    expires_after="2022-04-03">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -878,7 +946,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.DesksSwitch" enum="DesksSwitchSource"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -889,7 +957,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.MoveWindowFromActiveDesk"
-    enum="DesksMoveWindowFromActiveDeskSource" expires_after="2021-12-12">
+    enum="DesksMoveWindowFromActiveDeskSource" expires_after="2022-04-03">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -904,7 +972,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NewDesk2" enum="DesksCreationRemovalSource"
-    expires_after="2021-12-19">
+    expires_after="2022-04-03">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -915,7 +983,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfDeskTraversals" units="units"
-    expires_after="2022-01-09">
+    expires_after="2022-04-24">
   <owner>afakhry@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -929,7 +997,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_1" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-03">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -939,7 +1007,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_2" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -949,7 +1017,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_3" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -959,7 +1027,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_4" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -969,7 +1037,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_5" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -979,7 +1047,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_6" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -989,7 +1057,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_7" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -999,7 +1067,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfWindowsOnDesk_8" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-24">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -1009,7 +1077,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.PresentationTime.UpdateGesture" units="ms"
-    expires_after="2022-01-23">
+    expires_after="2022-03-27">
   <owner>afakhry@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -1038,12 +1106,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Desks.RemoveDesk" enum="DesksCreationRemovalSource"
-    expires_after="2022-01-30">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
     Emitted when a virtual desk is removed to specify the source of this remove
     operation, i.e. whether from the close-desk button, or keyboard shortcut.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.UserHasUsedDesksRecently" enum="Boolean"
+    expires_after="2022-05-19">
+  <owner>minch@chromium.org</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted true when first session started and detected user pref
+    `kUserHasUsedDesksRecently` has been set to true for the user. Will not emit
+    false otherwise. This will be used to count the number of users that
+    `kUserHasUsedDesksRecently` has been set to true.
   </summary>
 </histogram>
 
@@ -1121,7 +1201,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Display.InternalDisplay.ActiveEffectiveResolution"
-    enum="EffectiveResolution" expires_after="2021-10-31">
+    enum="EffectiveResolution" expires_after="2022-04-03">
   <owner>malaykeshav@chromium.org</owner>
   <owner>oshima@chromium.org</owner>
   <summary>
@@ -1325,7 +1405,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.HotseatTransition.Drag.PresentationTime" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-04-10">
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -1398,7 +1478,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.InteractiveWindowResize.TimeToPresent" units="ms"
-    expires_after="2021-12-10">
+    expires_after="2022-04-17">
   <owner>oshima@chromium.org</owner>
   <owner>mukai@chromium.org</owner>
   <summary>
@@ -1566,7 +1646,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.LoginAnimation.Duration" units="ms"
-    expires_after="2021-12-10">
+    expires_after="2022-04-17">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -1580,7 +1660,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.LoginAnimation.Jank" units="%"
-    expires_after="2021-12-10">
+    expires_after="2022-05-01">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -1593,7 +1673,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.LoginAnimation.Smoothness" units="%"
-    expires_after="2021-12-10">
+    expires_after="2022-04-24">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -1606,7 +1686,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Media.CameraPrivacySwitch.Event"
-    enum="CameraPrivacySwitchEvent" expires_after="2021-12-31">
+    enum="CameraPrivacySwitchEvent" expires_after="2022-05-01">
   <owner>tbarzic@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1624,7 +1704,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Media.CameraPrivacySwitch.TimeFromNotificationToOff"
-    units="5 seconds" expires_after="2021-12-31">
+    units="5 seconds" expires_after="2022-05-01">
   <owner>tbarzic@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1714,7 +1794,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.NightLight.AutoNightLightNotificationState"
-    enum="AshAutoNightLightNotificationState" expires_after="2022-01-30">
+    enum="AshAutoNightLightNotificationState" expires_after="2022-05-01">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -1736,7 +1816,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.NightLight.ScheduleType" enum="AshNightLightScheduleType"
-    expires_after="2022-01-16">
+    expires_after="2022-04-24">
   <owner>afakhry@chromium.org</owner>
   <summary>
     The selected Night Light schedule type. Emitted when the user changes the
@@ -1804,7 +1884,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.NumberOfVisibleWindowsInPrimaryDisplay" units="Windows"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>jamescook@chromium.org</owner>
   <summary>
     An upper bound on the number of windows visible to the user on the primary
@@ -1815,7 +1895,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.Overview.AnimationSmoothness.Close" units="%"
-    expires_after="2021-12-31">
+    expires_after="2022-04-10">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -1929,7 +2009,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Overview.Scroll.PresentationTime.TabletMode" units="ms"
-    expires_after="2021-12-31">
+    expires_after="2022-04-17">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -2051,12 +2131,37 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Ash.PersistentWindow.NumOfWindowsRestored" units="units"
     expires_after="M82">
+  <obsolete>
+    Expired on M82. Marked as obsolete on 10/2021. Replaced by
+    Ash.PersistentWindow.NumOfWindowsRestoredOnDisplayAdded.
+  </obsolete>
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     The number of windows restored in multi-display scenario, such as due to
     disconnecting and reconnecting display, enabling and disabling mirror mode,
     entering and leaving dock mode. Zero is not recorded.
+  </summary>
+</histogram>
+
+<histogram name="Ash.PersistentWindow.NumOfWindowsRestoredOnDisplayAdded"
+    units="units" expires_after="2022-10-31">
+  <owner>minch@chromium.org</owner>
+  <owner>fanafan@chromium.org</owner>
+  <summary>
+    The number of windows restored in multi-display scenario, such as due to
+    disconnecting and reconnecting display, enabling and disabling mirror mode,
+    entering and leaving dock mode. Zero is not recorded.
+  </summary>
+</histogram>
+
+<histogram name="Ash.PersistentWindow.NumOfWindowsRestoredOnScreenRotation"
+    units="units" expires_after="2022-10-31">
+  <owner>minch@chromium.org</owner>
+  <owner>fanafan@chromium.org</owner>
+  <summary>
+    Emits the number of windows bounds restored when rotating the screen back to
+    the previous screen orientation. Zero is not recorded.
   </summary>
 </histogram>
 
@@ -2182,13 +2287,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Pip.AndroidPipUseTime" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-04-24">
   <owner>takise@chromium.org</owner>
   <owner>linben@chromium.org</owner>
   <summary>How long Android PIP was used for, upon ending the session.</summary>
 </histogram>
 
-<histogram name="Ash.Pip.Events" enum="AshPipEvents" expires_after="2021-12-19">
+<histogram name="Ash.Pip.Events" enum="AshPipEvents" expires_after="2022-04-17">
   <owner>takise@chromium.org</owner>
   <owner>linben@chromium.org</owner>
   <summary>
@@ -2263,7 +2368,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Rotation.AnimationSmoothness" units="%"
-    expires_after="2021-12-12">
+    expires_after="2022-04-10">
   <owner>oshima@chromium.org</owner>
   <owner>wutao@chromium.org</owner>
   <summary>
@@ -2340,7 +2445,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Shelf.NumberOfItems" units="Icons"
-    expires_after="2021-12-26">
+    expires_after="2022-04-24">
   <owner>anasalazar@google.com</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -2429,7 +2534,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.Assistant.GestureType"
-    enum="AssistantGestureType" expires_after="2021-12-12">
+    enum="AssistantGestureType" expires_after="2022-05-01">
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -2494,7 +2599,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Shelf.Palette.Usage" enum="PaletteTrayOptions"
-    expires_after="2021-12-12">
+    expires_after="2022-04-17">
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -2709,7 +2814,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SplitView.TimeInSplitView" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-04-17">
   <owner>xdai@chromium.org</owner>
   <summary>
     The amount of time that the user spent in split view mode. The time is
@@ -2741,7 +2846,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SplitViewResize.AnimationSmoothness.DividerAnimation"
-    units="%" expires_after="2021-12-26">
+    units="%" expires_after="2022-04-17">
   <owner>sammiequon@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -2803,7 +2908,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SwipeDownDrag.Tab.PresentationTime.MaxLatency.TabletMode"
-    units="ms" expires_after="2021-12-19">
+    units="ms" expires_after="2022-06-30">
   <owner>xdai@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -2813,7 +2918,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SwipeDownDrag.Tab.PresentationTime.TabletMode" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-06-30">
   <owner>xdai@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>Presentation time while dragging a tab in tablet mode.</summary>
@@ -2821,7 +2926,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Ash.SwipeDownDrag.Window.PresentationTime.MaxLatency.TabletMode"
-    units="ms" expires_after="2021-10-18">
+    units="ms" expires_after="2022-06-30">
   <owner>xdai@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -2831,7 +2936,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SwipeDownDrag.Window.PresentationTime.TabletMode"
-    units="ms" expires_after="2021-10-18">
+    units="ms" expires_after="2022-06-30">
   <owner>xdai@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -2840,7 +2945,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SwipeHomeToOverviewGesture"
-    enum="SwipeHomeToOverviewResult" expires_after="2021-12-12">
+    enum="SwipeHomeToOverviewResult" expires_after="2022-05-01">
   <owner>andrewxu@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -2850,7 +2955,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.SystemMenu.DefaultView.VisibleRows"
-    enum="SystemMenuDefaultViewRows" expires_after="2021-12-12">
+    enum="SystemMenuDefaultViewRows" expires_after="2022-04-24">
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -2912,7 +3017,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TabletMode.AnimationSmoothness.Enter" units="%"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2923,7 +3028,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TabletMode.AnimationSmoothness.Exit" units="%"
-    expires_after="2021-12-26">
+    expires_after="2022-04-24">
   <owner>oshima@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2968,7 +3073,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TouchView.LidAngle" units="degrees"
-    expires_after="2021-12-05">
+    expires_after="2022-04-03">
   <owner>oshima@chromium.org</owner>
   <summary>
     Chrome OS only. The computed angle between the lid and the keyboard panel.
@@ -2979,7 +3084,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActive" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-04-03">
   <owner>girard@chromium.org</owner>
   <summary>
     The length of time that TouchView is active, for each activation.
@@ -2987,25 +3092,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActivePercentage" units="%"
-    expires_after="2021-12-12">
+    expires_after="2022-04-03">
   <owner>girard@chromium.org</owner>
   <summary>The proportion of time spent in TouchView during a session.</summary>
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewActiveTotal" units="minutes"
-    expires_after="2021-12-12">
+    expires_after="2022-04-03">
   <owner>girard@chromium.org</owner>
   <summary>The total time that TouchView is active during a session.</summary>
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewInactive" units="ms"
-    expires_after="2021-11-21">
+    expires_after="2022-04-03">
   <owner>girard@chromium.org</owner>
   <summary>The length of time between TouchView activations.</summary>
 </histogram>
 
 <histogram name="Ash.TouchView.TouchViewInactiveTotal" units="minutes"
-    expires_after="2021-12-26">
+    expires_after="2022-04-03">
   <owner>girard@chromium.org</owner>
   <summary>
     The total time that TouchView is not active during a session.
@@ -3027,7 +3132,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.UnlockAnimation.Jank" units="%"
-    expires_after="2021-12-10">
+    expires_after="2022-04-17">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -3040,7 +3145,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Ash.UnlockAnimation.Smoothness" units="%"
-    expires_after="2021-12-10">
+    expires_after="2022-04-17">
   <owner>oshima@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
 <!-- Name completed by histogram_suffixes
@@ -3050,6 +3155,104 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Relative smoothness of all animations applied during the unlock process.
     100% represents the ideal smoothness for 60 frames per second.
   </summary>
+</histogram>
+
+<histogram name="Ash.UserDataStatsRecorder.DataSize.{ItemName}" units="MB"
+    expires_after="M101">
+  <owner>ythjkt@chromium.org</owner>
+  <owner>hidehiko@chromium.org</owner>
+  <summary>
+    Records the size of each file/dir directly under user data directory.
+  </summary>
+  <token key="ItemName">
+    <variant name="AccountManagerTokensBin"/>
+    <variant name="Accounts"/>
+    <variant name="AffiliationDatabase"/>
+    <variant name="AppRankerPb"/>
+    <variant name="ArcApps"/>
+    <variant name="Autobrightness"/>
+    <variant name="AutofillStrikeDatabase"/>
+    <variant name="BlobStorage"/>
+    <variant name="Bookmarks"/>
+    <variant name="BrowserDataMigrator"/>
+    <variant name="BudgetDatabase"/>
+    <variant name="Cache"/>
+    <variant name="CodeCache"/>
+    <variant name="Cookies"/>
+    <variant name="CrostiniIcons"/>
+    <variant name="Databases"/>
+    <variant name="DataReductionProxyLeveldb"/>
+    <variant name="DNRExtensionRules"/>
+    <variant name="Downloads"/>
+    <variant name="DownloadService"/>
+    <variant name="ExtensionCookies"/>
+    <variant name="ExtensionInstallLog"/>
+    <variant name="ExtensionRules"/>
+    <variant name="Extensions"/>
+    <variant name="ExtensionState"/>
+    <variant name="Favicons"/>
+    <variant name="FeatureEngagementTracker"/>
+    <variant name="FileSystem"/>
+    <variant name="FullRestoreData"/>
+    <variant name="GCache"/>
+    <variant name="GCMStore"/>
+    <variant name="GoogleAssistantLibrary"/>
+    <variant name="GPUCache"/>
+    <variant name="HeavyAdInterventionOptOutDb"/>
+    <variant name="History"/>
+    <variant name="IndexedDB"/>
+    <variant name="LocalAppSettings"/>
+    <variant name="LocalExtensionSettings"/>
+    <variant name="LocalStorage"/>
+    <variant name="LOCK"/>
+    <variant name="LOG"/>
+    <variant name="LoginData"/>
+    <variant name="LoginDataForAccount"/>
+    <variant name="LoginTimes"/>
+    <variant name="LOGOld"/>
+    <variant name="LogoutTimes"/>
+    <variant name="ManagedExtensionSettings"/>
+    <variant name="MyFiles"/>
+    <variant name="NearbySharePublicCertificateDatabase"/>
+    <variant name="NetworkActionPredictor"/>
+    <variant name="NetworkPersistentState"/>
+    <variant name="OptimizationGuideHintCacheStore"/>
+    <variant name="OptimizationGuideModelAndFeaturesStore"/>
+    <variant name="PlatformNotifications"/>
+    <variant name="Policy"/>
+    <variant name="PPDCache"/>
+    <variant name="Preferences"/>
+    <variant name="PreferredApps"/>
+    <variant name="PreviewsOptOutDb"/>
+    <variant name="PrintJobDatabase"/>
+    <variant name="QuotaManager"/>
+    <variant name="README"/>
+    <variant name="ReportingAndNEL"/>
+    <variant name="RLZData"/>
+    <variant name="ServiceWorker"/>
+    <variant name="Sessions"/>
+    <variant name="SessionStorage"/>
+    <variant name="SharedProtoDb"/>
+    <variant name="Shortcuts"/>
+    <variant name="SiteCharacteristicsDatabase"/>
+    <variant name="Smartcharging"/>
+    <variant name="StructuredMetrics"/>
+    <variant name="SyncAppSettings"/>
+    <variant name="SyncData"/>
+    <variant name="SyncExtensionSettings"/>
+    <variant name="TopSites"/>
+    <variant name="TranslateRankerModel"/>
+    <variant name="TransportSecurity"/>
+    <variant name="TrustedVault"/>
+    <variant name="Unknown"/>
+    <variant name="VisitedLinks"/>
+    <variant name="WebApplications"/>
+    <variant name="WebData"/>
+    <variant name="WebrtcEventLogs"/>
+    <variant name="WebRTCLogs"/>
+    <variant name="ZeroStateGroupRankerPb"/>
+    <variant name="ZeroStateLocalFilesPb"/>
+  </token>
 </histogram>
 
 <histogram name="Ash.Wallpaper.Collection" enum="WallpaperCollection"
@@ -3074,7 +3277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Wallpaper.CustomLayout" enum="WallpaperLayout"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>xdai@chromium.org</owner>
   <summary>
     The custom wallpaper layout type. Recorded when the user sets a new custom
@@ -3103,7 +3306,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Wallpaper.Source" enum="WallpaperType"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>xdai@chromium.org</owner>
   <summary>
     Recorded when a new wallpaper is set, either by the built-in Wallpaper
@@ -3113,13 +3316,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.Wallpaper.Type" enum="WallpaperType"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>kuscher@google.com</owner>
   <summary>The wallpaper type. Recorded at user login.</summary>
 </histogram>
 
 <histogram name="Ash.Window.AnimationSmoothness.CrossFade" units="%"
-    expires_after="2021-12-05">
+    expires_after="2022-04-10">
   <owner>wutao@chromium.org</owner>
   <summary>
     Relative smoothness of cross fade animation when setting window bounds. 100%
@@ -3197,7 +3400,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.DesksSwitchDistance" units="units"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -3221,7 +3424,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.Items" units="items"
-    expires_after="2022-01-23">
+    expires_after="2022-04-10">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
@@ -3256,7 +3459,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.TimeBetweenTaskSwitches"
-    units="seconds" expires_after="2021-12-12">
+    units="seconds" expires_after="2022-04-17">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
@@ -3267,7 +3470,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.WindowCycleView.AnimationSmoothness.Container" units="%"
-    expires_after="2022-01-02">
+    expires_after="2022-04-10">
   <owner>yjliu@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -3279,7 +3482,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Ash.WindowCycleView.AnimationSmoothness.Show" units="%"
-    expires_after="2021-12-12">
+    expires_after="2022-04-10">
   <owner>yjliu@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>

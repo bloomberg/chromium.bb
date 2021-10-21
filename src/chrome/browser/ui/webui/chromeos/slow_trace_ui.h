@@ -26,6 +26,10 @@ namespace chromeos {
 class SlowTraceSource : public content::URLDataSource {
  public:
   SlowTraceSource();
+
+  SlowTraceSource(const SlowTraceSource&) = delete;
+  SlowTraceSource& operator=(const SlowTraceSource&) = delete;
+
   ~SlowTraceSource() override;
 
   // content::URLDataSource implementation.
@@ -40,16 +44,14 @@ class SlowTraceSource : public content::URLDataSource {
  private:
   void OnGetTraceData(content::URLDataSource::GotDataCallback callback,
                       scoped_refptr<base::RefCountedString> trace_data);
-
-  DISALLOW_COPY_AND_ASSIGN(SlowTraceSource);
 };
 
 class SlowTraceController : public content::WebUIController {
  public:
   explicit SlowTraceController(content::WebUI* web_ui);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SlowTraceController);
+  SlowTraceController(const SlowTraceController&) = delete;
+  SlowTraceController& operator=(const SlowTraceController&) = delete;
 };
 
 } // namespace chromeos

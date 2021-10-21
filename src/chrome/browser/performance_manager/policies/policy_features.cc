@@ -32,7 +32,7 @@ const base::Feature kTrimArcOnMemoryPressure{"TrimArcOnMemoryPressure",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTrimArcVmOnMemoryPressure{
-    "TrimArcVmOnMemoryPressure", base::FEATURE_ENABLED_BY_DEFAULT};
+    "TrimArcVmOnMemoryPressure", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrimOnFreeze{"TrimOnFreeze",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
@@ -62,19 +62,17 @@ const base::FeatureParam<int> kArcProcessInactivityTimeSec = {
     &kTrimArcOnMemoryPressure, "ArcProcessInactivityTimeSec", 600};
 
 const base::FeatureParam<base::TimeDelta> kArcVmInactivityTimeMs = {
-    &kTrimArcVmOnMemoryPressure, "ArcVmInactivityTimeMs",
-    base::TimeDelta::FromSeconds(600)};
+    &kTrimArcVmOnMemoryPressure, "ArcVmInactivityTimeMs", base::Seconds(1200)};
 
 const base::FeatureParam<base::TimeDelta> kArcVmTrimBackoffTimeMs = {
-    &kTrimArcVmOnMemoryPressure, "ArcVmTrimBackoffTimeMs",
-    base::TimeDelta::FromSeconds(900)};
+    &kTrimArcVmOnMemoryPressure, "ArcVmTrimBackoffTimeMs", base::Seconds(1800)};
 
 const base::FeatureParam<bool> kTrimArcVmOnCriticalPressure = {
     &kTrimArcVmOnMemoryPressure, "TrimArcVmOnCriticalPressure", false};
 
 const base::FeatureParam<bool> kTrimArcVmOnFirstMemoryPressureAfterArcVmBoot = {
     &kTrimArcVmOnMemoryPressure, "TrimArcVmOnFirstMemoryPressureAfterArcVmBoot",
-    true};
+    false};
 
 // Specifies the minimum amount of time a parent frame node must be invisible
 // before considering the process node for working set trim.
@@ -95,16 +93,14 @@ TrimOnMemoryPressureParams& TrimOnMemoryPressureParams::operator=(
 TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
   TrimOnMemoryPressureParams params;
   params.graph_walk_backoff_time =
-      base::TimeDelta::FromSeconds(kGraphWalkBackoffTimeSec.Get());
-  params.node_invisible_time =
-      base::TimeDelta::FromSeconds(kNodeInvisibileTimeSec.Get());
-  params.node_trim_backoff_time =
-      base::TimeDelta::FromSeconds(kNodeTrimBackoffTimeSec.Get());
+      base::Seconds(kGraphWalkBackoffTimeSec.Get());
+  params.node_invisible_time = base::Seconds(kNodeInvisibileTimeSec.Get());
+  params.node_trim_backoff_time = base::Seconds(kNodeTrimBackoffTimeSec.Get());
 
   params.arc_process_trim_backoff_time =
-      base::TimeDelta::FromSeconds(kArcProcessTrimBackoffTimeSec.Get());
+      base::Seconds(kArcProcessTrimBackoffTimeSec.Get());
   params.arc_process_list_fetch_backoff_time =
-      base::TimeDelta::FromSeconds(kArcProcessListFetchBackoffTimeSec.Get());
+      base::Seconds(kArcProcessListFetchBackoffTimeSec.Get());
   params.trim_arc_system_processes = kTrimArcSystemProcesses.Get();
   params.trim_arc_app_processes = kTrimArcAppProcesses.Get();
   params.trim_arc_aggressive = kTrimArcAggressive.Get();
@@ -112,8 +108,7 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
 
   const int arc_inactivity_time = kArcProcessInactivityTimeSec.Get();
   if (arc_inactivity_time > 0) {
-    params.arc_process_inactivity_time =
-        base::TimeDelta::FromSeconds(arc_inactivity_time);
+    params.arc_process_inactivity_time = base::Seconds(arc_inactivity_time);
   } else {
     // This causes us to ignore the last activity time if it was not configured.
     params.arc_process_inactivity_time = base::TimeDelta::Min();

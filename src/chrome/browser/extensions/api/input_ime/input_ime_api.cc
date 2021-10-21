@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/extension_registry.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_keymap.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keymap.h"
 #include "ui/base/ime/constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -548,6 +548,7 @@ InputImeAPI::InputImeAPI(content::BrowserContext* context)
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
   event_router->RegisterObserver(
       this, api::input_method_private::OnFocus::kEventName);
+  event_router->RegisterObserver(this, input_ime::OnKeyEvent::kEventName);
 }
 
 InputImeAPI::~InputImeAPI() = default;

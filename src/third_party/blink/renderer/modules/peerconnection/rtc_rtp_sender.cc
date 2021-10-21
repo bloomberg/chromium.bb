@@ -337,7 +337,7 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   webrtc_encoding.network_priority =
       PriorityToEnum(encoding->networkPriority());
   if (encoding->hasMaxBitrate()) {
-    webrtc_encoding.max_bitrate_bps = clampTo<int>(encoding->maxBitrate());
+    webrtc_encoding.max_bitrate_bps = ClampTo<int>(encoding->maxBitrate());
   }
   if (encoding->hasScaleResolutionDownBy()) {
     webrtc_encoding.scale_resolution_down_by =
@@ -383,7 +383,11 @@ RTCRtpCodecParameters* ToRtpCodecParameters(
     for (const auto& parameter : webrtc_codec.parameters) {
       if (!sdp_fmtp_line.empty())
         sdp_fmtp_line += ";";
-      sdp_fmtp_line += parameter.first + "=" + parameter.second;
+      if (parameter.first.empty()) {
+        sdp_fmtp_line += parameter.second;
+      } else {
+        sdp_fmtp_line += parameter.first + "=" + parameter.second;
+      }
     }
     codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
   }
@@ -766,7 +770,11 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
       for (const auto& parameter : rtc_codec.parameters) {
         if (!sdp_fmtp_line.empty())
           sdp_fmtp_line += ";";
-        sdp_fmtp_line += parameter.first + "=" + parameter.second;
+        if (parameter.first.empty()) {
+          sdp_fmtp_line += parameter.second;
+        } else {
+          sdp_fmtp_line += parameter.first + "=" + parameter.second;
+        }
       }
       codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
     }
@@ -784,8 +792,7 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
         modes.push_back("L1T3");
         codec->setScalabilityModes(modes);
       }
-    } else if (rtc_codec.mime_type() == "video/AV1" ||
-               rtc_codec.mime_type() == "video/AV1X") {
+    } else if (rtc_codec.mime_type() == "video/AV1") {
       Vector<String> modes;
       modes.push_back("L1T2");
       modes.push_back("L1T3");
@@ -820,7 +827,7 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(ScriptState* state,
     IdentifiableTokenBuilder builder;
     IdentifiabilityAddRTCRtpCapabilitiesToBuilder(builder, *capabilities);
     IdentifiabilityMetricBuilder(ExecutionContext::From(state)->UkmSourceID())
-        .Set(IdentifiableSurface::FromTypeAndToken(
+        .Add(IdentifiableSurface::FromTypeAndToken(
                  IdentifiableSurface::Type::kRtcRtpSenderGetCapabilities,
                  IdentifiabilityBenignStringToken(kind)),
              builder.GetToken())
@@ -941,7 +948,8 @@ void RTCRtpSender::InitializeEncodedVideoStreams(ScriptState* script_state) {
                                     ->GetEncodedVideoStreamTransformer()
                               : nullptr;
               },
-              WrapWeakPersistent(this)));
+              WrapWeakPersistent(this)),
+          webrtc::TransformableFrameInterface::Direction::kSender);
   // The high water mark for the stream is set to 1 so that the stream is
   // ready to write, but without queuing frames.
   WritableStream* writable_stream =

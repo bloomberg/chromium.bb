@@ -255,6 +255,10 @@ class SSLInterstitialTimerObserver {
     SSLErrorHandler::SetInterstitialTimerStartedCallbackForTesting(&callback_);
   }
 
+  SSLInterstitialTimerObserver(const SSLInterstitialTimerObserver&) = delete;
+  SSLInterstitialTimerObserver& operator=(const SSLInterstitialTimerObserver&) =
+      delete;
+
   ~SSLInterstitialTimerObserver() {
     SSLErrorHandler::SetInterstitialTimerStartedCallbackForTesting(nullptr);
   }
@@ -277,14 +281,18 @@ class SSLInterstitialTimerObserver {
   SSLErrorHandler::TimerStartedCallback callback_;
 
   std::unique_ptr<base::RunLoop> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLInterstitialTimerObserver);
 };
 
 class ChromeContentBrowserClientForMixedContentTest
     : public ChromeContentBrowserClient {
  public:
   ChromeContentBrowserClientForMixedContentTest() {}
+
+  ChromeContentBrowserClientForMixedContentTest(
+      const ChromeContentBrowserClientForMixedContentTest&) = delete;
+  ChromeContentBrowserClientForMixedContentTest& operator=(
+      const ChromeContentBrowserClientForMixedContentTest&) = delete;
+
   void OverrideWebkitPrefs(
       content::WebContents* web_contents,
       blink::web_pref::WebPreferences* web_prefs) override {
@@ -306,8 +314,6 @@ class ChromeContentBrowserClientForMixedContentTest
   bool allow_running_insecure_content_ = false;
   bool strict_mixed_content_checking_ = false;
   bool strictly_block_blockable_mixed_content_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientForMixedContentTest);
 };
 
 // Wrapper around content::SetBrowserClientForTesting() that ensures the
@@ -451,6 +457,9 @@ class SSLUITestBase : public InProcessBrowserTest,
         net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
     https_server_common_name_only_.AddDefaultHandlers(GetChromeTestDataDir());
   }
+
+  SSLUITestBase(const SSLUITestBase&) = delete;
+  SSLUITestBase& operator=(const SSLUITestBase&) = delete;
 
   void SetUp() override {
     policy_provider_.SetDefaultReturns(
@@ -699,9 +708,9 @@ class SSLUITestBase : public InProcessBrowserTest,
     // Set network time back ten minutes, which is sufficient to
     // trigger the reporting.
     g_browser_process->network_time_tracker()->UpdateNetworkTime(
-        base::Time::Now() - base::TimeDelta::FromMinutes(10),
-        base::TimeDelta::FromMilliseconds(1),   /* resolution */
-        base::TimeDelta::FromMilliseconds(500), /* latency */
+        base::Time::Now() - base::Minutes(10),
+        base::Milliseconds(1),   /* resolution */
+        base::Milliseconds(500), /* latency */
         base::TimeTicks::Now() /* posting time of this update */);
 
     // Opt in to sending reports for invalid certificate chains.
@@ -896,9 +905,6 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   network::mojom::SSLConfig last_ssl_config_;
   mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SSLUITestBase);
 };
 
 class SSLUITest : public SSLUITestBase {
@@ -909,6 +915,9 @@ class SSLUITest : public SSLUITestBase {
         /* disabled_features */ {blink::features::kMixedContentAutoupgrade});
   }
 
+  SSLUITest(const SSLUITest&) = delete;
+  SSLUITest& operator=(const SSLUITest&) = delete;
+
  protected:
   void DontProceedThroughInterstitial(WebContents* tab) override {
     content::TestNavigationObserver nav_observer(tab, 1);
@@ -918,7 +927,6 @@ class SSLUITest : public SSLUITestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
 
 class SSLUITestBlock : public SSLUITest {
@@ -1272,8 +1280,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSameDocumentNavigation) {
 
 // Tests that the WebContents's flag for displaying content with cert
 // errors get cleared upon navigation.
-// Flaky on Mac. https://crbug.com/1242369.
-#if defined(OS_MAC)
+// Flaky on Mac, Linux, ChromeOS. https://crbug.com/1242369.
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DisplayedContentWithCertErrorsClearedOnNavigation \
   DISABLED_DisplayedContentWithCertErrorsClearedOnNavigation
 #else
@@ -1548,7 +1556,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingBuildTime) {
   std::unique_ptr<base::SimpleTestClock> mock_clock(
       new base::SimpleTestClock());
   mock_clock->SetNow(base::Time::NowFromSystemTime());
-  mock_clock->Advance(base::TimeDelta::FromDays(367));
+  mock_clock->Advance(base::Days(367));
   SSLErrorHandler::SetClockForTesting(mock_clock.get());
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
@@ -1569,9 +1577,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingNetwork) {
   // Set network forward ten minutes, which is sufficient to trigger
   // the interstitial.
   g_browser_process->network_time_tracker()->UpdateNetworkTime(
-      base::Time::Now() + base::TimeDelta::FromMinutes(10),
-      base::TimeDelta::FromMilliseconds(1),   /* resolution */
-      base::TimeDelta::FromMilliseconds(500), /* latency */
+      base::Time::Now() + base::Minutes(10),
+      base::Milliseconds(1),   /* resolution */
+      base::Milliseconds(500), /* latency */
       base::TimeTicks::Now() /* posting time of this update */);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -1712,6 +1720,12 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
         true);
   }
+
+  CertificateTransparencySSLUITest(const CertificateTransparencySSLUITest&) =
+      delete;
+  CertificateTransparencySSLUITest& operator=(
+      const CertificateTransparencySSLUITest&) = delete;
+
   ~CertificateTransparencySSLUITest() override {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
         absl::nullopt);
@@ -1777,8 +1791,6 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
   net::EmbeddedTestServer https_server_;
 
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertificateTransparencySSLUITest);
 };
 
 // Visit an HTTPS page that has a publicly trusted certificate issued after
@@ -2421,6 +2433,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestExtensionEvents) {
   class ExtensionEventObserver : public extensions::EventRouter::TestObserver {
    public:
     ExtensionEventObserver() = default;
+
+    ExtensionEventObserver(const ExtensionEventObserver&) = delete;
+    ExtensionEventObserver& operator=(const ExtensionEventObserver&) = delete;
+
     ~ExtensionEventObserver() override = default;
 
     // extensions::EventRouter::TestObserver:
@@ -2434,8 +2450,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestExtensionEvents) {
 
    private:
     std::vector<std::string> event_names_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionEventObserver);
   };
 
   ExtensionEventObserver observer;
@@ -3122,6 +3136,11 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
   SSLUITestWaitForDOMNotification()
       : SSLUITestIgnoreCertErrors(), run_loop_(nullptr) {}
 
+  SSLUITestWaitForDOMNotification(const SSLUITestWaitForDOMNotification&) =
+      delete;
+  SSLUITestWaitForDOMNotification& operator=(
+      const SSLUITestWaitForDOMNotification&) = delete;
+
   ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); }
 
   void SetUpOnMainThread() override {
@@ -3153,8 +3172,6 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
   content::NotificationRegistrar registrar_;
   std::string expected_notification_;
   base::RunLoop* run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUITestWaitForDOMNotification);
 };
 
 // Tests that a mixed resource which includes HTTP in the redirect chain
@@ -3451,6 +3468,9 @@ class SSLUIWorkerFetchTest
  public:
   SSLUIWorkerFetchTest() { EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir()); }
 
+  SSLUIWorkerFetchTest(const SSLUIWorkerFetchTest&) = delete;
+  SSLUIWorkerFetchTest& operator=(const SSLUIWorkerFetchTest&) = delete;
+
   ~SSLUIWorkerFetchTest() override {}
 
   void SetUpOnMainThread() override { SSLUITestBase::SetUpOnMainThread(); }
@@ -3639,8 +3659,6 @@ class SSLUIWorkerFetchTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUIWorkerFetchTest);
 };
 
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
@@ -4570,7 +4588,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // Set up the build and current clock times to be more than a year apart.
   base::SimpleTestClock mock_clock;
   mock_clock.SetNow(base::Time::NowFromSystemTime());
-  mock_clock.Advance(base::TimeDelta::FromDays(367));
+  mock_clock.Advance(base::Days(367));
   SSLErrorHandler::SetClockForTesting(&mock_clock);
   ssl_errors::SetBuildTimeForTesting(base::Time::NowFromSystemTime());
 
@@ -4616,6 +4634,10 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
         {{"FetchBehavior", "on-demand-only"}});
   }
 
+  SSLNetworkTimeBrowserTest(const SSLNetworkTimeBrowserTest&) = delete;
+  SSLNetworkTimeBrowserTest& operator=(const SSLNetworkTimeBrowserTest&) =
+      delete;
+
   ~SSLNetworkTimeBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -4656,8 +4678,6 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_response_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
 };
 
 // Tests that if an on-demand network time fetch returns that the clock
@@ -4675,8 +4695,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, OnDemandFetchClockOk) {
   ssl_errors::SetBuildTimeForTesting(testing_clock.Now());
 
   // Set a long timeout to ensure that the on-demand time fetch completes.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -4718,14 +4737,13 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, OnDemandFetchClockWrong) {
   SSLErrorHandler::SetClockForTesting(&testing_clock);
   testing_clock.SetNow(
       base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime[0]));
-  testing_clock.Advance(base::TimeDelta::FromDays(30));
+  testing_clock.Advance(base::Days(30));
   // Set the build time to match the testing clock, to ensure that the
   // build time heuristic doesn't fire.
   ssl_errors::SetBuildTimeForTesting(testing_clock.Now());
 
   // Set a long timeout to ensure that the on-demand time fetch completes.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -4787,8 +4805,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
 IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, StopBeforeTimeoutExpires) {
   ASSERT_TRUE(https_server_expired_.Start());
   // Set the timer to a long delay.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
@@ -4825,8 +4842,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, StopBeforeTimeoutExpires) {
 IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, ReloadBeforeTimeoutExpires) {
   ASSERT_TRUE(https_server_expired_.Start());
   // Set the timer to a long delay.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
@@ -4863,8 +4879,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
   ASSERT_TRUE(https_server_expired_.Start());
   ASSERT_TRUE(https_server_.Start());
   // Set the timer to a long delay.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
@@ -5222,8 +5237,7 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
   // Set delay long enough so that the page appears loading.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -5285,8 +5299,7 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
   // Set delay long enough so that the page appears loading.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -5346,8 +5359,7 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
   // Set delay long enough so that the page appears loading.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -5862,6 +5874,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
 class SSLUITestCustomCACerts : public SSLUITestNoCert {
  public:
   SSLUITestCustomCACerts() = default;
+
+  SSLUITestCustomCACerts(const SSLUITestCustomCACerts&) = delete;
+  SSLUITestCustomCACerts& operator=(const SSLUITestCustomCACerts&) = delete;
+
   ~SSLUITestCustomCACerts() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -5968,8 +5984,6 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
     *out_cert_db = cert_db;
     loop->Quit();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUITestCustomCACerts);
 };
 
 // Imports a trusted CA certiifcate into a profile's NSS database.
@@ -7318,6 +7332,10 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
   SSLUIMITMSoftwareTest()
       : CertVerifierBrowserTest(),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  SSLUIMITMSoftwareTest(const SSLUIMITMSoftwareTest&) = delete;
+  SSLUIMITMSoftwareTest& operator=(const SSLUIMITMSoftwareTest&) = delete;
+
   ~SSLUIMITMSoftwareTest() override {}
 
   void SetUpOnMainThread() override {
@@ -7435,7 +7453,6 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-  DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareTest);
 };
 
 // The SSLUIMITMSoftwareEnabled and Disabled test classes exist so that the
@@ -7452,6 +7469,10 @@ class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
         {kMITMSoftwareInterstitial} /* enabled */, {} /* disabled */);
   }
 
+  SSLUIMITMSoftwareEnabledTest(const SSLUIMITMSoftwareEnabledTest&) = delete;
+  SSLUIMITMSoftwareEnabledTest& operator=(const SSLUIMITMSoftwareEnabledTest&) =
+      delete;
+
   ~SSLUIMITMSoftwareEnabledTest() override {}
 
   void SetUpOnMainThread() override {
@@ -7460,8 +7481,6 @@ class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareEnabledTest);
 };
 
 class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
@@ -7471,6 +7490,10 @@ class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
         {} /* enabled */, {kMITMSoftwareInterstitial} /* disabled */);
   }
 
+  SSLUIMITMSoftwareDisabledTest(const SSLUIMITMSoftwareDisabledTest&) = delete;
+  SSLUIMITMSoftwareDisabledTest& operator=(
+      const SSLUIMITMSoftwareDisabledTest&) = delete;
+
   ~SSLUIMITMSoftwareDisabledTest() override {}
 
   void SetUpOnMainThread() override {
@@ -7479,8 +7502,6 @@ class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareDisabledTest);
 };
 
 }  // namespace
@@ -7760,6 +7781,11 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
 class TLSLegacyVersionSSLUITest : public SSLUITest {
  public:
   TLSLegacyVersionSSLUITest() = default;
+
+  TLSLegacyVersionSSLUITest(const TLSLegacyVersionSSLUITest&) = delete;
+  TLSLegacyVersionSSLUITest& operator=(const TLSLegacyVersionSSLUITest&) =
+      delete;
+
   ~TLSLegacyVersionSSLUITest() override = default;
 
   void SetUpOnMainThread() override {
@@ -7795,8 +7821,6 @@ class TLSLegacyVersionSSLUITest : public SSLUITest {
 
  private:
   content::ContentMockCertVerifier mock_cert_verifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(TLSLegacyVersionSSLUITest);
 };
 
 // TLS 1.2 should not trigger a warning.
@@ -7872,10 +7896,12 @@ class LegacyTLSInterstitialTest : public TLSLegacyVersionSSLUITest {
     feature_list_.InitAndEnableFeature(net::features::kLegacyTLSEnforced);
   }
 
+  LegacyTLSInterstitialTest(const LegacyTLSInterstitialTest&) = delete;
+  LegacyTLSInterstitialTest& operator=(const LegacyTLSInterstitialTest&) =
+      delete;
+
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyTLSInterstitialTest);
 };
 
 // When kLegacyTLSEnforcement is enabled, visiting a legacy TLS page should
@@ -8167,6 +8193,11 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
   SSLUIDynamicInterstitialTest()
       : CertVerifierBrowserTest(),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  SSLUIDynamicInterstitialTest(const SSLUIDynamicInterstitialTest&) = delete;
+  SSLUIDynamicInterstitialTest& operator=(const SSLUIDynamicInterstitialTest&) =
+      delete;
+
   ~SSLUIDynamicInterstitialTest() override {}
 
   void SetUpCertVerifier() {
@@ -8261,8 +8292,6 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLUIDynamicInterstitialTest);
 };
 
 }  // namespace

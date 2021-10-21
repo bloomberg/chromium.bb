@@ -77,17 +77,15 @@ const int kMaxBitrateBps = 1e8;  // 100 Mbps.
 // Frequency of polling the event and control data channels for their current
 // state while waiting for them to close.
 constexpr base::TimeDelta kDefaultDataChannelStatePollingInterval =
-    base::TimeDelta::FromMilliseconds(50);
+    base::Milliseconds(50);
 
 // The maximum amount of time we will wait for the data channels to close before
 // closing the PeerConnection.
-constexpr base::TimeDelta kWaitForDataChannelsClosedTimeout =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kWaitForDataChannelsClosedTimeout = base::Seconds(5);
 
 // The maximum amount of time we will wait for a thread join before we crash the
 // host.
-constexpr base::TimeDelta kWaitForThreadJoinTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kWaitForThreadJoinTimeout = base::Seconds(30);
 
 base::TimeDelta data_channel_state_polling_interval =
     kDefaultDataChannelStatePollingInterval;
@@ -165,6 +163,11 @@ class CreateSessionDescriptionObserver
         std::move(result_callback));
   }
 
+  CreateSessionDescriptionObserver(const CreateSessionDescriptionObserver&) =
+      delete;
+  CreateSessionDescriptionObserver& operator=(
+      const CreateSessionDescriptionObserver&) = delete;
+
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     std::move(result_callback_).Run(base::WrapUnique(desc), std::string());
   }
@@ -180,8 +183,6 @@ class CreateSessionDescriptionObserver
 
  private:
   ResultCallback result_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateSessionDescriptionObserver);
 };
 
 // A webrtc::SetSessionDescriptionObserver implementation used to receive the
@@ -196,6 +197,10 @@ class SetSessionDescriptionObserver
     return new rtc::RefCountedObject<SetSessionDescriptionObserver>(
         std::move(result_callback));
   }
+
+  SetSessionDescriptionObserver(const SetSessionDescriptionObserver&) = delete;
+  SetSessionDescriptionObserver& operator=(
+      const SetSessionDescriptionObserver&) = delete;
 
   void OnSuccess() override {
     std::move(result_callback_).Run(true, std::string());
@@ -212,8 +217,6 @@ class SetSessionDescriptionObserver
 
  private:
   ResultCallback result_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetSessionDescriptionObserver);
 };
 
 class RtcEventLogOutput : public webrtc::RtcEventLogOutput {
@@ -325,6 +328,9 @@ class WebrtcTransport::PeerConnectionWrapper
     thread_join_watchdog_ = std::make_unique<ThreadJoinWatchdog>();
   }
 
+  PeerConnectionWrapper(const PeerConnectionWrapper&) = delete;
+  PeerConnectionWrapper& operator=(const PeerConnectionWrapper&) = delete;
+
   ~PeerConnectionWrapper() override {
     thread_join_watchdog_->Arm();
 
@@ -426,8 +432,6 @@ class WebrtcTransport::PeerConnectionWrapper
   base::OnceClosure before_disarm_thread_join_watchdog_callback_;
 
   base::WeakPtr<WebrtcTransport> transport_;
-
-  DISALLOW_COPY_AND_ASSIGN(PeerConnectionWrapper);
 };
 
 WebrtcTransport::WebrtcTransport(
@@ -1184,9 +1188,9 @@ void WebrtcTransport::EnsurePendingTransportInfoMessage() {
 
     // Delay sending the new candidates in case we get more candidates
     // that we can send in one message.
-    transport_info_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &WebrtcTransport::SendTransportInfo);
+    transport_info_timer_.Start(FROM_HERE,
+                                base::Milliseconds(kTransportInfoSendDelayMs),
+                                this, &WebrtcTransport::SendTransportInfo);
   }
 }
 

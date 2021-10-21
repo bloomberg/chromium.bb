@@ -143,6 +143,10 @@ class CastWebContents : public mojom::CastWebContents {
   static CastWebContents* FromWebContents(content::WebContents* web_contents);
 
   CastWebContents();
+
+  CastWebContents(const CastWebContents&) = delete;
+  CastWebContents& operator=(const CastWebContents&) = delete;
+
   ~CastWebContents() override;
 
   // Tab identifier for the WebContents, mainly used by the tabs extension API.
@@ -162,7 +166,11 @@ class CastWebContents : public mojom::CastWebContents {
   void SetAppProperties(const std::string& app_id,
                         const std::string& session_id,
                         bool is_audio_app,
-                        const GURL& app_web_url) override = 0;
+                        const GURL& app_web_url,
+                        bool enforce_feature_permissions,
+                        const std::vector<int32_t>& feature_permissions,
+                        const std::vector<std::string>&
+                            additional_feature_permission_origins) override = 0;
   void AddRendererFeatures(base::Value features) override = 0;
   void SetInterfacesForRenderer(mojo::PendingRemote<mojom::RemoteInterfaces>
                                     remote_interfaces) override = 0;
@@ -277,8 +285,6 @@ class CastWebContents : public mojom::CastWebContents {
   // valid sequence, enforced via SequenceChecker.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  DISALLOW_COPY_AND_ASSIGN(CastWebContents);
 };
 
 }  // namespace chromecast

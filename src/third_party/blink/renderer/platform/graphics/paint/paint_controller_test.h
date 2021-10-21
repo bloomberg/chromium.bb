@@ -35,23 +35,24 @@ class PaintControllerTestBase : public testing::Test {
                           DisplayItem::Type type) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
-    DrawingRecorder recorder(context, client, type, IntRect());
+    DrawingRecorder recorder(context, client, type, gfx::Rect());
   }
 
   static void DrawRect(GraphicsContext& context,
                        const DisplayItemClient& client,
                        DisplayItem::Type type,
-                       const IntRect& bounds) {
+                       const gfx::Rect& bounds) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
     DrawingRecorder recorder(context, client, type, bounds);
-    context.DrawRect(bounds);
+    context.DrawRect(IntRect(bounds), AutoDarkMode::Disabled());
   }
 
  protected:
   PaintControllerTestBase()
-      : root_paint_property_client_("root"),
-        root_paint_chunk_id_(root_paint_property_client_.Id(),
+      : root_paint_property_client_(
+            MakeGarbageCollected<FakeDisplayItemClient>("root")),
+        root_paint_chunk_id_(root_paint_property_client_->Id(),
                              DisplayItem::kUninitializedType),
         paint_controller_(std::make_unique<PaintController>()) {}
 
@@ -62,9 +63,9 @@ class PaintControllerTestBase : public testing::Test {
   void InitRootChunk() { InitRootChunk(GetPaintController()); }
   void InitRootChunk(PaintController& paint_controller) {
     paint_controller.UpdateCurrentPaintChunkProperties(
-        root_paint_chunk_id_, root_paint_property_client_,
+        root_paint_chunk_id_, *root_paint_property_client_,
         DefaultPaintChunkProperties());
-    paint_controller.RecordDebugInfo(root_paint_property_client_);
+    paint_controller.RecordDebugInfo(*root_paint_property_client_);
   }
   const PaintChunk::Id DefaultRootChunkId() const {
     return root_paint_chunk_id_;
@@ -108,7 +109,7 @@ class PaintControllerTestBase : public testing::Test {
   }
 
  private:
-  FakeDisplayItemClient root_paint_property_client_;
+  Persistent<FakeDisplayItemClient> root_paint_property_client_;
   PaintChunk::Id root_paint_chunk_id_;
   std::unique_ptr<PaintController> paint_controller_;
 };
@@ -142,7 +143,7 @@ inline bool CheckChunk(const PaintChunk& chunk,
                        const PaintChunk::Id& id,
                        const PropertyTreeStateOrAlias& properties,
                        const HitTestData* hit_test_data = nullptr,
-                       const IntRect* bounds = nullptr) {
+                       const gfx::Rect* bounds = nullptr) {
   return chunk.begin_index == begin && chunk.end_index == end &&
          chunk.id == id && chunk.properties == properties &&
          ((!chunk.hit_test_data && !hit_test_data) ||

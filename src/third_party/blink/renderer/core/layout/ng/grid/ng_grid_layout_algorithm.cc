@@ -341,7 +341,7 @@ scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
       ComputeGrid();
   }
 
-  PlaceGridItems(grid_items, grid_geometry, block_size);
+  PlaceGridItems(grid_items, grid_geometry);
 
   // Cache range placement data for out of flow items.
   for (auto& out_of_flow_item : out_of_flow_items) {
@@ -449,6 +449,10 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
   CacheGridItemsTrackSpanProperties(column_track_collection, &grid_items);
   CacheGridItemsTrackSpanProperties(row_track_collection, &grid_items);
 
+  // If we need to calculate the row geometry, we have a dependency on our
+  // block constraints.
+  bool depends_on_block_constraints = false;
+
   auto ComputeTotalColumnSize =
       [&](SizingConstraint sizing_constraint) -> LayoutUnit {
     GridGeometry grid_geometry(InitializeTrackSizes(&column_track_collection),
@@ -472,6 +476,8 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
     }
 
     if (needs_additional_pass || has_block_size_dependent_item) {
+      depends_on_block_constraints = true;
+
       absl::optional<SetGeometry> initial_row_geometry;
       if (!needs_additional_pass && has_block_size_dependent_item)
         initial_row_geometry = grid_geometry.row_geometry;
@@ -514,11 +520,8 @@ MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
 
   MinMaxSizes sizes{ComputeTotalColumnSize(SizingConstraint::kMinContent),
                     ComputeTotalColumnSize(SizingConstraint::kMaxContent)};
-
-  // TODO(janewman): Confirm that |input.percentage_resolution_block_size|
-  // isn't used within grid layout.
   sizes += BorderScrollbarPadding().InlineSum();
-  return MinMaxSizesResult(sizes, /* depends_on_block_constraints */ false);
+  return MinMaxSizesResult(sizes, depends_on_block_constraints);
 }
 
 const TrackSpanProperties& GridItemData::GetTrackSpanProperties(
@@ -1271,10 +1274,10 @@ void NGGridLayoutAlgorithm::ConstructAndAppendGridItems(
   DCHECK(grid_properties);
   DCHECK(grid_items);
 
-  absl::optional<wtf_size_t> previous_capacity =
-      Node().GetPreviousGridItemsSizeForReserveCapacity();
-  if (previous_capacity)
-    grid_items->ReserveCapacity(previous_capacity.value());
+  if (auto previous_capacity =
+          Node().GetPreviousGridItemsSizeForReserveCapacity()) {
+    grid_items->ReserveCapacity(*previous_capacity);
+  }
 
   const auto& container_style = Style();
   const auto container_writing_mode = ConstraintSpace().GetWritingMode();
@@ -2496,9 +2499,6 @@ void NGGridLayoutAlgorithm::IncreaseTrackSizesToAccommodateGridItems(
     sets_to_grow.Shrink(0);
     sets_to_grow_beyond_limit.Shrink(0);
 
-    // TODO(ansollan): If the grid is auto-sized and has a calc or percent row
-    // gap, then the gap can't be calculated on the first pass as we wouldn't
-    // know our block size.
     LayoutUnit spanned_tracks_size =
         GridGap(track_direction) * (grid_item->SpanSize(track_direction) - 1);
 
@@ -3138,8 +3138,6 @@ LayoutUnit NGGridLayoutAlgorithm::GridGap(
   if (!gap)
     return LayoutUnit();
 
-  // TODO(ansollan): Update behavior based on outcome of working group
-  // discussions. See https://github.com/w3c/csswg-drafts/issues/5566.
   LayoutUnit available_size =
       ((track_direction == kForColumns) ? grid_available_size_.inline_size
                                         : grid_available_size_.block_size)
@@ -3312,8 +3310,7 @@ const NGConstraintSpace NGGridLayoutAlgorithm::CreateConstraintSpaceForMeasure(
 }
 
 void NGGridLayoutAlgorithm::PlaceGridItems(const GridItems& grid_items,
-                                           const GridGeometry& grid_geometry,
-                                           LayoutUnit block_size) {
+                                           const GridGeometry& grid_geometry) {
   const auto& container_space = ConstraintSpace();
   const auto container_writing_direction =
       container_space.GetWritingDirection();

@@ -367,13 +367,8 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV444P14, AV_PIX_FMT_YUV444P16, AV_PIX_FMT_YUVA444P16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *formats;
 
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -390,7 +385,6 @@ static const AVFilterPad floodfill_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad floodfill_outputs[] = {
@@ -398,7 +392,6 @@ static const AVFilterPad floodfill_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(FloodfillContext, x)
@@ -427,7 +420,7 @@ const AVFilter ff_vf_floodfill = {
     .priv_class    = &floodfill_class,
     .query_formats = query_formats,
     .uninit        = uninit,
-    .inputs        = floodfill_inputs,
-    .outputs       = floodfill_outputs,
+    FILTER_INPUTS(floodfill_inputs),
+    FILTER_OUTPUTS(floodfill_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

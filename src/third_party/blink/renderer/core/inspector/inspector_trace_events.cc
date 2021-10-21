@@ -302,6 +302,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoWebkitAnyLink)
     DEFINE_STRING_MAPPING(PseudoAnyLink)
     DEFINE_STRING_MAPPING(PseudoAutofill)
+    DEFINE_STRING_MAPPING(PseudoWebKitAutofill)
     DEFINE_STRING_MAPPING(PseudoAutofillPreviewed)
     DEFINE_STRING_MAPPING(PseudoAutofillSelected)
     DEFINE_STRING_MAPPING(PseudoHover)
@@ -1105,35 +1106,16 @@ void inspector_xhr_load_event::Data(perfetto::TracedValue trace_context,
   SetCallStack(dict);
 }
 
-static FloatPoint LocalCoordToFloatPoint(LocalFrameView* view,
-                                         const FloatPoint& local) {
-  return FloatPoint(view->ConvertToRootFrame(RoundedIntPoint(local)));
-}
-
-static void LocalToPageQuad(const LayoutObject& layout_object,
-                            const PhysicalRect& rect,
-                            FloatQuad* quad) {
-  LocalFrame* frame = layout_object.GetFrame();
-  LocalFrameView* view = frame->View();
-  FloatQuad absolute = layout_object.LocalRectToAbsoluteQuad(rect);
-  quad->SetP1(LocalCoordToFloatPoint(view, absolute.P1()));
-  quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
-  quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
-  quad->SetP4(LocalCoordToFloatPoint(view, absolute.P4()));
-}
-
 void inspector_paint_event::Data(perfetto::TracedValue context,
-                                 LayoutObject* layout_object,
-                                 const PhysicalRect& clip_rect,
-                                 const GraphicsLayer* graphics_layer) {
+                                 Frame* frame,
+                                 const LayoutObject* layout_object,
+                                 const FloatQuad& quad,
+                                 int layer_id) {
   auto dict = std::move(context).WriteDictionary();
-  dict.Add("frame", IdentifiersFactory::FrameId(layout_object->GetFrame()));
-  FloatQuad quad;
-  LocalToPageQuad(*layout_object, clip_rect, &quad);
+  dict.Add("frame", IdentifiersFactory::FrameId(frame));
   CreateQuad(dict.AddItem("clip"), quad);
   SetGeneratingNodeInfo(dict, layout_object, "nodeId");
-  int graphics_layer_id = graphics_layer ? graphics_layer->CcLayer().id() : 0;
-  dict.Add("layerId", graphics_layer_id);
+  dict.Add("layerId", layer_id);
   SetCallStack(dict);
 }
 
@@ -1296,7 +1278,7 @@ void inspector_paint_image_event::Data(perfetto::TracedValue context,
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, &layout_image, "nodeId");
   if (const ImageResourceContent* content = layout_image.CachedImage())
-    dict.Add("url", content->Url().GetString());
+    dict.Add("url", content->Url().ElidedString());
 
   dict.Add("x", dest_rect.X());
   dict.Add("y", dest_rect.Y());
@@ -1312,7 +1294,7 @@ void inspector_paint_image_event::Data(perfetto::TracedValue context,
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, &owning_layout_object, "nodeId");
   if (const ImageResourceContent* content = style_image.CachedImage())
-    dict.Add("url", content->Url().GetString());
+    dict.Add("url", content->Url().ElidedString());
 }
 
 void inspector_paint_image_event::Data(perfetto::TracedValue context,
@@ -1324,7 +1306,7 @@ void inspector_paint_image_event::Data(perfetto::TracedValue context,
   if (node)
     SetNodeInfo(dict, node, "nodeId", nullptr);
   if (const ImageResourceContent* content = style_image.CachedImage())
-    dict.Add("url", content->Url().GetString());
+    dict.Add("url", content->Url().ElidedString());
 
   dict.Add("x", dest_rect.X());
   dict.Add("y", dest_rect.Y());
@@ -1340,7 +1322,7 @@ void inspector_paint_image_event::Data(
     const ImageResourceContent& image_content) {
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, owning_layout_object, "nodeId");
-  dict.Add("url", image_content.Url().GetString());
+  dict.Add("url", image_content.Url().ElidedString());
 }
 
 static size_t UsedHeapSize() {

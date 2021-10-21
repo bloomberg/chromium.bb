@@ -211,6 +211,11 @@ FakeDownloadItem::GetDownloadSchedule() const {
   return ::network::mojom::CredentialsMode::kInclude;
 }
 
+const absl::optional<net::IsolationInfo>& FakeDownloadItem::GetIsolationInfo()
+    const {
+  return isolation_info_;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }
@@ -274,6 +279,10 @@ void FakeDownloadItem::ValidateDangerousDownload() {
 }
 
 void FakeDownloadItem::ValidateMixedContentDownload() {
+  NOTREACHED();
+}
+
+void FakeDownloadItem::AcceptIncognitoWarning() {
   NOTREACHED();
 }
 
@@ -467,6 +476,10 @@ bool FakeDownloadItem::IsDangerous() const {
 
 bool FakeDownloadItem::IsMixedContent() const {
   return is_mixed_content_;
+}
+
+bool FakeDownloadItem::ShouldShowIncognitoWarning() const {
+  return false;
 }
 
 download::DownloadDangerType FakeDownloadItem::GetDangerType() const {

@@ -448,7 +448,7 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   int xy = 0;
   SkColor color = rep3.GetBitmap().getColor(xy, xy);
   normal.push_back(std::make_pair(xy, color));
-  for (int xy = 0; xy < 40; ++xy) {
+  for (xy = 0; xy < 40; ++xy) {
     SkColor next_color = rep3.GetBitmap().getColor(xy, xy);
     if (next_color != color) {
       color = next_color;
@@ -465,8 +465,8 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // We expect the same colors and at locations scaled by 2
   // since this bitmap was scaled by 2.
   for (size_t i = 0; i < normal.size(); ++i) {
-    int xy = 2 * normal[i].first;
-    SkColor color = normal[i].second;
+    xy = 2 * normal[i].first;
+    color = normal[i].second;
     EXPECT_EQ(color, rep4.GetBitmap().getColor(xy, xy));
   }
 }
@@ -760,7 +760,7 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxNoValues) {
                               {{kColorToolbar, SK_ColorRED},
                                {kColorOmniboxText, SK_ColorGREEN},
                                {kColorOmniboxBackground, SK_ColorBLUE}}});
-  theme_pack().AddCustomThemeColorMixers(&provider);
+  theme_pack().AddColorMixers(&provider, ui::ColorProviderManager::Key());
   EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorToolbar));
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorOmniboxText));
   EXPECT_EQ(SK_ColorBLUE, provider.GetColor(kColorOmniboxBackground));
@@ -777,7 +777,7 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxPartialValues) {
   std::string color_json = R"({ "toolbar": [0, 20, 40],
                                 "omnibox_text": [60, 80, 100] })";
   LoadColorJSON(color_json);
-  theme_pack().AddCustomThemeColorMixers(&provider);
+  theme_pack().AddColorMixers(&provider, ui::ColorProviderManager::Key());
   EXPECT_EQ(SkColorSetRGB(0, 20, 40), provider.GetColor(kColorToolbar));
   EXPECT_EQ(SkColorSetRGB(60, 80, 100), provider.GetColor(kColorOmniboxText));
   EXPECT_EQ(SK_ColorBLUE, provider.GetColor(kColorOmniboxBackground));
@@ -795,7 +795,7 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxAllValues) {
                                 "omnibox_text": [60, 80, 100],
                                 "omnibox_background": [120, 140, 160] })";
   LoadColorJSON(color_json);
-  theme_pack().AddCustomThemeColorMixers(&provider);
+  theme_pack().AddColorMixers(&provider, ui::ColorProviderManager::Key());
   EXPECT_EQ(SkColorSetRGB(0, 20, 40), provider.GetColor(kColorToolbar));
   EXPECT_EQ(SkColorSetRGB(60, 80, 100), provider.GetColor(kColorOmniboxText));
   EXPECT_EQ(SkColorSetRGB(120, 140, 160),

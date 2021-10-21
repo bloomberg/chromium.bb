@@ -30,9 +30,9 @@
 #include "base/strings/string_piece.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/net/client_cert_store_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -78,6 +78,9 @@ class NSSOperationState {
   explicit NSSOperationState(ServiceWeakPtr weak_ptr)
       : service_weak_ptr_(weak_ptr) {}
 
+  NSSOperationState(const NSSOperationState&) = delete;
+  NSSOperationState& operator=(const NSSOperationState&) = delete;
+
   virtual ~NSSOperationState() = default;
 
   // Called if an error occurred during the execution of the NSS operation
@@ -95,9 +98,6 @@ class NSSOperationState {
   // Weak pointer to the PlatformKeysServiceImpl that created this state. Used
   // to check if the callback should be still called.
   ServiceWeakPtr service_weak_ptr_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NSSOperationState);
 };
 
 using GetCertDBCallback =
@@ -156,9 +156,11 @@ class GenerateRSAKeyState : public NSSOperationState {
  public:
   GenerateRSAKeyState(ServiceWeakPtr weak_ptr,
                       unsigned int modulus_length_bits,
+                      bool sw_backed,
                       GenerateKeyCallback callback)
       : NSSOperationState(weak_ptr),
         modulus_length_bits_(modulus_length_bits),
+        sw_backed_(sw_backed),
         callback_(std::move(callback)) {}
 
   ~GenerateRSAKeyState() override = default;
@@ -173,6 +175,7 @@ class GenerateRSAKeyState : public NSSOperationState {
   }
 
   const unsigned int modulus_length_bits_;
+  const bool sw_backed_;
 
  private:
   void CallBack(const base::Location& from,
@@ -719,6 +722,8 @@ void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
 
   crypto::ScopedSECKEYPublicKey public_key;
   crypto::ScopedSECKEYPrivateKey private_key;
+  // TODO(https://crbug.com/1252410): Generate a software-backed key if
+  // |state->sw_backed_| is true.
   if (!crypto::GenerateRSAKeyPairNSS(
           state->slot_.get(), state->modulus_length_bits_, true /* permanent */,
           &public_key, &private_key)) {
@@ -1004,8 +1009,8 @@ void SignWithDB(std::unique_ptr<SignState> state,
       base::BindOnce(&SignOnWorkerThread, std::move(state)));
 }
 
-// Called when ClientCertStoreChromeOS::GetClientCerts is done. Builds the list
-// of net::CertificateList and calls back. Used by SelectCertificates().
+// Called when `ClientCertStoreAsh::GetClientCerts` is done. Builds the list of
+// `net::CertificateList` and calls back. Used by `SelectCertificates()`.
 void DidSelectCertificates(std::unique_ptr<SelectCertificatesState> state,
                            net::ClientCertIdentityList identities) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1478,10 +1483,12 @@ void IsKeyOnTokenWithDb(std::unique_ptr<IsKeyOnTokenState> state,
 
 void PlatformKeysServiceImpl::GenerateRSAKey(TokenId token_id,
                                              unsigned int modulus_length_bits,
+                                             bool sw_backed,
                                              GenerateKeyCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<GenerateRSAKeyState>(
-      weak_factory_.GetWeakPtr(), modulus_length_bits, std::move(callback));
+      weak_factory_.GetWeakPtr(), modulus_length_bits, sw_backed,
+      std::move(callback));
   if (delegate_->IsShutDown()) {
     state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;

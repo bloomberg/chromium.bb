@@ -8,6 +8,7 @@
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata.h"
+#include "ash/quick_pair/repository/fast_pair/pairing_metadata.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -19,8 +20,10 @@ class BluetoothDevice;
 namespace ash {
 namespace quick_pair {
 
-using AssociatedAccountKeyCallback =
-    base::OnceCallback<void(absl::optional<std::string>)>;
+class AccountKeyFilter;
+
+using CheckAccountKeysCallback =
+    base::OnceCallback<void(absl::optional<PairingMetadata>)>;
 using DeviceMetadataCallback = base::OnceCallback<void(DeviceMetadata*)>;
 using ValidModelIdCallback = base::OnceCallback<void(bool)>;
 
@@ -43,18 +46,15 @@ class FastPairRepository {
   virtual void IsValidModelId(const std::string& hex_model_id,
                               ValidModelIdCallback callback) = 0;
 
-  // Looks up the key associated with either |address| or |account_key_filter|
-  // and returns it to the provided |callback|, if available.  If this
-  // information is available locally that will be returned immediately,
-  // otherwise this will request data from the footprints server.
-  virtual void GetAssociatedAccountKey(
-      const std::string& address,
-      const std::string& account_key_filter,
-      AssociatedAccountKeyCallback callback) = 0;
+  // Checks all account keys associated with the user's account against the
+  // given filter.  If a match is found, metadata for the associated device will
+  // be returned through the callback.
+  virtual void CheckAccountKeys(const AccountKeyFilter& account_key_filter,
+                                CheckAccountKeysCallback callback) = 0;
 
   // Stores the given |account_key| for a |device| on the server.
-  virtual void AssociateAccountKey(const Device& device,
-                                   const std::string& account_key) = 0;
+  virtual void AssociateAccountKey(scoped_refptr<Device> device,
+                                   const std::vector<uint8_t>& account_key) = 0;
 
   // Deletes the associated data for a given |device|.
   virtual void DeleteAssociatedDevice(

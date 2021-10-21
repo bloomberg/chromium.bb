@@ -83,7 +83,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int process_frame(FFFrameSync *fs)
@@ -363,7 +363,6 @@ static const AVFilterPad midequalizer_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input1,
     },
-    { NULL }
 };
 
 static const AVFilterPad midequalizer_outputs[] = {
@@ -372,7 +371,6 @@ static const AVFilterPad midequalizer_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_midequalizer = {
@@ -382,8 +380,8 @@ const AVFilter ff_vf_midequalizer = {
     .uninit        = uninit,
     .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = midequalizer_inputs,
-    .outputs       = midequalizer_outputs,
+    FILTER_INPUTS(midequalizer_inputs),
+    FILTER_OUTPUTS(midequalizer_outputs),
     .priv_class    = &midequalizer_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

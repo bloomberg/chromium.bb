@@ -132,6 +132,10 @@ class DnsConfigServicePosix::Watcher : public DnsConfigService::Watcher {
  public:
   explicit Watcher(DnsConfigServicePosix& service)
       : DnsConfigService::Watcher(service) {}
+
+  Watcher(const Watcher&) = delete;
+  Watcher& operator=(const Watcher&) = delete;
+
   ~Watcher() override = default;
 
   bool Watch() override {
@@ -168,8 +172,6 @@ class DnsConfigServicePosix::Watcher : public DnsConfigService::Watcher {
 #if !defined(OS_IOS)
   base::FilePathWatcher hosts_watcher_;
 #endif  // !defined(OS_IOS)
-
-  DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
 
 // A SerialWorker that uses libresolv to initialize res_state and converts
@@ -181,6 +183,9 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
     // constructor.
     DETACH_FROM_SEQUENCE(sequence_checker_);
   }
+
+  ConfigReader(const ConfigReader&) = delete;
+  ConfigReader& operator=(const ConfigReader&) = delete;
 
   void DoWork() override { dns_config_ = ReadDnsConfig(); }
 
@@ -202,8 +207,6 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   DnsConfigServicePosix* const service_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   absl::optional<DnsConfig> dns_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfigReader);
 };
 
 DnsConfigServicePosix::DnsConfigServicePosix()
@@ -307,7 +310,7 @@ absl::optional<DnsConfig> ConvertResStateToDnsConfig(
   }
 
   dns_config.ndots = res.ndots;
-  dns_config.fallback_period = base::TimeDelta::FromSeconds(res.retrans);
+  dns_config.fallback_period = base::Seconds(res.retrans);
   dns_config.attempts = res.retry;
 #if defined(RES_ROTATE)
   dns_config.rotate = res.options & RES_ROTATE;

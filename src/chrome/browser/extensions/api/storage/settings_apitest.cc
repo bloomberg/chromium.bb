@@ -249,65 +249,30 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
-// A specialization of ExtensionSettingsApiTest that pretends it's running
-// on version_info::Channel::UNKNOWN.
-class ExtensionSettingsTrunkApiTest : public ExtensionSettingsApiTest {
- public:
-  ExtensionSettingsTrunkApiTest() = default;
-  ~ExtensionSettingsTrunkApiTest() override = default;
-  ExtensionSettingsTrunkApiTest(const ExtensionSettingsTrunkApiTest& other) =
-      delete;
-  ExtensionSettingsTrunkApiTest& operator=(
-      const ExtensionSettingsTrunkApiTest& other) = delete;
-
- private:
-  // TODO(crbug.com/1185226): Remove unknown channel when chrome.storage.session
-  // is released in stable.
-  ScopedCurrentChannel current_channel_{version_info::Channel::UNKNOWN};
-};
-
-// A specialization of ExtensionSettingsApiTest that pretends it's running
-// on version_info::Channel::DEV.
-class ExtensionSettingsDevApiTest : public ExtensionSettingsApiTest {
- public:
-  ExtensionSettingsDevApiTest() = default;
-  ~ExtensionSettingsDevApiTest() override = default;
-  ExtensionSettingsDevApiTest(const ExtensionSettingsDevApiTest& other) =
-      delete;
-  ExtensionSettingsDevApiTest& operator=(
-      const ExtensionSettingsDevApiTest& other) = delete;
-
- private:
-  // TODO(crbug.com/1185226): Remove dev channel when chrome.storage.session
-  // is released in stable.
-  ScopedCurrentChannel current_channel_{version_info::Channel::DEV};
-};
-
-// TODO(crbug.com/1185226): Remove test when chrome.storage.session
-// is released in stable.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsDevApiTest,
-                       SessionInUnsupportedChannel) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
+                       SessionInUnsupportedExtension) {
   constexpr char kManifest[] =
       R"({
-           "name": "Unsupported channel for session",
-           "manifest_version": 3,
-           "version": "0.1",
-           "background": { "service_worker": "worker.js" },
-           "permissions": ["storage"]
-         })";
-
-  constexpr char kWorker[] =
-      R"(chrome.test.runTests([
-          function unsupported() {
-            chrome.test.assertEq(undefined, chrome.storage.session);
-            chrome.test.assertTrue(!!chrome.storage.local);
-            chrome.test.succeed();
-          },
-        ]);)";
+      "name": "Unsupported manifest version for Storage API",
+      "manifest_version": 2,
+      "version": "0.1",
+      "background": {"scripts": ["script.js"]},
+      "permissions": ["storage"]
+    })";
+  constexpr char kScript[] =
+      R"({
+      chrome.test.runTests([
+        function unsupported() {
+          chrome.test.assertEq(undefined, chrome.storage.session),
+          chrome.test.assertTrue(!!chrome.storage.local);
+          chrome.test.succeed();
+        }
+      ])
+    })";
 
   TestExtensionDir test_dir;
   test_dir.WriteManifest(kManifest);
-  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
 
   ResultCatcher catcher;
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
@@ -315,9 +280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsDevApiTest,
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// TODO(crbug.com/1185226): Change parent class to `ExtensionSettingsApiTest`
-// when chrome.storage.session is released in stable.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest, SimpleTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
   ASSERT_TRUE(RunExtensionTest("settings/simple_test")) << message_;
 }
 
@@ -325,9 +288,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest, SimpleTest) {
 // Note that only split-mode incognito is tested, because spanning mode
 // incognito looks the same as normal mode when the only API activity comes
 // from background pages.
-// TODO(crbug.com/1185226): Change parent class to `ExtensionSettingsApiTest`
-// when chrome.storage.session is released in stable.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest, SplitModeIncognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher;
@@ -361,14 +322,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest, SplitModeIncognito) {
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// TODO(crbug.com/1185226): Change parent class to `ExtensionSettingsApiTest`
-// when chrome.storage.session is released in stable.
 // TODO(crbug.com/1229351): Service worker extension listener should receive an
 // event before the callback is made. Current workaround: wait for the event to
 // be received by the extension before checking for it. Potential solution: once
 // browser-side observation of SW lifetime work is finished, check if it fixes
 // this test.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
                        OnChangedNotificationsBetweenBackgroundPages) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
@@ -416,9 +375,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// TODO(crbug.com/1185226): Change parent class to `ExtensionSettingsApiTest`
-// when chrome.storage.session is released in stable.
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsTrunkApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
                        SyncLocalAndSessionAreasAreSeparate) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
@@ -637,6 +594,15 @@ class ExtensionSettingsManagedStorageApiTest
       const ExtensionSettingsManagedStorageApiTest& other) = delete;
   ExtensionSettingsManagedStorageApiTest& operator=(
       const ExtensionSettingsManagedStorageApiTest& other) = delete;
+
+  // TODO(crbug.com/1247323): Remove this.
+  // The ManagedStorageEvents test has a PRE_ step loads an extension which
+  // then runs in the main step. Since the extension immediately starts
+  // running the tests, constructing a ResultCatcher in the body of the
+  // fixture will occasionally miss the result from the JS test, leading
+  // to a flaky result. This ResultCatcher will be always be constructed
+  // before the test starts running.
+  ResultCatcher events_result_catcher_;
 };
 
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
@@ -732,6 +698,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
   EXPECT_EQ(base::Value::Type::INTEGER, dict.GetProperty("anything").type());
 }
 
+// TODO(crbug.com/1247323): This test should be rewritten. See the bug for more
+// details.
 IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest, ManagedStorage) {
   // Set policies for the test extension.
   std::unique_ptr<base::DictionaryValue> policy =
@@ -766,12 +734,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest, ManagedStorage) {
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
 
-// TODO(crbug.com/1241501): Somewhat flaky on all bots, but worse on the Linux
-// and ChromeOS bots.
+// TODO(crbug.com/1247323): This test should be rewritten. See the bug for more
+// details.
 IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
-                       DISABLED_PRE_ManagedStorageEvents) {
-  ResultCatcher catcher;
-
+                       PRE_ManagedStorageEvents) {
   // This test starts without any test extensions installed.
   EXPECT_FALSE(GetSingleLoadedExtension());
   message_.clear();
@@ -804,19 +770,16 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
       .Set("new-policy", "eee")
       .Build();
   SetPolicies(*policy);
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(events_result_catcher_.GetNextResult())
+      << events_result_catcher_.message();
 }
 
-// TODO(crbug.com/1241501): Somewhat flaky on all bots, but worse on the Linux
-// and ChromeOS bots.
 IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
-                       DISABLED_ManagedStorageEvents) {
+                       ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
   // policy went back to the empty default, and so the extension should receive
   // the corresponding change events.
-
-  ResultCatcher catcher;
 
   // Verify that the test extension is still installed.
   const Extension* extension = GetSingleLoadedExtension();
@@ -825,7 +788,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,
 
   // Running the test again skips the onInstalled callback, and just triggers
   // the onChanged notification.
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(events_result_catcher_.GetNextResult())
+      << events_result_catcher_.message();
 }
 
 IN_PROC_BROWSER_TEST_P(ExtensionSettingsManagedStorageApiTest,

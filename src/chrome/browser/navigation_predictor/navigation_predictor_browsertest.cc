@@ -54,6 +54,11 @@ class NavigationPredictorBrowserTest
         blink::features::kNavigationPredictor, params);
   }
 
+  NavigationPredictorBrowserTest(const NavigationPredictorBrowserTest&) =
+      delete;
+  NavigationPredictorBrowserTest& operator=(
+      const NavigationPredictorBrowserTest&) = delete;
+
   void SetUp() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
@@ -110,13 +115,15 @@ class NavigationPredictorBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationPredictorBrowserTest);
 };
 
 class TestObserver : public NavigationPredictorKeyedService::Observer {
  public:
   TestObserver() = default;
+
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   ~TestObserver() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -171,8 +178,6 @@ class TestObserver : public NavigationPredictorKeyedService::Observer {
   absl::optional<size_t> expected_notifications_count_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Pipeline) {

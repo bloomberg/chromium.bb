@@ -604,6 +604,32 @@ class DeviceUtils_GetApplicationTargetSdkTest(DeviceUtilsTest):
           'R', self.device.GetApplicationTargetSdk('com.android.chrome'))
 
 
+class DeviceUtils_GetUidForPackageTest(DeviceUtilsTest):
+  def test_GetUidForPackage_Exists(self):
+    with self.assertCall(
+        self.call.device._GetDumpsysOutput(
+            ['package', 'com.android.chrome'], 'userId='),
+        ['  userId=1001']):
+      self.assertEquals('1001',
+                        self.device.GetUidForPackage('com.android.chrome'))
+
+  def test_GetUidForPackage_notInstalled(self):
+    with self.assertCall(
+        self.call.device._GetDumpsysOutput(
+            ['package', 'com.android.chrome'], 'userId='),
+        ['']):
+      self.assertEquals(None,
+                        self.device.GetUidForPackage('com.android.chrome'))
+
+  def test_GetUidForPackage_fails(self):
+    with self.assertCall(
+        self.call.device._GetDumpsysOutput(
+            ['package', 'com.android.chrome'], 'userId='),
+        []):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.GetUidForPackage('com.android.chrome')
+
+
 class DeviceUtils_GetPackageArchitectureTest(DeviceUtilsTest):
   def test_GetPackageArchitecture_exists(self):
     with self.assertCall(
@@ -2081,7 +2107,7 @@ class DeviceUtilsBroadcastIntentTest(DeviceUtilsTest):
 class DeviceUtilsGoHomeTest(DeviceUtilsTest):
   def testGoHome_popupsExist(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand([
@@ -2091,22 +2117,22 @@ class DeviceUtilsGoHomeTest(DeviceUtilsTest):
                                           check_return=True),
          'Starting: Intent { act=android.intent.action.MAIN }\r\n'
          ''),
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand(['input', 'keyevent', '66'],
                                           check_return=True)),
         (self.call.device.RunShellCommand(['input', 'keyevent', '4'],
                                           check_return=True)),
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True),
-         ['mCurrentFocus Launcher'])):
+         ['mResumedActivity Launcher'])):
       self.device.GoHome()
 
   def testGoHome_willRetry(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand([
@@ -2116,7 +2142,7 @@ class DeviceUtilsGoHomeTest(DeviceUtilsTest):
                                           check_return=True),
          'Starting: Intent { act=android.intent.action.MAIN }\r\n'
          ''),
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand(
@@ -2124,14 +2150,14 @@ class DeviceUtilsGoHomeTest(DeviceUtilsTest):
             check_return=True,
         )), (self.call.device.RunShellCommand(['input', 'keyevent', '4'],
                                               check_return=True)),
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand(['input', 'keyevent', '66'],
                                           check_return=True)),
         (self.call.device.RunShellCommand(['input', 'keyevent', '4'],
                                           check_return=True)),
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True),
          self.TimeoutError())):
@@ -2140,23 +2166,23 @@ class DeviceUtilsGoHomeTest(DeviceUtilsTest):
 
   def testGoHome_alreadyFocused(self):
     with self.assertCall(
-        self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                          check_return=True,
                                          large_output=True),
-        ['mCurrentFocus Launcher']):
+        ['mResumedActivity Launcher']):
       self.device.GoHome()
 
   def testGoHome_alreadyFocusedAlternateCase(self):
     with self.assertCall(
-        self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                          check_return=True,
                                          large_output=True),
-        [' mCurrentFocus .launcher/.']):
+        [' mResumedActivity .launcher/.']):
       self.device.GoHome()
 
   def testGoHome_obtainsFocusAfterGoingHome(self):
     with self.assertCalls(
-        (self.call.device.RunShellCommand(['dumpsys', 'window', 'windows'],
+        (self.call.device.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                           check_return=True,
                                           large_output=True), []),
         (self.call.device.RunShellCommand([
@@ -2166,9 +2192,9 @@ class DeviceUtilsGoHomeTest(DeviceUtilsTest):
                                           check_return=True),
          'Starting: Intent { act=android.intent.action.MAIN }\r\n'
          ''), (self.call.device.RunShellCommand(
-             ['dumpsys', 'window', 'windows'],
+             ['dumpsys', 'activity', 'activities'],
              check_return=True,
-             large_output=True), ['mCurrentFocus Launcher'])):
+             large_output=True), ['mResumedActivity Launcher'])):
       self.device.GoHome()
 
 

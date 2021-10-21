@@ -43,9 +43,9 @@ class DataTransferDlpController : public ui::DataTransferPolicyController {
                       const absl::optional<size_t> size,
                       content::RenderFrameHost* rfh,
                       base::OnceCallback<void(bool)> callback) override;
-  bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
-                         const ui::DataTransferEndpoint* const data_dst,
-                         const bool is_drop) override;
+  void DropIfAllowed(const ui::DataTransferEndpoint* data_src,
+                     const ui::DataTransferEndpoint* data_dst,
+                     base::OnceClosure drop_cb) override;
 
  protected:
   explicit DataTransferDlpController(const DlpRulesManager& dlp_rules_manager);
@@ -74,21 +74,20 @@ class DataTransferDlpController : public ui::DataTransferPolicyController {
       const ui::DataTransferEndpoint* const data_src,
       const ui::DataTransferEndpoint* const data_dst);
 
+  virtual void WarnOnDrop(const ui::DataTransferEndpoint* const data_src,
+                          const ui::DataTransferEndpoint* const data_dst,
+                          base::OnceClosure drop_cb);
+
   bool ShouldSkipReporting(const ui::DataTransferEndpoint* const data_src,
                            const ui::DataTransferEndpoint* const data_dst,
                            base::TimeTicks curr_time);
 
-  template <typename T>
   void ReportEvent(const ui::DataTransferEndpoint* const data_src,
                    const ui::DataTransferEndpoint* const data_dst,
                    const std::string& src_pattern,
-                   const T& dst,
-                   DlpRulesManager::Level level);
-
-  DlpRulesManager::Level IsDataTransferAllowed(
-      const ui::DataTransferEndpoint* const data_src,
-      const ui::DataTransferEndpoint* const data_dst,
-      const absl::optional<size_t> size);
+                   const std::string& dst_pattern,
+                   DlpRulesManager::Level level,
+                   bool is_clipboard_event);
 
   // The solution for the issue of sending multiple reporting events for a
   // single user action. When a user triggers a paste (for instance by pressing

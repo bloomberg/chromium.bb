@@ -26,7 +26,8 @@
 
 namespace arc {
 
-ProgressBarDialogView::ProgressBarDialogView() {
+ProgressBarDialogView::ProgressBarDialogView(bool is_multiple_files)
+    : is_multiple_files_(is_multiple_files) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetOrientation(views::BoxLayout::Orientation::kVertical);
   SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kStart);
@@ -47,8 +48,12 @@ ProgressBarDialogView::ProgressBarDialogView() {
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 
-  const std::u16string message = l10n_util::GetStringUTF16(
-      IDS_ASH_ARC_NEARBY_SHARE_FILES_PREPARATION_PROGRESS);
+  const std::u16string message =
+      is_multiple_files
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_ARC_NEARBY_SHARE_FILES_PREPARATION_PROGRESS)
+          : l10n_util::GetStringUTF16(
+                IDS_ASH_ARC_NEARBY_SHARE_FILE_PREPARATION_PROGRESS);
   message_label_ = AddChildView(std::make_unique<views::Label>(message));
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -63,7 +68,10 @@ ProgressBarDialogView::ProgressBarDialogView() {
   progress_bar_->SizeToPreferredSize();
 }
 
-ProgressBarDialogView::~ProgressBarDialogView() = default;
+ProgressBarDialogView::~ProgressBarDialogView() {
+  // Destroy child views before the base overlay where they live is destroyed.
+  RemoveAllChildViews();
+}
 
 gfx::Size ProgressBarDialogView::CalculatePreferredSize() const {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
@@ -76,8 +84,13 @@ gfx::Size ProgressBarDialogView::CalculatePreferredSize() const {
 void ProgressBarDialogView::AddedToWidget() {
   auto& view_ax = GetWidget()->GetRootView()->GetViewAccessibility();
   view_ax.OverrideRole(ax::mojom::Role::kDialog);
-  view_ax.OverrideName(l10n_util::GetStringUTF16(
-      IDS_ASH_ARC_NEARBY_SHARE_FILES_PREPARATION_PROGRESS));
+  const std::u16string view_name =
+      is_multiple_files_
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_ARC_NEARBY_SHARE_FILES_PREPARATION_PROGRESS)
+          : l10n_util::GetStringUTF16(
+                IDS_ASH_ARC_NEARBY_SHARE_FILE_PREPARATION_PROGRESS);
+  view_ax.OverrideName(view_name);
 }
 
 void ProgressBarDialogView::OnThemeChanged() {
@@ -107,8 +120,8 @@ double ProgressBarDialogView::GetProgressBarValue() const {
 void ProgressBarDialogView::UpdateInterpolatedProgressBarValue() {
   DCHECK(progress_bar_);
 
-  constexpr double kStepSize = 0.1;
-  constexpr double kStepFactor = 2;  // Larger value = smaller step progression.
+  constexpr double kStepSize = 0.075;
+  constexpr double kStepFactor = 3;  // Larger value = smaller step progression.
 
   const double value = progress_bar_->GetValue();
 

@@ -35,6 +35,10 @@ class WebContentsImpl;
 class CONTENT_EXPORT FindRequestManager {
  public:
   explicit FindRequestManager(WebContentsImpl* web_contents);
+
+  FindRequestManager(const FindRequestManager&) = delete;
+  FindRequestManager& operator=(const FindRequestManager&) = delete;
+
   ~FindRequestManager();
 
   // Initiates a find operation for |search_text| with the options specified in
@@ -334,7 +338,12 @@ class CONTENT_EXPORT FindRequestManager {
   // WebContentses.
   std::vector<std::unique_ptr<FrameObserver>> frame_observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(FindRequestManager);
+  // last_time_typed_ and last_searched_text_ are used to measure how long the
+  // user takes between keystrokes.
+  // TODO(crbug.com/1250158): Remove these when we decide how long the
+  // find-in-page delay should be.
+  base::TimeTicks last_time_typed_;
+  std::u16string last_searched_text_;
 };
 
 }  // namespace content

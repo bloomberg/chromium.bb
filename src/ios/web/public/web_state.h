@@ -109,6 +109,10 @@ class WebState : public base::SupportsUserData {
   class InterfaceBinder {
    public:
     explicit InterfaceBinder(WebState* web_state);
+
+    InterfaceBinder(const InterfaceBinder&) = delete;
+    InterfaceBinder& operator=(const InterfaceBinder&) = delete;
+
     ~InterfaceBinder();
 
     template <typename Interface>
@@ -142,8 +146,6 @@ class WebState : public base::SupportsUserData {
 
     WebState* const web_state_;
     std::map<std::string, Callback> callbacks_;
-
-    DISALLOW_COPY_AND_ASSIGN(InterfaceBinder);
   };
 
   // Creates a new WebState.
@@ -154,6 +156,9 @@ class WebState : public base::SupportsUserData {
   static std::unique_ptr<WebState> CreateWithStorageSession(
       const CreateParams& params,
       CRWSessionStorage* session_storage);
+
+  WebState(const WebState&) = delete;
+  WebState& operator=(const WebState&) = delete;
 
   ~WebState() override {}
 
@@ -395,9 +400,6 @@ class WebState : public base::SupportsUserData {
   virtual void RemovePolicyDecider(WebStatePolicyDecider* decider) = 0;
 
   WebState() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebState);
 };
 
 }  // namespace web

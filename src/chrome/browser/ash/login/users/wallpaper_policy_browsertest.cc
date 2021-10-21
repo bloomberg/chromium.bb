@@ -130,6 +130,10 @@ void SetSystemSalt() {
 
 class WallpaperPolicyTest : public LoginManagerTest,
                             public WallpaperControllerObserver {
+ public:
+  WallpaperPolicyTest(const WallpaperPolicyTest&) = delete;
+  WallpaperPolicyTest& operator=(const WallpaperPolicyTest&) = delete;
+
  protected:
   WallpaperPolicyTest()
       : LoginManagerTest(), owner_key_util_(new ownership::MockOwnerKeyUtil()) {
@@ -299,7 +303,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
   std::unique_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   LoginManagerMixin login_manager_{&mixin_host_};
@@ -309,8 +313,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
   absl::optional<SkColor> average_color_;
 
   base::WeakPtrFactory<WallpaperPolicyTest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
 // Verifies that the wallpaper can be set and re-set through policy and that

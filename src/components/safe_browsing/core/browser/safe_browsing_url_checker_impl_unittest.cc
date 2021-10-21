@@ -184,6 +184,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   // if the threat type for the |gurl| is not set in advance.
   void StartLookup(
       const GURL& gurl,
+      const GURL& last_committed_url,
+      bool is_mainframe,
       RTLookupRequestCallback request_callback,
       RTLookupResponseCallback response_callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {
@@ -241,8 +243,11 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   bool CanPerformFullURLLookupWithToken() const override { return false; }
   bool CanAttachReferrerChain() const override { return false; }
   int GetReferrerUserGestureLimit() const override { return 0; }
+  bool CanSendPageLoadToken() const override { return false; }
   void GetAccessToken(
       const GURL& url,
+      const GURL& last_committed_url,
+      bool is_mainframe,
       RTLookupRequestCallback request_callback,
       RTLookupResponseCallback response_callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner) override {}
@@ -283,7 +288,7 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         UnsafeResource::kNoRenderFrameId, UnsafeResource::kNoFrameTreeNodeId,
         real_time_lookup_enabled,
         /*can_rt_check_subresource_url=*/false, can_check_safe_browsing_db,
-        base::SequencedTaskRunnerHandle::Get(),
+        /*last_committed_url=*/GURL(), base::SequencedTaskRunnerHandle::Get(),
         real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr,
         /*webui_delegate_=*/nullptr);
   }

@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
-#include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,6 +47,9 @@
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
+#include "extensions/common/hashed_extension_id.h"
 #include "extensions/common/mojom/renderer.mojom.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
@@ -166,6 +168,9 @@ static const ApiInfo kApiInfoTable[] = {
 // structure.  It inserts all data into a map on first lookup.
 class ApiInfoDatabase {
  public:
+  ApiInfoDatabase(const ApiInfoDatabase&) = delete;
+  ApiInfoDatabase& operator=(const ApiInfoDatabase&) = delete;
+
   static ApiInfoDatabase* GetInstance() {
     return base::Singleton<ApiInfoDatabase>::get();
   }
@@ -197,7 +202,6 @@ class ApiInfoDatabase {
   std::map<std::string, const ApiInfo*> api_database_;
 
   friend struct base::DefaultSingletonTraits<ApiInfoDatabase>;
-  DISALLOW_COPY_AND_ASSIGN(ApiInfoDatabase);
 };
 
 // Gets the URL for a given tab ID.  Helper method for ExtractUrls.  Returns
@@ -359,6 +363,13 @@ ActivityLog* SafeGetActivityLog(content::BrowserContext* browser_context) {
   return ActivityLog::GetInstance(browser_context);
 }
 
+bool IsExtensionAllowlisted(const std::string& extension_id) {
+  // TODO(devlin): Pass in a HashedExtensionId to avoid this conversion.
+  return FeatureProvider::GetPermissionFeatures()
+      ->GetFeature("activityLogPrivate")
+      ->IsIdInAllowlist(HashedExtensionId(extension_id));
+}
+
 // Calls into the ActivityLog to log an api event or function call.
 void LogApiActivity(content::BrowserContext* browser_context,
                     const std::string& extension_id,
@@ -366,7 +377,7 @@ void LogApiActivity(content::BrowserContext* browser_context,
                     const base::ListValue& args,
                     Action::ActionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ActivityLogAPI::IsExtensionAllowlisted(extension_id))
+  if (IsExtensionAllowlisted(extension_id))
     return;
 
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
@@ -405,7 +416,7 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
                            const std::string& api_call,
                            std::unique_ptr<base::DictionaryValue> details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (ActivityLogAPI::IsExtensionAllowlisted(extension_id))
+  if (IsExtensionAllowlisted(extension_id))
     return;
 
   ActivityLog* activity_log = SafeGetActivityLog(browser_context);
@@ -569,7 +580,7 @@ void ActivityLog::SetHasListeners(bool has_listeners) {
 
 void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
-  if (!ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
+  if (!IsExtensionAllowlisted(extension->id()))
     return;
 
   ++active_consumers_;
@@ -584,7 +595,7 @@ void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
 void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionReason reason) {
-  if (!ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
+  if (!IsExtensionAllowlisted(extension->id()))
     return;
   --active_consumers_;
 
@@ -600,7 +611,7 @@ void ActivityLog::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  if (ActivityLogAPI::IsExtensionAllowlisted(extension->id()) &&
+  if (IsExtensionAllowlisted(extension->id()) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging) &&
       active_consumers_ == 0) {
@@ -657,7 +668,7 @@ bool ActivityLog::ShouldLog(const std::string& extension_id) const {
   // Do not log for activities from the browser/WebUI, which is indicated by an
   // empty extension ID.
   return is_active_ && !extension_id.empty() &&
-         !ActivityLogAPI::IsExtensionAllowlisted(extension_id);
+         !IsExtensionAllowlisted(extension_id);
 }
 
 void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
@@ -669,7 +680,7 @@ void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
   for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
     const Extension* extension =
         registry->GetExtensionById(it->first, ExtensionRegistry::ENABLED);
-    if (!extension || ActivityLogAPI::IsExtensionAllowlisted(extension->id()))
+    if (!extension || IsExtensionAllowlisted(extension->id()))
       continue;
 
     // If OnScriptsExecuted is fired because of tabs.executeScript, the list

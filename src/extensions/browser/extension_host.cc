@@ -25,13 +25,12 @@
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_host_observer.h"
 #include "extensions/browser/extension_host_queue.h"
+#include "extensions/browser/extension_host_registry.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -79,6 +78,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 
   ExtensionWebContentsObserver::GetForWebContents(host_contents())->
       dispatcher()->set_delegate(this);
+  ExtensionHostRegistry::Get(browser_context_)->ExtensionHostCreated(this);
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -91,12 +91,10 @@ ExtensionHost::~ExtensionHost() {
                              load_start_->Elapsed());
   }
 
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<ExtensionHost>(this));
   for (auto& observer : observer_list_)
     observer.OnExtensionHostDestroyed(this);
+
+  ExtensionHostRegistry::Get(browser_context_)->ExtensionHostDestroyed(this);
 
   // Remove ourselves from the queue as late as possible (before effectively
   // destroying self, but after everything else) so that queues that are
@@ -232,6 +230,8 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // TODO(aa): This is suspicious. There can be multiple views in an extension,
   // and they aren't all going to use ExtensionHost. This should be in someplace
   // more central, like EPM maybe.
+  ExtensionHostRegistry::Get(browser_context_)
+      ->ExtensionHostRenderProcessGone(this);
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::Source<BrowserContext>(browser_context_),
@@ -249,10 +249,8 @@ void ExtensionHost::DidStopLoading() {
   if (first_load) {
     RecordStopLoadingUMA();
     OnDidStopFirstLoad();
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-        content::Source<BrowserContext>(browser_context_),
-        content::Details<ExtensionHost>(this));
+    ExtensionHostRegistry::Get(browser_context_)
+        ->ExtensionHostCompletedFirstLoad(this);
     for (auto& observer : observer_list_)
       observer.OnExtensionHostDidStopFirstLoad(this);
   }
@@ -271,10 +269,10 @@ void ExtensionHost::DocumentAvailableInMainFrame(
     return;
   document_element_available_ = true;
 
+  ExtensionHostRegistry::Get(browser_context_)
+      ->ExtensionHostDocumentElementAvailable(this);
+
   if (extension_host_type_ == mojom::ViewType::kExtensionBackgroundPage) {
-    ExtensionSystem::Get(browser_context_)
-        ->runtime_data()
-        ->SetBackgroundPageReady(extension_->id(), true);
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
         content::Source<const Extension>(extension_),
@@ -418,10 +416,8 @@ void ExtensionHost::RenderFrameCreated(content::RenderFrameHost* frame_host) {
 }
 
 void ExtensionHost::NotifyRenderProcessReady() {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<ExtensionHost>(this));
+  ExtensionHostRegistry::Get(browser_context_)
+      ->ExtensionHostRenderProcessReady(this);
 }
 
 void ExtensionHost::RenderFrameDeleted(content::RenderFrameHost* frame_host) {

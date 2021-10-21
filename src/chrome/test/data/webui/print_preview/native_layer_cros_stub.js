@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse, PrinterStatusReason, PrinterStatusSeverity, PrintServer, PrintServersConfig} from 'chrome://print/print_preview.js';
+import {NativeLayerCrosImpl, PrinterStatusReason, PrinterStatusSeverity} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
@@ -11,7 +11,7 @@ import {TestBrowserProxy} from '../test_browser_proxy.js';
 /** @return {!NativeLayerCrosStub} */
 export function setNativeLayerCrosInstance() {
   const instance = new NativeLayerCrosStub();
-  NativeLayerCrosImpl.instance_ = instance;
+  NativeLayerCrosImpl.setInstance(instance);
   return instance;
 }
 

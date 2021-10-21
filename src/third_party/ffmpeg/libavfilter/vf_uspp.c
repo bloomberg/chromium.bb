@@ -32,6 +32,7 @@
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavcodec/avcodec.h"
 #include "internal.h"
 #include "qp_table.h"
 #include "avfilter.h"
@@ -304,10 +305,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -482,7 +480,6 @@ static const AVFilterPad uspp_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad uspp_outputs[] = {
@@ -490,7 +487,6 @@ static const AVFilterPad uspp_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_uspp = {
@@ -499,8 +495,8 @@ const AVFilter ff_vf_uspp = {
     .priv_size       = sizeof(USPPContext),
     .uninit          = uninit,
     .query_formats   = query_formats,
-    .inputs          = uspp_inputs,
-    .outputs         = uspp_outputs,
+    FILTER_INPUTS(uspp_inputs),
+    FILTER_OUTPUTS(uspp_outputs),
     .priv_class      = &uspp_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

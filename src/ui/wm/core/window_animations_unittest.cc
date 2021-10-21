@@ -50,8 +50,8 @@ class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
   WindowAnimationsTest() {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
+  WindowAnimationsTest(const WindowAnimationsTest&) = delete;
+  WindowAnimationsTest& operator=(const WindowAnimationsTest&) = delete;
 };
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
@@ -247,6 +247,12 @@ TEST_F(WindowAnimationsTest, HideAnimationDetachLayersWithTransientChildren) {
 class NotifyHideCompletedAnimationHost : public AnimationHost {
  public:
   NotifyHideCompletedAnimationHost() : hide_completed_(false) {}
+
+  NotifyHideCompletedAnimationHost(const NotifyHideCompletedAnimationHost&) =
+      delete;
+  NotifyHideCompletedAnimationHost& operator=(
+      const NotifyHideCompletedAnimationHost&) = delete;
+
   ~NotifyHideCompletedAnimationHost() override {}
 
   // Overridden from AnimationHost:
@@ -259,8 +265,6 @@ class NotifyHideCompletedAnimationHost : public AnimationHost {
 
  private:
   bool hide_completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotifyHideCompletedAnimationHost);
 };
 
 TEST_F(WindowAnimationsTest, NotifyHideCompleted) {
@@ -340,7 +344,7 @@ TEST_F(WindowAnimationsTest, RotateHideNoCrash) {
                                        WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
   AnimateOnChildWindowVisibilityChanged(window.get(), true);
   window->layer()->GetAnimator()->Step(base::TimeTicks::Now() +
-                                       base::TimeDelta::FromSeconds(5));
+                                       base::Seconds(5));
   AnimateOnChildWindowVisibilityChanged(window.get(), false);
   animating_layer->GetAnimator()->StopAnimating();
 }

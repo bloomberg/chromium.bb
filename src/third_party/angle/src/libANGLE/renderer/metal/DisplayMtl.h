@@ -165,7 +165,7 @@ class DisplayMtl : public DisplayImpl
     mtl::AutoObjCObj<MTLSharedEventListener> getOrCreateSharedEventListener();
 #endif
 
-    bool useDirectToMetalCompiler();
+    bool useDirectToMetalCompiler() const;
 
   protected:
     void generateExtensions(egl::DisplayExtensions *outExtensions) const override;
@@ -179,7 +179,9 @@ class DisplayMtl : public DisplayImpl
     void initializeTextureCaps() const;
     void initializeFeatures();
     void initializeLimitations();
-    id<MTLDevice> getMetalDeviceMatchingAttribute(const egl::AttributeMap &attribs);
+    EGLenum EGLDrawingBufferTextureTarget();
+    mtl::AutoObjCPtr<id<MTLDevice>> getMetalDeviceMatchingAttribute(
+        const egl::AttributeMap &attribs);
     angle::Result initializeShaderLibrary();
 
     mtl::AutoObjCPtr<id<MTLDevice>> mMetalDevice = nil;

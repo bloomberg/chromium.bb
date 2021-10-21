@@ -18,7 +18,6 @@
 #include "android_webview/browser/variations/variations_seed_loader.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/proto/aw_variations_seed.pb.h"
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -28,7 +27,6 @@
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/embedder_support/origin_trials/origin_trial_prefs.h"
@@ -165,19 +163,9 @@ std::unique_ptr<PrefService> AwFeatureListCreator::CreatePrefService() {
 }
 
 void AwFeatureListCreator::SetUpFieldTrials() {
-  auto* metrics_client = AwMetricsServiceClient::GetInstance();
-
-  // Chrome uses the default entropy provider here (rather than low entropy
-  // provider). The default provider needs to know whether UMA is enabled, but
-  // WebView determines UMA by querying GMS, which is very slow. So WebView
-  // always uses the low entropy provider. Both providers guarantee permanent
-  // consistency, which is the main requirement. The difference is that the low
-  // entropy provider has fewer unique experiment combinations. This is better
-  // for privacy (since experiment state doesn't identify users), but also means
-  // fewer combinations tested in the wild.
-  DCHECK(!field_trial_list_);
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(
-      metrics_client->CreateLowEntropyProvider());
+  // The FieldTrialList should have been instantiated in
+  // AndroidMetricsServiceClient::Initialize().
+  DCHECK(base::FieldTrialList::GetInstance());
 
   // Convert the AwVariationsSeed proto to a SeedResponse object.
   std::unique_ptr<AwVariationsSeed> seed_proto = TakeSeed();
@@ -227,6 +215,7 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   std::vector<std::string> variation_ids =
       aw_feature_entries::RegisterEnabledFeatureEntries(feature_list.get());
 
+  auto* metrics_client = AwMetricsServiceClient::GetInstance();
   // Populate FieldTrialList. Since |low_entropy_provider| is null, it will fall
   // back to the provider we previously gave to FieldTrialList, which is a low
   // entropy provider. The X-Client-Data header is not reported on WebView, so
@@ -235,8 +224,7 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // platforms, pass false for |extend_variations_safe_mode| to opt out of the
   // Extended Variations Safe Mode experiment. See crbug/1220131 for more info.
   variations_field_trial_creator_->SetupFieldTrials(
-      cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, variation_ids,
+      variation_ids,
       GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       /*low_entropy_provider=*/nullptr, std::move(feature_list),

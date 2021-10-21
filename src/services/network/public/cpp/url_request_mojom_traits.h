@@ -30,6 +30,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/devtools_observer.mojom-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom-forward.h"
@@ -136,6 +137,19 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
   static bool Read(network::mojom::WebBundleTokenParamsDataView data,
                    network::ResourceRequest::WebBundleTokenParams* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::NetLogParamsDataView,
+                 network::ResourceRequest::NetLogParams> {
+  static uint32_t source_id(
+      const network::ResourceRequest::NetLogParams& params) {
+    return params.source_id;
+  }
+
+  static bool Read(network::mojom::NetLogParamsDataView data,
+                   network::ResourceRequest::NetLogParams* out);
 };
 
 template <>
@@ -318,6 +332,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const absl::optional<network::ResourceRequest::WebBundleTokenParams>&
   web_bundle_token_params(const network::ResourceRequest& request) {
     return request.web_bundle_token_params;
+  }
+  static const absl::optional<network::ResourceRequest::NetLogParams>&
+  net_log_params(const network::ResourceRequest& request) {
+    return request.net_log_params;
+  }
+  static network::mojom::IPAddressSpace target_ip_address_space(
+      const network::ResourceRequest& request) {
+    return request.target_ip_address_space;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,

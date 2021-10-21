@@ -134,6 +134,10 @@ void AuthenticationService::Shutdown() {
 void AuthenticationService::AddObserver(
     AuthenticationServiceObserver* observer) {
   observer_list_.AddObserver(observer);
+  // Handle messages for late observers.
+  if (primary_account_was_restricted_) {
+    observer->OnPrimaryAccountRestricted();
+  }
 }
 
 void AuthenticationService::RemoveObserver(
@@ -275,6 +279,8 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
   CHECK(signin::IsSigninAllowed(pref_service_));
   DCHECK(account_manager_service_->IsValidIdentity(identity));
 
+  primary_account_was_restricted_ = false;
+
   ResetReauthPromptForSignInAndSync();
 
   // Load all credentials from SSO library. This must load the credentials
@@ -293,7 +299,6 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
   const AccountInfo account_info =
       identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
   CHECK(!account_info.IsEmpty());
-  CHECK(!account_info.hosted_domain.empty());
 
   // |PrimaryAccountManager::SetAuthenticatedAccountId| simply ignores the call
   // if there is already a signed in user. Check that there is no signed in
@@ -321,11 +326,23 @@ void AuthenticationService::GrantSyncConsent(ChromeIdentity* identity) {
   const CoreAccountId account_id = identity_manager_->PickAccountIdForAccount(
       base::SysNSStringToUTF8(identity.gaiaID),
       base::SysNSStringToUTF8(identity.userEmail));
-  const bool success =
-      identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
-          account_id, signin::ConsentLevel::kSync);
+  const AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
+  CHECK(!account_info.IsEmpty());
+  CHECK(!account_info.hosted_domain.empty());
 
-  CHECK(success);
+  // When sync is disabled by enterprise, sync consent is not removed.
+  // Consent can be skipped.
+  // TODO(crbug.com/1259054): Remove this if once the sync consent is removed
+  // when enteprise disable sync.
+  if (!HasPrimaryIdentity(signin::ConsentLevel::kSync)) {
+    const signin::PrimaryAccountMutator::PrimaryAccountError error =
+        identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
+            account_id, signin::ConsentLevel::kSync);
+    CHECK_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::kNoError,
+             error)
+        << "SetPrimaryAccount error: " << static_cast<int>(error);
+  }
   CHECK_EQ(account_id,
            identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync));
 
@@ -553,8 +570,11 @@ void AuthenticationService::HandleForgottenIdentity(
   // Sign the user out.
   SignOut(signout_source, /*force_clear_browsing_data=*/false, nil);
 
-  if (should_prompt)
+  if (should_prompt && account_filtered_out) {
+    FirePrimaryAccountRestricted();
+  } else if (should_prompt) {
     SetReauthPromptForSignInAndSync();
+  }
 }
 
 void AuthenticationService::ReloadCredentialsFromIdentities(
@@ -582,6 +602,8 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
 }
 
 void AuthenticationService::FirePrimaryAccountRestricted() {
-  for (auto& observer : observer_list_)
+  primary_account_was_restricted_ = true;
+  for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountRestricted();
+  }
 }

@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -139,6 +140,9 @@ class DnsAttempt {
  public:
   explicit DnsAttempt(size_t server_index) : server_index_(server_index) {}
 
+  DnsAttempt(const DnsAttempt&) = delete;
+  DnsAttempt& operator=(const DnsAttempt&) = delete;
+
   virtual ~DnsAttempt() = default;
   // Starts the attempt. Returns ERR_IO_PENDING if cannot complete synchronously
   // and calls |callback| upon completion.
@@ -188,8 +192,6 @@ class DnsAttempt {
 
  private:
   const size_t server_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsAttempt);
 };
 
 class DnsUDPAttempt : public DnsAttempt {
@@ -203,6 +205,9 @@ class DnsUDPAttempt : public DnsAttempt {
         socket_(std::move(socket)),
         query_(std::move(query)),
         udp_tracker_(udp_tracker) {}
+
+  DnsUDPAttempt(const DnsUDPAttempt&) = delete;
+  DnsUDPAttempt& operator=(const DnsUDPAttempt&) = delete;
 
   // DnsAttempt methods.
 
@@ -350,8 +355,6 @@ class DnsUDPAttempt : public DnsAttempt {
   std::unique_ptr<DnsResponse> response_;
 
   CompletionOnceCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsUDPAttempt);
 };
 
 class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
@@ -438,6 +441,9 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     request_->set_allow_credentials(false);
     request_->set_isolation_info(isolation_info);
   }
+
+  DnsHTTPAttempt(const DnsHTTPAttempt&) = delete;
+  DnsHTTPAttempt& operator=(const DnsHTTPAttempt&) = delete;
 
   // DnsAttempt overrides.
 
@@ -588,8 +594,6 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
   NetLogWithSource net_log_;
 
   base::WeakPtrFactory<DnsHTTPAttempt> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DnsHTTPAttempt);
 };
 
 void ConstructDnsHTTPAttempt(DnsSession* session,
@@ -635,6 +639,9 @@ class DnsTCPAttempt : public DnsAttempt {
         length_buffer_(
             base::MakeRefCounted<IOBufferWithSize>(sizeof(uint16_t))),
         response_length_(0) {}
+
+  DnsTCPAttempt(const DnsTCPAttempt&) = delete;
+  DnsTCPAttempt& operator=(const DnsTCPAttempt&) = delete;
 
   // DnsAttempt:
   int Start(CompletionOnceCallback callback) override {
@@ -865,8 +872,6 @@ class DnsTCPAttempt : public DnsAttempt {
   std::unique_ptr<DnsResponse> response_;
 
   CompletionOnceCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsTCPAttempt);
 };
 
 // ----------------------------------------------------------------------------
@@ -902,7 +907,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
  public:
   DnsOverHttpsProbeRunner(base::WeakPtr<DnsSession> session,
                           ResolveContext* context)
-      : session_(std::move(session)), context_(context) {
+      : session_(std::move(session)), context_(context->AsSafeRef()) {
     DCHECK(session_);
     DCHECK(!session_->config().dns_over_https_servers.empty());
 
@@ -1053,8 +1058,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
   }
 
   base::WeakPtr<DnsSession> session_;
-  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
-  ResolveContext* const context_;
+  base::SafeRef<ResolveContext> context_;
   std::string formatted_probe_hostname_;
 
   // List of ProbeStats, one for each DoH server, indexed by the DoH server
@@ -1097,13 +1101,16 @@ class DnsTransactionImpl : public DnsTransaction,
         qnames_initial_size_(0),
         attempts_count_(0),
         had_tcp_retry_(false),
-        resolve_context_(resolve_context),
+        resolve_context_(resolve_context->AsSafeRef()),
         request_priority_(DEFAULT_PRIORITY) {
     DCHECK(session_.get());
     DCHECK(!hostname_.empty());
     DCHECK(!callback_.is_null());
     DCHECK(!IsIPLiteral(hostname_));
   }
+
+  DnsTransactionImpl(const DnsTransactionImpl&) = delete;
+  DnsTransactionImpl& operator=(const DnsTransactionImpl&) = delete;
 
   ~DnsTransactionImpl() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1666,13 +1673,10 @@ class DnsTransactionImpl : public DnsTransaction,
   base::OneShotTimer timer_;
   std::unique_ptr<base::ElapsedTimer> time_from_start_;
 
-  // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
-  ResolveContext* resolve_context_;
+  base::SafeRef<ResolveContext> resolve_context_;
   RequestPriority request_priority_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(DnsTransactionImpl);
 };
 
 // ----------------------------------------------------------------------------

@@ -49,11 +49,11 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/value_store/value_store.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -529,14 +529,13 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
       SyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return false;
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     // If in client use profile otherwise use GetUserPrefServiceSyncable.
     return sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
            profile->GetPrefs()->GetBoolean(
                chromeos::settings::prefs::kSyncOsWallpaper);
   }
   return sync_service->CanSyncFeatureStart() &&
-         sync_service->GetUserSettings()->IsFirstSetupComplete() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
              syncer::UserSelectableType::kThemes);
 }
@@ -544,9 +543,9 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
 void WallpaperControllerClientImpl::ActiveUserChanged(
     user_manager::User* active_user) {
   volume_manager_observation_.Reset();
-  active_user->AddProfileCreatedObserver(base::BindOnce(
-      &WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser,
-      weak_factory_.GetWeakPtr(), active_user));
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&WallpaperControllerClientImpl::OnProfileCreated,
+                     weak_factory_.GetWeakPtr(), active_user));
 }
 
 void WallpaperControllerClientImpl::OnVolumeMounted(
@@ -557,7 +556,7 @@ void WallpaperControllerClientImpl::OnVolumeMounted(
   }
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   if (user) {
-    wallpaper_controller_->OnGoogleDriveMounted(user->GetAccountId());
+    wallpaper_controller_->SyncLocalAndRemotePrefs(user->GetAccountId());
   }
 }
 
@@ -740,11 +739,16 @@ void WallpaperControllerClientImpl::OnDailyImageInfoFetched(
   surprise_me_image_fetcher_.reset();
 }
 
-void WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser(
-    user_manager::User* user) {
+void WallpaperControllerClientImpl::OnProfileCreated(user_manager::User* user) {
   if (!user->is_active())
     return;
 
+  ObserveVolumeManagerForActiveUser(user);
+  wallpaper_controller_->SyncLocalAndRemotePrefs(user->GetAccountId());
+}
+
+void WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser(
+    user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
 

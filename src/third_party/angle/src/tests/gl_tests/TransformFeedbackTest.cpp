@@ -208,9 +208,6 @@ TEST_P(TransformFeedbackTest, BufferRebinding)
 // afterward.
 TEST_P(TransformFeedbackTest, RecordAndDraw)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
@@ -286,8 +283,6 @@ TEST_P(TransformFeedbackTest, RecordAndDraw)
 // Test that transform feedback can cover multiple render passes.
 TEST_P(TransformFeedbackTest, SpanMultipleRenderPasses)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -382,8 +377,6 @@ TEST_P(TransformFeedbackTest, SpanMultipleRenderPasses)
 // Test that uploading data to buffer that's in use then using it for transform feedback works.
 TEST_P(TransformFeedbackTest, UseAsUBOThenUpdateThenCapture)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // http://anglebug.com/5833
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsQualcomm());
@@ -546,8 +539,6 @@ void TransformFeedbackTest::midRecordOpDoesNotContributeTest(std::function<void(
 // Test that draw-based clear between draws does not contribute to transform feedback.
 TEST_P(TransformFeedbackTest, ClearWhileRecordingDoesNotContribute)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -588,8 +579,6 @@ TEST_P(TransformFeedbackTest, ClearWhileRecordingDoesNotContribute)
 // Test that copy in the middle of rendering doesn't contribute to transform feedback.
 TEST_P(TransformFeedbackTest, CopyWhileRecordingDoesNotContribute)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -636,9 +625,6 @@ TEST_P(TransformFeedbackTest, BlitWhileRecordingDoesNotContribute)
 
     // anglebug.com/5434
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     auto blit = []() {
         GLFramebuffer dstFbo;
@@ -1040,9 +1026,6 @@ TEST_P(TransformFeedbackTest, MultiContext)
 
     // Flaky on Win Intel Vulkan. http://anglebug.com/4497
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
-
-    // Flaky on Metal. http://anglebug.com/5713
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     EGLint contextAttributes[] = {
         EGL_CONTEXT_MAJOR_VERSION_KHR,
@@ -1503,8 +1486,6 @@ TEST_P(TransformFeedbackTest, OffsetResetOnBeginTransformFeedback)
 // Test that the captured buffer can be copied to other buffers.
 TEST_P(TransformFeedbackTest, CaptureAndCopy)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -2274,15 +2255,6 @@ TEST_P(TransformFeedbackTest, BufferOutOfMemory)
     // The GL back-end throws an internal error that we can't deal with in this test.
     ANGLE_SKIP_TEST_IF(IsOpenGL());
 
-    // TODO: http://anglebug.com/5345: fails consistently on Mac FYI GPU ASAN Release bot
-    ANGLE_SKIP_TEST_IF(IsMetal() && (IsIntel() || IsAMD()));
-
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsNVIDIA());
-
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
-
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -2366,8 +2338,6 @@ void VerifyVertexFloats(const GLfloat *mapPtrFloat,
 // Tests that stopping XFB works as expected.
 TEST_P(TransformFeedbackTest, Overrun)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -2398,8 +2368,6 @@ TEST_P(TransformFeedbackTest, Overrun)
 // Similar to the overrun test but with Pause instead of End.
 TEST_P(TransformFeedbackTest, OverrunWithPause)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -2435,8 +2403,6 @@ TEST_P(TransformFeedbackTest, OverrunWithPause)
 // Similar to the overrun test but with Pause instead of End.
 TEST_P(TransformFeedbackTest, OverrunWithPauseAndResume)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -2479,8 +2445,6 @@ TEST_P(TransformFeedbackTest, OverrunWithPauseAndResume)
 // Similar to the overrun Pause/Resume test but with more than one Pause and Resume.
 TEST_P(TransformFeedbackTest, OverrunWithMultiplePauseAndResume)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -2531,8 +2495,6 @@ TEST_P(TransformFeedbackTest, OverrunWithMultiplePauseAndResume)
 // Tests begin/draw/end/*bindBuffer*/begin/draw/end.
 TEST_P(TransformFeedbackTest, EndThenBindNewBufferAndRestart)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     // TODO(anglebug.com/4533) This fails after the upgrade to the 26.20.100.7870 driver.
     ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
@@ -2708,9 +2670,6 @@ void main() {
 // Test that transform feedback with scissor test enabled works.
 TEST_P(TransformFeedbackTest, RecordAndDrawWithScissorTest)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     // http://crbug.com/1135841
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOSX());
 
@@ -3245,6 +3204,59 @@ TEST_P(TransformFeedbackTestES32, PrimitivesGeneratedVsRasterizerDiscard)
     EXPECT_GL_NO_ERROR();
 
     EXPECT_EQ(primitivesGenerated, 20u);  // 10 draw calls, 2 triangles each.
+}
+
+// Test that multiple primitives generated querys and rasterizer discard interact well.
+TEST_P(TransformFeedbackTestES32, MultiPrimitivesGeneratedVsRasterizerDiscard)
+{
+    // No ES3.2 support on our bots.  http://anglebug.com/5435
+    ANGLE_SKIP_TEST_IF(IsPixel2() && IsVulkan());
+
+    // No pipelineStatisticsQuery or VK_EXT_transform_feedback support on the following
+    // configurations.  http://anglebug.com/5435
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD() && IsWindows());
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsNVIDIA() && IsWindows7());
+
+    // http://anglebug.com/5539
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsLinux());
+
+    ANGLE_GL_PROGRAM(drawColor, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(drawColor);
+
+    // Enable rasterizer discard.
+    glEnable(GL_RASTERIZER_DISCARD);
+
+    // Start first primitives generated query
+    GLQuery primitivesGeneratedQuery;
+    glBeginQuery(GL_PRIMITIVES_GENERATED, primitivesGeneratedQuery);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.6f);
+    ASSERT_GL_NO_ERROR();
+
+    // End the query and verify the count.
+    glEndQuery(GL_PRIMITIVES_GENERATED);
+    ASSERT_GL_NO_ERROR();
+
+    GLuint primitivesGenerated = 0;
+    glGetQueryObjectuiv(primitivesGeneratedQuery, GL_QUERY_RESULT, &primitivesGenerated);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_EQ(primitivesGenerated, 2u);  // 1 draw call, 2 triangles each.
+
+    // Start second primitives generated query
+    glBeginQuery(GL_PRIMITIVES_GENERATED, primitivesGeneratedQuery);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.6f);
+    ASSERT_GL_NO_ERROR();
+
+    // End the query and verify the count.
+    glEndQuery(GL_PRIMITIVES_GENERATED);
+    ASSERT_GL_NO_ERROR();
+
+    primitivesGenerated = 0;
+    glGetQueryObjectuiv(primitivesGeneratedQuery, GL_QUERY_RESULT, &primitivesGenerated);
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_EQ(primitivesGenerated, 2u);  // 1 draw call, 2 triangles each.
+    glDisable(GL_RASTERIZER_DISCARD);
 }
 
 // Test that primitives generated query and rasterizer discard interact well when the framebuffer

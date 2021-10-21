@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/service/service.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "components/autofill_assistant/browser/suppress_keyboard_raii.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_action.h"
@@ -68,6 +69,10 @@ class Controller : public ScriptExecutorDelegate,
              base::WeakPtr<RuntimeManagerImpl> runtime_manager,
              std::unique_ptr<Service> service,
              std::unique_ptr<AutofillAssistantTtsController> tts_controller);
+
+  Controller(const Controller&) = delete;
+  Controller& operator=(const Controller&) = delete;
+
   ~Controller() override;
 
   // Let the controller know it should keep tracking script availability for the
@@ -118,7 +123,6 @@ class Controller : public ScriptExecutorDelegate,
   WebsiteLoginManager* GetWebsiteLoginManager() override;
   content::WebContents* GetWebContents() override;
   std::string GetEmailAddressForAccessTokenAccount() override;
-  std::string GetLocale() override;
 
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
@@ -203,7 +207,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() const override;
-  void OnUserInteractionInsideTouchableArea() override;
   std::vector<Details> GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
@@ -276,6 +279,8 @@ class Controller : public ScriptExecutorDelegate,
   const GenericUserInterfaceProto* GetGenericUiProto() const override;
   const GenericUserInterfaceProto* GetPersistentGenericUiProto() const override;
   bool ShouldShowOverlay() const override;
+  bool ShouldSuppressKeyboard() const override;
+  void SuppressKeyboard(bool suppress) override;
   void ShutdownIfNecessary() override;
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnInputTextFocusChanged(bool is_text_focused) override;
@@ -384,6 +389,7 @@ class Controller : public ScriptExecutorDelegate,
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;
+  void WebContentsDestroyed() override;
 
   // Overrides autofill_assistant::UserModel::Observer:
   void OnValueChanged(const std::string& identifier,
@@ -439,6 +445,10 @@ class Controller : public ScriptExecutorDelegate,
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
+
+  // An instance to suppress keyboard. If this is not nullptr, the keyboard
+  // is suppressed.
+  std::unique_ptr<SuppressKeyboardRAII> suppress_keyboard_raii_;
 
   // Lazily instantiate in GetService().
   std::unique_ptr<Service> service_;
@@ -526,7 +536,7 @@ class Controller : public ScriptExecutorDelegate,
   // which information was requested.
   std::unique_ptr<CollectUserDataOptions> last_collect_user_data_options_;
   CollectUserDataOptions* collect_user_data_options_ = nullptr;
-  std::unique_ptr<UserData> user_data_;
+  UserData user_data_;
 
   std::unique_ptr<FormProto> form_;
   std::unique_ptr<FormProto::Result> form_result_;
@@ -617,8 +627,6 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<GenericUserInterfaceProto> persistent_generic_user_interface_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
 }  // namespace autofill_assistant

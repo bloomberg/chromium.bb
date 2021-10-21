@@ -30,26 +30,6 @@
 
 namespace content {
 
-namespace {
-
-void CreateWebTransportConnectorImpl(
-    int process_id,
-    const url::Origin& origin,
-    const net::NetworkIsolationKey& network_isolation_key,
-    mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebTransportConnectorImpl>(
-          process_id, /*frame=*/nullptr, origin, network_isolation_key),
-      std::move(receiver));
-}
-
-}  // anonymous namespace
-
 ServiceWorkerHost::ServiceWorkerHost(
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
@@ -60,18 +40,19 @@ ServiceWorkerHost::ServiceWorkerHost(
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           std::move(context))),
       host_receiver_(container_host_.get(), std::move(host_receiver)) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(version_);
 
   container_host_->set_service_worker_host(this);
   container_host_->UpdateUrls(
       version_->script_url(),
       net::SiteForCookies::FromUrl(version_->script_url()),
-      version_->key().origin());
+      url::Origin::Create(version_->key().top_level_site().GetURL()),
+      version_->key());
 }
 
 ServiceWorkerHost::~ServiceWorkerHost() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Explicitly destroy the ServiceWorkerContainerHost to release
   // ServiceWorkerObjectHosts and ServiceWorkerRegistrationObjectHosts owned by
@@ -87,7 +68,7 @@ void ServiceWorkerHost::CompleteStartWorkerPreparation(
     int process_id,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         broker_receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, worker_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   worker_process_id_ = process_id;
@@ -96,17 +77,17 @@ void ServiceWorkerHost::CompleteStartWorkerPreparation(
 
 void ServiceWorkerHost::CreateWebTransportConnector(
     mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreateWebTransportConnectorImpl, worker_process_id_,
-                     version_->key().origin(), GetNetworkIsolationKey(),
-                     std::move(receiver)));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<WebTransportConnectorImpl>(
+          worker_process_id_, /*frame=*/nullptr, version_->key().origin(),
+          GetNetworkIsolationKey()),
+      std::move(receiver));
 }
 
 void ServiceWorkerHost::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base::FeatureList::IsEnabled(
       blink::features::kEagerCacheStorageSetupForServiceWorkers));
   version_->embedded_worker()->BindCacheStorage(std::move(receiver));
@@ -159,7 +140,7 @@ void ServiceWorkerHost::CreateCodeCacheHost(
 }
 
 base::WeakPtr<ServiceWorkerHost> ServiceWorkerHost::GetWeakPtr() {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return weak_factory_.GetWeakPtr();
 }
 

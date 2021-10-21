@@ -86,7 +86,6 @@ class TickClock;
 
 namespace blink {
 
-class ApplicationCacheHostForFrame;
 class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
@@ -239,10 +238,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
 
-  ApplicationCacheHostForFrame* GetApplicationCacheHost() const {
-    return application_cache_host_.Get();
-  }
-
   PreviewsState GetPreviewsState() const { return previews_state_; }
 
   struct InitialScrollState {
@@ -302,10 +297,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // UseCounter
   void CountUse(mojom::WebFeature) override;
   void CountDeprecation(mojom::WebFeature) override;
-
-  void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
-    application_cache_host_ = host;
-  }
 
   void SetCommitReason(CommitReason reason) { commit_reason_ = reason; }
 
@@ -543,8 +534,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   DocumentLoadTiming document_load_timing_;
 
   base::TimeTicks time_of_last_data_received_;
-
-  Member<ApplicationCacheHostForFrame> application_cache_host_;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;

@@ -9,7 +9,6 @@
 #include "http2/adapter/http2_visitor_interface.h"
 #include "http2/adapter/nghttp2_data_provider.h"
 #include "http2/adapter/nghttp2_util.h"
-#include "third_party/nghttp2/nghttp2.h"
 #include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
 #include "common/platform/api/quiche_bug_tracker.h"
 #include "common/platform/api/quiche_logging.h"
@@ -102,8 +101,7 @@ int OnFrameReceived(nghttp2_session* /* session */,
           nghttp2_settings_entry entry = frame->settings.iv[i];
           // The nghttp2_settings_entry uses int32_t for the ID; we must cast.
           visitor->OnSetting(Http2Setting{
-              .id = static_cast<Http2SettingsId>(entry.settings_id),
-              .value = entry.value});
+              static_cast<Http2SettingsId>(entry.settings_id), entry.value});
         }
         visitor->OnSettingsEnd();
       }

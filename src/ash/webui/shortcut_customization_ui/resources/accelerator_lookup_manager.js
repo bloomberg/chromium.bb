@@ -6,7 +6,7 @@ import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
 import {fakeActionNames} from './fake_data.js';
-import {AcceleratorConfig, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, LayoutInfo, LayoutInfoList} from './shortcut_types.js';
+import {AcceleratorConfig, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, LayoutInfo, LayoutInfoList} from './shortcut_types.js';
 
 /**
  * A singleton class that manages the fetched accelerators and layout
@@ -116,7 +116,8 @@ export class AcceleratorLookupManager {
           this.acceleratorLookup_.set(id, []);
         }
         accelInfos.forEach((info) => {
-          this.acceleratorLookup_.get(id).push(info);
+          this.acceleratorLookup_.get(id).push(
+              /** @type {!AcceleratorInfo} */(Object.assign({}, info)));
           const accelKeys = info.accelerator;
           this.reverseAcceleratorLookup_.set(JSON.stringify(accelKeys), id);
         });
@@ -137,7 +138,7 @@ export class AcceleratorLookupManager {
       }
       this.acceleratorLayoutLookup_.get(entry.category)
           .get(entry.sub_category)
-          .push(entry);
+          .push(/** @type {!LayoutInfo} */(Object.assign({}, entry)));
 
       // Add the entry to the AcceleratorNameLookup.
       const uuid = `${entry.source}-${entry.action}`;
@@ -174,6 +175,59 @@ export class AcceleratorLookupManager {
     this.reverseAcceleratorLookup_
         .set(JSON.stringify(newAccelerator), `${source}-${action}`);
     this.reverseAcceleratorLookup_.delete(JSON.stringify(oldAccelerator));
+  }
+
+  /**
+   * @param {AcceleratorSource} source
+   * @param {number} action
+   * @param {AcceleratorKeys} newAccelerator
+   */
+  addAccelerator(source, action, newAccelerator) {
+    // Check to see if there is a pre-existing accelerator to remove first.
+    this.maybeRemoveOrDisableAccelerator_(newAccelerator);
+
+    // Get the matching accelerator and add the new accelerator to its
+    // container.
+    const accelInfos = this.getAccelerators(source, action);
+    const newAccelInfo = /** @type {!AcceleratorInfo} */ ({
+      accelerator: newAccelerator,
+      type: AcceleratorType.kUserDefined,
+      state: AcceleratorState.kEnabled,
+      locked: false,
+    });
+    accelInfos.push(newAccelInfo);
+
+    // Update the reverse look up maps.
+    this.reverseAcceleratorLookup_.set(
+        JSON.stringify(newAccelerator), `${source}-${action}`);
+  }
+
+  /**
+   * @param {!AcceleratorSource} source
+   * @param {number} action
+   * @param {AcceleratorKeys} accelerator
+   */
+  removeAccelerator(source, action, accelerator) {
+    const foundIdx = this.getAcceleratorInfoIndex_(source, action, accelerator);
+
+    if (foundIdx === -1) {
+      // Can only attempt to remove an existing accelerator.
+      assertNotReached();
+    }
+
+    const accelInfos = this.getAccelerators(source, action);
+    const foundAccel = accelInfos[foundIdx];
+
+    if (foundAccel.locked) {
+      // Not possible to remove a locked accelerator manually.
+      assertNotReached();
+    }
+
+    // Remove accelerator from main map.
+    accelInfos.splice(foundIdx, 1);
+
+    // Remove from reverse lookup.
+    this.reverseAcceleratorLookup_.delete(JSON.stringify(accelerator));
   }
 
   /**
@@ -229,7 +283,9 @@ export class AcceleratorLookupManager {
 
   reset() {
     this.acceleratorLookup_.clear();
+    this.acceleratorNameLookup_.clear();
     this.acceleratorLayoutLookup_.clear();
+    this.reverseAcceleratorLookup_.clear();
   }
 }
 

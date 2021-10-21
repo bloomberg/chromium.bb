@@ -139,8 +139,7 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  MediaResourceProviderService* const provider =
-      main_parts_->media_resource_provider_service();
+  CdmProviderService* const provider = main_parts_->cdm_provider_service();
   DCHECK(provider);
   PopulateFuchsiaFrameBinders(map, provider);
 }
@@ -207,9 +206,8 @@ std::string WebEngineContentBrowserClient::GetApplicationLocale() {
 std::string WebEngineContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
   // Returns a comma-separated list of language codes, in preference order.
-  // This is suitable for direct use setting the "lang" header, or
-  // passed to net::HttpUtil::GenerateAcceptLanguageHeader() to generate a
-  // legacy "accept-language" header value.
+  // This is passed to net::HttpUtil::GenerateAcceptLanguageHeader() to
+  // generate a legacy "accept-language" header value.
   return l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES);
 }
 

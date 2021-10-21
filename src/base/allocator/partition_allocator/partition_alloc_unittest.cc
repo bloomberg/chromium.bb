@@ -193,16 +193,24 @@ class PartitionAllocTest : public testing::Test {
 
   void SetUp() override {
     PartitionAllocGlobalInit(HandleOOM);
-    allocator.init({PartitionOptions::AlignedAlloc::kDisallowed,
-                    PartitionOptions::ThreadCache::kDisabled,
-                    PartitionOptions::Quarantine::kDisallowed,
-                    PartitionOptions::Cookie::kAllowed,
-                    PartitionOptions::RefCount::kAllowed});
+    allocator.init({
+      PartitionOptions::AlignedAlloc::kDisallowed,
+          PartitionOptions::ThreadCache::kDisabled,
+          PartitionOptions::Quarantine::kDisallowed,
+          PartitionOptions::Cookie::kAllowed,
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+          PartitionOptions::BackupRefPtr::kEnabled,
+#else
+          PartitionOptions::BackupRefPtr::kDisabled,
+#endif
+          PartitionOptions::UseConfigurablePool::kNo
+    });
     aligned_allocator.init({PartitionOptions::AlignedAlloc::kAllowed,
                             PartitionOptions::ThreadCache::kDisabled,
                             PartitionOptions::Quarantine::kDisallowed,
                             PartitionOptions::Cookie::kDisallowed,
-                            PartitionOptions::RefCount::kDisallowed});
+                            PartitionOptions::BackupRefPtr::kDisabled,
+                            PartitionOptions::UseConfigurablePool::kNo});
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
   }
 
@@ -3351,9 +3359,9 @@ TEST_F(PartitionAllocTest, CrossPartitionRootRealloc) {
                                            nullptr);
   EXPECT_TRUE(ptr);
 
-  // Create new root to simulate ConfigurePartitionRefCountSupport(false)
+  // Create new root to simulate ConfigurePartitionBackupRefPtrSupport(false)
 
-  // Copied from ConfigurePartitionRefCountSupport()
+  // Copied from ConfigurePartitionBackupRefPtrSupport()
   allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
                                 PartitionPurgeDiscardUnusedSystemPages);
 
@@ -3363,7 +3371,8 @@ TEST_F(PartitionAllocTest, CrossPartitionRootRealloc) {
       base::PartitionOptions::ThreadCache::kDisabled,
       base::PartitionOptions::Quarantine::kDisallowed,
       base::PartitionOptions::Cookie::kAllowed,
-      base::PartitionOptions::RefCount::kDisallowed,
+      base::PartitionOptions::BackupRefPtr::kDisabled,
+      base::PartitionOptions::UseConfigurablePool::kNo,
   });
 
   // Realloc from |allocator.root()| into |new_root|.
@@ -3531,16 +3540,61 @@ TEST_F(PartitionAllocTest, MallocFunctionAnnotations) {
   Free(buffer);
 }
 
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 TEST_F(PartitionAllocTest, Padding) {
-  uintptr_t allow_ref_count_offset =
-      reinterpret_cast<uintptr_t>(&allocator.root()->allow_ref_count) -
+  uintptr_t brp_enabled_offset =
+      reinterpret_cast<uintptr_t>(&allocator.root()->brp_enabled_) -
       reinterpret_cast<uintptr_t>(allocator.root());
   uintptr_t lock_offset =
       reinterpret_cast<uintptr_t>(&allocator.root()->lock_) -
       reinterpret_cast<uintptr_t>(allocator.root());
 
   // Double-check that the padding in the root was not removed.
-  EXPECT_GT(lock_offset - allow_ref_count_offset, 64u);
+  EXPECT_GT(lock_offset - brp_enabled_offset, 64u);
+}
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+
+// Test that the ConfigurablePool works properly.
+TEST_F(PartitionAllocTest, ConfigurablePool) {
+  EXPECT_FALSE(IsConfigurablePoolAvailable());
+
+  // The rest is only applicable to 64-bit mode
+#if defined(ARCH_CPU_64_BITS)
+  const size_t pool_size =
+      PartitionAddressSpace::ConfigurablePoolReservationSize();
+  void* pool_memory = AllocPages(nullptr, pool_size, pool_size,
+                                 PageInaccessible, PageTag::kPartitionAlloc);
+  EXPECT_NE(nullptr, pool_memory);
+  PartitionAddressSpace::InitConfigurablePool(pool_memory, pool_size);
+
+  EXPECT_TRUE(IsConfigurablePoolAvailable());
+
+  auto* root = new base::PartitionRoot<ThreadSafe>({
+      base::PartitionOptions::AlignedAlloc::kDisallowed,
+      base::PartitionOptions::ThreadCache::kDisabled,
+      base::PartitionOptions::Quarantine::kDisallowed,
+      base::PartitionOptions::Cookie::kAllowed,
+      base::PartitionOptions::BackupRefPtr::kDisabled,
+      base::PartitionOptions::UseConfigurablePool::kIfAvailable,
+  });
+
+  const size_t count = 250;
+  std::vector<void*> allocations(count, nullptr);
+  uintptr_t pool_base = reinterpret_cast<uintptr_t>(pool_memory);
+  for (size_t i = 0; i < count; ++i) {
+    const size_t size = kTestSizes[base::RandGenerator(kTestSizesCount)];
+    allocations[i] = root->Alloc(size, nullptr);
+    EXPECT_NE(nullptr, allocations[i]);
+    uintptr_t allocation_base = reinterpret_cast<uintptr_t>(allocations[i]);
+    EXPECT_TRUE(allocation_base >= pool_base &&
+                allocation_base < pool_base + pool_size);
+  }
+
+  for (size_t i = 0; i < count; ++i) {
+    root->Free(allocations[i]);
+  }
+
+#endif  // defined(ARCH_CPU_64_BITS)
 }
 
 }  // namespace internal

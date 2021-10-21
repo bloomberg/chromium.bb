@@ -502,6 +502,12 @@ String BuildCorsError(network::mojom::CorsError cors_error) {
 
     case network::mojom::CorsError::kInsecurePrivateNetwork:
       return protocol::Network::CorsErrorEnum::InsecurePrivateNetwork;
+
+    case network::mojom::CorsError::kInvalidPrivateNetworkAccess:
+      return protocol::Network::CorsErrorEnum::InvalidPrivateNetworkAccess;
+
+    case network::mojom::CorsError::kUnexpectedPrivateNetworkAccess:
+      return protocol::Network::CorsErrorEnum::UnexpectedPrivateNetworkAccess;
   }
 }
 
@@ -1200,7 +1206,6 @@ void InspectorNetworkAgent::PrepareRequest(DocumentLoader* loader,
     } else {
       request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
     }
-    request.SetShouldResetAppCache(true);
   }
   if (bypass_service_worker_.Get())
     request.SetSkipServiceWorker(true);

@@ -79,14 +79,15 @@ class NET_EXPORT SpdySessionPool
     class NET_EXPORT_PRIVATE Delegate {
      public:
       Delegate();
+
+      Delegate(const Delegate&) = delete;
+      Delegate& operator=(const Delegate&) = delete;
+
       virtual ~Delegate();
 
       // |spdy_session| will not be null.
       virtual void OnSpdySessionAvailable(
           base::WeakPtr<SpdySession> spdy_session) = 0;
-
-     private:
-      DISALLOW_COPY_AND_ASSIGN(Delegate);
     };
 
     // Constructor - this is called by the SpdySessionPool.
@@ -96,6 +97,9 @@ class NET_EXPORT SpdySessionPool
                        bool is_blocking_request_for_session,
                        Delegate* delegate,
                        SpdySessionPool* spdy_session_pool);
+
+    SpdySessionRequest(const SpdySessionRequest&) = delete;
+    SpdySessionRequest& operator=(const SpdySessionRequest&) = delete;
 
     ~SpdySessionRequest();
 
@@ -122,8 +126,6 @@ class NET_EXPORT SpdySessionPool
     const bool is_blocking_request_for_session_;
     Delegate* const delegate_;
     SpdySessionPool* spdy_session_pool_;
-
-    DISALLOW_COPY_AND_ASSIGN(SpdySessionRequest);
   };
 
   SpdySessionPool(HostResolver* host_resolver,
@@ -142,6 +144,10 @@ class NET_EXPORT SpdySessionPool
                   bool enable_priority_update,
                   SpdySessionPool::TimeFunc time_func,
                   NetworkQualityEstimator* network_quality_estimator);
+
+  SpdySessionPool(const SpdySessionPool&) = delete;
+  SpdySessionPool& operator=(const SpdySessionPool&) = delete;
+
   ~SpdySessionPool() override;
 
   // In the functions below, a session is "available" if this pool has
@@ -475,8 +481,6 @@ class NET_EXPORT SpdySessionPool
   NetworkQualityEstimator* network_quality_estimator_;
 
   base::WeakPtrFactory<SpdySessionPool> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionPool);
 };
 
 }  // namespace net

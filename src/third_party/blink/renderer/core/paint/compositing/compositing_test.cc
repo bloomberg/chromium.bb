@@ -166,7 +166,7 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back(
-      {scroll_element_id, gfx::ScrollOffset(0, 1), absl::nullopt});
+      {scroll_element_id, gfx::Vector2dF(0, 1), absl::nullopt});
   overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
       &commit_data);
   UpdateAllLifecyclePhases();
@@ -186,7 +186,7 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // apply impl-side offsets without crashing.
   ASSERT_EQ(overflow_scroll_layer,
             CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
-  commit_data.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
+  commit_data.scrolls[0] = {scroll_element_id, gfx::Vector2dF(0, 1),
                             absl::nullopt};
   overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
       &commit_data);
@@ -223,7 +223,7 @@ TEST_P(CompositingTest, FrameViewScroll) {
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.push_back({scrollable_area->GetScrollElementId(),
-                                 gfx::ScrollOffset(0, 1), absl::nullopt});
+                                 gfx::Vector2dF(0, 1), absl::nullopt});
   RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
@@ -1718,10 +1718,10 @@ TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
   // Simulate the scroll update with scroll delta from impl-side.
   cc::CompositorCommitData commit_data;
   commit_data.scrolls.emplace_back(cc::CompositorCommitData::ScrollUpdateInfo(
-      element_id, gfx::ScrollOffset(0, 10), absl::nullopt));
+      element_id, gfx::Vector2dF(0, 10), absl::nullopt));
   Compositor().LayerTreeHost()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 10), scrollable_area->ScrollPosition());
-  EXPECT_EQ(gfx::ScrollOffset(0, 10),
+  EXPECT_EQ(gfx::Vector2dF(0, 10),
             GetPropertyTrees()->scroll_tree.current_scroll_offset(element_id));
 
   // Update just the blink lifecycle because a full frame would clear the bit
@@ -2146,6 +2146,24 @@ TEST_P(CompositingSimTest, ContentsOpaqueForTextWithPartialBackground) {
       <!DOCTYPE html>
       <div id="target" style="will-change: transform; padding: 10px">
         <div style="background: white">TEXT</div>
+      </div>
+  )HTML");
+  Compositor().BeginFrame();
+  auto* cc_layer = CcLayerByDOMElementId("target");
+  EXPECT_FALSE(cc_layer->contents_opaque());
+  EXPECT_TRUE(cc_layer->contents_opaque_for_text());
+}
+
+TEST_P(CompositingSimTest, ContentsOpaqueForTextWithBorderRadiusAndPadding) {
+  // This test works only with the new text opaque algorithm.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div id="target" style="will-change: transform; border-radius: 5px;
+                              padding: 10px; background: blue">
+        TEXT
       </div>
   )HTML");
   Compositor().BeginFrame();

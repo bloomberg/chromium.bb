@@ -29,6 +29,11 @@ class ServiceWorkerHostInterceptor
     : public blink::mojom::ServiceWorkerHostInterceptorForTesting {
  public:
   ServiceWorkerHostInterceptor();
+
+  ServiceWorkerHostInterceptor(const ServiceWorkerHostInterceptor&) = delete;
+  ServiceWorkerHostInterceptor& operator=(const ServiceWorkerHostInterceptor&) =
+      delete;
+
   ~ServiceWorkerHostInterceptor() override;
 
   // Looks for the service worker with the |scope| and starts intercepting calls
@@ -56,14 +61,11 @@ class ServiceWorkerHostInterceptor
       const GURL& url,
       OpenPaymentHandlerWindowCallback callback) override;
 
-  void FindRegistrationOnServiceWorkerCoreThread(
-      scoped_refptr<ServiceWorkerContextWrapper> context,
-      const GURL& scope,
-      BrowserThread::ID run_done_thread,
-      base::OnceClosure done);
+  void FindRegistration(scoped_refptr<ServiceWorkerContextWrapper> context,
+                        const GURL& scope,
+                        base::OnceClosure done);
 
-  void OnFoundRegistrationOnServiceWorkerCoreThread(
-      BrowserThread::ID run_done_thread,
+  void OnFoundRegistration(
       base::OnceClosure done,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
@@ -73,8 +75,6 @@ class ServiceWorkerHostInterceptor
   int service_worker_process_id_ = -1;
   ServiceWorkerVersion* service_worker_version_ = nullptr;
   blink::mojom::ServiceWorkerHost* forwarding_interface_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHostInterceptor);
 };
 
 }  // namespace content

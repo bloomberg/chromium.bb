@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/common/pref_names.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -53,7 +54,6 @@
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -379,7 +379,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     // App launched by user rather than full restore.
     if (window_info &&
         window_info->window_id <=
-            full_restore::kArcSessionIdOffsetForRestoredLaunching) {
+            app_restore::kArcSessionIdOffsetForRestoredLaunching) {
       arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
     }
 
@@ -726,6 +726,11 @@ void AddAppLaunchObserver(content::BrowserContext* context,
   class ProfileDestroyedObserver : public ProfileObserver {
    public:
     ProfileDestroyedObserver() = default;
+
+    ProfileDestroyedObserver(const ProfileDestroyedObserver&) = delete;
+    ProfileDestroyedObserver& operator=(const ProfileDestroyedObserver&) =
+        delete;
+
     ~ProfileDestroyedObserver() override = default;
 
     void Observe(Profile* profile) {
@@ -741,8 +746,6 @@ void AddAppLaunchObserver(content::BrowserContext* context,
    private:
     base::ScopedMultiSourceObservation<Profile, ProfileObserver>
         observed_profiles_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(ProfileDestroyedObserver);
   };
   static base::NoDestructor<ProfileDestroyedObserver>
       profile_destroyed_observer;
@@ -834,8 +837,7 @@ void RecordPlayStoreLaunchWithinAWeek(PrefService* prefs, bool launched) {
   auto time_oobe_finished = prefs->GetTime(ash::prefs::kOobeOnboardingTime);
   if (!time_oobe_finished.is_null())
     return;
-  bool within_a_week =
-      base::Time::Now() - time_oobe_finished < base::TimeDelta::FromDays(7);
+  bool within_a_week = base::Time::Now() - time_oobe_finished < base::Days(7);
   if (within_a_week && !launched)
     return;
   base::UmaHistogramBoolean("Arc.PlayStoreLaunchWithinAWeek", within_a_week);

@@ -54,6 +54,9 @@ namespace {
 // are balanced with Wait() calls.
 class AsyncTestHelper {
  public:
+  AsyncTestHelper(const AsyncTestHelper&) = delete;
+  AsyncTestHelper& operator=(const AsyncTestHelper&) = delete;
+
   void Wait() {
     run_loop_->Run();
     Reset();
@@ -84,8 +87,6 @@ class AsyncTestHelper {
 
   std::unique_ptr<base::RunLoop> run_loop_;
   bool quit_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncTestHelper);
 };
 
 class SupervisedUserURLFilterObserver
@@ -93,6 +94,12 @@ class SupervisedUserURLFilterObserver
       public SupervisedUserURLFilter::Observer {
  public:
   SupervisedUserURLFilterObserver() {}
+
+  SupervisedUserURLFilterObserver(const SupervisedUserURLFilterObserver&) =
+      delete;
+  SupervisedUserURLFilterObserver& operator=(
+      const SupervisedUserURLFilterObserver&) = delete;
+
   ~SupervisedUserURLFilterObserver() {}
 
   void Init(SupervisedUserURLFilter* url_filter) {
@@ -108,13 +115,15 @@ class SupervisedUserURLFilterObserver
   base::ScopedObservation<SupervisedUserURLFilter,
                           SupervisedUserURLFilter::Observer>
       scoped_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilterObserver);
 };
 
 class AsyncResultHolder {
  public:
   AsyncResultHolder() : result_(false) {}
+
+  AsyncResultHolder(const AsyncResultHolder&) = delete;
+  AsyncResultHolder& operator=(const AsyncResultHolder&) = delete;
+
   ~AsyncResultHolder() {}
 
   void SetResult(bool result) {
@@ -130,8 +139,6 @@ class AsyncResultHolder {
  private:
   base::RunLoop run_loop_;
   bool result_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncResultHolder);
 };
 
 class SupervisedUserServiceTest : public ::testing::Test {
@@ -175,6 +182,11 @@ namespace {
 class MockPermissionRequestCreator : public PermissionRequestCreator {
  public:
   MockPermissionRequestCreator() : enabled_(false) {}
+
+  MockPermissionRequestCreator(const MockPermissionRequestCreator&) = delete;
+  MockPermissionRequestCreator& operator=(const MockPermissionRequestCreator&) =
+      delete;
+
   ~MockPermissionRequestCreator() override {}
 
   void set_enabled(bool enabled) {
@@ -206,8 +218,6 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
   bool enabled_;
   std::vector<GURL> requested_urls_;
   std::vector<SuccessCallback> callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPermissionRequestCreator);
 };
 
 }  // namespace

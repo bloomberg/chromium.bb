@@ -407,6 +407,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
         }
       }
     } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
+      page_rule->SetCascadeLayer(cascade_layer);
       AddPageRule(page_rule);
     } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule)) {
       if (MatchMediaForAddRules(medium, media_rule->MediaQueries())) {
@@ -414,11 +415,13 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
                       container_query, cascade_layer);
       }
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
+      font_face_rule->SetCascadeLayer(cascade_layer);
       AddFontFaceRule(font_face_rule);
     } else if (auto* keyframes_rule = DynamicTo<StyleRuleKeyframes>(rule)) {
       keyframes_rule->SetCascadeLayer(cascade_layer);
       AddKeyframesRule(keyframes_rule);
     } else if (auto* property_rule = DynamicTo<StyleRuleProperty>(rule)) {
+      property_rule->SetCascadeLayer(cascade_layer);
       AddPropertyRule(property_rule);
     } else if (auto* counter_style_rule =
                    DynamicTo<StyleRuleCounterStyle>(rule)) {
@@ -426,6 +429,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       AddCounterStyleRule(counter_style_rule);
     } else if (auto* scroll_timeline_rule =
                    DynamicTo<StyleRuleScrollTimeline>(rule)) {
+      scroll_timeline_rule->SetCascadeLayer(cascade_layer);
       AddScrollTimelineRule(scroll_timeline_rule);
     } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule)) {
       if (supports_rule->ConditionIsSupported()) {

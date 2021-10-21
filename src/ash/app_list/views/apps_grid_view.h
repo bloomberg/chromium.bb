@@ -51,6 +51,7 @@ class AppListItemList;
 class AppListItemView;
 class AppListModel;
 class AppListViewDelegate;
+class AppsGridViewFocusDelegate;
 class AppsGridViewFolderDelegate;
 class ContentsView;
 class PulsingBlockView;
@@ -99,21 +100,22 @@ class ASH_EXPORT AppsGridView : public views::View,
                AppListA11yAnnouncer* a11y_announcer,
                AppListViewDelegate* app_list_view_delegate,
                AppsGridViewFolderDelegate* folder_delegate,
-               AppListFolderController* folder_controller);
+               AppListFolderController* folder_controller,
+               AppsGridViewFocusDelegate* focus_delegate);
   AppsGridView(const AppsGridView&) = delete;
   AppsGridView& operator=(const AppsGridView&) = delete;
   ~AppsGridView() override;
 
   // Initializes the class. Calls virtual methods, so its code cannot be in the
   // constructor.
-  virtual void Init();
+  void Init();
 
-  // Sets fixed layout parameters. After setting this, CalculateLayout below
-  // is no longer called to dynamically choosing those layout params.
-  void SetLayout(int cols, int rows_per_page);
+  // Sets the `AppListConfig` that should be used to configure app list item
+  // size within the grid. This will cause all items views to be updated to
+  // adhere to new tile and icon dimensions, so it should be used sparingly.
+  void UpdateAppListConfig(const AppListConfig* app_list_config);
 
   int cols() const { return cols_; }
-  int rows_per_page() const { return rows_per_page_; }
 
   // Sets padding for apps grid items to use during layout if fixed padding
   // should be used. Otherwise, for paged apps grid, the padding will be
@@ -124,9 +126,6 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Returns the size of a tile view including its padding.
   gfx::Size GetTotalTileSize() const;
-
-  // Returns the size of the entire tile grid with padding between tiles.
-  gfx::Size GetTileGridSizeWithPadding() const;
 
   // Returns the minimum size of the entire tile grid.
   gfx::Size GetMinimumTileGridSize(int cols, int rows_per_page) const;
@@ -176,6 +175,8 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Return true if the |bounds_animator_| is animating |view|.
   bool IsAnimatingView(AppListItemView* view);
+
+  const AppListConfig* app_list_config() const { return app_list_config_; }
 
   bool has_selected_view() const { return selected_view_ != nullptr; }
   AppListItemView* selected_view() const { return selected_view_; }
@@ -244,10 +245,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // a folder item.
   void EndDragForReparentInHiddenFolderGridView();
 
-  // Called when the folder item associated with the grid view is removed.
-  // The grid view must be inside a folder view.
-  void OnFolderItemRemoved();
-
   // Moves |reparented_view| from its folder to the root AppsGridView in the
   // direction of |key_code|.
   // |original_parent_item_view|: The folder AppListView for the folder from
@@ -255,12 +252,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   void HandleKeyboardReparent(AppListItemView* reparented_view,
                               AppListItemView* original_parent_item_view,
                               ui::KeyboardCode key_code);
-
-  // Returns the first app list item view in the selected page in the folder.
-  AppListItemView* GetCurrentPageFirstItemViewInFolder();
-
-  // Returns the last app list item view in the selected page in the folder.
-  AppListItemView* GetCurrentPageLastItemViewInFolder();
 
   // Updates paged view structure and save it to meta data.
   void UpdatePagedViewStructure();
@@ -270,20 +261,11 @@ class ASH_EXPORT AppsGridView : public views::View,
   // AshTestBase.
   bool IsTabletMode() const;
 
-  // Should be called by AppListView if the app list config it uses changes.
-  // This will update all app list items (as the icon sizes and bounds might
-  // need updating), so it should be used sparingly.
-  void OnAppListConfigUpdated();
-
   // Returns the expected bounds rect in grid coordinates for the item with the
   // provided id, if the item is in the first page.
   // If the item is not in the current page (or cannot be found), this will
   // return 1x1 rectangle in the apps grid center.
   gfx::Rect GetExpectedItemBoundsInFirstPage(const std::string& id) const;
-
-  // Helper for getting current app list config from the parents in the app list
-  // view hierarchy.
-  const AppListConfig& GetAppListConfig() const override;
 
   // Passes scroll information from AppListView, so that subclasses may scroll
   // or switch pages.
@@ -346,10 +328,11 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns the size of the entire tile grid.
   virtual gfx::Size GetTileGridSize() const = 0;
 
-  // Returns the number of app tiles per page. Takes a page number as an
-  // argument as the first page might have less apps shown. Folder grids may
-  // have different numbers of tiles from the main grid.
-  virtual int TilesPerPage(int page) const = 0;
+  // Returns the max number of rows the grid can have on a page.
+  virtual int GetMaxRowsInPage(int page) const = 0;
+
+  // Calculates the offset distance to center the grid in the container.
+  virtual gfx::Vector2d GetGridCenteringOffset(int page) const = 0;
 
   // Returns the padding between each page of the apps grid, or zero if the grid
   // does not use pages.
@@ -398,10 +381,19 @@ class ASH_EXPORT AppsGridView : public views::View,
   virtual void SetFocusAfterEndDrag() = 0;
 
   // Calculates the item views' bounds for non-folder.
-  virtual void CalculateIdealBounds();
+  virtual void CalculateIdealBoundsForNonFolder() = 0;
 
-  // Calculates the item views' bounds for folder.
-  void CalculateIdealBoundsForFolder();
+  // Sets the max number of columns that the grid can have.
+  // For root apps grid view, the grid size depends on the space available to
+  // apps grid view only, and `cols()` will match `max_columns`. I.e. if the
+  // grid doesn't have enough items to fill out all columns, it will leave empty
+  // spaces in the UI.
+  // For folder item grid, the grid size also depends on the number of items in
+  // the grid, so number of actual columns may be smaller than `max_columns`.
+  void SetMaxColumnsInternal(int max_columns);
+
+  // Calculates the item views' bounds for both folder and non-folder.
+  void CalculateIdealBounds();
 
   // Whether the provided view is hidden to facilitate drag operation (for
   // example, the drag view for which a drag icon proxy has been created).
@@ -410,6 +402,11 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Gets the bounds of the tile located at |index|, where |index| contains the
   // page/slot info.
   gfx::Rect GetExpectedTileBounds(const GridIndex& index) const;
+
+  // Returns the number of app tiles per page. Takes a page number as an
+  // argument as the first page might have less apps shown. Folder grids may
+  // have different numbers of tiles from the main grid.
+  int TilesPerPage(int page) const;
 
   GridIndex GetIndexOfView(const AppListItemView* view) const;
   AppListItemView* GetViewAtIndex(const GridIndex& index) const;
@@ -437,10 +434,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   bool ignore_layout() const { return ignore_layout_; }
   views::BoundsAnimator* bounds_animator() { return bounds_animator_.get(); }
   views::View* items_container() { return items_container_; }
-  const views::ViewModelT<PulsingBlockView>& pulsing_blocks_model() {
+  views::ViewModelT<PulsingBlockView>& pulsing_blocks_model() {
     return pulsing_blocks_model_;
   }
-  int reorder_placeholder_slot() const { return reorder_placeholder_.slot; }
+  GridIndex reorder_placeholder() const { return reorder_placeholder_; }
   const gfx::Point& last_drag_point() const { return last_drag_point_; }
   void set_last_drag_point(const gfx::Point& p) { last_drag_point_ = p; }
   bool handling_keyboard_move() const { return handling_keyboard_move_; }
@@ -668,9 +665,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // slot if |point| is outside the page's bounds.
   GridIndex GetNearestTileIndexForPoint(const gfx::Point& point) const;
 
-  // Calculates the offset distance to center the grid in the container.
-  gfx::Vector2d GetGridCenteringOffset() const;
-
   // Gets the item view currently displayed at |slot| on the current page. If
   // there is no item displayed at |slot|, returns nullptr. Note that this finds
   // an item *displayed* at a slot, which may differ from the item's location in
@@ -794,11 +788,20 @@ class ASH_EXPORT AppsGridView : public views::View,
   AppListA11yAnnouncer* const a11y_announcer_;
   AppListViewDelegate* const app_list_view_delegate_;
 
+  // May be nullptr if this apps grid doesn't have custom focus handling.
+  AppsGridViewFocusDelegate* const focus_delegate_;
+
   // Keeps the individual AppListItemView. Owned by views hierarchy.
   views::View* items_container_ = nullptr;
 
+  // The `AppListConfig` currently used for sizing app list item views within
+  // the grid.
+  const AppListConfig* app_list_config_ = nullptr;
+
+  // The max number of columns the grid can have.
+  int max_cols_ = 0;
+
   int cols_ = 0;
-  int rows_per_page_ = 0;
 
   // List of app item views. There is a view per item in |model_|.
   views::ViewModelT<AppListItemView> view_model_;

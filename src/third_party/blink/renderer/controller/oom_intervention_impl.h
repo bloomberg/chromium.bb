@@ -29,7 +29,7 @@ class CONTROLLER_EXPORT OomInterventionImpl
     : public mojom::blink::OomIntervention,
       public MemoryUsageMonitor::Observer {
  public:
-  static void Bind(
+  static void BindReceiver(
       mojo::PendingReceiver<mojom::blink::OomIntervention> receiver);
 
   OomInterventionImpl();
@@ -54,9 +54,12 @@ class CONTROLLER_EXPORT OomInterventionImpl
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest,
                            ContinueWatchingWithoutDetection);
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, V1DetectionAdsNavigation);
+  FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, MojoDisconnection);
 
   // Overridden by test.
   virtual MemoryUsageMonitor& MemoryUsageMonitorInstance();
+
+  void Bind(mojo::PendingReceiver<mojom::blink::OomIntervention> receiver);
 
   void Check(MemoryUsage);
 

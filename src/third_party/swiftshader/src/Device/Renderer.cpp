@@ -146,13 +146,15 @@ inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topo
 
 DrawCall::DrawCall()
 {
-	data = (DrawData *)allocate(sizeof(DrawData));
+	// TODO(b/140991626): Use allocateZeroOrPoison() instead of allocateZero() to detect MemorySanitizer errors.
+	// TODO(b/140991626): Use allocateUninitialized() instead of allocateZeroOrPoison() to improve startup peformance.
+	data = (DrawData *)sw::allocateZero(sizeof(DrawData));
 	data->constants = &Constants::Get();
 }
 
 DrawCall::~DrawCall()
 {
-	deallocate(data);
+	sw::freeMemory(data);
 }
 
 Renderer::Renderer(vk::Device *device)
@@ -172,12 +174,12 @@ Renderer::~Renderer()
 void *Renderer::operator new(size_t size)
 {
 	ASSERT(size == sizeof(Renderer));  // This operator can't be called from a derived class
-	return vk::allocate(sizeof(Renderer), alignof(Renderer), vk::DEVICE_MEMORY, VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
+	return vk::allocateHostMemory(sizeof(Renderer), alignof(Renderer), vk::NULL_ALLOCATION_CALLBACKS, VK_SYSTEM_ALLOCATION_SCOPE_DEVICE);
 }
 
 void Renderer::operator delete(void *mem)
 {
-	vk::deallocate(mem, vk::DEVICE_MEMORY);
+	vk::freeHostMemory(mem, vk::NULL_ALLOCATION_CALLBACKS);
 }
 
 void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState &dynamicState, unsigned int count, int baseVertex,
@@ -380,15 +382,15 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 	{
 		const vk::Attachments attachments = pipeline->getAttachments();
 
-		for(int index = 0; index < RENDERTARGETS; index++)
+		for(int index = 0; index < MAX_COLOR_BUFFERS; index++)
 		{
-			draw->renderTarget[index] = attachments.renderTarget[index];
+			draw->colorBuffer[index] = attachments.colorBuffer[index];
 
-			if(draw->renderTarget[index])
+			if(draw->colorBuffer[index])
 			{
-				data->colorBuffer[index] = (unsigned int *)attachments.renderTarget[index]->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_COLOR_BIT, 0, data->viewID);
-				data->colorPitchB[index] = attachments.renderTarget[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
-				data->colorSliceB[index] = attachments.renderTarget[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+				data->colorBuffer[index] = (unsigned int *)attachments.colorBuffer[index]->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_COLOR_BIT, 0, data->viewID);
+				data->colorPitchB[index] = attachments.colorBuffer[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+				data->colorSliceB[index] = attachments.colorBuffer[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 			}
 		}
 
@@ -466,11 +468,11 @@ void DrawCall::teardown()
 	setupRoutine = {};
 	pixelRoutine = {};
 
-	for(auto *rt : renderTarget)
+	for(auto *target : colorBuffer)
 	{
-		if(rt)
+		if(target)
 		{
-			rt->contentsChanged();
+			target->contentsChanged();
 		}
 	}
 

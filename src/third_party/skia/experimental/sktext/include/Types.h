@@ -19,6 +19,7 @@ enum class TextAlign {
     kJustify,
     kStart,
     kEnd,
+    kNothing,
 };
 
 enum class TextDirection {
@@ -28,6 +29,7 @@ enum class TextDirection {
 
 // This enum lists all possible ways to query output positioning
 enum class PositionType {
+    kRandomText,
     kGraphemeCluster, // Both the edge of the glyph cluster and the text grapheme
     kGlyphCluster,
     kGlyph,
@@ -39,26 +41,34 @@ enum class LineBreakType {
   kHardLineBreakBefore,
 };
 
+enum class LogicalRunType {
+    kText,
+    kLineBreak
+};
+
 enum class CodeUnitFlags : uint8_t {
     kNoCodeUnitFlag = (1 << 0),
     kPartOfWhiteSpace = (1 << 1),
     kGraphemeStart = (1 << 2),
     kSoftLineBreakBefore = (1 << 3),
     kHardLineBreakBefore = (1 << 4),
+    kAllCodeUnitFlags = ((1 << 5) - 1),
 };
 
 enum class GlyphUnitFlags : uint8_t {
     kNoGlyphUnitFlag = (1 << 0),
-    kPartOfWhiteSpace = (1 << 1),
-    kGraphemeStart = (1 << 2),
-    kSoftLineBreakBefore = (1 << 3),
-    kHardLineBreakBefore = (1 << 4),
+    //kPartOfWhiteSpace = (1 << 1),
+    //kGraphemeStart = (1 << 2),
+    //kSoftLineBreakBefore = (1 << 3),
+    //kHardLineBreakBefore = (1 << 4),
     kGlyphClusterStart = (1 << 5),
     kGraphemeClusterStart = (1 << 6),
 };
 
 typedef size_t TextIndex;
 typedef size_t GlyphIndex;
+typedef size_t RunIndex;
+typedef size_t LineIndex;
 const size_t EMPTY_INDEX = std::numeric_limits<size_t>::max();
 
 template <typename T>
@@ -67,8 +77,20 @@ public:
     Range() : fStart(0), fEnd(0) { }
     Range(T start, T end) : fStart(start) , fEnd(end) { }
 
+    bool operator==(Range<T> other) {
+        return fStart == other.fStart && fEnd == other.fEnd;
+    }
+
     bool leftToRight() const {
         return fEnd >= fStart;
+    }
+
+    bool before(T index) const {
+        if (leftToRight()) {
+            return index >= fEnd;
+        } else {
+            return index >= fStart;
+        }
     }
 
     bool contains(T index) const {
@@ -76,6 +98,14 @@ public:
             return index >= fStart && index < fEnd;
         } else {
             return index < fStart && index >= fEnd;
+        }
+    }
+
+    bool contains(Range<T> range) const {
+        if (leftToRight()) {
+            return range.fStart >= fStart && range.fEnd < fEnd;
+        } else {
+            return range.fStart < fStart && range.fEnd >= fEnd;
         }
     }
 
@@ -152,7 +182,7 @@ const Range<size_t> EMPTY_RANGE = Range<size_t>(EMPTY_INDEX, EMPTY_INDEX);
 
 // Blocks
 enum BlockType {
-    kFont,
+    kFontChain,
     kPlaceholder,
 };
 
@@ -166,38 +196,42 @@ public:
     // Returns the number of faces in the chain. Always >= 1
     virtual size_t count() const = 0;
     virtual sk_sp<SkTypeface> operator[](size_t index) const = 0;
-    virtual float size() const = 0;
-
+    virtual float fontSize() const = 0;
+    virtual SkString locale() const = 0;
 };
 
 struct FontBlock {
     FontBlock(uint32_t count, sk_sp<FontChain> fontChain)
-        : type(BlockType::kFont)
+        : type(BlockType::kFontChain)
         , charCount(count)
         , chain(fontChain) { }
     FontBlock() : FontBlock(0, nullptr) { }
+    FontBlock(FontBlock& block) {
+        this->type = block.type;
+        this->charCount = block.charCount;
+        this->chain = block.chain;
+    }
     ~FontBlock() { }
 
-    SkFont createFont() const {
-
-        if (this->chain->count() == 0) {
-            return SkFont();
-        }
-        sk_sp<SkTypeface> typeface = this->chain->operator[](0);
-
-        SkFont font(std::move(typeface), this->chain->size());
-        font.setEdging(SkFont::Edging::kAntiAlias);
-        font.setHinting(SkFontHinting::kSlight);
-        font.setSubpixel(true);
-
-        return font;
-    }
     BlockType  type;
     uint32_t   charCount;
     union {
         sk_sp<FontChain>  chain;
         Placeholder placeholder;
     };
+};
+
+struct ResolvedFontBlock {
+    ResolvedFontBlock(TextRange textRange, sk_sp<SkTypeface> typeface, SkScalar size, SkFontStyle fontStyle)
+        : textRange(textRange)
+        , typeface(typeface)
+        , size(size)
+        , style(fontStyle) { }
+
+    TextRange textRange;
+    sk_sp<SkTypeface> typeface;
+    float size;
+    SkFontStyle style;
 };
 
 }  // namespace text

@@ -1542,7 +1542,11 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
   }
 
   // Prune rectangular, AB and 4-way partition based on q index and block size
-  if (cpi->sf.part_sf.prune_rectangular_split_based_on_qidx) {
+  if (cpi->sf.part_sf.prune_rectangular_split_based_on_qidx == 1) {
+    if (bsize == BLOCK_8X8 && x->qindex < 35)
+      av1_disable_rect_partitions(part_state);
+
+  } else if (cpi->sf.part_sf.prune_rectangular_split_based_on_qidx == 2) {
     // Enumeration difference between two square partitions
     const int sqr_bsize_step = BLOCK_32X32 - BLOCK_16X16;
     int max_bsize =
@@ -1946,7 +1950,7 @@ static bool ext_ml_model_decision_before_none(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_BEFORE_PART_NONE;
+  features.id = AOM_EXT_PART_FEATURE_BEFORE_NONE;
   for (int i = 0; i < FEATURE_SIZE_SMS_SPLIT; ++i) {
     features.before_part_none.f[i] = features_from_motion[i];
   }
@@ -1983,7 +1987,7 @@ static bool ext_ml_model_decision_before_none_part2(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_BEFORE_PART_NONE_PART2;
+  features.id = AOM_EXT_PART_FEATURE_BEFORE_NONE_PART2;
   for (int i = 0; i < FEATURE_SIZE_SMS_PRUNE_PART; ++i) {
     features.before_part_none.f_part2[i] = features_from_motion[i];
   }
@@ -2016,7 +2020,7 @@ bool ext_ml_model_decision_after_none(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_AFTER_PART_NONE;
+  features.id = AOM_EXT_PART_FEATURE_AFTER_NONE;
   for (int i = 0; i < 4; ++i) {
     features.after_part_none.f[i] = features_after_none[i];
   }
@@ -2049,7 +2053,7 @@ bool ext_ml_model_decision_after_none_part2(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_AFTER_PART_NONE_PART2;
+  features.id = AOM_EXT_PART_FEATURE_AFTER_NONE_PART2;
   for (int i = 0; i < FEATURE_SIZE_SMS_TERM_NONE; ++i) {
     features.after_part_none.f_terminate[i] = features_terminate[i];
   }
@@ -2083,7 +2087,7 @@ bool ext_ml_model_decision_after_split(AV1_COMP *const cpi,
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_AFTER_PART_SPLIT;
+  features.id = AOM_EXT_PART_FEATURE_AFTER_SPLIT;
   for (int i = 0; i < 31; ++i) {
     features.after_part_split.f_terminate[i] = features_terminate[i];
   }
@@ -2117,7 +2121,7 @@ bool ext_ml_model_decision_after_split_part2(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_AFTER_PART_SPLIT_PART2;
+  features.id = AOM_EXT_PART_FEATURE_AFTER_SPLIT_PART2;
   for (int i = 0; i < 9; ++i) {
     features.after_part_split.f_prune_rect[i] = features_prune[i];
   }
@@ -2153,7 +2157,7 @@ static bool ext_ml_model_decision_after_rect(
 
   // Setup features.
   aom_partition_features_t features;
-  features.id = FEATURE_AFTER_PART_RECT;
+  features.id = AOM_EXT_PART_FEATURE_AFTER_RECT;
   for (int i = 0; i < 10; ++i) {
     features.after_part_rect.f[i] = features_after_rect[i];
   }
@@ -2192,7 +2196,7 @@ static bool ext_ml_model_decision_after_part_ab(
   if (!frame_is_intra_only(cm) && ext_part_controller->ready) {
     // Setup features.
     aom_partition_features_t features;
-    features.id = FEATURE_AFTER_PART_AB;
+    features.id = AOM_EXT_PART_FEATURE_AFTER_AB;
     prepare_features_after_part_ab(cpi, x, bsize, part_ctx, best_rd,
                                    rect_part_rd, split_rd, pb_source_variance,
                                    mi_row, mi_col, &features);
@@ -2218,8 +2222,8 @@ static bool ext_ml_model_decision_after_part_ab(
 
 // This function resembles "av1_setup_sms_tree()" in context_tree.c
 // with function signature change.
-SIMPLE_MOTION_DATA_TREE *setup_sms_tree(AV1_COMP *const cpi,
-                                        SIMPLE_MOTION_DATA_TREE *sms_tree) {
+static SIMPLE_MOTION_DATA_TREE *setup_sms_tree(
+    AV1_COMP *const cpi, SIMPLE_MOTION_DATA_TREE *sms_tree) {
   AV1_COMMON *const cm = &cpi->common;
   const int stat_generation_stage = is_stat_generation_stage(cpi);
   const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
@@ -2292,16 +2296,21 @@ static void write_motion_feature_to_file(
 }
 
 void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
+                                           TileDataEnc *tile_data,
                                            const int mi_row, const int mi_col,
                                            const BLOCK_SIZE bsize,
                                            aom_partition_features_t *features) {
   const AV1_COMMON *const cm = &cpi->common;
+  if (frame_is_intra_only(cm)) return;
+
   MACROBLOCK *const x = &td->mb;
   const BLOCK_SIZE fixed_block_size = BLOCK_16X16;
   const int col_step = mi_size_wide[fixed_block_size];
   const int row_step = mi_size_high[fixed_block_size];
   SIMPLE_MOTION_DATA_TREE *sms_tree = NULL;
   SIMPLE_MOTION_DATA_TREE *sms_root = setup_sms_tree(cpi, sms_tree);
+  TileInfo *const tile_info = &tile_data->tile_info;
+  av1_set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col, bsize);
   av1_init_simple_motion_search_mvs_for_sb(cpi, NULL, x, sms_root, mi_row,
                                            mi_col);
   av1_reset_simple_motion_tree_partition(sms_root, bsize);

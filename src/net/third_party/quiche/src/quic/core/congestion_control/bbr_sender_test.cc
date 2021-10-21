@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "quic/core/congestion_control/rtt_stats.h"
+#include "quic/core/crypto/crypto_protocol.h"
 #include "quic/core/quic_bandwidth.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_types.h"
@@ -109,7 +110,13 @@ class BbrSenderTest : public QuicTest {
         receiver_multiplexer_("Receiver multiplexer",
                               {&receiver_, &competing_receiver_}) {
     rtt_stats_ = bbr_sender_.connection()->sent_packet_manager().GetRttStats();
+    const int kTestMaxPacketSize = 1350;
+    bbr_sender_.connection()->SetMaxPacketLength(kTestMaxPacketSize);
     sender_ = SetupBbrSender(&bbr_sender_);
+    if (GetQuicReloadableFlag(
+            quic_bbr_start_new_aggregation_epoch_after_a_full_round)) {
+      SetConnectionOption(kBBRA);
+    }
 
     clock_ = simulator_.GetClock();
   }
@@ -292,6 +299,39 @@ TEST_F(BbrSenderTest, SetInitialCongestionWindow) {
 
 // Test a simple long data transfer in the default setup.
 TEST_F(BbrSenderTest, SimpleTransfer) {
+  CreateDefaultSetup();
+
+  // At startup make sure we are at the default.
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
+  // At startup make sure we can send.
+  EXPECT_TRUE(sender_->CanSend(0));
+  // And that window is un-affected.
+  EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
+
+  // Verify that Sender is in slow start.
+  EXPECT_TRUE(sender_->InSlowStart());
+
+  // Verify that pacing rate is based on the initial RTT.
+  QuicBandwidth expected_pacing_rate = QuicBandwidth::FromBytesAndTimeDelta(
+      2.885 * kDefaultWindowTCP, rtt_stats_->initial_rtt());
+  EXPECT_APPROX_EQ(expected_pacing_rate.ToBitsPerSecond(),
+                   sender_->PacingRate(0).ToBitsPerSecond(), 0.01f);
+
+  ASSERT_GE(kTestBdp, kDefaultWindowTCP + kDefaultTCPMSS);
+
+  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(30));
+  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  EXPECT_EQ(0u, bbr_sender_.connection()->GetStats().packets_lost);
+  EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
+
+  // The margin here is quite high, since there exists a possibility that the
+  // connection just exited high gain cycle.
+  EXPECT_APPROX_EQ(kTestRtt, rtt_stats_->smoothed_rtt(), 0.2f);
+}
+
+TEST_F(BbrSenderTest, SimpleTransferBBRB) {
+  SetQuicReloadableFlag(quic_bbr_use_send_rate_in_max_ack_height_tracker, true);
+  SetConnectionOption(kBBRB);
   CreateDefaultSetup();
 
   // At startup make sure we are at the default.

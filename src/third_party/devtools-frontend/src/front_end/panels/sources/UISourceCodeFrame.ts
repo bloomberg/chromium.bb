@@ -44,16 +44,16 @@ import * as UI from '../../ui/legacy/legacy.js';
 import {CoveragePlugin} from './CoveragePlugin.js';
 import {CSSPlugin} from './CSSPlugin.js';
 import {DebuggerPlugin} from './DebuggerPlugin.js';
-import {GutterDiffPlugin} from './GutterDiffPlugin.js';
 import {JavaScriptCompilerPlugin} from './JavaScriptCompilerPlugin.js';
 import type {Plugin} from './Plugin.js';
 import {ScriptOriginPlugin} from './ScriptOriginPlugin.js';
 import {SnippetsPlugin} from './SnippetsPlugin.js';
 import {SourcesPanel} from './SourcesPanel.js';
 
-export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
+export class UISourceCodeFrame extends
+    Common.ObjectWrapper.eventMixin<EventTypes, typeof SourceFrame.SourceFrame.SourceFrameImpl>(
+        SourceFrame.SourceFrame.SourceFrameImpl) {
   private uiSourceCodeInternal: Workspace.UISourceCode.UISourceCode;
-  private readonly diff: SourceFrame.SourceCodeDiff.SourceCodeDiff|undefined;
   private muteSourceCodeEvents: boolean;
   private isSettingContent: boolean;
   private persistenceBinding: Persistence.Persistence.PersistenceBinding|null;
@@ -68,10 +68,6 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode) {
     super(workingCopy);
     this.uiSourceCodeInternal = uiSourceCode;
-
-    if (Root.Runtime.experiments.isEnabled('sourceDiff')) {
-      this.diff = new SourceFrame.SourceCodeDiff.SourceCodeDiff(this.textEditor);
-    }
 
     this.muteSourceCodeEvents = false;
     this.isSettingContent = false;
@@ -361,10 +357,6 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
     if (ScriptOriginPlugin.accepts(pluginUISourceCode)) {
       this.plugins.push(new ScriptOriginPlugin(this.textEditor, pluginUISourceCode));
     }
-    if (!this.pretty && Root.Runtime.experiments.isEnabled('sourceDiff') &&
-        GutterDiffPlugin.accepts(pluginUISourceCode)) {
-      this.plugins.push(new GutterDiffPlugin(this.textEditor, pluginUISourceCode));
-    }
     if (CoveragePlugin.accepts(pluginUISourceCode)) {
       this.plugins.push(new CoveragePlugin(this.textEditor, pluginUISourceCode));
     }
@@ -401,9 +393,6 @@ export class UISourceCodeFrame extends SourceFrame.SourceFrame.SourceFrameImpl {
   private innerSetContent(content: string): void {
     this.isSettingContent = true;
     const oldContent = this.textEditor.text();
-    if (this.diff) {
-      this.diff.highlightModifiedLines(oldContent, content);
-    }
     if (oldContent !== content) {
       this.setContent(content, null);
     }
@@ -919,3 +908,7 @@ function messageLevelComparator(a: Workspace.UISourceCode.Message, b: Workspace.
 export enum Events {
   ToolbarItemsChanged = 'ToolbarItemsChanged',
 }
+
+export type EventTypes = {
+  [Events.ToolbarItemsChanged]: void,
+};

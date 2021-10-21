@@ -116,13 +116,13 @@ apps::mojom::AppPtr MakeApp(const std::string& app_id,
                             apps::mojom::AppType app_type,
                             const std::string& publisher_id,
                             apps::mojom::Readiness readiness,
-                            apps::mojom::InstallSource install_source) {
+                            apps::mojom::InstallReason install_reason) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_id = app_id;
   app->app_type = app_type;
   app->publisher_id = publisher_id;
   app->readiness = readiness;
-  app->install_source = install_source;
+  app->install_reason = install_reason;
   return app;
 }
 
@@ -133,7 +133,7 @@ void InstallWebApp(Profile* profile, const GURL& start_url) {
   deltas.push_back(MakeApp(
       web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, start_url),
       apps::mojom::AppType::kWeb, start_url.spec(),
-      apps::mojom::Readiness::kReady, apps::mojom::InstallSource::kSync));
+      apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kSync));
   cache.OnApps(std::move(deltas), apps::mojom::AppType::kWeb,
                /*should_notify_initialized=*/true);
 }
@@ -657,7 +657,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   }
 
   // Check |url4| disappears from the list when its embargo expires.
-  clock.Advance(base::TimeDelta::FromDays(8));
+  clock.Advance(base::Days(8));
   handler()->HandleGetAllSites(&base::Value::AsListValue(get_all_sites_args));
 
   {
@@ -682,7 +682,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
       CONTENT_SETTING_BLOCK,
       auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
-  clock.Advance(base::TimeDelta::FromDays(8));
+  clock.Advance(base::Days(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
@@ -711,7 +711,7 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
       CONTENT_SETTING_BLOCK,
       auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
-  clock.Advance(base::TimeDelta::FromDays(8));
+  clock.Advance(base::Days(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
       auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
@@ -761,7 +761,7 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
   permissions::PermissionDecisionAutoBlocker* auto_blocker =
       PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
   auto_blocker->SetClockForTesting(&clock);
-  clock.Advance(base::TimeDelta::FromHours(1));
+  clock.Advance(base::Hours(1));
 
   // Test recent permissions is empty when there are no preferences.
   handler()->HandleGetRecentSitePermissions(
@@ -786,14 +786,14 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
     auto_blocker->RecordDismissAndEmbargo(
         url1, ContentSettingsType::NOTIFICATIONS, false);
 
-  clock.Advance(base::TimeDelta::FromHours(2));
-  clock.Advance(base::TimeDelta::FromHours(1));
+  clock.Advance(base::Hours(2));
+  clock.Advance(base::Hours(1));
   CreateIncognitoProfile();
   HostContentSettingsMap* incognito_map =
       HostContentSettingsMapFactory::GetForProfile(incognito_profile());
   incognito_map->SetClockForTesting(&clock);
 
-  clock.Advance(base::TimeDelta::FromHours(1));
+  clock.Advance(base::Hours(1));
   permissions::PermissionDecisionAutoBlocker* incognito_auto_blocker =
       PermissionDecisionAutoBlockerFactory::GetForProfile(incognito_profile());
   incognito_auto_blocker->SetClockForTesting(&clock);
@@ -1732,20 +1732,14 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
   // Navigate the |foo| tab to the same origin as |origin_anchor|, and the
   // |origin_query| tab to a different origin.
   const GURL origin_path("https://www.example.com/path/to/page.html");
-  content::NavigationController* foo_controller =
-      &browser()
-           ->tab_strip_model()
-           ->GetWebContentsAt(/*foo=*/0)
-           ->GetController();
-  NavigateAndCommit(foo_controller, origin_path);
+  content::WebContents* foo_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(/*foo=*/0);
+  NavigateAndCommit(foo_contents, origin_path);
 
   const GURL example_without_www("https://example.com/");
-  content::NavigationController* origin_query_controller =
-      &browser2()
-           ->tab_strip_model()
-           ->GetWebContentsAt(/*origin_query=*/1)
-           ->GetController();
-  NavigateAndCommit(origin_query_controller, example_without_www);
+  content::WebContents* origin_query_contents =
+      browser2()->tab_strip_model()->GetWebContentsAt(/*origin_query=*/1);
+  NavigateAndCommit(origin_query_contents, example_without_www);
 
   // Reset all permissions.
   base::Value reset_args(base::Value::Type::LIST);
@@ -2039,8 +2033,7 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     device_manager_.AddReceiver(
         device_manager.InitWithNewPipeAndPassReceiver());
     chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
-    chooser_context->GetDevices(
-        base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
+    chooser_context->GetDevices(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
@@ -2084,8 +2077,7 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     device_manager_.AddReceiver(
         device_manager.InitWithNewPipeAndPassReceiver());
     chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
-    chooser_context->GetDevices(
-        base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
+    chooser_context->GetDevices(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);

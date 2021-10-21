@@ -33,11 +33,21 @@ group("preprocess") {
   public_deps = [
     ":preprocess_generated",
     ":preprocess_src",
+    ":preprocess_src_ts",
     "cr/ui:preprocess",
   ]
   if (include_polymer) {
     public_deps += [ "browser_command:build_ts" ]
   }
+}
+
+preprocess_if_expr("preprocess_src_ts") {
+  in_folder = "./"
+  out_folder = "$preprocess_folder"
+  in_files = [
+    "i18n_mixin.ts",
+    "web_ui_listener_mixin.ts",
+  ]
 }
 
 preprocess_if_expr("preprocess_src") {
@@ -63,6 +73,7 @@ preprocess_if_expr("preprocess_src") {
     "test_loader_util.js",
     "util.js",
     "webui_resource_test.js",
+    "webview_manager.js",
   ]
 
   if (is_chromeos_ash) {
@@ -212,6 +223,9 @@ js_library("promise_resolver") {
 js_library("util") {
   deps = [ ":cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("webview_manager") {
 }
 
 js_library("web_ui_listener_behavior") {

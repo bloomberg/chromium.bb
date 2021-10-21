@@ -34,6 +34,11 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       base::OnceClosure disconnect_callback);
+
+  LocalHotkeyInputMonitorX11(const LocalHotkeyInputMonitorX11&) = delete;
+  LocalHotkeyInputMonitorX11& operator=(const LocalHotkeyInputMonitorX11&) =
+      delete;
+
   ~LocalHotkeyInputMonitorX11() override;
 
  private:
@@ -44,6 +49,9 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
          base::OnceClosure disconnect_callback);
+
+    Core(const Core&) = delete;
+    Core& operator=(const Core&) = delete;
 
     void Start();
     void Stop();
@@ -74,15 +82,11 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
     bool ctrl_pressed_ = false;
 
     x11::Connection* connection_ = nullptr;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   scoped_refptr<Core> core_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(LocalHotkeyInputMonitorX11);
 };
 
 LocalHotkeyInputMonitorX11::LocalHotkeyInputMonitorX11(

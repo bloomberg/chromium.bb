@@ -74,22 +74,24 @@ class SlowAuthResponse : public content::SlowHttpResponse {
   SlowAuthResponse operator=(const SlowAuthResponse& other) = delete;
 
   // content::SlowHttpResponse:
-  void AddResponseHeaders(std::string* response) override {
-    response->append("WWW-Authenticate: Basic realm=\"test\"\r\n");
-    response->append("Cache-Control: max-age=0\r\n");
+  base::StringPairs ResponseHeaders() override {
+    base::StringPairs response;
+    response.emplace_back("WWW-Authenticate", "Basic realm=\"test\"");
+    response.emplace_back("Cache-Control", "max-age=0");
     // Content-length and Content-type are both necessary to trigger the bug
     // that this class is used to test. Specifically, there must be a delay
     // between the OnAuthRequired notification from the net stack and when the
     // response body is ready, and the OnAuthRequired notification requires
     // headers to be complete (which requires a known content type and length).
-    response->append("Content-type: text/html");
-    response->append(
-        base::StringPrintf("Content-Length: %d\r\n",
-                           kFirstResponsePartSize + kSecondResponsePartSize));
+    response.emplace_back("Content-type", "text/html");
+    response.emplace_back(
+        "Content-Length",
+        base::NumberToString(kFirstResponsePartSize + kSecondResponsePartSize));
+    return response;
   }
 
-  void SetStatusLine(std::string* response) override {
-    response->append("HTTP/1.1 401 Unauthorized\r\n");
+  std::pair<net::HttpStatusCode, std::string> StatusLine() override {
+    return {net::HTTP_UNAUTHORIZED, "Unauthorized"};
   }
 };
 
@@ -1492,23 +1494,22 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
                                      ui::PAGE_TRANSITION_TYPED, false));
     auth_needed_waiter2.Wait();
     ASSERT_EQ(1u, observer.handlers().size());
-    WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
-    LoginHandler* handler = *observer.handlers().begin();
+    WindowedAuthSuppliedObserver auth_supplied_waiter2(controller);
+    handler = *observer.handlers().begin();
     SetAuthFor(handler);
-    auth_supplied_waiter.Wait();
+    auth_supplied_waiter2.Wait();
     navigation_observer.Wait();
     EXPECT_EQ(2, observer.auth_needed_count());
   }
 
-  std::vector<content::RenderFrameHost*> frames = contents->GetAllFrames();
-  ASSERT_EQ(2u, frames.size());
-  ASSERT_TRUE(frames[1]->IsDescendantOf(frames[0]));
-  ASSERT_EQ(test_page, frames[1]->GetLastCommittedURL());
+  content::RenderFrameHost* child_frame = ChildFrameAt(contents, 0);
+  ASSERT_TRUE(child_frame);
+  ASSERT_EQ(test_page, child_frame->GetLastCommittedURL());
 
   // Make sure the iframe is displaying the base64-encoded credentials that
   // should have been set, which the EmbeddedTestServer echos back in response
   // bodies when /basic-auth is requested.
-  EXPECT_EQ(true, content::EvalJs(frames[1],
+  EXPECT_EQ(true, content::EvalJs(child_frame,
                                   "document.documentElement.innerText.search("
                                   "'YmFzaWN1c2VyOnNlY3JldA==') >= 0"));
 }
@@ -1574,15 +1575,14 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   EXPECT_EQ(0u, observer.handlers().size());
   EXPECT_EQ(1, observer.auth_needed_count());
 
-  std::vector<content::RenderFrameHost*> frames = contents->GetAllFrames();
-  ASSERT_EQ(2u, frames.size());
-  ASSERT_TRUE(frames[1]->IsDescendantOf(frames[0]));
-  ASSERT_EQ(test_page, frames[1]->GetLastCommittedURL());
+  content::RenderFrameHost* child_frame = ChildFrameAt(contents, 0);
+  ASSERT_TRUE(child_frame);
+  ASSERT_EQ(test_page, child_frame->GetLastCommittedURL());
 
   // Make sure the iframe is displaying the base64-encoded credentials that
   // should have been set, which the EmbeddedTestServer echos back in response
   // bodies when /basic-auth is requested.
-  EXPECT_EQ(true, content::EvalJs(frames[1],
+  EXPECT_EQ(true, content::EvalJs(child_frame,
                                   "document.documentElement.innerText.search("
                                   "'YmFzaWN1c2VyOnNlY3JldA==') >= 0"));
 }

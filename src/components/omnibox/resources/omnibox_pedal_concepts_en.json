@@ -1,7 +1,7 @@
 {
   "schema": "pedal_concepts_runtime",
   "schema_version": 3,
-  "data_version": 16021440,
+  "data_version": 16081750,
   "tokenize_each_character": false,
   "dictionary": [
     "a",
@@ -17,16 +17,22 @@
     "allow",
     "alter",
     "an",
+    "appearance",
+    "as",
+    "assistive",
+    "backgrounds",
     "block",
     "browse",
     "browser",
-    "browsers",
     "browsing",
     "cache",
     "cal",
     "calendar",
+    "caption",
+    "captions",
     "card",
     "cards",
+    "cast",
     "center",
     "certificates",
     "change",
@@ -34,21 +40,25 @@
     "checks",
     "checkup",
     "chrome",
-    "chromeos",
     "clear",
     "close",
+    "code",
+    "color",
+    "colors",
     "compose",
     "control",
+    "controls",
     "cookie",
     "cookies",
     "create",
-    "credentials",
     "credit",
-    "current",
+    "custom",
     "customize",
+    "customized",
     "data",
     "deck",
     "delete",
+    "device",
     "dino",
     "dinosaur",
     "disable",
@@ -60,16 +70,17 @@
     "downloads",
     "edit",
     "email",
+    "end",
     "engines",
     "enhanced",
     "enter",
     "erase",
     "event",
-    "exit",
     "explore",
     "features",
     "find",
     "fix",
+    "font",
     "fonts",
     "for",
     "form",
@@ -79,9 +90,11 @@
     "gmail",
     "google",
     "gsuite",
+    "help",
     "history",
     "how",
     "i",
+    "identify",
     "in",
     "incognito",
     "info",
@@ -89,18 +102,25 @@
     "inside",
     "install",
     "invite",
+    "is",
     "keep",
     "keys",
     "language",
     "launch",
     "learn",
+    "link",
+    "locate",
+    "lost",
+    "low",
     "make",
     "manage",
     "manager",
+    "me",
     "meeting",
     "message",
     "methods",
     "mode",
+    "modify",
     "most",
     "my",
     "new",
@@ -110,7 +130,6 @@
     "of",
     "on",
     "open",
-    "os",
     "page",
     "party",
     "password",
@@ -126,15 +145,19 @@
     "privacy",
     "private",
     "protection",
-    "quit",
+    "qr",
     "quiz",
     "remove",
     "reset",
+    "revise",
+    "revisit",
     "run",
     "safely",
     "safety",
     "save",
     "schedule",
+    "scoped",
+    "screen",
     "search",
     "secure",
     "securely",
@@ -146,8 +169,12 @@
     "sheet",
     "sheets",
     "shipping",
+    "shortcuts",
     "show",
     "site",
+    "size",
+    "sizes",
+    "sizing",
     "slide",
     "slides",
     "spreadsheet",
@@ -158,8 +185,10 @@
     "survey",
     "sync",
     "tab",
-    "tabs",
+    "tech",
+    "technology",
     "the",
+    "theme",
     "themes",
     "third",
     "this",
@@ -168,19 +197,24 @@
     "track",
     "translate",
     "trix",
+    "type",
     "understand",
     "update",
     "updates",
     "upgrade",
+    "url",
     "use",
+    "via",
     "view",
+    "vision",
     "visit",
     "web",
     "webpage",
     "website",
+    "where",
     "window",
-    "windows",
     "wipe",
+    "with",
     "within",
     "workspace",
     "write",
@@ -196,17 +230,17 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              17
+              20
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -215,43 +249,43 @@
           "single": true,
           "synonyms": [
             [
-              44
+              53
             ],
             [
-              124
-            ],
-            [
-              31
-            ],
-            [
-              59
-            ],
-            [
-              176
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              81
+              143
             ],
             [
               36
             ],
             [
-              75
+              70
             ],
             [
-              18
+              209
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              94
             ],
             [
-              42
+              45
             ],
             [
-              80
+              87
+            ],
+            [
+              21
+            ],
+            [
+              51
+            ],
+            [
+              93
             ]
           ]
         }
@@ -267,59 +301,56 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
         {
-          "required": true,
+          "required": false,
           "single": true,
           "synonyms": [
-            [
-              92
-            ],
-            [
-              25
-            ],
-            [
-              91
-            ],
-            [
-              165
-            ],
-            [
-              54
-            ],
-            [
-              129
-            ],
-            [
-              142
-            ],
-            [
-              169
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              38
-            ],
             [
               110
             ],
             [
+              31
+            ],
+            [
               109
+            ],
+            [
+              195
+            ],
+            [
+              64
+            ],
+            [
+              150
+            ],
+            [
+              166
+            ],
+            [
+              201
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              129
+            ],
+            [
+              128
             ]
           ]
         }
@@ -335,14 +366,14 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -351,19 +382,19 @@
           "single": true,
           "synonyms": [
             [
-              25
+              31
             ],
             [
-              91
+              109
             ],
             [
-              165
+              195
             ],
             [
-              54
+              64
             ],
             [
-              129
+              150
             ]
           ]
         },
@@ -372,43 +403,43 @@
           "single": true,
           "synonyms": [
             [
-              39,
-              21,
-              81
+              47,
+              26,
+              94
             ],
             [
-              39,
-              21,
-              80
+              47,
+              26,
+              93
             ],
             [
-              21,
-              81
+              26,
+              94
             ],
             [
-              111,
-              95
+              130,
+              114
             ],
             [
-              39,
-              22
+              47,
+              27
             ],
             [
-              39,
-              21
+              47,
+              26
             ],
             [
-              21,
-              80
+              26,
+              93
             ],
             [
-              112
+              131
             ],
             [
-              111
+              130
             ],
             [
-              22
+              27
             ]
           ]
         }
@@ -424,14 +455,14 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -440,19 +471,19 @@
           "single": true,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              88
+              102
             ],
             [
-              58
+              69
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ]
           ]
         },
@@ -461,31 +492,31 @@
           "single": true,
           "synonyms": [
             [
-              79,
-              174
+              92,
+              208
             ],
             [
-              79,
-              96
+              92,
+              115
             ],
             [
-              120,
-              174
+              139,
+              208
             ],
             [
-              79,
-              153
+              92,
+              180
             ],
             [
-              120,
-              96
+              139,
+              115
             ],
             [
-              120,
-              153
+              139,
+              180
             ],
             [
-              79
+              92
             ]
           ]
         }
@@ -501,14 +532,14 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -517,11 +548,11 @@
           "single": true,
           "synonyms": [
             [
-              25,
-              87
+              31,
+              101
             ],
             [
-              162
+              191
             ]
           ]
         },
@@ -530,21 +561,21 @@
           "single": true,
           "synonyms": [
             [
-              158,
-              107
+              187,
+              126
             ],
             [
-              171,
-              107
+              204,
+              126
             ],
             [
-              172
+              205
             ],
             [
-              107
+              126
             ],
             [
-              158
+              187
             ]
           ]
         }
@@ -560,14 +591,14 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -576,16 +607,16 @@
           "single": true,
           "synonyms": [
             [
-              83
+              96
             ],
             [
-              166
+              196
             ],
             [
-              167
+              197
             ],
             [
-              165
+              195
             ]
           ]
         }
@@ -604,13 +635,13 @@
               3
             ],
             [
-              113
+              132
             ],
             [
-              126
+              147
             ],
             [
-              168
+              199
             ]
           ]
         },
@@ -619,17 +650,17 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ]
           ]
         },
@@ -638,13 +669,13 @@
           "single": true,
           "synonyms": [
             [
-              28
+              34
             ],
             [
-              27
+              33
             ],
             [
-              26
+              32
             ]
           ]
         },
@@ -653,16 +684,16 @@
           "single": true,
           "synonyms": [
             [
-              110
+              129
             ],
             [
-              134
-            ],
-            [
-              109
+              157
             ],
             [
               128
+            ],
+            [
+              149
             ]
           ]
         }
@@ -683,29 +714,29 @@
           "single": false,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              17
+              20
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ],
             [
-              14
+              18
             ],
             [
-              25
+              31
             ],
             [
-              91
+              109
             ]
           ]
         },
@@ -714,33 +745,33 @@
           "single": true,
           "synonyms": [
             [
-              57,
-              121
+              68,
+              140
             ],
             [
-              147,
-              121
+              174,
+              140
             ],
             [
-              134,
-              137
+              157,
+              160
             ],
             [
-              134,
-              86
+              157,
+              100
             ],
             [
-              132,
-              49
+              155,
+              59
             ],
             [
-              24
+              30
             ],
             [
-              133
+              156
             ],
             [
-              127
+              148
             ]
           ]
         },
@@ -752,7 +783,7 @@
               11
             ],
             [
-              168
+              199
             ]
           ]
         }
@@ -773,15 +804,15 @@
           "single": true,
           "synonyms": [
             [
-              100,
-              161
+              120,
+              190
             ],
             [
-              35,
-              137
+              44,
+              160
             ],
             [
-              36
+              45
             ]
           ]
         },
@@ -790,29 +821,29 @@
           "single": false,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              48
+              58
             ],
             [
-              15
+              19
             ],
             [
-              34
+              42
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ],
             [
-              91
+              109
             ],
             [
-              13
+              17
             ],
             [
               10
@@ -821,7 +852,7 @@
               11
             ],
             [
-              168
+              199
             ]
           ]
         },
@@ -830,8 +861,8 @@
           "single": false,
           "synonyms": [
             [
-              157,
-              108
+              186,
+              127
             ],
             [
               9
@@ -855,25 +886,25 @@
           "single": true,
           "synonyms": [
             [
-              34
+              42
             ],
             [
-              91
+              109
             ],
             [
               8
             ],
             [
-              44
+              53
             ],
             [
-              25
+              31
             ],
             [
-              149
+              176
             ],
             [
-              54
+              64
             ],
             [
               5
@@ -885,15 +916,15 @@
           "single": true,
           "synonyms": [
             [
-              141,
+              164,
               7
             ],
             [
-              141,
+              164,
               6
             ],
             [
-              99,
+              119,
               6
             ],
             [
@@ -909,17 +940,17 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ]
           ]
         }
@@ -940,11 +971,11 @@
           "single": true,
           "synonyms": [
             [
-              152,
-              137
+              179,
+              160
             ],
             [
-              152
+              179
             ]
           ]
         },
@@ -953,38 +984,38 @@
           "single": false,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              41
+              49
             ],
             [
-              15
+              19
             ],
             [
-              34
+              42
             ],
             [
-              47
+              57
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ],
             [
-              91
+              109
             ],
             [
               8
             ],
             [
-              25
+              31
             ],
             [
-              54
+              64
             ],
             [
               5
@@ -1008,15 +1039,15 @@
           "single": true,
           "synonyms": [
             [
-              143,
-              114
+              167,
+              133
             ],
             [
-              143,
-              137
+              167,
+              160
             ],
             [
-              114
+              133
             ]
           ]
         },
@@ -1025,35 +1056,35 @@
           "single": false,
           "synonyms": [
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              41
+              49
             ],
             [
-              15
+              19
             ],
             [
-              34
+              42
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ],
             [
-              91
+              109
             ],
             [
               8
             ],
             [
-              25
+              31
             ],
             [
-              54
+              64
             ]
           ]
         }
@@ -1074,31 +1105,31 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              178
+              84,
+              212
             ],
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ],
             [
-              74
+              85
             ]
           ]
         },
@@ -1107,19 +1138,19 @@
           "single": false,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1128,10 +1159,10 @@
           "single": true,
           "synonyms": [
             [
-              52
+              62
             ],
             [
-              51
+              61
             ]
           ]
         }
@@ -1152,19 +1183,19 @@
           "single": false,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1173,28 +1204,28 @@
           "single": true,
           "synonyms": [
             [
-              73,
-              178
+              84,
+              212
             ],
             [
-              73,
-              29
+              84,
+              35
             ],
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -1203,16 +1234,16 @@
           "single": true,
           "synonyms": [
             [
-              146
-            ],
-            [
-              140
-            ],
-            [
-              139
+              173
             ],
             [
               163
+            ],
+            [
+              162
+            ],
+            [
+              192
             ]
           ]
         }
@@ -1233,19 +1264,19 @@
           "single": true,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1254,19 +1285,19 @@
           "single": true,
           "synonyms": [
             [
-              117
+              136
             ],
             [
-              145
+              172
             ],
             [
-              144
+              171
             ],
             [
-              118
+              137
             ],
             [
-              43
+              52
             ]
           ]
         },
@@ -1275,20 +1306,20 @@
           "single": false,
           "synonyms": [
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ]
           ]
         }
@@ -1309,22 +1340,22 @@
           "single": false,
           "synonyms": [
             [
-              130
+              151
             ],
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ],
             [
               5
@@ -1336,26 +1367,26 @@
           "single": false,
           "synonyms": [
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              20
-            ],
-            [
-              15
-            ],
-            [
-              73
-            ],
-            [
-              29
+              23
             ],
             [
               19
+            ],
+            [
+              84
+            ],
+            [
+              35
+            ],
+            [
+              22
             ]
           ]
         },
@@ -1364,13 +1395,13 @@
           "single": true,
           "synonyms": [
             [
-              93
+              112
             ],
             [
-              84
+              97
             ],
             [
-              60
+              71
             ]
           ]
         }
@@ -1391,19 +1422,19 @@
           "single": false,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1412,20 +1443,20 @@
           "single": false,
           "synonyms": [
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -1434,10 +1465,10 @@
           "single": true,
           "synonyms": [
             [
-              173
+              206
             ],
             [
-              143
+              167
             ]
           ]
         }
@@ -1458,19 +1489,19 @@
           "single": false,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1479,23 +1510,23 @@
           "single": false,
           "synonyms": [
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              73
+              84
             ],
             [
-              29
+              35
             ],
             [
-              85
+              99
             ]
           ]
         },
@@ -1504,10 +1535,10 @@
           "single": true,
           "synonyms": [
             [
-              102
+              122
             ],
             [
-              101
+              121
             ]
           ]
         }
@@ -1528,19 +1559,19 @@
           "single": false,
           "synonyms": [
             [
-              37
+              46
             ],
             [
-              148
+              175
             ],
             [
-              105
+              125
             ],
             [
-              90
+              108
             ],
             [
-              99
+              119
             ]
           ]
         },
@@ -1549,20 +1580,20 @@
           "single": false,
           "synonyms": [
             [
-              70,
-              150
+              81,
+              177
             ],
             [
-              178
+              212
             ],
             [
-              15
+              19
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ]
           ]
         },
@@ -1571,16 +1602,16 @@
           "single": true,
           "synonyms": [
             [
-              151
+              178
             ],
             [
-              69
+              80
             ],
             [
-              68
+              79
             ],
             [
-              123
+              142
             ]
           ]
         }
@@ -1601,24 +1632,24 @@
           "single": true,
           "synonyms": [
             [
-              90,
-              97,
+              108,
+              117,
+              123
+            ],
+            [
+              194
+            ],
+            [
+              72
+            ],
+            [
               103
             ],
             [
-              164
+              203
             ],
             [
-              62
-            ],
-            [
-              89
-            ],
-            [
-              170
-            ],
-            [
-              135
+              158
             ]
           ]
         },
@@ -1627,10 +1658,10 @@
           "single": false,
           "synonyms": [
             [
-              15
+              19
             ],
             [
-              73
+              84
             ]
           ]
         },
@@ -1639,22 +1670,22 @@
           "single": true,
           "synonyms": [
             [
-              99,
-              29,
-              63
+              119,
+              35,
+              73
             ],
             [
-              29,
-              159,
-              23
+              35,
+              188,
+              29
             ],
             [
-              29,
-              63
+              35,
+              73
             ],
             [
-              29,
-              159
+              35,
+              188
             ]
           ]
         }
@@ -1675,7 +1706,7 @@
           "single": true,
           "synonyms": [
             [
-              73,
+              84,
               2
             ]
           ]
@@ -1685,10 +1716,10 @@
           "single": false,
           "synonyms": [
             [
-              15
+              19
             ],
             [
-              29
+              35
             ]
           ]
         },
@@ -1697,16 +1728,16 @@
           "single": true,
           "synonyms": [
             [
-              34
+              42
             ],
             [
-              91
+              109
             ],
             [
               8
             ],
             [
-              65
+              75
             ]
           ]
         }
@@ -1727,22 +1758,22 @@
           "single": true,
           "synonyms": [
             [
-              73,
+              84,
               2,
-              109
+              128
             ],
             [
-              72,
+              83,
               2,
-              109
+              128
             ],
             [
-              73,
-              109
+              84,
+              128
             ],
             [
-              72,
-              109
+              83,
+              128
             ]
           ]
         },
@@ -1751,13 +1782,13 @@
           "single": false,
           "synonyms": [
             [
-              15
+              19
             ],
             [
-              29
+              35
             ],
             [
-              73
+              84
             ]
           ]
         },
@@ -1766,16 +1797,16 @@
           "single": true,
           "synonyms": [
             [
-              25
+              31
             ],
             [
-              165
+              195
             ],
             [
-              125
+              144
             ],
             [
-              65
+              75
             ]
           ]
         }
@@ -1796,13 +1827,16 @@
           "single": true,
           "synonyms": [
             [
-              32
+              53
             ],
             [
-              61
+              37
             ],
             [
-              122
+              36
+            ],
+            [
+              66
             ]
           ]
         },
@@ -1811,37 +1845,24 @@
           "single": true,
           "synonyms": [
             [
-              79
-            ]
-          ]
-        },
-        {
-          "required": false,
-          "single": true,
-          "synonyms": [
-            [
-              16
+              92,
+              208
             ],
             [
-              175
+              92,
+              115
             ],
             [
-              15
-            ],
-            [
-              174
-            ],
-            [
-              154
+              92
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Close Incognito windows",
+        "button_text": "Close all Incognito windows",
         "description_text": "Close all Incognito windows that are currently open.",
         "spoken_suggestion_description_suffix": "$1, Press tab then Enter to close all Incognito windows that are currently open.",
-        "spoken_button_focus_announcement": "Close Incognito windows button, Enter to close all Incognito windows that are currently open."
+        "spoken_button_focus_announcement": "Close Incognito windows button, press Enter to close all Incognito windows that are currently open."
       },
       "url": "batch3"
     },
@@ -1849,57 +1870,64 @@
       "id": 27,
       "groups": [
         {
-          "required": false,
-          "single": true,
-          "synonyms": [
-            [
-              116
-            ],
-            [
-              126
-            ]
-          ]
-        },
-        {
           "required": true,
           "single": true,
           "synonyms": [
             [
-              73,
-              29
+              135,
+              35,
+              55,
+              82
             ],
             [
-              29
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              46
+              135,
+              35,
+              56
             ],
             [
-              45
-            ]
-          ]
-        },
-        {
-          "required": false,
-          "single": true,
-          "synonyms": [
+              135,
+              35,
+              55
+            ],
             [
-              71
+              35,
+              55,
+              82
+            ],
+            [
+              135,
+              55,
+              82
+            ],
+            [
+              135,
+              55,
+              147
+            ],
+            [
+              35,
+              56
+            ],
+            [
+              35,
+              55
+            ],
+            [
+              55,
+              82
+            ],
+            [
+              55,
+              147
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Play Dino Run",
+        "button_text": "Play Chrome Dino game",
         "description_text": "Play the Dino Run game in Chrome",
         "spoken_suggestion_description_suffix": "$1, Press tab then Enter to play the Dino Run game in Chrome",
-        "spoken_button_focus_announcement": "Play Dino Run button, Enter to play the Dino Run game in Chrome"
+        "spoken_button_focus_announcement": "Play Chrome Dino game button, press Enter to play the Dino Run game in Chrome"
       },
       "url": "chrome://dino"
     },
@@ -1911,7 +1939,39 @@
           "single": true,
           "synonyms": [
             [
-              64
+              86,
+              111,
+              105
+            ],
+            [
+              86,
+              111,
+              74
+            ],
+            [
+              86,
+              74
+            ],
+            [
+              86,
+              105
+            ],
+            [
+              86,
+              74
+            ],
+            [
+              207,
+              98
+            ],
+            [
+              90
+            ],
+            [
+              105
+            ],
+            [
+              74
             ]
           ]
         },
@@ -1920,18 +1980,29 @@
           "single": true,
           "synonyms": [
             [
-              115
+              106,
+              54
+            ],
+            [
+              106,
+              134
+            ],
+            [
+              54
+            ],
+            [
+              134
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Find my phone",
-        "description_text": "Find my phone",
-        "spoken_suggestion_description_suffix": "$1, Find my phone",
-        "spoken_button_focus_announcement": "Find my phone"
+        "button_text": "Find your phone",
+        "description_text": "Find, secure, or erase your device",
+        "spoken_suggestion_description_suffix": "$1, Press Tab then Enter to Find your device in the Google Account",
+        "spoken_button_focus_announcement": "Find my device button, press Enter to visit find your device in the Google Account"
       },
-      "url": "https://www.google.com/android/find?u=0?"
+      "url": "https://myaccount.google.com/find-your-phone?utm_source=ga-chrome-actions&utm_medium=findYourPhone"
     },
     {
       "id": 29,
@@ -1941,76 +2012,82 @@
           "single": true,
           "synonyms": [
             [
-              91
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              109,
+              84,
+              138,
+              160
+            ],
             [
-              119
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              31,
+              84,
+              138,
+              160
+            ],
             [
-              73
+              64,
+              84,
+              138,
+              160
+            ],
+            [
+              31,
+              138,
+              84
+            ],
+            [
+              64,
+              138,
+              84
+            ],
+            [
+              84,
+              138,
+              160
+            ],
+            [
+              84,
+              138,
+              43
+            ],
+            [
+              84,
+              2,
+              138
+            ],
+            [
+              84,
+              138,
+              34
+            ],
+            [
+              109,
+              84,
+              138
+            ],
+            [
+              31,
+              84,
+              138
+            ],
+            [
+              64,
+              84,
+              138
+            ],
+            [
+              84,
+              138
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Manage my privacy on Google",
-        "description_text": "Manage my privacy on Google",
-        "spoken_suggestion_description_suffix": "$1, Manage my privacy on Google",
-        "spoken_button_focus_announcement": "Manage my privacy on Google"
+        "button_text": "Manage Google Account privacy settings",
+        "description_text": "Manage Google privacy settings in your Google Account",
+        "spoken_suggestion_description_suffix": "$1, Press Tab then Enter to manage your Google Account privacy settings",
+        "spoken_button_focus_announcement": "Manage Google Privacy settings button, press Enter to visit your Google Account privacy settings"
       },
-      "url": "https://myaccount.google.com/data-and-privacy"
-    },
-    {
-      "id": 30,
-      "groups": [
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              91
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              73
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              4,
-              137
-            ]
-          ]
-        }
-      ],
-      "omnibox_ui_strings": {
-        "button_text": "Manage my Google Ad Settings",
-        "description_text": "Manage my Google Ad Settings",
-        "spoken_suggestion_description_suffix": "$1, Manage my Google Ad Settings",
-        "spoken_button_focus_announcement": "Manage my Google Ad Settings"
-      },
-      "url": "https://adssettings.google.com/authenticated?hl=en"
+      "url": "https://myaccount.google.com/data-and-privacy?utm_source=ga-chrome-actions&utm_medium=managePrivacy"
     },
     {
       "id": 31,
@@ -2020,16 +2097,28 @@
           "single": true,
           "synonyms": [
             [
-              91
-            ]
-          ]
-        },
-        {
-          "required": false,
-          "single": true,
-          "synonyms": [
+              42
+            ],
             [
-              29
+              146
+            ],
+            [
+              31
+            ],
+            [
+              116
+            ],
+            [
+              109
+            ],
+            [
+              145
+            ],
+            [
+              11
+            ],
+            [
+              64
             ]
           ]
         },
@@ -2038,13 +2127,31 @@
           "single": true,
           "synonyms": [
             [
-              137
+              35,
+              19,
+              160
+            ],
+            [
+              84,
+              35,
+              160
+            ],
+            [
+              19,
+              160
+            ],
+            [
+              35,
+              160
+            ],
+            [
+              160
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Manage Chrome settings",
+        "button_text": "Manage settings",
         "description_text": "Manage your Chrome settings",
         "spoken_suggestion_description_suffix": "$1, Press Tab then Enter to manage your Chrome settings",
         "spoken_button_focus_announcement": "Manage Chrome settings button, press Enter to visit your Chrome settings"
@@ -2059,16 +2166,34 @@
           "single": true,
           "synonyms": [
             [
-              91
-            ]
-          ]
-        },
-        {
-          "required": false,
-          "single": true,
-          "synonyms": [
+              42
+            ],
             [
-              29
+              146
+            ],
+            [
+              31
+            ],
+            [
+              116
+            ],
+            [
+              109
+            ],
+            [
+              145
+            ],
+            [
+              11
+            ],
+            [
+              64
+            ],
+            [
+              201
+            ],
+            [
+              158
             ]
           ]
         },
@@ -2077,13 +2202,31 @@
           "single": true,
           "synonyms": [
             [
-              53
+              35,
+              19,
+              63
+            ],
+            [
+              84,
+              35,
+              63
+            ],
+            [
+              19,
+              63
+            ],
+            [
+              35,
+              63
+            ],
+            [
+              63
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Manage downloads in Chrome",
+        "button_text": "Manage downloads",
         "description_text": "Manage files you have downloaded in Chrome",
         "spoken_suggestion_description_suffix": "$1, Press Tab then Enter to manage files you have downloaded in Chrome",
         "spoken_button_focus_announcement": "Manage downloads in Chrome button, press Enter to manage files you have downloaded in Chrome."
@@ -2098,55 +2241,16 @@
           "single": true,
           "synonyms": [
             [
-              169
-            ]
-          ]
-        },
-        {
-          "required": false,
-          "single": true,
-          "synonyms": [
+              146
+            ],
             [
-              29
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              203
+            ],
             [
-              75
-            ]
-          ]
-        }
-      ],
-      "omnibox_ui_strings": {
-        "button_text": "View your Chrome history",
-        "description_text": "View and manage your browsing history in Chrome settings",
-        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to view your browsing history in Chrome",
-        "spoken_button_focus_announcement": "View your Chrome history button, Enter to view and manage your browsing history in Chrome settings"
-      },
-      "url": "chrome://history"
-    },
-    {
-      "id": 34,
-      "groups": [
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              74
+            ],
             [
-              138
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              40
+              201
             ],
             [
               158
@@ -2158,22 +2262,134 @@
           "single": true,
           "synonyms": [
             [
-              173
+              84,
+              35,
+              20,
+              87
             ],
             [
-              107
+              84,
+              35,
+              87
             ],
             [
-              143
+              20,
+              87
+            ],
+            [
+              19,
+              87
+            ],
+            [
+              35,
+              87
+            ],
+            [
+              198,
+              87
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Share this page",
-        "description_text": "Share this page by sharing the link, creating a QR code, casting, and more.",
-        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to share this page, with options to share the link, create a QR code, cast, and more.",
-        "spoken_button_focus_announcement": "Share this page button, Enter to share this page with options to share the link, create a QR code, cast, and more."
+        "button_text": "View your Chrome history",
+        "description_text": "View and manage your browsing history in Chrome settings",
+        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to view your browsing history in Chrome",
+        "spoken_button_focus_announcement": "View your Chrome history button, press Enter to view and manage your browsing history in Chrome settings"
+      },
+      "url": "chrome://history"
+    },
+    {
+      "id": 34,
+      "groups": [
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              161,
+              104,
+              210,
+              141,
+              38
+            ],
+            [
+              159,
+              104,
+              210,
+              141,
+              38
+            ],
+            [
+              161,
+              104,
+              200,
+              141,
+              38
+            ],
+            [
+              159,
+              104,
+              200,
+              141,
+              38
+            ],
+            [
+              161,
+              187,
+              126
+            ],
+            [
+              28,
+              187,
+              126
+            ],
+            [
+              150,
+              187,
+              126
+            ],
+            [
+              150,
+              126,
+              14
+            ],
+            [
+              28,
+              153
+            ],
+            [
+              161,
+              104
+            ],
+            [
+              161,
+              126
+            ],
+            [
+              159,
+              104
+            ],
+            [
+              159,
+              126
+            ],
+            [
+              28,
+              126
+            ],
+            [
+              141,
+              38
+            ]
+          ]
+        }
+      ],
+      "omnibox_ui_strings": {
+        "button_text": "Share this tab",
+        "description_text": "Share this tab by sharing the link, creating a QR code, casting, and more.",
+        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to share this tab by sharing the link, creating a QR code, casting, and more.",
+        "spoken_button_focus_announcement": "Share this tab button, press Enter to share this tab by sharing the link, creating a QR code, casting, and more."
       },
       "url": ""
     },
@@ -2181,20 +2397,26 @@
       "id": 35,
       "groups": [
         {
-          "required": true,
-          "single": true,
-          "synonyms": [
-            [
-              91
-            ]
-          ]
-        },
-        {
           "required": false,
           "single": true,
           "synonyms": [
             [
-              29
+              49
+            ],
+            [
+              42
+            ],
+            [
+              109
+            ],
+            [
+              203
+            ],
+            [
+              201
+            ],
+            [
+              64
             ]
           ]
         },
@@ -2203,7 +2425,44 @@
           "single": true,
           "synonyms": [
             [
+              107,
+              202,
+              160
+            ],
+            [
+              107,
+              202,
+              73
+            ],
+            [
+              1,
+              160
+            ],
+            [
+              1,
+              73
+            ],
+            [
+              15,
+              182
+            ],
+            [
+              35,
               1
+            ],
+            [
+              24,
+              160
+            ],
+            [
+              15,
+              181
+            ],
+            [
+              1
+            ],
+            [
+              25
             ]
           ]
         }
@@ -2212,7 +2471,7 @@
         "button_text": "Manage accessibility settings",
         "description_text": "Personalize your accessibility tools in Chrome settings",
         "spoken_suggestion_description_suffix": "$1, Press tab then Enter to personalize your accessibility tools in Chrome settings.",
-        "spoken_button_focus_announcement": "Manage accessibility settings button, Enter to personalize your accessibility tools in Chrome settings."
+        "spoken_button_focus_announcement": "Manage accessibility settings button, press Enter to personalize your accessibility tools in Chrome settings."
       },
       "url": "chrome://settings/accessibility"
     },
@@ -2224,7 +2483,22 @@
           "single": true,
           "synonyms": [
             [
-              41
+              49
+            ],
+            [
+              42
+            ],
+            [
+              31
+            ],
+            [
+              109
+            ],
+            [
+              11
+            ],
+            [
+              64
             ]
           ]
         },
@@ -2233,7 +2507,14 @@
           "single": true,
           "synonyms": [
             [
-              29
+              84,
+              35
+            ],
+            [
+              19
+            ],
+            [
+              35
             ]
           ]
         },
@@ -2242,16 +2523,39 @@
           "single": true,
           "synonyms": [
             [
-              66
+              76,
+              170
+            ],
+            [
+              76,
+              169
+            ],
+            [
+              77,
+              193
+            ],
+            [
+              76,
+              168
+            ],
+            [
+              76,
+              193
+            ],
+            [
+              77
+            ],
+            [
+              76
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Customize fonts in Chrome",
+        "button_text": "Customize fonts",
         "description_text": "Customize font sizes and typefaces in Chrome",
         "spoken_suggestion_description_suffix": "$1, Press tab then Enter to customize font sizes and typefaces in Chrome",
-        "spoken_button_focus_announcement": "Customize fonts in Chrome button, Enter to customize font sizes and typefaces in Chrome"
+        "spoken_button_focus_announcement": "Customize fonts in Chrome button, press Enter to customize font sizes and typefaces in Chrome"
       },
       "url": "chrome://settings/fonts"
     },
@@ -2259,11 +2563,26 @@
       "id": 37,
       "groups": [
         {
-          "required": true,
+          "required": false,
           "single": true,
           "synonyms": [
             [
-              91
+              49
+            ],
+            [
+              42
+            ],
+            [
+              31
+            ],
+            [
+              109
+            ],
+            [
+              116
+            ],
+            [
+              64
             ]
           ]
         },
@@ -2272,27 +2591,42 @@
           "single": true,
           "synonyms": [
             [
-              29
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              35,
+              16
+            ],
             [
-              156
+              35,
+              13
+            ],
+            [
+              35,
+              185
+            ],
+            [
+              35,
+              40
+            ],
+            [
+              35,
+              184
+            ],
+            [
+              35,
+              39
+            ],
+            [
+              165
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Manage Chrome themes",
-        "description_text": "Customize the look of your browser with themes",
-        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to customize the look of your browser with themes.",
-        "spoken_button_focus_announcement": "Manage Chrome themes button, Enter to customize the look of your browser with themes."
+        "button_text": "Customize Chrome",
+        "description_text": "Customize the look of your browser",
+        "spoken_suggestion_description_suffix": "$1, Press tab then Enter to customize the look of your browser.",
+        "spoken_button_focus_announcement": "Customize Chrome button, press Enter to customize the look of your browser."
       },
-      "url": "chrome://new-tab-page/?customize=background"
+      "url": "chrome://new-tab-page/?customize=backgrounds"
     },
     {
       "id": 38,
@@ -2302,7 +2636,25 @@
           "single": true,
           "synonyms": [
             [
-              41
+              49
+            ],
+            [
+              42
+            ],
+            [
+              109
+            ],
+            [
+              31
+            ],
+            [
+              116
+            ],
+            [
+              64
+            ],
+            [
+              5
             ]
           ]
         },
@@ -2311,17 +2663,63 @@
           "single": true,
           "synonyms": [
             [
-              131,
-              56
+              48,
+              154,
+              67
+            ],
+            [
+              167,
+              154,
+              67
+            ],
+            [
+              180,
+              154
+            ],
+            [
+              50,
+              154
+            ],
+            [
+              154,
+              67
+            ],
+            [
+              152,
+              154
+            ],
+            [
+              48,
+              154
+            ],
+            [
+              167,
+              154
+            ]
+          ]
+        },
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              84,
+              35
+            ],
+            [
+              19
+            ],
+            [
+              35
             ]
           ]
         }
       ],
       "omnibox_ui_strings": {
-        "button_text": "Manage site search",
-        "description_text": "Manage site search and your default search engine",
+        "button_text": "Manage search engines",
+        "description_text": "Manage your default search engine and site search",
         "spoken_suggestion_description_suffix": "$1, Press tab then Enter to manage site search and your default search engine",
-        "spoken_button_focus_announcement": "Manage site search button, press Enter to manage site search and your default search engine"
+        "spoken_button_focus_announcement": "Manage search engines button, press Enter to manage your default search engine and site search"
       },
       "url": "chrome://settings/searchEngines"
     },
@@ -2329,17 +2727,26 @@
       "id": 39,
       "groups": [
         {
-          "required": true,
+          "required": false,
           "single": true,
           "synonyms": [
             [
-              91
+              49
             ],
             [
-              25
+              42
             ],
             [
-              54
+              109
+            ],
+            [
+              203
+            ],
+            [
+              201
+            ],
+            [
+              64
             ]
           ]
         },
@@ -2348,24 +2755,44 @@
           "single": true,
           "synonyms": [
             [
-              29,
-              106
+              107,
+              202,
+              160
             ],
             [
-              30
-            ]
-          ]
-        },
-        {
-          "required": true,
-          "single": true,
-          "synonyms": [
+              107,
+              202,
+              73
+            ],
             [
               1,
-              137
+              160
+            ],
+            [
+              1,
+              73
+            ],
+            [
+              15,
+              182
+            ],
+            [
+              35,
+              1
+            ],
+            [
+              24,
+              160
+            ],
+            [
+              15,
+              181
             ],
             [
               1
+            ],
+            [
+              25
             ]
           ]
         }
@@ -2384,43 +2811,43 @@
     "single": false,
     "synonyms": [
       [
-        82
+        95
       ],
       [
-        177
-      ],
-      [
-        67
-      ],
-      [
-        76
-      ],
-      [
-        155
-      ],
-      [
-        12
-      ],
-      [
-        50
+        211
       ],
       [
         78
       ],
       [
-        98
+        88
       ],
       [
-        104
+        183
       ],
       [
-        160
+        12
+      ],
+      [
+        60
+      ],
+      [
+        91
+      ],
+      [
+        118
+      ],
+      [
+        124
+      ],
+      [
+        189
       ],
       [
         0
       ],
       [
-        77
+        89
       ]
     ]
   },

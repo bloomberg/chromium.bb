@@ -105,10 +105,10 @@ bool ProcessDrmEvent(int fd, const DrmEventHandler& callback) {
         DCHECK_EQ(base::TimeTicks::GetClock(),
                   base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
         const base::TimeTicks timestamp =
-            base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                                    static_cast<int64_t>(vblank.tv_sec) *
-                                        base::Time::kMicrosecondsPerSecond +
-                                    vblank.tv_usec);
+            base::TimeTicks() +
+            base::Microseconds(static_cast<int64_t>(vblank.tv_sec) *
+                                   base::Time::kMicrosecondsPerSecond +
+                               vblank.tv_usec);
         callback.Run(vblank.sequence, timestamp, vblank.user_data);
       } break;
       case DRM_EVENT_VBLANK:
@@ -146,6 +146,10 @@ DrmPropertyBlobMetadata::~DrmPropertyBlobMetadata() {
 class DrmDevice::PageFlipManager {
  public:
   PageFlipManager() : next_id_(0) {}
+
+  PageFlipManager(const PageFlipManager&) = delete;
+  PageFlipManager& operator=(const PageFlipManager&) = delete;
+
   ~PageFlipManager() = default;
 
   void OnPageFlip(uint32_t frame, base::TimeTicks timestamp, uint64_t id) {
@@ -192,8 +196,6 @@ class DrmDevice::PageFlipManager {
   uint64_t next_id_;
 
   std::vector<PageFlip> callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageFlipManager);
 };
 
 class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
@@ -202,6 +204,9 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
       : page_flip_manager_(page_flip_manager), controller_(FROM_HERE), fd_(fd) {
     Register();
   }
+
+  IOWatcher(const IOWatcher&) = delete;
+  IOWatcher& operator=(const IOWatcher&) = delete;
 
   ~IOWatcher() override { Unregister(); }
 
@@ -235,8 +240,6 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
   base::MessagePumpLibevent::FdWatchController controller_;
 
   int fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOWatcher);
 };
 
 DrmDevice::DrmDevice(const base::FilePath& device_path,

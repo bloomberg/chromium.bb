@@ -11,7 +11,7 @@
 import '../../settings_shared_css.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_icon.js';
-import './os_bluetooth_device_battery_info.js';
+import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_device_battery_info.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -107,7 +107,7 @@ class SettingsPairedBluetoothListItemElement extends
    * @private
    */
   shouldShowBatteryInfo_(device) {
-    return getBatteryPercentage(device) !== undefined;
+    return getBatteryPercentage(device.deviceProperties) !== undefined;
   }
 
   /**
@@ -173,7 +173,7 @@ class SettingsPairedBluetoothListItemElement extends
           stringName, this.itemIndex + 1, this.listSize, deviceName);
     }
 
-    const batteryPercentage = getBatteryPercentage(device);
+    const batteryPercentage = getBatteryPercentage(device.deviceProperties);
     assert(batteryPercentage !== undefined);
     return this.i18n(
         stringName, this.itemIndex + 1, this.listSize, deviceName,

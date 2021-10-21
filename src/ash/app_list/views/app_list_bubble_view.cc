@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
@@ -16,8 +17,10 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
 #include "ash/app_list/views/folder_background_view.h"
+#include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/search_box/search_box_constants.h"
@@ -36,6 +39,7 @@
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -46,6 +50,11 @@ namespace {
 
 // Folder view inset from the edge of the bubble.
 constexpr int kFolderViewInset = 16;
+
+AppListConfig* GetAppListConfig() {
+  return AppListConfigProvider::Get().GetConfigForType(
+      AppListConfigType::kMedium, /*can_create=*/true);
+}
 
 // A simplified horizontal separator that uses a solid color layer for painting.
 // This is more efficient than using a views::Separator, which would require
@@ -79,6 +88,7 @@ AppListBubbleView::AppListBubbleView(
   DCHECK(drag_and_drop_host);
 
   // Set up rounded corners and background blur, similar to TrayBubbleView.
+  // Layer color is set in OnThemeChanged().
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
@@ -92,7 +102,7 @@ AppListBubbleView::AppListBubbleView(
   a11y_announcer_ = std::make_unique<AppListA11yAnnouncer>(
       AddChildView(std::make_unique<views::View>()));
   InitContentsView(drag_and_drop_host);
-  InitFolderView();
+  InitFolderView(drag_and_drop_host);
   // Folder view is laid out manually based on its contents.
   layout->SetChildViewIgnoredByLayout(folder_view_, true);
 
@@ -135,7 +145,8 @@ void AppListBubbleView::InitContentsView(
   // that the `apps_page_` will not get reused for showing the app list in
   // another root window.
   apps_page_ = contents->AddChildView(std::make_unique<AppListBubbleAppsPage>(
-      view_delegate_, drag_and_drop_host, a11y_announcer_.get(),
+      view_delegate_, drag_and_drop_host, GetAppListConfig(),
+      a11y_announcer_.get(),
       /*folder_controller=*/this));
 
   search_page_ =
@@ -149,10 +160,14 @@ void AppListBubbleView::InitContentsView(
   assistant_page_->SetVisible(false);
 }
 
-void AppListBubbleView::InitFolderView() {
+void AppListBubbleView::InitFolderView(
+    ApplicationDragAndDropHost* drag_and_drop_host) {
   auto folder_view = std::make_unique<AppListFolderView>(
       this, apps_page_->scrollable_apps_grid_view(), view_delegate_->GetModel(),
       /*contents_view=*/nullptr, a11y_announcer_.get(), view_delegate_);
+  folder_view->items_grid_view()->SetDragAndDropHostOfCurrentAppList(
+      drag_and_drop_host);
+  folder_view->UpdateAppListConfig(GetAppListConfig());
   folder_background_view_ =
       AddChildView(std::make_unique<FolderBackgroundView>(folder_view.get()));
   folder_background_view_->SetVisible(false);
@@ -163,12 +178,14 @@ void AppListBubbleView::InitFolderView() {
 }
 
 bool AppListBubbleView::Back() {
+  if (showing_folder_) {
+    folder_view_->CloseFolderPage();
+    return true;
+  }
   if (search_box_view_->HasSearch()) {
     search_box_view_->ClearSearch();
     return true;
   }
-  // TODO(https://crbug.com/1220808): Handle back action for open folders in
-  // AppListBubble
 
   return false;
 }
@@ -292,12 +309,21 @@ void AppListBubbleView::ShowFolderForItemView(
   folder_background_view_->SetVisible(true);
   folder_view_->ScheduleShowHideAnimation(/*show=*/true,
                                           /*hide_for_reparent=*/false);
-  // TODO(crbug.com/1214064): Disable items behind the folder so they will not
-  // be reached in focus traversal. See
-  // AppsContainerView::DisableFocusForShowingActiveFolder().
+  if (apps_page_->scrollable_apps_grid_view()->has_selected_view()) {
+    // If the user is keyboard navigating, move focus into the folder.
+    folder_view_->FocusFirstItem(/*silently=*/false);
+  } else {
+    // Release focus so that disabling the views below does not shift focus
+    // into the folder grid.
+    GetFocusManager()->ClearFocus();
+  }
+  // Disable items behind the folder so they will not be reached in focus
+  // traversal.
+  DisableFocusForShowingActiveFolder(true);
 }
 
-void AppListBubbleView::ShowApps(AppListFolderItem* folder_item) {
+void AppListBubbleView::ShowApps(AppListItemView* folder_item_view,
+                                 bool select_folder) {
   DVLOG(1) << __FUNCTION__;
   if (folder_view_->IsAnimationRunning())
     return;
@@ -307,12 +333,17 @@ void AppListBubbleView::ShowApps(AppListFolderItem* folder_item) {
   folder_background_view_->SetVisible(false);
   apps_page_->scrollable_apps_grid_view()->ResetForShowApps();
   folder_view_->ResetItemsGridForClose();
-  if (folder_item) {
+  if (folder_item_view) {
     folder_view_->ScheduleShowHideAnimation(/*show=*/false,
                                             /*hide_for_reparent=*/false);
   } else {
     folder_view_->HideViewImmediately();
   }
+  DisableFocusForShowingActiveFolder(false);
+  if (folder_item_view && select_folder)
+    folder_item_view->RequestFocus();
+  else
+    search_box_view_->search_box()->RequestFocus();
 }
 
 void AppListBubbleView::ReparentFolderItemTransit(
@@ -326,11 +357,19 @@ void AppListBubbleView::ReparentFolderItemTransit(
   folder_background_view_->SetVisible(false);
   folder_view_->ScheduleShowHideAnimation(/*show=*/false,
                                           /*hide_for_reparent=*/true);
+  DisableFocusForShowingActiveFolder(false);
 }
 
 void AppListBubbleView::ReparentDragEnded() {
   DVLOG(1) << __FUNCTION__;
   // Nothing to do.
+}
+
+void AppListBubbleView::DisableFocusForShowingActiveFolder(bool disabled) {
+  search_box_view_->SetEnabled(!disabled);
+  SetViewIgnoredForAccessibility(search_box_view_, disabled);
+
+  apps_page_->DisableFocusForShowingActiveFolder(disabled);
 }
 
 }  // namespace ash

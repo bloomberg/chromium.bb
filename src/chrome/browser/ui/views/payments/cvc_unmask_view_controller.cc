@@ -35,6 +35,8 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -59,8 +61,7 @@ class ErrorLabelView : public views::Label {
   // views::View:
   void OnThemeChanged() override {
     Label::OnThemeChanged();
-    SetEnabledColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityHigh));
+    SetEnabledColor(GetColorProvider()->GetColor(ui::kColorAlertHighSeverity));
   }
 };
 
@@ -97,8 +98,7 @@ CvcUnmaskViewController::CvcUnmaskViewController(
                          &payments_client_,
                          state->GetPersonalDataManager()) {
   full_card_request_.GetFullCard(
-      credit_card,
-      autofill::AutofillClient::UnmaskCardReason::UNMASK_FOR_PAYMENT_REQUEST,
+      credit_card, autofill::AutofillClient::UnmaskCardReason::kPaymentRequest,
       result_delegate, weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -127,31 +127,33 @@ void CvcUnmaskViewController::ShowUnmaskPrompt(
 void CvcUnmaskViewController::OnUnmaskVerificationResult(
     autofill::AutofillClient::PaymentsRpcResult result) {
   switch (result) {
-    case autofill::AutofillClient::NONE:
+    case autofill::AutofillClient::PaymentsRpcResult::kNone:
       NOTREACHED();
       FALLTHROUGH;
-    case autofill::AutofillClient::SUCCESS:
+    case autofill::AutofillClient::PaymentsRpcResult::kSuccess:
       // In the success case, don't show any error and don't hide the spinner
       // because the dialog is about to close when the merchant completes the
       // transaction.
       return;
 
-    case autofill::AutofillClient::TRY_AGAIN_FAILURE:
+    case autofill::AutofillClient::PaymentsRpcResult::kTryAgainFailure:
       DisplayError(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC));
       break;
 
-    case autofill::AutofillClient::PERMANENT_FAILURE:
+    case autofill::AutofillClient::PaymentsRpcResult::kPermanentFailure:
       DisplayError(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT));
       break;
 
-    case autofill::AutofillClient::NETWORK_ERROR:
+    case autofill::AutofillClient::PaymentsRpcResult::kNetworkError:
       DisplayError(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK));
       break;
-    case autofill::AutofillClient::VCN_RETRIEVAL_TRY_AGAIN_FAILURE:
-    case autofill::AutofillClient::VCN_RETRIEVAL_PERMANENT_FAILURE:
+    case autofill::AutofillClient::PaymentsRpcResult::
+        kVcnRetrievalTryAgainFailure:
+    case autofill::AutofillClient::PaymentsRpcResult::
+        kVcnRetrievalPermanentFailure:
       NOTREACHED();
       break;
   }
@@ -194,7 +196,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   constexpr int kPadding = 16;
 
   bool requesting_expiration =
-      credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now());
+      credit_card_.ShouldUpdateExpiration();
   if (requesting_expiration) {
     // Month dropdown column
     cvc_field_columns->AddColumn(
@@ -278,8 +280,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   auto error_icon = std::make_unique<views::ImageView>();
   error_icon->SetID(static_cast<int>(DialogViewID::CVC_ERROR_ICON));
   error_icon->SetImage(ui::ImageModel::FromVectorIcon(
-      vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
-      16));
+      vector_icons::kWarningIcon, ui::kColorAlertHighSeverity, 16));
   error_icon->SetVisible(false);
   layout->AddView(std::move(error_icon));
 
@@ -314,7 +315,7 @@ void CvcUnmaskViewController::CvcConfirmed() {
   if (unmask_delegate_) {
     autofill::CardUnmaskDelegate::UserProvidedUnmaskDetails details;
     details.cvc = cvc;
-    if (credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now())) {
+    if (credit_card_.ShouldUpdateExpiration()) {
       views::Combobox* month = static_cast<views::Combobox*>(
           dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_MONTH)));
       DCHECK(month);
@@ -353,7 +354,7 @@ void CvcUnmaskViewController::UpdatePayButtonState() {
       dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_YEAR)));
 
   bool expiration_date_valid =
-      !credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now());
+      !credit_card_.ShouldUpdateExpiration();
 
   if (month && year) {
     DCHECK(!expiration_date_valid);

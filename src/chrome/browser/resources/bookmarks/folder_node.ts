@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_nav_menu_item_style.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 import './shared_style.js';
 import './strings.m.js';
 
@@ -24,11 +26,16 @@ const BookmarksFolderNodeElementBase =
     mixinBehaviors(StoreClient, PolymerElement) as {
   new (): PolymerElement & BookmarksStoreClientInterface &
       StoreObserver<BookmarksPageState>;
-}
+};
+
+// Workaround because TS compiler doesn't know about scrollIntoViewIfNeeded().
+type HTMLDivElementWithScroll = HTMLDivElement&{
+  scrollIntoViewIfNeeded: () => void;
+};
 
 export interface BookmarksFolderNodeElement {
   $: {
-    container: HTMLDivElement,
+    container: HTMLDivElementWithScroll,
     descendants: HTMLDivElement,
   }
 }
@@ -376,7 +383,7 @@ export class BookmarksFolderNodeElement extends BookmarksFolderNodeElementBase {
       return;
     }
 
-    microTask.run(() => this.$.container.scrollIntoView());
+    microTask.run(() => this.$.container.scrollIntoViewIfNeeded());
   }
 
   private computeIsOpen_(openState: boolean|null, depth: number): boolean {

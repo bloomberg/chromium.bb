@@ -38,13 +38,13 @@ class RestoreOnStartupTest : public LoginPolicyTestBase {
  public:
   RestoreOnStartupTest() = default;
 
+  RestoreOnStartupTest(const RestoreOnStartupTest&) = delete;
+  RestoreOnStartupTest& operator=(const RestoreOnStartupTest&) = delete;
+
   // LoginPolicyTestBase:
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override;
 
   void VerifyStartUpURLs();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupTest);
 };
 
 void RestoreOnStartupTest::GetMandatoryPoliciesValue(
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(RestoreOnStartupTest, PRE_LogInAndVerify) {
 IN_PROC_BROWSER_TEST_F(RestoreOnStartupTest, LogInAndVerify) {
   ash::LoginScreenTestApi::SubmitPassword(account_id(), "7654321",
                                           true /* check_if_submittable */);
-  chromeos::test::WaitForPrimaryUserSessionStart();
+  ash::test::WaitForPrimaryUserSessionStart();
   VerifyStartUpURLs();
 }
 

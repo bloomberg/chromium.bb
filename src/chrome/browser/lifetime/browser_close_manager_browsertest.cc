@@ -129,6 +129,11 @@ class TabRestoreServiceChangesObserver
       service_->AddObserver(this);
   }
 
+  TabRestoreServiceChangesObserver(const TabRestoreServiceChangesObserver&) =
+      delete;
+  TabRestoreServiceChangesObserver& operator=(
+      const TabRestoreServiceChangesObserver&) = delete;
+
   ~TabRestoreServiceChangesObserver() override {
     if (service_)
       service_->RemoveObserver(this);
@@ -149,8 +154,6 @@ class TabRestoreServiceChangesObserver
 
   sessions::TabRestoreService* service_ = nullptr;
   size_t changes_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceChangesObserver);
 };
 
 class TestBrowserCloseManager : public BrowserCloseManager {
@@ -160,6 +163,9 @@ class TestBrowserCloseManager : public BrowserCloseManager {
     USER_CHOICE_USER_ALLOWS_CLOSE,
     NO_USER_CHOICE
   };
+
+  TestBrowserCloseManager(const TestBrowserCloseManager&) = delete;
+  TestBrowserCloseManager& operator=(const TestBrowserCloseManager&) = delete;
 
   static void AttemptClose(UserChoice user_choice) {
     scoped_refptr<BrowserCloseManager> browser_close_manager =
@@ -193,8 +199,6 @@ class TestBrowserCloseManager : public BrowserCloseManager {
       : user_choice_(user_choice) {}
 
   UserChoice user_choice_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserCloseManager);
 };
 
 class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
@@ -243,6 +247,10 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
                                   ->GetProfileAttributesStorage()),
         suspended_(false) {}
 
+  FakeBackgroundModeManager(const FakeBackgroundModeManager&) = delete;
+  FakeBackgroundModeManager& operator=(const FakeBackgroundModeManager&) =
+      delete;
+
   void SuspendBackgroundMode() override {
     BackgroundModeManager::SuspendBackgroundMode();
     suspended_ = true;
@@ -259,8 +267,6 @@ class FakeBackgroundModeManager : public BackgroundModeManager {
 
  private:
   bool suspended_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBackgroundModeManager);
 };
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
@@ -524,12 +530,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // Test that tabs that are slow to respond are not closed prematurely.
 // Regression for crbug.com/365052 caused some of tabs to be closed even if
 // user chose to cancel browser close.
-// Flaky on ChromeOS ASan. https://crbug.com/805457
-#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TestUnloadMultipleSlowTabs DISABLED_TestUnloadMultipleSlowTabs
-#else
-#define MAYBE_TestUnloadMultipleSlowTabs TestUnloadMultipleSlowTabs
-#endif
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
                        TestUnloadMultipleSlowTabs) {
   const int kTabCount = 5;
@@ -1159,6 +1159,11 @@ class BrowserCloseManagerWithBackgroundModeBrowserTest
  public:
   BrowserCloseManagerWithBackgroundModeBrowserTest() {}
 
+  BrowserCloseManagerWithBackgroundModeBrowserTest(
+      const BrowserCloseManagerWithBackgroundModeBrowserTest&) = delete;
+  BrowserCloseManagerWithBackgroundModeBrowserTest& operator=(
+      const BrowserCloseManagerWithBackgroundModeBrowserTest&) = delete;
+
   void SetUpOnMainThread() override {
     BrowserCloseManagerBrowserTest::SetUpOnMainThread();
     g_browser_process->set_background_mode_manager_for_test(
@@ -1170,9 +1175,6 @@ class BrowserCloseManagerWithBackgroundModeBrowserTest
         g_browser_process->background_mode_manager())
         ->IsBackgroundModeSuspended();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserCloseManagerWithBackgroundModeBrowserTest);
 };
 
 // Check that background mode is suspended when closing all browsers unless we

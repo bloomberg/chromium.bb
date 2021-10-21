@@ -35,41 +35,16 @@ public:
     static PositionInfo Capture() { return PositionInfo(); }
 #endif // __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
 
-    static PositionInfo Offset(const char* file, const char* text, int offset) {
-        PositionInfo result(file, -1);
-        result.fText = text;
-        result.fOffset = offset;
-        return result;
-    }
-
     const char* file_name() const {
         return fFile;
     }
 
     int line() {
-        if (fLine == -1) {
-            if (fOffset == -1 || !fText) {
-                return -1;
-            }
-            fLine = 1;
-            for (int i = 0; i < fOffset; i++) {
-                SkASSERT(fText[i]);
-                if (fText[i] == '\n') {
-                    ++fLine;
-                }
-            }
-        }
         return fLine;
-    }
-
-    int offset() {
-        return fOffset;
     }
 
 private:
     const char* fFile = nullptr;
-    const char* fText = nullptr;
-    int32_t fOffset = -1;
     int32_t fLine = -1;
 };
 
@@ -87,10 +62,10 @@ public:
     void error(skstd::string_view msg, PositionInfo position);
 
     /**
-     * Reports an error message at the given character offset of the source text. Errors reported
-     * with an offset of -1 will be queued until line number information can be determined.
+     * Reports an error message at the given line of the source text. Errors reported
+     * with a line of -1 will be queued until line number information can be determined.
      */
-    void error(int offset, skstd::string_view msg);
+    void error(int line, skstd::string_view msg);
 
     const char* source() const { return fSource; }
 

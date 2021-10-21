@@ -20,6 +20,9 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/content/browser/page_content_annotations_common.h"
+#include "components/optimization_guide/content/browser/page_content_annotator.h"
+#include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "url/gurl.h"
 
@@ -35,11 +38,14 @@ namespace optimization_guide {
 
 class OptimizationGuideModelProvider;
 class PageContentAnnotationsModelManager;
+class PageContentAnnotationsServiceBrowserTest;
+class PageContentAnnotationsWebContentsObserver;
 
 // The information used by HistoryService to identify a visit to a URL.
 struct HistoryVisit {
   base::Time nav_entry_timestamp;
   GURL url;
+  int64_t navigation_id;
 
   struct Comp {
     bool operator()(const HistoryVisit& lhs, const HistoryVisit& rhs) const {
@@ -51,7 +57,8 @@ struct HistoryVisit {
 };
 
 // A KeyedService that annotates page content.
-class PageContentAnnotationsService : public KeyedService {
+class PageContentAnnotationsService : public KeyedService,
+                                      public EntityMetadataProvider {
  public:
   explicit PageContentAnnotationsService(
       OptimizationGuideModelProvider* optimization_guide_model_provider,
@@ -61,31 +68,29 @@ class PageContentAnnotationsService : public KeyedService {
   PageContentAnnotationsService& operator=(
       const PageContentAnnotationsService&) = delete;
 
-  // Creates a HistoryVisit based on the current state of |web_contents|.
-  static HistoryVisit CreateHistoryVisitFromWebContents(
-      content::WebContents* web_contents);
+  // This is the main entry point for page content annotations by external
+  // callers.
+  //
+  // TODO(crbug/1249632): Flesh out description more as implementation
+  // progresses and we see what is most important to write here.
+  void BatchAnnotate(BatchAnnotationCallback callback,
+                     const std::vector<std::string>& inputs,
+                     AnnotationType annotation_type);
 
-  // Requests to annotate |text|, which is associated with |web_contents|.
-  //
-  // When finished annotating, it will store the relevant information in
-  // History Service.
-  //
-  // Virtualized for testing.
-  virtual void Annotate(const HistoryVisit& visit, const std::string& text);
-
-  // Requests |search_result_extractor_client_| to extract related searches from
-  // the Google SRP DOM associated with |web_contents|.
-  //
-  // Once finished, it will store the related searches in History Service.
-  //
-  // Virtualized for testing.
-  virtual void ExtractRelatedSearches(const HistoryVisit& visit,
-                                      content::WebContents* web_contents);
+  // Overrides the PageContentAnnotator for testing. See
+  // test_page_content_annotator.h for an implementation designed for testing.
+  void OverridePageContentAnnotatorForTesting(
+      std::unique_ptr<PageContentAnnotator> annotator);
 
   // Returns the version of the page topics model that is currently being used
   // to annotate page content. Will return |absl::nullopt| if no model is being
   // used to annotate page topics for received page content.
   absl::optional<int64_t> GetPageTopicsModelVersion() const;
+
+  // EntityMetadataProvider:
+  void GetMetadataForEntityId(
+      const std::string& entity_id,
+      EntityMetadataRetrievedCallback callback) override;
 
  private:
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
@@ -97,6 +102,39 @@ class PageContentAnnotationsService : public KeyedService {
 
   std::unique_ptr<PageContentAnnotationsModelManager> model_manager_;
 #endif
+
+  // TODO(crbug/1249632): This will take the place of |model_manager_| where
+  // |PageContentAnnotationsModelManager| implements the virtual interface.
+  //
+  // The annotator to use for requests to |BatchAnnotate|. Override-able for
+  // testing.
+  std::unique_ptr<PageContentAnnotator> annotator_;
+
+  // Requests to annotate |text|, which is associated with |web_contents|.
+  //
+  // When finished annotating, it will store the relevant information in
+  // History Service.
+  //
+  // The WCO friend class is used to keep the `Annotate` API internal to
+  // OptGuide. Callers should use `BatchAnnotate` instead.
+  friend class PageContentAnnotationsWebContentsObserver;
+  friend class PageContentAnnotationsServiceBrowserTest;
+  // Virtualized for testing.
+  virtual void Annotate(const HistoryVisit& visit, const std::string& text);
+
+  // Creates a HistoryVisit based on the current state of |web_contents|.
+  static HistoryVisit CreateHistoryVisitFromWebContents(
+      content::WebContents* web_contents,
+      int64_t navigation_id);
+
+  // Requests |search_result_extractor_client_| to extract related searches from
+  // the Google SRP DOM associated with |web_contents|.
+  //
+  // Once finished, it will store the related searches in History Service.
+  //
+  // Virtualized for testing.
+  virtual void ExtractRelatedSearches(const HistoryVisit& visit,
+                                      content::WebContents* web_contents);
 
   // Callback invoked when related searches have been extracted for |visit|.
   void OnRelatedSearchesExtracted(

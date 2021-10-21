@@ -32,7 +32,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
@@ -71,12 +71,13 @@ BubbleBorder::Arrow GetArrowAlignment(ash::ShelfAlignment alignment) {
 class MouseMoveDetectorHost : public views::MouseWatcherHost {
  public:
   MouseMoveDetectorHost();
+
+  MouseMoveDetectorHost(const MouseMoveDetectorHost&) = delete;
+  MouseMoveDetectorHost& operator=(const MouseMoveDetectorHost&) = delete;
+
   ~MouseMoveDetectorHost() override;
 
   bool Contains(const gfx::Point& screen_point, EventType type) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
 };
 
 MouseMoveDetectorHost::MouseMoveDetectorHost() {}
@@ -95,6 +96,9 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
   explicit BottomAlignedBoxLayout(TrayBubbleView* bubble_view)
       : BoxLayout(BoxLayout::Orientation::kVertical),
         bubble_view_(bubble_view) {}
+
+  BottomAlignedBoxLayout(const BottomAlignedBoxLayout&) = delete;
+  BottomAlignedBoxLayout& operator=(const BottomAlignedBoxLayout&) = delete;
 
   ~BottomAlignedBoxLayout() override {}
 
@@ -121,8 +125,6 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
   }
 
   TrayBubbleView* bubble_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(BottomAlignedBoxLayout);
 };
 
 }  // namespace

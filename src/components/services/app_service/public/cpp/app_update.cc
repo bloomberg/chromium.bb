@@ -95,8 +95,14 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->permissions.clear();
     ClonePermissions(delta->permissions, &state->permissions);
   }
+  if (delta->install_reason != apps::mojom::InstallReason::kUnknown) {
+    state->install_reason = delta->install_reason;
+  }
   if (delta->install_source != apps::mojom::InstallSource::kUnknown) {
     state->install_source = delta->install_source;
+  }
+  if (delta->policy_id.has_value()) {
+    state->policy_id = delta->policy_id;
   }
   if (delta->is_platform_app != apps::mojom::OptionalBool::kUnknown) {
     state->is_platform_app = delta->is_platform_app;
@@ -337,6 +343,23 @@ bool AppUpdate::PermissionsChanged() const {
          (!state_ || (delta_->permissions != state_->permissions));
 }
 
+apps::mojom::InstallReason AppUpdate::InstallReason() const {
+  if (delta_ &&
+      (delta_->install_reason != apps::mojom::InstallReason::kUnknown)) {
+    return delta_->install_reason;
+  }
+  if (state_) {
+    return state_->install_reason;
+  }
+  return apps::mojom::InstallReason::kUnknown;
+}
+
+bool AppUpdate::InstallReasonChanged() const {
+  return delta_ &&
+         (delta_->install_reason != apps::mojom::InstallReason::kUnknown) &&
+         (!state_ || (delta_->install_reason != state_->install_reason));
+}
+
 apps::mojom::InstallSource AppUpdate::InstallSource() const {
   if (delta_ &&
       (delta_->install_source != apps::mojom::InstallSource::kUnknown)) {
@@ -354,14 +377,29 @@ bool AppUpdate::InstallSourceChanged() const {
          (!state_ || (delta_->install_source != state_->install_source));
 }
 
+const std::string& AppUpdate::PolicyId() const {
+  if (delta_ && delta_->policy_id.has_value()) {
+    return delta_->policy_id.value();
+  }
+  if (state_ && state_->policy_id.has_value()) {
+    return state_->policy_id.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::PolicyIdChanged() const {
+  return delta_ && delta_->policy_id.has_value() &&
+         (!state_ || (delta_->policy_id != state_->policy_id));
+}
+
 apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
-  switch (InstallSource()) {
-    case apps::mojom::InstallSource::kUnknown:
+  switch (InstallReason()) {
+    case apps::mojom::InstallReason::kUnknown:
       return apps::mojom::OptionalBool::kUnknown;
-    case apps::mojom::InstallSource::kSystem:
-    case apps::mojom::InstallSource::kPolicy:
-    case apps::mojom::InstallSource::kOem:
-    case apps::mojom::InstallSource::kDefault:
+    case apps::mojom::InstallReason::kSystem:
+    case apps::mojom::InstallReason::kPolicy:
+    case apps::mojom::InstallReason::kOem:
+    case apps::mojom::InstallReason::kDefault:
       return apps::mojom::OptionalBool::kTrue;
     default:
       return apps::mojom::OptionalBool::kFalse;
@@ -590,12 +628,13 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
 
   out << "Permissions:" << std::endl;
   for (const auto& permission : app.Permissions()) {
-    out << "  ID: " << permission->permission_id;
+    out << "  ID: " << permission->permission_type;
     out << " value: " << permission->value;
     out << " is_managed: " << permission->is_managed << std::endl;
   }
 
-  out << "InstallSource: " << app.InstallSource() << std::endl;
+  out << "InstallReason: " << app.InstallReason() << std::endl;
+  out << "PolicyId: " << app.PolicyId() << std::endl;
   out << "InstalledInternally: " << app.InstalledInternally() << std::endl;
   out << "IsPlatformApp: " << app.IsPlatformApp() << std::endl;
   out << "Recommendable: " << app.Recommendable() << std::endl;

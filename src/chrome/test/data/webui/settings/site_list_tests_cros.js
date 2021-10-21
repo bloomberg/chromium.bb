@@ -49,9 +49,9 @@ suite('SiteListChromeOS', function() {
                 ])]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.setInstance(browserProxy);
     androidInfoBrowserProxy = new TestAndroidInfoBrowserProxy();
-    AndroidInfoBrowserProxyImpl.instance_ = androidInfoBrowserProxy;
+    AndroidInfoBrowserProxyImpl.setInstance(androidInfoBrowserProxy);
 
     PolymerTest.clearBody();
     testElement = document.createElement('site-list');

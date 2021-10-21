@@ -517,7 +517,8 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
   .deltaq_mode =
       ARG_DEF(NULL, "deltaq-mode", 1,
               "Delta qindex mode (0: off, 1: deltaq objective (default), "
-              "2: deltaq placeholder, 3: key frame visual quality). "
+              "2: deltaq placeholder, 3: key frame visual quality, 4: user "
+              "rating based visual quality optimization). "
               "Currently this requires enable-tpl-model as a prerequisite."),
   .deltalf_mode = ARG_DEF(NULL, "delta-lf-mode", 1,
                           "Enable delta-lf-mode (0: off (default), 1: on)"),
@@ -604,9 +605,7 @@ const av1_codec_arg_definitions_t g_av1_codec_arg_defs = {
               "pyramid. Selected automatically from --cq-level if "
               "--fixed-qp-offsets is not provided. If this option is not "
               "specified (default), offsets are adaptively chosen by the "
-              "encoder. Further, if this option is specified, at least two "
-              "comma-separated values corresponding to kf and arf offsets "
-              "must be provided, while the rest are chosen by the encoder"),
+              "encoder."),
 
   .fixed_qp_offsets = ARG_DEF(
       NULL, "fixed-qp-offsets", 1,

@@ -293,6 +293,10 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  public:
   DownloadTargetDeterminerTest() = default;
 
+  DownloadTargetDeterminerTest(const DownloadTargetDeterminerTest&) = delete;
+  DownloadTargetDeterminerTest& operator=(const DownloadTargetDeterminerTest&) =
+      delete;
+
   // ::testing::Test
   void SetUp() override;
   void TearDown() override;
@@ -361,8 +365,6 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   NullWebContentsDelegate web_contents_delegate_;
   base::FilePath test_virtual_dir_;
   safe_browsing::FileTypePoliciesTestOverlay file_type_configuration_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadTargetDeterminerTest);
 };
 
 void DownloadTargetDeterminerTest::SetUp() {
@@ -1198,8 +1200,8 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
   GURL url("http://visited.example.com/visited-link.html");
   // The time of visit is picked to be several seconds prior to the most recent
   // midnight.
-  base::Time time_of_visit(
-      base::Time::Now().LocalMidnight() - base::TimeDelta::FromSeconds(10));
+  base::Time time_of_visit(base::Time::Now().LocalMidnight() -
+                           base::Seconds(10));
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile(),
                                            ServiceAccessType::EXPLICIT_ACCESS);

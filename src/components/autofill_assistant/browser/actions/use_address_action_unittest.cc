@@ -73,8 +73,7 @@ class UseAddressActionTest : public testing::Test {
           checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
-        .WillByDefault(RunOnceCallback<1>(OkClientStatus(),
-                                          base::TimeDelta::FromSeconds(0)));
+        .WillByDefault(RunOnceCallback<1>(OkClientStatus(), base::Seconds(0)));
     test_util::MockFindAnyElement(mock_web_controller_);
   }
 
@@ -116,20 +115,6 @@ class UseAddressActionTest : public testing::Test {
                                         autofill::test::kEmptyOrigin};
 };
 
-#if !defined(OS_ANDROID)
-#define MAYBE_FillManually FillManually
-#else
-#define MAYBE_FillManually DISABLED_FillManually
-#endif
-TEST_F(UseAddressActionTest, MAYBE_FillManually) {
-  InSequence seq;
-
-  ActionProto action_proto = CreateUseAddressAction();
-
-  EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
-            ProcessAction(action_proto));
-}
-
 TEST_F(UseAddressActionTest, InvalidActionNoSelectorSet) {
   ActionProto action;
   action.mutable_use_address();
@@ -163,8 +148,7 @@ TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForName) {
 
 TEST_F(UseAddressActionTest, ResolveProfileByNameSucceeds) {
   ON_CALL(mock_action_delegate_, OnShortWaitForElement(fake_selector_, _))
-      .WillByDefault(RunOnceCallback<1>(OkClientStatus(),
-                                        base::TimeDelta::FromSeconds(0)));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), base::Seconds(0)));
   ON_CALL(mock_web_controller_, GetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
@@ -200,8 +184,7 @@ TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForModelIdentifier) {
 
 TEST_F(UseAddressActionTest, ResolveProfileByModelIdentifierSucceeds) {
   ON_CALL(mock_action_delegate_, OnShortWaitForElement(fake_selector_, _))
-      .WillByDefault(RunOnceCallback<1>(OkClientStatus(),
-                                        base::TimeDelta::FromSeconds(0)));
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), base::Seconds(0)));
   ON_CALL(mock_web_controller_, GetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
@@ -246,8 +229,7 @@ TEST_F(UseAddressActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
 
 TEST_F(UseAddressActionTest, ShortWaitForElementVisible) {
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(fake_selector_, _))
-      .WillOnce(RunOnceCallback<1>(OkClientStatus(),
-                                   base::TimeDelta::FromSeconds(0)));
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), base::Seconds(0)));
 
   ActionProto action_proto = CreateUseAddressAction();
   // Autofill succeeds.
@@ -590,15 +572,13 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
   EXPECT_CALL(mock_action_delegate_,
               WaitUntilDocumentIsInReadyState(
                   _, DOCUMENT_INTERACTIVE, EqualsElement(expected_element), _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
-                                   base::TimeDelta::FromSeconds(0)));
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(), base::Seconds(0)));
   EXPECT_CALL(mock_web_controller_,
               ScrollIntoView(std::string(), "center", "center",
                              EqualsElement(expected_element), _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
   EXPECT_CALL(mock_web_controller_, WaitUntilElementIsStable(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(OkClientStatus(),
-                                   base::TimeDelta::FromSeconds(0)));
+      .WillOnce(RunOnceCallback<3>(OkClientStatus(), base::Seconds(0)));
   EXPECT_CALL(
       mock_web_controller_,
       ClickOrTapElement(ClickType::CLICK, EqualsElement(expected_element), _))

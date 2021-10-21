@@ -285,8 +285,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     VibranceContext *s = avctx->priv;
     int res;
 
-    if (res = avctx->internal->execute(avctx, s->do_slice, frame, NULL,
-                                       FFMIN(frame->height, ff_filter_get_nb_threads(avctx))))
+    if (res = ff_filter_execute(avctx, s->do_slice, frame, NULL,
+                                FFMIN(frame->height, ff_filter_get_nb_threads(avctx))))
         return res;
 
     return ff_filter_frame(avctx->outputs[0], frame);
@@ -309,13 +309,7 @@ static av_cold int query_formats(AVFilterContext *avctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *formats = NULL;
-
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(avctx, formats);
+    return ff_set_common_formats_from_list(avctx, pixel_fmts);
 }
 
 static av_cold int config_input(AVFilterLink *inlink)
@@ -346,11 +340,10 @@ static const AVFilterPad vibrance_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
-        .needs_writable = 1,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = filter_frame,
         .config_props   = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad vibrance_outputs[] = {
@@ -358,7 +351,6 @@ static const AVFilterPad vibrance_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(VibranceContext, x)
@@ -384,8 +376,8 @@ const AVFilter ff_vf_vibrance = {
     .priv_size     = sizeof(VibranceContext),
     .priv_class    = &vibrance_class,
     .query_formats = query_formats,
-    .inputs        = vibrance_inputs,
-    .outputs       = vibrance_outputs,
+    FILTER_INPUTS(vibrance_inputs),
+    FILTER_OUTPUTS(vibrance_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

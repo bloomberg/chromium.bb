@@ -75,10 +75,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 #define DEFINE_DEDOTCRAWL(name, type, div)                       \
@@ -299,19 +296,19 @@ static int activate(AVFilterContext *ctx)
                 ret = av_frame_make_writable(out);
                 if (ret >= 0) {
                     if (s->m & 1)
-                        ctx->internal->execute(ctx, s->dedotcrawl, out, NULL,
-                                               FFMIN(s->planeheight[0],
-                                               ff_filter_get_nb_threads(ctx)));
+                        ff_filter_execute(ctx, s->dedotcrawl, out, NULL,
+                                          FFMIN(ff_filter_get_nb_threads(ctx),
+                                                s->planeheight[0]));
                     if (s->m & 2) {
                         ThreadData td;
                         td.out = out; td.plane = 1;
-                        ctx->internal->execute(ctx, s->derainbow, &td, NULL,
-                                               FFMIN(s->planeheight[1],
-                                               ff_filter_get_nb_threads(ctx)));
+                        ff_filter_execute(ctx, s->derainbow, &td, NULL,
+                                          FFMIN(ff_filter_get_nb_threads(ctx),
+                                                s->planeheight[1]));
                         td.plane = 2;
-                        ctx->internal->execute(ctx, s->derainbow, &td, NULL,
-                                               FFMIN(s->planeheight[2],
-                                               ff_filter_get_nb_threads(ctx)));
+                        ff_filter_execute(ctx, s->derainbow, &td, NULL,
+                                          FFMIN(ff_filter_get_nb_threads(ctx),
+                                                s->planeheight[2]));
                     }
                 } else
                     av_frame_free(&out);
@@ -387,7 +384,6 @@ static const AVFilterPad inputs[] = {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -396,7 +392,6 @@ static const AVFilterPad outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 AVFILTER_DEFINE_CLASS(dedot);
@@ -409,7 +404,7 @@ const AVFilter ff_vf_dedot = {
     .query_formats = query_formats,
     .activate      = activate,
     .uninit        = uninit,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
 };

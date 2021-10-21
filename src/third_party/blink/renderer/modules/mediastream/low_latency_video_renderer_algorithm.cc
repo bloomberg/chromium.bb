@@ -63,7 +63,8 @@ scoped_refptr<media::VideoFrame> LowLatencyVideoRendererAlgorithm::Render(
 
   stats_.accumulated_queue_length += frame_queue_.size();
   ++stats_.accumulated_queue_length_count;
-
+  stats_.max_queue_length =
+      std::max<int>(frame_queue_.size(), stats_.max_queue_length);
   // Determine how many fractional frames that should be rendered based on how
   // much time has passed since the last renderer deadline.
   double fractional_frames_to_render = 1.0;
@@ -124,7 +125,7 @@ scoped_refptr<media::VideoFrame> LowLatencyVideoRendererAlgorithm::Render(
     // Record stats for every 100 s, corresponding to roughly 6000 frames in
     // normal conditions.
     if (deadline_min - *last_deadline_min_stats_recorded_ >
-        base::TimeDelta::FromSeconds(100)) {
+        base::Seconds(100)) {
       RecordAndResetStats();
       last_deadline_min_stats_recorded_ = deadline_min;
     }
@@ -279,6 +280,8 @@ void LowLatencyVideoRendererAlgorithm::RecordAndResetStats() {
   base::UmaHistogramCounts1000(uma_prefix + ".AverageQueueLengthX10",
                                10 * stats_.accumulated_queue_length /
                                    stats_.accumulated_queue_length_count);
+  base::UmaHistogramCounts100(uma_prefix + ".MaxQueueLength",
+                              stats_.max_queue_length);
   // Enter drain mode count.
   base::UmaHistogramCounts10000(uma_prefix + ".EnterDrainModeCount",
                                 stats_.enter_drain_mode);

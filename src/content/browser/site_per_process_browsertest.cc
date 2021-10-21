@@ -84,6 +84,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
@@ -122,6 +123,7 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/mock_http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -155,7 +157,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/latency/latency_info.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -269,6 +271,11 @@ class RedirectNotificationObserver : public NotificationObserver {
   // NotificationService::AllSources().
   RedirectNotificationObserver(int notification_type,
                                const NotificationSource& source);
+
+  RedirectNotificationObserver(const RedirectNotificationObserver&) = delete;
+  RedirectNotificationObserver& operator=(const RedirectNotificationObserver&) =
+      delete;
+
   ~RedirectNotificationObserver() override;
 
   // Wait until the specified notification occurs.  If the notification was
@@ -300,8 +307,6 @@ class RedirectNotificationObserver : public NotificationObserver {
   NotificationSource source_;
   NotificationDetails details_;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(RedirectNotificationObserver);
 };
 
 RedirectNotificationObserver::RedirectNotificationObserver(
@@ -347,6 +352,9 @@ class UserInteractionObserver : public WebContentsObserver {
   explicit UserInteractionObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents), user_interaction_received_(false) {}
 
+  UserInteractionObserver(const UserInteractionObserver&) = delete;
+  UserInteractionObserver& operator=(const UserInteractionObserver&) = delete;
+
   ~UserInteractionObserver() override {}
 
   // Retrieve the flag. There is no need to wait on a loop since
@@ -363,8 +371,6 @@ class UserInteractionObserver : public WebContentsObserver {
   }
 
   bool user_interaction_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserInteractionObserver);
 };
 
 // Supports waiting until a WebContents notifies its observers that the visible
@@ -6457,7 +6463,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // termination.
   RenderProcessHost* subframe_process =
       root->child_at(0)->current_frame_host()->GetProcess();
-  subframe_process->IncrementKeepAliveRefCount();
+  subframe_process->IncrementKeepAliveRefCount(0);
 
   // Navigate the subframe away from b.com.  Since this is the last active
   // frame in the b.com process, this causes the RenderWidget and RenderView to
@@ -6469,7 +6475,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Release the process.
   RenderProcessHostWatcher process_shutdown_observer(
       subframe_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  subframe_process->DecrementKeepAliveRefCount();
+  subframe_process->DecrementKeepAliveRefCount(0);
   process_shutdown_observer.Wait();
 }
 
@@ -8464,12 +8470,11 @@ class RequestDelayingSitePerProcessBrowserTest
 
  private:
   // Called on the test server's thread.
-  void AddDelayedResponse(const net::test_server::SendBytesCallback& send,
-                          net::test_server::SendCompleteCallback done) {
-    // Just create a closure that closes the socket without sending a response.
-    // This will propagate an error to the underlying request.
-    send_response_closures_.push_back(
-        base::BindOnce(send, "", std::move(done)));
+  void AddDelayedResponse(
+      base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) {
+    response_closures_.push_back(base::BindOnce(
+        &net::test_server::HttpResponseDelegate::SendHeadersContentAndFinish,
+        delegate, net::HTTP_OK, "OK", base::StringPairs(), ""));
   }
 
   // Custom embedded test server handler. Looks for requests matching
@@ -8503,21 +8508,20 @@ class RequestDelayingSitePerProcessBrowserTest
       if (it.second > 0)
         return;
     }
-    for (auto& it : send_response_closures_) {
+    for (auto& it : response_closures_)
       std::move(it).Run();
-    }
   }
 
-  // This class passes the callbacks needed to respond to a request to the
+  // This class passes the delegates needed to respond to a request to the
   // underlying test fixture.
   class DelayedResponse : public net::test_server::BasicHttpResponse {
    public:
     explicit DelayedResponse(
         RequestDelayingSitePerProcessBrowserTest* test_harness)
         : test_harness_(test_harness) {}
-    void SendResponse(const net::test_server::SendBytesCallback& send,
-                      net::test_server::SendCompleteCallback done) override {
-      test_harness_->AddDelayedResponse(send, std::move(done));
+    void SendResponse(base::WeakPtr<net::test_server::HttpResponseDelegate>
+                          delegate) override {
+      test_harness_->AddDelayedResponse(delegate);
     }
 
    private:
@@ -8526,9 +8530,9 @@ class RequestDelayingSitePerProcessBrowserTest
     DISALLOW_COPY_AND_ASSIGN(DelayedResponse);
   };
 
-  // Set of closures to call which will complete delayed requests. May only be
+  // Set of delegates to call which will complete delayed requests. May only be
   // modified on the test_server_'s thread.
-  std::vector<base::OnceClosure> send_response_closures_;
+  std::vector<base::OnceClosure> response_closures_;
 
   // Map from URL paths to the number of requests to delay for that particular
   // path. Initialized on the UI thread but modified and read on the test
@@ -8589,6 +8593,9 @@ class TextSelectionObserver : public TextInputManager::Observer {
     text_input_manager->AddObserver(this);
   }
 
+  TextSelectionObserver(const TextSelectionObserver&) = delete;
+  TextSelectionObserver& operator=(const TextSelectionObserver&) = delete;
+
   ~TextSelectionObserver() { text_input_manager_->RemoveObserver(this); }
 
   void WaitForSelectedText(const std::string& expected_text) {
@@ -8612,13 +8619,16 @@ class TextSelectionObserver : public TextInputManager::Observer {
   std::string last_selected_text_;
   std::string expected_text_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextSelectionObserver);
 };
 
 class SitePerProcessAndroidImeTest : public SitePerProcessBrowserTest {
  public:
   SitePerProcessAndroidImeTest() : SitePerProcessBrowserTest() {}
+
+  SitePerProcessAndroidImeTest(const SitePerProcessAndroidImeTest&) = delete;
+  SitePerProcessAndroidImeTest& operator=(const SitePerProcessAndroidImeTest&) =
+      delete;
+
   ~SitePerProcessAndroidImeTest() override {}
 
  protected:
@@ -8682,9 +8692,6 @@ class SitePerProcessAndroidImeTest : public SitePerProcessBrowserTest {
   }
 
   std::vector<RenderFrameHostImpl*> frames_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessAndroidImeTest);
 };
 
 // This test verifies that committing text will be applied on the focused
@@ -10127,6 +10134,11 @@ class TouchSelectionControllerClientTestWrapper
       ui::TouchSelectionControllerClient* client)
       : expected_event_(ui::SELECTION_HANDLES_SHOWN), client_(client) {}
 
+  TouchSelectionControllerClientTestWrapper(
+      const TouchSelectionControllerClientTestWrapper&) = delete;
+  TouchSelectionControllerClientTestWrapper& operator=(
+      const TouchSelectionControllerClientTestWrapper&) = delete;
+
   ~TouchSelectionControllerClientTestWrapper() override {}
 
   void InitWaitForSelectionEvent(ui::SelectionEventType expected_event) {
@@ -10181,8 +10193,6 @@ class TouchSelectionControllerClientTestWrapper
   std::unique_ptr<base::RunLoop> run_loop_;
   // Not owned.
   ui::TouchSelectionControllerClient* client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientTestWrapper);
 };
 
 class TouchSelectionControllerClientAndroidSiteIsolationTest
@@ -10211,7 +10221,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
     SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
     // action_timeout() is far longer than needed for a LongPress, so we use
     // a custom timeout here.
-    DelayBy(base::TimeDelta::FromMilliseconds(2000));
+    DelayBy(base::Milliseconds(2000));
     SendTouch(main_view, ui::MotionEvent::Action::UP, point);
   }
 
@@ -10222,7 +10232,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
     SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
     // tiny_timeout() is way shorter than a reasonable user-created tap gesture,
     // so we use a custom timeout here.
-    DelayBy(base::TimeDelta::FromMilliseconds(300));
+    DelayBy(base::Milliseconds(300));
     SendTouch(main_view, ui::MotionEvent::Action::UP, point);
   }
 
@@ -10334,7 +10344,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
                            end_in_x_range && has_end_handle;
       }
       if (!handles_in_place)
-        DelayBy(base::TimeDelta::FromMilliseconds(100));
+        DelayBy(base::Milliseconds(100));
     }
   }
 
@@ -10436,7 +10446,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAndroidSiteIsolationTest,
 
   // Let's wait for the previous events to clear the round-trip to the renders
   // and back.
-  DelayBy(base::TimeDelta::FromMilliseconds(2000));
+  DelayBy(base::Milliseconds(2000));
 
   // Initiate selection with a sequence of events that go through the targeting
   // system. Repeat of above but this time we'l cancel the selection by
@@ -11380,6 +11390,11 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
         deferred_url_(deferred_url),
         deferred_url_triggered_action_(
             std::move(deferred_url_triggered_action)) {}
+
+  CommitMessageOrderReverser(const CommitMessageOrderReverser&) = delete;
+  CommitMessageOrderReverser& operator=(const CommitMessageOrderReverser&) =
+      delete;
+
   ~CommitMessageOrderReverser() override = default;
 
   void WaitForBothCommits() { outer_run_loop.Run(); }
@@ -11414,8 +11429,6 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 
   const GURL deferred_url_;
   DidStartDeferringCommitCallback deferred_url_triggered_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommitMessageOrderReverser);
 };
 
 }  // namespace
@@ -13676,8 +13689,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
-  NavigationRequest::SetCommitTimeoutForTesting(
-      base::TimeDelta::FromMilliseconds(100));
+  NavigationRequest::SetCommitTimeoutForTesting(base::Milliseconds(100));
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
   EXPECT_TRUE(
@@ -13734,7 +13746,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
-  base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
+  base::TimeDelta kTimeout = base::Milliseconds(100);
   NavigationRequest::SetCommitTimeoutForTesting(kTimeout);
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
@@ -14049,8 +14061,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   auto allow_time_for_rafs = []() {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(1000));
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(1000));
     run_loop.Run();
   };
 
@@ -14608,6 +14619,11 @@ class InnerWebContentsAttachTest
                      bool /* user proceeds with attaching */>> {
  public:
   InnerWebContentsAttachTest() {}
+
+  InnerWebContentsAttachTest(const InnerWebContentsAttachTest&) = delete;
+  InnerWebContentsAttachTest& operator=(const InnerWebContentsAttachTest&) =
+      delete;
+
   ~InnerWebContentsAttachTest() override {}
 
  protected:
@@ -14630,6 +14646,10 @@ class InnerWebContentsAttachTest
       original_render_frame_host->PrepareForInnerWebContentsAttach(
           std::move(callback));
     }
+
+    PrepareFrameJob(const PrepareFrameJob&) = delete;
+    PrepareFrameJob& operator=(const PrepareFrameJob&) = delete;
+
     virtual ~PrepareFrameJob() {}
 
     void WaitForPreparedFrame() {
@@ -14654,14 +14674,10 @@ class InnerWebContentsAttachTest
     bool did_call_prepare_ = false;
     RenderFrameHostImpl* new_render_frame_host_ = nullptr;
     base::RunLoop run_loop_;
-
-    DISALLOW_COPY_AND_ASSIGN(PrepareFrameJob);
   };
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(InnerWebContentsAttachTest);
 };
 
 // This is a test for the FrameTreeNode preparation process for various types

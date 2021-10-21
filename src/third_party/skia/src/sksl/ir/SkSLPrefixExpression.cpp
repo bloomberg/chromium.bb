@@ -8,14 +8,12 @@
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 
 #include "src/sksl/SkSLConstantFolder.h"
-#include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 
 namespace SkSL {
 
@@ -25,17 +23,11 @@ static std::unique_ptr<Expression> simplify_negation(const Context& context,
                                                      const Expression& originalExpr) {
     const Expression* value = ConstantFolder::GetConstantValueForVariable(originalExpr);
     switch (value->kind()) {
-        case Expression::Kind::kFloatLiteral:
-            // Convert -floatLiteral(1) to floatLiteral(-1).
-            return FloatLiteral::Make(originalExpr.fOffset,
-                                      -value->as<FloatLiteral>().value(),
-                                      &value->type());
-
-        case Expression::Kind::kIntLiteral:
-            // Convert -intLiteral(1) to intLiteral(-1).
-            return IntLiteral::Make(originalExpr.fOffset,
-                                    -value->as<IntLiteral>().value(),
-                                    &value->type());
+        case Expression::Kind::kLiteral:
+            // Convert -literal(1) to literal(-1).
+            return Literal::Make(originalExpr.fLine,
+                                 -value->as<Literal>().value(),
+                                 &value->type());
 
         case Expression::Kind::kPrefix:
             if (context.fConfig->fSettings.fOptimize) {
@@ -51,7 +43,7 @@ static std::unique_ptr<Expression> simplify_negation(const Context& context,
             // Convert `-array[N](literal, ...)` into `array[N](-literal, ...)`.
             if (context.fConfig->fSettings.fOptimize && value->isCompileTimeConstant()) {
                 const ConstructorArray& ctor = value->as<ConstructorArray>();
-                return ConstructorArray::Make(context, originalExpr.fOffset, ctor.type(),
+                return ConstructorArray::Make(context, originalExpr.fLine, ctor.type(),
                                               negate_operands(context, ctor.arguments()));
             }
             break;
@@ -60,7 +52,7 @@ static std::unique_ptr<Expression> simplify_negation(const Context& context,
             // Convert `-matrix(literal)` into `matrix(-literal)`.
             if (context.fConfig->fSettings.fOptimize && value->isCompileTimeConstant()) {
                 const ConstructorDiagonalMatrix& ctor = value->as<ConstructorDiagonalMatrix>();
-                return ConstructorDiagonalMatrix::Make(context, originalExpr.fOffset, ctor.type(),
+                return ConstructorDiagonalMatrix::Make(context, originalExpr.fLine, ctor.type(),
                                                       simplify_negation(context, *ctor.argument()));
             }
             break;
@@ -69,7 +61,7 @@ static std::unique_ptr<Expression> simplify_negation(const Context& context,
             // Convert `-vector(literal)` into `vector(-literal)`.
             if (context.fConfig->fSettings.fOptimize && value->isCompileTimeConstant()) {
                 const ConstructorSplat& ctor = value->as<ConstructorSplat>();
-                return ConstructorSplat::Make(context, originalExpr.fOffset, ctor.type(),
+                return ConstructorSplat::Make(context, originalExpr.fLine, ctor.type(),
                                               simplify_negation(context, *ctor.argument()));
             }
             break;
@@ -78,7 +70,7 @@ static std::unique_ptr<Expression> simplify_negation(const Context& context,
             // Convert `-vecN(literal, ...)` into `vecN(-literal, ...)`.
             if (context.fConfig->fSettings.fOptimize && value->isCompileTimeConstant()) {
                 const ConstructorCompound& ctor = value->as<ConstructorCompound>();
-                return ConstructorCompound::Make(context, originalExpr.fOffset, ctor.type(),
+                return ConstructorCompound::Make(context, originalExpr.fLine, ctor.type(),
                                                  negate_operands(context, ctor.arguments()));
             }
             break;
@@ -119,10 +111,11 @@ static std::unique_ptr<Expression> logical_not_operand(const Context& context,
                                                        std::unique_ptr<Expression> operand) {
     const Expression* value = ConstantFolder::GetConstantValueForVariable(*operand);
     switch (value->kind()) {
-        case Expression::Kind::kBoolLiteral: {
+        case Expression::Kind::kLiteral: {
             // Convert !boolLiteral(true) to boolLiteral(false).
-            const BoolLiteral& b = value->as<BoolLiteral>();
-            return BoolLiteral::Make(operand->fOffset, !b.value(), &operand->type());
+            SkASSERT(value->type().isBoolean());
+            const Literal& b = value->as<Literal>();
+            return Literal::MakeBool(operand->fLine, !b.boolValue(), &operand->type());
         }
         case Expression::Kind::kPrefix:
             if (context.fConfig->fSettings.fOptimize) {
@@ -149,7 +142,7 @@ std::unique_ptr<Expression> PrefixExpression::Convert(const Context& context,
     switch (op.kind()) {
         case Token::Kind::TK_PLUS:
             if (!baseType.componentType().isNumber()) {
-                context.fErrors->error(base->fOffset,
+                context.fErrors->error(base->fLine,
                                        "'+' cannot operate on '" + baseType.displayName() + "'");
                 return nullptr;
             }
@@ -157,7 +150,7 @@ std::unique_ptr<Expression> PrefixExpression::Convert(const Context& context,
 
         case Token::Kind::TK_MINUS:
             if (!baseType.componentType().isNumber()) {
-                context.fErrors->error(base->fOffset,
+                context.fErrors->error(base->fLine,
                                        "'-' cannot operate on '" + baseType.displayName() + "'");
                 return nullptr;
             }
@@ -166,7 +159,7 @@ std::unique_ptr<Expression> PrefixExpression::Convert(const Context& context,
         case Token::Kind::TK_PLUSPLUS:
         case Token::Kind::TK_MINUSMINUS:
             if (!baseType.isNumber()) {
-                context.fErrors->error(base->fOffset,
+                context.fErrors->error(base->fLine,
                                        String("'") + op.operatorName() + "' cannot operate on '" +
                                        baseType.displayName() + "'");
                 return nullptr;
@@ -179,7 +172,7 @@ std::unique_ptr<Expression> PrefixExpression::Convert(const Context& context,
 
         case Token::Kind::TK_LOGICALNOT:
             if (!baseType.isBoolean()) {
-                context.fErrors->error(base->fOffset,
+                context.fErrors->error(base->fLine,
                                        String("'") + op.operatorName() + "' cannot operate on '" +
                                        baseType.displayName() + "'");
                 return nullptr;
@@ -190,12 +183,12 @@ std::unique_ptr<Expression> PrefixExpression::Convert(const Context& context,
             if (context.fConfig->strictES2Mode()) {
                 // GLSL ES 1.00, Section 5.1
                 context.fErrors->error(
-                        base->fOffset,
+                        base->fLine,
                         String("operator '") + op.operatorName() + "' is not allowed");
                 return nullptr;
             }
             if (!baseType.isInteger()) {
-                context.fErrors->error(base->fOffset,
+                context.fErrors->error(base->fLine,
                                        String("'") + op.operatorName() + "' cannot operate on '" +
                                        baseType.displayName() + "'");
                 return nullptr;

@@ -45,12 +45,12 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 24;
+constexpr int kIndexedRulesetFormatVersion = 25;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating kIndexedRulesetFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 11,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 12,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated kIndexedRulesetFormatVersion above.");
 
@@ -503,8 +503,8 @@ std::string GetParseError(ParseResult error_reason, int rule_id) {
       return ErrorUtils::FormatErrorMessage(kErrorCannotAppendRequestHeader,
                                             base::NumberToString(rule_id));
     case ParseResult::ERROR_REGEX_TOO_LARGE:
-      // These rules are ignored while indexing and so won't cause an error.
-      break;
+      return ErrorUtils::FormatErrorMessage(
+          kErrorRegexTooLarge, base::NumberToString(rule_id), kRegexFilterKey);
     case ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED:
       return ErrorUtils::FormatErrorMessage(kErrorMultipleFilters,
                                             base::NumberToString(rule_id),

@@ -99,11 +99,11 @@ const std::vector<base::FilePath> GetTestFiles() {
 // Serializes the |profiles| into a string.
 std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
   std::string result;
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (auto* profile : profiles) {
     result += kProfileSeparator;
     result += "\n";
     for (const ServerFieldType& type : kProfileFieldTypes) {
-      std::u16string value = profiles[i]->GetRawInfo(type);
+      std::u16string value = profile->GetRawInfo(type);
       result += AutofillType::ServerFieldTypeToString(type);
       result += kFieldSeparator;
       if (!value.empty()) {
@@ -121,6 +121,10 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
 class PersonalDataManagerMock : public PersonalDataManager {
  public:
   PersonalDataManagerMock();
+
+  PersonalDataManagerMock(const PersonalDataManagerMock&) = delete;
+  PersonalDataManagerMock& operator=(const PersonalDataManagerMock&) = delete;
+
   ~PersonalDataManagerMock() override;
 
   // Reset the saved profiles.
@@ -132,14 +136,12 @@ class PersonalDataManagerMock : public PersonalDataManager {
 
  private:
   std::vector<std::unique_ptr<AutofillProfile>> profiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerMock);
 };
 
 PersonalDataManagerMock::PersonalDataManagerMock()
     : PersonalDataManager("en-US", "US") {}
 
-PersonalDataManagerMock::~PersonalDataManagerMock() {}
+PersonalDataManagerMock::~PersonalDataManagerMock() = default;
 
 void PersonalDataManagerMock::Reset() {
   profiles_.clear();
@@ -174,6 +176,10 @@ std::vector<AutofillProfile*> PersonalDataManagerMock::GetProfiles() const {
 // input format.
 class AutofillMergeTest : public DataDrivenTest,
                           public testing::TestWithParam<base::FilePath> {
+ public:
+  AutofillMergeTest(const AutofillMergeTest&) = delete;
+  AutofillMergeTest& operator=(const AutofillMergeTest&) = delete;
+
  protected:
   AutofillMergeTest();
   ~AutofillMergeTest() override;
@@ -200,8 +206,6 @@ class AutofillMergeTest : public DataDrivenTest,
 
  private:
   std::map<std::string, ServerFieldType> string_to_field_type_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillMergeTest);
 };
 
 AutofillMergeTest::AutofillMergeTest() : DataDrivenTest(GetTestDataDir()) {
@@ -276,11 +280,11 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
     if ((i > 0 && line == kProfileSeparator) || i == lines.size() - 1) {
       // Reached the end of a profile.  Try to import it.
       FormStructure form_structure(form);
-      for (size_t i = 0; i < form_structure.field_count(); ++i) {
+      for (size_t j = 0; j < form_structure.field_count(); ++j) {
         // Set the heuristic type for each field, which is currently serialized
         // into the field's name.
         AutofillField* field =
-            const_cast<AutofillField*>(form_structure.field(i));
+            const_cast<AutofillField*>(form_structure.field(j));
         ServerFieldType type =
             StringToFieldType(base::UTF16ToUTF8(field->name));
         field->set_heuristic_type(type);
@@ -290,12 +294,17 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
       absl::optional<std::string> unused_imported_upi_id;
+      std::vector<FormDataImporter::AddressProfileImportCandidate>
+          address_profile_import_candidates;
       form_data_importer_->ImportFormData(form_structure,
                                           true,  // address autofill enabled,
                                           true,  // credit card autofill enabled
                                           false,  // should return local card
                                           &imported_credit_card,
+                                          address_profile_import_candidates,
                                           &unused_imported_upi_id);
+      form_data_importer_->ProcessAddressProfileImportCandidates(
+          address_profile_import_candidates, true);
       EXPECT_FALSE(imported_credit_card);
       EXPECT_FALSE(unused_imported_upi_id.has_value());
 

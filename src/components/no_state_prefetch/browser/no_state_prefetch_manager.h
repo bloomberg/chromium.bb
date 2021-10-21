@@ -21,7 +21,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager_delegate.h"
 #include "components/no_state_prefetch/browser/prerender_config.h"
 #include "components/no_state_prefetch/browser/prerender_histograms.h"
-#include "components/no_state_prefetch/common/prerender_final_status.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -85,6 +85,10 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
   NoStatePrefetchManager(
       content::BrowserContext* browser_context,
       std::unique_ptr<NoStatePrefetchManagerDelegate> delegate);
+
+  NoStatePrefetchManager(const NoStatePrefetchManager&) = delete;
+  NoStatePrefetchManager& operator=(const NoStatePrefetchManager&) = delete;
+
   ~NoStatePrefetchManager() override;
 
   // From KeyedService:
@@ -299,6 +303,9 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
                         std::unique_ptr<NoStatePrefetchContents> contents,
                         base::TimeTicks expiry_time);
 
+    NoStatePrefetchData(const NoStatePrefetchData&) = delete;
+    NoStatePrefetchData& operator=(const NoStatePrefetchData&) = delete;
+
     ~NoStatePrefetchData();
 
     // A new NoStatePrefetchHandle has been created for this
@@ -346,8 +353,6 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
 
     // After this time, this prefetch is no longer fresh, and should be removed.
     base::TimeTicks expiry_time_;
-
-    DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchData);
   };
 
   // Called by a NoStatePrefetchData to signal that the launcher has navigated
@@ -540,8 +545,6 @@ class NoStatePrefetchManager : public content::RenderProcessHostObserver,
   std::vector<std::unique_ptr<NoStatePrefetchManagerObserver>> observers_;
 
   base::WeakPtrFactory<NoStatePrefetchManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchManager);
 };
 
 }  // namespace prerender

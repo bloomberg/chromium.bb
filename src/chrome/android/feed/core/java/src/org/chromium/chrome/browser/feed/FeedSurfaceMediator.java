@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
-import org.chromium.chrome.browser.ntp.ScrollListener;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.promo.enhanced_protection.EnhancedProtectionPromoController.EnhancedProtectionPromoStateListener;
@@ -49,6 +48,7 @@ import org.chromium.chrome.browser.ntp.snippets.OnSectionHeaderSelectedListener;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderListProperties;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderProperties;
 import org.chromium.chrome.browser.ntp.snippets.SectionType;
+import org.chromium.chrome.browser.ntp.snippets.ViewVisibility;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -156,23 +156,45 @@ public class FeedSurfaceMediator
         public void onSectionHeaderSelected(int index) {
             PropertyListModel<PropertyModel, PropertyKey> headerList =
                     mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY);
-            if (index >= headerList.size()) {
-                Log.e(TAG, "Attempted to select a Tab with an invalid index");
-                return;
-            }
             mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, index);
-            Runnable onSelectCallback =
-                    headerList.get(index).get(SectionHeaderProperties.ON_SELECT_CALLBACK_KEY);
-            if (onSelectCallback != null) {
-                onSelectCallback.run();
-            }
 
             // Proactively disable the unread content. Waiting for observers is too slow.
             headerList.get(index).set(SectionHeaderProperties.UNREAD_CONTENT_KEY, false);
 
             maybeLogLaunchFinished(DiscoverLaunchResult.SWITCHED_FEED_TABS);
             getPrefService().setInteger(Pref.LAST_SEEN_FEED_TYPE, index);
-            bindStream(mTabToStreamMap.get(index));
+
+            Stream newStream = mTabToStreamMap.get(index);
+            if (newStream.getOptionsView() != null) {
+                headerList.get(index).set(SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY,
+                        ViewVisibility.VISIBLE);
+            }
+            if (!mSettingUpStreams) {
+                bindStream(newStream);
+            }
+        }
+
+        @Override
+        public void onSectionHeaderUnselected(int index) {
+            PropertyListModel<PropertyModel, PropertyKey> headerList =
+                    mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY);
+            PropertyModel headerModel = headerList.get(index);
+            if (mTabToStreamMap.get(index).getOptionsView() != null) {
+                headerModel.set(SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY,
+                        ViewVisibility.INVISIBLE);
+            }
+            mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY, null);
+        }
+
+        @Override
+        public void onSectionHeaderReselected(int index) {
+            Stream stream = mTabToStreamMap.get(index);
+            if (stream.getOptionsView() == null) return;
+            // Reselected toggles the visibility of the options view.
+            View currentView =
+                    mSectionHeaderModel.get(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY);
+            mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY,
+                    currentView == null ? stream.getOptionsView() : null);
         }
     }
 
@@ -278,6 +300,9 @@ public class FeedSurfaceMediator
 
     private final HashMap<Integer, Stream> mTabToStreamMap = new HashMap<>();
     private Stream mCurrentStream;
+    // Whether we're currently adding the streams. If this is true, streams should not be bound yet.
+    // This avoids automatically binding the first stream when it's added.
+    private boolean mSettingUpStreams;
 
     /**
      * @param coordinator The {@link FeedSurfaceCoordinator} that interacts with this class.
@@ -438,6 +463,8 @@ public class FeedSurfaceMediator
      */
     private void initializePropertiesForStream() {
         if (mHasHeader) {
+            assert !mSettingUpStreams;
+            mSettingUpStreams = true;
             mSectionHeaderModel.set(SectionHeaderListProperties.ON_TAB_SELECTED_CALLBACK_KEY,
                     new FeedSurfaceHeaderSelectedCallback());
 
@@ -467,6 +494,7 @@ public class FeedSurfaceMediator
             if (mTabToStreamMap.size() <= mRestoreTabId) mRestoreTabId = 0;
             mSectionHeaderModel.set(
                     SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, mRestoreTabId);
+            mSettingUpStreams = false;
         } else {
             // Show feed if there is no header that would allow user to hide feed.
             // This is currently only relevant for the two panes start surface.
@@ -478,8 +506,7 @@ public class FeedSurfaceMediator
             mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, 0);
         }
 
-        if (mCoordinator.isActive()
-                && mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) {
+        if (mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) {
             bindStream(mTabToStreamMap.get(
                     mSectionHeaderModel.get(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY)));
         } else {
@@ -522,10 +549,19 @@ public class FeedSurfaceMediator
     }
 
     private void addHeaderAndStream(String headerText, Stream stream) {
+        int tabId = mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY).size();
+        mTabToStreamMap.put(tabId, stream);
+
         PropertyModel headerModel = SectionHeaderProperties.createSectionHeader(headerText);
+        ViewVisibility indicatorVisibility;
+        if (stream.getOptionsView() == null) {
+            indicatorVisibility = ViewVisibility.GONE;
+        } else {
+            indicatorVisibility = ViewVisibility.INVISIBLE;
+        }
+        headerModel.set(
+                SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY, indicatorVisibility);
         mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY).add(headerModel);
-        int tabId =
-                mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY).size() - 1;
 
         // Update UNREAD_CONTENT_KEY and HEADER_ACCESSIBILITY_TEXT_KEY now, and any time
         // hasUnreadContent() changes.
@@ -533,8 +569,6 @@ public class FeedSurfaceMediator
             headerModel.set(SectionHeaderProperties.UNREAD_CONTENT_KEY, hasUnreadContent);
         };
         callback.onResult(stream.hasUnreadContent().addObserver(callback));
-
-        mTabToStreamMap.put(tabId, stream);
     }
 
     private int getTabIdForSection(@SectionType int sectionType) {
@@ -571,6 +605,11 @@ public class FeedSurfaceMediator
         if (mCurrentStream == stream) return;
         if (mCurrentStream != null) {
             unbindStream(/* shouldPlaceSpacer = */ true);
+        }
+        // Don't bind before the coordinator is active, or when the feed should not show.
+        if (!mCoordinator.isActive()
+                || !mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) {
+            return;
         }
         mCurrentStream = stream;
         mCurrentStream.addOnContentChangedListener(mStreamContentChangedListener);
@@ -641,8 +680,6 @@ public class FeedSurfaceMediator
     private void rebindStream() {
         // If a stream is already bound, then do nothing.
         if (mCurrentStream != null) return;
-        // If feed shouldn't be shown, do nothing.
-        if (!mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) return;
         // Find the stream that should be bound and bind it. If no stream matches, then we haven't
         // fully set up yet. This will be taken care of by setup.
         Stream stream = mTabToStreamMap.get(
@@ -784,20 +821,26 @@ public class FeedSurfaceMediator
         // When Google is not the default search engine, we need to show the Logo.
         mSectionHeaderModel.set(SectionHeaderListProperties.IS_LOGO_KEY,
                 !isGoogleSearchEngine && isSignedIn && suggestionsVisible);
-        SectionHeaderListProperties.ViewVisibility indicatorState;
+        ViewVisibility indicatorState;
         if (!isSignedIn) {
             // Gone when not signed in to align text to far left.
-            indicatorState = SectionHeaderListProperties.ViewVisibility.GONE;
+            indicatorState = ViewVisibility.GONE;
         } else if (!suggestionsVisible || !isGoogleSearchEngine) {
             // Visible when Google is not the search engine (show logo) or when turned off (eye).
-            indicatorState = SectionHeaderListProperties.ViewVisibility.VISIBLE;
+            indicatorState = ViewVisibility.VISIBLE;
         } else {
             // Invisible when we have centered text (signed in and not shown). This
             // counterbalances the gear icon so text is properly centered.
-            indicatorState = SectionHeaderListProperties.ViewVisibility.INVISIBLE;
+            indicatorState = ViewVisibility.INVISIBLE;
         }
         mSectionHeaderModel.set(
                 SectionHeaderListProperties.INDICATOR_VIEW_VISIBILITY_KEY, indicatorState);
+
+        // Make sure to collapse option panel if not shown.
+        if (!suggestionsVisible) {
+            mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY, null);
+        }
+
         // Set enabled last because it makes the animation smoother.
         mSectionHeaderModel.set(
                 SectionHeaderListProperties.IS_SECTION_ENABLED_KEY, suggestionsVisible);
@@ -829,10 +872,27 @@ public class FeedSurfaceMediator
         if (suggestionsVisible) mCoordinator.getSurfaceLifecycleManager().show();
         mStreamContentChanged = true;
 
+        PropertyModel currentStreamHeaderModel =
+                mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
+                        .get(mSectionHeaderModel.get(
+                                SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY));
+        Stream currentStream = mTabToStreamMap.get(
+                mSectionHeaderModel.get(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY));
+
         // If feed turned on, we bind the last stream that was visible. Else unbind it.
         if (suggestionsVisible) {
+            if (currentStream.getOptionsView() != null) {
+                currentStreamHeaderModel.set(
+                        SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY,
+                        ViewVisibility.VISIBLE);
+            }
             rebindStream();
         } else {
+            if (currentStream.getOptionsView() != null) {
+                currentStreamHeaderModel.set(
+                        SectionHeaderProperties.OPTIONS_INDICATOR_VISIBILITY_KEY,
+                        ViewVisibility.INVISIBLE);
+            }
             unbindStream();
         }
     }
@@ -896,13 +956,17 @@ public class FeedSurfaceMediator
                         R.id.ntp_feed_header_menu_item_activity, iconId));
                 itemList.add(buildMenuListItem(R.string.ntp_manage_interests,
                         R.id.ntp_feed_header_menu_item_interest, iconId));
+                if (FeedServiceBridge.isAutoplayEnabled()) {
+                    itemList.add(buildMenuListItem(R.string.ntp_manage_autoplay,
+                            R.id.ntp_feed_header_menu_item_autoplay, iconId));
+                }
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2_HEARTS)) {
+                    itemList.add(buildMenuListItem(R.string.ntp_manage_reactions,
+                            R.id.ntp_feed_header_menu_item_reactions, iconId));
+                }
             }
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2_HEARTS)) {
-                itemList.add(buildMenuListItem(R.string.ntp_manage_reactions,
-                        R.id.ntp_feed_header_menu_item_reactions, iconId));
-            }
-        }
-        if (FeedServiceBridge.isAutoplayEnabled()) {
+        } else if (FeedServiceBridge.isAutoplayEnabled()) {
+            // Show manage autoplay if not signed in.
             itemList.add(buildMenuListItem(
                     R.string.ntp_manage_autoplay, R.id.ntp_feed_header_menu_item_autoplay, iconId));
         }
@@ -1208,5 +1272,20 @@ public class FeedSurfaceMediator
 
     private boolean isSuggestionsVisible() {
         return getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+    }
+
+    @VisibleForTesting
+    OnSectionHeaderSelectedListener getOrCreateSectionHeaderListenerForTesting() {
+        OnSectionHeaderSelectedListener listener =
+                mSectionHeaderModel.get(SectionHeaderListProperties.ON_TAB_SELECTED_CALLBACK_KEY);
+        if (listener == null) {
+            listener = new FeedSurfaceHeaderSelectedCallback();
+        }
+        return listener;
+    }
+
+    @VisibleForTesting
+    void setStreamForTesting(int key, Stream stream) {
+        mTabToStreamMap.put(key, stream);
     }
 }

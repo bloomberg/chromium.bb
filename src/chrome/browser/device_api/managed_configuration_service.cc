@@ -7,6 +7,7 @@
 #include "chrome/browser/device_api/managed_configuration_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "third_party/blink/public/common/features.h"
 
 // static
@@ -27,14 +28,14 @@ void ManagedConfigurationServiceImpl::Create(
   }
 
   // The object is bound to the lifetime of |host| and the mojo
-  // connection. See DocumentServiceBase for details.
+  // connection. See DocumentService for details.
   new ManagedConfigurationServiceImpl(host, std::move(receiver));
 }
 
 ManagedConfigurationServiceImpl::ManagedConfigurationServiceImpl(
     content::RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::ManagedConfigurationService> receiver)
-    : DocumentServiceBase(host, std::move(receiver)), host_(host) {
+    : DocumentService(host, std::move(receiver)), host_(host) {
   managed_configuration_api()->AddObserver(this);
 }
 

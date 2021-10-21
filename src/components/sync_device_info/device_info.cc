@@ -7,7 +7,7 @@
 // device_info.h's size can impact build time. Try not to raise this limit
 // unless absolutely necessary. See
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 506000
+#pragma clang max_tokens_here 507000
 
 #include <utility>
 
@@ -100,7 +100,7 @@ DeviceInfo::DeviceInfo(
       fcm_registration_token_(fcm_registration_token),
       interested_data_types_(interested_data_types) {}
 
-DeviceInfo::~DeviceInfo() {}
+DeviceInfo::~DeviceInfo() = default;
 
 const std::string& DeviceInfo::guid() const {
   return guid_;

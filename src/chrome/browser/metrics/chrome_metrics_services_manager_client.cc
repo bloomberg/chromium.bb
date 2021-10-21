@@ -16,8 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -30,7 +28,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/structured/recorder.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -40,6 +37,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
@@ -56,13 +54,19 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
-#include "components/metrics/structured/neutrino_logging.h"
-#include "components/metrics/structured/neutrino_logging_util.h"
+#include "components/metrics/structured/neutrino_logging.h"       // nogncheck
+#include "components/metrics/structured/neutrino_logging_util.h"  // nogncheck
+#include "components/metrics/structured/recorder.h"               // nogncheck
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace metrics {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_service.h"
+#endif
 
+namespace metrics {
 namespace internal {
+
 // Metrics reporting feature. This feature, along with user consent, controls if
 // recording and reporting are enabled. If the feature is enabled, but no
 // consent is given, then there will be no recording or reporting.
@@ -142,6 +146,11 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
  public:
   explicit ChromeEnabledStateProvider(PrefService* local_state)
       : local_state_(local_state) {}
+
+  ChromeEnabledStateProvider(const ChromeEnabledStateProvider&) = delete;
+  ChromeEnabledStateProvider& operator=(const ChromeEnabledStateProvider&) =
+      delete;
+
   ~ChromeEnabledStateProvider() override {}
 
   bool IsConsentGiven() const override {
@@ -156,8 +165,6 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
 
  private:
   PrefService* const local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeEnabledStateProvider);
 };
 
 ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
@@ -169,6 +176,11 @@ ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
 }
 
 ChromeMetricsServicesManagerClient::~ChromeMetricsServicesManagerClient() {}
+
+metrics::MetricsStateManager*
+ChromeMetricsServicesManagerClient::GetMetricsStateManagerForTesting() {
+  return GetMetricsStateManager();
+}
 
 // static
 void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
@@ -279,10 +291,30 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   if (!metrics_state_manager_) {
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+
+    metrics::StartupVisibility startup_visibility;
+#if defined(OS_ANDROID)
+    startup_visibility = UmaSessionStats::HasVisibleActivity()
+                             ? metrics::StartupVisibility::kForeground
+                             : metrics::StartupVisibility::kBackground;
+#else
+    startup_visibility = metrics::StartupVisibility::kForeground;
+#endif  // defined(OS_ANDROID)
+
+    std::string client_id;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Read metrics service client id from ash chrome if it's present.
+    auto* init_params = chromeos::LacrosService::Get()->init_params();
+    if (init_params->metrics_service_client_id.has_value())
+      client_id = init_params->metrics_service_client_id.value();
+#endif
+
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
-        user_data_dir, base::BindRepeating(&PostStoreMetricsClientInfo),
-        base::BindRepeating(&GoogleUpdateSettings::LoadMetricsClientInfo));
+        user_data_dir, startup_visibility,
+        base::BindRepeating(&PostStoreMetricsClientInfo),
+        base::BindRepeating(&GoogleUpdateSettings::LoadMetricsClientInfo),
+        client_id);
   }
   return metrics_state_manager_.get();
 }

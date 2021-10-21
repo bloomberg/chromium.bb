@@ -34,33 +34,6 @@ namespace {
 constexpr FilenameToURLPolicy kFilenameToURLPolicy =
     FilenameToURLPolicy::CONVERT_FILENAMES;
 
-// TODO(crbug.com/1236708): This duplicates logic in tab_strip_ui::IsDraggedTab.
-// Check if it is really needed to extract app-specific types from pickled data
-// and, if yes, factor it out to a common place and reuse it here instead.
-void AddTabDragMimeTypes(const base::Pickle& pickle,
-                         std::vector<std::string>* mime_types) {
-  DCHECK(mime_types);
-  base::PickleIterator iter(pickle);
-  uint32_t entry_count = 0;
-  if (iter.ReadUInt32(&entry_count)) {
-    for (uint32_t i = 0; i < entry_count; ++i) {
-      base::StringPiece16 type;
-      base::StringPiece16 data;
-      if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
-        break;
-      const std::u16string kWebUITabIdDataType =
-          u"application/vnd.chromium.tab";
-      const std::u16string kWebUITabGroupIdDataType =
-          u"application/vnd.chromium.tabgroup";
-      if (type == kWebUITabIdDataType) {
-        mime_types->push_back(base::UTF16ToASCII(kWebUITabIdDataType));
-      } else if (type == kWebUITabGroupIdDataType) {
-        mime_types->push_back(base::UTF16ToASCII(kWebUITabIdDataType));
-      }
-    }
-  }
-}
-
 // Converts mime type string to OSExchangeData::Format, if supported, otherwise
 // 0 is returned.
 int MimeTypeToFormat(const std::string& mime_type) {
@@ -74,6 +47,8 @@ int MimeTypeToFormat(const std::string& mime_type) {
     return OSExchangeData::HTML;
   if (base::StartsWith(mime_type, ui::kMimeTypeOctetStream))
     return OSExchangeData::FILE_CONTENTS;
+  if (mime_type == ui::kMimeTypeWebCustomData)
+    return OSExchangeData::PICKLED_DATA;
   return 0;
 }
 
@@ -225,13 +200,8 @@ std::vector<std::string> WaylandExchangeDataProvider::BuildMimeTypesList()
     mime_types.push_back(mime_type);
   }
 
-  for (auto item : pickle_data()) {
-    if (item.first == ClipboardFormatType::WebCustomDataType()) {
-      AddTabDragMimeTypes(item.second, &mime_types);
-      continue;
-    }
+  for (auto item : pickle_data())
     mime_types.push_back(item.first.GetName());
-  }
 
   return mime_types;
 }
@@ -291,6 +261,14 @@ bool WaylandExchangeDataProvider::ExtractData(const std::string& mime_type,
     out_content->append(base::UTF16ToUTF8(data));
     return true;
   }
+  if (HasCustomFormat(ui::ClipboardFormatType::WebCustomDataType())) {
+    base::Pickle pickle;
+    GetPickledData(ui::ClipboardFormatType::WebCustomDataType(), &pickle);
+    *out_content = std::string(reinterpret_cast<const char*>(pickle.data()),
+                               pickle.size());
+    return true;
+  }
+
   return false;
 }
 

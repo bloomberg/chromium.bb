@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_bubble_action_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -88,6 +90,13 @@ void SharingHubBubbleViewImpl::OnPaint(gfx::Canvas* canvas) {
   views::BubbleDialogDelegateView::OnPaint(canvas);
 }
 
+void SharingHubBubbleViewImpl::OnThemeChanged() {
+  LocationBarBubbleDelegateView::OnThemeChanged();
+  if (GetWidget()) {
+    set_color(GetColorProvider()->GetColor(ui::kColorMenuBackground));
+  }
+}
+
 void SharingHubBubbleViewImpl::Show(DisplayReason reason) {
   ShowForReason(reason);
 }
@@ -116,6 +125,7 @@ void SharingHubBubbleViewImpl::Init() {
 
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>());
   scroll_view_->ClipHeightTo(0, kActionButtonHeight * kMaximumButtons);
+  scroll_view_->SetBackgroundThemeColorId(ui::kColorMenuBackground);
 
   PopulateScrollView(controller_->GetFirstPartyActions(),
                      controller_->GetThirdPartyActions());

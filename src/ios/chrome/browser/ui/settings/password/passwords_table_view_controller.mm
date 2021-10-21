@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
@@ -60,6 +61,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -77,6 +79,7 @@ using password_manager::metrics_util::PasswordCheckInteraction;
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSavePasswordsSwitch = kSectionIdentifierEnumZero,
   SectionIdentifierSavedPasswords,
+  SectionIdentifierPasswordsInOtherApps,
   SectionIdentifierBlocked,
   SectionIdentifierExportPasswordsButton,
   SectionIdentifierPasswordCheck,
@@ -86,6 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
+  ItemTypePasswordsInOtherApps,
   ItemTypeManagedSavePasswords,
   ItemTypePasswordCheckStatus,
   ItemTypeCheckForProblemsButton,
@@ -138,16 +142,6 @@ void RemoveFormsToBeDeleted(
 @property(nonatomic) password_manager::PasswordForm form;
 @end
 @implementation PasswordFormContentItem
-@end
-
-// Use the type of the items to convey the Saved/Blocked status.
-@interface SavedFormContentItem : PasswordFormContentItem
-@end
-@implementation SavedFormContentItem
-@end
-@interface BlockedFormContentItem : PasswordFormContentItem
-@end
-@implementation BlockedFormContentItem
 @end
 
 @protocol PasswordExportActivityViewControllerDelegate <NSObject>
@@ -205,6 +199,9 @@ void RemoveFormsToBeDeleted(
   TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* _savePasswordsItem;
+  // The item that shows the current Auto-fill state and opens an
+  // autofill settings tutorial
+  TableViewDetailIconItem* _passwordsInOtherAppsDetailItem;
   // The item related to the enterprise managed save password setting.
   TableViewInfoButtonItem* _managedSavePasswordItem;
   // The item related to the password check status.
@@ -258,8 +255,13 @@ void RemoveFormsToBeDeleted(
 // Number of compromised passwords.
 @property(assign) NSInteger compromisedPasswordsCount;
 
-// Button to add new password profile in the toolbar.
-@property(nonatomic, strong) UIBarButtonItem* addPasswordButton;
+// Stores the most recently created or updated password form.
+@property(nonatomic, assign) absl::optional<password_manager::PasswordForm>
+    mostRecentlyUpdatedPassword;
+
+// Stores the PasswordFormContentItem which has form attribute's username and
+// site equivalent to that of |mostRecentlyUpdatedPassword|.
+@property(nonatomic, weak) PasswordFormContentItem* mostRecentlyUpdatedItem;
 
 @end
 
@@ -305,6 +307,11 @@ void RemoveFormsToBeDeleted(
   _passwordExporter = [[PasswordExporter alloc]
       initWithReauthenticationModule:_reauthenticationModule
                             delegate:self];
+}
+
+- (void)setMostRecentlyUpdatedPasswordDetails:
+    (const password_manager::PasswordForm&)password {
+  self.mostRecentlyUpdatedPassword = password;
 }
 
 #pragma mark - UIViewController
@@ -353,6 +360,17 @@ void RemoveFormsToBeDeleted(
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventTouchUpInside];
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kSupportForAddPasswordsInSettings)) {
+    // If the settings are managed by enterprise policy and the password manager
+    // is not enabled, there won't be any add functionality.
+    if (!(_browserState->GetPrefs()->IsManagedPreference(
+              password_manager::prefs::kCredentialsEnableService) &&
+          ![_passwordManagerEnabled value])) {
+      self.shouldShowAddButtonInToolbar = YES;
+    }
+  }
 
   [self loadModel];
 
@@ -454,6 +472,16 @@ void RemoveFormsToBeDeleted(
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   }
 
+  // Passwords in other apps
+  if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
+    [model addSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+    if (!_passwordsInOtherAppsDetailItem) {
+      _passwordsInOtherAppsDetailItem = [self passwordsInOtherAppsItem];
+    }
+    [model addItem:_passwordsInOtherAppsDetailItem
+        toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+  }
+
   // Password check.
   [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
   if (!_passwordProblemsItem) {
@@ -533,11 +561,7 @@ void RemoveFormsToBeDeleted(
 - (BOOL)shouldHideToolbar {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kSupportForAddPasswordsInSettings)) {
-    // There is a bug from apple that this method might be called in this view
-    // controller even if it is not the top view controller.
-    if (self.navigationController.topViewController == self) {
       return NO;
-    }
   }
 
   return [super shouldHideToolbar];
@@ -556,8 +580,13 @@ void RemoveFormsToBeDeleted(
   [super updateUIForEditState];
   if (base::FeatureList::IsEnabled(
           password_manager::features::kSupportForAddPasswordsInSettings)) {
-    [self setToolbarItemsWithEditing:self.tableView.editing];
+    self.addButtonInToolbar.enabled = [_passwordManagerEnabled value];
+    [self updatedToolbarForEditState];
   }
+}
+
+- (void)addButtonCallback {
+  [self.handler showAddPasswordSheet];
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -599,6 +628,28 @@ void RemoveFormsToBeDeleted(
   savePasswordsItem.on = [_passwordManagerEnabled value];
   savePasswordsItem.accessibilityIdentifier = kSavePasswordSwitchTableViewId;
   return savePasswordsItem;
+}
+
+- (TableViewDetailIconItem*)passwordsInOtherAppsItem {
+  // TODO(crbug.com/1252116): will retrieve value of
+  // "passwordsInOtherAppsEnabled" from PasswordsInOtherAppsPromoCoordinator
+  // that isn't implemented yet
+  BOOL passwordsInOtherAppsEnabled = NO;
+
+  _passwordsInOtherAppsDetailItem = [[TableViewDetailIconItem alloc]
+      initWithType:ItemTypePasswordsInOtherApps];
+  _passwordsInOtherAppsDetailItem.text =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_IN_OTHER_APPS);
+  _passwordsInOtherAppsDetailItem.detailText =
+      passwordsInOtherAppsEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  _passwordsInOtherAppsDetailItem.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  _passwordsInOtherAppsDetailItem.accessibilityTraits |=
+      UIAccessibilityTraitButton;
+  _passwordsInOtherAppsDetailItem.accessibilityIdentifier =
+      kSettingsPasswordsInOtherAppsCellId;
+  return _passwordsInOtherAppsDetailItem;
 }
 
 - (TableViewInfoButtonItem*)managedSavePasswordItem {
@@ -655,25 +706,33 @@ void RemoveFormsToBeDeleted(
   return exportPasswordsItem;
 }
 
-- (SavedFormContentItem*)
+- (PasswordFormContentItem*)
     savedFormItemWithText:(NSString*)text
             andDetailText:(NSString*)detailText
                   forForm:(const password_manager::PasswordForm&)form {
-  SavedFormContentItem* passwordItem =
-      [[SavedFormContentItem alloc] initWithType:ItemTypeSavedPassword];
+  PasswordFormContentItem* passwordItem =
+      [[PasswordFormContentItem alloc] initWithType:ItemTypeSavedPassword];
   passwordItem.text = text;
   passwordItem.form = form;
   passwordItem.detailText = detailText;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+  if (self.mostRecentlyUpdatedPassword) {
+    if (self.mostRecentlyUpdatedPassword->username_value ==
+            form.username_value &&
+        self.mostRecentlyUpdatedPassword->signon_realm == form.signon_realm) {
+      self.mostRecentlyUpdatedItem = passwordItem;
+      self.mostRecentlyUpdatedPassword = absl::nullopt;
+    }
+  }
   return passwordItem;
 }
 
-- (BlockedFormContentItem*)
+- (PasswordFormContentItem*)
     blockedFormItemWithText:(NSString*)text
                     forForm:(const password_manager::PasswordForm&)form {
-  BlockedFormContentItem* passwordItem =
-      [[BlockedFormContentItem alloc] initWithType:ItemTypeBlocked];
+  PasswordFormContentItem* passwordItem =
+      [[PasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.text = text;
   passwordItem.form = form;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -725,7 +784,7 @@ void RemoveFormsToBeDeleted(
   if (base::FeatureList::IsEnabled(
           password_manager::features::kSupportForAddPasswordsInSettings)) {
     // Disable the "Add" button if the password manager is not enabled.
-    self.addPasswordButton.enabled = [_passwordManagerEnabled value];
+    self.addButtonInToolbar.enabled = [_passwordManagerEnabled value];
   }
 }
 
@@ -770,13 +829,6 @@ void RemoveFormsToBeDeleted(
   [self presentViewController:errorInfoPopover animated:YES completion:nil];
 }
 
-- (void)handleAddPassword:(id)sender {
-  [self.handler showAddPasswordSheet];
-}
-
-- (void)editOrDoneButtonPressed {
-  [self setEditing:!self.tableView.editing animated:YES];
-}
 
 #pragma mark - PasswordsConsumer
 
@@ -866,6 +918,7 @@ void RemoveFormsToBeDeleted(
       [self filterItems:self.searchTerm];
       [self.tableView reloadSections:sectionsToUpdate
                     withRowAnimation:UITableViewRowAnimationAutomatic];
+      [self scrollToLastUpdatedItem];
     } else if (_savedForms.empty() && _blockedForms.empty()) {
       [self setEditing:NO animated:YES];
     }
@@ -998,41 +1051,6 @@ void RemoveFormsToBeDeleted(
   }
 
   [self searchForTerm:searchText];
-}
-
-#pragma mark - Toolbar Buttons
-
-// Returns "Add Password" button, to be added to the toolbar.
-- (UIBarButtonItem*)addPasswordButton {
-  if (!_addPasswordButton) {
-    // TODO(crbug.com/1226006): Use i18n string for the add password button.
-    _addPasswordButton =
-        [[UIBarButtonItem alloc] initWithTitle:@"Add"
-                                         style:UIBarButtonItemStylePlain
-                                        target:self
-                                        action:@selector(handleAddPassword:)];
-    _addPasswordButton.accessibilityIdentifier = kPasswordsAddPasswordButtonId;
-  }
-  _addPasswordButton.enabled = [_passwordManagerEnabled value];
-  return _addPasswordButton;
-}
-
-// Creates and returns "Edit" or "Done" button based on |editing|, to be added
-// to the toolbar.
-- (UIBarButtonItem*)editOrDoneButtonWithEditing:(BOOL)editing {
-  // TODO(crbug.com/1226006): Create separate accessibility identifiers for the
-  // toolbar "Edit" and "Done" buttons.
-  NSString* title =
-      l10n_util::GetNSString(editing ? IDS_IOS_NAVIGATION_BAR_DONE_BUTTON
-                                     : IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
-  UIBarButtonItem* button = [[UIBarButtonItem alloc]
-      initWithTitle:title
-              style:(editing ? UIBarButtonItemStyleDone
-                             : UIBarButtonItemStylePlain)
-             target:self
-             action:@selector(editOrDoneButtonPressed)];
-  button.enabled = editing || [self editButtonEnabled];
-  return button;
 }
 
 #pragma mark - Private methods
@@ -1414,7 +1432,8 @@ void RemoveFormsToBeDeleted(
     PasswordFormContentItem* item =
         base::mac::ObjCCastStrict<PasswordFormContentItem>(
             [self.tableViewModel itemAtIndexPath:indexPath]);
-    BOOL blocked = [item isKindOfClass:[BlockedFormContentItem class]];
+    NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+    BOOL blocked = (itemType == ItemTypeBlocked);
     blocked ? blockedToDelete.push_back(item.form)
             : passwordsToDelete.push_back(item.form);
   }
@@ -1476,20 +1495,16 @@ void RemoveFormsToBeDeleted(
       password_manager::PasswordCheckReferrer::kPasswordSettings);
 }
 
-// Sets toolbar items based on |editing|.
-- (void)setToolbarItemsWithEditing:(BOOL)editing {
-  UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                           target:nil
-                           action:nil];
-  UIBarButtonItem* toolbarLeftButton =
-      editing ? self.deleteButton : self.addPasswordButton;
-  [self setToolbarItems:@[
-    toolbarLeftButton, flexibleSpace, [self editOrDoneButtonWithEditing:editing]
-  ]
-               animated:YES];
-  if (editing) {
-    self.deleteButton.enabled = NO;
+// Scrolls the password lists such that most recently updated
+// SavedFormContentItem is in the middle of the screen.
+- (void)scrollToLastUpdatedItem {
+  if (self.mostRecentlyUpdatedItem) {
+    NSIndexPath* indexPath =
+        [self.tableViewModel indexPathForItem:self.mostRecentlyUpdatedItem];
+    [self.tableView scrollToRowAtIndexPath:indexPath
+                          atScrollPosition:UITableViewScrollPositionMiddle
+                                  animated:NO];
+    self.mostRecentlyUpdatedItem = nil;
   }
 }
 
@@ -1513,14 +1528,17 @@ void RemoveFormsToBeDeleted(
     case ItemTypeSavePasswordsSwitch:
     case ItemTypeManagedSavePasswords:
       break;
+    case ItemTypePasswordsInOtherApps:
+      // TODO(crbug.com/1252116): To be implemented;
+      break;
     case ItemTypePasswordCheckStatus:
       [self showPasswordIssuesPage];
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
                 [model sectionIdentifierForSection:indexPath.section]);
-      SavedFormContentItem* saveFormItem =
-          base::mac::ObjCCastStrict<SavedFormContentItem>(
+      PasswordFormContentItem* saveFormItem =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
               [model itemAtIndexPath:indexPath]);
       [self.handler showDetailedViewForForm:saveFormItem.form];
       break;
@@ -1528,8 +1546,8 @@ void RemoveFormsToBeDeleted(
     case ItemTypeBlocked: {
       DCHECK_EQ(SectionIdentifierBlocked,
                 [model sectionIdentifierForSection:indexPath.section]);
-      BlockedFormContentItem* blockedItem =
-          base::mac::ObjCCastStrict<BlockedFormContentItem>(
+      PasswordFormContentItem* blockedItem =
+          base::mac::ObjCCastStrict<PasswordFormContentItem>(
               [model itemAtIndexPath:indexPath]);
       [self.handler showDetailedViewForForm:blockedItem.form];
       break;
@@ -1604,9 +1622,8 @@ void RemoveFormsToBeDeleted(
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   // Only password cells are editable.
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  return [item isKindOfClass:[SavedFormContentItem class]] ||
-         [item isKindOfClass:[BlockedFormContentItem class]];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  return itemType == ItemTypeSavedPassword || itemType == ItemTypeBlocked;
 }
 
 - (void)tableView:(UITableView*)tableView

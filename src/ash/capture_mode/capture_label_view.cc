@@ -22,10 +22,10 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -44,25 +44,20 @@ constexpr int kCountDownStartSeconds = 3;
 constexpr int kCountDownEndSeconds = 1;
 
 constexpr base::TimeDelta kCaptureLabelOpacityFadeoutDuration =
-    base::TimeDelta::FromMilliseconds(33);
+    base::Milliseconds(33);
 // Opacity fade in animation duration and scale up animation duration when the
 // timeout label enters 3.
-constexpr base::TimeDelta kCountDownEnter3Duration =
-    base::TimeDelta::FromMilliseconds(267);
+constexpr base::TimeDelta kCountDownEnter3Duration = base::Milliseconds(267);
 // Opacity fade out animation duration and scale down animation duration when
 // the timeout label exits 1.
-constexpr base::TimeDelta kCountDownExit1Duration =
-    base::TimeDelta::FromMilliseconds(333);
+constexpr base::TimeDelta kCountDownExit1Duration = base::Milliseconds(333);
 // For other number enter/exit fade in/out, scale up/down animation duration.
-constexpr base::TimeDelta kCountDownEnterExitDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kCountDownEnterExitDuration = base::Milliseconds(167);
 
 // Delay to enter number 3 to start count down.
-constexpr base::TimeDelta kStartCountDownDelay =
-    base::TimeDelta::FromMilliseconds(233);
+constexpr base::TimeDelta kStartCountDownDelay = base::Milliseconds(233);
 // Delay to exit a number after entering animation is completed.
-constexpr base::TimeDelta kCountDownExitDelay =
-    base::TimeDelta::FromMilliseconds(667);
+constexpr base::TimeDelta kCountDownExitDelay = base::Milliseconds(667);
 
 // Different scales for enter/exiting countdown numbers.
 constexpr float kEnterLabelScaleDown = 0.8f;
@@ -339,7 +334,8 @@ CaptureLabelView::CreatePathGenerator() {
   // the same size as its widget, inset by half the focus ring thickness to
   // ensure the focus ring is drawn inside the widget bounds.
   return std::make_unique<views::RoundRectHighlightPathGenerator>(
-      gfx::Insets(views::FocusRing::kHaloThickness / 2), kCaptureLabelRadius);
+      gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2),
+      kCaptureLabelRadius);
 }
 
 void CaptureLabelView::ScheduleCountDownAnimation() {

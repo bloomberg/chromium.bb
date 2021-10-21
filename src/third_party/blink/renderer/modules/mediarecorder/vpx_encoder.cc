@@ -348,8 +348,6 @@ bool VpxEncoder::IsInitialized(const vpx_codec_enc_cfg_t& codec_config) const {
 base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoding_sequence_checker_);
 
-  using base::TimeDelta;
-
   // If the source of the video frame did not provide the frame duration, use
   // the actual amount of time between the current and previous frame as a
   // prediction for the next frame's duration.
@@ -362,10 +360,8 @@ base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
       frame.metadata().frame_duration.value_or(predicted_frame_duration);
   last_frame_timestamp_ = frame.timestamp();
   // Make sure |frame_duration| is in a safe range of values.
-  const base::TimeDelta kMaxFrameDuration =
-      base::TimeDelta::FromSecondsD(1.0 / 8);
-  const base::TimeDelta kMinFrameDuration =
-      base::TimeDelta::FromMilliseconds(1);
+  const base::TimeDelta kMaxFrameDuration = base::Seconds(1.0 / 8);
+  const base::TimeDelta kMinFrameDuration = base::Milliseconds(1);
   return std::min(kMaxFrameDuration,
                   std::max(frame_duration, kMinFrameDuration));
 }

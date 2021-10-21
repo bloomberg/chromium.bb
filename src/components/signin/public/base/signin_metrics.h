@@ -13,19 +13,6 @@
 
 namespace signin_metrics {
 
-// Enum for the ways in which primary account detection is done.
-enum DifferentPrimaryAccounts {
-  // token and cookie had same primary accounts.
-  ACCOUNTS_SAME = 0,
-  // Deprecated. Indicates different primary accounts.
-  UNUSED_ACCOUNTS_DIFFERENT,
-  // No GAIA cookie present, so the primaries are considered different.
-  NO_COOKIE_PRESENT,
-  // There was at least one cookie and one token, and the primaries differed.
-  COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT,
-  NUM_DIFFERENT_PRIMARY_ACCOUNT_METRICS,
-};
-
 // Track all the ways a profile can become signed out as a histogram.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
@@ -176,6 +163,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_WEB_SIGNIN = 31,
   ACCESS_POINT_SAFETY_CHECK = 32,
   ACCESS_POINT_KALEIDOSCOPE = 33,
+  ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR = 34,
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -388,28 +376,28 @@ enum class AccountRelation : int {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SourceForRefreshTokenOperation {
-  kUnknown,
-  kTokenService_LoadCredentials,
-  // NOTE: This is no longer used but is kept per the comment above about not
-  // renumbering.
-  kDeprecatedSupervisedUser_InitSync,
-  kInlineLoginHandler_Signin,
-  kPrimaryAccountManager_ClearAccount,
-  kPrimaryAccountManager_LegacyPreDiceSigninFlow,
-  kUserMenu_RemoveAccount,
-  kUserMenu_SignOutAllAccounts,
-  kSettings_Signout,
-  kSettings_PauseSync,
-  kAccountReconcilor_GaiaCookiesDeletedByUser,
-  kAccountReconcilor_GaiaCookiesUpdated,
-  kAccountReconcilor_Reconcile,
-  kDiceResponseHandler_Signin,
-  kDiceResponseHandler_Signout,
-  kDiceTurnOnSyncHelper_Abort,
-  kMachineLogon_CredentialProvider,
-  kTokenService_ExtractCredentials,
-  kAccountReconcilor_RevokeTokensNotInCookies,
-  kLogoutTabHelper_DidFinishNavigation,
+  kUnknown = 0,
+  kTokenService_LoadCredentials = 1,
+  // DEPRECATED
+  // kSupervisedUser_InitSync = 2,
+  kInlineLoginHandler_Signin = 3,
+  kPrimaryAccountManager_ClearAccount = 4,
+  kPrimaryAccountManager_LegacyPreDiceSigninFlow = 5,
+  kUserMenu_RemoveAccount = 6,
+  kUserMenu_SignOutAllAccounts = 7,
+  kSettings_Signout = 8,
+  kSettings_PauseSync = 9,
+  kAccountReconcilor_GaiaCookiesDeletedByUser = 10,
+  kAccountReconcilor_GaiaCookiesUpdated = 11,
+  kAccountReconcilor_Reconcile = 12,
+  kDiceResponseHandler_Signin = 13,
+  kDiceResponseHandler_Signout = 14,
+  kDiceTurnOnSyncHelper_Abort = 15,
+  kMachineLogon_CredentialProvider = 16,
+  kTokenService_ExtractCredentials = 17,
+  // DEPRECATED on 09/2021 (used for force migration to DICE)
+  // kAccountReconcilor_RevokeTokensNotInCookies = 18,
+  kLogoutTabHelper_DidFinishNavigation = 19,
 
   kMaxValue = kLogoutTabHelper_DidFinishNavigation,
 };
@@ -455,27 +443,6 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
 
 // Tracks the reason of sign in.
 void LogSigninReason(Reason reason);
-
-// Log to UMA histograms and UserCounts stats about a single execution of the
-// AccountReconciler.
-// |total_number_accounts| - How many accounts are in the browser for this
-//                           profile.
-// |count_added_to_cookie_jar| - How many accounts were in the browser but not
-//                               in the cookie jar.
-// |count_removed_from_cookie_jar| - How many accounts were in the cookie jar
-//                                   but not in the browser.
-// |primary_accounts_same| - False if the primary account for the cookie jar
-//                           and the token service were different; else true.
-// |is_first_reconcile| - True if these stats are from the first execution of
-//                        the AccountReconcilor.
-// |pre_count_gaia_cookies| - How many GAIA cookies were present before
-//                            the AccountReconcilor began modifying the state.
-void LogSigninAccountReconciliation(int total_number_accounts,
-                                    int count_added_to_cookie_jar,
-                                    int count_removed_from_cookie_jar,
-                                    bool primary_accounts_same,
-                                    bool is_first_reconcile,
-                                    int pre_count_gaia_cookies);
 
 // Logs to UMA histograms how many accounts are in the browser for this
 // profile.

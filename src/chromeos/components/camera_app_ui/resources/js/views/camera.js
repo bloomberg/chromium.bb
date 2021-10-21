@@ -53,7 +53,6 @@ import {Layout} from './camera/layout.js';
 import {
   Modes,
   PhotoHandler,  // eslint-disable-line no-unused-vars
-  Scan,
   ScanHandler,  // eslint-disable-line no-unused-vars
   setAvc1Parameters,
   Video,
@@ -66,7 +65,7 @@ import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {Dialog} from './dialog.js';
 import {PTZPanel} from './ptz_panel.js';
-import {ReviewDocument} from './review_document.js';
+import * as review from './review.js';
 import {PrimarySettings} from './settings.js';
 import {PTZPanelOptions, View} from './view.js';
 import {WarningType} from './warning.js';
@@ -124,10 +123,10 @@ export class Camera extends View {
     this.perfLogger_ = perfLogger;
 
     /**
-     * @type {!ReviewDocument}
+     * @type {!review.Review}
      * @private
      */
-    this.reviewDocumentView_ = new ReviewDocument();
+    this.review_ = new review.Review();
 
     /**
      * @type {!Dialog}
@@ -142,7 +141,7 @@ export class Camera extends View {
     this.subViews_ = [
       new PrimarySettings(infoUpdater, photoPreferrer, videoPreferrer),
       new PTZPanel(),
-      this.reviewDocumentView_,
+      this.review_,
       this.docModeDialogView_,
       new View(ViewName.FLASH),
     ];
@@ -301,7 +300,7 @@ export class Camera extends View {
     dom.get('#start-takephoto', HTMLButtonElement)
         .addEventListener('click', (e) => {
           const mouseEvent = assertInstanceof(e, MouseEvent);
-          this.beginTake_(getShutterType(mouseEvent));
+          this.beginTake(getShutterType(mouseEvent));
         });
 
     dom.get('#stop-takephoto', HTMLButtonElement)
@@ -310,7 +309,7 @@ export class Camera extends View {
     const videoShutter = dom.get('#recordvideo', HTMLButtonElement);
     videoShutter.addEventListener('click', (e) => {
       if (!state.get(state.State.TAKING)) {
-        this.beginTake_(getShutterType(assertInstanceof(e, MouseEvent)));
+        this.beginTake(getShutterType(assertInstanceof(e, MouseEvent)));
       } else {
         this.endTake_();
       }
@@ -623,9 +622,8 @@ export class Camera extends View {
    *     shutter type.
    * @return {?Promise} Promise resolved when take action completes. Returns
    *     null if CCA can't start take action.
-   * @protected
    */
-  beginTake_(shutterType) {
+  beginTake(shutterType) {
     if (state.get(state.State.CAMERA_CONFIGURING) ||
         state.get(state.State.TAKING)) {
       return null;
@@ -686,7 +684,7 @@ export class Camera extends View {
    * @return {number}
    */
   getPreviewAspectRatio() {
-    const {videoWidth, videoHeight} = this.preview_.video;
+    const {videoWidth, videoHeight} = this.preview_.getVideoElement();
     return videoWidth / videoHeight;
   }
 
@@ -712,6 +710,7 @@ export class Camera extends View {
    * @override
    */
   handleNoDocument() {
+    nav.close(ViewName.FLASH);
     const message = loadTimeData.getI18nMessage(
         I18nString.DOCUMENT_MODE_DIALOG_NOT_DETECTED_TITLE);
     nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
@@ -757,40 +756,44 @@ export class Camera extends View {
   }
 
   /**
+   * Opens review view to review input blob.
+   * @param {!Blob} blob
+   * @param {!review.Options} options
    * @return {!Promise}
    * @private
    */
-  async restorePreviewInScanMode_() {
-    assert(this.constraints_ !== null);
-    await this.modes_.prepareDevice(Mode.SCAN);
-    await this.preview_.open(this.constraints_);
-    const scanMode = assertInstanceof(this.modes_.current, Scan);
-    scanMode.updatePreview(this.preview_.stream);
-    await this.scanOptions_.attachPreview(this.preview_.video);
-  }
-
-  /**
-   * @override
-   */
-  async setReviewDocument(blob) {
-    this.constraints_ = this.preview_.getConstraits();
+  async doReview_(blob, options) {
+    // Because the review view will cover the whole camera view, prepare for
+    // temporarily turn off camera by stopping preview.
+    this.constraints_ = this.preview_.getConstraints();
     await this.preview_.close();
     await this.scanOptions_.detachPreview();
     try {
-      await this.reviewDocumentView_.setReviewDocument(blob);
-    } catch (e) {
-      await this.restorePreviewInScanMode_();
-      throw e;
+      await this.review_.setReviewPhoto(blob);
+      return await this.review_.startReview(options);
+    } finally {
+      assert(this.constraints_ !== null);
+      await this.modes_.prepareDevice();
+      await this.preview_.open(this.constraints_);
+      this.modes_.current.updatePreview(this.preview_.stream);
+      await this.scanOptions_.attachPreview(this.preview_.getVideoElement());
     }
   }
 
   /**
    * @override
    */
-  async getDocumentReviewResult() {
-    const result = await this.reviewDocumentView_.startReview();
-    await this.restorePreviewInScanMode_();
-    return result;
+  async reviewDocument(blob) {
+    state.addOneTimeObserver(ViewName.REVIEW, () => {
+      nav.close(ViewName.FLASH);
+    });
+    const options = new review.Options(
+        new review.Option(
+            I18nString.LABEL_SAVE_PDF_DOCUMENT, {exitValue: MimeType.PDF}),
+        new review.Option(
+            I18nString.LABEL_SAVE_PHOTO_DOCUMENT, {exitValue: MimeType.JPEG}),
+    );
+    return this.doReview_(blob, options);
   }
 
   /**
@@ -803,9 +806,18 @@ export class Camera extends View {
   /**
    * @override
    */
+  getPreviewVideo() {
+    const video = this.preview_.getVideoElement();
+    assertInstanceof(video, HTMLVideoElement);
+    return video;
+  }
+
+  /**
+   * @override
+   */
   playShutterEffect() {
     sound.play(dom.get('#sound-shutter', HTMLAudioElement));
-    animate.play(this.preview_.video);
+    animate.play(this.preview_.getVideoElement());
   }
 
   /**
@@ -814,13 +826,6 @@ export class Camera extends View {
   playBlockingShutterEffect() {
     sound.play(dom.get('#sound-shutter', HTMLAudioElement));
     nav.open(ViewName.FLASH);
-  }
-
-  /**
-   * @override
-   */
-  clearBlockingShutterEffect() {
-    nav.close(ViewName.FLASH);
   }
 
   /**
@@ -835,6 +840,7 @@ export class Camera extends View {
    */
   async handleResultVideo({resolution, duration, videoSaver, everPaused}) {
     metrics.sendCaptureEvent({
+      recordType: metrics.RecordType.NORMAL_VIDEO,
       facing: this.facingMode_,
       duration,
       resolution,
@@ -846,6 +852,49 @@ export class Camera extends View {
     } catch (e) {
       toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
       throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
+  async handleResultGif({blob, name, resolution, duration}) {
+    const sendEvent = (gifResult) => {
+      metrics.sendCaptureEvent({
+        recordType: metrics.RecordType.GIF,
+        facing: this.facingMode_,
+        resolution,
+        duration,
+        shutterType: this.shutterType_,
+        gifResult,
+      });
+    };
+
+    const options = new review.Options(
+        new review.Option(I18nString.LABEL_SAVE, {exitValue: true}),
+        new review.Option(I18nString.LABEL_SHARE, {
+          callback: async () => {
+            sendEvent(metrics.GifResultType.SHARE);
+            const file = new File([blob], name, {type: MimeType.GIF});
+            const shareData = {files: [file]};
+            try {
+              if (!navigator.canShare(shareData)) {
+                throw new Error('cannot share');
+              }
+              await navigator.share(shareData);
+            } catch (e) {
+              // TODO(b/191950622): Handles all share error case, e.g. no share
+              // target, share abort... with right treatment like toast message.
+            }
+          },
+        }),
+    );
+    const result = await this.doReview_(blob, options);
+    if (result) {
+      sendEvent(metrics.GifResultType.SAVE);
+      await this.resultSaver_.saveGif(blob, name);
+    } else {
+      sendEvent(metrics.GifResultType.RETAKE);
     }
   }
 
@@ -869,7 +918,7 @@ export class Camera extends View {
       if (state.get(state.State.TAKING)) {
         this.endTake_();
       } else {
-        this.beginTake_(metrics.ShutterType.VOLUME_KEY);
+        this.beginTake(metrics.ShutterType.VOLUME_KEY);
       }
       return true;
     }
@@ -925,10 +974,10 @@ export class Camera extends View {
         if (this.isSuspended()) {
           throw new CameraSuspendedError();
         }
-        this.modes_.setCaptureOption(constraints, captureR);
+        this.modes_.setCaptureParams(mode, constraints, captureR);
 
         try {
-          await this.modes_.prepareDevice(mode);
+          await this.modes_.prepareDevice();
           const factory = this.modes_.getModeFactory(mode);
 
           // Sets 2500 ms delay between screen resumed and open camera preview.
@@ -965,8 +1014,9 @@ export class Camera extends View {
 
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(
-              mode, factory, stream, this.facingMode_, deviceId, captureR);
-          await this.scanOptions_.attachPreview(this.preview_.video);
+              factory, stream, this.facingMode_, deviceId);
+          await this.scanOptions_.attachPreview(
+              this.preview_.getVideoElement());
           for (const l of this.configureCompleteListener_) {
             l();
           }
@@ -981,6 +1031,18 @@ export class Camera extends View {
             errorToReport =
                 new Error(`${e.message} (constraint = ${e.constraint})`);
             errorToReport.name = 'OverconstrainedError';
+          } else if (e.name === 'NotReadableError') {
+            // TODO(b/187879603): Remove this hacked once we understand more
+            // about such error.
+            // We cannot get the camera facing from stream since it might not be
+            // successfully opened. Therefore, we asked the camera facing via
+            // Mojo API.
+            let facing = Facing.NOT_SET;
+            if (deviceOperator !== null) {
+              facing = await deviceOperator.getCameraFacing(deviceId);
+            }
+            errorToReport = new Error(`${e.message} (facing = ${facing})`);
+            errorToReport.name = 'NotReadableError';
           }
           error.reportError(
               ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR,
@@ -1070,8 +1132,6 @@ export class Camera extends View {
    * @private
    */
   async stopStreams_() {
-    // Stopping preview will wait device close. Therefore, we clear
-    // mode before stopping preview to close extra stream first.
     await this.modes_.clear();
     await this.preview_.close();
     await this.scanOptions_.detachPreview();

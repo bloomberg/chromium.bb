@@ -21,9 +21,7 @@
 class GrGLSLColorSpaceXformHelper;
 
 namespace SkSL {
-    namespace dsl {
-        class DSLWriter;
-    }
+    class ThreadContext;
 }
 
 /**
@@ -142,6 +140,8 @@ public:
     void emitFunctionPrototype(GrSLType returnType,
                                const char* mangledName,
                                SkSpan<const GrShaderVar> args);
+
+    void emitFunctionPrototype(const char* declaration);
 
     /** Emits a helper function outside of main() in the fragment shader. */
     void emitFunction(GrSLType returnType,
@@ -288,6 +288,6 @@ protected:
     friend class GrGLPathProgramBuilder; // to access fInputs.
     friend class GrVkPipelineStateBuilder;
     friend class GrMtlPipelineStateBuilder;
-    friend class SkSL::dsl::DSLWriter;
+    friend class SkSL::ThreadContext;
 };
 #endif

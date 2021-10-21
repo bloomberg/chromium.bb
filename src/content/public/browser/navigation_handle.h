@@ -125,13 +125,13 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   //  * <a> link click
   //  * changing window.location.href
   //  * redirect via the <meta http-equiv="refresh"> tag
-  //  * using window.history.pushState
+  //  * using window.history.pushState() or window.history.replaceState()
+  //  * using window.history.forward() or window.history.back()
   //
   // This method returns false for browser-initiated navigations, including:
   //  * any navigation initiated from the omnibox
   //  * navigations via suggestions in browser UI
   //  * navigations via browser UI: Ctrl-R, refresh/forward/back/home buttons
-  //  * using window.history.forward() or window.history.back()
   //  * any other "explicit" URL navigations, e.g. bookmarks
   virtual bool IsRendererInitiated() = 0;
 
@@ -151,8 +151,7 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // lifetime.
   //
   // However, because of prerender activations, the RenderFrameHost that this
-  // navigation is committed into may later transfer to another FrameTreeNode,
-  // so this value is not necessarily constant over the lifetime of the frame.
+  // navigation is committed into may later transfer to another FrameTreeNode.
   // See documentation for RenderFrameHost::GetFrameTreeNodeId() for more
   // details.
   virtual int GetFrameTreeNodeId() = 0;
@@ -425,6 +424,12 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
 
   // Returns, if available, the origin of the document that has initiated the
   // navigation for this NavigationHandle.
+  // NOTE: If this is a history navigation, the initiator origin will be the
+  // origin that initiated the *original* navigation, not the history
+  // navigation. This means that if there was no initiator origin for the
+  // original navigation, but the history navigation was initiated by
+  // javascript, the initiator origin will be null even though
+  // IsRendererInitiated() returns true.
   virtual const absl::optional<url::Origin>& GetInitiatorOrigin() = 0;
 
   // Retrieves any DNS aliases for the requested URL. The alias chain order
@@ -491,6 +496,14 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
 
   // Write a representation of this object into a trace.
   virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
+
+  // Sets an overall request timeout for this navigation, which will cause the
+  // navigation to fail if it expires before the navigation commits. This is
+  // separate from any //net level timeouts. This can only be set at the
+  // NavigationThrottle::WillRedirectRequest() stage of the navigation. Returns
+  // `true` if the timeout is being started for the first time. Repeated calls
+  // will be ignored (they won't reset the timeout) and will return `false`.
+  virtual bool SetNavigationTimeout(base::TimeDelta timeout) = 0;
 
   // Testing methods ----------------------------------------------------------
   //

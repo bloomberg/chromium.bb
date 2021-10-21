@@ -47,6 +47,11 @@ class CanvasRenderingContext2DState final
   CanvasRenderingContext2DState(const CanvasRenderingContext2DState&,
                                 ClipListCopyMode,
                                 SaveType);
+
+  CanvasRenderingContext2DState(const CanvasRenderingContext2DState&) = delete;
+  CanvasRenderingContext2DState& operator=(
+      const CanvasRenderingContext2DState&) = delete;
+
   ~CanvasRenderingContext2DState() override;
 
   void Trace(Visitor*) const override;
@@ -168,7 +173,7 @@ class CanvasRenderingContext2DState final
   }
 
   void SetLineWidth(double line_width) {
-    stroke_flags_.setStrokeWidth(clampTo<float>(line_width));
+    stroke_flags_.setStrokeWidth(ClampTo<float>(line_width));
   }
   double LineWidth() const { return stroke_flags_.getStrokeWidth(); }
 
@@ -187,7 +192,7 @@ class CanvasRenderingContext2DState final
   }
 
   void SetMiterLimit(double miter_limit) {
-    stroke_flags_.setStrokeMiter(clampTo<float>(miter_limit));
+    stroke_flags_.setStrokeMiter(ClampTo<float>(miter_limit));
   }
   double MiterLimit() const { return stroke_flags_.getStrokeMiter(); }
 
@@ -316,8 +321,6 @@ class CanvasRenderingContext2DState final
   ClipList clip_list_;
 
   const SaveType save_type_ = SaveType::kInitial;
-
-  DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext2DState);
 
   // Some endlayer calls need to restore to a specific save count.
   // If no such restore is needed, restore_to_count_ is set to nullopt.

@@ -18,9 +18,9 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
 
 namespace device {
 
@@ -64,7 +64,7 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   }
 
   frame_data->time_delta =
-      base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());
+      base::Nanoseconds(openxr_->GetPredictedDisplayTime());
   frame_data->views = openxr_->GetViews();
   frame_data->input_state = openxr_->GetInputState(
       IsFeatureEnabled(device::mojom::XRSessionFeature::HAND_INPUT));
@@ -451,7 +451,7 @@ void OpenXrRenderLoop::CreatePlaneAnchor(
     const device::Pose& native_origin_from_anchor,
     uint64_t plane_id,
     CreatePlaneAnchorCallback callback) {
-  mojo::ReportBadMessage(
+  environment_receiver_.ReportBadMessage(
       "OpenXrRenderLoop::CreatePlaneAnchor not yet implemented");
 }
 

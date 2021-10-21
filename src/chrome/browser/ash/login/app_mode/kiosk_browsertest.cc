@@ -296,6 +296,10 @@ class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
   KioskFakeDiskMountManager() {}
 
+  KioskFakeDiskMountManager(const KioskFakeDiskMountManager&) = delete;
+  KioskFakeDiskMountManager& operator=(const KioskFakeDiskMountManager&) =
+      delete;
+
   ~KioskFakeDiskMountManager() override {}
 
   void set_usb_mount_path(const std::string& usb_mount_path) {
@@ -316,8 +320,6 @@ class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
 
  private:
   std::string usb_mount_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskFakeDiskMountManager);
 };
 
 class AppDataLoadWaiter : public KioskAppManagerObserver {
@@ -334,6 +336,9 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
         version_(version) {
     manager_->AddObserver(this);
   }
+
+  AppDataLoadWaiter(const AppDataLoadWaiter&) = delete;
+  AppDataLoadWaiter& operator=(const AppDataLoadWaiter&) = delete;
 
   ~AppDataLoadWaiter() override { manager_->RemoveObserver(this); }
 
@@ -422,8 +427,6 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   bool quit_;
   std::string app_id_;
   std::string version_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
 };
 
 // Replaces settings urls for KioskSettingsNavigationThrottle.
@@ -491,6 +494,9 @@ class KioskTest : public OobeBaseTest {
     KioskAppData::SetIgnoreKioskAppDataLoadFailuresForTesting(true);
   }
 
+  KioskTest(const KioskTest&) = delete;
+  KioskTest& operator=(const KioskTest&) = delete;
+
   ~KioskTest() override = default;
 
  protected:
@@ -503,7 +509,7 @@ class KioskTest : public OobeBaseTest {
     skip_splash_wait_override_ =
         KioskLaunchController::SkipSplashScreenWaitForTesting();
     network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
-        base::TimeDelta::FromSeconds(kTestNetworkTimeoutSeconds));
+        base::Seconds(kTestNetworkTimeoutSeconds));
 
     OobeBaseTest::SetUp();
   }
@@ -825,7 +831,7 @@ class KioskTest : public OobeBaseTest {
 
   // We need Fake gaia to avoid network errors that can be caused by
   // attempts to load real GAIA.
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 
  private:
   bool use_consumer_kiosk_mode_ = true;
@@ -837,8 +843,6 @@ class KioskTest : public OobeBaseTest {
   std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
   std::unique_ptr<base::AutoReset<base::TimeDelta>> network_wait_override_;
   std::unique_ptr<base::AutoReset<bool>> block_app_launch_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskTest);
 };
 
 class KioskDeviceOwnedTest : public KioskTest {
@@ -947,8 +951,8 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, HiddenShelf) {
       display_bounds.bottom() - ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point.x(), start_point.y() - 80);
   ui::test::EventGenerator event_generator(window);
-  event_generator.GestureScrollSequence(
-      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+  event_generator.GestureScrollSequence(start_point, end_point,
+                                        base::Milliseconds(500), 4);
 
   // The shelf should be still hidden after the gesture.
   EXPECT_FALSE(ShelfTestApi().IsVisible());
@@ -1448,12 +1452,16 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindow) {
   ASSERT_EQ(settings_browser, app_session->GetSettingsBrowserForTesting());
   EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
 
-  // Try navigating to a disallowed subpage.
-  NavigateToURLBlockUntilNavigationsComplete(web_contents, page2_sub, 1);
+  // Try navigating to a disallowed subpage (this won't commit the navigation).
+  NavigateToURLBlockUntilNavigationsComplete(
+      web_contents, page2_sub, 1,
+      /*ignore_uncommitted_navigations=*/false);
   EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
 
-  // Try navigating to a disallowed page.
-  NavigateToURLBlockUntilNavigationsComplete(web_contents, page3, 1);
+  // Try navigating to a disallowed page (this won't commit the navigation).
+  NavigateToURLBlockUntilNavigationsComplete(
+      web_contents, page3, 1,
+      /*ignore_uncommitted_navigations=*/false);
   EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
 
   // Close settings browser, expect the value to be cleared.
@@ -1676,6 +1684,10 @@ IN_PROC_BROWSER_TEST_F(
 class KioskUpdateTest : public KioskTest {
  public:
   KioskUpdateTest() {}
+
+  KioskUpdateTest(const KioskUpdateTest&) = delete;
+  KioskUpdateTest& operator=(const KioskUpdateTest&) = delete;
+
   ~KioskUpdateTest() override {}
 
   struct TestAppInfo {
@@ -1912,6 +1924,10 @@ class KioskUpdateTest : public KioskTest {
       manager_->AddObserver(this);
     }
 
+    KioskAppExternalUpdateWaiter(const KioskAppExternalUpdateWaiter&) = delete;
+    KioskAppExternalUpdateWaiter& operator=(
+        const KioskAppExternalUpdateWaiter&) = delete;
+
     ~KioskAppExternalUpdateWaiter() override { manager_->RemoveObserver(this); }
 
     void Wait() {
@@ -1946,14 +1962,10 @@ class KioskUpdateTest : public KioskTest {
     bool quit_;
     bool update_success_;
     bool app_update_notified_;
-
-    DISALLOW_COPY_AND_ASSIGN(KioskAppExternalUpdateWaiter);
   };
 
   // Owned by DiskMountManager.
   KioskFakeDiskMountManager* fake_disk_mount_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppNoNetwork) {
@@ -2488,6 +2500,10 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 }
 
 class KioskEnterpriseTest : public KioskTest {
+ public:
+  KioskEnterpriseTest(const KioskEnterpriseTest&) = delete;
+  KioskEnterpriseTest& operator=(const KioskEnterpriseTest&) = delete;
+
  protected:
   KioskEnterpriseTest() { set_use_consumer_kiosk_mode(false); }
 
@@ -2548,10 +2564,7 @@ class KioskEnterpriseTest : public KioskTest {
 
  private:
   DeviceStateMixin device_state_{
-      &mixin_host_,
-      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-
-  DISALLOW_COPY_AND_ASSIGN(KioskEnterpriseTest);
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
 IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
@@ -2658,6 +2671,11 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
  public:
   KioskVirtualKeyboardTestSoundsManagerTestImpl() {}
 
+  KioskVirtualKeyboardTestSoundsManagerTestImpl(
+      const KioskVirtualKeyboardTestSoundsManagerTestImpl&) = delete;
+  KioskVirtualKeyboardTestSoundsManagerTestImpl& operator=(
+      const KioskVirtualKeyboardTestSoundsManagerTestImpl&) = delete;
+
   bool Initialize(SoundKey key, const base::StringPiece& data) override {
     sound_data_[key] = std::string(data);
     return true;
@@ -2691,8 +2709,6 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
 
  private:
   std::map<SoundKey, std::string> sound_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskVirtualKeyboardTestSoundsManagerTestImpl);
 };
 
 // Specialized test fixture for testing kiosk mode where virtual keyboard is
@@ -2703,6 +2719,9 @@ class KioskVirtualKeyboardTest : public KioskDeviceOwnedTest,
   KioskVirtualKeyboardTest() {
     audio::FakeSystemInfo::OverrideGlobalBinderForAudioService(this);
   }
+
+  KioskVirtualKeyboardTest(const KioskVirtualKeyboardTest&) = delete;
+  KioskVirtualKeyboardTest& operator=(const KioskVirtualKeyboardTest&) = delete;
 
   ~KioskVirtualKeyboardTest() override {
     audio::FakeSystemInfo::ClearGlobalBinderForAudioService();
@@ -2728,9 +2747,6 @@ class KioskVirtualKeyboardTest : public KioskDeviceOwnedTest,
   void HasInputDevices(HasInputDevicesCallback callback) override {
     std::move(callback).Run(true);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KioskVirtualKeyboardTest);
 };
 
 // Flaky. crbug.com/1094809
@@ -2768,6 +2784,9 @@ class KioskHiddenWebUITest : public KioskTest,
  public:
   KioskHiddenWebUITest() = default;
 
+  KioskHiddenWebUITest(const KioskHiddenWebUITest&) = delete;
+  KioskHiddenWebUITest& operator=(const KioskHiddenWebUITest&) = delete;
+
   // KioskTest:
   void SetUpOnMainThread() override {
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
@@ -2799,8 +2818,6 @@ class KioskHiddenWebUITest : public KioskTest,
  private:
   bool wallpaper_loaded_ = false;
   scoped_refptr<content::MessageLoopRunner> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };
 
 IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
@@ -2854,7 +2871,7 @@ class KioskAutoLaunchViewsTest : public OobeBaseTest,
         kAccountsPrefDeviceLocalAccountAutoLoginId, kTestEnterpriseAccountId);
   }
 
-  // chromeos::LocalStateMixin::Delegate:
+  // LocalStateMixin::Delegate:
   void SetUpLocalState() override {
     // Simulate auto login request from the previous session.
     PrefService* prefs = g_browser_process->local_state();
@@ -2874,7 +2891,7 @@ class KioskAutoLaunchViewsTest : public OobeBaseTest,
  protected:
   std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  chromeos::LocalStateMixin local_state_mixin_{&mixin_host_, this};
+  LocalStateMixin local_state_mixin_{&mixin_host_, this};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};

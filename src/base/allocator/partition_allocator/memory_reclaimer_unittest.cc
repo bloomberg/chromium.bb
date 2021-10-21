@@ -50,7 +50,8 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
                       PartitionOptions::ThreadCache::kDisabled,
                       PartitionOptions::Quarantine::kAllowed,
                       PartitionOptions::Cookie::kAllowed,
-                      PartitionOptions::RefCount::kDisallowed});
+                      PartitionOptions::BackupRefPtr::kDisabled,
+                      PartitionOptions::UseConfigurablePool::kNo});
   }
 
   void TearDown() override {
@@ -74,14 +75,16 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
   std::unique_ptr<PartitionAllocator> allocator_;
 };
 
-TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
+// Flaky. https://crbug.com/1205802
+TEST_F(PartitionAllocMemoryReclaimerTest, DISABLED_Simple) {
   StartReclaimer();
 
   EXPECT_EQ(1u, task_environment_.GetPendingMainThreadTaskCount());
   EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
 }
 
-TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
+// Flaky. https://crbug.com/1212670
+TEST_F(PartitionAllocMemoryReclaimerTest, DISABLED_FreesMemory) {
   PartitionRoot<internal::ThreadSafe>* root = allocator_->root();
 
   size_t committed_initially = root->get_total_size_of_committed_pages();
@@ -98,7 +101,8 @@ TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
   EXPECT_LE(committed_initially, committed_after);
 }
 
-TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
+// Flaky. https://crbug.com/1211441
+TEST_F(PartitionAllocMemoryReclaimerTest, DISABLED_Reclaim) {
   PartitionRoot<internal::ThreadSafe>* root = allocator_->root();
   size_t committed_initially = root->get_total_size_of_committed_pages();
 
@@ -128,7 +132,9 @@ NOINLINE void FreeForTest(void* data) {
 }
 }  // namespace
 
-TEST_F(PartitionAllocMemoryReclaimerTest, DoNotAlwaysPurgeThreadCache) {
+// Flaky. https://crbug.com/1208390
+TEST_F(PartitionAllocMemoryReclaimerTest,
+       DISABLED_DoNotAlwaysPurgeThreadCache) {
   for (size_t i = 0; i < internal::ThreadCache::kDefaultSizeThreshold; i++) {
     void* data = malloc(i);
     FreeForTest(data);

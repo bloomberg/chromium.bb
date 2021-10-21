@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
-#include "components/safe_browsing/content/browser/client_side_model_loader.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
@@ -75,6 +74,9 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
       std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
       bool is_off_the_record,
       const PrimaryAccountSignedIn& account_signed_in_callback);
+
+  ClientSideDetectionHost(const ClientSideDetectionHost&) = delete;
+  ClientSideDetectionHost& operator=(const ClientSideDetectionHost&) = delete;
 
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until WebContentsDestroyed is called.
@@ -222,8 +224,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   PrimaryAccountSignedIn account_signed_in_callback_;
 
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
 
 }  // namespace safe_browsing

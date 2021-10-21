@@ -353,6 +353,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsWaitingToCommit() override;
   bool WasEarlyHintsPreloadLinkHeaderReceived() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
+  bool SetNavigationTimeout(base::TimeDelta timeout) override;
 
   void RegisterCommitDeferringConditionForTesting(
       std::unique_ptr<CommitDeferringCondition> condition);
@@ -726,48 +727,19 @@ class CONTENT_EXPORT NavigationRequest
   // Returns the coop status information relevant to the current navigation.
   CrossOriginOpenerPolicyStatus& coop_status() { return coop_status_; }
 
-  // Returns true if |common_params| represents a WebView loadDataWithBaseUrl
-  // navigation. Note that this may sometimes return a different result from
-  // IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer(), as the renderer
-  // applies additional checks before possibly entering the special
-  // loadDataWithBaseUrl path tha will try to use the supplied base URL and
-  // history URL (instead of just using the data: URL like a normal data: URL
-  // navigation).
-  // NOTE: To ensure consistency with other browser-side checks that already
-  // use IsLoadDataWithBaseURL(), prefer to use IsLoadDataWithBaseURL() for now.
-  // IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer() and
-  // IsLoadDataWithBaseURLAndHasUnreachableURL() are both currently only used to
-  // simulate renderer-side calculations. In the future, the plan is to remove
-  // those two functions and combine all the checks into just one function.
-  // TODO(rakina): Maybe combine all three functions to
-  // GetLoadDataWithBaseURLInfo() that will return a struct containing relevant
-  // information (e.g. "has_unreachable_url", "base_url_used", etc.)
-  // TODO(https://crbug.com/1223403): Inspect whether current callers for
-  // IsLoadDataWithBaseURL() should use
-  // IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer() instead.
-  static bool IsLoadDataWithBaseURL(
-      const blink::mojom::CommonNavigationParams& common_params);
+  // Returns true if this is a NavigationRequest represents a WebView
+  // loadDataWithBaseUrl navigation.
+  bool IsLoadDataWithBaseURL() const;
 
-  // Returns true if the navigation is treated as a loadDataWithBaseURL
-  // navigation in the renderer, different than other data: URL navigation.
-  // In particular, whether the renderer will try to use the supplied base URL
-  // and history URL as the "document URL" and "history URL", instead of just
-  // using the  data: URL used to commit like it would on normal data: URL
-  // navigations. Note that this does not say anything about whether the
-  // supplied base URL & history URL will actually be used (as they can be
-  // empty/invalid etc), just whether the renderer will go through the special
-  // path that *tries* to use those URLs.
-  // NOTE: This function is currently only used for simulating renderer-side
-  // calculations. Do not use it to make actual decisions. For most cases, the
-  // IsLoadDataWithBaseURL() function above should be used.
-  bool IsNavigationTreatedAsLoadDataWithBaseURLInTheRenderer();
-
-  // Returns true if the navigation is a WebView loadDataWithBaseUrl
-  // navigation that has a non-empty "unreachable URL" in the renderer, set to
-  // the "history URL" supplied with the loadDataWithBaseUrl call.
-  // NOTE: This function is currently only used for simulating renderer-side
-  // calculations. Do not use it to make actual decisions.
-  bool IsLoadDataWithBaseURLAndHasUnreachableURL();
+  // Calculates the origin that this NavigationRequest may commit.
+  //
+  // GetTentativeOriginAtRequestTime must be called before the final HTTP
+  // response is received (unlike GetOriginToCommit), but the returned origin
+  // may differ from the final origin committed by this navigation (e.g. the
+  // origin may change because of subsequent redirects, or because of CSP
+  // headers in the final response). Prefer to use GetOriginToCommit if
+  // possible.
+  url::Origin GetTentativeOriginAtRequestTime();
 
   // Will calculate the origin that this NavigationRequest will commit. (This
   // should be reasonably accurate, but some browser-vs-renderer inconsistencies

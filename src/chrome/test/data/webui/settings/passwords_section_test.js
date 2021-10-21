@@ -165,12 +165,16 @@ function isElementVisible(element) {
 /**
  * Helper function to test if all components of edit dialog are shown correctly.
  */
-function editDialogPartsAreShownCorrectly(passwordDialog) {
+function assertEditDialogParts(passwordDialog) {
   assertEquals(
       passwordDialog.i18n('editPasswordTitle'),
       passwordDialog.$.title.textContent.trim());
+  assertTrue(passwordDialog.$.websiteInput.readonly);
+  assertFalse(passwordDialog.$.usernameInput.readonly);
   assertFalse(passwordDialog.$.passwordInput.readonly);
   assertTrue(passwordDialog.$.passwordInput.required);
+  assertFalse(isElementVisible(passwordDialog.$.storePicker));
+  assertTrue(!!passwordDialog.shadowRoot.querySelector('#showPasswordButton'));
   assertTrue(isElementVisible(passwordDialog.$.footnote));
   assertTrue(isElementVisible(passwordDialog.$.cancel));
   assertEquals(
@@ -182,12 +186,16 @@ function editDialogPartsAreShownCorrectly(passwordDialog) {
  * Helper function to test if all components of details dialog are shown
  * correctly.
  */
-function detailsDialogPartsAreShownCorrectly(passwordDialog) {
+function assertDetailsDialogParts(passwordDialog) {
   assertEquals(
       passwordDialog.i18n('passwordDetailsTitle'),
       passwordDialog.$.title.textContent.trim());
+  assertTrue(passwordDialog.$.websiteInput.readonly);
+  assertTrue(passwordDialog.$.usernameInput.readonly);
   assertTrue(passwordDialog.$.passwordInput.readonly);
   assertFalse(passwordDialog.$.passwordInput.required);
+  assertFalse(isElementVisible(passwordDialog.$.storePicker));
+  assertFalse(!!passwordDialog.shadowRoot.querySelector('#showPasswordButton'));
   assertFalse(isElementVisible(passwordDialog.$.footnote));
   assertFalse(isElementVisible(passwordDialog.$.cancel));
   assertEquals(
@@ -195,6 +203,25 @@ function detailsDialogPartsAreShownCorrectly(passwordDialog) {
       passwordDialog.$.actionButton.textContent.trim());
 }
 
+/**
+ * Helper function to test if all components of add dialog are shown correctly.
+ */
+function assertAddDialogParts(passwordDialog) {
+  assertEquals(
+      passwordDialog.i18n('addPasswordTitle'),
+      passwordDialog.$.title.textContent.trim());
+  assertFalse(passwordDialog.$.websiteInput.readonly);
+  assertFalse(passwordDialog.$.usernameInput.readonly);
+  assertFalse(passwordDialog.$.passwordInput.readonly);
+  assertTrue(passwordDialog.$.passwordInput.required);
+  assertFalse(isElementVisible(passwordDialog.$.storageDetails));
+  assertTrue(!!passwordDialog.shadowRoot.querySelector('#showPasswordButton'));
+  assertTrue(isElementVisible(passwordDialog.$.footnote));
+  assertTrue(isElementVisible(passwordDialog.$.cancel));
+  assertEquals(
+      passwordDialog.i18n('save'),
+      passwordDialog.$.actionButton.textContent.trim());
+}
 
 /**
  * Helper function to test change saved password behavior.
@@ -205,19 +232,16 @@ function detailsDialogPartsAreShownCorrectly(passwordDialog) {
  */
 async function changeSavedPasswordTestHelper(
     editDialog, entryIds, passwordManager) {
-  const PASSWORD1 = 'hello_world';
-  const USERNAME1 = 'new_username';
-  editDialog.set('entry.password', PASSWORD1);
-  assertEquals(PASSWORD1, editDialog.$.passwordInput.value);
+  const NEW_USERNAME = 'new_username';
+  const NEW_PASSWORD = 'new_password';
 
-  // Empty password should be consider invalid and disables the save button.
+  // Empty password should be considered invalid and disable the save button.
   editDialog.$.passwordInput.value = '';
   assertTrue(editDialog.$.passwordInput.invalid);
   assertTrue(editDialog.$.actionButton.disabled);
 
-  const PASSWORD2 = 'hello_world_2';
-  editDialog.$.usernameInput.value = USERNAME1;
-  editDialog.$.passwordInput.value = PASSWORD2;
+  editDialog.$.usernameInput.value = NEW_USERNAME;
+  editDialog.$.passwordInput.value = NEW_PASSWORD;
   assertFalse(editDialog.$.passwordInput.invalid);
   assertFalse(editDialog.$.actionButton.disabled);
 
@@ -226,8 +250,8 @@ async function changeSavedPasswordTestHelper(
   // Check that the changeSavedPassword is called with the right arguments.
   const {ids, newUsername, newPassword} =
       await passwordManager.whenCalled('changeSavedPassword');
-  assertEquals(USERNAME1, newUsername);
-  assertEquals(PASSWORD2, newPassword);
+  assertEquals(NEW_USERNAME, newUsername);
+  assertEquals(NEW_PASSWORD, newPassword);
 
   assertEquals(entryIds.length, ids.length);
   entryIds.forEach(entryId => assertTrue(ids.includes(entryId)));
@@ -280,16 +304,16 @@ async function openPasswordEditDialogHelper(passwordManager, elementFactory) {
   const passwordEditDialog =
       passwordsSection.$.passwordsListHandler.shadowRoot.querySelector(
           '#passwordEditDialog');
+  const showPasswordButton =
+      passwordEditDialog.shadowRoot.querySelector('#showPasswordButton');
   assertEquals('password', passwordEditDialog.$.passwordInput.type);
-  assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
-      'icon-visibility'));
+  assertTrue(showPasswordButton.classList.contains('icon-visibility'));
 
   passwordEditDialog.shadowRoot.querySelector('#showPasswordButton').click();
   flush();
 
   assertEquals('text', passwordEditDialog.$.passwordInput.type);
-  assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
-      'icon-visibility-off'));
+  assertTrue(showPasswordButton.classList.contains('icon-visibility-off'));
 
   // Close the dialog, verify that the list item password remains hidden.
   // Note that the password only gets hidden in the on-close handler, thus we
@@ -1084,33 +1108,43 @@ suite('PasswordsSection', function() {
     assertTrue(ids.includes(accountCopy.id));
   });
 
-  test('verifyFederatedPassword', function() {
-    const federationEntry = createMultiStorePasswordEntry(
-        {federationText: 'with chromium.org', username: 'bart', deviceId: 42});
-    const passwordDialog =
-        elementFactory.createPasswordEditDialog(federationEntry);
+  test(
+      'editDialogWhenViewFederatedCredentialHasCorrectInitialState',
+      function() {
+        const federationEntry = createMultiStorePasswordEntry({
+          federationText: 'with chromium.org',
+          username: 'bart',
+          deviceId: 42
+        });
+        const passwordDialog =
+            elementFactory.createPasswordEditDialog(federationEntry);
+        assertDetailsDialogParts(passwordDialog);
+        assertEquals(
+            federationEntry.urls.link, passwordDialog.$.websiteInput.value);
+        assertEquals(
+            federationEntry.username, passwordDialog.$.usernameInput.value);
+        assertEquals(
+            federationEntry.federationText,
+            passwordDialog.$.passwordInput.value);
+        assertEquals('text', passwordDialog.$.passwordInput.type);
+        assertEquals(
+            passwordDialog.i18n(
+                'editPasswordFootnote', federationEntry.urls.shown),
+            passwordDialog.$.footnote.innerText.trim());
+      });
 
-    assertEquals(
-        federationEntry.federationText, passwordDialog.$.passwordInput.value);
-    // Text should be readable.
-    assertEquals('text', passwordDialog.$.passwordInput.type);
-    assertTrue(passwordDialog.$.showPasswordButton.hidden);
-    detailsDialogPartsAreShownCorrectly(passwordDialog);
-  });
-
-  test('verifyEditOrDetailsDialog', function() {
-    const federationEntry = createMultiStorePasswordEntry(
-        {federationText: 'with chromium.org', username: 'bart', deviceId: 42});
-    const passwordDialogFederation =
-        elementFactory.createPasswordEditDialog(federationEntry);
-    detailsDialogPartsAreShownCorrectly(passwordDialogFederation);
-
+  test('editDialogWhenEditPasswordHasCorrectInitialState', function() {
     const commonEntry = createMultiStorePasswordEntry(
         {url: 'goo.gl', username: 'bart', accountId: 42});
-    const passwordDialogCommon =
-        elementFactory.createPasswordEditDialog(commonEntry);
-    // Should show edit dialog for common credential.
-    editDialogPartsAreShownCorrectly(passwordDialogCommon);
+    const passwordDialog = elementFactory.createPasswordEditDialog(commonEntry);
+    assertEditDialogParts(passwordDialog);
+    assertEquals(commonEntry.urls.link, passwordDialog.$.websiteInput.value);
+    assertEquals(commonEntry.username, passwordDialog.$.usernameInput.value);
+    assertEquals(commonEntry.password, passwordDialog.$.passwordInput.value);
+    assertEquals('password', passwordDialog.$.passwordInput.type);
+    assertEquals(
+        passwordDialog.i18n('editPasswordFootnote', commonEntry.urls.shown),
+        passwordDialog.$.footnote.innerText.trim());
   });
 
   test('editDialogChangePasswordAccountId', async function() {
@@ -1145,11 +1179,14 @@ suite('PasswordsSection', function() {
   });
 
   test('editDialogChangeUsernameFailsWhenReused', async function() {
-
-    const accountEntry = createMultiStorePasswordEntry(
-        {url: 'goo.gl', username: 'bart', accountId: 0});
-    const editDialog = elementFactory.createPasswordEditDialog(accountEntry);
-    editDialog.usernamesForSameOrigin = new Set(['mark', 'bart']);
+    const accountPasswords = [
+      createMultiStorePasswordEntry(
+          {url: 'goo.gl', username: 'bart', accountId: 0}),
+      createMultiStorePasswordEntry(
+          {url: 'goo.gl', username: 'mark', accountId: 0})
+    ];
+    const editDialog = elementFactory.createPasswordEditDialog(
+        accountPasswords[0], accountPasswords);
 
     editDialog.$.usernameInput.value = 'mark';
     assertTrue(editDialog.$.usernameInput.invalid);
@@ -1160,7 +1197,7 @@ suite('PasswordsSection', function() {
     assertFalse(editDialog.$.actionButton.disabled);
 
     changeSavedPasswordTestHelper(
-        editDialog, [accountEntry.accountId], passwordManager);
+        editDialog, [accountPasswords[0].accountId], passwordManager);
   });
 
   test('editDialogChangeUsernameWhenReusedForDifferentStore', async function() {
@@ -1192,7 +1229,7 @@ suite('PasswordsSection', function() {
     assertTrue(accountPasswordDialog.$.storageDetails.hidden);
 
     // Display the message.
-    accountPasswordDialog.shouldShowStorageDetails = true;
+    accountPasswordDialog.isAccountStoreUser = true;
     flush();
     assertFalse(accountPasswordDialog.$.storageDetails.hidden);
     assertEquals(
@@ -1212,7 +1249,7 @@ suite('PasswordsSection', function() {
     assertTrue(devicePasswordDialog.$.storageDetails.hidden);
 
     // Display the message.
-    devicePasswordDialog.shouldShowStorageDetails = true;
+    devicePasswordDialog.isAccountStoreUser = true;
     flush();
     assertFalse(devicePasswordDialog.$.storageDetails.hidden);
     assertEquals(
@@ -1233,7 +1270,7 @@ suite('PasswordsSection', function() {
         assertTrue(accountAndDevicePasswordDialog.$.storageDetails.hidden);
 
         // Display the message.
-        accountAndDevicePasswordDialog.shouldShowStorageDetails = true;
+        accountAndDevicePasswordDialog.isAccountStoreUser = true;
         flush();
         assertFalse(accountAndDevicePasswordDialog.$.storageDetails.hidden);
         assertEquals(
@@ -1308,8 +1345,9 @@ suite('PasswordsSection', function() {
             '#passwordEditDialog');
     assertEquals('password', passwordEditDialog.$.passwordInput.type);
     assertEquals(PASSWORD, passwordEditDialog.$.passwordInput.value);
-    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
-        'icon-visibility'));
+    assertTrue(
+        passwordEditDialog.shadowRoot.querySelector('#showPasswordButton')
+            .classList.contains('icon-visibility'));
   });
 
   test('onShowSavedPasswordListItem', function() {
@@ -2086,4 +2124,69 @@ suite('PasswordsSection', function() {
         await testHatsBrowserProxy.whenCalled('trustSafetyInteractionOccurred');
     assertEquals(TrustSafetyInteraction.OPENED_PASSWORD_MANAGER, interaction);
   });
+
+  test(
+      'addPasswordButtonShownOnlyWhenAddingPasswordsFeatureEnabled',
+      function() {
+        loadTimeData.overrideValues({addPasswordsInSettingsEnabled: false});
+        const passwordsSectionAddPasswordsDisabled =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+        assertFalse(
+            !!passwordsSectionAddPasswordsDisabled.shadowRoot.querySelector(
+                '#addPasswordButton'));
+
+        loadTimeData.overrideValues({addPasswordsInSettingsEnabled: true});
+        const passwordsSectionAddPasswordsEnabled =
+            elementFactory.createPasswordsSection(passwordManager, [], []);
+        assertTrue(
+            !!passwordsSectionAddPasswordsEnabled.shadowRoot.querySelector(
+                '#addPasswordButton'));
+      });
+
+  test('addPasswordButtonOpensAddPasswordDialog', function() {
+    loadTimeData.overrideValues({addPasswordsInSettingsEnabled: true});
+    const passwordsSection =
+        elementFactory.createPasswordsSection(passwordManager, [], []);
+    assertFalse(
+        !!passwordsSection.shadowRoot.querySelector('#addPasswordDialog'));
+
+    passwordsSection.shadowRoot.querySelector('#addPasswordButton').click();
+    flush();
+    const addDialog =
+        passwordsSection.shadowRoot.querySelector('#addPasswordDialog');
+    assertTrue(!!addDialog);
+    assertAddDialogParts(addDialog);
+  });
+
+  test('editDialogWhenAddPasswordHasCorrectInitialState', function() {
+    const addDialog = elementFactory.createPasswordEditDialog();
+    assertAddDialogParts(addDialog);
+    assertEquals('', addDialog.$.websiteInput.value);
+    assertEquals('', addDialog.$.usernameInput.value);
+    assertEquals('', addDialog.$.passwordInput.value);
+    assertEquals('password', addDialog.$.passwordInput.type);
+    assertEquals(
+        addDialog.i18n('addPasswordFootnote'),
+        addDialog.$.footnote.innerText.trim());
+  });
+
+  test(
+      'editDialogWhenAddPasswordShowsStorePickerForAccountStoreUser',
+      function() {
+        const addDialog = elementFactory.createPasswordEditDialog();
+        addDialog.accountEmail = 'username@gmail.com';
+        const picker = addDialog.$.storePicker;
+        assertFalse(isElementVisible(picker));
+
+        addDialog.isAccountStoreUser = true;
+        flush();
+        assertTrue(isElementVisible(picker));
+        assertEquals(
+            addDialog.i18n(
+                'addPasswordStoreOptionAccount', addDialog.accountEmail),
+            picker.options[0].textContent.trim());
+        assertEquals(
+            addDialog.i18n('addPasswordStoreOptionDevice'),
+            picker.options[1].textContent.trim());
+      });
 });

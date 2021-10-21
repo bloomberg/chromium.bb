@@ -105,9 +105,20 @@ class WebAppRegistrar : public ProfileManagerObserver {
       ExternalInstallSource install_source) const;
 
   // Returns true if the web app with the |app_id| contains |protocol_scheme|
-  // as one of its approved launch protocols.
-  bool IsApprovedLaunchProtocol(const AppId& app_id,
-                                std::string protocol_scheme) const;
+  // as one of its allowed launch protocols.
+  bool IsAllowedLaunchProtocol(const AppId& app_id,
+                               std::string protocol_scheme) const;
+
+  // Returns true if the web app with the |app_id| contains |protocol_scheme|
+  // as one of its disallowed launch protocols.
+  bool IsDisallowedLaunchProtocol(const AppId& app_id,
+                                  std::string protocol_scheme) const;
+
+  // Gets all allowed launch protocols from all installed apps.
+  base::flat_set<std::string> GetAllAllowedLaunchProtocols() const;
+
+  // Gets all disallowed launch protocols from all installed apps.
+  base::flat_set<std::string> GetAllDisallowedLaunchProtocols() const;
 
   // Count a number of all apps which are installed by user (non-default).
   // Requires app registry to be in a ready state.
@@ -118,6 +129,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   std::string GetAppDescription(const AppId& app_id) const;
   absl::optional<SkColor> GetAppThemeColor(const AppId& app_id) const;
   absl::optional<SkColor> GetAppBackgroundColor(const AppId& app_id) const;
+  absl::optional<SkColor> GetAppDarkModeThemeColor(const AppId& app_id) const;
   const GURL& GetAppStartUrl(const AppId& app_id) const;
   absl::optional<std::string> GetAppManifestId(const AppId& app_id) const;
   const std::string* GetAppLaunchQueryParams(const AppId& app_id) const;
@@ -225,6 +237,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppManifestUpdated(const AppId& app_id,
                                    base::StringPiece old_name);
+  void NotifyWebAppProtocolSettingsChanged();
   void NotifyWebAppsWillBeUpdatedFromSync(
       const std::vector<const WebApp*>& new_apps_state);
   void NotifyWebAppUninstalled(const AppId& app_id);

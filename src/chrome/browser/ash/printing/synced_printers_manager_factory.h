@@ -12,9 +12,9 @@
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
-namespace chromeos {
+namespace ash {
 
 class SyncedPrintersManager;
 
@@ -24,6 +24,10 @@ class SyncedPrintersManagerFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 
   static SyncedPrintersManagerFactory* GetInstance();
+
+  SyncedPrintersManagerFactory(const SyncedPrintersManagerFactory&) = delete;
+  SyncedPrintersManagerFactory& operator=(const SyncedPrintersManagerFactory&) =
+      delete;
 
  protected:
   content::BrowserContext* GetBrowserContextToUse(
@@ -38,10 +42,8 @@ class SyncedPrintersManagerFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory implementation:
   SyncedPrintersManager* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedPrintersManagerFactory);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_SYNCED_PRINTERS_MANAGER_FACTORY_H_

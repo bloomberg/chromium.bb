@@ -1485,6 +1485,17 @@ FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
 
 CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
     TextDecoration text_decoration) {
+  switch (text_decoration) {
+    case TextDecoration::kNone:
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
+    case TextDecoration::kSpellingError:
+      return CSSIdentifierValue::Create(CSSValueID::kSpellingError);
+    case TextDecoration::kGrammarError:
+      return CSSIdentifierValue::Create(CSSValueID::kGrammarError);
+    default:
+      break;
+  }
+
   // Blink value is ignored.
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (EnumHasFlags(text_decoration, TextDecoration::kUnderline))
@@ -1788,6 +1799,56 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformationMatrix(
   }
 }
 
+CSSValueID ComputedStyleUtils::CSSValueIDForScaleOperation(
+    const TransformOperation::OperationType type) {
+  switch (type) {
+    case TransformOperation::kScaleX:
+      return CSSValueID::kScaleX;
+    case TransformOperation::kScaleY:
+      return CSSValueID::kScaleY;
+    case TransformOperation::kScaleZ:
+      return CSSValueID::kScaleZ;
+    case TransformOperation::kScale3D:
+      return CSSValueID::kScale3d;
+    default:
+      DCHECK(type == TransformOperation::kScale);
+      return CSSValueID::kScale;
+  }
+}
+
+CSSValueID ComputedStyleUtils::CSSValueIDForTranslateOperation(
+    const TransformOperation::OperationType type) {
+  switch (type) {
+    case TransformOperation::kTranslateX:
+      return CSSValueID::kTranslateX;
+    case TransformOperation::kTranslateY:
+      return CSSValueID::kTranslateY;
+    case TransformOperation::kTranslateZ:
+      return CSSValueID::kTranslateZ;
+    case TransformOperation::kTranslate3D:
+      return CSSValueID::kTranslate3d;
+    default:
+      DCHECK(type == TransformOperation::kTranslate);
+      return CSSValueID::kTranslate;
+  }
+}
+
+CSSValueID ComputedStyleUtils::CSSValueIDForRotateOperation(
+    const TransformOperation::OperationType type) {
+  switch (type) {
+    case TransformOperation::kRotateX:
+      return CSSValueID::kRotateX;
+    case TransformOperation::kRotateY:
+      return CSSValueID::kRotateY;
+    case TransformOperation::kRotateZ:
+      return CSSValueID::kRotateZ;
+    case TransformOperation::kRotate3D:
+      return CSSValueID::kRotate3d;
+    default:
+      return CSSValueID::kRotate;
+  }
+}
+
 // We collapse functions like translateX into translate, since we will reify
 // them as a translate anyway.
 CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
@@ -1801,14 +1862,21 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     case TransformOperation::kScale:
     case TransformOperation::kScale3D: {
       const auto& scale = To<ScaleTransformOperation>(operation);
-      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
-          operation.Is3DOperation() ? CSSValueID::kScale3d
-                                    : CSSValueID::kScale);
-      result->Append(*CSSNumericLiteralValue::Create(
-          scale.X(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSNumericLiteralValue::Create(
-          scale.Y(), CSSPrimitiveValue::UnitType::kNumber));
-      if (operation.Is3DOperation()) {
+
+      CSSValueID id = CSSValueIDForScaleOperation(operation.GetType());
+
+      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(id);
+      if (id == CSSValueID::kScaleX || id == CSSValueID::kScale ||
+          id == CSSValueID::kScale3d) {
+        result->Append(*CSSNumericLiteralValue::Create(
+            scale.X(), CSSPrimitiveValue::UnitType::kNumber));
+      }
+      if (id == CSSValueID::kScaleY || id == CSSValueID::kScale ||
+          id == CSSValueID::kScale3d) {
+        result->Append(*CSSNumericLiteralValue::Create(
+            scale.Y(), CSSPrimitiveValue::UnitType::kNumber));
+      }
+      if (id == CSSValueID::kScale3d || id == CSSValueID::kScaleZ) {
         result->Append(*CSSNumericLiteralValue::Create(
             scale.Z(), CSSPrimitiveValue::UnitType::kNumber));
       }
@@ -1820,12 +1888,21 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     case TransformOperation::kTranslate:
     case TransformOperation::kTranslate3D: {
       const auto& translate = To<TranslateTransformOperation>(operation);
-      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
-          operation.Is3DOperation() ? CSSValueID::kTranslate3d
-                                    : CSSValueID::kTranslate);
-      result->Append(*CSSPrimitiveValue::CreateFromLength(translate.X(), zoom));
-      result->Append(*CSSPrimitiveValue::CreateFromLength(translate.Y(), zoom));
-      if (operation.Is3DOperation()) {
+
+      CSSValueID id = CSSValueIDForTranslateOperation(operation.GetType());
+
+      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(id);
+      if (id == CSSValueID::kTranslateX || id == CSSValueID::kTranslate ||
+          id == CSSValueID::kTranslate3d) {
+        result->Append(
+            *CSSPrimitiveValue::CreateFromLength(translate.X(), zoom));
+      }
+      if (id == CSSValueID::kTranslateY || id == CSSValueID::kTranslate ||
+          id == CSSValueID::kTranslate3d) {
+        result->Append(
+            *CSSPrimitiveValue::CreateFromLength(translate.Y(), zoom));
+      }
+      if (id == CSSValueID::kTranslate3d || id == CSSValueID::kTranslateZ) {
         // Since this is pixel length, we must unzoom (CreateFromLength above
         // does the division internally).
         result->Append(*CSSNumericLiteralValue::Create(
@@ -1835,24 +1912,21 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     }
     case TransformOperation::kRotateX:
     case TransformOperation::kRotateY:
-    case TransformOperation::kRotate3D: {
-      const auto& rotate = To<RotateTransformOperation>(operation);
-      CSSFunctionValue* result =
-          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate3d);
-      result->Append(*CSSNumericLiteralValue::Create(
-          rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSNumericLiteralValue::Create(
-          rotate.Y(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSNumericLiteralValue::Create(
-          rotate.Z(), CSSPrimitiveValue::UnitType::kNumber));
-      result->Append(*CSSNumericLiteralValue::Create(
-          rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
-      return result;
-    }
+    case TransformOperation::kRotateZ:
+    case TransformOperation::kRotate3D:
     case TransformOperation::kRotate: {
       const auto& rotate = To<RotateTransformOperation>(operation);
-      auto* result =
-          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kRotate);
+      CSSValueID id = CSSValueIDForRotateOperation(operation.GetType());
+
+      CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(id);
+      if (id == CSSValueID::kRotate3d) {
+        result->Append(*CSSNumericLiteralValue::Create(
+            rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
+        result->Append(*CSSNumericLiteralValue::Create(
+            rotate.Y(), CSSPrimitiveValue::UnitType::kNumber));
+        result->Append(*CSSNumericLiteralValue::Create(
+            rotate.Z(), CSSPrimitiveValue::UnitType::kNumber));
+      }
       result->Append(*CSSNumericLiteralValue::Create(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
@@ -1964,7 +2038,7 @@ CSSValue* ComputedStyleUtils::ComputedTransformList(
 CSSValue* ComputedStyleUtils::ResolvedTransform(
     const LayoutObject* layout_object,
     const ComputedStyle& style) {
-  if (!layout_object || !style.HasTransform())
+  if (!layout_object || !style.HasTransformOperations())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   FloatRect reference_box = ReferenceBoxForTransform(*layout_object);
@@ -2687,6 +2761,65 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
         } else if (!(identifier_value &&
                      identifier_value->GetValueID() == CSSValueID::kNormal)) {
           list->Append(*value);
+        }
+      }
+      return list;
+    }
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+CSSValue* ComputedStyleUtils::ValuesForFontSynthesisProperty(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) {
+  enum FontSynthesisShorthandCases { kAllNone, kConcatenateAuto };
+  StylePropertyShorthand shorthand = fontSynthesisShorthand();
+  FontSynthesisShorthandCases shorthand_case = kAllNone;
+  for (unsigned i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        shorthand.properties()[i]->CSSValueFromComputedStyle(
+            style, layout_object, allow_visited_style);
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+    if (shorthand.properties()[i]->IDEquals(
+            CSSPropertyID::kFontSynthesisWeight) &&
+        identifier_value->GetValueID() == CSSValueID::kAuto) {
+      shorthand_case = kConcatenateAuto;
+    } else if (shorthand.properties()[i]->IDEquals(
+                   CSSPropertyID::kFontSynthesisStyle) &&
+               identifier_value->GetValueID() == CSSValueID::kAuto) {
+      shorthand_case = kConcatenateAuto;
+    } else if (shorthand.properties()[i]->IDEquals(
+                   CSSPropertyID::kFontSynthesisSmallCaps) &&
+               identifier_value->GetValueID() == CSSValueID::kAuto) {
+      shorthand_case = kConcatenateAuto;
+    }
+  }
+
+  switch (shorthand_case) {
+    case kAllNone:
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
+    case kConcatenateAuto: {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      for (unsigned i = 0; i < shorthand.length(); ++i) {
+        const CSSValue* value =
+            shorthand.properties()[i]->CSSValueFromComputedStyle(
+                style, layout_object, allow_visited_style);
+        auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+        if (shorthand.properties()[i]->IDEquals(
+                CSSPropertyID::kFontSynthesisWeight) &&
+            identifier_value->GetValueID() == CSSValueID::kAuto) {
+          list->Append(*CSSIdentifierValue::Create(CSSValueID::kWeight));
+        } else if (shorthand.properties()[i]->IDEquals(
+                       CSSPropertyID::kFontSynthesisStyle) &&
+                   identifier_value->GetValueID() == CSSValueID::kAuto) {
+          list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
+        } else if (shorthand.properties()[i]->IDEquals(
+                       CSSPropertyID::kFontSynthesisSmallCaps) &&
+                   identifier_value->GetValueID() == CSSValueID::kAuto) {
+          list->Append(*CSSIdentifierValue::Create(CSSValueID::kSmallCaps));
         }
       }
       return list;

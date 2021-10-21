@@ -16,6 +16,7 @@ export {MultiStoreExceptionEntry} from './autofill_page/multi_store_exception_en
 export {MultiStorePasswordUiEntry} from './autofill_page/multi_store_password_ui_entry.js';
 export {PasswordCheckInteraction, PasswordCheckReferrer, PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 export {SettingsBasicPageElement} from './basic_page/basic_page.js';
+export {SettingsToggleButtonElement} from './controls/settings_toggle_button.js';
 // <if expr="not chromeos and not lacros">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.js';
 // </if>
@@ -37,7 +38,7 @@ export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.js
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './people_page/sync_browser_proxy.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.js';
 export {SettingsPrefsElement} from './prefs/prefs.js';
-export {PrefsBehavior, PrefsBehaviorInterface} from './prefs/prefs_behavior.js';
+export {PrefsMixin, PrefsMixinInterface} from './prefs/prefs_mixin.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.js';
 export {SettingsPrivacyPageElement} from './privacy_page/privacy_page.js';
 export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.js';

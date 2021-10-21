@@ -211,11 +211,9 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     rcClip = GetClientRect();
     pRange = &wrRange;
   }
-
-  CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device, m_pEditImpl.get(),
-                          GetTextColor().ToFXColor(GetTransparency()), rcClip,
-                          CFX_PointF(), pRange, GetSystemHandler(),
-                          m_pFormFiller.Get());
+  m_pEditImpl->DrawEdit(
+      pDevice, mtUser2Device, GetTextColor().ToFXColor(GetTransparency()),
+      rcClip, CFX_PointF(), pRange, GetSystemHandler(), GetAttachedData());
 }
 
 
@@ -256,11 +254,6 @@ void CPWL_Edit::OnKillFocus() {
 
   SetCharSet(FX_Charset::kANSI);
   m_bFocus = false;
-}
-
-void CPWL_Edit::SetCharSpace(float fCharSpace) {
-  m_pEditImpl->SetCharSpace(fCharSpace);
-  m_pEditImpl->Paint();
 }
 
 CPVT_WordRange CPWL_Edit::GetSelectWordRange() const {

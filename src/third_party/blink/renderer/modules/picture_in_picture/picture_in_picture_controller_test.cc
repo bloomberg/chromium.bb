@@ -78,6 +78,11 @@ class MockPictureInPictureService
         .WillByDefault(testing::Invoke(
             this, &MockPictureInPictureService::StartSessionInternal));
   }
+
+  MockPictureInPictureService(const MockPictureInPictureService&) = delete;
+  MockPictureInPictureService& operator=(const MockPictureInPictureService&) =
+      delete;
+
   ~MockPictureInPictureService() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -116,8 +121,6 @@ class MockPictureInPictureService
   mojo::Receiver<mojom::blink::PictureInPictureService> receiver_{this};
   std::unique_ptr<MockPictureInPictureSession> session_;
   mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureService);
 };
 
 class PictureInPictureControllerFrameClient
@@ -133,13 +136,21 @@ class PictureInPictureControllerFrameClient
       std::unique_ptr<WebMediaPlayer> player)
       : test::MediaStubLocalFrameClient(std::move(player)) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerFrameClient);
+  PictureInPictureControllerFrameClient(
+      const PictureInPictureControllerFrameClient&) = delete;
+  PictureInPictureControllerFrameClient& operator=(
+      const PictureInPictureControllerFrameClient&) = delete;
 };
 
 class PictureInPictureControllerPlayer final : public EmptyWebMediaPlayer {
  public:
   PictureInPictureControllerPlayer() = default;
+
+  PictureInPictureControllerPlayer(const PictureInPictureControllerPlayer&) =
+      delete;
+  PictureInPictureControllerPlayer& operator=(
+      const PictureInPictureControllerPlayer&) = delete;
+
   ~PictureInPictureControllerPlayer() override = default;
 
   double Duration() const override {
@@ -157,8 +168,6 @@ class PictureInPictureControllerPlayer final : public EmptyWebMediaPlayer {
  private:
   bool infinity_duration_ = false;
   absl::optional<viz::SurfaceId> surface_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerPlayer);
 };
 
 class PictureInPictureTestWebFrameClient

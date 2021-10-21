@@ -64,6 +64,8 @@ const base::Feature kReliabilityLogging{"FeedReliabilityLogging",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFeedInteractiveRefresh{"FeedInteractiveRefresh",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFeedLoadingPlaceholder{"FeedLoadingPlaceholder",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFeedImageMemoryCacheSizePercentage{
     "FeedImageMemoryCacheSizePercentage", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFeedClearImageMemoryCache{
@@ -75,6 +77,9 @@ const base::Feature kFeedSignInPromoDismiss{"FeedSignInPromoDismiss",
 const base::Feature kFeedStamp{"FeedStamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kDefaultReferrerUrl[] = "https://www.google.com/";
+
+const base::Feature kWebFeedSort{"WebFeedSort",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::string GetFeedReferrerUrl() {
   const base::Feature* feature = base::FeatureList::IsEnabled(kInterestFeedV2)

@@ -77,12 +77,14 @@ base::Value ProtoToDictionary(const App::LocaleString& locale_string) {
   return result;
 }
 
-std::set<std::string> ListToStringSet(const base::Value* list) {
+std::set<std::string> ListToStringSet(const base::Value* list,
+                                      bool to_lower_ascii = false) {
   std::set<std::string> result;
   if (!list)
     return result;
   for (const base::Value& value : list->GetList())
-    result.insert(value.GetString());
+    result.insert(to_lower_ascii ? base::ToLowerASCII(value.GetString())
+                                 : value.GetString());
   return result;
 }
 
@@ -158,8 +160,7 @@ base::Time GetTime(const base::Value& pref, const char* key) {
   int64_t time;
   if (!value || !base::StringToInt64(value->GetString(), &time))
     return base::Time();
-  return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(time));
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(time));
 }
 
 bool EqualsExcludingTimestamps(const base::Value& left,
@@ -408,15 +409,19 @@ std::string GuestOsRegistryService::Registration::ExecutableFileName() const {
 std::set<std::string> GuestOsRegistryService::Registration::Extensions() const {
   if (pref_.is_none())
     return {};
+  // Convert to lowercase ASCII to allow case-insensitive match.
   return ListToStringSet(pref_.FindKeyOfType(guest_os::prefs::kAppExtensionsKey,
-                                             base::Value::Type::LIST));
+                                             base::Value::Type::LIST),
+                         /*to_lower_ascii=*/true);
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::MimeTypes() const {
   if (pref_.is_none())
     return {};
+  // Convert to lowercase ASCII to allow case-insensitive match.
   return ListToStringSet(pref_.FindKeyOfType(guest_os::prefs::kAppMimeTypesKey,
-                                             base::Value::Type::LIST));
+                                             base::Value::Type::LIST),
+                         /*to_lower_ascii=*/true);
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::Keywords() const {

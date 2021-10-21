@@ -23,11 +23,9 @@ namespace {
 // TODO(b/183573525): This timeout is chosen tentatively. We should adjust the
 // value after collecting the latency metrics.
 constexpr base::TimeDelta kKeyEventDoneCallbackTimeout =
-    base::TimeDelta::FromMilliseconds(300);
-constexpr base::TimeDelta kKeyEventLatencyMin =
-    base::TimeDelta::FromMilliseconds(1);
-constexpr base::TimeDelta kKeyEventLatencyMax =
-    base::TimeDelta::FromMilliseconds(350);
+    base::Milliseconds(300);
+constexpr base::TimeDelta kKeyEventLatencyMin = base::Milliseconds(1);
+constexpr base::TimeDelta kKeyEventLatencyMax = base::Milliseconds(350);
 
 constexpr char kImeLatencyHistogramName[] = "Arc.ChromeOsImeLatency";
 
@@ -38,7 +36,7 @@ KeyEventResultReceiver::KeyEventResultReceiver() = default;
 KeyEventResultReceiver::~KeyEventResultReceiver() = default;
 
 void KeyEventResultReceiver::DispatchKeyEventPostIME(ui::KeyEvent* event) {
-  // This method is called by |ui::InputMethodChromeOS| when IME finishes
+  // This method is called by `ui::InputMethodAsh` when IME finishes
   // handling a key event coming from |ArcImeService::SendKeyEvent()|. If the
   // key event seems not to be consumed by IME, it's sent back to ARC to give it
   // to the focused View in ARC side.

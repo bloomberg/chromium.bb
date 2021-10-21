@@ -531,10 +531,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int filter_slice_packed(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
@@ -742,7 +739,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     td.in  = in;
     td.out = out;
-    ctx->internal->execute(ctx, curves->filter_slice, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, curves->filter_slice, &td, NULL,
+                      FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     if (out != in)
         av_frame_free(&in);
@@ -802,7 +800,6 @@ static const AVFilterPad curves_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad curves_outputs[] = {
@@ -810,7 +807,6 @@ static const AVFilterPad curves_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_curves = {
@@ -820,8 +816,8 @@ const AVFilter ff_vf_curves = {
     .init          = curves_init,
     .uninit        = curves_uninit,
     .query_formats = query_formats,
-    .inputs        = curves_inputs,
-    .outputs       = curves_outputs,
+    FILTER_INPUTS(curves_inputs),
+    FILTER_OUTPUTS(curves_outputs),
     .priv_class    = &curves_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

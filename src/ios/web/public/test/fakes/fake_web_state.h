@@ -124,14 +124,14 @@ class FakeWebState : public WebState {
   // to PolicyDecision::Allow().
   void ShouldAllowRequest(
       NSURLRequest* request,
-      const WebStatePolicyDecider::RequestInfo& request_info,
+      WebStatePolicyDecider::RequestInfo request_info,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
   // Uses |policy_deciders| to determine whether the navigation corresponding to
   // |response| should be allowed. Calls |callback| with the decision. Defaults
   // to PolicyDecision::Allow().
   void ShouldAllowResponse(
       NSURLResponse* response,
-      bool for_main_frame,
+      WebStatePolicyDecider::ResponseInfo response_info,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
   std::u16string GetLastExecutedJavascript() const;
   // Returns a copy of the last added callback, if one has been added.

@@ -17,10 +17,11 @@ import '../prefs/prefs.js';
 import '../settings_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {SettingsCheckboxElement} from '../controls/settings_checkbox.js';
 import {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_proxy.js';
 import {ChromeCleanupRemovalListItem} from './items_to_remove_list.js';
 
@@ -115,12 +116,6 @@ type ChromeCleanerScannerResults = {
  *    </iron-animated-pages>
  */
 
-// TODO(crbug.com/1234307): Remove when settings_checkbox.js is migrated to
-// TypeScript.
-interface SettingsCheckboxElement extends HTMLElement {
-  checked: boolean;
-}
-
 interface SettingsChromeCleanupPageElement {
   $: {
     chromeCleanupLogsUploadControl: SettingsCheckboxElement,
@@ -129,8 +124,7 @@ interface SettingsChromeCleanupPageElement {
 }
 
 const SettingsChromeCleanupPageElementBase =
-    mixinBehaviors([I18nBehavior, WebUIListenerBehavior], PolymerElement) as
-    {new (): PolymerElement & I18nBehavior & WebUIListenerBehavior};
+    WebUIListenerMixin(I18nMixin(PolymerElement));
 
 class SettingsChromeCleanupPageElement extends
     SettingsChromeCleanupPageElementBase {

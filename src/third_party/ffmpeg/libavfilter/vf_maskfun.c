@@ -83,7 +83,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
@@ -105,8 +105,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         return ff_filter_frame(outlink, out);
     }
 
-    ctx->internal->execute(ctx, s->maskfun, frame, NULL,
-                           FFMIN(s->height[1], ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->maskfun, frame, NULL,
+                      FFMIN(s->height[1], ff_filter_get_nb_threads(ctx)));
 
     return ff_filter_frame(outlink, frame);
 }
@@ -294,11 +294,10 @@ static const AVFilterPad maskfun_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = filter_frame,
         .config_props   = config_input,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad maskfun_outputs[] = {
@@ -306,7 +305,6 @@ static const AVFilterPad maskfun_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_maskfun = {
@@ -315,8 +313,8 @@ const AVFilter ff_vf_maskfun = {
     .priv_size     = sizeof(MaskFunContext),
     .query_formats = query_formats,
     .uninit        = uninit,
-    .inputs        = maskfun_inputs,
-    .outputs       = maskfun_outputs,
+    FILTER_INPUTS(maskfun_inputs),
+    FILTER_OUTPUTS(maskfun_outputs),
     .priv_class    = &maskfun_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

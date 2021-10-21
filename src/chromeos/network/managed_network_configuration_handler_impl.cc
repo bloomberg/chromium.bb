@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -593,7 +594,7 @@ bool ManagedNetworkConfigurationHandlerImpl::ApplyOrQueuePolicies(
 
   PolicyApplicator* applicator = new PolicyApplicator(
       *profile, policies->per_network_config, policies->global_network_config,
-      this, modified_policies);
+      this, cellular_policy_handler_, modified_policies);
   policy_applicators_[userhash] = base::WrapUnique(applicator);
   applicator->Run();
   return true;
@@ -674,6 +675,11 @@ void ManagedNetworkConfigurationHandlerImpl::
                      std::move(split_callback.second), FROM_HERE));
 }
 
+void ManagedNetworkConfigurationHandlerImpl::OnCellularPoliciesApplied(
+    const NetworkProfile& profile) {
+  OnPoliciesApplied(profile);
+}
+
 void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
     const NetworkProfile& profile) {
   const std::string& userhash = profile.userhash;
@@ -694,6 +700,14 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
       device_policy_applied_ = true;
     else
       user_policy_applied_ = true;
+
+    if (features::IsESimPolicyEnabled()) {
+      // Call UpdateBlockedCellularNetworks when either device policy applied or
+      // user policy applied so that so that unmanaged cellular networks are
+      // blocked correctly if the policy appears in either.
+      network_state_handler_->UpdateBlockedCellularNetworks(
+          AllowOnlyPolicyCellularNetworks());
+    }
 
     if (device_policy_applied_ && user_policy_applied_) {
       network_state_handler_->UpdateBlockedWifiNetworks(
@@ -907,11 +921,13 @@ ManagedNetworkConfigurationHandlerImpl::
 }
 
 void ManagedNetworkConfigurationHandlerImpl::Init(
+    CellularPolicyHandler* cellular_policy_handler,
     NetworkStateHandler* network_state_handler,
     NetworkProfileHandler* network_profile_handler,
     NetworkConfigurationHandler* network_configuration_handler,
     NetworkDeviceHandler* network_device_handler,
     ProhibitedTechnologiesHandler* prohibited_technologies_handler) {
+  cellular_policy_handler_ = cellular_policy_handler;
   network_state_handler_ = network_state_handler;
   network_profile_handler_ = network_profile_handler;
   network_configuration_handler_ = network_configuration_handler;
@@ -925,14 +941,11 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
     base::OnceClosure callback,
     const std::string& service_path,
     const std::string& guid) {
-  DCHECK(!service_path.empty());
-
   // When this is called, the policy has been fully applied and is reflected in
   // NetworkStateHandler, so it is safe to notify obserers.
   // Notifying observers is the last step of policy application to
   // |service_path|.
-  for (auto& observer : observers_)
-    observer.PolicyAppliedToNetwork(service_path);
+  NotifyPolicyAppliedToNetwork(service_path);
 
   // Inform the caller that has requested policy application that it has
   // finished.
@@ -1164,6 +1177,14 @@ void ManagedNetworkConfigurationHandlerImpl::SendProperties(
   std::move(callback).Run(service_path,
                           absl::make_optional(std::move(augmented_properties)),
                           absl::nullopt);
+}
+
+void ManagedNetworkConfigurationHandlerImpl::NotifyPolicyAppliedToNetwork(
+    const std::string& service_path) const {
+  DCHECK(!service_path.empty());
+
+  for (auto& observer : observers_)
+    observer.PolicyAppliedToNetwork(service_path);
 }
 
 }  // namespace chromeos

@@ -19,6 +19,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/browsing_data/browsing_data_lifetime_policy_handler.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
@@ -165,6 +166,10 @@
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "chrome/browser/ui/side_search/side_search_prefs.h"
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 namespace policy {
 namespace {
@@ -572,6 +577,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSharedArrayBufferUnrestrictedAccessAllowed,
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_ANDROID)
+  { key::kSandboxExternalProtocolBlocked,
+    prefs::kSandboxExternalProtocolBlocked,
+    base::Value::Type::BOOLEAN },
   { key::kCrossOriginWebAssemblyModuleSharingEnabled,
     prefs::kCrossOriginWebAssemblyModuleSharingEnabled,
     base::Value::Type::BOOLEAN },
@@ -727,6 +735,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kMediaRouterCastAllowAllIPs,
     media_router::prefs::kMediaRouterCastAllowAllIPs,
     base::Value::Type::BOOLEAN },
+  { key::kAccessCodeCastEnabled,
+    media_router::prefs::kAccessCodeCastEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kAccessCodeCastDeviceDuration,
+    media_router::prefs::kAccessCodeCastDeviceDuration,
+    base::Value::Type::INTEGER },
   { key::kWebRtcLocalIpsAllowedUrls,
     prefs::kWebRtcLocalIpsAllowedUrls,
     base::Value::Type::LIST },
@@ -891,6 +905,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kFullscreenAlertEnabled,
     ash::prefs::kFullscreenAlertEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kFastPairEnabled,
+    ash::prefs::kFastPairEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultLargeCursorEnabled,
     nullptr,
@@ -1103,7 +1120,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kBootOnAcEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSamlInSessionPasswordChangeEnabled,
-    chromeos::prefs::kSamlInSessionPasswordChangeEnabled,
+    ash::prefs::kSamlInSessionPasswordChangeEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSamlPasswordExpirationAdvanceWarningDays,
     chromeos::prefs::kSamlPasswordExpirationAdvanceWarningDays,
@@ -1243,6 +1260,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnhancedNetworkVoicesInSelectToSpeakAllowed,
     ash::prefs::kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kFullRestoreEnabled,
+    ash::full_restore::kRestoreAppsEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kGhostWindowEnabled,
+    ash::full_restore::kGhostWindowEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDeskTemplatesEnabled,
+    ash::prefs::kDeskTemplatesEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -1273,6 +1299,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrintRasterizationMode,
     prefs::kPrintRasterizationMode,
     base::Value::Type::INTEGER },
+  { key::kNetworkServiceSandboxEnabled,
+    prefs::kNetworkServiceSandboxEnabled,
+    base::Value::Type::BOOLEAN },
 #else  // defined(OS_WIN)
   { key::kNtlmV2Enabled,
     prefs::kNtlmV2Enabled,
@@ -1310,9 +1339,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kPrintPreviewUseSystemDefaultPrinter,
     prefs::kPrintPreviewUseSystemDefaultPrinter,
-    base::Value::Type::BOOLEAN },
-  { key::kCloudPolicyOverridesPlatformPolicy,
-    policy_prefs::kCloudPolicyOverridesPlatformPolicy,
     base::Value::Type::BOOLEAN },
   { key::kUserDataSnapshotRetentionLimit,
     prefs::kUserDataSnapshotRetentionLimit,
@@ -1395,6 +1421,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,
     base::Value::Type::LIST },
+  { key::kU2fSecurityKeyApiEnabled,
+    extensions::pref_names::kU2fSecurityKeyApiEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1420,6 +1449,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     spellcheck::prefs::kSpellCheckUseSpellingService,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  { key::kSideSearchEnabled,
+    side_search_prefs::kSideSearchEnabled,
+    base::Value::Type::BOOLEAN },
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   { key::kScrollToTextFragmentEnabled,
     prefs::kScrollToTextFragmentEnabled,
@@ -1466,6 +1501,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWebRtcIPHandling,
     prefs::kWebRTCIPHandlingPolicy,
     base::Value::Type::STRING },
+  { key::kPromptOnMultipleMatchingCertificates,
+    prefs::kPromptOnMultipleMatchingCertificates,
+    base::Value::Type::BOOLEAN },
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kPdfAnnotationsEnabled,
@@ -1484,6 +1522,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     extensions::pref_names::kChromeAppsEnabled,
     base::Value::Type::BOOLEAN },
 #endif
+
+  { key::kWebSQLInThirdPartyContextEnabled,
+    policy_prefs::kWebSQLInThirdPartyContextEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 
@@ -1640,6 +1682,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<ExplicitlyAllowedNetworkPortsPolicyHandler>());
   handlers->AddHandler(std::make_unique<HttpsOnlyModePolicyHandler>());
 
+  handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
+      key::kBrowsingDataLifetime, browsing_data::prefs::kBrowsingDataLifetime,
+      chrome_schema));
+
 #if defined(OS_ANDROID)
   handlers->AddHandler(
       std::make_unique<ContextualSearchPolicyHandlerAndroid>());
@@ -1722,10 +1768,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           key::kEnterpriseRealTimeUrlCheckMode,
           prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
           prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope, chrome_schema));
-
-  handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
-      key::kBrowsingDataLifetime, browsing_data::prefs::kBrowsingDataLifetime,
-      chrome_schema));
 
   handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
       key::kClearBrowsingDataOnExitList,
@@ -1942,6 +1984,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kDeviceWilcoDtcConfiguration));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kCrostiniAnsiblePlaybook));
+  handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
+      key::kPreconfiguredDeskTemplates));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kSessionLocales, nullptr, chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,

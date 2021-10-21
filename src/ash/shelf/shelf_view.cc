@@ -124,9 +124,11 @@ class BoundsAnimatorDisabler {
   explicit BoundsAnimatorDisabler(views::BoundsAnimator* bounds_animator)
       : old_duration_(bounds_animator->GetAnimationDuration()),
         bounds_animator_(bounds_animator) {
-    bounds_animator_->SetAnimationDuration(
-        base::TimeDelta::FromMilliseconds(1));
+    bounds_animator_->SetAnimationDuration(base::Milliseconds(1));
   }
+
+  BoundsAnimatorDisabler(const BoundsAnimatorDisabler&) = delete;
+  BoundsAnimatorDisabler& operator=(const BoundsAnimatorDisabler&) = delete;
 
   ~BoundsAnimatorDisabler() {
     bounds_animator_->SetAnimationDuration(old_duration_);
@@ -137,8 +139,6 @@ class BoundsAnimatorDisabler {
   base::TimeDelta old_duration_;
   // The bounds animator which gets used.
   views::BoundsAnimator* bounds_animator_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoundsAnimatorDisabler);
 };
 
 // Custom FocusSearch used to navigate the shelf in the order items are in
@@ -147,6 +147,10 @@ class ShelfFocusSearch : public views::FocusSearch {
  public:
   explicit ShelfFocusSearch(ShelfView* shelf_view)
       : FocusSearch(nullptr, true, true), shelf_view_(shelf_view) {}
+
+  ShelfFocusSearch(const ShelfFocusSearch&) = delete;
+  ShelfFocusSearch& operator=(const ShelfFocusSearch&) = delete;
+
   ~ShelfFocusSearch() override = default;
 
   // views::FocusSearch:
@@ -186,23 +190,18 @@ class ShelfFocusSearch : public views::FocusSearch {
 
  private:
   ShelfView* shelf_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfFocusSearch);
 };
 
 void ReportMoveAnimationSmoothness(int smoothness) {
-  base::UmaHistogramPercentageObsoleteDoNotUse(kShelfIconMoveAnimationHistogram,
-                                               smoothness);
+  base::UmaHistogramPercentage(kShelfIconMoveAnimationHistogram, smoothness);
 }
 
 void ReportFadeInAnimationSmoothness(int smoothness) {
-  base::UmaHistogramPercentageObsoleteDoNotUse(
-      kShelfIconFadeInAnimationHistogram, smoothness);
+  base::UmaHistogramPercentage(kShelfIconFadeInAnimationHistogram, smoothness);
 }
 
 void ReportFadeOutAnimationSmoothness(int smoothness) {
-  base::UmaHistogramPercentageObsoleteDoNotUse(
-      kShelfIconFadeOutAnimationHistogram, smoothness);
+  base::UmaHistogramPercentage(kShelfIconFadeOutAnimationHistogram, smoothness);
 }
 
 // Returns the id of the display on which |view| is shown.
@@ -318,6 +317,10 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
  public:
   FadeOutAnimationDelegate(ShelfView* host, std::unique_ptr<views::View> view)
       : shelf_view_(host), view_(std::move(view)) {}
+
+  FadeOutAnimationDelegate(const FadeOutAnimationDelegate&) = delete;
+  FadeOutAnimationDelegate& operator=(const FadeOutAnimationDelegate&) = delete;
+
   ~FadeOutAnimationDelegate() override = default;
 
   // AnimationDelegate overrides:
@@ -338,8 +341,6 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
  private:
   ShelfView* shelf_view_;
   std::unique_ptr<views::View> view_;
-
-  DISALLOW_COPY_AND_ASSIGN(FadeOutAnimationDelegate);
 };
 
 // AnimationDelegate used to trigger fading an element in. When an item is
@@ -349,6 +350,11 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
  public:
   StartFadeAnimationDelegate(ShelfView* host, views::View* view)
       : shelf_view_(host), view_(view) {}
+
+  StartFadeAnimationDelegate(const StartFadeAnimationDelegate&) = delete;
+  StartFadeAnimationDelegate& operator=(const StartFadeAnimationDelegate&) =
+      delete;
+
   ~StartFadeAnimationDelegate() override = default;
 
   // AnimationDelegate overrides:
@@ -362,8 +368,6 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
  private:
   ShelfView* shelf_view_;
   views::View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
 // static
@@ -758,7 +762,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
       FROM_HERE,
       base::BindOnce(&ShelfView::DestroyScopedDisplay,
                      weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(100));
+      base::Milliseconds(100));
 
   // Slow down activation animations if Control key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
@@ -1096,22 +1100,29 @@ void ShelfView::UpdateSeparatorIndex() {
   separator_index_ = last_pinned_index;
 }
 
-bool ShelfView::ShouldStartDrag(const std::string& app_id,
-                                const gfx::Point& location_in_screen) const {
+bool ShelfView::ShouldHandleDrag(const std::string& app_id,
+                                 const gfx::Point& location_in_screen) const {
   // Remote Apps are not pinnable.
   if (IsRemoteApp(app_id))
     return false;
 
-  // Do not start drag if an operation is already going on - or the cursor is
-  // not inside. This could happen if mouse / touch operations overlap.
-  return (drag_and_drop_shelf_id_.IsNull() && !app_id.empty() &&
-          GetBoundsInScreen().Contains(location_in_screen));
+  // Do not handle drag if an operation for another app is already in progress,
+  // or the cursor is not inside the shelf bounds. This could happen if mouse /
+  // touch operations overlap.
+  return !app_id.empty() &&
+         (drag_and_drop_shelf_id_.IsNull() ||
+          drag_and_drop_shelf_id_.app_id == app_id) &&
+         GetBoundsInScreen().Contains(location_in_screen);
 }
 
 bool ShelfView::StartDrag(const std::string& app_id,
                           const gfx::Point& location_in_screen,
                           const gfx::Rect& drag_icon_bounds_in_screen) {
-  if (!ShouldStartDrag(app_id, location_in_screen))
+  // Don't start a drag if another one is in progress.
+  if (!drag_and_drop_shelf_id_.IsNull())
+    return false;
+
+  if (!ShouldHandleDrag(app_id, location_in_screen))
     return false;
 
   DCHECK(!is_active_drag_and_drop_host_);

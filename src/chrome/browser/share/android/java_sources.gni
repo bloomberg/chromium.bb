@@ -5,6 +5,7 @@
 # TODO(crbug/1022172): This should be a separate build target when circular
 # dependencies are removed.
 share_java_sources = [
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/BaseScreenshotCoordinator.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/BitmapDownloadRequest.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/SaveBitmapDelegate.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextBridge.java",
@@ -53,8 +54,11 @@ share_java_sources = [
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetView.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetViewBinder.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotShareSheetViewProperties.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureCallbackDelegate.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureCallbackImpl.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureManager.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureManagerDelegate.java",
+  "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/scroll_capture/ScrollCaptureManagerDelegateImpl.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/DevicePickerBottomSheetAdapter.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/DevicePickerBottomSheetContent.java",
   "//chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/send_tab_to_self/MetricsRecorder.java",
@@ -77,5 +81,7 @@ share_java_sources = [
 share_java_deps = [
   "//chrome/browser/content_creation/notes/android:factory_java",
   "//chrome/browser/content_creation/notes/android:public_java",
+  "//chrome/browser/content_creation/reactions/android:factory_java",
+  "//chrome/browser/content_creation/reactions/android:public_java",
   "//components/feature_engagement/public:public_java",
 ]

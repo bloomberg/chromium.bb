@@ -333,10 +333,10 @@ export const generatedProperties = [
     'keywords': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint', 'inline-size', 'block-size']
   },
   {'name': 'contain-intrinsic-block-size'},
-  {'name': 'contain-intrinsic-height', 'keywords': ['auto']},
+  {'name': 'contain-intrinsic-height', 'keywords': ['auto', 'none']},
   {'name': 'contain-intrinsic-inline-size'},
   {'longhands': ['contain-intrinsic-width', 'contain-intrinsic-height'], 'name': 'contain-intrinsic-size'},
-  {'name': 'contain-intrinsic-width', 'keywords': ['auto']},
+  {'name': 'contain-intrinsic-width', 'keywords': ['auto', 'none']},
   {'longhands': ['container-type', 'container-name'], 'name': 'container'},
   {'name': 'container-name', 'keywords': ['none']},
   {'name': 'container-type', 'keywords': ['none', 'block-size', 'inline-size', 'size']},
@@ -445,6 +445,12 @@ export const generatedProperties = [
     ]
   },
   {'name': 'font-style', 'inherited': true, 'keywords': ['normal', 'italic', 'oblique']},
+  {
+    'longhands': ['font-synthesis-weight', 'font-synthesis-style', 'font-synthesis-small-caps'],
+    'name': 'font-synthesis',
+    'inherited': true
+  },
+  {'name': 'font-synthesis-small-caps', 'inherited': true, 'keywords': ['auto', 'none']},
   {'name': 'font-synthesis-style', 'inherited': true, 'keywords': ['auto', 'none']},
   {'name': 'font-synthesis-weight', 'inherited': true, 'keywords': ['auto', 'none']},
   {
@@ -780,7 +786,6 @@ export const generatedProperties = [
   },
   {'name': 'text-underline-offset', 'inherited': true, 'keywords': ['auto']},
   {'name': 'text-underline-position', 'inherited': true, 'keywords': ['auto', 'from-font', 'under', 'left', 'right']},
-  {'name': 'time-range'},
   {'name': 'top', 'keywords': ['auto']},
   {
     'name': 'touch-action',
@@ -933,8 +938,8 @@ export const generatedPropertyValues = {
   'column-span': {'values': ['none', 'all']},
   'column-width': {'values': ['auto']},
   'contain': {'values': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint', 'inline-size', 'block-size']},
-  'contain-intrinsic-height': {'values': ['auto']},
-  'contain-intrinsic-width': {'values': ['auto']},
+  'contain-intrinsic-height': {'values': ['auto', 'none']},
+  'contain-intrinsic-width': {'values': ['auto', 'none']},
   'container-name': {'values': ['none']},
   'container-type': {'values': ['none', 'block-size', 'inline-size', 'size']},
   'content-visibility': {'values': ['visible', 'auto', 'hidden', 'hidden-matchable']},
@@ -1010,6 +1015,7 @@ export const generatedPropertyValues = {
     ]
   },
   'font-style': {'values': ['normal', 'italic', 'oblique']},
+  'font-synthesis-small-caps': {'values': ['auto', 'none']},
   'font-synthesis-style': {'values': ['auto', 'none']},
   'font-synthesis-weight': {'values': ['auto', 'none']},
   'font-variant-caps': {

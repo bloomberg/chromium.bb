@@ -463,31 +463,19 @@ AVFILTER_DEFINE_CLASS(afwtdn);
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    AVFilterChannelLayouts *layouts = NULL;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_DBLP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 #define pow2(x) (1U << (x))
@@ -1072,7 +1060,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     td.in  = in;
     td.out = out;
-    ctx->internal->execute(ctx, s->filter_channel, &td, NULL, inlink->channels);
+    ff_filter_execute(ctx, s->filter_channel, &td, NULL, inlink->channels);
     if (s->need_profile)
         s->got_profile = 1;
 
@@ -1323,7 +1311,6 @@ static const AVFilterPad inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1332,7 +1319,6 @@ static const AVFilterPad outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_afwtdn = {
@@ -1343,8 +1329,8 @@ const AVFilter ff_af_afwtdn = {
     .priv_class      = &afwtdn_class,
     .activate        = activate,
     .uninit          = uninit,
-    .inputs          = inputs,
-    .outputs         = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .process_command = process_command,
     .flags           = AVFILTER_FLAG_SLICE_THREADS,
 };

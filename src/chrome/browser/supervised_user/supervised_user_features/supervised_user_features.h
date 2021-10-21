@@ -11,7 +11,21 @@ namespace supervised_users {
 
 extern const base::Feature kEduCoexistenceFlowV2;
 
+extern const base::Feature kWebFilterInterstitialRefresh;
+
+extern const base::Feature kLocalWebApprovals;
+
 bool IsEduCoexistenceFlowV2Enabled();
+
+// Returns whether refreshed version of the website filter interstitial is
+// enabled.
+bool IsWebFilterInterstitialRefreshEnabled();
+
+// Returns whether local parent approvals on Family Link user's device are
+// enabled.
+// Local web approvals are only available when refreshed version of web
+// filter interstitial is enabled.
+bool IsLocalWebApprovalsEnabled();
 
 }  // namespace supervised_users
 

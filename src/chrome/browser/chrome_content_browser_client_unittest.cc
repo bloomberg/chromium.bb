@@ -26,11 +26,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/camera_app_ui/url_constants.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
@@ -72,9 +75,6 @@
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "components/policy/core/common/policy_pref_names.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -238,6 +238,11 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
       : from_command_line_(base::CommandLine::NO_PROGRAM),
         to_command_line_(base::CommandLine::NO_PROGRAM) {}
 
+  DisableWebRtcEncryptionFlagTest(const DisableWebRtcEncryptionFlagTest&) =
+      delete;
+  DisableWebRtcEncryptionFlagTest& operator=(
+      const DisableWebRtcEncryptionFlagTest&) = delete;
+
  protected:
   void SetUp() override {
     from_command_line_.AppendSwitch(switches::kDisableWebRtcEncryption);
@@ -252,9 +257,6 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
 
   base::CommandLine from_command_line_;
   base::CommandLine to_command_line_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisableWebRtcEncryptionFlagTest);
 };
 
 TEST_F(DisableWebRtcEncryptionFlagTest, UnknownChannel) {
@@ -292,7 +294,8 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   static const char kFakeGroupName[];
 
   BlinkSettingsFieldTrialTest()
-      : command_line_(base::CommandLine::NO_PROGRAM) {}
+      : command_line_(base::CommandLine::NO_PROGRAM),
+        testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     command_line_.AppendSwitchASCII(
@@ -338,6 +341,7 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   base::CommandLine command_line_;
 
   content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState testing_local_state_;
 };
 
 const char BlinkSettingsFieldTrialTest::kDisallowFetchFieldTrialName[] =
@@ -654,6 +658,10 @@ class CaptivePortalCheckProcessHost : public content::MockRenderProcessHost {
       content::BrowserContext* browser_context)
       : MockRenderProcessHost(browser_context) {}
 
+  CaptivePortalCheckProcessHost(const CaptivePortalCheckProcessHost&) = delete;
+  CaptivePortalCheckProcessHost& operator=(
+      const CaptivePortalCheckProcessHost&) = delete;
+
   void CreateURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryParamsPtr params) override {
@@ -670,14 +678,17 @@ class CaptivePortalCheckProcessHost : public content::MockRenderProcessHost {
  private:
   bool* invoked_url_factory_ = nullptr;
   bool expected_disable_secure_dns_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckProcessHost);
 };
 
 class CaptivePortalCheckRenderProcessHostFactory
     : public content::RenderProcessHostFactory {
  public:
   CaptivePortalCheckRenderProcessHostFactory() = default;
+
+  CaptivePortalCheckRenderProcessHostFactory(
+      const CaptivePortalCheckRenderProcessHostFactory&) = delete;
+  CaptivePortalCheckRenderProcessHostFactory& operator=(
+      const CaptivePortalCheckRenderProcessHostFactory&) = delete;
 
   content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context,
@@ -698,8 +709,6 @@ class CaptivePortalCheckRenderProcessHostFactory
 
  private:
   std::list<std::unique_ptr<CaptivePortalCheckProcessHost>> processes_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckRenderProcessHostFactory);
 };
 
 class ChromeContentBrowserClientCaptivePortalBrowserTest
@@ -821,4 +830,69 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest, FeatureEnabled) {
       /*in_memory=*/false);
   EXPECT_EQ(expected_config, config);
 }
+
+TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationLevel_App) {
+  web_app::WebApp app(kAppId);
+  app.SetScope(GURL(kScope));
+  app.SetStorageIsolated(true);
+  web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
+
+  TestChromeContentBrowserClient test_content_browser_client;
+  bool isolated =
+      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
+          &profile_, GURL(kScope));
+
+  EXPECT_TRUE(isolated);
+}
+
+TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationLevel_NonApp) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  bool isolated =
+      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
+          &profile_, GURL(kScope));
+
+  EXPECT_FALSE(isolated);
+}
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+class ChromeContentBrowserClientSwitchTest : public testing::Test {
+ public:
+  ChromeContentBrowserClientSwitchTest()
+      : command_line_(base::CommandLine::NO_PROGRAM),
+        testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+  void SetUp() override {
+    command_line_.AppendSwitchASCII(switches::kProcessType,
+                                    switches::kRendererProcess);
+  }
+
+ protected:
+  base::CommandLine command_line_;
+  ScopedTestingLocalState testing_local_state_;
+  ChromeContentBrowserClient client_;
+  content::BrowserTaskEnvironment task_environment_;
+  static const int kFakeChildProcessId = 1;
+};
+
+TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLInThirdPartyContextDefault) {
+  client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
+  EXPECT_FALSE(command_line_.HasSwitch(
+      blink::switches::kWebSQLInThirdPartyContextEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest,
+       WebSQLInThirdPartyContextDisabled) {
+  testing_local_state_.Get()->SetBoolean(
+      policy::policy_prefs::kWebSQLInThirdPartyContextEnabled, false);
+  client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
+  EXPECT_FALSE(command_line_.HasSwitch(
+      blink::switches::kWebSQLInThirdPartyContextEnabled));
+}
+
+TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLInThirdPartyContextEnabled) {
+  testing_local_state_.Get()->SetBoolean(
+      policy::policy_prefs::kWebSQLInThirdPartyContextEnabled, true);
+  client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
+  EXPECT_TRUE(command_line_.HasSwitch(
+      blink::switches::kWebSQLInThirdPartyContextEnabled));
+}

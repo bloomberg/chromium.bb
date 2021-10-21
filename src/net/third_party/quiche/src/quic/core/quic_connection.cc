@@ -324,7 +324,6 @@ QuicConnection::QuicConnection(
 
   support_multiple_connection_ids_ =
       version().HasIetfQuicFrames() &&
-      GetQuicRestartFlag(quic_time_wait_list_support_multiple_cid_v2) &&
       GetQuicRestartFlag(
           quic_dispatcher_support_multiple_cid_per_connection_v2);
 
@@ -638,10 +637,17 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kDFER, perspective_)) {
     defer_send_in_response_to_packets_ = false;
   }
+  const bool remove_connection_migration_connection_option =
+      GetQuicReloadableFlag(quic_remove_connection_migration_connection_option);
+  if (remove_connection_migration_connection_option) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_remove_connection_migration_connection_option);
+  }
   if (framer_.version().HasIetfQuicFrames() && use_path_validator_ &&
       count_bytes_on_alternative_path_separately_ &&
       GetQuicReloadableFlag(quic_server_reverse_validate_new_path3) &&
-      config.HasClientSentConnectionOption(kRVCM, perspective_)) {
+      (remove_connection_migration_connection_option ||
+       config.HasClientSentConnectionOption(kRVCM, perspective_))) {
     QUIC_CODE_COUNT_N(quic_server_reverse_validate_new_path3, 6, 6);
     validate_client_addresses_ = true;
   }
@@ -2015,10 +2021,7 @@ bool QuicConnection::OnNewConnectionIdFrameInner(
   if (perspective_ == Perspective::IS_SERVER) {
     OnClientConnectionIdAvailable();
   }
-  if (ack_cid_frames_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_ack_cid_frames, 1, 2);
-    MaybeUpdateAckTimeout();
-  }
+  MaybeUpdateAckTimeout();
   return true;
 }
 
@@ -2078,10 +2081,7 @@ bool QuicConnection::OnRetireConnectionIdFrame(
   }
   // Count successfully received RETIRE_CONNECTION_ID frames.
   QUIC_RELOADABLE_FLAG_COUNT_N(quic_connection_migration_use_new_cid_v2, 5, 6);
-  if (ack_cid_frames_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_ack_cid_frames, 2, 2);
-    MaybeUpdateAckTimeout();
-  }
+  MaybeUpdateAckTimeout();
   return true;
 }
 
@@ -5290,11 +5290,7 @@ void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
   }
   // There could be pending NEW_TOKEN_FRAME triggered by non-probing
   // PATH_RESPONSE_FRAME in the same packet.
-  if (GetQuicReloadableFlag(
-          quic_flush_pending_frame_before_updating_default_path) &&
-      packet_creator_.HasPendingFrames()) {
-    QUICHE_RELOADABLE_FLAG_COUNT(
-        quic_flush_pending_frame_before_updating_default_path);
+  if (packet_creator_.HasPendingFrames()) {
     packet_creator_.FlushCurrentPacket();
     if (!connected_) {
       return;
@@ -5354,6 +5350,17 @@ void QuicConnection::StartEffectivePeerMigration(AddressChangeType type) {
       sent_packet_manager_.SetRttStats(
           std::move(alternative_path_.rtt_stats).value());
     }
+  }
+  if (packet_creator_.HasPendingFrames() ||
+      packet_creator_.pending_padding_bytes() > 0) {
+    QUIC_BUG(quic_bug_5196)
+        << "Starts effective peer migration with pending frame types: "
+        << packet_creator_.GetPendingFramesInfo() << ". pending_padding_bytes: "
+        << packet_creator_.pending_padding_bytes()
+        << ". Address change type is " << AddressChangeTypeToString(type)
+        << ". Current frame type: " << framer_.current_received_frame_type()
+        << ". Previous frame type: "
+        << framer_.previously_received_frame_type();
   }
   // Update to the new peer address.
   UpdatePeerAddress(last_received_packet_info_.source_address);
@@ -6040,6 +6047,9 @@ bool QuicConnection::FlushCoalescedPacket() {
   if (length == 0) {
     return false;
   }
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnCoalescedPacketSent(coalesced_packet_, length);
+  }
   QUIC_DVLOG(1) << ENDPOINT << "Sending coalesced packet "
                 << coalesced_packet_.ToString(length);
 
@@ -6049,9 +6059,6 @@ bool QuicConnection::FlushCoalescedPacket() {
     buffered_packets_.emplace_back(
         buffer, static_cast<QuicPacketLength>(length),
         coalesced_packet_.self_address(), coalesced_packet_.peer_address());
-    if (debug_visitor_ != nullptr) {
-      debug_visitor_->OnCoalescedPacketSent(coalesced_packet_, length);
-    }
     return true;
   }
 
@@ -6071,9 +6078,6 @@ bool QuicConnection::FlushCoalescedPacket() {
           buffer, static_cast<QuicPacketLength>(length),
           coalesced_packet_.self_address(), coalesced_packet_.peer_address());
     }
-  }
-  if (debug_visitor_ != nullptr) {
-    debug_visitor_->OnCoalescedPacketSent(coalesced_packet_, length);
   }
   // Account for added padding.
   if (length > coalesced_packet_.length()) {
@@ -6132,7 +6136,7 @@ void QuicConnection::SetLargestReceivedPacketWithAck(
 }
 
 void QuicConnection::OnForwardProgressMade() {
-  if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) && !connected_) {
+  if (!connected_) {
     return;
   }
   if (is_path_degrading_) {
@@ -6839,8 +6843,7 @@ void QuicConnection::OnPathValidationFailureAtClient() {
 
 QuicConnectionId QuicConnection::GetOneActiveServerConnectionId() const {
   if (perspective_ == Perspective::IS_CLIENT ||
-      self_issued_cid_manager_ == nullptr ||
-      !use_active_cid_for_session_lookup_) {
+      self_issued_cid_manager_ == nullptr) {
     return connection_id();
   }
   auto active_connection_ids = GetActiveServerConnectionIds();

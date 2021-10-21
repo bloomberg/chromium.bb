@@ -95,10 +95,8 @@ constexpr int kMinDataPointsForQuickRun = 3;
 
 // These are how long the browser is run with trace event recording taking
 // place.
-constexpr base::TimeDelta kFullRunObservationPeriod =
-    base::TimeDelta::FromSeconds(15);
-constexpr base::TimeDelta kQuickRunObservationPeriod =
-    base::TimeDelta::FromSeconds(4);
+constexpr base::TimeDelta kFullRunObservationPeriod = base::Seconds(15);
+constexpr base::TimeDelta kQuickRunObservationPeriod = base::Seconds(4);
 
 constexpr char kMetricPrefixCastV2[] = "CastV2.";
 constexpr char kMetricTimeBetweenCapturesMs[] = "time_between_captures";
@@ -418,6 +416,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
                              configs.video)),
         is_full_performance_run_(is_full_performance_run) {}
 
+  TestPatternReceiver(const TestPatternReceiver&) = delete;
+  TestPatternReceiver& operator=(const TestPatternReceiver&) = delete;
+
   typedef std::map<uint16_t, base::TimeTicks> TimeMap;
 
   // Build a map from frame ID (as encoded in the audio and video data)
@@ -567,8 +568,6 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 
   // The height (number of lines) of each video frame received.
   std::vector<int> video_frame_lines_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPatternReceiver);
 };
 
 class TestCompleteObserver {
@@ -818,12 +817,12 @@ class CastV2PerformanceTest : public InProcessBrowserTest,
                      const SharedSenderReceiverConfigs& shared_configs) {
     // Start the in-process receiver that examines audio/video for the expected
     // test patterns.
-    base::TimeDelta delta = base::TimeDelta::FromSeconds(0);
+    base::TimeDelta delta = base::Seconds(0);
     if (HasFlag(kFastClock)) {
-      delta = base::TimeDelta::FromSeconds(10);
+      delta = base::Seconds(10);
     }
     if (HasFlag(kSlowClock)) {
-      delta = base::TimeDelta::FromSeconds(-10);
+      delta = base::Seconds(-10);
     }
 
     cast_environment_ = base::MakeRefCounted<SkewedCastEnvironment>(delta);
@@ -880,8 +879,7 @@ class TestTabMirroringSession : public mirroring::mojom::SessionObserver,
     const std::string receiver_model_name{};
     auto session_params = mirroring::mojom::SessionParameters::New(
         mirroring::mojom::SessionType::AUDIO_AND_VIDEO, endpoint.address(),
-        receiver_model_name,
-        base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs));
+        receiver_model_name, base::Milliseconds(kTargetPlayoutDelayMs));
 
     host_->Start(std::move(session_params), std::move(observer_remote),
                  std::move(channel_remote),

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -39,9 +40,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/component_extension_ime_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
@@ -146,7 +147,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   }
 
   builder->Add("welcomeScreenGetStarted", IDS_LOGIN_GET_STARTED);
-  builder->Add("welcomeScreenOsInstall", IDS_OOBE_WELCOME_START_OS_INSTALL);
 
   // MD-OOBE (oobe-welcome-element)
   builder->Add("debuggingFeaturesLink", IDS_WELCOME_ENABLE_DEV_FEATURES_LINK);
@@ -154,6 +154,7 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("languageButtonLabel", IDS_LANGUAGE_BUTTON_LABEL);
   builder->Add("languageSectionTitle", IDS_LANGUAGE_SECTION_TITLE);
+  builder->Add("languageSectionHint", IDS_LANGUAGE_SECTION_HINT);
   builder->Add("accessibilitySectionTitle", IDS_ACCESSIBILITY_SECTION_TITLE);
   builder->Add("accessibilitySectionHint", IDS_ACCESSIBILITY_SECTION_HINT);
   builder->Add("timezoneSectionTitle", IDS_TIMEZONE_SECTION_TITLE);
@@ -282,19 +283,17 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   if (!language_list)
     language_list = GetMinimalUILanguageList();
 
-  const bool enable_layouts = true;
-
   dict->SetKey("languageList",
                base::Value::FromUniquePtrValue(std::move(language_list)));
   dict->SetKey("inputMethodsList",
-               GetAndActivateLoginKeyboardLayouts(
-                   application_locale, selected_input_method, enable_layouts));
+               GetAndActivateLoginKeyboardLayouts(application_locale,
+                                                  selected_input_method));
   dict->SetKey("timezoneList", GetTimezoneList());
   dict->SetKey("demoModeCountryList", DemoSession::GetCountryList());
 
-  // This switch is set by the session manager if the OS install
-  // service is enabled and the OS is running from a USB installer.
-  dict->SetKey("osInstallEnabled", base::Value(switches::IsOsInstallAllowed()));
+  dict->SetKey("languagePacksEnabled",
+               base::Value(base::FeatureList::IsEnabled(
+                   ash::features::kLanguagePacksHandwriting)));
 }
 
 void WelcomeScreenHandler::Initialize() {

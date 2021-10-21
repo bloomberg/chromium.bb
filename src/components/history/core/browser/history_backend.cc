@@ -63,7 +63,6 @@
 #endif
 
 using base::Time;
-using base::TimeDelta;
 using base::TimeTicks;
 using favicon::FaviconBitmap;
 using favicon::FaviconBitmapID;
@@ -176,8 +175,8 @@ std::u16string FormatUrlForRedirectComparison(const GURL& url) {
 }
 
 base::Time MidnightNDaysLater(base::Time time, int days) {
-  return (time.LocalMidnight() + base::TimeDelta::FromDays(days) +
-          base::TimeDelta::FromHours(kDSTRoundingOffsetHours))
+  return (time.LocalMidnight() + base::Days(days) +
+          base::Hours(kDSTRoundingOffsetHours))
       .LocalMidnight();
 }
 
@@ -536,7 +535,7 @@ void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
     // We should never have a negative duration time even when time is skewed.
     visit_row.visit_duration = end_ts > visit_row.visit_time
                                    ? end_ts - visit_row.visit_time
-                                   : TimeDelta::FromMicroseconds(0);
+                                   : base::Microseconds(0);
     db_->UpdateVisitRow(visit_row);
   }
 }
@@ -628,18 +627,18 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     }
   }
 
+  VisitID opener_visit = 0;
+  if (request.opener) {
+    opener_visit = tracker_.GetLastVisit(request.opener->context_id,
+                                         request.opener->nav_entry_id,
+                                         request.opener->url);
+  }
+
   if (!has_redirects) {
     // The single entry is both a chain start and end.
     ui::PageTransition t = ui::PageTransitionFromInt(
         request_transition | ui::PAGE_TRANSITION_CHAIN_START |
         ui::PAGE_TRANSITION_CHAIN_END);
-
-    VisitID opener_visit = 0;
-    if (request.opener) {
-      opener_visit = tracker_.GetLastVisit(request.opener->context_id,
-                                           request.opener->nav_entry_id,
-                                           request.opener->url);
-    }
 
     // No redirect case (one element means just the page itself).
     last_ids = AddPageVisit(request.url, request.time, last_ids.second, t,
@@ -743,14 +742,9 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       ui::PageTransition t = ui::PageTransitionFromInt(
           ui::PageTransitionStripQualifier(request_transition) | redirect_info);
 
-      bool floc_allowed = false;
-
       // If this is the last transition, add a CHAIN_END marker
       if (redirect_index == (redirects.size() - 1)) {
         t = ui::PageTransitionFromInt(t | ui::PAGE_TRANSITION_CHAIN_END);
-        // Since request.floc_allowed is a property of the visit to request.url,
-        // it only applies to the final redirect.
-        floc_allowed = request.floc_allowed;
       }
 
       bool should_increment_typed_count = IsTypedIncrement(t);
@@ -763,11 +757,12 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
       // Record all redirect visits with the same timestamp. We don't display
       // them anyway, and if we ever decide to, we can reconstruct their order
-      // from the redirect chain.
+      // from the redirect chain. Only place the opener on the initial visit in
+      // the chain.
       last_ids = AddPageVisit(
           redirects[redirect_index], request.time, last_ids.second, t,
           request.hidden, request.visit_source, should_increment_typed_count,
-          floc_allowed, request.title);
+          redirect_index == 0 ? opener_visit : 0, request.title);
 
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
         if (request.consider_for_ntp_most_visited) {
@@ -916,7 +911,7 @@ void HistoryBackend::InitImpl(
   db_->GetStartDate(&first_recorded_time_);
 
   // Start expiring old stuff.
-  expirer_.StartExpiringOldStuff(TimeDelta::FromDays(kExpireDaysThreshold));
+  expirer_.StartExpiringOldStuff(base::Days(kExpireDaysThreshold));
 
   LOCAL_HISTOGRAM_TIMES("History.InitTime", TimeTicks::Now() - beginning_time);
 }
@@ -1243,6 +1238,15 @@ bool HistoryBackend::GetVisitsSource(const VisitVector& visits,
   return true;
 }
 
+bool HistoryBackend::GetVisitSource(const VisitID visit_id,
+                                    VisitSource* source) {
+  if (!db_)
+    return false;
+
+  *source = db_->GetVisitSource(visit_id);
+  return true;
+}
+
 bool HistoryBackend::GetURL(const GURL& url, URLRow* url_row) {
   if (db_)
     return db_->GetRowForURL(url, url_row) != 0;
@@ -1468,6 +1472,9 @@ std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
   db_->GetVisibleVisitsInRange(options, &visit_rows);
   DCHECK_LE(static_cast<int>(visit_rows.size()), options.EffectiveMaxCount());
 
+  VisitSourceMap sources;
+  GetVisitsSource(visit_rows, &sources);
+
   std::vector<AnnotatedVisit> annotated_visits;
   for (const auto& visit_row : visit_rows) {
     // Add a result row for this visit, get the URL info from the DB.
@@ -1482,7 +1489,7 @@ std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
     // failures, because visits can lack annotations for legitimate reasons.
     // In these cases, the annotations members are left unchanged.
     // TODO(tommycli): Migrate these fields to use absl::optional to make the
-    // optional nature more explicit.
+    //  optional nature more explicit.
     VisitContextAnnotations context_annotations;
     db_->GetContextAnnotationsForVisit(visit_row.visit_id,
                                        &context_annotations);
@@ -1490,12 +1497,19 @@ std::vector<AnnotatedVisit> HistoryBackend::GetAnnotatedVisits(
     db_->GetContentAnnotationsForVisit(visit_row.visit_id,
                                        &content_annotations);
 
+    VisitRow redirect_start = GetRedirectChainStart(visit_row);
     VisitID referring_visit_of_redirect_chain_start =
-        GetRedirectChainStart(visit_row).referring_visit;
+        redirect_start.referring_visit;
+    VisitID opener_visit_of_redirect_chain_start = redirect_start.opener_visit;
+
+    const auto source = sources.count(visit_row.visit_id) == 0
+                            ? VisitSource::SOURCE_BROWSED
+                            : sources[visit_row.visit_id];
 
     annotated_visits.emplace_back(url_row, visit_row, context_annotations,
                                   content_annotations,
-                                  referring_visit_of_redirect_chain_start);
+                                  referring_visit_of_redirect_chain_start,
+                                  opener_visit_of_redirect_chain_start, source);
   }
 
   return annotated_visits;
@@ -1595,12 +1609,16 @@ std::vector<AnnotatedVisit> HistoryBackend::AnnotatedVisitsFromRows(
     VisitRow visit_row;
     if (db_->GetRowForVisit(annotated_visit_row.visit_id, &visit_row) &&
         db_->GetURLRow(visit_row.url_id, &url_row)) {
-      annotated_visits.push_back(
-          {url_row,
-           visit_row,
-           annotated_visit_row.context_annotations,
-           {},
-           GetRedirectChainStart(visit_row).referring_visit});
+      VisitSource source;
+      GetVisitSource(annotated_visit_row.visit_id, &source);
+      VisitRow redirect_start = GetRedirectChainStart(visit_row);
+      annotated_visits.push_back({url_row,
+                                  visit_row,
+                                  annotated_visit_row.context_annotations,
+                                  {},
+                                  redirect_start.referring_visit,
+                                  redirect_start.opener_visit,
+                                  source});
     } else {
       // Ignore corrupt data but do not crash, as user DBs can be in bad states.
       DVLOG(0) << "HistoryBackend: AnnotatedVisit found with missing associated"
@@ -1876,8 +1894,7 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count,
                                 base::Unretained(backend_client_.get()))
           : base::NullCallback();
   std::vector<std::unique_ptr<PageUsageData>> data = db_->QuerySegmentUsage(
-      base::Time::Now() - base::TimeDelta::FromDays(days_back), result_count,
-      url_filter);
+      base::Time::Now() - base::Days(days_back), result_count, url_filter);
 
   MostVisitedURLList result;
   for (const std::unique_ptr<PageUsageData>& current_data : data)
@@ -2236,9 +2253,8 @@ void HistoryBackend::ScheduleCommit() {
   scheduled_commit_.Reset(
       base::BindOnce(&HistoryBackend::Commit, base::Unretained(this)));
 
-  task_runner_->PostDelayedTask(
-      FROM_HERE, scheduled_commit_.callback(),
-      base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
+  task_runner_->PostDelayedTask(FROM_HERE, scheduled_commit_.callback(),
+                                base::Seconds(kCommitIntervalSeconds));
 }
 
 void HistoryBackend::CancelScheduledCommit() {

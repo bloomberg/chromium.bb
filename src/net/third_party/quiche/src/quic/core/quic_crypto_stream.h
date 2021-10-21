@@ -63,11 +63,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Performs key extraction to derive a new secret of |result_len| bytes
   // dependent on |label|, |context|, and the stream's negotiated subkey secret.
   // Returns false if the handshake has not been confirmed or the parameters are
-  // invalid (e.g. |label| contains null bytes); returns true on success.
-  bool ExportKeyingMaterial(absl::string_view label,
-                            absl::string_view context,
-                            size_t result_len,
-                            std::string* result) const;
+  // invalid (e.g. |label| contains null bytes); returns true on success. This
+  // method is only supported for IETF QUIC and MUST NOT be called in gQUIC as
+  // that'll trigger an assert in DEBUG build.
+  virtual bool ExportKeyingMaterial(absl::string_view label,
+                                    absl::string_view context,
+                                    size_t result_len, std::string* result) = 0;
 
   // Writes |data| to the QuicStream at level |level|.
   virtual void WriteCryptoData(EncryptionLevel level, absl::string_view data);
@@ -146,6 +147,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Called to generate an encrypter for the same key phase of the last
   // decrypter returned by AdvanceKeysAndCreateCurrentOneRttDecrypter().
   virtual std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() = 0;
+
+  // Return the SSL struct object created by BoringSSL if the stream is using
+  // TLS1.3. Otherwise, return nullptr.
+  // This method is used in Envoy.
+  virtual SSL* GetSsl() const = 0;
 
   // Called to cancel retransmission of unencrypted crypto stream data.
   void NeuterUnencryptedStreamData();

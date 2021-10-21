@@ -27,9 +27,12 @@ namespace ash {
 namespace attestation {
 class AttestationPolicyObserver;
 class EnrollmentCertificateUploader;
-class EnrollmentPolicyObserver;
+class EnrollmentIdUploadManager;
 class MachineCertificateUploader;
 }  // namespace attestation
+namespace reporting {
+class LoginLogoutReporter;
+}
 }  // namespace ash
 
 namespace base {
@@ -37,13 +40,8 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace chromeos {
-
-namespace reporting {
-class LoginLogoutReporter;
-}  // namespace reporting
-
 class InstallAttributes;
-}  // namespace chromeos
+}
 
 class PrefRegistrySimple;
 class PrefService;
@@ -53,6 +51,7 @@ namespace policy {
 class DeviceCloudPolicyStoreAsh;
 class ForwardingSchemaRegistry;
 class HeartbeatScheduler;
+class ManagedSessionService;
 class SchemaRegistry;
 class StatusUploader;
 class SystemLogUploader;
@@ -80,6 +79,11 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker);
+
+  DeviceCloudPolicyManagerAsh(const DeviceCloudPolicyManagerAsh&) = delete;
+  DeviceCloudPolicyManagerAsh& operator=(const DeviceCloudPolicyManagerAsh&) =
+      delete;
+
   ~DeviceCloudPolicyManagerAsh() override;
 
   // Initializes state keys.
@@ -179,9 +183,12 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   // the server, to monitor connectivity.
   std::unique_ptr<HeartbeatScheduler> heartbeat_scheduler_;
 
+  // Object that monitors managed session related events used by reporting
+  // services.
+  std::unique_ptr<policy::ManagedSessionService> managed_session_service_;
+
   // Object that reports login/logout events to the server.
-  std::unique_ptr<chromeos::reporting::LoginLogoutReporter>
-      login_logout_reporter_;
+  std::unique_ptr<ash::reporting::LoginLogoutReporter> login_logout_reporter_;
 
   // Object that reports user added/removed events to the server.
   std::unique_ptr<reporting::UserAddedRemovedReporter>
@@ -197,8 +204,8 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
 
   std::unique_ptr<ash::attestation::EnrollmentCertificateUploader>
       enrollment_certificate_uploader_;
-  std::unique_ptr<ash::attestation::EnrollmentPolicyObserver>
-      enrollment_policy_observer_;
+  std::unique_ptr<ash::attestation::EnrollmentIdUploadManager>
+      enrollment_id_upload_manager_;
   std::unique_ptr<ash::attestation::MachineCertificateUploader>
       machine_certificate_uploader_;
   std::unique_ptr<ash::attestation::AttestationPolicyObserver>
@@ -217,8 +224,6 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   bool component_policy_disabled_for_testing_ = false;
 
   base::ObserverList<Observer, true>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerAsh);
 };
 
 }  // namespace policy

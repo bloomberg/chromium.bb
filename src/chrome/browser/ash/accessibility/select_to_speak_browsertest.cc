@@ -32,6 +32,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -48,6 +49,9 @@ namespace ash {
 
 class SelectToSpeakTest : public InProcessBrowserTest {
  public:
+  SelectToSpeakTest(const SelectToSpeakTest&) = delete;
+  SelectToSpeakTest& operator=(const SelectToSpeakTest&) = delete;
+
   void OnFocusRingChanged() {
     if (loop_runner_) {
       loop_runner_->Quit();
@@ -70,11 +74,11 @@ class SelectToSpeakTest : public InProcessBrowserTest {
         browser()->profile(), extension_misc::kSelectToSpeakExtensionId);
 
     tray_test_api_ = SystemTrayTestApi::Create();
-    content::WindowedNotificationObserver extension_load_waiter(
-        extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-        content::NotificationService::AllSources());
+
+    extensions::ExtensionHostTestHelper host_helper(
+        browser()->profile(), extension_misc::kSelectToSpeakExtensionId);
     AccessibilityManager::Get()->SetSelectToSpeakEnabled(true);
-    extension_load_waiter.Wait();
+    host_helper.WaitForHostCompletedFirstLoad();
 
     aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
     generator_ = std::make_unique<ui::test::EventGenerator>(root_window);
@@ -167,7 +171,6 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   scoped_refptr<content::MessageLoopRunner> tray_loop_runner_;
   base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTest);
 };
 
 /* Test fixture enabling experimental accessibility language detection switch */

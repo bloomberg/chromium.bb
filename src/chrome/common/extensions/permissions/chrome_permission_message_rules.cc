@@ -4,9 +4,12 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 
+#include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -28,6 +31,12 @@ class DefaultPermissionMessageFormatter
  public:
   explicit DefaultPermissionMessageFormatter(int message_id)
       : message_id_(message_id) {}
+
+  DefaultPermissionMessageFormatter(const DefaultPermissionMessageFormatter&) =
+      delete;
+  DefaultPermissionMessageFormatter& operator=(
+      const DefaultPermissionMessageFormatter&) = delete;
+
   ~DefaultPermissionMessageFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -38,8 +47,6 @@ class DefaultPermissionMessageFormatter
 
  private:
   int message_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultPermissionMessageFormatter);
 };
 
 // A formatter that substitutes the parameter into the message using string
@@ -48,6 +55,10 @@ class DefaultPermissionMessageFormatter
 class SingleParameterFormatter : public ChromePermissionMessageFormatter {
  public:
   explicit SingleParameterFormatter(int message_id) : message_id_(message_id) {}
+
+  SingleParameterFormatter(const SingleParameterFormatter&) = delete;
+  SingleParameterFormatter& operator=(const SingleParameterFormatter&) = delete;
+
   ~SingleParameterFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -63,8 +74,6 @@ class SingleParameterFormatter : public ChromePermissionMessageFormatter {
 
  private:
   int message_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleParameterFormatter);
 };
 
 // Adds each parameter to a growing list, with the given |root_message_id| as
@@ -73,6 +82,10 @@ class SimpleListFormatter : public ChromePermissionMessageFormatter {
  public:
   explicit SimpleListFormatter(int root_message_id)
       : root_message_id_(root_message_id) {}
+
+  SimpleListFormatter(const SimpleListFormatter&) = delete;
+  SimpleListFormatter& operator=(const SimpleListFormatter&) = delete;
+
   ~SimpleListFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -85,8 +98,6 @@ class SimpleListFormatter : public ChromePermissionMessageFormatter {
 
  private:
   int root_message_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleListFormatter);
 };
 
 // Creates a space-separated list of permissions with the given PermissionID.
@@ -100,6 +111,11 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
                               int message_id_for_multiple_hosts)
       : message_id_for_one_host_(message_id_for_one_host),
         message_id_for_multiple_hosts_(message_id_for_multiple_hosts) {}
+
+  SpaceSeparatedListFormatter(const SpaceSeparatedListFormatter&) = delete;
+  SpaceSeparatedListFormatter& operator=(const SpaceSeparatedListFormatter&) =
+      delete;
+
   ~SpaceSeparatedListFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -119,8 +135,6 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
  private:
   int message_id_for_one_host_;
   int message_id_for_multiple_hosts_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpaceSeparatedListFormatter);
 };
 
 // Creates a list of host permissions. If there are 1-3 hosts, they are inserted
@@ -136,6 +150,10 @@ class HostListFormatter : public ChromePermissionMessageFormatter {
         message_id_for_two_hosts_(message_id_for_two_hosts),
         message_id_for_three_hosts_(message_id_for_three_hosts),
         message_id_for_many_hosts_(message_id_for_many_hosts) {}
+
+  HostListFormatter(const HostListFormatter&) = delete;
+  HostListFormatter& operator=(const HostListFormatter&) = delete;
+
   ~HostListFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -188,13 +206,15 @@ class HostListFormatter : public ChromePermissionMessageFormatter {
   int message_id_for_two_hosts_;
   int message_id_for_three_hosts_;
   int message_id_for_many_hosts_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostListFormatter);
 };
 
 class USBDevicesFormatter : public ChromePermissionMessageFormatter {
  public:
   USBDevicesFormatter() {}
+
+  USBDevicesFormatter(const USBDevicesFormatter&) = delete;
+  USBDevicesFormatter& operator=(const USBDevicesFormatter&) = delete;
+
   ~USBDevicesFormatter() override {}
 
   PermissionMessage GetPermissionMessage(
@@ -254,8 +274,43 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
         permissions, submessages);
   }
+};
 
-  DISALLOW_COPY_AND_ASSIGN(USBDevicesFormatter);
+// Concatenates a set of permission message ids into one string by adding a
+// space between them. Useful to define a common message text once and use
+// it in different combinations. See usages.
+class ConcatenateMessageFormatter : public ChromePermissionMessageFormatter {
+ public:
+  ConcatenateMessageFormatter(
+      const std::initializer_list<int>& permission_messages)
+      : message_(ConcatenateMessagesWithIds(permission_messages)) {}
+  ConcatenateMessageFormatter(const ConcatenateMessageFormatter&) = delete;
+  ConcatenateMessageFormatter& operator=(const ConcatenateMessageFormatter&) =
+      delete;
+  ~ConcatenateMessageFormatter() override = default;
+
+  PermissionMessage GetPermissionMessage(
+      const PermissionIDSet& permissions) const override {
+    DCHECK(permissions.size() > 0);
+    return PermissionMessage(message_, permissions);
+  }
+
+ private:
+  static std::u16string ConcatenateMessagesWithIds(
+      const std::initializer_list<int>& message_ids) {
+    std::vector<std::u16string> message_strings;
+    message_strings.reserve(message_ids.size());
+
+    std::transform(message_ids.begin(), message_ids.end(),
+                   std::back_inserter(message_strings),
+                   [](int message_id) -> std::u16string {
+                     return l10n_util::GetStringUTF16(message_id);
+                   });
+
+    return base::JoinString(message_strings, u" ");
+  }
+
+  const std::u16string message_;
 };
 
 }  // namespace
@@ -705,6 +760,42 @@ ChromePermissionMessageRule::GetAllRules() {
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_TRANSIENT_BACKGROUND,
        {APIPermissionID::kTransientBackground},
+       {}},
+
+      // Telemetry System Extension permission messages.
+      //
+      // The permission messages for both os.diagnostics and os.telemetry differ
+      // based on which permissions are requested:
+      //   1. os.diagnostics permission only.
+      //   2. os.telemetry permission only.
+      //   3. Both os.diagnostics and os.telemetry permissions.
+      // That's why 3 permission messages are defined, respectively.
+      // In all of the above cases, a common text (for privacy and legal
+      // purposes) should appear. The common text is defined as a separate
+      // permission message and the ConcatenateMessageFormatter is used to
+      // construct the complete message.
+      {std::make_unique<ConcatenateMessageFormatter>(std::initializer_list<int>{
+           IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_TELEMETRY_AND_DIAGNOSTICS,
+           IDS_EXTENSION_PROMPT_WARNING_DEVICE_INFO_MAYBE_SHARED_WITH_MANUFACTURER}),
+       {APIPermissionID::kChromeOSTelemetry,
+        APIPermissionID::kChromeOSDiagnostics},
+       {}},
+      {std::make_unique<ConcatenateMessageFormatter>(std::initializer_list<int>{
+           IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_DIAGNOSTICS,
+           IDS_EXTENSION_PROMPT_WARNING_DEVICE_INFO_MAYBE_SHARED_WITH_MANUFACTURER}),
+       {APIPermissionID::kChromeOSDiagnostics},
+       {}},
+      {std::make_unique<ConcatenateMessageFormatter>(std::initializer_list<int>{
+           IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_TELEMETRY,
+           IDS_EXTENSION_PROMPT_WARNING_DEVICE_INFO_MAYBE_SHARED_WITH_MANUFACTURER}),
+       {APIPermissionID::kChromeOSTelemetry},
+       {}},
+      // Serial number permission warning that appears the first time the
+      // extension accesses serial numbers.
+      {std::make_unique<ConcatenateMessageFormatter>(std::initializer_list<int>{
+           IDS_EXTENSION_PROMPT_WARNING_CHROMEOS_TELEMETRY_SERIAL_NUMBER,
+           IDS_EXTENSION_PROMPT_WARNING_DEVICE_INFO_MAYBE_SHARED_WITH_MANUFACTURER}),
+       {APIPermissionID::kChromeOSTelemetrySerialNumber},
        {}},
   };
 

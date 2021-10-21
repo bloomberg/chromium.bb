@@ -51,6 +51,7 @@ if (safe_browsing_mode > 0) {
       "//components/prefs",
       "//components/safe_browsing/content/browser/triggers",
       "//components/safe_browsing/core/browser",
+      "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
       "//components/safe_browsing/core/common",
       "//components/safe_browsing/core/common:safe_browsing_prefs",
       "//components/security_interstitials/content:security_interstitial_page",
@@ -73,8 +74,6 @@ source_set("browser") {
     "mojo_safe_browsing_impl.h",
     "safe_browsing_controller_client.cc",
     "safe_browsing_controller_client.h",
-    "safe_browsing_metrics_collector.cc",
-    "safe_browsing_metrics_collector.h",
     "safe_browsing_network_context.cc",
     "safe_browsing_network_context.h",
     "threat_details.cc",
@@ -137,30 +136,9 @@ source_set("browser") {
   }
 }
 
-source_set("client_side_model_loader") {
-  sources = [
-    "client_side_model_loader.cc",
-    "client_side_model_loader.h",
-  ]
-  deps = [
-    "//base:base",
-    "//components/safe_browsing:buildflags",
-    "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
-    "//components/safe_browsing/core/common",
-    "//components/safe_browsing/core/common/proto:client_model_proto",
-    "//components/safe_browsing/core/common/proto:csd_proto",
-    "//components/variations",
-    "//net:net",
-    "//net/traffic_annotation:traffic_annotation",
-    "//services/network/public/cpp",
-    "//url:url",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "client_side_model_loader_unittest.cc",
     "client_side_phishing_model_unittest.cc",
     "user_population_unittest.cc",
     "web_api_handshake_checker_unittest.cc",
@@ -168,7 +146,6 @@ source_set("unit_tests") {
 
   deps = [
     ":client_side_detection",
-    ":client_side_model_loader",
     "//base:base",
     "//base/test:test_support",
     "//components/safe_browsing:buildflags",
@@ -191,10 +168,7 @@ source_set("unit_tests") {
   ]
 
   if (safe_browsing_mode > 0) {
-    sources += [
-      "safe_browsing_metrics_collector_unittest.cc",
-      "ui_manager_unittest.cc",
-    ]
+    sources += [ "ui_manager_unittest.cc" ]
     deps += [
       "//components/prefs",
       "//components/prefs:test_support",
@@ -231,7 +205,6 @@ source_set("client_side_detection") {
     "safe_browsing_tab_observer.h",
   ]
   deps = [
-    ":client_side_model_loader",
     "//base:base",
     "//components/prefs",
     "//components/safe_browsing:buildflags",

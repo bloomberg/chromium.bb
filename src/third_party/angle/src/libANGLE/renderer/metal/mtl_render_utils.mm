@@ -670,19 +670,6 @@ RenderPipelineDesc GetComputingVertexShaderOnlyRenderPipelineDesc(RenderCommandE
 
 // Get pipeline descriptor for render pipeline that contains vertex shader acting as transform
 // feedback.
-ANGLE_INLINE
-RenderPipelineDesc GetTransformFeedbackRenderPipelineDesc(RenderCommandEncoder *cmdEncoder,
-                                                          mtl::RenderPipelineDesc &pipelineDesc)
-{
-    RenderPipelineDesc xfbPipelineDesc   = RenderPipelineDesc(pipelineDesc);
-    const RenderPassDesc &renderPassDesc = cmdEncoder->renderPassDesc();
-
-    renderPassDesc.populateRenderPipelineOutputDesc(&pipelineDesc.outputDescriptor);
-    xfbPipelineDesc.rasterizationType      = RenderPipelineRasterization::Disabled;
-    xfbPipelineDesc.inputPrimitiveTopology = kPrimitiveTopologyClassPoint;
-
-    return xfbPipelineDesc;
-}
 
 template <typename T>
 void ClearRenderPipelineCacheArray(T *pipelineCacheArray)
@@ -1211,21 +1198,6 @@ angle::Result RenderUtils::expandVertexFormatComponentsVS(const gl::Context *con
                                                              params);
 }
 
-angle::Result RenderUtils::createTransformFeedbackPSO(const gl::Context *context,
-                                                      RenderCommandEncoder *renderEncoder,
-                                                      mtl::RenderPipelineDesc &pipelineDesc)
-{
-    ContextMtl *contextMtl = mtl::GetImpl(context);
-    // Create and cache the PSO
-    auto pso = mTransformFeedbackUtils.getTransformFeedbackRenderPipeline(contextMtl, renderEncoder,
-                                                                          pipelineDesc);
-    if (pso)
-    {
-        return angle::Result::Continue;
-    }
-    return angle::Result::Stop;
-}
-
 // ClearUtils implementation
 ClearUtils::ClearUtils(const std::string &fragmentShaderName)
     : mFragmentShaderName(fragmentShaderName)
@@ -1339,13 +1311,18 @@ id<MTLRenderPipelineState> ClearUtils::getClearRenderPipelineState(const gl::Con
     return cache.getRenderPipelineState(contextMtl, pipelineDesc);
 }
 
-void ClearUtils::setupClearWithDraw(const gl::Context *context,
-                                    RenderCommandEncoder *cmdEncoder,
-                                    const ClearRectParams &params)
+angle::Result ClearUtils::setupClearWithDraw(const gl::Context *context,
+                                             RenderCommandEncoder *cmdEncoder,
+                                             const ClearRectParams &params)
 {
     // Generate render pipeline state
     id<MTLRenderPipelineState> renderPipelineState =
         getClearRenderPipelineState(context, cmdEncoder, params);
+    if (renderPipelineState == nil)
+    {
+        // Return early
+        return angle::Result::Stop;
+    }
     ASSERT(renderPipelineState);
     // Setup states
     SetupFullscreenQuadDrawCommonStates(cmdEncoder);
@@ -1379,6 +1356,7 @@ void ClearUtils::setupClearWithDraw(const gl::Context *context,
 
     cmdEncoder->setVertexData(uniformParams, 0);
     cmdEncoder->setFragmentData(uniformParams, 0);
+    return angle::Result::Continue;
 }
 
 angle::Result ClearUtils::clearWithDraw(const gl::Context *context,
@@ -1407,7 +1385,7 @@ angle::Result ClearUtils::clearWithDraw(const gl::Context *context,
         return angle::Result::Continue;
     }
     ContextMtl *contextMtl = GetImpl(context);
-    setupClearWithDraw(context, cmdEncoder, overridedParams);
+    ANGLE_TRY(setupClearWithDraw(context, cmdEncoder, overridedParams));
 
     angle::Result result;
     {
@@ -1543,9 +1521,9 @@ id<MTLRenderPipelineState> ColorBlitUtils::getColorBlitRenderPipelineState(
     return pipelineCache->getRenderPipelineState(contextMtl, pipelineDesc);
 }
 
-void ColorBlitUtils::setupColorBlitWithDraw(const gl::Context *context,
-                                            RenderCommandEncoder *cmdEncoder,
-                                            const ColorBlitParams &params)
+angle::Result ColorBlitUtils::setupColorBlitWithDraw(const gl::Context *context,
+                                                     RenderCommandEncoder *cmdEncoder,
+                                                     const ColorBlitParams &params)
 {
     ASSERT(cmdEncoder->renderPassDesc().numColorAttachments >= 1 && params.src);
 
@@ -1555,6 +1533,11 @@ void ColorBlitUtils::setupColorBlitWithDraw(const gl::Context *context,
     id<MTLRenderPipelineState> renderPipelineState =
         getColorBlitRenderPipelineState(context, cmdEncoder, params);
     ASSERT(renderPipelineState);
+    if (!renderPipelineState)
+    {
+        // return early
+        return angle::Result::Stop;
+    }
     // Setup states
     cmdEncoder->setRenderPipelineState(renderPipelineState);
     cmdEncoder->setDepthStencilState(
@@ -1570,6 +1553,7 @@ void ColorBlitUtils::setupColorBlitWithDraw(const gl::Context *context,
     cmdEncoder->setFragmentSamplerState(contextMtl->getDisplay()->getStateCache().getSamplerState(
                                             contextMtl->getMetalDevice(), samplerDesc),
                                         0, FLT_MAX, 0);
+    return angle::Result::Continue;
 }
 
 angle::Result ColorBlitUtils::blitColorWithDraw(const gl::Context *context,
@@ -1581,7 +1565,7 @@ angle::Result ColorBlitUtils::blitColorWithDraw(const gl::Context *context,
         return angle::Result::Continue;
     }
     ContextMtl *contextMtl = GetImpl(context);
-    setupColorBlitWithDraw(context, cmdEncoder, params);
+    ANGLE_TRY(setupColorBlitWithDraw(context, cmdEncoder, params));
 
     angle::Result result;
     {
@@ -1736,9 +1720,10 @@ id<MTLRenderPipelineState> DepthStencilBlitUtils::getDepthStencilBlitRenderPipel
     return pipelineCache->getRenderPipelineState(contextMtl, pipelineDesc);
 }
 
-void DepthStencilBlitUtils::setupDepthStencilBlitWithDraw(const gl::Context *context,
-                                                          RenderCommandEncoder *cmdEncoder,
-                                                          const DepthStencilBlitParams &params)
+angle::Result DepthStencilBlitUtils::setupDepthStencilBlitWithDraw(
+    const gl::Context *context,
+    RenderCommandEncoder *cmdEncoder,
+    const DepthStencilBlitParams &params)
 {
     ContextMtl *contextMtl = mtl::GetImpl(context);
 
@@ -1749,7 +1734,10 @@ void DepthStencilBlitUtils::setupDepthStencilBlitWithDraw(const gl::Context *con
     // Generate render pipeline state
     id<MTLRenderPipelineState> renderPipelineState =
         getDepthStencilBlitRenderPipelineState(context, cmdEncoder, params);
-    ASSERT(renderPipelineState);
+    if (!renderPipelineState)
+    {
+        return angle::Result::Stop;
+    }
     // Setup states
     cmdEncoder->setRenderPipelineState(renderPipelineState);
 
@@ -1791,6 +1779,7 @@ void DepthStencilBlitUtils::setupDepthStencilBlitWithDraw(const gl::Context *con
 
     cmdEncoder->setDepthStencilState(contextMtl->getDisplay()->getStateCache().getDepthStencilState(
         contextMtl->getMetalDevice(), dsStateDesc));
+    return angle::Result::Continue;
 }
 
 angle::Result DepthStencilBlitUtils::blitDepthStencilWithDraw(const gl::Context *context,
@@ -1803,7 +1792,7 @@ angle::Result DepthStencilBlitUtils::blitDepthStencilWithDraw(const gl::Context 
     }
     ContextMtl *contextMtl = GetImpl(context);
 
-    setupDepthStencilBlitWithDraw(context, cmdEncoder, params);
+    ANGLE_TRY(setupDepthStencilBlitWithDraw(context, cmdEncoder, params));
 
     angle::Result result;
     {
@@ -2895,6 +2884,10 @@ angle::Result VertexFormatConversionUtils::setupCommonConvertVertexFormatToFloat
     const angle::Format &srcAngleFormat,
     const VertexFormatConvertParams &params)
 {
+    if (pipeline == nullptr)
+    {
+        return angle::Result::Stop;
+    }
     SetPipelineState(cmdEncoder, pipeline);
     SetComputeOrVertexBuffer(cmdEncoder, params.srcBuffer, 0, 1);
     SetComputeOrVertexBufferForWrite(cmdEncoder, params.dstBuffer, 0, 2);
@@ -2943,6 +2936,10 @@ angle::Result VertexFormatConversionUtils::expandVertexFormatComponentsVS(
 
     AutoObjCPtr<id<MTLRenderPipelineState>> pipeline =
         getComponentsExpandRenderPipeline(contextMtl, cmdEncoder);
+    if (pipeline == nullptr)
+    {
+        return angle::Result::Stop;
+    }
 
     ANGLE_TRY(setupCommonExpandVertexFormatComponents(contextMtl, cmdEncoder, pipeline,
                                                       srcAngleFormat, params));
@@ -2966,6 +2963,10 @@ angle::Result VertexFormatConversionUtils::setupCommonExpandVertexFormatComponen
     const angle::Format &srcAngleFormat,
     const VertexFormatConvertParams &params)
 {
+    if (pipeline == nullptr)
+    {
+        return angle::Result::Stop;
+    }
     SetPipelineState(cmdEncoder, pipeline);
     SetComputeOrVertexBuffer(cmdEncoder, params.srcBuffer, 0, 1);
     SetComputeOrVertexBufferForWrite(cmdEncoder, params.dstBuffer, 0, 2);
@@ -3064,56 +3065,6 @@ VertexFormatConversionUtils::getFloatConverstionRenderPipeline(ContextMtl *conte
     RenderPipelineDesc pipelineDesc = GetComputingVertexShaderOnlyRenderPipelineDesc(cmdEncoder);
 
     return cache.getRenderPipelineState(contextMtl, pipelineDesc);
-}
-
-AutoObjCPtr<id<MTLLibrary>> TransformFeedbackUtils::createMslXfbLibrary(
-    ContextMtl *contextMtl,
-    const std::string &translatedMsl)
-{
-    ANGLE_MTL_OBJC_SCOPE
-    {
-        DisplayMtl *display     = contextMtl->getDisplay();
-        id<MTLDevice> mtlDevice = display->getMetalDevice();
-
-        // Convert to actual binary shader
-        mtl::AutoObjCPtr<NSError *> err               = nil;
-        mtl::AutoObjCPtr<id<MTLLibrary>> mtlShaderLib = mtl::CreateShaderLibrary(
-            mtlDevice, translatedMsl, @{@"TRANSFORM_FEEDBACK_ENABLED" : @"1"}, &err);
-        if (err && !mtlShaderLib)
-        {
-            NSLog(@"%@", err.get());
-            assert(0);
-        }
-        mtlShaderLib.get().label = @"TransformFeedback";
-        return mtlShaderLib;
-    }
-}
-
-AutoObjCPtr<id<MTLRenderPipelineState>> TransformFeedbackUtils::getTransformFeedbackRenderPipeline(
-    ContextMtl *contextMtl,
-    RenderCommandEncoder *cmdEncoder,
-    mtl::RenderPipelineDesc &pipelineDesc)
-{
-    const ProgramMtl *programMtl = mtl::GetImpl(contextMtl->getState().getProgram());
-    RenderPipelineCache &cache   = *programMtl->mMetalXfbRenderPipelineCache;
-
-    if (!cache.getVertexShader())
-    {
-        // Pipeline cache not intialized, do it now:
-        ANGLE_MTL_OBJC_SCOPE
-        {
-            auto shaderLib = createMslXfbLibrary(
-                contextMtl, programMtl->getTranslatedShaderSource(gl::ShaderType::Vertex));
-            // Non specialized constants provided, use default creation function.
-            EnsureVertexShaderOnlyPipelineCacheInitialized(contextMtl, SHADER_ENTRY_NAME, shaderLib,
-                                                           &cache);
-        }
-    }
-
-    RenderPipelineDesc xfbPipelineDesc =
-        GetTransformFeedbackRenderPipelineDesc(cmdEncoder, pipelineDesc);
-
-    return cache.getRenderPipelineState(contextMtl, xfbPipelineDesc);
 }
 
 }  // namespace mtl

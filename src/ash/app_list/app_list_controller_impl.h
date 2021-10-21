@@ -78,6 +78,10 @@ class ASH_EXPORT AppListControllerImpl
       public apps::AppRegistryCache::Observer {
  public:
   AppListControllerImpl();
+
+  AppListControllerImpl(const AppListControllerImpl&) = delete;
+  AppListControllerImpl& operator=(const AppListControllerImpl&) = delete;
+
   ~AppListControllerImpl() override;
 
   enum HomeLauncherTransitionState {
@@ -101,8 +105,6 @@ class ASH_EXPORT AppListControllerImpl
                        const std::string& folder_id) override;
   void RemoveItem(const std::string& id) override;
   void RemoveUninstalledItem(const std::string& id) override;
-  void MoveItemToFolder(const std::string& id,
-                        const std::string& folder_id) override;
   void SetStatus(AppListModelStatus status) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
   void UpdateSearchBox(const std::u16string& text,
@@ -556,9 +558,6 @@ class ASH_EXPORT AppListControllerImpl
   // initial notification badge information when app list items are added.
   apps::AppRegistryCache* cache_ = nullptr;
 
-  // Whether the notification indicator flag is enabled.
-  const bool is_notification_indicator_enabled_;
-
   // Observes user profile prefs for the app list.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
@@ -589,8 +588,6 @@ class ASH_EXPORT AppListControllerImpl
       split_view_observation_{this};
 
   base::WeakPtrFactory<AppListControllerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };
 
 }  // namespace ash

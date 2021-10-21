@@ -16,33 +16,9 @@
 
 #include "dawn_native/Device.h"
 #include "dawn_native/ObjectContentHasher.h"
+#include "dawn_native/ObjectType_autogen.h"
 
 namespace dawn_native {
-
-    FlatComputePipelineDescriptor::FlatComputePipelineDescriptor(
-        const ComputePipelineDescriptor* descriptor)
-        : mLabel(descriptor->label != nullptr ? descriptor->label : ""),
-          mLayout(descriptor->layout) {
-        label = mLabel.c_str();
-        layout = mLayout.Get();
-
-        // TODO(dawn:800): Remove after deprecation period.
-        if (descriptor->compute.module == nullptr && descriptor->computeStage.module != nullptr) {
-            mComputeModule = descriptor->computeStage.module;
-            mEntryPoint = descriptor->computeStage.entryPoint;
-        } else {
-            mComputeModule = descriptor->compute.module;
-            mEntryPoint = descriptor->compute.entryPoint;
-        }
-
-        compute.entryPoint = mEntryPoint.c_str();
-        compute.module = mComputeModule.Get();
-    }
-
-    void FlatComputePipelineDescriptor::SetLayout(Ref<PipelineLayoutBase> appliedLayout) {
-        mLayout = std::move(appliedLayout);
-        layout = mLayout.Get();
-    }
 
     MaybeError ValidateComputePipelineDescriptor(DeviceBase* device,
                                                  const ComputePipelineDescriptor* descriptor) {
@@ -54,20 +30,10 @@ namespace dawn_native {
             DAWN_TRY(device->ValidateObject(descriptor->layout));
         }
 
-        if (descriptor->compute.module != nullptr) {
-            DAWN_TRY(ValidateProgrammableStage(device, descriptor->compute.module,
-                                               descriptor->compute.entryPoint, descriptor->layout,
-                                               SingleShaderStage::Compute));
-        } else {
-            // TODO(dawn:800): Remove after deprecation period.
-            device->EmitDeprecationWarning(
-                "computeStage has been deprecated. Please begin using compute instead.");
-            DAWN_TRY(ValidateProgrammableStage(device, descriptor->computeStage.module,
-                                               descriptor->computeStage.entryPoint,
-                                               descriptor->layout, SingleShaderStage::Compute));
-        }
-
-        return {};
+        return ValidateProgrammableStage(
+            device, descriptor->compute.module, descriptor->compute.entryPoint,
+            descriptor->compute.constantCount, descriptor->compute.constants, descriptor->layout,
+            SingleShaderStage::Compute);
     }
 
     // ComputePipelineBase
@@ -78,7 +44,8 @@ namespace dawn_native {
                        descriptor->layout,
                        descriptor->label,
                        {{SingleShaderStage::Compute, descriptor->compute.module,
-                         descriptor->compute.entryPoint}}) {
+                         descriptor->compute.entryPoint, descriptor->compute.constantCount,
+                         descriptor->compute.constants}}) {
     }
 
     ComputePipelineBase::ComputePipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -92,13 +59,17 @@ namespace dawn_native {
         }
     }
 
-    MaybeError ComputePipelineBase::Initialize(const ComputePipelineDescriptor* descriptor) {
+    MaybeError ComputePipelineBase::Initialize() {
         return {};
     }
 
     // static
     ComputePipelineBase* ComputePipelineBase::MakeError(DeviceBase* device) {
         return new ComputePipelineBase(device, ObjectBase::kError);
+    }
+
+    ObjectType ComputePipelineBase::GetType() const {
+        return ObjectType::ComputePipeline;
     }
 
     bool ComputePipelineBase::EqualityFunc::operator()(const ComputePipelineBase* a,

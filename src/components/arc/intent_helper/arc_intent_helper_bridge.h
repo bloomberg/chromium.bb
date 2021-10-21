@@ -79,21 +79,15 @@ class ArcIntentHelperBridge : public KeyedService,
       std::vector<IntentFilter> intent_filters) override;
   void OnOpenDownloads() override;
   void OnOpenUrl(const std::string& url) override;
-  void OnOpenCustomTabDeprecated(const std::string& url,
-                                 int32_t task_id,
-                                 int32_t surface_id,
-                                 int32_t top_margin,
-                                 OnOpenCustomTabCallback callback) override;
   void OnOpenCustomTab(const std::string& url,
                        int32_t task_id,
                        OnOpenCustomTabCallback callback) override;
   void OnOpenChromePage(mojom::ChromePage page) override;
   void FactoryResetArc() override;
   void OpenWallpaperPicker() override;
-  void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
   void OpenVolumeControl() override;
   void OnOpenWebApp(const std::string& url) override;
-  void RecordShareFilesMetrics(mojom::ShareFiles flag) override;
+  void RecordShareFilesMetricsDeprecated(mojom::ShareFiles flag) override;
   void LaunchCameraApp(uint32_t intent_id,
                        arc::mojom::CameraIntentMode mode,
                        bool should_handle_result,

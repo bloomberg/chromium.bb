@@ -82,9 +82,8 @@ id<MTLLibrary> NewLibraryWithRetry(id<MTLDevice> device,
 
   // Suppress the watchdog timer for kTimeout by reporting progress every
   // half-second. After that, allow it to kill the the GPU process.
-  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
-  constexpr base::TimeDelta kWaitPeriod =
-      base::TimeDelta::FromMilliseconds(500);
+  constexpr base::TimeDelta kTimeout = base::Seconds(60);
+  constexpr base::TimeDelta kWaitPeriod = base::Milliseconds(500);
   while (true) {
     if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
       progress_reporter->ReportProgress();
@@ -119,9 +118,8 @@ id<MTLRenderPipelineState> NewRenderPipelineStateWithRetry(
     progress_reporter->ReportProgress();
   [device newRenderPipelineStateWithDescriptor:descriptor
                              completionHandler:completionHandler];
-  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
-  constexpr base::TimeDelta kWaitPeriod =
-      base::TimeDelta::FromMilliseconds(500);
+  constexpr base::TimeDelta kTimeout = base::Seconds(60);
+  constexpr base::TimeDelta kWaitPeriod = base::Milliseconds(500);
   while (true) {
     if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
       progress_reporter->ReportProgress();
@@ -148,6 +146,10 @@ constexpr uint32_t kShaderCrashDumpLength = 8128;
 class MTLLibraryCache {
  public:
   MTLLibraryCache() = default;
+
+  MTLLibraryCache(const MTLLibraryCache&) = delete;
+  MTLLibraryCache& operator=(const MTLLibraryCache&) = delete;
+
   ~MTLLibraryCache() = default;
 
   id<MTLLibrary> NewLibraryWithSource(id<MTLDevice> device,
@@ -224,7 +226,6 @@ class MTLLibraryCache {
   };
 
   std::map<LibraryKey, LibraryData> libraries_;
-  DISALLOW_COPY_AND_ASSIGN(MTLLibraryCache);
 };
 
 // Disable protocol warnings and property synthesis warnings. Any unimplemented

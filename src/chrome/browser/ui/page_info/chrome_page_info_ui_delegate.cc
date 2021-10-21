@@ -6,10 +6,12 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
+#include "chrome/browser/page_info/about_this_site_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/page_info/about_this_site_service.h"
 #include "components/permissions/permission_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -24,9 +26,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
-ChromePageInfoUiDelegate::ChromePageInfoUiDelegate(Profile* profile,
-                                                   const GURL& site_url)
-    : profile_(profile), site_url_(site_url) {}
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#endif
+
+ChromePageInfoUiDelegate::ChromePageInfoUiDelegate(
+    content::WebContents* web_contents,
+    const GURL& site_url)
+    : web_contents_(web_contents), site_url_(site_url) {}
 
 bool ChromePageInfoUiDelegate::ShouldShowAllow(ContentSettingsType type) {
   switch (type) {
@@ -34,7 +43,7 @@ bool ChromePageInfoUiDelegate::ShouldShowAllow(ContentSettingsType type) {
     // incognito.
     case ContentSettingsType::NOTIFICATIONS:
     case ContentSettingsType::IDLE_DETECTION:
-      return !profile_->IsOffTheRecord();
+      return !GetProfile()->IsOffTheRecord();
     // Media only supports CONTENT_SETTING_ALLOW for secure origins.
     case ContentSettingsType::MEDIASTREAM_MIC:
     case ContentSettingsType::MEDIASTREAM_CAMERA:
@@ -61,7 +70,7 @@ std::u16string ChromePageInfoUiDelegate::GetAutomaticallyBlockedReason(
     // incognito.
     case ContentSettingsType::NOTIFICATIONS:
     case ContentSettingsType::IDLE_DETECTION: {
-      if (profile_->IsOffTheRecord()) {
+      if (GetProfile()->IsOffTheRecord()) {
         return l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_STATE_TEXT_NOT_ALLOWED_IN_INCOGNITO);
       }
@@ -84,13 +93,35 @@ std::u16string ChromePageInfoUiDelegate::GetAutomaticallyBlockedReason(
   return std::u16string();
 }
 
+std::u16string ChromePageInfoUiDelegate::GetAboutThisSiteDescription() {
+  if (auto* service =
+          AboutThisSiteServiceFactory::GetForProfile(GetProfile())) {
+    return service->GetAboutThisSiteDescription(site_url_);
+  }
+  return std::u16string();
+}
+
 bool ChromePageInfoUiDelegate::ShouldShowAsk(ContentSettingsType type) {
   return permissions::PermissionUtil::IsGuardContentSetting(type);
 }
 
 #if !defined(OS_ANDROID)
-bool ChromePageInfoUiDelegate::ShouldShowSiteSettings() {
-  return !profile_->IsGuestSession();
+bool ChromePageInfoUiDelegate::ShouldShowSiteSettings(int* link_text_id,
+                                                      int* tooltip_text_id) {
+  if (GetProfile()->IsGuestSession())
+    return false;
+
+  *link_text_id = IDS_PAGE_INFO_SITE_SETTINGS_LINK;
+  *tooltip_text_id = IDS_PAGE_INFO_SITE_SETTINGS_TOOLTIP;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (web_app::AppBrowserController::IsWebApp(browser)) {
+    *link_text_id = IDS_PAGE_INFO_APP_SETTINGS_LINK;
+    *tooltip_text_id = IDS_PAGE_INFO_APP_SETTINGS_TOOLTIP;
+  }
+#endif
+
+  return true;
 }
 
 // TODO(crbug.com/1227074): Reconcile with LastTabStandingTracker.
@@ -122,18 +153,22 @@ std::u16string ChromePageInfoUiDelegate::GetPermissionDetail(
     case ContentSettingsType::ADS:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE);
     default:
-      return content_settings::GetPermissionDetailString(profile_, type,
+      return content_settings::GetPermissionDetailString(GetProfile(), type,
                                                          site_url_);
   }
 }
 
 bool ChromePageInfoUiDelegate::IsBlockAutoPlayEnabled() {
-  return profile_->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
+  return GetProfile()->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled);
 }
 #endif
 
 permissions::PermissionResult ChromePageInfoUiDelegate::GetPermissionStatus(
     ContentSettingsType type) {
-  return PermissionManagerFactory::GetForProfile(profile_)->GetPermissionStatus(
-      type, site_url_, site_url_);
+  return PermissionManagerFactory::GetForProfile(GetProfile())
+      ->GetPermissionStatus(type, site_url_, site_url_);
+}
+
+Profile* ChromePageInfoUiDelegate::GetProfile() const {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }

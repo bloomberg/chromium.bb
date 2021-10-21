@@ -173,7 +173,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 #if defined(OS_ANDROID)
 #include "components/viz/common/features.h"
@@ -204,7 +204,7 @@ static const float minScaleDifference = 0.01f;
 static const float doubleTapZoomContentDefaultMargin = 5;
 static const float doubleTapZoomContentMinimumMargin = 2;
 static constexpr base::TimeDelta kDoubleTapZoomAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 static const float doubleTapZoomAlreadyLegibleRatio = 1.2f;
 
 static constexpr base::TimeDelta kFindInPageAnimationDuration;
@@ -215,7 +215,7 @@ static const float viewportAnchorCoordY = 0;
 
 // Constants for zooming in on a focused text field.
 static constexpr base::TimeDelta kScrollAndScaleAnimationDuration =
-    base::TimeDelta::FromMicroseconds(200);
+    base::Microseconds(200);
 static const int minReadableCaretHeight = 16;
 static const int minReadableCaretHeightForTextArea = 13;
 static const float minScaleChangeToTriggerZoom = 1.5f;
@@ -672,7 +672,7 @@ gfx::Rect WebViewImpl::WidenRectWithinPageBounds(const gfx::Rect& source,
   DCHECK(MainFrame());
   DCHECK(MainFrame()->IsWebLocalFrame());
   gfx::Size max_size = MainFrame()->ToWebLocalFrame()->DocumentSize();
-  gfx::ScrollOffset scroll_offset =
+  gfx::Vector2dF scroll_offset =
       MainFrame()->ToWebLocalFrame()->GetScrollOffset();
 
   int left_margin = target_margin;
@@ -1389,16 +1389,16 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
   DCHECK(main_view.GetLayoutView()->GetDocument().Lifecycle().GetState() ==
          DocumentLifecycle::kPaintClean);
 
-  PaintRecordBuilder builder;
-  main_view.PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase,
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
+  main_view.PaintOutsideOfLifecycle(builder->Context(), kGlobalPaintNormalPhase,
                                     CullRect(IntRect(rect)));
   // Don't bother to save/restore here as the caller is expecting the canvas
   // to be modified and take care of it.
   canvas->clipRect(gfx::RectToSkRect(rect));
-  builder.EndRecording(*canvas, main_view.GetLayoutView()
-                                    ->FirstFragment()
-                                    .LocalBorderBoxProperties()
-                                    .Unalias());
+  builder->EndRecording(*canvas, main_view.GetLayoutView()
+                                     ->FirstFragment()
+                                     .LocalBorderBoxProperties()
+                                     .Unalias());
 }
 
 // static
@@ -3217,7 +3217,7 @@ void WebViewImpl::UpdateRendererPreferences(
   blink::SetCaretBlinkInterval(
       renderer_preferences_.caret_blink_interval.has_value()
           ? renderer_preferences_.caret_blink_interval.value()
-          : base::TimeDelta::FromMilliseconds(
+          : base::Milliseconds(
                 mojom::blink::kDefaultCaretBlinkIntervalInMilliseconds));
 
 #if defined(USE_AURA)

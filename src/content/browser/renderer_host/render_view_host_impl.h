@@ -132,7 +132,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       blink::mojom::PluginActionType action) override;
-  RenderViewHostDelegate* GetDelegate() override;
   bool IsRenderViewLive() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
 
@@ -161,6 +160,8 @@ class CONTENT_EXPORT RenderViewHostImpl
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int proxy_route_id,
       bool window_was_opened_by_another_window);
+
+  RenderViewHostDelegate* GetDelegate();
 
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending unload or unloaded), according to its main frame
@@ -310,7 +311,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // to keep them consistent).
 
  protected:
-  friend class RefCounted<RenderViewHostImpl>;
+  friend class base::RefCounted<RenderViewHostImpl>;
   ~RenderViewHostImpl() override;
 
   // RenderWidgetHostOwnerDelegate overrides.
@@ -362,7 +363,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
   static constexpr base::TimeDelta kUnloadTimeout =
-      base::TimeDelta::FromMilliseconds(kUnloadTimeoutInMSec);
+      base::Milliseconds(kUnloadTimeoutInMSec);
 
   // The RenderWidgetHost.
   const std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;

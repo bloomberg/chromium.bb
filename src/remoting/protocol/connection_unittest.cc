@@ -127,7 +127,7 @@ static constexpr int kSamplesPerAudioPacket =
     kAudioSampleRate * kAudioPacketDurationMs /
     base::Time::kMillisecondsPerSecond;
 static constexpr base::TimeDelta kAudioPacketDuration =
-    base::TimeDelta::FromMilliseconds(kAudioPacketDurationMs);
+    base::Milliseconds(kAudioPacketDurationMs);
 
 static const int kAudioChannels = 2;
 
@@ -271,6 +271,9 @@ class ConnectionTest : public testing::Test,
     audio_encode_thread_.Start();
     audio_decode_thread_.Start();
   }
+
+  ConnectionTest(const ConnectionTest&) = delete;
+  ConnectionTest& operator=(const ConnectionTest&) = delete;
 
   void DestroyHost() {
     host_connection_.reset();
@@ -462,9 +465,6 @@ class ConnectionTest : public testing::Test,
   base::Thread video_encode_thread_;
   base::Thread audio_encode_thread_;
   base::Thread audio_decode_thread_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(Ice, ConnectionTest, ::testing::Values(false));
@@ -577,8 +577,8 @@ TEST_P(ConnectionTest, MAYBE_Video) {
 // connection is being established.
 TEST_P(ConnectionTest, MAYBE_VideoWithSlowSignaling) {
   // Add signaling delay to slow down connection handshake.
-  host_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
-  client_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
+  host_session_->set_signaling_delay(base::Milliseconds(100));
+  client_session_->set_signaling_delay(base::Milliseconds(100));
 
   Connect();
 

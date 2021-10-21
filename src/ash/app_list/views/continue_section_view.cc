@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/views/continue_task_view.h"
@@ -21,6 +22,8 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -34,7 +37,8 @@ constexpr int kSectionHorizontalPadding = 20;
 constexpr int kHeaderVerticalSpacing = 4;
 constexpr int kHeaderHorizontalPadding = 12;
 
-// Suggested tasks layout constants.
+// Suggested tasks layout constants. Should this change, we should update the
+// Layout to leave out empty rows.
 constexpr int kMinFilesForContinueSection = 3;
 
 std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
@@ -55,6 +59,8 @@ ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
       gfx::Insets(kSectionVerticalPadding, kSectionHorizontalPadding),
       kHeaderVerticalSpacing));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   // TODO(https://crbug.com/1204551): Localized strings.
   // TODO(https://crbug.com/1204551): Styling.
@@ -75,6 +81,13 @@ ContinueSectionView::~ContinueSectionView() = default;
 
 size_t ContinueSectionView::GetTasksSuggestionsCount() const {
   return static_cast<size_t>(suggestions_container_->num_results());
+}
+
+void ContinueSectionView::DisableFocusForShowingActiveFolder(bool disabled) {
+  suggestions_container_->DisableFocusForShowingActiveFolder(disabled);
+
+  // Prevent items from being accessed by ChromeVox.
+  SetViewIgnoredForAccessibility(this, disabled);
 }
 
 ContinueTaskView* ContinueSectionView::GetTaskViewAtForTesting(

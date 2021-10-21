@@ -1095,13 +1095,15 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
 
   ASSERT_TRUE(profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
 
-  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::DISABLED);
+  IncognitoModePrefs::SetAvailability(
+      prefs, IncognitoModePrefs::Availability::kDisabled);
   EXPECT_FALSE(
       profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
 
   // GetLastUsedProfileAllowedByPolicy() returns the off-the-record Profile when
   // incognito mode is forced.
-  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::FORCED);
+  IncognitoModePrefs::SetAvailability(
+      prefs, IncognitoModePrefs::Availability::kForced);
   EXPECT_TRUE(
       profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
 }
@@ -1445,13 +1447,7 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   ASSERT_EQ(0u, final_last_active_profile_list->GetList().size());
 }
 
-#if defined(OS_WIN)
-#define MAYBE_CleanUpGuestEphemeralProfile DISABLED_CleanUpGuestEphemeralProfile
-#else
-#define MAYBE_CleanUpGuestEphemeralProfile CleanUpGuestEphemeralProfile
-#endif
-// TODO(crbug.com/1203621) Disabled for flakiness.
-TEST_F(ProfileManagerGuestTest, CleanUpGuestEphemeralProfile) {
+TEST_F(ProfileManagerGuestTest, CleanUpOnlyEphemeralProfiles) {
   // Create two profiles, one of them is guest.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
@@ -1499,7 +1495,7 @@ TEST_F(ProfileManagerGuestTest, CleanUpGuestEphemeralProfile) {
   const base::ListValue* final_last_active_profile_list =
       local_state->GetList(prefs::kProfilesLastActive);
 
-  // The guest profile isn't impacted.
+  // The guest and the non-ephemeral regular profile aren't impacted.
   EXPECT_TRUE(base::DirectoryExists(guest_path));
   EXPECT_TRUE(base::DirectoryExists(path));
   EXPECT_EQ(guest_profile_name,

@@ -284,6 +284,14 @@ enum class ContentSettingsType : int32_t {
   // with the relying party's origin.
   FEDERATED_IDENTITY_ACTIVE_SESSION,
 
+  // Setting to indicate whether Chrome should automatically apply darkening to
+  // web content.
+  AUTO_DARK_WEB_CONTENT,
+
+  // Setting to indicate whether Chrome should request the desktop view of a
+  // site instead of the mobile one.
+  REQUEST_DESKTOP_SITE,
+
   NUM_TYPES,
 };
 

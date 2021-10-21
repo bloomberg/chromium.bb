@@ -60,7 +60,6 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_dlc_installer.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/connection_holder.h"
 #include "components/arc/session/file_system_status.h"
@@ -86,9 +85,9 @@ constexpr const char kArcVmBootNotificationServerSocketPath[] =
     "/run/arcvm_boot_notification_server/host.socket";
 
 constexpr base::TimeDelta kArcBugReportBackupTimeMetricMinTime =
-    base::TimeDelta::FromMilliseconds(1);
+    base::Milliseconds(1);
 constexpr base::TimeDelta kArcBugReportBackupTimeMetricMaxTime =
-    base::TimeDelta::FromSeconds(60);
+    base::Seconds(60);
 constexpr int kArcBugReportBackupTimeMetricBuckets = 50;
 constexpr const char kArcBugReportBackupTimeMetric[] =
     "Login.ArcBugReportBackupTime";
@@ -99,10 +98,9 @@ constexpr const char kArcVmDefaultOwner[] = "ARCVM_DEFAULT_OWNER";
 
 constexpr int64_t kInvalidCid = -1;
 
-constexpr base::TimeDelta kConnectTimeoutLimit =
-    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kConnectTimeoutLimit = base::Seconds(20);
 constexpr base::TimeDelta kConnectSleepDurationInitial =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 absl::optional<base::TimeDelta> g_connect_timeout_limit_for_testing;
 absl::optional<base::TimeDelta> g_connect_sleep_duration_initial_for_testing;
@@ -241,6 +239,7 @@ std::vector<std::string> GenerateKernelCmdline(
                          BUILDFLAG(USE_IIOSERVICE)),
       base::StringPrintf("androidboot.enable_notifications_refresh=%d",
                          start_params.enable_notifications_refresh),
+      base::StringPrintf("androidboot.zram_size=%d", kGuestZramSize.Get()),
   };
 
   const ArcVmUreadaheadMode mode =
@@ -330,6 +329,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     uint32_t cpus,
     const base::FilePath& demo_session_apps_path,
     const FileSystemStatus& file_system_status,
+    bool use_per_vm_core_scheduling,
     std::vector<std::string> kernel_cmdline,
     base::OnceCallback<bool(base::SystemMemoryInfoKB*)>
         get_system_memory_info_cb) {
@@ -337,6 +337,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   request.set_name(kArcVmName);
   request.set_owner_id(kArcVmDefaultOwner);
+  request.set_use_per_vm_core_scheduling(use_per_vm_core_scheduling);
 
   request.add_params("root=/dev/vda");
   if (file_system_status.is_host_rootfs_writable() &&
@@ -400,15 +401,15 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
       const int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
       constexpr int kVmRamMinMib = 2048;
 
-      // This is a workaround for ARM Chromebooks where userland including
-      // crosvm is compiled in 32 bit. crosvm binary in 32 bit doesn't have
-      // enough virtual address space to map >4GB of VM memory obviously.
-      // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
-      const int vm_ram_max_mib =
-          (sizeof(uintptr_t) == 4) ? 3500 : std::numeric_limits<int>::max();
-
-      if (vm_ram_mib > kVmRamMinMib) {
-        request.set_memory_mib(std::min(vm_ram_max_mib, vm_ram_mib));
+      if (sizeof(uintptr_t) == 4) {
+        // This is a workaround for ARM Chromebooks where userland including
+        // crosvm is compiled in 32 bit. crosvm binary in 32 bit doesn't have
+        // enough virtual address space to map >4GB of VM memory obviously.
+        // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+        VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, so "
+                << "fall back to the old VM memory size policy.";
+      } else if (vm_ram_mib > kVmRamMinMib) {
+        request.set_memory_mib(vm_ram_mib);
       } else {
         VLOG(1) << "VmMemorySize is enabled, but computed size is "
                 << "min(" << ram_mib << " + " << shift_mib << "," << max_mib
@@ -551,6 +552,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     DCHECK(arc_service_manager);
     arc_service_manager->arc_bridge_service()->app()->AddObserver(this);
   }
+
+  ArcVmClientAdapter(const ArcVmClientAdapter&) = delete;
+  ArcVmClientAdapter& operator=(const ArcVmClientAdapter&) = delete;
 
   ~ArcVmClientAdapter() override {
     auto* arc_service_manager = arc::ArcServiceManager::Get();
@@ -867,18 +871,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     if (file_system_status_rewriter_for_testing_)
       file_system_status_rewriter_for_testing_.Run(&file_system_status);
 
-    VLOG(2) << "Wait for DLC installation if necessary";
-    // Waits for a stable state (kInstalled/kUninstalled) and proceeds
-    // regardless of installation result because even if the installation
-    // has failed, it will only affect limited functionality (e.g. without
-    // Houdini library for ARM apps). ARCVM should still continue to start.
-    ArcDlcInstaller::Get()->WaitForStableState(base::BindOnce(
-        &ArcVmClientAdapter::LoadDemoResources, weak_factory_.GetWeakPtr(),
-        std::move(callback), std::move(file_system_status)));
-  }
-
-  void LoadDemoResources(chromeos::VoidDBusMethodCallback callback,
-                         FileSystemStatus file_system_status) {
     VLOG(2) << "Retrieving demo session apps path";
     DCHECK(demo_mode_delegate_);
     demo_mode_delegate_->EnsureOfflineResourcesLoaded(base::BindOnce(
@@ -890,15 +882,20 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                              FileSystemStatus file_system_status) {
     const base::FilePath demo_session_apps_path =
         demo_mode_delegate_->GetDemoAppsPath();
+    const bool use_per_vm_core_scheduling =
+        base::FeatureList::IsEnabled(kEnablePerVmCoreScheduling);
 
-    // When the CPU has MDS or L1TF vulnerabilities, crosvm won't be allowed to
-    // run two vCPUs on the same physical core at the same time. This
-    // effectively disables SMT on crosvm. Because of this restriction, when the
-    // CPU has the vulnerabilities, set |cpus| to the number of physical cores.
-    // Otherwise, set the variable to the number of logical cores minus the ones
-    // disabled by chrome://flags/#scheduler-configuration.
+    // When the CPU has MDS or L1TF vulnerabilities, and per-VM core scheduling
+    // is not enabled via |kEnablePerVmCoreScheduling|, crosvm won't be allowed
+    // to run two vCPUs on the same physical core at the same time. This mode is
+    // called per-vCPU core scheduling, and it effectively disables SMT on
+    // crosvm. Because of this restriction, when per-vCPU core scheduling is in
+    // use, set |cpus| to the number of physical cores. Otherwise, set the
+    // variable to the number of logical cores minus the ones disabled by
+    // chrome://flags/#scheduler-configuration.
     const int32_t cpus =
-        chromeos::system::IsCoreSchedulingAvailable()
+        (chromeos::system::IsCoreSchedulingAvailable() &&
+         !use_per_vm_core_scheduling)
             ? chromeos::system::NumberOfProcessorsForCoreScheduling()
             : base::SysInfo::NumberOfProcessors() -
                   start_params_.num_cores_disabled;
@@ -909,7 +906,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         GetChromeOsChannelFromLsbRelease());
     auto start_request = CreateStartArcVmRequest(
         cpus, demo_session_apps_path, file_system_status,
-        std::move(kernel_cmdline),
+        use_per_vm_core_scheduling, std::move(kernel_cmdline),
         base::BindOnce(&ArcVmClientAdapterDelegate::GetSystemMemoryInfo,
                        // Unretained is safe because CreateStartArcVmRequest is
                        // a synchronous function.
@@ -1182,8 +1179,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapter);
 };
 
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter() {

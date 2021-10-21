@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -107,7 +108,7 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
     RenderFrameHostImpl* current_rfh,
     const UrlInfo& destination_effective_url_info) {
   // Only main frames are eligible to swap BrowsingInstances.
-  if (!current_rfh->frame_tree_node()->IsMainFrame())
+  if (!current_rfh->is_main_frame())
     return false;
 
   // Skip cases when there are other windows that might script this one.
@@ -382,6 +383,12 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
       outer_contents_frame_tree_node->parent()->GetSiteInstance());
 }
 
+RenderFrameProxyHost*
+RenderFrameHostManager::GetProxyToParentOrOuterDelegate() {
+  return IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate()
+                                       : GetProxyToParent();
+}
+
 void RenderFrameHostManager::RemoveOuterDelegateFrame() {
   // Removing the outer delegate frame will destroy the inner WebContents. This
   // should only be called on the main frame.
@@ -632,8 +639,16 @@ void RenderFrameHostManager::UnloadOldFrame(
   // Now close any modal dialogs that would prevent us from unloading the frame.
   // This must be done separately from Unload(), so that the
   // ScopedPageLoadDeferrer is no longer on the stack when we send the
-  // mojo::FrameNavigationControl::Unload message.
-  delegate_->CancelModalDialogsForRenderManager();
+  // mojo::FrameNavigationControl::Unload message. Prerendering pages cannot
+  // create modal dialogs and unloading a prerendering RFH should not cause
+  // existing dialogs to close.
+  // TODO(crbug.com/1249466): Update CancelModalDialogsForRenderManager
+  // to take a RFH/RPH and only clear relevant dialogs instead of all dialogs in
+  // the WebContents.
+  if (current_frame_host()->GetLifecycleState() !=
+      RenderFrameHost::LifecycleState::kPrerendering) {
+    delegate_->CancelModalDialogsForRenderManager();
+  }
 
   // If the old RFH is not live, just return as there is no further work to do.
   // It will be deleted and there will be no proxy created.
@@ -917,7 +932,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // Inactive frames should never be navigated. If this happens, log a
     // DumpWithoutCrashing to understand the root cause. See
     // https://crbug.com/926820 and https://crbug.com/927705.
-    if (current_frame_host()->IsInactiveAndDisallowActivation()) {
+    if (current_frame_host()->IsInactiveAndDisallowActivation(
+            DisallowActivationReasonId::kNavigatingInInactiveFrame)) {
       NOTREACHED() << "Navigation in an inactive frame";
       DEBUG_ALIAS_FOR_GURL(url, request->common_params().url);
       base::debug::DumpWithoutCrashing();
@@ -1277,7 +1293,8 @@ void RenderFrameHostManager::DiscardSpeculativeRenderFrameHostForShutdown() {
   // handlers but gets deleted by reset directly in kSpeculative state.
   if (speculative_render_frame_host_->lifecycle_state() ==
       LifecycleStateImpl::kPendingCommit) {
-    speculative_render_frame_host_->SetLifecycleStateToReadyToBeDeleted();
+    speculative_render_frame_host_->SetLifecycleState(
+        LifecycleStateImpl::kReadyToBeDeleted);
   }
   // TODO(dcheng): Figure out why `RenderFrameDeleted()` doesn't seem to be
   // called on child `RenderFrameHost`s at shutdown. This is currently limited
@@ -1696,7 +1713,7 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
     return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
 
   // Only main frames are eligible to swap BrowsingInstances.
-  if (!render_frame_host_->frame_tree_node()->IsMainFrame())
+  if (!frame_tree_node_->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
 
   // If the frame has not committed any navigation yet, we should not try to do
@@ -2938,7 +2955,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
   proxy->SetRenderFrameProxyCreated(true);
 }
 
-void RenderFrameHostManager::SetRWHViewForInnerContents(
+void RenderFrameHostManager::SetRWHViewForInnerFrameTree(
     RenderWidgetHostViewChildFrame* child_rwhv) {
   DCHECK(IsMainFrameForInnerDelegate());
   DCHECK(GetProxyToOuterDelegate());
@@ -2993,7 +3010,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
 
   // Srcdoc documents are always in the same SiteInstance as their parent. They
   // load their content from the "srcdoc" iframe attribute which lives in the
-  // parent's process.
+  // parent's process. Using `GetParent()` is correct here because we never
+  // share BrowsingInstance / SiteInstance across inner and outer frame tree.
   RenderFrameHostImpl* parent = render_frame_host_->GetParent();
   if (parent && request->common_params().url.IsAboutSrcdoc()) {
     AppendReason(reason,
@@ -3267,8 +3285,7 @@ void RenderFrameHostManager::CommitPending(
   NavigationEntryImpl* navigation_entry =
       GetNavigationController().GetLastCommittedEntry();
   if (navigation_entry) {
-    render_frame_host_->frame_tree_node()->PruneChildFrameNavigationEntries(
-        navigation_entry);
+    frame_tree_node_->PruneChildFrameNavigationEntries(navigation_entry);
   }
 
   // If we navigate to an existing page (i.e. |pending_stored_page| is not
@@ -3391,8 +3408,8 @@ void RenderFrameHostManager::CommitPending(
 
   // Notify that we've swapped RenderFrameHosts. We do this before shutting down
   // the RFH so that we can clean up RendererResources related to the RFH first.
-  delegate_->NotifySwappedFromRenderManager(
-      old_render_frame_host.get(), render_frame_host_.get(), is_main_frame);
+  delegate_->NotifySwappedFromRenderManager(old_render_frame_host.get(),
+                                            render_frame_host_.get());
 
   // Make the new view show the contents of old view until it has something
   // useful to show.
@@ -3464,16 +3481,17 @@ void RenderFrameHostManager::CommitPending(
       DeleteRenderFrameProxyHost(proxy->GetSiteInstance());
   }
 
-  // If this is a subframe, it should have a CrossProcessFrameConnector
-  // created already.  Use it to link the new RFH's view to the proxy that
-  // belongs to the parent frame's SiteInstance. If this navigation causes
-  // an out-of-process frame to return to the same process as its parent, the
-  // proxy would have been removed from proxy_hosts_ above.
+  // If this is a subframe or inner frame tree, it should have a
+  // CrossProcessFrameConnector created already.  Use it to link the new RFH's
+  // view to the proxy that belongs to the parent frame's SiteInstance. If this
+  // navigation causes an out-of-process frame to return to the same process as
+  // its parent, the proxy would have been removed from proxy_hosts_ above.
   // Note: We do this after unloading the old RFH because that may create
   // the proxy we're looking for.
-  RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-  if (proxy_to_parent) {
-    proxy_to_parent->SetChildRWHView(
+  RenderFrameProxyHost* proxy_to_parent_or_outer_delegate =
+      GetProxyToParentOrOuterDelegate();
+  if (proxy_to_parent_or_outer_delegate) {
+    proxy_to_parent_or_outer_delegate->SetChildRWHView(
         static_cast<RenderWidgetHostViewChildFrame*>(new_view),
         old_size ? &*old_size : nullptr);
   }
@@ -3529,11 +3547,13 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   if (render_frame_host_) {
     if (frame_tree->is_prerendering()) {
       if (render_frame_host_->lifecycle_state() ==
-          LifecycleStateImpl::kPendingCommit)
-        render_frame_host_->SetLifecycleStateToPrerendering();
+          LifecycleStateImpl::kPendingCommit) {
+        render_frame_host_->SetLifecycleState(
+            LifecycleStateImpl::kPrerendering);
+      }
     } else {
       if (render_frame_host_->lifecycle_state() != LifecycleStateImpl::kActive)
-        render_frame_host_->SetLifecycleStateToActive();
+        render_frame_host_->SetLifecycleState(LifecycleStateImpl::kActive);
     }
   }
 

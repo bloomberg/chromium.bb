@@ -9,6 +9,7 @@ import "chromeos/crosapi/mojom/account_manager.mojom";
 import "chromeos/crosapi/mojom/app_service.mojom";
 import "chromeos/crosapi/mojom/app_window_tracker.mojom";
 import "chromeos/crosapi/mojom/automation.mojom";
+import "chromeos/crosapi/mojom/browser_app_instance_registry.mojom";
 import "chromeos/crosapi/mojom/browser_version.mojom";
 import "chromeos/crosapi/mojom/cert_database.mojom";
 import "chromeos/crosapi/mojom/clipboard.mojom";
@@ -22,6 +23,7 @@ import "chromeos/crosapi/mojom/field_trial.mojom";
 import "chromeos/crosapi/mojom/file_manager.mojom";
 import "chromeos/crosapi/mojom/geolocation.mojom";
 import "chromeos/crosapi/mojom/holding_space_service.mojom";
+import "chromeos/crosapi/mojom/identity_manager.mojom";
 import "chromeos/crosapi/mojom/idle_service.mojom";
 import "chromeos/crosapi/mojom/image_writer.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
@@ -37,12 +39,14 @@ import "chromeos/crosapi/mojom/remoting.mojom";
 import "chromeos/crosapi/mojom/resource_manager.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
 import "chromeos/crosapi/mojom/select_file.mojom";
+import "chromeos/crosapi/mojom/structured_metrics_service.mojom";
 import "chromeos/crosapi/mojom/system_display.mojom";
 import "chromeos/crosapi/mojom/task_manager.mojom";
 import "chromeos/crosapi/mojom/test_controller.mojom";
 import "chromeos/crosapi/mojom/url_handler.mojom";
 import "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom";
 import "chromeos/crosapi/mojom/video_capture.mojom";
+import "chromeos/crosapi/mojom/kiosk_session_service.mojom";
 import "chromeos/crosapi/mojom/web_page_info.mojom";
 import "mojo/public/mojom/base/big_string.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
@@ -73,8 +77,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 47
-// Next method id: 52
+// Next version: 53
+// Next method id: 57
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -99,6 +103,10 @@ interface Crosapi {
   // Added in M93.
   [MinVersion=40]
   BindAppServiceProxy@45(pending_receiver<AppServiceProxy> receiver);
+
+  // Added in M95.
+  [MinVersion=50] BindBrowserAppInstanceRegistry@54(
+      pending_receiver<BrowserAppInstanceRegistry> receiver);
 
   // Binds the BrowserVersionService interface for getting browser version
   // information.
@@ -190,6 +198,11 @@ interface Crosapi {
   [MinVersion=27]
   BindHoldingSpaceService@32(pending_receiver<HoldingSpaceService> receiver);
 
+  // Binds the IdentityManager interface for reading identity information.
+  // Added in M96.
+  [MinVersion=51]
+  BindIdentityManager@55(pending_receiver<IdentityManager> receiver);
+
   // Binds the IdleService interface for reading idle states.
   // Added in M90.
   [MinVersion=16]
@@ -263,6 +276,22 @@ interface Crosapi {
   BindSensorHalClient@19(
       pending_remote<chromeos.sensors.mojom.SensorHalClient> receiver);
 
+  // Binds the StableVideoDecoderFactory, which allows lacros-chrome to request
+  // hardware accelerated video decoding. We need to use a
+  // GenericPendingReceiver to avoid dependency circularities.
+  // TODO(b/202188196): split StableVideoDecoder API to try to avoid dependency
+  // issues.
+  // Added in M96.
+  [MinVersion=52]
+  BindStableVideoDecoderFactory@56(
+      mojo_base.mojom.GenericPendingReceiver receiver);
+
+  // Binds the StructuredMetricsService interface to record events.
+  // Added in M96.
+  [MinVersion=48]
+  BindStructuredMetricsService@52(
+      pending_receiver<StructuredMetricsService> receiver);
+
   // Binds the HidManager interface for support HID devices.
   // Added in M87.
   BindHidManager@4(pending_receiver<device.mojom.HidManager> receiver);
@@ -326,6 +355,12 @@ interface Crosapi {
   // Added in M90.
   [MinVersion=20] BindVideoCaptureDeviceFactory@25(
       pending_receiver<crosapi.mojom.VideoCaptureDeviceFactory> receiver);
+
+  // Binds the Kiosk session service which sends session status changes from
+  // lacros to ash.
+  // Added in M96.
+  [MinVersion=49] BindKioskSessionService@53(
+    pending_receiver<KioskSessionService> receiver);
 
   // Binds the web page info factory interface which allows ash to request web
   // page info from Lacros.
@@ -406,12 +441,20 @@ struct DefaultPaths {
 };
 
 // The device specific data needed in Lacros.
+// Next version: 2
+// Next id: 2
 // TODO(igorcov): Include DeviceAttributes here.
 [Stable, Extensible]
 struct DeviceProperties {
   // The value of device DM token. It is the raw data from the policy, not
   // encrypted.
   string device_dm_token@0;
+
+  // The value of the device affiliation IDs, which represent which customer is
+  // managing the device so that the user's affiliation to the device can be
+  // determined. It is non-encrypted data corresponding to
+  // PolicyData::device_affiliation_ids.
+  [MinVersion=1] array<string>? device_affiliation_ids@1;
 };
 
 // Copy of UsbDetachableAllowlistProto from chrome_device_policy.proto.
@@ -514,6 +557,7 @@ enum BuildFlag {
   kUseChromeosProtectedMedia = 1,
   kEnablePlatformEncryptedHevc = 2,
   kEnablePlatformHevc = 3,
+  [MinVersion=47] kUseChromeosProtectedAv1 = 4,
 };
 
 // Indicates whether a browser window is created successfully or not.
@@ -543,8 +587,8 @@ enum CreationResult {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 26
-// Next id: 26
+// Next version: 29
+// Next id: 29
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -702,6 +746,19 @@ struct BrowserInitParams {
   // The set of device settings Lacros needs to know about.
   [MinVersion=25]
   DeviceSettings? device_settings@25;
+
+  // Metrics service client id of ash chrome.
+  // Lacros needs to use the same client id as ash chrome.
+  [MinVersion=26]
+  string? metrics_service_client_id@26;
+
+  // When this flag is |true|, Lacros is the only browser.
+  [MinVersion=27]
+  bool standalone_browser_is_only_browser@27;
+
+  // When this flag is set, lacros will publish chrome apps to the app service.
+  [MinVersion=28]
+  bool publish_chrome_apps@28;
 };
 
 // BrowserService defines the APIs that live in a browser (such as

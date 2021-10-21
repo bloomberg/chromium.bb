@@ -73,7 +73,7 @@ void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
   }
 
   delegate_->OpenFileSystem(
-      url.origin(), url.type(), mode, std::move(callback),
+      url.storage_key(), url.type(), mode, std::move(callback),
       GetFileSystemRootURI(url.origin().GetURL(), url.type()));
 }
 
@@ -174,10 +174,10 @@ const AccessObserverList* SandboxFileSystemBackend::GetAccessObservers(
   return delegate_->GetAccessObservers(type);
 }
 
-SandboxFileSystemBackendDelegate::OriginEnumerator*
-SandboxFileSystemBackend::CreateOriginEnumerator() {
+SandboxFileSystemBackendDelegate::StorageKeyEnumerator*
+SandboxFileSystemBackend::CreateStorageKeyEnumerator() {
   DCHECK(delegate_);
-  return delegate_->CreateOriginEnumerator();
+  return delegate_->CreateStorageKeyEnumerator();
 }
 
 }  // namespace storage

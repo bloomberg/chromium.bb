@@ -29,7 +29,6 @@
 #include "api/audio/echo_control.h"
 #include "api/scoped_refptr.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
-#include "modules/audio_processing/include/config.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/ref_count.h"
@@ -64,35 +63,6 @@ static constexpr int kAgcStartupMinVolume = 85;
 static constexpr int kAgcStartupMinVolume = 0;
 #endif  // defined(WEBRTC_CHROMIUM_BUILD)
 static constexpr int kClippedLevelMin = 70;
-
-// To be deprecated: Please instead use the flag in the
-// AudioProcessing::Config::AnalogGainController.
-// TODO(webrtc:5298): Remove.
-struct ExperimentalAgc {
-  ExperimentalAgc() = default;
-  explicit ExperimentalAgc(bool enabled) : enabled(enabled) {}
-  ExperimentalAgc(bool enabled, int startup_min_volume)
-      : enabled(enabled), startup_min_volume(startup_min_volume) {}
-  static const ConfigOptionID identifier = ConfigOptionID::kExperimentalAgc;
-  bool enabled = true;
-  int startup_min_volume = kAgcStartupMinVolume;
-  // Lowest microphone level that will be applied in response to clipping.
-  int clipped_level_min = kClippedLevelMin;
-  bool digital_adaptive_disabled = false;
-};
-
-// To be deprecated: Please instead use the flag in the
-// AudioProcessing::Config::TransientSuppression.
-//
-// Use to enable experimental noise suppression. It can be set in the
-// constructor.
-// TODO(webrtc:5298): Remove.
-struct ExperimentalNs {
-  ExperimentalNs() : enabled(false) {}
-  explicit ExperimentalNs(bool enabled) : enabled(enabled) {}
-  static const ConfigOptionID identifier = ConfigOptionID::kExperimentalNs;
-  bool enabled;
-};
 
 // The Audio Processing Module (APM) provides a collection of voice processing
 // components designed for real-time communications software.
@@ -386,9 +356,6 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
         return !(*this == rhs);
       }
 
-      // TODO(crbug.com/webrtc/7494): Remove `LevelEstimator`.
-      enum LevelEstimator { kRms, kPeak };
-      enum NoiseEstimator { kStationaryNoise, kNoiseFloor };
       bool enabled = false;
       struct FixedDigital {
         float gain_db = 0.0f;
@@ -400,24 +367,18 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
         }
 
         bool enabled = false;
-        // Run the adaptive digital controller but the signal is not modified.
+        // When true, the adaptive digital controller runs but the signal is not
+        // modified.
         bool dry_run = false;
+        float headroom_db = 6.0f;
+        // TODO(bugs.webrtc.org/7494): Consider removing and inferring from
+        // `max_output_noise_level_dbfs`.
+        float max_gain_db = 30.0f;
+        float initial_gain_db = 8.0f;
         int vad_reset_period_ms = 1500;
         int adjacent_speech_frames_threshold = 12;
         float max_gain_change_db_per_second = 3.0f;
         float max_output_noise_level_dbfs = -50.0f;
-        bool sse2_allowed = true;
-        bool avx2_allowed = true;
-        bool neon_allowed = true;
-        // TODO(crbug.com/webrtc/7494): Remove deprecated settings below.
-        NoiseEstimator noise_estimator = kNoiseFloor;
-        float vad_probability_attack = 1.0f;
-        LevelEstimator level_estimator = kRms;
-        int level_estimator_adjacent_speech_frames_threshold = 12;
-        bool use_saturation_protector = true;
-        float initial_saturation_margin_db = 25.0f;
-        float extra_saturation_margin_db = 5.0f;
-        int gain_applier_adjacent_speech_frames_threshold = 12;
       } adaptive_digital;
     } gain_controller2;
 
@@ -816,7 +777,6 @@ class RTC_EXPORT AudioProcessingBuilder {
   // This creates an APM instance using the previously set components. Calling
   // the Create function resets the AudioProcessingBuilder to its initial state.
   rtc::scoped_refptr<AudioProcessing> Create();
-  rtc::scoped_refptr<AudioProcessing> Create(const webrtc::Config& config);
 
  private:
   std::unique_ptr<EchoControlFactory> echo_control_factory_;

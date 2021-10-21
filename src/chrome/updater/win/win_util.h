@@ -16,6 +16,10 @@
 #include "base/win/windows_types.h"
 #include "chrome/updater/updater_scope.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace updater {
 
 // Returns the last error as an HRESULT or E_FAIL if last error is NO_ERROR.
@@ -25,11 +29,14 @@ namespace updater {
 HRESULT HRESULTFromLastError();
 
 // Returns an HRESULT with a custom facility code representing an updater error.
+// The updater error should be a small positive or a small negative 16-bit
+// integral value.
 template <typename Error>
 HRESULT HRESULTFromUpdaterError(Error error) {
+  constexpr ULONG kSeverityError = 0x80000000;
   constexpr ULONG kCustomerBit = 0x20000000;
   constexpr ULONG kFacilityOmaha = 67;
-  return static_cast<HRESULT>(ULONG{SEVERITY_ERROR} | kCustomerBit |
+  return static_cast<HRESULT>(kSeverityError | kCustomerBit |
                               (kFacilityOmaha << 16) |
                               static_cast<ULONG>(error));
 }
@@ -150,6 +157,14 @@ std::wstring GetTaskDisplayName(UpdaterScope scope);
 // Returns `KEY_WOW64_32KEY | access`. All registry access under the Updater key
 // should use `Wow6432(access)` as the `REGSAM`.
 REGSAM Wow6432(REGSAM access);
+
+// Starts a new elevated process. `file_path` specifies the program to be run.
+// `parameters` can be an empty string.
+// The function waits until the spawned process has completed. The exit code of
+// the process is returned in `exit_code`.
+HRESULT RunElevated(const base::FilePath& file_path,
+                    const std::wstring& parameters,
+                    DWORD* exit_code);
 
 }  // namespace updater
 

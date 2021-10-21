@@ -120,6 +120,10 @@ class FetchEventServiceWorker : public FakeServiceWorker {
       : FakeServiceWorker(helper),
         task_environment_(task_environment),
         embedded_worker_instance_client_(embedded_worker_instance_client) {}
+
+  FetchEventServiceWorker(const FetchEventServiceWorker&) = delete;
+  FetchEventServiceWorker& operator=(const FetchEventServiceWorker&) = delete;
+
   ~FetchEventServiceWorker() override = default;
 
   // Tells this worker to dispatch a fetch event 1s after the fetch event is
@@ -263,7 +267,7 @@ class FetchEventServiceWorker : public FakeServiceWorker {
             std::move(finish_callback));
         break;
       case ResponseMode::kDispatchAfter1sDelay:
-        task_environment_->AdvanceClock(base::TimeDelta::FromSeconds(1));
+        task_environment_->AdvanceClock(base::Seconds(1));
         FakeServiceWorker::DispatchFetchEventForMainResource(
             std::move(params), response_callback.Unbind(),
             std::move(finish_callback));
@@ -390,8 +394,6 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   std::string cache_storage_cache_name_;
   base::Time response_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(FetchEventServiceWorker);
 };
 
 // Returns typical response info for a resource load that went through a service
@@ -497,9 +499,10 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
                                   /*mock frame_routing_id=*/1),
           /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
           &container_endpoints_);
-      container_host_->UpdateUrls(request->url,
-                                  net::SiteForCookies::FromUrl(request->url),
-                                  url::Origin::Create(request->url));
+      container_host_->UpdateUrls(
+          request->url, net::SiteForCookies::FromUrl(request->url),
+          url::Origin::Create(request->url),
+          blink::StorageKey(url::Origin::Create(request->url)));
       container_host_->AddMatchingRegistration(registration_.get());
       container_host_->SetControllerRegistration(
           registration_, /*notify_controllerchange=*/false);
@@ -509,7 +512,8 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
     loader_ = std::make_unique<ServiceWorkerMainResourceLoader>(
         base::BindOnce(&ServiceWorkerMainResourceLoaderTest::Fallback,
                        base::Unretained(this)),
-        container_host_);
+        container_host_,
+        /*frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId);
 
     // Load |request.url|.
     loader_->StartRequest(*request, loader_remote_.BindNewPipeAndPassReceiver(),
@@ -637,7 +641,8 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, NoActiveWorker) {
   container_host_->UpdateUrls(
       GURL("https://example.com/"),
       net::SiteForCookies::FromUrl(GURL("https://example.com/")),
-      url::Origin::Create(GURL("https://example.com/")));
+      url::Origin::Create(GURL("https://example.com/")),
+      blink::StorageKey(url::Origin::Create(GURL("https://example.com/"))));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -1120,13 +1125,11 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, TimingInfo) {
   auto& info = client_.response_head();
   EXPECT_EQ(200, info->headers->response_code());
   ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
-            info->load_timing.service_worker_ready_time -
-                info->load_timing.service_worker_start_time);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
-            info->load_timing.service_worker_fetch_start -
-                info->load_timing.service_worker_start_time);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
+  EXPECT_EQ(base::Seconds(1), info->load_timing.service_worker_ready_time -
+                                  info->load_timing.service_worker_start_time);
+  EXPECT_EQ(base::Seconds(1), info->load_timing.service_worker_fetch_start -
+                                  info->load_timing.service_worker_start_time);
+  EXPECT_EQ(base::Seconds(1),
             info->load_timing.service_worker_respond_with_settled -
                 info->load_timing.service_worker_start_time);
 }

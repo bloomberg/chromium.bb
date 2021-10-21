@@ -35,6 +35,7 @@
 #include "encode.h"
 #include "internal.h"
 #include "packet_internal.h"
+#include "sei.h"
 
 typedef struct libx265Context {
     const AVClass *class;
@@ -50,6 +51,9 @@ typedef struct libx265Context {
     char *tune;
     char *profile;
     AVDictionary *x265_opts;
+
+    void *sei_data;
+    int sei_data_size;
 
     /**
      * If the encoder does not support ROI then warn the first time we
@@ -78,6 +82,7 @@ static av_cold int libx265_encode_close(AVCodecContext *avctx)
     libx265Context *ctx = avctx->priv_data;
 
     ctx->api->param_free(ctx->params);
+    av_freep(&ctx->sei_data);
 
     if (ctx->encoder)
         ctx->api->encoder_close(ctx->encoder);
@@ -119,9 +124,10 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
 {
     libx265Context *ctx = avctx->priv_data;
     AVCPBProperties *cpb_props = NULL;
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
     int ret;
 
-    ctx->api = x265_api_get(av_pix_fmt_desc_get(avctx->pix_fmt)->comp[0].depth);
+    ctx->api = x265_api_get(desc->comp[0].depth);
     if (!ctx->api)
         ctx->api = x265_api_get(0);
 
@@ -176,10 +182,15 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
 
     ctx->params->vui.bEnableVideoSignalTypePresentFlag = 1;
 
-    ctx->params->vui.bEnableVideoFullRangeFlag = avctx->pix_fmt == AV_PIX_FMT_YUVJ420P ||
-                                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ422P ||
-                                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ444P ||
-                                                 avctx->color_range == AVCOL_RANGE_JPEG;
+    if (avctx->color_range != AVCOL_RANGE_UNSPECIFIED)
+        ctx->params->vui.bEnableVideoFullRangeFlag =
+            avctx->color_range == AVCOL_RANGE_JPEG;
+    else
+        ctx->params->vui.bEnableVideoFullRangeFlag =
+            (desc->flags & AV_PIX_FMT_FLAG_RGB) ||
+            avctx->pix_fmt == AV_PIX_FMT_YUVJ420P ||
+            avctx->pix_fmt == AV_PIX_FMT_YUVJ422P ||
+            avctx->pix_fmt == AV_PIX_FMT_YUVJ444P;
 
     if ((avctx->color_primaries <= AVCOL_PRI_SMPTE432 &&
          avctx->color_primaries != AVCOL_PRI_UNSPECIFIED) ||
@@ -198,6 +209,19 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
             ctx->params->preferredTransferCharacteristics = ctx->params->vui.transferCharacteristics;
 #endif
         ctx->params->vui.matrixCoeffs            = avctx->colorspace;
+    }
+
+    // chroma sample location values are to be ignored in case of non-4:2:0
+    // according to the specification, so we only write them out in case of
+    // 4:2:0 (log2_chroma_{w,h} == 1).
+    ctx->params->vui.bEnableChromaLocInfoPresentFlag =
+        avctx->chroma_sample_location != AVCHROMA_LOC_UNSPECIFIED &&
+        desc->log2_chroma_w == 1 && desc->log2_chroma_h == 1;
+
+    if (ctx->params->vui.bEnableChromaLocInfoPresentFlag) {
+        ctx->params->vui.chromaSampleLocTypeTopField =
+        ctx->params->vui.chromaSampleLocTypeBottomField =
+            avctx->chroma_sample_location - 1;
     }
 
     if (avctx->sample_aspect_ratio.num > 0 && avctx->sample_aspect_ratio.den > 0) {
@@ -489,6 +513,8 @@ static int libx265_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     ctx->api->picture_init(ctx->params, &x265pic);
 
     if (pic) {
+        x265_sei *sei = &x265pic.userSEI;
+        sei->numPayloads = 0;
         for (i = 0; i < 3; i++) {
            x265pic.planes[i] = pic->data[i];
            x265pic.stride[i] = pic->linesize[i];
@@ -515,6 +541,32 @@ static int libx265_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             }
 
             memcpy(x265pic.userData, &pic->reordered_opaque, sizeof(pic->reordered_opaque));
+        }
+
+        for (i = 0; i < pic->nb_side_data; i++) {
+            AVFrameSideData *side_data = pic->side_data[i];
+            void *tmp;
+            x265_sei_payload *sei_payload;
+
+            if (side_data->type != AV_FRAME_DATA_SEI_UNREGISTERED)
+                continue;
+
+            tmp = av_fast_realloc(ctx->sei_data,
+                                  &ctx->sei_data_size,
+                                  (sei->numPayloads + 1) * sizeof(*sei_payload));
+            if (!tmp) {
+                av_freep(&x265pic.userData);
+                av_freep(&x265pic.quantOffsets);
+                return AVERROR(ENOMEM);
+            }
+            ctx->sei_data = tmp;
+            sei->payloads = ctx->sei_data;
+            sei_payload = &sei->payloads[sei->numPayloads];
+            sei_payload->payload = side_data->data;
+            sei_payload->payloadSize = side_data->size;
+            /* Equal to libx265 USER_DATA_UNREGISTERED */
+            sei_payload->payloadType = SEI_TYPE_USER_DATA_UNREGISTERED;
+            sei->numPayloads++;
         }
     }
 

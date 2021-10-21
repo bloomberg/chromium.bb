@@ -41,6 +41,7 @@ class ASH_PUBLIC_EXPORT ColorProvider {
     kTransparent60,
     kTransparent80,
     kTransparent90,
+    kTransparent95,
 
     // Base layer is opaque.
     kOpaque,
@@ -56,6 +57,9 @@ class ASH_PUBLIC_EXPORT ColorProvider {
     kControlBackgroundColorPositive,
     kFocusAuraColor,
     kFocusRingColor,
+    // TODO(crbug/1224694): Rename these once naming in UX spec is finalized.
+    kHighlightBorderHighlightColor,
+    kHighlightBorderBorderColor,
   };
 
   enum class ContentLayerType {

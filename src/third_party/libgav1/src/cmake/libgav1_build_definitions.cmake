@@ -53,7 +53,8 @@ macro(libgav1_set_build_definitions)
               "LIBGAV1_FLAGS_TMPDIR=\"/tmp\"")
 
   if(MSVC OR WIN32)
-    list(APPEND libgav1_defines "_CRT_SECURE_NO_DEPRECATE=1" "NOMINMAX=1")
+    list(APPEND libgav1_defines "_CRT_SECURE_NO_WARNINGS" "NOMINMAX"
+                "_SCL_SECURE_NO_WARNINGS")
   endif()
 
   if(ANDROID)
@@ -159,7 +160,7 @@ macro(libgav1_set_build_definitions)
 
   # Source file names ending in these suffixes will have the appropriate
   # compiler flags added to their compile commands to enable intrinsics.
-  set(libgav1_avx2_source_file_suffix "avx2.cc")
-  set(libgav1_neon_source_file_suffix "neon.cc")
-  set(libgav1_sse4_source_file_suffix "sse4.cc")
+  set(libgav1_avx2_source_file_suffix "avx2(_test)?.cc")
+  set(libgav1_neon_source_file_suffix "neon(_test)?.cc")
+  set(libgav1_sse4_source_file_suffix "sse4(_test)?.cc")
 endmacro()

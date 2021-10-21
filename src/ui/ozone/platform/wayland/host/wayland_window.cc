@@ -270,6 +270,7 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
 
   if (update_visual_size_immediately_)
     UpdateVisualSize(bounds_px.size());
+
   delegate_->OnBoundsChanged(bounds_px_);
 }
 
@@ -384,8 +385,8 @@ void WaylandWindow::SetDecorationInsets(const gfx::Insets* insets_px) {
     frame_insets_px_ = *insets_px;
   else
     frame_insets_px_ = absl::nullopt;
-  SetWindowGeometry(gfx::ScaleToRoundedRect(GetBounds(), 1.f / window_scale()));
-  connection()->ScheduleFlush();
+  UpdateDecorations();
+  connection_->ScheduleFlush();
 }
 
 void WaylandWindow::SetWindowIcons(const gfx::ImageSkia& window_icon,
@@ -474,6 +475,11 @@ void WaylandWindow::UpdateVisualSize(const gfx::Size& size_px) {
     return;
   visual_size_px_ = size_px;
   UpdateWindowMask();
+
+  if (apply_pending_state_on_update_visual_size_) {
+    root_surface_->ApplyPendingState();
+    connection_->ScheduleFlush();
+  }
 }
 
 void WaylandWindow::OnCloseRequest() {
@@ -560,7 +566,8 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   // Update visual size in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.
-  set_update_visual_size_immediately(UseTestConfigForPlatformWindows());
+  if (!update_visual_size_immediately_)
+    set_update_visual_size_immediately(UseTestConfigForPlatformWindows());
 
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
@@ -583,18 +590,20 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
         GetWidget(), primary_subsurface_.get());
   }
 
-  connection_->ScheduleFlush();
-
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
   std::vector<gfx::Rect> region{gfx::Rect{bounds_px_.size()}};
   root_surface_->SetOpaqueRegion(&region);
+  root_surface_->ApplyPendingState();
+  connection_->ScheduleFlush();
 
   return true;
 }
 
 void WaylandWindow::SetWindowGeometry(gfx::Rect bounds) {}
+
+void WaylandWindow::UpdateDecorations() {}
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
@@ -776,7 +785,7 @@ bool WaylandWindow::CommitOverlays(
     if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
       main_overlay = overlays.begin();
     root_surface()->SetSurfaceBufferScale(
-        (*main_overlay)->surface_scale_factor);
+        ceil((*main_overlay)->surface_scale_factor));
   }
 
   {
@@ -798,13 +807,26 @@ bool WaylandWindow::CommitOverlays(
           reference_above = (*std::next(iter))->wayland_surface();
         }
         (*iter)->ConfigureAndShowSurface(
-            (*overlay_iter)->transform, (*overlay_iter)->bounds_rect,
-            root_surface()->buffer_scale(), (*overlay_iter)->enable_blend,
-            nullptr, reference_above);
+            (*overlay_iter)->bounds_rect, (*split)->bounds_rect,
+            root_surface()->pending_buffer_scale(), nullptr, reference_above);
+
+        (*iter)->wayland_surface()->SetBufferTransform(
+            (*overlay_iter)->transform);
+        (*iter)->wayland_surface()->SetSurfaceBufferScale(
+            root_surface()->pending_buffer_scale());
         (*iter)->wayland_surface()->SetViewportSource(
             (*overlay_iter)->crop_rect);
+        (*iter)->wayland_surface()->SetOverlayPriority(
+            (*overlay_iter)->priority_hint);
         (*iter)->wayland_surface()->SetViewportDestination(
             (*overlay_iter)->bounds_rect.size());
+        gfx::Rect region_px =
+            (*overlay_iter)->enable_blend
+                ? gfx::Rect()
+                : gfx::Rect((*overlay_iter)->bounds_rect.size());
+        std::vector<gfx::Rect> opaque_region{region_px};
+        (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
+        (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -834,13 +856,26 @@ bool WaylandWindow::CommitOverlays(
           reference_below = (*std::prev(iter))->wayland_surface();
         }
         (*iter)->ConfigureAndShowSurface(
-            (*overlay_iter)->transform, (*overlay_iter)->bounds_rect,
-            root_surface()->buffer_scale(), (*overlay_iter)->enable_blend,
-            reference_below, nullptr);
+            (*overlay_iter)->bounds_rect, (*split)->bounds_rect,
+            root_surface()->pending_buffer_scale(), reference_below, nullptr);
+
+        (*iter)->wayland_surface()->SetBufferTransform(
+            (*overlay_iter)->transform);
+        (*iter)->wayland_surface()->SetSurfaceBufferScale(
+            root_surface()->pending_buffer_scale());
         (*iter)->wayland_surface()->SetViewportSource(
             (*overlay_iter)->crop_rect);
+        (*iter)->wayland_surface()->SetOverlayPriority(
+            (*overlay_iter)->priority_hint);
         (*iter)->wayland_surface()->SetViewportDestination(
             (*overlay_iter)->bounds_rect.size());
+        gfx::Rect region_px =
+            (*overlay_iter)->enable_blend
+                ? gfx::Rect()
+                : gfx::Rect((*overlay_iter)->bounds_rect.size());
+        std::vector<gfx::Rect> opaque_region{region_px};
+        (*iter)->wayland_surface()->SetOpaqueRegion(&opaque_region);
+        (*iter)->wayland_surface()->SetOpacity((*overlay_iter)->opacity);
         connection_->buffer_manager_host()->CommitBufferInternal(
             (*iter)->wayland_surface(), (*overlay_iter)->buffer_id,
             (*overlay_iter)->damage_region,
@@ -882,16 +917,24 @@ bool WaylandWindow::CommitOverlays(
     //   to apply viewport.destination is made at commit time. Right now PIP
     //   would have incorrect size b/c it is fullscreen overlay scheduled at
     //   z_order=0.
-    primary_subsurface_->ConfigureAndShowSurface(
-        (*split)->transform, (*split)->bounds_rect,
-        root_surface()->buffer_scale(), (*split)->enable_blend, nullptr,
-        nullptr);
+    primary_subsurface_->wayland_surface()->SetBufferTransform(
+        (*split)->transform);
+    primary_subsurface_->wayland_surface()->SetSurfaceBufferScale(
+        root_surface()->pending_buffer_scale());
     primary_subsurface_->wayland_surface()->SetViewportSource(
         (*split)->crop_rect);
+    primary_subsurface_->wayland_surface()->SetOverlayPriority(
+        (*split)->priority_hint);
     primary_subsurface_->wayland_surface()->SetViewportDestination(
         (*split)->crop_rect == gfx::RectF(1.f, 1.f)
             ? gfx::Size()
             : (*split)->bounds_rect.size());
+    gfx::Rect region_px = (*split)->enable_blend
+                              ? gfx::Rect()
+                              : gfx::Rect((*split)->bounds_rect.size());
+    std::vector<gfx::Rect> opaque_region{region_px};
+    primary_subsurface_->wayland_surface()->SetOpaqueRegion(&opaque_region);
+    primary_subsurface_->wayland_surface()->SetOpacity((*split)->opacity);
     connection_->buffer_manager_host()->CommitBufferInternal(
         primary_subsurface_->wayland_surface(), (*split)->buffer_id,
         (*split)->damage_region,

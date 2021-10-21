@@ -247,6 +247,9 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValuesForFontVariantProperty(const ComputedStyle&,
                                                 const LayoutObject*,
                                                 bool allow_visited_style);
+  static CSSValue* ValuesForFontSynthesisProperty(const ComputedStyle&,
+                                                  const LayoutObject*,
+                                                  bool allow_visited_style);
   static CSSValueList* ValuesForContainerShorthand(const ComputedStyle&,
                                                    const LayoutObject*,
                                                    bool allow_visited_style);
@@ -281,6 +284,18 @@ class CORE_EXPORT ComputedStyleUtils {
   static const CSSValue* ComputedPropertyValue(const CSSProperty&,
                                                const ComputedStyle&,
                                                const LayoutObject* = nullptr);
+
+ private:
+  // Returns the CSSValueID for a scale transform operation.
+  static CSSValueID CSSValueIDForScaleOperation(
+      const TransformOperation::OperationType);
+  // Returns the CSSValueID for a translate transform operation.
+
+  static CSSValueID CSSValueIDForTranslateOperation(
+      const TransformOperation::OperationType);
+  // Returns the CSSValueID for a rotate transform operation.
+  static CSSValueID CSSValueIDForRotateOperation(
+      const TransformOperation::OperationType);
 };
 
 }  // namespace blink

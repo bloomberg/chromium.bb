@@ -1398,7 +1398,7 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   // in the following Size() call.
   base::FilePath cache_index_path =
       storage_path.AppendASCII(LegacyCacheStorage::kIndexFileName);
-  base::Time t = base::Time::Now() + base::TimeDelta::FromHours(-1);
+  base::Time t = base::Time::Now() + base::Hours(-1);
   EXPECT_TRUE(base::TouchFile(cache_index_path, t, t));
   EXPECT_FALSE(IsIndexFileCurrent(storage_path));
 
@@ -1762,7 +1762,7 @@ TEST_F(CacheStorageManagerTest, GetAllStorageKeysUsageWithOldIndex) {
   // older than the other directories in the store to trigger size
   // recalculation.
   EXPECT_TRUE(base::CopyFile(backup_index_path, index_path));
-  base::Time t = base::Time::Now() - base::TimeDelta::FromHours(1);
+  base::Time t = base::Time::Now() - base::Hours(1);
   EXPECT_TRUE(base::TouchFile(index_path, t, t));
   EXPECT_FALSE(IsIndexFileCurrent(storage_dir));
 
@@ -1821,7 +1821,7 @@ TEST_F(CacheStorageManagerTest, GetKeySizeWithOldIndex) {
 
   // Make the access/mod times of index file older than the other files in the
   // cache to trigger size recalculation.
-  base::Time t = base::Time::Now() - base::TimeDelta::FromHours(1);
+  base::Time t = base::Time::Now() - base::Hours(1);
   EXPECT_TRUE(base::TouchFile(index_path, t, t));
   EXPECT_FALSE(IsIndexFileCurrent(storage_dir));
 
@@ -2325,6 +2325,21 @@ TEST_P(CacheStorageManagerTestP, SlowPutCompletesWithoutExternalRef) {
   // succeeded.
   cache_loop.Run();
   EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageManagerTestP, StoragePutPartialContentForBackgroundFetch) {
+  EXPECT_TRUE(Open(storage_key1_, "foo",
+                   storage::mojom::CacheStorageOwner::kBackgroundFetch));
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = GURL("http://example.com/foo");
+  auto request_clone = BackgroundFetchSettledFetch::CloneRequest(request);
+
+  EXPECT_TRUE(CachePutWithStatusCode(callback_cache_handle_.value(),
+                                     std::move(request), 206));
+  EXPECT_TRUE(StorageMatchAllWithRequest(
+      storage_key1_, std::move(request_clone), /* match_options= */ nullptr,
+      storage::mojom::CacheStorageOwner::kBackgroundFetch));
+  EXPECT_EQ(206, callback_cache_handle_response_->status_code);
 }
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {

@@ -69,7 +69,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
@@ -127,6 +126,9 @@ class TestShelfObserver : public ShelfObserver {
     shelf_->AddObserver(this);
   }
 
+  TestShelfObserver(const TestShelfObserver&) = delete;
+  TestShelfObserver& operator=(const TestShelfObserver&) = delete;
+
   ~TestShelfObserver() override { shelf_->RemoveObserver(this); }
 
   // ShelfObserver implementation.
@@ -151,8 +153,6 @@ class TestShelfObserver : public ShelfObserver {
   Shelf* shelf_;
   bool icon_positions_changed_ = false;
   base::TimeDelta icon_positions_animation_duration_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
 
 // A ShelfItemDelegate that tracks the last context menu request, and exposes a
@@ -194,6 +194,10 @@ class AsyncContextMenuShelfItemDelegate : public ShelfItemDelegate {
 class ShelfObserverIconTest : public AshTestBase {
  public:
   ShelfObserverIconTest() = default;
+
+  ShelfObserverIconTest(const ShelfObserverIconTest&) = delete;
+  ShelfObserverIconTest& operator=(const ShelfObserverIconTest&) = delete;
+
   ~ShelfObserverIconTest() override = default;
 
   void SetUp() override {
@@ -201,8 +205,7 @@ class ShelfObserverIconTest : public AshTestBase {
     observer_ = std::make_unique<TestShelfObserver>(GetPrimaryShelf());
     shelf_view_test_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
-    shelf_view_test_->SetAnimationDuration(
-        base::TimeDelta::FromMilliseconds(1));
+    shelf_view_test_->SetAnimationDuration(base::Milliseconds(1));
   }
 
   void TearDown() override {
@@ -217,14 +220,17 @@ class ShelfObserverIconTest : public AshTestBase {
  private:
   std::unique_ptr<TestShelfObserver> observer_;
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfObserverIconTest);
 };
 
 // A ShelfItemDelegate that tracks selections and reports a custom action.
 class ShelfItemSelectionTracker : public ShelfItemDelegate {
  public:
   ShelfItemSelectionTracker() : ShelfItemDelegate(ShelfID()) {}
+
+  ShelfItemSelectionTracker(const ShelfItemSelectionTracker&) = delete;
+  ShelfItemSelectionTracker& operator=(const ShelfItemSelectionTracker&) =
+      delete;
+
   ~ShelfItemSelectionTracker() override = default;
 
   size_t item_selected_count() const { return item_selected_count_; }
@@ -247,8 +253,6 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
  private:
   size_t item_selected_count_ = 0;
   ShelfAction item_selected_action_ = SHELF_ACTION_NONE;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
 
 // A ShelfItemDelegate to generate empty shelf context menu.
@@ -367,7 +371,7 @@ class ShelfViewTest : public AshTestBase {
               500);
 
     test_api_ = std::make_unique<ShelfViewTestAPI>(shelf_view_);
-    test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
+    test_api_->SetAnimationDuration(base::Milliseconds(1));
 
     // Add a browser shortcut shelf item, as chrome does, for testing.
     AddItem(TYPE_BROWSER_SHORTCUT, true);
@@ -1537,7 +1541,7 @@ TEST_P(LtrRtlShelfViewTest, TestShelfItemsAnimations) {
   ShelfID second_app_id = AddAppShortcut();
 
   // Set the animation duration for shelf items.
-  test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(100));
+  test_api_->SetAnimationDuration(base::Milliseconds(100));
 
   // The shelf items should animate if they are moved within the shelf, either
   // by swapping or if the items need to be rearranged due to an item getting
@@ -1863,8 +1867,7 @@ TEST_P(LtrRtlShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
   EXPECT_FALSE(shelf_view_->drag_view());
   EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
-  generator->GestureScrollSequence(start, end,
-                                   base::TimeDelta::FromMilliseconds(100), 3);
+  generator->GestureScrollSequence(start, end, base::Milliseconds(100), 3);
   generator->ReleaseTouch();
 
   // |first_add_id| has been moved to the end of the items in the shelf.
@@ -1936,8 +1939,7 @@ TEST_P(LtrRtlShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   EXPECT_FALSE(shelf_view_->drag_view());
   EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
-  generator->GestureScrollSequence(start, end,
-                                   base::TimeDelta::FromMilliseconds(100), 3);
+  generator->GestureScrollSequence(start, end, base::Milliseconds(100), 3);
   generator->ReleaseTouch();
 
   // |first_add_id| has been moved to the end of the items in the shelf.
@@ -2267,9 +2269,11 @@ class ShelfViewMenuTest : public ShelfViewTest,
                           public testing::WithParamInterface<bool> {
  public:
   ShelfViewMenuTest() = default;
-  ~ShelfViewMenuTest() override = default;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewMenuTest);
+  ShelfViewMenuTest(const ShelfViewMenuTest&) = delete;
+  ShelfViewMenuTest& operator=(const ShelfViewMenuTest&) = delete;
+
+  ~ShelfViewMenuTest() override = default;
 };
 
 INSTANTIATE_TEST_SUITE_P(All, ShelfViewMenuTest, testing::Bool());
@@ -2303,24 +2307,9 @@ TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
           .x());
 }
 
-// Test class that enables notification indicators.
-class NotificationIndicatorTest : public ShelfViewTest {
- public:
-  NotificationIndicatorTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kNotificationIndicator);
-  }
-  ~NotificationIndicatorTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationIndicatorTest);
-};
-
 // Tests that an item has a notification badge indicator when the notification
 // is added and removed.
-TEST_F(NotificationIndicatorTest, ItemHasCorrectNotificationBadgeIndicator) {
+TEST_F(ShelfViewTest, ItemHasCorrectNotificationBadgeIndicator) {
   const ShelfID item_id = AddApp();
   const ShelfAppButton* shelf_app_button = GetButtonByID(item_id);
 
@@ -2345,6 +2334,10 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
  public:
   ShelfViewVisibleBoundsTest() : scoped_locale_(GetParam() ? "he" : "") {}
 
+  ShelfViewVisibleBoundsTest(const ShelfViewVisibleBoundsTest&) = delete;
+  ShelfViewVisibleBoundsTest& operator=(const ShelfViewVisibleBoundsTest&) =
+      delete;
+
   void CheckAllItemsAreInBounds() {
     gfx::Rect visible_bounds = shelf_view_->GetVisibleItemsBoundsInScreen();
     gfx::Rect shelf_bounds = shelf_view_->GetBoundsInScreen();
@@ -2359,8 +2352,6 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
  private:
   // Restores locale to the default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale scoped_locale_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewVisibleBoundsTest);
 };
 
 TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
@@ -2384,6 +2375,10 @@ class InkDropSpy : public views::InkDrop {
  public:
   explicit InkDropSpy(std::unique_ptr<views::InkDrop> ink_drop)
       : ink_drop_(std::move(ink_drop)) {}
+
+  InkDropSpy(const InkDropSpy&) = delete;
+  InkDropSpy& operator=(const InkDropSpy&) = delete;
+
   ~InkDropSpy() override = default;
 
   std::vector<views::InkDropState> GetAndResetRequestedStates() {
@@ -2438,15 +2433,17 @@ class InkDropSpy : public views::InkDrop {
 
   std::unique_ptr<views::InkDrop> ink_drop_;
   std::vector<views::InkDropState> requested_states_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InkDropSpy);
 };
 
 // A ShelfItemDelegate that returns a menu for the shelf item.
 class ListMenuShelfItemDelegate : public ShelfItemDelegate {
  public:
   ListMenuShelfItemDelegate() : ShelfItemDelegate(ShelfID()) {}
+
+  ListMenuShelfItemDelegate(const ListMenuShelfItemDelegate&) = delete;
+  ListMenuShelfItemDelegate& operator=(const ListMenuShelfItemDelegate&) =
+      delete;
+
   ~ListMenuShelfItemDelegate() override = default;
 
  private:
@@ -2461,8 +2458,6 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
 };
 
 }  // namespace
@@ -2961,6 +2956,10 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonTransformed) {
 class ShelfViewFocusTest : public ShelfViewTest {
  public:
   ShelfViewFocusTest() = default;
+
+  ShelfViewFocusTest(const ShelfViewFocusTest&) = delete;
+  ShelfViewFocusTest& operator=(const ShelfViewFocusTest&) = delete;
+
   ~ShelfViewFocusTest() override = default;
 
   // AshTestBase:
@@ -2991,9 +2990,6 @@ class ShelfViewFocusTest : public ShelfViewTest {
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
     generator.PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EventFlags::EF_NONE);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);
 };
 
 // Tests that the number of buttons is as expected and the shelf's widget
@@ -3182,11 +3178,11 @@ TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionAfterGestureLongPress) {
   GetEventGenerator()->PressTouch(app_icon1_center_point);
 
   // Fast forward to generate the ET_GESTURE_SHOW_PRESS event.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+  task_environment()->FastForwardBy(base::Milliseconds(200));
 
   // Fast forward to generate the ET_GESTURE_LONG_PRESS event to show the
   // context menu.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  task_environment()->FastForwardBy(base::Milliseconds(1000));
   ASSERT_TRUE(shelf_view_->IsShowingMenu());
 
   // Mouse click at `app_icon2_` while gesture pressing `app_icon1_`.
@@ -3218,7 +3214,7 @@ TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionBeforeGestureLongPress) {
   GetEventGenerator()->PressTouch(app_icon1_center_point);
 
   // Fast forward to generate the ET_GESTURE_SHOW_PRESS event.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+  task_environment()->FastForwardBy(base::Milliseconds(200));
 
   // Mouse click at `app_icon2_` while gesture pressing `app_icon1_`. Note that
   // we do not need to release the touch on `app_icon1_` because the gesture
@@ -3228,7 +3224,7 @@ TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionBeforeGestureLongPress) {
   GetEventGenerator()->ClickLeftButton();
 
   // Fast forward until the callback is executed.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+  task_environment()->FastForwardBy(base::Milliseconds(200));
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_EQ(views::InkDropState::HIDDEN, GetInkDropStateOfAppIcon1());

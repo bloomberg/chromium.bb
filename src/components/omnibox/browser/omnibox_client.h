@@ -40,20 +40,13 @@ using FaviconFetchedCallback =
 // (e.g., getting information about the current page, retrieving objects
 // associated with the current tab, or performing operations that rely on such
 // objects under the hood).
-class OmniboxClient : public OmniboxAction::Client {
+class OmniboxClient {
  public:
   virtual ~OmniboxClient() {}
 
   // Returns an AutocompleteProviderClient specific to the embedder context.
   virtual std::unique_ptr<AutocompleteProviderClient>
   CreateAutocompleteProviderClient() = 0;
-
-  // Returns an OmniboxNavigationObserver specific to the embedder context. May
-  // return null if the embedder has no need to observe omnibox navigations.
-  virtual std::unique_ptr<OmniboxNavigationObserver>
-  CreateOmniboxNavigationObserver(const std::u16string& text,
-                                  const AutocompleteMatch& match,
-                                  const AutocompleteMatch& alternate_nav_match);
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
@@ -112,10 +105,10 @@ class OmniboxClient : public OmniboxAction::Client {
   // that was created by CreateOmniboxNavigationObserver() for |match|; in some
   // embedding contexts, processing an extension keyword involves invoking
   // action on this observer.
-  virtual bool ProcessExtensionKeyword(const TemplateURL* template_url,
+  virtual bool ProcessExtensionKeyword(const std::u16string& text,
+                                       const TemplateURL* template_url,
                                        const AutocompleteMatch& match,
-                                       WindowOpenDisposition disposition,
-                                       OmniboxNavigationObserver* observer);
+                                       WindowOpenDisposition disposition);
 
   // Called to notify clients that the omnibox input state has changed.
   virtual void OnInputStateChanged() {}
@@ -170,24 +163,6 @@ class OmniboxClient : public OmniboxAction::Client {
 
   // Presents prompt to update Chrome.
   virtual void OpenUpdateChromeDialog() {}
-
-  // OmniboxAction::Client:
-
-  // Opens the Sharing Hub as if the "Share this page" airplane button
-  // were clicked.
-  void OpenSharingHub() override {}
-
-  // Opens and shows a new incognito browser window.
-  void NewIncognitoWindow() override {}
-
-  // Opens an Incognito clear browsing data dialog.
-  void OpenIncognitoClearBrowsingDataDialog() override {}
-
-  // Closes incognito browser windows.
-  void CloseIncognitoWindows() override {}
-
-  // Presents translation prompt for current tab web contents.
-  void PromptPageTranslation() override {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

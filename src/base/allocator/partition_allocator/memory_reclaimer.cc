@@ -13,6 +13,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/base_tracing.h"
 
+// TODO(bikineev): Temporarily disable *Scan in MemoryReclaimer as it seems to
+// cause significant jank.
+#define PA_STARSCAN_ENABLE_STARSCAN_ON_RECLAIM 0
+
 namespace base {
 
 namespace {
@@ -67,13 +71,15 @@ void PartitionAllocMemoryReclaimer::UnregisterPartition(
 
 void PartitionAllocMemoryReclaimer::Start(
     scoped_refptr<SequencedTaskRunner> task_runner) {
-  PA_DCHECK(!timer_);
+  AutoLock lock(lock_);
+
   PA_DCHECK(task_runner);
 
-  {
-    AutoLock lock(lock_);
-    PA_DCHECK(!thread_safe_partitions_.empty());
-  }
+  // Can be called several times.
+  if (timer_)
+    return;
+
+  PA_DCHECK(!thread_safe_partitions_.empty());
 
   // This does not need to run on the main thread, however there are a few
   // reasons to do it there:
@@ -89,7 +95,7 @@ void PartitionAllocMemoryReclaimer::Start(
   // seconds is useful. Since this is meant to run during idle time only, it is
   // a reasonable starting point balancing effectivenes vs cost. See
   // crbug.com/942512 for details and experimental results.
-  constexpr TimeDelta kInterval = TimeDelta::FromSeconds(4);
+  constexpr TimeDelta kInterval = Seconds(4);
 
   timer_ = std::make_unique<RepeatingTimer>();
   timer_->SetTaskRunner(task_runner);
@@ -130,6 +136,7 @@ void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
   //
   // Lastly decommit empty slot spans and lastly try to discard unused pages at
   // the end of the remaining active slots.
+#if PA_STARSCAN_ENABLE_STARSCAN_ON_RECLAIM
   {
     using PCScan = internal::PCScan;
     const auto invocation_mode = flags & PartitionPurgeAggressiveReclaim
@@ -137,6 +144,7 @@ void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
                                      : PCScan::InvocationMode::kBlocking;
     PCScan::PerformScanIfNeeded(invocation_mode);
   }
+#endif
 
 #if defined(PA_THREAD_CACHE_SUPPORTED)
   // Don't completely empty the thread cache outside of low memory situations,

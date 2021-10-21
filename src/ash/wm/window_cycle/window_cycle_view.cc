@@ -74,17 +74,14 @@ constexpr char kContainerAnimationSmoothness[] =
     "Ash.WindowCycleView.AnimationSmoothness.Container";
 
 // Duration of the window cycle UI fade in animation.
-constexpr base::TimeDelta kFadeInDuration =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kFadeInDuration = base::Milliseconds(100);
 
 // Duration of the window cycle elements slide animation.
-constexpr base::TimeDelta kContainerSlideDuration =
-    base::TimeDelta::FromMilliseconds(120);
+constexpr base::TimeDelta kContainerSlideDuration = base::Milliseconds(120);
 
 // Duration of the window cycle scale animation when a user toggles alt-tab
 // modes.
-constexpr base::TimeDelta kToggleModeScaleDuration =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr base::TimeDelta kToggleModeScaleDuration = base::Milliseconds(150);
 
 }  // namespace
 
@@ -593,6 +590,12 @@ void WindowCycleView::OnImplicitAnimationsCompleted() {
     GetWidget()->SetBounds(GetTargetBounds());
     defer_widget_bounds_update_ = false;
   }
+}
+
+bool WindowCycleView::IsEventInTabSliderContainer(
+    const gfx::Point& screen_point) {
+  return tab_slider_container_ &&
+         tab_slider_container_->GetBoundsInScreen().Contains(screen_point);
 }
 
 gfx::Rect WindowCycleView::GetContentContainerBounds() const {

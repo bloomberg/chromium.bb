@@ -7,9 +7,11 @@
 
 #include "ash/public/cpp/system_tray_client.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/ash/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 struct LocaleInfo;
@@ -30,6 +32,10 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
                              public UpgradeObserver {
  public:
   SystemTrayClientImpl();
+
+  SystemTrayClientImpl(const SystemTrayClientImpl&) = delete;
+  SystemTrayClientImpl& operator=(const SystemTrayClientImpl&) = delete;
+
   ~SystemTrayClientImpl() override;
 
   static SystemTrayClientImpl* Get();
@@ -57,10 +63,9 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   // ash::SystemTrayClient:
   void ShowSettings(int64_t display_id) override;
   void ShowBluetoothSettings() override;
-  void ShowBluetoothPairingDialog(const std::string& address,
-                                  const std::u16string& name_for_display,
-                                  bool paired,
-                                  bool connected) override;
+  void ShowBluetoothSettings(const std::string& device_id) override;
+  void ShowBluetoothPairingDialog(
+      absl::optional<base::StringPiece> device_address) override;
   void ShowDateSettings() override;
   void ShowSetTimeDialog() override;
   void ShowDisplaySettings() override;
@@ -136,8 +141,6 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   std::string last_enterprise_account_domain_manager_;
 
   std::unique_ptr<EnterpriseAccountObserver> enterprise_account_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayClientImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_IMPL_H_

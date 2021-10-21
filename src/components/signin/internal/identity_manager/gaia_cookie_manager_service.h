@@ -97,6 +97,9 @@ class GaiaCookieManagerService
   // Contains the information and parameters for any request.
   class GaiaCookieRequest {
    public:
+    GaiaCookieRequest(const GaiaCookieRequest&) = delete;
+    GaiaCookieRequest& operator=(const GaiaCookieRequest&) = delete;
+
     ~GaiaCookieRequest();
     GaiaCookieRequest(GaiaCookieRequest&&);
     GaiaCookieRequest& operator=(GaiaCookieRequest&&);
@@ -163,8 +166,6 @@ class GaiaCookieManagerService
     AddAccountToCookieCompletedCallback
         add_account_to_cookie_completed_callback_;
     LogOutFromCookieCompletedCallback log_out_from_cookie_completed_callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(GaiaCookieRequest);
   };
 
   // Class to retrieve the external connection check results from gaia.
@@ -179,6 +180,10 @@ class GaiaCookieManagerService
     typedef std::map<std::string, std::string> ResultMap;
 
     explicit ExternalCcResultFetcher(GaiaCookieManagerService* helper);
+
+    ExternalCcResultFetcher(const ExternalCcResultFetcher&) = delete;
+    ExternalCcResultFetcher& operator=(const ExternalCcResultFetcher&) = delete;
+
     ~ExternalCcResultFetcher() override;
 
     // Gets the current value of the external connection check result string.
@@ -224,12 +229,13 @@ class GaiaCookieManagerService
     ResultMap results_;
     base::Time m_external_cc_result_start_time_;
     base::OnceClosure callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
 
   GaiaCookieManagerService(ProfileOAuth2TokenService* token_service,
                            SigninClient* signin_client);
+
+  GaiaCookieManagerService(const GaiaCookieManagerService&) = delete;
+  GaiaCookieManagerService& operator=(const GaiaCookieManagerService&) = delete;
 
   ~GaiaCookieManagerService() override;
 
@@ -444,8 +450,6 @@ class GaiaCookieManagerService
   bool list_accounts_stale_;
 
   base::WeakPtrFactory<GaiaCookieManagerService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_GAIA_COOKIE_MANAGER_SERVICE_H_

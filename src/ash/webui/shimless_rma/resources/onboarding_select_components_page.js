@@ -9,6 +9,7 @@ import './shimless_rma_shared_css.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {ComponentTypeToId, ComponentTypeToName} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {Component, ComponentRepairStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 
@@ -22,58 +23,6 @@ import {Component, ComponentRepairStatus, ComponentType, ShimlessRmaServiceInter
  * }}
  */
 let ComponentCheckbox;
-
-/**
- * @type {!Object<!ComponentType, string>}
- */
-const ComponentTypeToName = {
-  [ComponentType.kAudioCodec]: 'Audio',
-  [ComponentType.kBattery]: 'Battery',
-  [ComponentType.kStorage]: 'Storage',
-  [ComponentType.kVpdCached]: 'Vpd Cached',
-  [ComponentType.kNetwork]: 'Network',
-  [ComponentType.kCamera]: 'Camera',
-  [ComponentType.kStylus]: 'Stylus',
-  [ComponentType.kTouchpad]: 'Touchpad',
-  [ComponentType.kTouchsreen]: 'Touchscreen',
-  [ComponentType.kDram]: 'Memory',
-  [ComponentType.kDisplayPanel]: 'Display',
-  [ComponentType.kCellular]: 'Cellular',
-  [ComponentType.kEthernet]: 'Ethernet',
-  [ComponentType.kWireless]: 'Wireless',
-  [ComponentType.kGyroscope]: 'Gyroscope',
-  [ComponentType.kBaseAccelerometer]: 'Base Accelerometer',
-  [ComponentType.kLidAccelerometer]: 'Lid Accelerometer',
-  [ComponentType.kScreen]: 'Screen',
-  [ComponentType.kKeyboard]: 'Keyboard',
-  [ComponentType.kPowerButton]: 'Power Button'
-};
-
-/**
- * @type {!Object<!ComponentType, string>}
- */
-const ComponentTypeToId = {
-  [ComponentType.kAudioCodec]: 'componentAudio',
-  [ComponentType.kBattery]: 'componentBattery',
-  [ComponentType.kStorage]: 'componentStorage',
-  [ComponentType.kVpdCached]: 'componentVpd Cached',
-  [ComponentType.kNetwork]: 'componentNetwork',
-  [ComponentType.kCamera]: 'componentCamera',
-  [ComponentType.kStylus]: 'componentStylus',
-  [ComponentType.kTouchpad]: 'componentTouchpad',
-  [ComponentType.kTouchsreen]: 'componentTouchscreen',
-  [ComponentType.kDram]: 'componentDram',
-  [ComponentType.kDisplayPanel]: 'componentDisplayPanel',
-  [ComponentType.kCellular]: 'componentCellular',
-  [ComponentType.kEthernet]: 'componentEthernet',
-  [ComponentType.kWireless]: 'componentWireless',
-  [ComponentType.kGyroscope]: 'componentGyroscope',
-  [ComponentType.kBaseAccelerometer]: 'componentBaseAccelerometer',
-  [ComponentType.kLidAccelerometer]: 'componentLidAccelerometer',
-  [ComponentType.kScreen]: 'componentScreen',
-  [ComponentType.kKeyboard]: 'componentKeyboard',
-  [ComponentType.kPowerButton]: 'componentPowerButton'
-};
 
 /**
  * @fileoverview
@@ -91,13 +40,7 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private {?ShimlessRmaServiceInterface} */
-      shimlessRmaService_: {
-        type: Object,
-        value: null,
-      },
-
-      /** @private {!Array<!ComponentCheckbox>} */
+      /** @protected {!Array<!ComponentCheckbox>} */
       componentCheckboxes_: {
         type: Array,
         value: () => [],
@@ -105,11 +48,20 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
     };
   }
 
+  constructor() {
+    super();
+    /** @private {ShimlessRmaServiceInterface} */
+    this.shimlessRmaService_ = getShimlessRmaService();
+  }
+
   /** @override */
   ready() {
     super.ready();
-    this.shimlessRmaService_ = getShimlessRmaService();
     this.getComponents_();
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: false},
+        ));
   }
 
   /** @private */
@@ -158,9 +110,11 @@ export class OnboardingSelectComponentsPageElement extends PolymerElement {
   onReworkFlowButtonClicked_(e) {
     e.preventDefault();
     console.log('Rework flow clicked');
-    // TODO(gavindodd): call
-    // this.shimlessRmaService_.reworkMainboard().then((state)
-    //     => shimlessRma.loadNextState_(state));
+    this.shimlessRmaService_.reworkMainboard().then(
+        (state) => this.dispatchEvent(new CustomEvent(
+            'load-next-state',
+            {bubbles: true, composed: true, detail: state},
+            )));
   }
 
   /** @return {!Promise<!StateResult>} */

@@ -538,7 +538,6 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
-#if CONFIG_INSPECTION
 // This function enables the inspector to inspect non visible frames.
 static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
                                        const uint8_t *data, size_t data_sz,
@@ -556,8 +555,10 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
       (FrameWorkerData *)ctx->frame_worker->data1;
   AV1Decoder *const pbi = frame_worker_data->pbi;
   AV1_COMMON *const cm = &pbi->common;
+#if CONFIG_INSPECTION
   frame_worker_data->pbi->inspect_cb = ctx->inspect_cb;
   frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
+#endif
   res = av1_receive_compressed_data(frame_worker_data->pbi, data_sz, &data);
   check_resync(ctx, frame_worker_data->pbi);
 
@@ -578,7 +579,6 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
   data2->show_existing = cm->show_existing_frame;
   return res;
 }
-#endif
 
 static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       const uint8_t *data, size_t data_sz,
@@ -593,6 +593,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   // Release any pending output frames from the previous decoder_decode call.
   // We need to do this even if the decoder is being flushed or the input
   // arguments are invalid.
+  // TODO(aomedia:3131): decoder_inspect should also do this.
   if (ctx->frame_worker) {
     BufferPool *const pool = ctx->buffer_pool;
     lock_buffer_pool(pool);
@@ -633,6 +634,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   const uint8_t *data_start = data;
   const uint8_t *data_end = data + data_sz;
 
+  // TODO(aomedia:3131): decoder_inspect should also do this.
   if (ctx->is_annexb) {
     // read the size of this temporal unit
     size_t length_of_size;
@@ -1381,6 +1383,39 @@ static aom_codec_err_t ctrl_get_tile_count(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_codec_err_t ctrl_get_base_q_idx(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  int *const arg = va_arg(args, int *);
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
+  FrameWorkerData *const frame_worker_data =
+      (FrameWorkerData *)ctx->frame_worker->data1;
+  *arg = frame_worker_data->pbi->common.quant_params.base_qindex;
+  return AOM_CODEC_OK;
+}
+
+static aom_codec_err_t ctrl_get_show_frame_flag(aom_codec_alg_priv_t *ctx,
+                                                va_list args) {
+  int *const arg = va_arg(args, int *);
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
+  FrameWorkerData *const frame_worker_data =
+      (FrameWorkerData *)ctx->frame_worker->data1;
+  *arg = frame_worker_data->pbi->common.show_frame;
+  return AOM_CODEC_OK;
+}
+
+static aom_codec_err_t ctrl_get_order_hint(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  unsigned int *const arg = va_arg(args, unsigned int *);
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  if (ctx->frame_worker == NULL) return AOM_CODEC_ERROR;
+  FrameWorkerData *const frame_worker_data =
+      (FrameWorkerData *)ctx->frame_worker->data1;
+  *arg = frame_worker_data->pbi->common.current_frame.order_hint;
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_set_invert_tile_order(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   ctx->invert_tile_order = va_arg(args, int);
@@ -1568,7 +1603,9 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AOMD_GET_SB_SIZE, ctrl_get_sb_size },
   { AOMD_GET_SHOW_EXISTING_FRAME_FLAG, ctrl_get_show_existing_frame_flag },
   { AOMD_GET_S_FRAME_INFO, ctrl_get_s_frame_info },
-
+  { AOMD_GET_SHOW_FRAME_FLAG, ctrl_get_show_frame_flag },
+  { AOMD_GET_BASE_Q_IDX, ctrl_get_base_q_idx },
+  { AOMD_GET_ORDER_HINT, ctrl_get_order_hint },
   CTRL_MAP_END,
 };
 
@@ -1589,6 +1626,38 @@ aom_codec_iface_t aom_codec_av1_dx_algo = {
       decoder_peek_si,    // aom_codec_peek_si_fn_t
       decoder_get_si,     // aom_codec_get_si_fn_t
       decoder_decode,     // aom_codec_decode_fn_t
+      decoder_get_frame,  // aom_codec_get_frame_fn_t
+      decoder_set_fb_fn,  // aom_codec_set_fb_fn_t
+  },
+  {
+      // NOLINT
+      0,
+      NULL,  // aom_codec_enc_cfg_t
+      NULL,  // aom_codec_encode_fn_t
+      NULL,  // aom_codec_get_cx_data_fn_t
+      NULL,  // aom_codec_enc_config_set_fn_t
+      NULL,  // aom_codec_get_global_headers_fn_t
+      NULL   // aom_codec_get_preview_frame_fn_t
+  },
+  NULL  // aom_codec_set_option_fn_t
+};
+
+// Decoder interface for inspecting frame data. It uses decoder_inspect instead
+// of decoder_decode so it only decodes one frame at a time, whether the frame
+// is shown or not.
+aom_codec_iface_t aom_codec_av1_inspect_algo = {
+  "AOMedia Project AV1 Decoder Inspector" VERSION_STRING,
+  AOM_CODEC_INTERNAL_ABI_VERSION,
+  AOM_CODEC_CAP_DECODER |
+      AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER,  // aom_codec_caps_t
+  decoder_init,                             // aom_codec_init_fn_t
+  decoder_destroy,                          // aom_codec_destroy_fn_t
+  decoder_ctrl_maps,                        // aom_codec_ctrl_fn_map_t
+  {
+      // NOLINT
+      decoder_peek_si,    // aom_codec_peek_si_fn_t
+      decoder_get_si,     // aom_codec_get_si_fn_t
+      decoder_inspect,    // aom_codec_decode_fn_t
       decoder_get_frame,  // aom_codec_get_frame_fn_t
       decoder_set_fb_fn,  // aom_codec_set_fb_fn_t
   },

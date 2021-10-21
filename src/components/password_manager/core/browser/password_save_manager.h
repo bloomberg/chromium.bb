@@ -6,7 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SAVE_MANAGER_H_
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 
 namespace autofill {
 struct FormData;
@@ -35,6 +35,10 @@ struct PasswordForm;
 class PasswordSaveManager {
  public:
   PasswordSaveManager() = default;
+
+  PasswordSaveManager(const PasswordSaveManager&) = delete;
+  PasswordSaveManager& operator=(const PasswordSaveManager&) = delete;
+
   virtual ~PasswordSaveManager() = default;
 
   virtual void Init(PasswordManagerClient* client,
@@ -104,9 +108,6 @@ class PasswordSaveManager {
   virtual bool HasGeneratedPassword() const = 0;
 
   virtual std::unique_ptr<PasswordSaveManager> Clone() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordSaveManager);
 };
 }  // namespace password_manager
 

@@ -28,14 +28,17 @@ class AlsFileReader : public LightProviderInterface {
   // ALS file location may not be ready immediately, so we retry every
   // |kAlsFileCheckingInterval| until |kMaxInitialAttempts| is reached, then
   // we give up.
-  static constexpr base::TimeDelta kAlsFileCheckingInterval =
-      base::TimeDelta::FromSeconds(1);
+  static constexpr base::TimeDelta kAlsFileCheckingInterval = base::Seconds(1);
   static constexpr int kMaxInitialAttempts = 20;
 
   static constexpr base::TimeDelta kAlsPollInterval =
-      base::TimeDelta::FromSecondsD(1.0 / AlsReader::kAlsPollFrequency);
+      base::Seconds(1.0 / AlsReader::kAlsPollFrequency);
 
   explicit AlsFileReader(AlsReader* als_reader);
+
+  AlsFileReader(const AlsFileReader&) = delete;
+  AlsFileReader& operator=(const AlsFileReader&) = delete;
+
   ~AlsFileReader() override;
 
   // Checks if an ALS is enabled, and if the config is valid . Also
@@ -86,8 +89,6 @@ class AlsFileReader : public LightProviderInterface {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AlsFileReader> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AlsFileReader);
 };
 
 }  // namespace auto_screen_brightness

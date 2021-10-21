@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 import {metrics} from '../../common/js/metrics.js';
+import {util} from '../../common/js/util.js';
 
 /**
  * Records metrics for mount events.
  */
 export class MountMetrics {
   constructor() {
-    chrome.fileManagerPrivate.onMountCompleted.addListener(
-        this.onMountCompleted_.bind(this));
+    // SWA version of Files app has no concept of background pages, avoid
+    // emitting UMA metrics if running in SWA.
+    if (!window.isSWA) {
+      chrome.fileManagerPrivate.onMountCompleted.addListener(
+          this.onMountCompleted_.bind(this));
+    }
   }
 
   /**
@@ -20,6 +25,12 @@ export class MountMetrics {
    * @private
    */
   onMountCompleted_(event) {
+    // The SWA and Chrome app currently co-exist so the FilesSwa flag may be
+    // enabled but the Chrome app is running, exit early in this case as the
+    // event_router will be sending these metrics instead.
+    if (util.isSwaEnabled()) {
+      return;
+    }
     if (event.eventType === 'mount') {
       if (event.status === 'success' && event.volumeMetadata) {
         if (event.volumeMetadata.volumeType === 'provided') {
@@ -58,6 +69,7 @@ export class MountMetrics {
  */
 MountMetrics.FileSystemProvidersForUMA = {
   UNKNOWN: 0,
+  ZIP_UNPACKER: 1,
   FILE_SYSTEM_FOR_DROPBOX: 2,
   FILE_SYSTEM_FOR_ONEDRIVE: 3,
   SFTP_FILE_SYSTEM: 4,
@@ -71,6 +83,7 @@ MountMetrics.FileSystemProvidersForUMA = {
   WICKED_GOOD_UNARCHIVER: 12,
   NETWORK_FILE_SHARE_FOR_CHROMEOS: 13,
   LAN_FOLDER: 14,
+  ZIP_PACKER: 15,
   SECURE_SHELL_APP: 16,
   NATIVE_NETWORK_SMB: 17,
 };

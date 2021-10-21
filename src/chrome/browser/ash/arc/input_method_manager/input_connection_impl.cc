@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_keymap.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keymap.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -27,7 +27,7 @@ namespace {
 // Android.
 // TODO(yhanada): Implement a way to observe an IME operation completion and
 // send the current text input state right after the IME operation completion.
-constexpr base::TimeDelta kStateUpdateTimeout = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kStateUpdateTimeout = base::Seconds(1);
 
 // Characters which should be sent as a KeyEvent and attributes of generated
 // KeyEvent.

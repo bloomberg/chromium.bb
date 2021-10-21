@@ -33,7 +33,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -60,6 +60,10 @@ namespace {
 
 class PwaInstallIconChangeWaiter : public views::ViewObserver {
  public:
+  PwaInstallIconChangeWaiter(const PwaInstallIconChangeWaiter&) = delete;
+  PwaInstallIconChangeWaiter& operator=(const PwaInstallIconChangeWaiter&) =
+      delete;
+
   static void VerifyIconVisibility(views::View* iconView, bool visible);
 
  private:
@@ -77,8 +81,6 @@ class PwaInstallIconChangeWaiter : public views::ViewObserver {
   base::RunLoop run_loop_;
 
   base::ScopedObservation<views::View, views::ViewObserver> observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PwaInstallIconChangeWaiter);
 };
 
 // static
@@ -113,6 +115,11 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
          {feature_engagement::kIPHDesktopPwaInstallFeature, {}}},
         {});
   }
+
+  PwaInstallViewBrowserTest(const PwaInstallViewBrowserTest&) = delete;
+  PwaInstallViewBrowserTest& operator=(const PwaInstallViewBrowserTest&) =
+      delete;
+
   ~PwaInstallViewBrowserTest() override = default;
 
   void SetUp() override {
@@ -281,8 +288,6 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   PageActionIconView* pwa_install_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
   webapps::TestAppBannerManagerDesktop* app_banner_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PwaInstallViewBrowserTest);
 
  private:
   web_app::ScopedOsHooksSuppress os_hooks_suppress_;
@@ -579,11 +584,11 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, TextContrast) {
 }
 
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallMeasured) {
-  TestInstallBounce(base::TimeDelta::FromMinutes(50), 1);
+  TestInstallBounce(base::Minutes(50), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallIgnored) {
-  TestInstallBounce(base::TimeDelta::FromMinutes(70), 0);
+  TestInstallBounce(base::Minutes(70), 0);
 }
 
 // Omnibox install promotion should show if there are no viable related apps
@@ -653,7 +658,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
       "Manifest listing related chrome app"));
 }
 
-IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PwaIntallIphSiteEngagement) {
+// TODO(crbug.com/1258062): Flaky.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, DISABLED_PwaIntallIphSiteEngagement) {
   GURL app_url = GetInstallableAppURL();
   bool installable = OpenTab(app_url).installable;
   ASSERT_TRUE(installable);

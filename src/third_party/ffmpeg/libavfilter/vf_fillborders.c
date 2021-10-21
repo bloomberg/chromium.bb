@@ -78,10 +78,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void smear_borders8(FillBordersContext *s, AVFrame *frame)
@@ -708,11 +705,10 @@ static const AVFilterPad fillborders_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .config_props   = config_input,
         .filter_frame   = filter_frame,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad fillborders_outputs[] = {
@@ -720,7 +716,6 @@ static const AVFilterPad fillborders_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_fillborders = {
@@ -729,8 +724,8 @@ const AVFilter ff_vf_fillborders = {
     .priv_size     = sizeof(FillBordersContext),
     .priv_class    = &fillborders_class,
     .query_formats = query_formats,
-    .inputs        = fillborders_inputs,
-    .outputs       = fillborders_outputs,
+    FILTER_INPUTS(fillborders_inputs),
+    FILTER_OUTPUTS(fillborders_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
     .process_command = process_command,
 };

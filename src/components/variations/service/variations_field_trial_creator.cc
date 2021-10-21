@@ -94,7 +94,7 @@ void RecordSeedExpiry(bool is_safe_seed, VariationsSeedExpiry seed_expiry) {
 // Records the loaded seed's age.
 void RecordSeedFreshness(base::TimeDelta seed_age) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.SeedFreshness", seed_age.InMinutes(),
-                              1, base::TimeDelta::FromDays(30).InMinutes(), 50);
+                              1, base::Days(30).InMinutes(), 50);
 }
 
 // Records details about Chrome's attempt to apply a variations seed.
@@ -146,6 +146,9 @@ Study::CpuArchitecture GetCurrentCpuArchitecture() {
 
 }  // namespace
 
+const base::Feature kForceFieldTrialSetupCrashForTesting{
+    "ForceFieldTrialSetupCrashForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     VariationsServiceClient* client,
     std::unique_ptr<VariationsSeedStore> seed_store,
@@ -171,9 +174,6 @@ std::string VariationsFieldTrialCreator::GetLatestCountry() const {
 }
 
 bool VariationsFieldTrialCreator::SetupFieldTrials(
-    const char* kEnableGpuBenchmarking,
-    const char* kEnableFeatures,
-    const char* kDisableFeatures,
     const std::vector<std::string>& variation_ids,
     const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -184,18 +184,13 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     SafeSeedManager* safe_seed_manager,
     absl::optional<int> low_entropy_source_value,
     bool extend_variations_safe_mode) {
+  DCHECK(feature_list);
+  DCHECK(metrics_state_manager);
+  DCHECK(platform_field_trials);
+  DCHECK(safe_seed_manager);
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
-      command_line->HasSwitch(kEnableGpuBenchmarking)) {
-    base::FieldTrial::EnableBenchmarking();
-  }
-
-#if !defined(OS_ANDROID)
-  if (extend_variations_safe_mode)
-    MaybeExtendVariationsSafeMode(metrics_state_manager);
-#endif
-
   if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
     bool result = AssociateParamsFromString(
         command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
@@ -221,6 +216,19 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
                                          ::switches::kForceFieldTrials));
     }
   }
+
+#if !defined(OS_ANDROID)
+  // TODO(crbug/1248239): Enable Extended Variations Safe Mode on Android.
+  if (extend_variations_safe_mode &&
+      !metrics_state_manager->is_background_session()) {
+    // If the session is expected to be a background session, then do not extend
+    // Variations Safe Mode. Extending Safe Mode involves monitoring for crashes
+    // earlier on in startup; however, this monitoring is not desired in
+    // background sessions, whose terminations should never be considered
+    // crashes.
+    MaybeExtendVariationsSafeMode(metrics_state_manager);
+  }
+#endif
 
   VariationsIdsProvider* http_header_provider =
       VariationsIdsProvider::GetInstance();
@@ -253,8 +261,8 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   }
 
   feature_list->InitializeFromCommandLine(
-      command_line->GetSwitchValueASCII(kEnableFeatures),
-      command_line->GetSwitchValueASCII(kDisableFeatures));
+      command_line->GetSwitchValueASCII(::switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(::switches::kDisableFeatures));
 
   // This needs to happen here: After the InitializeFromCommandLine() call,
   // because the explicit cmdline --disable-features and --enable-features
@@ -287,6 +295,14 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
       used_seed, low_entropy_provider.get(), feature_list.get());
 
   base::FeatureList::SetInstance(std::move(feature_list));
+
+  // For testing Variations Safe Mode, maybe crash here.
+  if (base::FeatureList::IsEnabled(kForceFieldTrialSetupCrashForTesting)) {
+    // We log a recognizable token for the crash condition, to allow tests to
+    // recognize the crash location in the test output. See:
+    // TEST_P(FieldTrialTest, ExtendedSafeModeEndToEnd)
+    LOG(FATAL) << "crash_for_testing";
+  }
 
   // This must be called after |local_state_| is initialized.
   platform_field_trials->SetupFieldTrials();

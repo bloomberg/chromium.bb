@@ -24,21 +24,13 @@ namespace scheduler {
 #define QUEUEING_TIME_PER_QUEUE_TYPE_METRIC_NAME \
   "RendererScheduler.QueueingDurationPerQueueType"
 
-// Same as UMA_HISTOGRAM_TIMES but for a broader view of this metric we end
-// at 1 minute instead of 10 seconds.
-#define QUEUEING_TIME_HISTOGRAM(name, sample)                               \
-  UMA_HISTOGRAM_CUSTOM_TIMES(QUEUEING_TIME_PER_QUEUE_TYPE_METRIC_NAME name, \
-                             sample, base::TimeDelta::FromMilliseconds(1),  \
-                             base::TimeDelta::FromMinutes(1), 50)
-
 enum class MainThreadTaskLoadState { kLow, kHigh, kUnknown };
 
 namespace {
 
 constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
-    base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
-    base::TimeDelta::FromMinutes(3);
+    base::Seconds(1);
+constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold = base::Minutes(3);
 
 // Main thread load percentage that is considered low.
 constexpr int kMainThreadTaskLoadLowPercentage = 25;
@@ -207,7 +199,7 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
 
     UMA_HISTOGRAM_ENUMERATION(
         "RendererScheduler.ResourceLoadingTaskCountPerPriority",
-        queue->GetTaskQueue()->GetQueuePriority(),
+        queue->GetQueuePriority(),
         base::sequence_manager::TaskQueue::QueuePriority::kQueuePriorityCount);
   }
 }
@@ -250,7 +242,7 @@ void MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad(
       base::TimeDelta time_since_foregrounded =
           time - main_thread_scheduler_->main_thread_only()
                      .background_status_changed_at;
-      if (time_since_foregrounded > base::TimeDelta::FromMinutes(1)) {
+      if (time_since_foregrounded > base::Minutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Foreground.AfterFirstMinute",
                                  load_percentage);
@@ -282,17 +274,17 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
       base::TimeDelta time_since_backgrounded =
           time - main_thread_scheduler_->main_thread_only()
                      .background_status_changed_at;
-      if (time_since_backgrounded > base::TimeDelta::FromMinutes(1)) {
+      if (time_since_backgrounded > base::Minutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Background.AfterFirstMinute",
                                  load_percentage);
       }
-      if (time_since_backgrounded > base::TimeDelta::FromMinutes(5)) {
+      if (time_since_backgrounded > base::Minutes(5)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Background.AfterFifthMinute",
                                  load_percentage);
       }
-      if (time_since_backgrounded > base::TimeDelta::FromMinutes(10)) {
+      if (time_since_backgrounded > base::Minutes(10)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Background.AfterTenthMinute",
                                  load_percentage);

@@ -257,7 +257,8 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_FetchExtensionPolicy) {
 }
 
 // crbug.com/1230268 not working on Lacros.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1254962): flaky on Mac builders
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_MAC)
 #define MAYBE_UpdateExtensionPolicy DISABLED_UpdateExtensionPolicy
 #else
 #define MAYBE_UpdateExtensionPolicy UpdateExtensionPolicy
@@ -328,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, MAYBE_InstallNewExtension) {
 // This test verifies that when the user signs out then any existing component
 // policy caches are dropped, and that it's still possible to sign back in and
 // get policy for components working again.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// Signing out on Lacros is not possible.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
   // Read the initial policy.
   ExtensionTestMessageListener initial_policy_listener(kTestPolicyJSON, true);
@@ -383,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
   // And the cache is back.
   EXPECT_TRUE(base::PathExists(cache_path));
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 // Test of the component cloud policy when the policy test server is configured
 // to perform the signing key rotation for each policy fetch.

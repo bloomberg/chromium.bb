@@ -8,6 +8,7 @@
 
 #include "platform/test/fake_task_runner.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 
@@ -66,8 +67,7 @@ void FakeClock::Advance(Clock::duration delta) {
 
 void FakeClock::SubscribeToTimeChanges(FakeTaskRunner* task_runner) {
   OSP_CHECK_EQ(std::this_thread::get_id(), control_thread_id_);
-  OSP_CHECK(std::find(task_runners_.begin(), task_runners_.end(),
-                      task_runner) == task_runners_.end());
+  OSP_CHECK(!Contains(task_runners_, task_runner));
   task_runners_.push_back(task_runner);
 }
 

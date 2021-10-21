@@ -26,10 +26,8 @@ const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
 // Max and min number of seconds that must pass between showing user contextual
 // nudges when override switch is set.
-constexpr base::TimeDelta kAshContextualNudgesMinInterval =
-    base::TimeDelta::FromSeconds(0);
-constexpr base::TimeDelta kAshContextualNudgesMaxInterval =
-    base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kAshContextualNudgesMinInterval = base::Seconds(0);
+constexpr base::TimeDelta kAshContextualNudgesMaxInterval = base::Seconds(60);
 
 }  // namespace
 
@@ -406,12 +404,6 @@ const char kEnableHoudini[] = "enable-houdini";
 
 // Enables the use of 64-bit Houdini library for ARM binary translation.
 const char kEnableHoudini64[] = "enable-houdini64";
-
-// Enables the use of Houdini DLC library for ARM binary translation. This is
-// independent of choosing between the 32-bit vs 64-bit Houdini library. Houdini
-// DLC library will be downloaded and installed at run-time instead of at build
-// time.
-const char kEnableHoudiniDlc[] = "enable-houdini-dlc";
 
 // Enables the use of 32-bit NDK translation library for ARM binary translation.
 const char kEnableNdkTranslation[] = "enable-ndk-translation";
@@ -813,6 +805,9 @@ const char kTimeBeforeOnboardingSurveyInSecondsForTesting[] =
 const char kTouchscreenUsableWhileScreenOff[] =
     "touchscreen-usable-while-screen-off";
 
+// Enables TPM selection in runtime.
+const char kTpmIsDynamic[] = "tpm-is-dynamic";
+
 // Shows all Bluetooth devices in UI (System Tray/Settings Page.)
 const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 
@@ -884,6 +879,10 @@ bool IsArcCpuRestrictionDisabled() {
       kDisableArcCpuRestriction);
 }
 
+bool IsTpmDynamic() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kTpmIsDynamic);
+}
+
 bool IsUnfilteredBluetoothDevicesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUnfilteredBluetoothDevices);
@@ -931,8 +930,7 @@ absl::optional<base::TimeDelta> ContextualNudgesInterval() {
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               kAshContextualNudgesInterval),
           &numeric_cooldown_time)) {
-    base::TimeDelta cooldown_time =
-        base::TimeDelta::FromSeconds(numeric_cooldown_time);
+    base::TimeDelta cooldown_time = base::Seconds(numeric_cooldown_time);
     cooldown_time = base::clamp(cooldown_time, kAshContextualNudgesMinInterval,
                                 kAshContextualNudgesMaxInterval);
     return absl::optional<base::TimeDelta>(cooldown_time);

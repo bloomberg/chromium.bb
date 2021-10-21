@@ -22,12 +22,14 @@ namespace reporting {
 UserAddedRemovedReporter::UserAddedRemovedReporter(
     std::unique_ptr<UserEventReporterHelper> helper)
     : helper_(std::move(helper)) {
+  ProcessRemoveUserCache();
   managed_session_observation_.Observe(&managed_session_service_);
 }
 
 UserAddedRemovedReporter::UserAddedRemovedReporter()
     : helper_(std::make_unique<UserEventReporterHelper>(
           Destination::ADDED_REMOVED_EVENTS)) {
+  ProcessRemoveUserCache();
   managed_session_observation_.Observe(&managed_session_service_);
 }
 
@@ -52,7 +54,7 @@ void UserAddedRemovedReporter::OnLogin(Profile* profile) {
   UserAddedRemovedRecord record;
   record.mutable_user_added_event();
   if (helper_->ShouldReportUser(email)) {
-    record.mutable_user()->set_email(email);
+    record.mutable_affiliated_user()->set_user_email(email);
   }
   record.set_event_timestamp_sec(base::Time::Now().ToTimeT());
 
@@ -93,10 +95,29 @@ void UserAddedRemovedReporter::OnUserRemoved(
   UserAddedRemovedRecord record;
   record.mutable_user_removed_event()->set_reason(UserRemovalReason(reason));
   if (is_affiliated_user) {
-    record.mutable_user()->set_email(account_id.GetUserEmail());
+    record.mutable_affiliated_user()->set_user_email(account_id.GetUserEmail());
   }
   record.set_event_timestamp_sec(base::Time::Now().ToTimeT());
 
   helper_->ReportEvent(&record, ::reporting::Priority::IMMEDIATE);
+}
+
+void UserAddedRemovedReporter::ProcessRemoveUserCache() {
+  ash::ChromeUserManager* user_manager = ash::ChromeUserManager::Get();
+  auto users = user_manager->GetRemovedUserCache();
+
+  for (const auto& user : users) {
+    UserAddedRemovedRecord record;
+    record.set_event_timestamp_sec(base::Time::Now().ToTimeT());
+    record.mutable_user_removed_event()->set_reason(
+        UserRemovalReason(user.second));
+    if (user.first != "") {
+      record.mutable_affiliated_user()->set_user_email(user.first);
+    }
+
+    helper_->ReportEvent(&record, ::reporting::Priority::IMMEDIATE);
+  }
+
+  user_manager->MarkReporterInitialized();
 }
 }  // namespace reporting

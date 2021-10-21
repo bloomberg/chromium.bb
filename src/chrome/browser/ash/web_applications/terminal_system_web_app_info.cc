@@ -16,11 +16,13 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace {
 constexpr gfx::Rect TERMINAL_DEFAULT_BOUNDS(gfx::Point(64, 64),

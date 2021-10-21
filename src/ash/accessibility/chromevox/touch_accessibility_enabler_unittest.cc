@@ -28,6 +28,12 @@ class MockTouchAccessibilityEnablerDelegate
     : public TouchAccessibilityEnablerDelegate {
  public:
   MockTouchAccessibilityEnablerDelegate() {}
+
+  MockTouchAccessibilityEnablerDelegate(
+      const MockTouchAccessibilityEnablerDelegate&) = delete;
+  MockTouchAccessibilityEnablerDelegate& operator=(
+      const MockTouchAccessibilityEnablerDelegate&) = delete;
+
   ~MockTouchAccessibilityEnablerDelegate() override {}
 
   void OnTwoFingerTouchStart() override { started_ = true; }
@@ -51,13 +57,16 @@ class MockTouchAccessibilityEnablerDelegate
   bool stopped_ = false;
   size_t feedback_progress_sound_count_ = 0;
   bool toggle_spoken_feedback_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTouchAccessibilityEnablerDelegate);
 };
 
 class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
  public:
   TouchAccessibilityEnablerTest() {}
+
+  TouchAccessibilityEnablerTest(const TouchAccessibilityEnablerTest&) = delete;
+  TouchAccessibilityEnablerTest& operator=(
+      const TouchAccessibilityEnablerTest&) = delete;
+
   ~TouchAccessibilityEnablerTest() override {}
 
   void SetUp() override {
@@ -66,7 +75,7 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
     generator_ = std::make_unique<ui::test::EventGenerator>(root_window());
 
     // Tests fail if time is ever 0.
-    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+    simulated_clock_.Advance(base::Milliseconds(10));
     ui::SetEventTickClockForTesting(&simulated_clock_);
 
     enabler_ =
@@ -91,8 +100,6 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
   MockTouchAccessibilityEnablerDelegate delegate_;
   std::unique_ptr<TouchAccessibilityEnabler> enabler_;
   ui::GestureDetector::Config gesture_detector_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchAccessibilityEnablerTest);
 };
 
 }  // namespace
@@ -112,7 +119,7 @@ TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
   generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(500));
+  simulated_clock_.Advance(base::Milliseconds(500));
 
   generator_->set_current_screen_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
@@ -161,7 +168,7 @@ TEST_F(TouchAccessibilityEnablerTest, PlaysProgressSound) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(0U, delegate_.feedback_progress_sound_count());
 
-  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(3000));
+  simulated_clock_.Advance(base::Milliseconds(3000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(1U, delegate_.feedback_progress_sound_count());
 }
@@ -182,7 +189,7 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_FALSE(delegate_.toggle_spoken_feedback());
 
-  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(5000));
+  simulated_clock_.Advance(base::Milliseconds(5000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_TRUE(delegate_.toggle_spoken_feedback());
   EXPECT_TRUE(delegate_.started());

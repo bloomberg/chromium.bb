@@ -21,6 +21,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_types.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_provider_source.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -102,6 +103,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public ui::EventSource,
                             public FocusTraversable,
                             public ui::NativeThemeObserver,
+                            public ui::ColorProviderSource,
                             public ui::metadata::MetaDataProvider {
  public:
   METADATA_HEADER_BASE(Widget);
@@ -391,16 +393,21 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // associated widget. See Widget::LockPaintAsActive().
   class PaintAsActiveLock {
    public:
+    PaintAsActiveLock(const PaintAsActiveLock&) = delete;
+    PaintAsActiveLock& operator=(const PaintAsActiveLock&) = delete;
+
     virtual ~PaintAsActiveLock();
 
    protected:
     PaintAsActiveLock();
-
-    DISALLOW_COPY_AND_ASSIGN(PaintAsActiveLock);
   };
 
   Widget();
   explicit Widget(InitParams params);
+
+  Widget(const Widget&) = delete;
+  Widget& operator=(const Widget&) = delete;
+
   ~Widget() override;
 
   // Creates a decorated window Widget with the specified properties. The
@@ -734,18 +741,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual const ui::ThemeProvider* GetThemeProvider() const;
 
+  // Returns a custom theme object suitable for use in a
+  // ColorProviderManager::Key. If this is null, the window has no custom theme.
+  virtual ui::ColorProviderManager::InitializerSupplier* GetCustomTheme() const;
+
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         static_cast<const Widget*>(this)->GetNativeTheme());
   }
   virtual const ui::NativeTheme* GetNativeTheme() const;
-
-  // Returns the ui::ColorProvider associated with this Widget.
-  ui::ColorProvider* GetColorProvider() {
-    return const_cast<ui::ColorProvider*>(
-        static_cast<const Widget*>(this)->GetColorProvider());
-  }
-  const ui::ColorProvider* GetColorProvider() const;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
@@ -1038,6 +1042,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Overridden from ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
+  // ui::ColorProviderSource:
+  const ui::ColorProvider* GetColorProvider() const override;
+  ui::ColorProviderManager::Key GetColorProviderKey() const override;
+
   // Set the native theme from which this widget gets color from.
   void SetNativeThemeForTest(ui::NativeTheme* native_theme) {
     SetNativeTheme(native_theme);
@@ -1267,8 +1275,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       native_theme_observation_{this};
 
   base::WeakPtrFactory<Widget> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Widget);
 };
 
 }  // namespace views

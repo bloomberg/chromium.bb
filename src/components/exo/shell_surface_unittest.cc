@@ -4,6 +4,8 @@
 
 #include "components/exo/shell_surface.h"
 
+#include <vector>
+
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -397,7 +399,7 @@ TEST_F(ShellSurfaceTest, ActivationPermission) {
   EXPECT_FALSE(HasPermissionToActivate(window));
 
   // Can grant permission.
-  GrantPermissionToActivate(window, base::TimeDelta::FromDays(1));
+  GrantPermissionToActivate(window, base::Days(1));
   exo::Permission* permission = window->GetProperty(kPermissionKey);
   EXPECT_TRUE(permission->Check(Permission::Capability::kActivate));
   EXPECT_TRUE(HasPermissionToActivate(window));
@@ -407,7 +409,7 @@ TEST_F(ShellSurfaceTest, ActivationPermission) {
   EXPECT_FALSE(HasPermissionToActivate(window));
 
   // Can grant permission again.
-  GrantPermissionToActivate(window, base::TimeDelta::FromDays(2));
+  GrantPermissionToActivate(window, base::Days(2));
   exo::Permission* permission2 = window->GetProperty(kPermissionKey);
   EXPECT_TRUE(permission2->Check(Permission::Capability::kActivate));
   EXPECT_TRUE(HasPermissionToActivate(window));
@@ -440,8 +442,7 @@ TEST_F(ShellSurfaceTest, WidgetActivation) {
   EXPECT_TRUE(widget2->IsActive());
 
   // Grant permission to activate the first window.
-  GrantPermissionToActivate(widget1->GetNativeWindow(),
-                            base::TimeDelta::FromDays(1));
+  GrantPermissionToActivate(widget1->GetNativeWindow(), base::Days(1));
 
   // The first window can activate itself.
   surface1->RequestActivation();
@@ -1350,6 +1351,7 @@ TEST_F(ShellSurfaceTest, NotifyLeaveEnter) {
     DCHECK_EQ(0, *new_display_id);
     *old_display_id = old_id;
     *new_display_id = new_id;
+    return true;
   };
 
   int64_t old_display_id = 0, new_display_id = 0;
@@ -1624,6 +1626,38 @@ TEST_F(ShellSurfaceTest, OverlayCanResize) {
     shell_surface->AddOverlay(std::move(params));
   }
   EXPECT_TRUE(shell_surface->GetWidget()->widget_delegate()->CanResize());
+}
+
+class TestWindowObserver : public WMHelper::ExoWindowObserver {
+ public:
+  TestWindowObserver() {}
+
+  TestWindowObserver(const TestWindowObserver&) = delete;
+  TestWindowObserver& operator=(const TestWindowObserver&) = delete;
+
+  // WMHelper::ExoWindowObserver overrides
+  void OnExoWindowCreated(aura::Window* window) override {
+    windows_.push_back(window);
+  }
+
+  const std::vector<aura::Window*>& observed_windows() { return windows_; }
+
+ private:
+  std::vector<aura::Window*> windows_;
+};
+
+TEST_F(ShellSurfaceTest, NotifyOnWindowCreation) {
+  auto shell_surface =
+      test::ShellSurfaceBuilder({100, 100}).SetNoCommit().BuildShellSurface();
+
+  TestWindowObserver observer;
+  WMHelper::GetInstance()->AddExoWindowObserver(&observer);
+
+  // Committing a surface triggers window creation if it isn't already attached
+  // to the root.
+  shell_surface->surface_for_testing()->Commit();
+
+  EXPECT_EQ(1u, observer.observed_windows().size());
 }
 
 }  // namespace exo

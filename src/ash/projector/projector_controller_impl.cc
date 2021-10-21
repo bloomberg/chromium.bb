@@ -11,10 +11,52 @@
 #include "ash/public/cpp/projector/projector_client.h"
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
+#include "base/task/thread_pool.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 
 namespace ash {
+
+namespace {
+
+// String format of the screencast name.
+constexpr char kScreencastPathFmtStr[] =
+    "Screencast %d-%02d-%02d %02d.%02d.%02d";
+
+// Create directory. Returns true if saving succeeded, or false otherwise.
+bool CreateDirectory(const base::FilePath& path) {
+  DCHECK(!base::CurrentUIThread::IsSet());
+  DCHECK(!path.empty());
+
+  // The path is constructed from datetime which should be unique for most
+  // cases. In case it is already exist, returns false.
+  if (base::PathExists(path)) {
+    LOG(ERROR) << "Path has already existed: " << path;
+    return false;
+  }
+
+  if (!base::CreateDirectory(path)) {
+    LOG(ERROR) << "Failed to create path: " << path;
+    return false;
+  }
+
+  return true;
+}
+
+std::string GetScreencastName() {
+  base::Time::Exploded exploded_time;
+  base::Time::Now().LocalExplode(&exploded_time);
+  return base::StringPrintf(kScreencastPathFmtStr, exploded_time.year,
+                            exploded_time.month, exploded_time.day_of_month,
+                            exploded_time.hour, exploded_time.minute,
+                            exploded_time.second);
+}
+
+}  // namespace
 
 ProjectorControllerImpl::ProjectorControllerImpl()
     : projector_session_(std::make_unique<ash::ProjectorSessionImpl>()),
@@ -40,11 +82,34 @@ void ProjectorControllerImpl::StartProjectorSession(
   }
 }
 
+void ProjectorControllerImpl::CreateScreencastContainerFolder(
+    CreateScreencastContainerFolderCallback callback) {
+  base::FilePath mounted_path;
+  if (!client_->GetDriveFsMountPointPath(&mounted_path)) {
+    LOG(ERROR) << "Failed to get DriveFs mounted point path.";
+    // TODO(b/197363815): Notify user when there is an error.
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  auto path = mounted_path.Append("root")
+                  .Append(projector_session_->storage_dir())
+                  .Append(GetScreencastName());
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&CreateDirectory, path),
+      base::BindOnce(&ProjectorControllerImpl::OnContainerFolderCreated,
+                     weak_factory_.GetWeakPtr(), path, std::move(callback)));
+}
+
 void ProjectorControllerImpl::SetClient(ProjectorClient* client) {
   client_ = client;
 }
 
 void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
+  if (ProjectorController::AreExtendedProjectorFeaturesDisabled())
+    return;
+
   if (available == is_speech_recognition_available_)
     return;
 
@@ -70,13 +135,27 @@ void ProjectorControllerImpl::OnTranscriptionError() {
 }
 
 bool ProjectorControllerImpl::IsEligible() const {
-  return is_speech_recognition_available_;
+  return is_speech_recognition_available_ ||
+         ProjectorController::AreExtendedProjectorFeaturesDisabled();
 }
 
 bool ProjectorControllerImpl::CanStartNewSession() const {
   // TODO(crbug.com/1165435) Add other pre-conditions to starting a new
   // projector session.
-  return IsEligible() && !projector_session_->is_active();
+  return IsEligible() && !projector_session_->is_active() &&
+         client_->IsDriveFsMounted();
+}
+
+void ProjectorControllerImpl::OnToolSet(const chromeos::AnnotatorTool& tool) {
+  // TODO(b/198184362): Reflect the annotator tool changes on the Projector
+  // toolbar.
+}
+
+void ProjectorControllerImpl::OnUndoRedoAvailabilityChanged(
+    bool undo_available,
+    bool redo_available) {
+  // TODO(b/198184362): Reflect undo and redo buttons availability on the
+  // Projector toolbar.
 }
 
 void ProjectorControllerImpl::SetCaptionBubbleState(bool is_on) {
@@ -111,17 +190,17 @@ void ProjectorControllerImpl::OnRecordingEnded() {
   // Close Projector toolbar.
   ui_controller_->CloseToolbar();
 
-  // TODO(crbug.com/1165439): Call on to SaveScreencast when the storage
-  // strategy is finalized.
-}
+  if (projector_session_->screencast_container_path()) {
+    // Finish saving the screencast if the container is available. The container
+    // might be unavailable if fail in creating the directory.
+    SaveScreencast();
+  }
 
-void ProjectorControllerImpl::SaveScreencast(
-    const base::FilePath& saved_video_path) {
-  metadata_controller_->SaveMetadata(saved_video_path);
-
-  // TODO(crbug.com/1165439): Stop projector session when the screencast is
-  // saved.
   projector_session_->Stop();
+
+  // At this point, the screencast might not synced to Drive yet.  Open
+  // Projector App which showing the Gallery view by default.
+  client_->OpenProjectorApp();
 }
 
 void ProjectorControllerImpl::OnLaserPointerPressed() {
@@ -173,6 +252,9 @@ void ProjectorControllerImpl::SetProjectorMetadataControllerForTest(
 }
 
 void ProjectorControllerImpl::StartSpeechRecognition() {
+  if (ProjectorController::AreExtendedProjectorFeaturesDisabled())
+    return;
+
   DCHECK(is_speech_recognition_available_);
   DCHECK(!is_speech_recognition_on_);
   DCHECK_NE(client_, nullptr);
@@ -181,11 +263,42 @@ void ProjectorControllerImpl::StartSpeechRecognition() {
 }
 
 void ProjectorControllerImpl::StopSpeechRecognition() {
+  if (ProjectorController::AreExtendedProjectorFeaturesDisabled())
+    return;
+
   DCHECK(is_speech_recognition_available_);
   DCHECK(is_speech_recognition_on_);
   DCHECK_NE(client_, nullptr);
   client_->StopSpeechRecognition();
   is_speech_recognition_on_ = false;
+}
+
+void ProjectorControllerImpl::OnContainerFolderCreated(
+    const base::FilePath& path,
+    CreateScreencastContainerFolderCallback callback,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to create screencast container path: "
+               << path.DirName();
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  projector_session_->set_screencast_container_path(path);
+  std::move(callback).Run(GetScreencastFilePathNoExtension());
+}
+
+void ProjectorControllerImpl::SaveScreencast() {
+  metadata_controller_->SaveMetadata(GetScreencastFilePathNoExtension());
+}
+
+base::FilePath ProjectorControllerImpl::GetScreencastFilePathNoExtension()
+    const {
+  auto screencast_container_path =
+      projector_session_->screencast_container_path();
+
+  DCHECK(screencast_container_path.has_value());
+  return screencast_container_path->Append(GetScreencastName());
 }
 
 }  // namespace ash

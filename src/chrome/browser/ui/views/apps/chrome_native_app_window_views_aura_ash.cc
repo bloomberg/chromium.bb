@@ -19,7 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/icon_standardizer.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -31,7 +31,8 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/common/constants.h"
@@ -43,8 +44,8 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
@@ -141,11 +142,11 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   const int32_t restore_window_id =
       full_restore::FetchRestoreWindowId(app_window()->extension_id());
   init_params->init_properties_container.SetProperty(
-      full_restore::kWindowIdKey, app_window()->session_id().id());
+      app_restore::kWindowIdKey, app_window()->session_id().id());
   init_params->init_properties_container.SetProperty(
-      full_restore::kRestoreWindowIdKey, restore_window_id);
+      app_restore::kRestoreWindowIdKey, restore_window_id);
   init_params->init_properties_container.SetProperty(
-      full_restore::kAppIdKey, app_window()->extension_id());
+      app_restore::kAppIdKey, app_window()->extension_id());
   init_params->init_properties_container.SetProperty(
       aura::client::kAppType, static_cast<int>(ash::AppType::CHROME_APP));
 
@@ -406,6 +407,11 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateExclusiveAccessExitBubbleContent(
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
       this, url, bubble_type, std::move(bubble_first_hide_callback));
+}
+
+bool ChromeNativeAppWindowViewsAuraAsh::IsExclusiveAccessBubbleDisplayed()
+    const {
+  return exclusive_access_bubble_ && exclusive_access_bubble_->IsShowing();
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnExclusiveAccessUserInput() {

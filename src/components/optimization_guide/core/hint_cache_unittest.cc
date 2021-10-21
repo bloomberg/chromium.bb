@@ -35,6 +35,9 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase,
  public:
   HintCacheTest() : loaded_hint_(nullptr) {}
 
+  HintCacheTest(const HintCacheTest&) = delete;
+  HintCacheTest& operator=(const HintCacheTest&) = delete;
+
   ~HintCacheTest() override {}
 
   void SetUp() override { ProtoDatabaseProviderTestBase::SetUp(); }
@@ -174,8 +177,6 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase,
   bool are_component_hints_updated_;
   bool on_load_hint_callback_called_;
   bool are_fetched_hints_updated_;
-
-  DISALLOW_COPY_AND_ASSIGN(HintCacheTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(WithPersistentStore,
@@ -600,7 +601,7 @@ TEST_P(HintCacheTest, ParseEmptyFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
-  base::Time stored_time = base::Time().Now() + base::TimeDelta().FromDays(1);
+  base::Time stored_time = base::Time().Now() + base::Days(1);
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
@@ -656,8 +657,7 @@ TEST_P(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 
   // Set time so hint should be expired.
-  MoveClockForwardBy(
-      base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs + 1));
+  MoveClockForwardBy(base::Seconds(kFetchedHintExpirationSecs + 1));
   EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
@@ -695,7 +695,7 @@ TEST_P(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   // Set time so hint should be expired.
   MoveClockForwardBy(
       optimization_guide::features::StoredFetchedHintsFreshnessDuration() +
-      base::TimeDelta::FromSeconds(1));
+      base::Seconds(1));
   EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("host.domain.org"));
 }
 
@@ -741,7 +741,7 @@ TEST_P(HintCacheTest, URLKeyedHintExpired) {
 
   EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
 
-  MoveClockForwardBy(base::TimeDelta().FromSeconds(cache_duration_in_secs + 1));
+  MoveClockForwardBy(base::Seconds(cache_duration_in_secs + 1));
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(url));
 }
 
@@ -786,7 +786,7 @@ TEST_P(HintCacheTest, PurgeExpiredFetchedHints) {
   EXPECT_TRUE(hint_cache()->HasHint("shouldpurge.com"));
   EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
 
-  MoveClockForwardBy(base::TimeDelta().FromSeconds(cache_duration_in_secs + 1));
+  MoveClockForwardBy(base::Seconds(cache_duration_in_secs + 1));
 
   hint_cache()->PurgeExpiredFetchedHints();
   RunUntilIdle();

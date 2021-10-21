@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
+#include "components/metrics/metrics_data_validation.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -36,7 +37,7 @@ int g_num_trace_events_in_process = 0;
 // The threshold to emit a trace event is the 99th percentile
 // of the histogram on Windows Stable as of Feb 26th, 2020.
 constexpr base::TimeDelta kFirstContentfulPaintTraceThreshold =
-    base::TimeDelta::FromMilliseconds(12388);
+    base::Milliseconds(12388);
 
 // TODO(bmcquade): If other observers want to log histograms based on load type,
 // promote this enum to page_load_metrics_observer.h.
@@ -383,14 +384,6 @@ const char
         "PageLoad.Experimental.NavigationTiming."
         "FinalLoaderCallbackToNavigationCommitSent";
 
-// 103 Early Hints metrics for experiment (https://crbug.com/1093693).
-const char kHistogramEarlyHintsFirstRequestStartToEarlyHints[] =
-    "PageLoad.Experimental.EarlyHints.FirstRequestStartToEarlyHints";
-const char kHistogramEarlyHintsFinalRequestStartToEarlyHints[] =
-    "PageLoad.Experimental.EarlyHints.FinalRequestStartToEarlyHints";
-const char kHistogramEarlyHintsEarlyHintsToFinalResponseStart[] =
-    "PageLoad.Experimental.EarlyHints.EarlyHintsToFinalResponseStart";
-
 // V8 memory usage metrics.
 const char kHistogramMemoryMainframe[] =
     "PageLoad.Experimental.Memory.Core.MainFrame.Max";
@@ -689,8 +682,14 @@ void UmaPageLoadMetricsObserver::OnFirstInputInPage(
   UMA_HISTOGRAM_CUSTOM_TIMES(
       internal::kHistogramFirstInputDelay,
       timing.interactive_timing->first_input_delay.value(),
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-      50);
+      base::Milliseconds(1), base::Seconds(60), 50);
+  // The pseudo metric of |kHistogramFirstInputDelay|. Only used to assess field
+  // trial data quality.
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "UMA.Pseudo.PageLoad.InteractiveTiming.FirstInputDelay4",
+      metrics::GetPseudoMetricsSample(
+          timing.interactive_timing->first_input_delay.value()),
+      base::Milliseconds(1), base::Seconds(60), 50);
   PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstInputTimestamp,
                       timing.interactive_timing->first_input_timestamp.value());
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
@@ -1006,39 +1005,6 @@ void UmaPageLoadMetricsObserver::RecordNavigationTimingHistograms() {
       internal::
           kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent,
       timing.navigation_commit_sent_time - timing.final_loader_callback_time);
-
-  // Record intervals for the 103 Early Hints experiment
-  // (https://crbug.com/1093693). Note that multiple 103 responses can be served
-  // per request. These metrics use the first 103 response as the timing.
-  if (!timing.early_hints_for_first_request_time.is_null()) {
-    // Record the interval from "first request start" to "103 Early Hints
-    // response start for first request".
-    DCHECK_LT(timing.first_request_start_time,
-              timing.early_hints_for_first_request_time);
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints,
-        timing.early_hints_for_first_request_time -
-            timing.first_request_start_time);
-  }
-  if (!timing.early_hints_for_final_request_time.is_null()) {
-    // Record the interval from "final request start" to "103 Early Hints
-    // response start for final request".
-    DCHECK_LT(timing.final_request_start_time,
-              timing.early_hints_for_final_request_time);
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints,
-        timing.early_hints_for_final_request_time -
-            timing.final_request_start_time);
-
-    // Record the interval from "103 Early Hints response start for final
-    // request" to "non-informational final response start"
-    DCHECK_LT(timing.early_hints_for_final_request_time,
-              timing.final_non_informational_response_start_time);
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart,
-        timing.final_non_informational_response_start_time -
-            timing.early_hints_for_final_request_time);
-  }
 }
 
 // This method records values for metrics that were not recorded during any
@@ -1093,6 +1059,12 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
           all_frames_largest_contentful_paint.Time(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
                         all_frames_largest_contentful_paint.Time().value());
+    // The pseudo metric of |kHistogramLargestContentfulPaint|. Only used to
+    // assess field trial data quality.
+    PAGE_LOAD_HISTOGRAM(
+        "UMA.Pseudo.PageLoad.PaintTiming.NavigationToLargestContentfulPaint2",
+        metrics::GetPseudoMetricsSample(
+            all_frames_largest_contentful_paint.Time().value()));
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramLargestContentfulPaintContentType,
         all_frames_largest_contentful_paint.Type());
@@ -1159,8 +1131,7 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
     UMA_HISTOGRAM_CUSTOM_TIMES(
         internal::kHistogramLongestInputDelay,
         main_frame_timing.interactive_timing->longest_input_delay.value(),
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-        50);
+        base::Milliseconds(1), base::Seconds(60), 50);
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramLongestInputTimestamp,
         main_frame_timing.interactive_timing->longest_input_timestamp.value());

@@ -31,11 +31,6 @@
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/vsync_thread_win.h"
 
-#ifndef EGL_ANGLE_flexible_surface_compatibility
-#define EGL_ANGLE_flexible_surface_compatibility 1
-#define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
-#endif /* EGL_ANGLE_flexible_surface_compatibility */
-
 #ifndef EGL_ANGLE_d3d_texture_client_buffer
 #define EGL_ANGLE_d3d_texture_client_buffer 1
 #define EGL_D3D_TEXTURE_ANGLE 0x33A3
@@ -56,6 +51,9 @@ bool g_direct_composition_swap_chain_failed = false;
 // If damage_rect / full_chrome_rect >= kForceFullDamageThreshold, present
 // the swap chain with full damage.
 float kForceFullDamageThreshold = 0.6f;
+
+const char* kDirectCompositionChildSurfaceLabel =
+    "DirectCompositionChildSurface";
 
 bool SupportsLowLatencyPresentation() {
   return base::FeatureList::IsEnabled(
@@ -105,8 +103,6 @@ bool DirectCompositionChildSurfaceWin::Initialize(GLSurfaceFormat format) {
       1,
       EGL_HEIGHT,
       1,
-      EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE,
-      EGL_TRUE,
       EGL_NONE,
   };
 
@@ -444,6 +440,9 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       return false;
     }
 
+    gl::LabelSwapChainAndBuffers(swap_chain_.Get(),
+                                 kDirectCompositionChildSurfaceLabel);
+
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {
       hr = swap_chain->SetColorSpace1(
@@ -480,8 +479,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   pbuffer_attribs.push_back(size_.width());
   pbuffer_attribs.push_back(EGL_HEIGHT);
   pbuffer_attribs.push_back(size_.height());
-  pbuffer_attribs.push_back(EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE);
-  pbuffer_attribs.push_back(EGL_TRUE);
   if (use_angle_texture_offset_) {
     pbuffer_attribs.push_back(EGL_TEXTURE_OFFSET_X_ANGLE);
     pbuffer_attribs.push_back(draw_offset_.x());
@@ -556,6 +553,11 @@ bool DirectCompositionChildSurfaceWin::Resize(
                           SUCCEEDED(hr));
     if (SUCCEEDED(hr))
       return true;
+
+    // Resizing swap chain buffers causes the internal textures to be released
+    // and re-created as new textures. We need to label the new textures.
+    gl::LabelSwapChainBuffers(swap_chain_.Get(),
+                              kDirectCompositionChildSurfaceLabel);
     DLOG(ERROR) << "ResizeBuffers failed with error 0x" << std::hex << hr;
   }
   // Next SetDrawRectangle call will recreate the swap chain or surface.

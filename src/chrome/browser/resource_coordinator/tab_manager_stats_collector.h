@@ -90,6 +90,8 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
                            HistogramsTabSwitchLoadTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorParameterizedTest,
                            HistogramsTabCount);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorPrerenderingTest,
+                           KeepingWebContentsMapInPrerendering);
 
   // Create and initialize the swap metrics driver if needed.
   void CreateAndInitSwapMetricsDriverIfNeeded();
@@ -110,7 +112,7 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // The rough sampling interval for low-frequency sampled stats. This should
   // be O(minutes).
   static constexpr base::TimeDelta kLowFrequencySamplingInterval =
-      base::TimeDelta::FromMinutes(5);
+      base::Minutes(5);
 
   // TabManagerStatsCollector should be used from a single sequence.
   SEQUENCE_CHECKER(sequence_checker_);

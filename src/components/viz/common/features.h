@@ -36,15 +36,14 @@ VIZ_COMMON_EXPORT extern const base::Feature kWebRtcLogCapturePipeline;
 #if defined(OS_WIN)
 VIZ_COMMON_EXPORT extern const base::Feature kUseSetPresentDuration;
 #endif  // OS_WIN
-#if defined(USE_X11)
-VIZ_COMMON_EXPORT extern const base::Feature kUseX11Present;
-#endif
 VIZ_COMMON_EXPORT extern const base::Feature kWebViewVulkanIntermediateBuffer;
 VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 #if defined(OS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
 #endif
 VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
+VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForDraw;
+VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForClients;
 
 VIZ_COMMON_EXPORT extern const base::Feature kDrawPredictedInkPoint;
 VIZ_COMMON_EXPORT extern const char kDraw1Point12Ms[];
@@ -76,6 +75,8 @@ VIZ_COMMON_EXPORT bool ShouldUsePlatformDelegatedInk();
 VIZ_COMMON_EXPORT bool UseSurfaceLayerForVideo();
 #endif
 VIZ_COMMON_EXPORT bool IsSurfaceSyncThrottling();
+VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForDraw();
+VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForClients();
 
 }  // namespace features
 

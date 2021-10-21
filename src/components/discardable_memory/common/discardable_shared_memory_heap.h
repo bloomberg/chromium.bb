@@ -38,6 +38,9 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
  public:
   class DISCARDABLE_MEMORY_EXPORT Span : public base::LinkNode<Span> {
    public:
+    Span(const Span&) = delete;
+    Span& operator=(const Span&) = delete;
+
     ~Span() = default;
 
     base::DiscardableSharedMemory* shared_memory() { return shared_memory_; }
@@ -67,11 +70,14 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
     size_t start_;
     size_t length_;
     bool is_locked_;
-
-    DISALLOW_COPY_AND_ASSIGN(Span);
   };
 
   DiscardableSharedMemoryHeap();
+
+  DiscardableSharedMemoryHeap(const DiscardableSharedMemoryHeap&) = delete;
+  DiscardableSharedMemoryHeap& operator=(const DiscardableSharedMemoryHeap&) =
+      delete;
+
   ~DiscardableSharedMemoryHeap();
 
   // Grow heap using |shared_memory| and return a span for this new memory.
@@ -139,6 +145,10 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
         size_t size,
         int32_t id,
         base::OnceClosure deleted_callback);
+
+    ScopedMemorySegment(const ScopedMemorySegment&) = delete;
+    ScopedMemorySegment& operator=(const ScopedMemorySegment&) = delete;
+
     ~ScopedMemorySegment();
 
     bool IsUsed() const;
@@ -166,8 +176,6 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
     const size_t size_;
     const int32_t id_;
     base::OnceClosure deleted_callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
   };
 
   void InsertIntoFreeList(std::unique_ptr<Span> span);
@@ -205,8 +213,6 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
   // is a free list of runs that consist of k blocks. The 256th entry is a
   // free list of runs that have length >= 256 blocks.
   base::LinkedList<Span> free_spans_[256];
-
-  DISALLOW_COPY_AND_ASSIGN(DiscardableSharedMemoryHeap);
 };
 
 }  // namespace discardable_memory

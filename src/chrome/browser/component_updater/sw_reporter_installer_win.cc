@@ -152,11 +152,11 @@ bool GetOptionalBehaviour(
 // Returns whether the manifest was successfully read.
 bool ExtractInvocationSequenceFromManifest(
     const base::FilePath& exe_path,
-    std::unique_ptr<base::DictionaryValue> manifest,
+    base::Value manifest,
     safe_browsing::SwReporterInvocationSequence* out_sequence) {
   // Allow an empty or missing |parameter_list| list, but log an error if
   // |parameter_list| cannot be parsed as a list.
-  base::Value* parameter_list = manifest->FindPath("launch_params");
+  base::Value* parameter_list = manifest.FindPath("launch_params");
   if (parameter_list && !parameter_list->is_list()) {
     ReportConfigurationError(kBadParams);
     return false;
@@ -257,7 +257,7 @@ SwReporterInstallerPolicy::SwReporterInstallerPolicy(
 SwReporterInstallerPolicy::~SwReporterInstallerPolicy() = default;
 
 bool SwReporterInstallerPolicy::VerifyInstallation(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& dir) const {
   return base::PathExists(dir.Append(kSwReporterExeName));
 }
@@ -272,7 +272,7 @@ bool SwReporterInstallerPolicy::RequiresNetworkEncryption() const {
 }
 
 update_client::CrxInstaller::Result SwReporterInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
@@ -282,7 +282,7 @@ void SwReporterInstallerPolicy::OnCustomUninstall() {}
 void SwReporterInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    std::unique_ptr<base::DictionaryValue> manifest) {
+    base::Value manifest) {
   safe_browsing::SwReporterInvocationSequence invocations(version);
   const base::FilePath exe_path(install_dir.Append(kSwReporterExeName));
   if (ExtractInvocationSequenceFromManifest(exe_path, std::move(manifest),
@@ -428,7 +428,7 @@ void ReportUMAForLastCleanerRun() {
       cleaner_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
                             &start_time_value);
       const base::Time start_time = base::Time::FromDeltaSinceWindowsEpoch(
-          base::TimeDelta::FromMicroseconds(start_time_value));
+          base::Microseconds(start_time_value));
 
       const bool completed =
           cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
@@ -437,7 +437,7 @@ void ReportUMAForLastCleanerRun() {
         cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
                               &end_time_value);
         const base::Time end_time = base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(end_time_value));
+            base::Microseconds(end_time_value));
 
         cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
         UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
@@ -459,9 +459,6 @@ void ReportUMAForLastCleanerRun() {
         // Check if we are running after the user has rebooted.
         const base::TimeDelta elapsed = base::Time::Now() - start_time;
         DCHECK_GT(elapsed.InMilliseconds(), 0);
-        UMA_HISTOGRAM_BOOLEAN(
-            "SoftwareReporter.Cleaner.HasRebooted",
-            static_cast<uint64_t>(elapsed.InMilliseconds()) > ::GetTickCount());
       }
 
       if (cleaner_key.HasValue(chrome_cleaner::kUploadResultsValueName)) {

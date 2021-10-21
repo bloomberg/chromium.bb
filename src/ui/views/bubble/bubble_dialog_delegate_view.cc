@@ -18,6 +18,8 @@
 #include "ui/base/default_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/display/screen.h"
@@ -25,7 +27,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
@@ -87,27 +88,42 @@ class BubbleWidget : public Widget {
  public:
   BubbleWidget() = default;
 
+  BubbleWidget(const BubbleWidget&) = delete;
+  BubbleWidget& operator=(const BubbleWidget&) = delete;
+
   // Widget:
   const ui::ThemeProvider* GetThemeProvider() const override {
-    // TODO(pbos): Could this use Widget::parent() instead of anchor_widget()?
-    BubbleDialogDelegate* const bubble_delegate =
-        static_cast<BubbleDialogDelegate*>(widget_delegate());
-    if (!bubble_delegate || !bubble_delegate->anchor_widget())
-      return Widget::GetThemeProvider();
-    return bubble_delegate->anchor_widget()->GetThemeProvider();
+    const Widget* const anchor = GetAnchorWidget();
+    return anchor ? anchor->GetThemeProvider() : Widget::GetThemeProvider();
+  }
+
+  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+      const override {
+    const Widget* const anchor = GetAnchorWidget();
+    return anchor ? anchor->GetCustomTheme() : Widget::GetCustomTheme();
+  }
+
+  const ui::NativeTheme* GetNativeTheme() const override {
+    const Widget* const anchor = GetAnchorWidget();
+    return anchor ? anchor->GetNativeTheme() : Widget::GetNativeTheme();
   }
 
   Widget* GetPrimaryWindowWidget() override {
-    // TODO(pbos): Could this use Widget::parent() instead of anchor_widget()?
-    BubbleDialogDelegate* const bubble_delegate =
-        static_cast<BubbleDialogDelegate*>(widget_delegate());
-    if (!bubble_delegate || !bubble_delegate->anchor_widget())
-      return Widget::GetPrimaryWindowWidget();
-    return bubble_delegate->anchor_widget()->GetPrimaryWindowWidget();
+    Widget* const anchor = GetAnchorWidget();
+    return anchor ? anchor->GetPrimaryWindowWidget()
+                  : Widget::GetPrimaryWindowWidget();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
+  const Widget* GetAnchorWidget() const {
+    // TODO(pbos): Could this use Widget::parent() instead of anchor_widget()?
+    BubbleDialogDelegate* const bubble_delegate =
+        static_cast<BubbleDialogDelegate*>(widget_delegate());
+    return bubble_delegate ? bubble_delegate->anchor_widget() : nullptr;
+  }
+  Widget* GetAnchorWidget() {
+    return const_cast<Widget*>(base::as_const(*this).GetAnchorWidget());
+  }
 };
 
 // The frame view for bubble dialog widgets. These are not user-sizable so have
@@ -118,12 +134,12 @@ class BubbleDialogFrameView : public BubbleFrameView {
   explicit BubbleDialogFrameView(const gfx::Insets& title_margins)
       : BubbleFrameView(title_margins, gfx::Insets()) {}
 
+  BubbleDialogFrameView(const BubbleDialogFrameView&) = delete;
+  BubbleDialogFrameView& operator=(const BubbleDialogFrameView&) = delete;
+
   // View:
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
   gfx::Size GetMaximumSize() const override { return gfx::Size(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BubbleDialogFrameView);
 };
 
 bool CustomShadowsSupported() {
@@ -810,8 +826,8 @@ void BubbleDialogDelegate::UpdateColorsFromTheme() {
   View* const contents_view = GetContentsView();
   DCHECK(contents_view);
   if (!color_explicitly_set()) {
-    set_color_internal(contents_view->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_BubbleBackground));
+    set_color_internal(contents_view->GetColorProvider()->GetColor(
+        ui::kColorBubbleBackground));
   }
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)

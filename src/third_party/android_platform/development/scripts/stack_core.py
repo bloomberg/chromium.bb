@@ -186,7 +186,8 @@ def StreamingConvertTrace(_, load_vaddrs, more_info, fallback_monochrome,
 
   preprocessor = PreProcessLog(load_vaddrs, apks_directory)
   for line in iter(sys.stdin.readline, b''):
-    print(line)
+    if not line: # EOF
+      break
     maybe_line, maybe_so_dir = preprocessor([line])
     useful_lines.extend(maybe_line)
     so_dirs.extend(maybe_so_dir)
@@ -226,8 +227,9 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
   useful_log = []
   so_dirs = []
   for result in results:
-    useful_log += result[0]
-    so_dirs += result[1]
+    if result is not None:
+      useful_log += result[0]
+      so_dirs += result[1]
 
   if use_multiprocessing:
     pool.close()
@@ -319,7 +321,11 @@ class PreProcessLog:
     """
     useful_log = []
     for ln in lines:
-      line = ln.encode().decode(encoding='utf8', errors='ignore')
+      if sys.version_info.major == 3:
+        line = ln
+      else:
+        line = ln.decode(encoding='utf8', errors='ignore')
+
       if (_PROCESS_INFO_LINE.search(line)
           or _SIGNAL_LINE.search(line)
           or _REGISTER_LINE.search(line)

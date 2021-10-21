@@ -801,6 +801,7 @@ static_library("extensions") {
     "//chrome/browser/safe_browsing:metrics_collector",
     "//chrome/browser/web_applications",
     "//components/safe_browsing/content/browser",
+    "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/site_engagement/core/mojom:mojo_bindings",
     "//components/webapps/browser",
 
@@ -850,7 +851,6 @@ static_library("extensions") {
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser/leak_detection",
     "//components/payments/core",
-    "//components/pdf/browser",
     "//components/performance_manager",
     "//components/permissions",
     "//components/policy:generated",
@@ -992,6 +992,8 @@ static_library("extensions") {
         "api/printing/printing_api_utils.cc",
         "api/printing/printing_api_utils.h",
       ]
+
+      deps += [ "//printing/backend" ]
     }
     deps += [
       "//chromeos/crosapi/cpp",
@@ -1056,6 +1058,8 @@ static_library("extensions") {
       "api/media_perception_private/media_perception_api_delegate_chromeos.h",
       "api/networking_private/networking_private_ui_delegate_chromeos.cc",
       "api/networking_private/networking_private_ui_delegate_chromeos.h",
+      "api/quick_unlock_private/quick_unlock_private_api.cc",
+      "api/quick_unlock_private/quick_unlock_private_api.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.cc",
@@ -1102,7 +1106,6 @@ static_library("extensions") {
       "//chromeos/attestation",
       "//chromeos/components/camera_app_ui",
       "//chromeos/components/camera_app_ui:mojo_bindings",
-      "//chromeos/components/camera_app_ui/resources:chrome_camera_app",
       "//chromeos/components/chromebox_for_meetings/buildflags",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/remote_apps/mojom",
@@ -1114,6 +1117,8 @@ static_library("extensions") {
       "//chromeos/dbus/update_engine",
       "//chromeos/dbus/util",
       "//chromeos/disks",
+      "//chromeos/language/language_packs",
+      "//chromeos/language/public/mojom",
       "//chromeos/login/auth",
       "//chromeos/login/login_state",
       "//chromeos/network",
@@ -1137,7 +1142,7 @@ static_library("extensions") {
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//third_party/protobuf:protobuf_lite",
       "//ui/accessibility",
-      "//ui/base/ime/chromeos",
+      "//ui/base/ime/ash",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager:file_manager_gen_resources",
@@ -1151,8 +1156,28 @@ static_library("extensions") {
         "//chromeos/services/chromebox_for_meetings/public/mojom",
       ]
     }
+  } else if (is_chromeos_lacros) {
+    sources += [
+      "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
+      "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
+      "api/enterprise_reporting_private/keychain_data_helper_mac.h",
+      "api/enterprise_reporting_private/keychain_data_helper_mac.mm",
+      "api/image_writer_private/operation_nonchromeos.cc",
+      "api/image_writer_private/removable_storage_provider_linux.cc",
+      "api/tabs/tabs_util_chromeos.cc",
+      "chrome_kiosk_delegate.cc",
+      "preinstalled_apps.cc",
+      "preinstalled_apps.h",
+    ]
+    deps += [
+      "//chromeos/ui/base",
+      "//components/enterprise",
+      "//components/enterprise/common/proto:connectors_proto",
+      "//components/keep_alive_registry",
+    ]
   } else {
     assert(!is_chromeos_ash)
+    assert(!is_chromeos_lacros)
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
@@ -1169,7 +1194,7 @@ static_library("extensions") {
       "//components/enterprise/common/proto:connectors_proto",
       "//components/keep_alive_registry",
     ]
-    if (is_linux || is_chromeos) {
+    if (is_linux) {
       sources +=
           [ "api/image_writer_private/removable_storage_provider_linux.cc" ]
     }
@@ -1181,22 +1206,12 @@ static_library("extensions") {
     }
   }
 
-  if (use_x11) {
-    sources += [
-      "global_shortcut_listener_x11.cc",
-      "global_shortcut_listener_x11.h",
-    ]
-  }
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
     sources += [
       "global_shortcut_listener_ozone.cc",
       "global_shortcut_listener_ozone.h",
     ]
-  }
-
-  if (use_x11 || use_ozone) {
-    sources += [ "global_shortcut_listener_linux.cc" ]
   }
 
   if (is_mac) {
@@ -1217,14 +1232,6 @@ static_library("extensions") {
     }
     if (use_udev) {
       deps += [ "//device/udev_linux" ]
-    }
-
-    if (use_x11) {
-      deps += [
-        "//ui/events:events_base",
-        "//ui/events/platform",
-        "//ui/events/platform/x11",
-      ]
     }
   }
 
@@ -1283,6 +1290,7 @@ static_library("extensions") {
 
   if (enable_pdf) {
     deps += [
+      "//components/pdf/browser",
       "//pdf:buildflags",
       "//pdf:features",
     ]

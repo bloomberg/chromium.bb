@@ -127,6 +127,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     bool real_time_lookup_enabled,
     bool can_rt_check_subresource_url,
     bool can_check_db,
+    GURL last_committed_url,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
     WebUIDelegate* webui_delegate)
@@ -143,6 +144,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       real_time_lookup_enabled_(real_time_lookup_enabled),
       can_rt_check_subresource_url_(can_rt_check_subresource_url),
       can_check_db_(can_check_db),
+      last_committed_url_(last_committed_url),
       ui_task_runner_(ui_task_runner),
       url_lookup_service_on_ui_(url_lookup_service_on_ui),
       webui_delegate_(webui_delegate) {
@@ -232,7 +234,6 @@ UnsafeResource SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(
       base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                           weak_factory_.GetWeakPtr());
   resource.callback_sequence = base::SequencedTaskRunnerHandle::Get();
-  resource.web_contents_getter = web_contents_getter_;
   resource.render_process_id = render_process_id_;
   resource.render_frame_id = render_frame_id_;
   resource.frame_tree_node_id = frame_tree_node_id_;
@@ -422,8 +423,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                                       TRACE_ID_LOCAL(this), "url", url.spec());
 
     // Start a timer to abort the check if it takes too long.
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs), this,
+    timer_.Start(FROM_HERE, base::Milliseconds(kCheckUrlTimeoutMs), this,
                  &SafeBrowsingUrlCheckerImpl::OnTimeout);
 
     bool safe_synchronously;
@@ -580,8 +580,10 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread,
-                     weak_factory_.GetWeakPtr(), url, url_lookup_service_on_ui_,
-                     database_manager_,
+                     weak_factory_.GetWeakPtr(), url, last_committed_url_,
+                     /*is_mainframe=*/request_destination_ ==
+                         network::mojom::RequestDestination::kDocument,
+                     url_lookup_service_on_ui_, database_manager_,
                      base::SequencedTaskRunnerHandle::Get()));
 }
 
@@ -593,6 +595,8 @@ void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
 void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
     const GURL& url,
+    const GURL& last_committed_url,
+    bool is_mainframe,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
@@ -614,9 +618,9 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
   RTLookupResponseCallback response_callback = base::BindOnce(
       &SafeBrowsingUrlCheckerImpl::OnRTLookupResponse, weak_checker_on_io);
 
-  url_lookup_service_on_ui->StartLookup(url, std::move(request_callback),
-                                        std::move(response_callback),
-                                        std::move(io_task_runner));
+  url_lookup_service_on_ui->StartLookup(
+      url, last_committed_url, is_mainframe, std::move(request_callback),
+      std::move(response_callback), std::move(io_task_runner));
 }
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {

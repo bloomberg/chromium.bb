@@ -43,7 +43,7 @@ const base::Feature kOptimizationHintsFieldTrials{
 const base::Feature kRemoteOptimizationGuideFetching{
     "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
   "OptimizationHintsFetchingAnonymousDataConsent",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -85,15 +85,14 @@ const base::Feature kPushNotifications{"OptimizationGuidePushNotifications",
 const base::Feature kPageTextExtraction{
     "OptimizationGuidePageContentExtraction", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the model file to be loaded for each execution, then unloaded on
-// completion.
-const base::Feature kLoadModelFileForEachExecution{
-    "LoadModelFileForEachExecution", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables the validation of optimization guide metadata.
+const base::Feature kOptimizationGuideMetadataValidation{
+    "OptimizationGuideMetadataValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
 base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod() {
-  return base::TimeDelta::FromMilliseconds(GetFieldTrialParamByFeatureAsInt(
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
       kPageTextExtraction, "outstanding_requests_grace_period_ms", 1000));
 }
 
@@ -125,7 +124,7 @@ size_t MaxHostsForRecordingSuccessfullyCovered() {
 }
 
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
-  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+  return base::Days(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "max_store_duration_for_featured_hints_in_days", 7));
 }
@@ -206,20 +205,20 @@ int MaxServerBloomFilterByteSize() {
 }
 
 base::TimeDelta GetHostHintsFetchRefreshDuration() {
-  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+  return base::Hours(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching, "hints_fetch_refresh_duration_in_hours",
       72));
 }
 
 base::TimeDelta GetActiveTabsFetchRefreshDuration() {
-  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+  return base::Hours(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "active_tabs_fetch_refresh_duration_in_hours", 1));
 }
 
 base::TimeDelta GetActiveTabsStalenessTolerance() {
   // 90 days initially chosen since that's how long local history lasts for.
-  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+  return base::Days(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "active_tabs_staleness_tolerance_in_days", 90));
 }
@@ -244,7 +243,7 @@ int ActiveTabsHintsFetchRandomMaxDelaySecs() {
 }
 
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
-  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+  return base::Days(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction,
       "max_store_duration_for_host_model_features_in_days", 7));
 }
@@ -254,13 +253,13 @@ base::TimeDelta StoredModelsInactiveDuration() {
   // careful consideration. Any model that is on device and expires will be
   // removed and triggered to refetch so any feature relying on the model could
   // have a period of time without a valid model.
-  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+  return base::Days(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "inactive_duration_for_models_in_days",
       30));
 }
 
 base::TimeDelta URLKeyedHintValidCacheDuration() {
-  return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
       kOptimizationHints, "max_url_keyed_hint_valid_cache_duration_in_seconds",
       60 * 60 /* 1 hour */));
 }
@@ -315,12 +314,12 @@ int PredictionModelFetchRandomMaxDelaySecs() {
 }
 
 base::TimeDelta PredictionModelFetchRetryDelay() {
-  return base::TimeDelta::FromMinutes(GetFieldTrialParamByFeatureAsInt(
+  return base::Minutes(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "fetch_retry_minutes", 2));
 }
 
 base::TimeDelta PredictionModelFetchInterval() {
-  return base::TimeDelta::FromHours(GetFieldTrialParamByFeatureAsInt(
+  return base::Hours(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
 }
 
@@ -357,6 +356,11 @@ bool IsPageContentAnnotationEnabled() {
 uint64_t MaxSizeForPageContentTextDump() {
   return static_cast<uint64_t>(base::GetFieldTrialParamByFeatureAsInt(
       kPageContentAnnotations, "max_size_for_text_dump_in_bytes", 1024));
+}
+
+bool ShouldAnnotateTitleInsteadOfPageContent() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kPageContentAnnotations, "annotate_title_instead_of_page_content", false);
 }
 
 bool ShouldWriteContentAnnotationsToHistoryService() {
@@ -404,14 +408,30 @@ GetPageContentModelsToExecute() {
   return model_targets.vector();
 }
 
-bool LoadModelFileForEachExecution() {
-  return base::FeatureList::IsEnabled(kLoadModelFileForEachExecution);
-}
-
 base::TimeDelta GetOnloadDelayForHintsFetching() {
-  return base::TimeDelta::FromMilliseconds(GetFieldTrialParamByFeatureAsInt(
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching, "onload_delay_for_hints_fetching_ms",
       0));
+}
+
+int NumBitsForRAPPORMetrics() {
+  // The number of bits must be at least 1.
+  return std::max(
+      1, GetFieldTrialParamByFeatureAsInt(kPageContentAnnotations,
+                                          "num_bits_for_rappor_metrics", 4));
+}
+
+double NoiseProbabilityForRAPPORMetrics() {
+  // The noise probability must be between 0 and 1.
+  return std::max(0.0, std::min(1.0, GetFieldTrialParamByFeatureAsDouble(
+                                         kPageContentAnnotations,
+                                         "noise_prob_for_rappor_metrics", .5)));
+}
+
+bool ShouldMetadataValidationFetchHostKeyed() {
+  DCHECK(base::FeatureList::IsEnabled(kOptimizationGuideMetadataValidation));
+  return GetFieldTrialParamByFeatureAsBool(kOptimizationGuideMetadataValidation,
+                                           "is_host_keyed", true);
 }
 
 }  // namespace features

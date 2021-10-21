@@ -33,6 +33,10 @@ class HistogramController {
   // Normally instantiated when the child process is launched. Only one instance
   // should be created per process.
   HistogramController();
+
+  HistogramController(const HistogramController&) = delete;
+  HistogramController& operator=(const HistogramController&) = delete;
+
   virtual ~HistogramController();
 
   // Register the subscriber so that it will be called when for example
@@ -47,13 +51,6 @@ class HistogramController {
 
   // Contact all processes and get their histogram data.
   void GetHistogramData(int sequence_number);
-
-  // Notify the |subscriber_| that it should expect at least |pending_processes|
-  // additional calls to OnHistogramDataCollected().  OnPendingProcess() may be
-  // called repeatedly; the last call will have |end| set to true, indicating
-  // that there is no longer a possibility for the count of pending processes to
-  // increase.  This is called on the UI thread.
-  void OnPendingProcesses(int sequence_number, int pending_processes, bool end);
 
   // Send the |histogram| back to the |subscriber_|.
   // This can be called from any thread.
@@ -71,11 +68,6 @@ class HistogramController {
 
  private:
   friend struct base::LeakySingletonTraits<HistogramController>;
-
-  // Contact PLUGIN and GPU child processes and get their histogram data.
-  // TODO(rtenneti): Enable getting histogram data for other processes like
-  // PPAPI and NACL.
-  void GetHistogramDataFromChildProcesses(int sequence_number);
 
   HistogramSubscriber* subscriber_;
 
@@ -102,8 +94,6 @@ class HistogramController {
 
   ChildHistogramFetcherMap<RenderProcessHost> renderer_histogram_fetchers_;
   ChildHistogramFetcherMap<ChildProcessHost> child_histogram_fetchers_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistogramController);
 };
 
 }  // namespace content

@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DisallowPreloadFromIframe) {
   std::vector<RenderFrameHost*> all_frames =
       CollectAllRenderFrameHosts(shell()->web_contents());
   ASSERT_EQ(all_frames.size(), 2UL);
-  ASSERT_TRUE(all_frames[1]->IsDescendantOf(all_frames[0]));
+  ASSERT_EQ(all_frames[0], all_frames[1]->GetParent());
   RenderFrameHostImpl* iframe_host =
       static_cast<RenderFrameHostImpl*>(all_frames[1]);
 
@@ -698,6 +698,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, SimplePreconnect) {
   ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(preconnect_listener().num_accepted_sockets(), 1UL);
+  EXPECT_TRUE(GetEarlyHintsManager()->WasPreloadLinkHeaderReceived());
 }
 
 class NavigationEarlyHintsAddressSpaceTest : public NavigationEarlyHintsTest {

@@ -74,13 +74,14 @@ const char kDefaultServiceProcessLocale[] = "en-US";
 class ServiceIOThread : public base::Thread {
  public:
   explicit ServiceIOThread(const char* name);
+
+  ServiceIOThread(const ServiceIOThread&) = delete;
+  ServiceIOThread& operator=(const ServiceIOThread&) = delete;
+
   ~ServiceIOThread() override;
 
  protected:
   void CleanUp() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceIOThread);
 };
 
 ServiceIOThread::ServiceIOThread(const char* name) : base::Thread(name) {}
@@ -427,7 +428,7 @@ void ServiceProcess::ScheduleShutdownCheck() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ServiceProcess::ShutdownIfNeeded, base::Unretained(this)),
-      base::TimeDelta::FromSeconds(kShutdownDelaySeconds));
+      base::Seconds(kShutdownDelaySeconds));
 }
 
 void ServiceProcess::ShutdownIfNeeded() {

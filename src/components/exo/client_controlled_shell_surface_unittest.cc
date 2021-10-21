@@ -17,7 +17,6 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -27,6 +26,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -41,6 +41,9 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "components/app_restore/features.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/pointer.h"
@@ -50,8 +53,6 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
-#include "components/full_restore/features.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -86,10 +87,7 @@ bool HasBackdrop() {
 }
 
 bool IsWidgetPinned(views::Widget* widget) {
-  chromeos::WindowPinType type =
-      widget->GetNativeWindow()->GetProperty(chromeos::kWindowPinTypeKey);
-  return type == chromeos::WindowPinType::kPinned ||
-         type == chromeos::WindowPinType::kTrustedPinned;
+  return ash::WindowState::Get(widget->GetNativeWindow())->IsPinned();
 }
 
 int GetShadowElevation(aura::Window* window) {
@@ -104,6 +102,10 @@ void EnableTabletMode(bool enable) {
 class TestCanvas : public SkNoDrawCanvas {
  public:
   TestCanvas() : SkNoDrawCanvas(100, 100) {}
+
+  TestCanvas(const TestCanvas&) = delete;
+  TestCanvas& operator=(const TestCanvas&) = delete;
+
   ~TestCanvas() override {}
 
   void onDrawTextBlob(const SkTextBlob*,
@@ -117,8 +119,6 @@ class TestCanvas : public SkNoDrawCanvas {
 
  private:
   bool text_was_drawn_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCanvas);
 };
 
 }  // namespace
@@ -636,6 +636,10 @@ namespace {
 class TestEventHandler : public ui::EventHandler {
  public:
   TestEventHandler() = default;
+
+  TestEventHandler(const TestEventHandler&) = delete;
+  TestEventHandler& operator=(const TestEventHandler&) = delete;
+
   ~TestEventHandler() override = default;
 
   // ui::EventHandler:
@@ -645,7 +649,6 @@ class TestEventHandler : public ui::EventHandler {
 
  private:
   bool received_event_ = false;
-  DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
 }  // namespace
@@ -1156,6 +1159,11 @@ class ShellSurfaceWindowObserver : public aura::WindowObserver {
         has_delegate_(ash::WindowState::Get(window)->HasDelegate()) {
     window_->AddObserver(this);
   }
+
+  ShellSurfaceWindowObserver(const ShellSurfaceWindowObserver&) = delete;
+  ShellSurfaceWindowObserver& operator=(const ShellSurfaceWindowObserver&) =
+      delete;
+
   ~ShellSurfaceWindowObserver() override {
     if (window_) {
       window_->RemoveObserver(this);
@@ -1179,8 +1187,6 @@ class ShellSurfaceWindowObserver : public aura::WindowObserver {
  private:
   aura::Window* window_;
   bool has_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWindowObserver);
 };
 
 }  // namespace
@@ -1221,6 +1227,12 @@ namespace {
 class ClientControlledShellSurfaceDragTest : public test::ExoTestBase {
  public:
   ClientControlledShellSurfaceDragTest() = default;
+
+  ClientControlledShellSurfaceDragTest(
+      const ClientControlledShellSurfaceDragTest&) = delete;
+  ClientControlledShellSurfaceDragTest& operator=(
+      const ClientControlledShellSurfaceDragTest&) = delete;
+
   ~ClientControlledShellSurfaceDragTest() override = default;
 
   // Sends a gesture scroll sequence to TabletModeAppWindowDragController.
@@ -1251,9 +1263,6 @@ class ClientControlledShellSurfaceDragTest : public test::ExoTestBase {
     }
     ash::WindowState::Get(window)->DeleteDragDetails();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurfaceDragTest);
 };
 
 }  // namespace
@@ -1806,7 +1815,7 @@ TEST_F(ClientControlledShellSurfaceTest, NoFrameOnModalContainer) {
 
 TEST_F(ClientControlledShellSurfaceTest,
        SetGeometryReparentsToDisplayOnFirstCommit) {
-  UpdateDisplay("100x100,100x100");
+  UpdateDisplay("100x200,100x200");
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -1852,7 +1861,7 @@ TEST_F(ClientControlledShellSurfaceTest,
 }
 
 TEST_F(ClientControlledShellSurfaceTest, SetBoundsReparentsToDisplay) {
-  UpdateDisplay("100x100,100+0-100x100");
+  UpdateDisplay("100x200,100x200");
 
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -1986,13 +1995,13 @@ TEST_F(ClientControlledShellSurfaceTest, SetOrientationLock) {
   surface->Commit();
 
   shell_surface->SetOrientationLock(
-      ash::OrientationLockType::kLandscapePrimary);
+      chromeos::OrientationType::kLandscapePrimary);
   EXPECT_TRUE(controller->rotation_locked());
   display::Display display(display::Screen::GetScreen()->GetPrimaryDisplay());
   gfx::Size displaySize = display.size();
   EXPECT_GT(displaySize.width(), displaySize.height());
 
-  shell_surface->SetOrientationLock(ash::OrientationLockType::kAny);
+  shell_surface->SetOrientationLock(chromeos::OrientationType::kAny);
   EXPECT_FALSE(controller->rotation_locked());
 
   EnableTabletMode(false);
@@ -2636,7 +2645,7 @@ TEST_F(ClientControlledShellSurfaceScaleTest,
       display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect initial_native_bounds(100, 100, 100, 100);
   shell_surface->SetBounds(primary_display.id(), initial_native_bounds);
-  shell_surface->SetSnappedToRight();
+  shell_surface->SetSnappedToSecondary();
   surface->Commit();
 
   EXPECT_EQ(2.f, 1.f / shell_surface->GetClientToDpScale());
@@ -2702,7 +2711,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedClientBounds) {
 
   ash::WindowState::Get(window)->OnWMEvent(&event);
   EXPECT_EQ(gfx::Rect(0, 32, 400, 568), delegate->requested_bounds().back());
-  shell_surface->SetSnappedToLeft();
+  shell_surface->SetSnappedToPrimary();
   shell_surface->SetGeometry(gfx::Rect(0, 0, 400, 568));
   surface->Commit();
 
@@ -2715,10 +2724,10 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedClientBounds) {
 
   // Tablet mode -> clamshell mode. Top caption height should be reserved.
   EnableTabletMode(false);
-  EXPECT_EQ(gfx::Rect(0, 32, 396, 568), delegate->requested_bounds().back());
+  EXPECT_EQ(gfx::Rect(0, 32, 400, 568), delegate->requested_bounds().back());
 
   // Clean up state.
-  shell_surface->SetSnappedToLeft();
+  shell_surface->SetSnappedToPrimary();
   surface->Commit();
 }
 
@@ -2848,11 +2857,11 @@ TEST_F(ClientControlledShellSurfaceFullRestoreTest,
   auto* wide_frame = shell_surface->wide_frame_for_test();
   ASSERT_FALSE(wide_frame);
 
-  // Set the |full_restore::kParentToHiddenContainerKey| for the surface and
+  // Set the |app_restore::kParentToHiddenContainerKey| for the surface and
   // reparent it, simulating the Full Restore process for an unparented ARC
   // task.
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  window->SetProperty(full_restore::kParentToHiddenContainerKey, true);
+  window->SetProperty(app_restore::kParentToHiddenContainerKey, true);
   aura::client::ParentWindowWithContext(window,
                                         /*context=*/window->GetRootWindow(),
                                         window->GetBoundsInScreen());
@@ -2867,9 +2876,10 @@ TEST_F(ClientControlledShellSurfaceFullRestoreTest,
   EXPECT_EQ(hidden_container_parent,
             wide_frame->GetWidget()->GetNativeWindow()->parent());
 
-  // Call the FullRestoreController, simulating the ARC task becoming ready. The
-  // surface should be reparented and the WideFrameView should follow it.
-  ash::FullRestoreController::Get()->OnARCTaskReadyForUnparentedWindow(window);
+  // Call the WindowRestoreController, simulating the ARC task becoming ready.
+  // The surface should be reparented and the WideFrameView should follow it.
+  ash::WindowRestoreController::Get()->OnARCTaskReadyForUnparentedWindow(
+      window);
   EXPECT_NE(hidden_container_parent, window->parent());
   wide_frame = shell_surface->wide_frame_for_test();
   EXPECT_TRUE(wide_frame);

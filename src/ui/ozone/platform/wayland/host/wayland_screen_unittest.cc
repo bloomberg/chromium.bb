@@ -38,6 +38,10 @@ constexpr uint32_t kOutputHeight = 768;
 class TestDisplayObserver : public display::DisplayObserver {
  public:
   TestDisplayObserver() {}
+
+  TestDisplayObserver(const TestDisplayObserver&) = delete;
+  TestDisplayObserver& operator=(const TestDisplayObserver&) = delete;
+
   ~TestDisplayObserver() override {}
 
   display::Display GetDisplay() { return std::move(display_); }
@@ -67,8 +71,6 @@ class TestDisplayObserver : public display::DisplayObserver {
   uint32_t changed_metrics_ = 0;
   display::Display display_;
   display::Display removed_display_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
 };
 
 }  // namespace
@@ -76,6 +78,10 @@ class TestDisplayObserver : public display::DisplayObserver {
 class WaylandScreenTest : public WaylandTest {
  public:
   WaylandScreenTest() = default;
+
+  WaylandScreenTest(const WaylandScreenTest&) = delete;
+  WaylandScreenTest& operator=(const WaylandScreenTest&) = delete;
+
   ~WaylandScreenTest() override = default;
 
   void SetUp() override {
@@ -121,9 +127,6 @@ class WaylandScreenTest : public WaylandTest {
   WaylandOutputManager* output_manager_ = nullptr;
 
   std::unique_ptr<WaylandScreen> platform_screen_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandScreenTest);
 };
 
 // Tests whether a primary output has been initialized before PlatformScreen is
@@ -759,43 +762,6 @@ TEST_P(WaylandScreenTest, SetWindowScale) {
   EXPECT_EQ(window_->ui_scale_, kForcedUIScale);
 
   display::Display::ResetForceDeviceScaleFactorForTesting();
-}
-
-// Tests that WaylandScreen updates list of displays with additional fractional
-// scale by taking only decimal part of it and updating the displays using their
-// existing scale + fractional part. This fractional part comes from GNOME's
-// accessibility feature called "Large Text".
-TEST_P(WaylandScreenTest, SetAdditionalScale) {
-  TestDisplayObserver observer;
-  platform_screen_->AddObserver(&observer);
-
-  const display::Display primary_display =
-      platform_screen_->GetPrimaryDisplay();
-
-  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
-
-  Sync();
-
-  // Place it on the right side of the primary display.
-  const gfx::Rect output2_rect =
-      gfx::Rect(primary_display.bounds().width(), 0, 1024, 768);
-  output2->SetRect(output2_rect);
-  output2->Flush();
-
-  Sync();
-
-  const std::vector<float> scales = {0.2, 0.7, 1.3, 1.6, 1.8, 2.3, 2.9, 3.5};
-  // Pretend GNOME updates scale and sets fractional scale (Large Text feature).
-  for (auto scale : scales) {
-    platform_screen_->SetDeviceScaleFactor(scale);
-    for (auto& display : platform_screen_->GetAllDisplays()) {
-      float whole = 0;
-      // WaylandScreen will get decimal part and use the integer part provided
-      // by wl_output.
-      float expected_scale = std::modf(scale, &whole) + 1.f;
-      EXPECT_EQ(expected_scale, display.device_scale_factor());
-    }
-  }
 }
 
 namespace {

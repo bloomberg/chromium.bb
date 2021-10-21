@@ -30,11 +30,14 @@ class HasEnrolledInstrumentTest
  public:
   HasEnrolledInstrumentTest() {
     if (GetParam() == STRICT_HAS_ENROLLED_INSTRUMENT) {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
-          /*disabled_features=*/{features::kPaymentRequestSkipToGPay});
+      feature_list_.InitAndEnableFeature(
+          features::kStrictHasEnrolledAutofillInstrument);
     }
   }
+
+  HasEnrolledInstrumentTest(const HasEnrolledInstrumentTest&) = delete;
+  HasEnrolledInstrumentTest& operator=(const HasEnrolledInstrumentTest&) =
+      delete;
 
   ~HasEnrolledInstrumentTest() override = default;
 
@@ -104,8 +107,6 @@ class HasEnrolledInstrumentTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(HasEnrolledInstrumentTest);
 };
 
 IN_PROC_BROWSER_TEST_P(HasEnrolledInstrumentTest, NoCard) {

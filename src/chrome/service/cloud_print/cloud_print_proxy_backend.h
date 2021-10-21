@@ -34,6 +34,9 @@ class CloudPrintProxyFrontend {
  public:
   CloudPrintProxyFrontend() {}
 
+  CloudPrintProxyFrontend(const CloudPrintProxyFrontend&) = delete;
+  CloudPrintProxyFrontend& operator=(const CloudPrintProxyFrontend&) = delete;
+
   // We successfully authenticated with the cloud print server. This callback
   // allows the frontend to persist the tokens.
   virtual void OnAuthenticated(const std::string& robot_oauth_refresh_token,
@@ -53,9 +56,6 @@ class CloudPrintProxyFrontend {
  protected:
   // Don't delete through CloudPrintProxyFrontend interface.
   virtual ~CloudPrintProxyFrontend() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyFrontend);
 };
 
 class CloudPrintProxyBackend {
@@ -66,6 +66,10 @@ class CloudPrintProxyBackend {
       const gaia::OAuthClientInfo& oauth_client_info,
       bool enable_job_poll,
       network::NetworkConnectionTracker* network_connection_tracker);
+
+  CloudPrintProxyBackend(const CloudPrintProxyBackend&) = delete;
+  CloudPrintProxyBackend& operator=(const CloudPrintProxyBackend&) = delete;
+
   ~CloudPrintProxyBackend();
 
   // Legacy mechanism when we have saved user credentials but no saved robot
@@ -104,8 +108,6 @@ class CloudPrintProxyBackend {
   CloudPrintProxyFrontend* const frontend_;
 
   friend class base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintProxyBackend);
 };
 
 }  // namespace cloud_print

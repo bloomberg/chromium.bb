@@ -4,6 +4,7 @@
 
 import("//build/config/ios/ios_sdk.gni")
 import("//build/toolchain/goma.gni")
+import("//build/toolchain/rbe.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 
@@ -89,7 +90,7 @@ config("runtime_library") {
   # Rebase the value in that case since gn does not convert paths in compiler
   # flags (since it is not aware they are paths).
   _sdk_root = ios_sdk_path
-  if (use_system_xcode && use_goma) {
+  if (use_system_xcode && (use_goma || use_remoteexec)) {
     _sdk_root = rebase_path(ios_sdk_path, root_build_dir)
   }
 
@@ -122,6 +123,20 @@ config("runtime_library") {
   asmflags = common_flags
   cflags = common_flags
   ldflags = common_flags
+
+  # TODO(crbug.com/1223481): Temporarily use a different
+  # libclang_rt.iossim.a for arm64 simulator builds. This can be
+  # removed when an arm64 slice is added to upstream Clang.
+  if (target_environment == "simulator" && current_cpu == "arm64") {
+    assert(xcode_version_int == 1300)
+    ldflags += [
+      "-lSystem",
+      rebase_path("$ios_toolchains_path/usr/lib/clang/13.0.0/" +
+                      "lib/darwin/libclang_rt.iossim.a",
+                  root_build_dir),
+      "-nodefaultlibs",
+    ]
+  }
 }
 
 config("ios_executable_flags") {
@@ -229,7 +244,7 @@ _xctrunner_path =
 #
 # To workaround this, add a target that pretends to create those files
 # (but does nothing). See https://crbug.com/1061487 for why this is needed.
-if (use_system_xcode && use_goma) {
+if (use_system_xcode && (use_goma || use_remoteexec)) {
   action("copy_xctrunner_app") {
     testonly = true
     script = "//build/noop.py"
@@ -258,7 +273,7 @@ action("xctest_runner_without_arm64e") {
     xcode_version,
   ]
 
-  if (use_system_xcode && use_goma) {
+  if (use_system_xcode && (use_goma || use_remoteexec)) {
     deps = [ ":copy_xctrunner_app" ]
   }
 }

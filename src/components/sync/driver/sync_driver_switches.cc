@@ -73,8 +73,7 @@ const base::Feature kSyncRequiresPoliciesLoaded{
 
 // Max time to delay the sync startup while waiting for policies to load.
 const base::FeatureParam<base::TimeDelta> kSyncPolicyLoadTimeout{
-    &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout",
-    base::TimeDelta::FromSeconds(10)};
+    &kSyncRequiresPoliciesLoaded, "SyncPolicyLoadTimeout", base::Seconds(10)};
 
 #if defined(OS_IOS)
 // Whether RPC is enabled.
@@ -97,7 +96,7 @@ const base::Feature kSyncTrustedVaultPassphrasePromo{
 // side-by-side mode is enabled.
 const base::Feature kSyncSettingsShowLacrosSideBySideWarning{
     "SyncSettingsShowLacrosSideBySideWarning",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace switches

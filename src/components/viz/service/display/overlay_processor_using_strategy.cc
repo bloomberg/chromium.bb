@@ -25,7 +25,7 @@
 #include "media/gpu/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 #include "components/viz/common/quads/texture_draw_quad.h"
 
@@ -155,6 +155,8 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   DBG_DRAW_RECT("overlay.incoming.damage", (*damage_rect));
   for (auto&& each : surface_damage_rect_list) {
     DBG_DRAW_RECT("overlay.surface.damage", each);
+    // TODO(petermcneeley) : Check is temporary to isolate b/191414141.
+    CHECK(each.size().GetCheckedArea().IsValid());
   }
 
   // If we have any copy requests, we can't remove any quads for overlays or
@@ -309,7 +311,10 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
     // black transparent hole is made for the underlay to show through
     // but its possible that the damage for this quad is less than the
     // complete size of the underlay.  https://crbug.com/1130733
-    if (is_underlay) {
+    // Also a non-opaque overlay must damage the primary plane as we might be
+    // able see through the overlay to the primary plane.
+    // https://buganizer.corp.google.com/issues/192294199
+    if (is_underlay || !is_opaque_overlay) {
       damage_rect->Union(this_frame_overlay_rect);
     }
   }

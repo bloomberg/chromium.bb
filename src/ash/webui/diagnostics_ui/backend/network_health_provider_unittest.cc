@@ -8,6 +8,7 @@
 #include "ash/webui/diagnostics_ui/backend/networking_log.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -170,6 +171,8 @@ class NetworkHealthProviderTest : public testing::Test {
         /*userhash=*/std::string(),
         /*network_configs_onc=*/base::ListValue(),
         /*global_network_config=*/base::DictionaryValue());
+
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     network_health_provider_ = std::make_unique<NetworkHealthProvider>();
   }
 
@@ -480,6 +483,7 @@ class NetworkHealthProviderTest : public testing::Test {
   std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<network_config::CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<NetworkHealthProvider> network_health_provider_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(NetworkHealthProviderTest, ZeroNetworksAvailable) {
@@ -579,8 +583,14 @@ TEST_F(NetworkHealthProviderTest, SetupEthernetNetwork) {
   EXPECT_EQ(observer.GetLatestState()->state, mojom::NetworkState::kConnected);
   EXPECT_FALSE(list_observer.active_guid().empty());
   EXPECT_EQ(observer_guid, list_observer.active_guid());
-  // TODO(michaelcheco): Verify ethernet authentication properties once added
-  // to the API.
+  // Verify ethernet authentication is none for non-EAP Ethernet.
+  EXPECT_EQ(observer.GetLatestState()
+                ->type_properties->get_ethernet()
+                ->authentication,
+            mojom::AuthenticationType::kNone);
+
+  // TODO(ashleydp): Add test for authentication k8021x when fake shill service
+  // can support and required configuration is known.
 
   // Put ethernet into online state. It's guid should remain active.
   SetEthernetOnline();
@@ -1354,7 +1364,7 @@ TEST_F(NetworkHealthProviderTest, EthernetAndWifiOrderedCorrectly) {
 }
 
 TEST_F(NetworkHealthProviderTest, NetworkingLog) {
-  NetworkingLog log;
+  NetworkingLog log(temp_dir_.GetPath());
   network_health_provider_->SetNetworkingLogForTesting(&log);
 
   // Observe the network list.
@@ -1371,8 +1381,8 @@ TEST_F(NetworkHealthProviderTest, NetworkingLog) {
   AssociateWifi();
   EXPECT_TRUE(list_observer.active_guid().empty());
 
-  // No active network, log is empty.
-  EXPECT_TRUE(log.GetContents().empty());
+  // The non-active network still appears in the log.
+  EXPECT_FALSE(log.GetNetworkInfo().empty());
 
   // Put wifi into online state.
   SetWifiOnline();
@@ -1380,7 +1390,7 @@ TEST_F(NetworkHealthProviderTest, NetworkingLog) {
   // Log is populated with network info now that WiFi is online.
   // Log contents tested in networking_log_unittest.cc -
   // NetworkingLogTest.DetailedLogContentsWiFi.
-  EXPECT_FALSE(log.GetContents().empty());
+  EXPECT_FALSE(log.GetNetworkInfo().empty());
 }
 
 TEST_F(NetworkHealthProviderTest, ResetReceiverOnDisconnect) {

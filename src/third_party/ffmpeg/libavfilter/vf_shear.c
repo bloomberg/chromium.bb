@@ -114,10 +114,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 #define NN(type, name)                                                       \
@@ -246,7 +243,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                           0, 0, outlink->w, outlink->h);
 
     td.in = in, td.out = out;
-    ctx->internal->execute(ctx, s->filter_slice[s->interp], &td, NULL, FFMIN(s->planeheight[1], ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->filter_slice[s->interp], &td, NULL,
+                      FFMIN(s->planeheight[1], ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -304,7 +302,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -313,7 +310,6 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_shear = {
@@ -322,8 +318,8 @@ const AVFilter ff_vf_shear = {
     .priv_size       = sizeof(ShearContext),
     .init            = init,
     .query_formats   = query_formats,
-    .inputs          = inputs,
-    .outputs         = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .priv_class      = &shear_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

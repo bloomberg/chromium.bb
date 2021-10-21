@@ -28,6 +28,9 @@ class ThirdPartyNTPBrowserTest : public InProcessBrowserTest,
  public:
   ThirdPartyNTPBrowserTest() = default;
 
+  ThirdPartyNTPBrowserTest(const ThirdPartyNTPBrowserTest&) = delete;
+  ThirdPartyNTPBrowserTest& operator=(const ThirdPartyNTPBrowserTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
@@ -37,9 +40,6 @@ class ThirdPartyNTPBrowserTest : public InProcessBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(https_test_server().Start());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyNTPBrowserTest);
 };
 
 // Verifies that a third party NTP can successfully embed the most visited
@@ -73,8 +73,8 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyNTPBrowserTest, EmbeddedMostVisitedIframe) {
   nav_observer.WaitForNavigationFinished();
 
   // Verify that the subframe exists and has the expected origin.
-  ASSERT_EQ(2u, contents->GetAllFrames().size());
-  content::RenderFrameHost* subframe = contents->GetAllFrames()[1];
+  content::RenderFrameHost* subframe = ChildFrameAt(contents, 0);
+  ASSERT_TRUE(subframe);
   std::string subframe_origin;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       subframe, "domAutomationController.send(window.origin)",

@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/value_store/value_store_factory.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
-#include "extensions/browser/value_store/value_store_factory.h"
 
 namespace syncer {
 class SyncErrorFactory;
@@ -44,6 +44,9 @@ class SyncStorageBackend : public syncer::SyncableService {
       scoped_refptr<SettingsObserverList> observers,
       syncer::ModelType sync_type,
       const syncer::SyncableService::StartSyncFlare& flare);
+
+  SyncStorageBackend(const SyncStorageBackend&) = delete;
+  SyncStorageBackend& operator=(const SyncStorageBackend&) = delete;
 
   ~SyncStorageBackend() override;
 
@@ -99,8 +102,6 @@ class SyncStorageBackend : public syncer::SyncableService {
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   syncer::SyncableService::StartSyncFlare flare_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncStorageBackend);
 };
 
 }  // namespace extensions

@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -30,6 +31,7 @@
 #include "chrome/updater/crash_reporter.h"
 #include "chrome/updater/launchd_util.h"
 #import "chrome/updater/mac/mac_util.h"
+#include "chrome/updater/mac/setup/keystone.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/setup.h"
 #include "chrome/updater/updater_branding.h"
@@ -39,11 +41,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
-
 namespace {
-
-constexpr char kLoggingModuleSwitchValue[] =
-    "*/updater/*=2,*/update_client/*=2";
 
 #pragma mark Helpers
 Launchd::Domain LaunchdDomain(UpdaterScope scope) {
@@ -149,9 +147,9 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateServiceLaunchdPlist(
     [program_arguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetUpdateServiceLaunchdLabel(),
+    @LAUNCH_JOBKEY_LABEL : GetUpdateServiceLaunchdLabel(scope),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetUpdateServiceMachName() : @YES},
+    @LAUNCH_JOBKEY_MACHSERVICES : @{GetUpdateServiceMachName(scope) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope)
   };
@@ -175,7 +173,7 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateWakeLaunchdPlist(
     [program_arguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetWakeLaunchdLabel(),
+    @LAUNCH_JOBKEY_LABEL : GetWakeLaunchdLabel(scope),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @3600,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
@@ -206,9 +204,10 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateUpdateServiceInternalLaunchdPlist(
     [program_arguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetUpdateServiceInternalLaunchdLabel(),
+    @LAUNCH_JOBKEY_LABEL : GetUpdateServiceInternalLaunchdLabel(scope),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetUpdateServiceInternalMachName() : @YES},
+    @LAUNCH_JOBKEY_MACHSERVICES :
+        @{GetUpdateServiceInternalMachName(scope) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @YES,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : NSStringSessionType(scope)
   };
@@ -228,7 +227,7 @@ bool CreateUpdateServiceLaunchdJobPlist(UpdaterScope scope,
       CreateServiceLaunchdPlist(scope, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
       LaunchdDomain(scope), ServiceLaunchdType(scope),
-      CopyUpdateServiceLaunchdName(), plist);
+      CopyUpdateServiceLaunchdName(scope), plist);
 }
 
 bool CreateWakeLaunchdJobPlist(UpdaterScope scope,
@@ -238,9 +237,9 @@ bool CreateWakeLaunchdJobPlist(UpdaterScope scope,
                                                 base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
       CreateWakeLaunchdPlist(scope, updater_path));
-  return Launchd::GetInstance()->WritePlistToFile(LaunchdDomain(scope),
-                                                  ServiceLaunchdType(scope),
-                                                  CopyWakeLaunchdName(), plist);
+  return Launchd::GetInstance()->WritePlistToFile(
+      LaunchdDomain(scope), ServiceLaunchdType(scope),
+      CopyWakeLaunchdName(scope), plist);
 }
 
 bool CreateUpdateServiceInternalLaunchdJobPlist(
@@ -253,7 +252,7 @@ bool CreateUpdateServiceInternalLaunchdJobPlist(
       CreateUpdateServiceInternalLaunchdPlist(scope, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
       LaunchdDomain(scope), ServiceLaunchdType(scope),
-      CopyUpdateServiceInternalLaunchdName(), plist);
+      CopyUpdateServiceInternalLaunchdName(scope), plist);
 }
 
 bool StartUpdateServiceVersionedLaunchdJob(
@@ -266,19 +265,19 @@ bool StartUpdateServiceVersionedLaunchdJob(
 
 bool StartUpdateWakeVersionedLaunchdJob(UpdaterScope scope) {
   return Launchd::GetInstance()->RestartJob(
-      LaunchdDomain(scope), ServiceLaunchdType(scope), CopyWakeLaunchdName(),
-      CFSessionType(scope));
+      LaunchdDomain(scope), ServiceLaunchdType(scope),
+      CopyWakeLaunchdName(scope), CFSessionType(scope));
 }
 
 bool StartUpdateServiceInternalVersionedLaunchdJob(UpdaterScope scope) {
   return Launchd::GetInstance()->RestartJob(
       LaunchdDomain(scope), ServiceLaunchdType(scope),
-      CopyUpdateServiceInternalLaunchdName(), CFSessionType(scope));
+      CopyUpdateServiceInternalLaunchdName(scope), CFSessionType(scope));
 }
 
 bool StartLaunchdServiceJob(UpdaterScope scope) {
-  return StartUpdateServiceVersionedLaunchdJob(scope,
-                                               CopyUpdateServiceLaunchdName());
+  return StartUpdateServiceVersionedLaunchdJob(
+      scope, CopyUpdateServiceLaunchdName(scope));
 }
 
 bool RemoveServiceJobFromLaunchd(UpdaterScope scope,
@@ -295,16 +294,16 @@ bool RemoveUpdateServiceJobFromLaunchd(
 
 bool RemoveUpdateServiceJobFromLaunchd(UpdaterScope scope) {
   return RemoveUpdateServiceJobFromLaunchd(scope,
-                                           CopyUpdateServiceLaunchdName());
+                                           CopyUpdateServiceLaunchdName(scope));
 }
 
 bool RemoveUpdateWakeJobFromLaunchd(UpdaterScope scope) {
-  return RemoveServiceJobFromLaunchd(scope, CopyWakeLaunchdName());
+  return RemoveServiceJobFromLaunchd(scope, CopyWakeLaunchdName(scope));
 }
 
 bool RemoveUpdateServiceInternalJobFromLaunchd(UpdaterScope scope) {
-  return RemoveServiceJobFromLaunchd(scope,
-                                     CopyUpdateServiceInternalLaunchdName());
+  return RemoveServiceJobFromLaunchd(
+      scope, CopyUpdateServiceInternalLaunchdName(scope));
 }
 
 bool DeleteFolder(const absl::optional<base::FilePath>& installed_path) {
@@ -417,7 +416,7 @@ int PromoteCandidate(UpdaterScope scope) {
     return setup_exit_codes::kFailedToStartLaunchdActiveServiceJob;
 
   // Wait for launchd to finish the load operation for the update service.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
+  base::PlatformThread::Sleep(base::Seconds(2));
 
   return setup_exit_codes::kSuccess;
 }
@@ -452,6 +451,10 @@ int Uninstall(UpdaterScope scope) {
 
   if (!DeleteInstallFolder(scope))
     return setup_exit_codes::kFailedToDeleteFolder;
+
+  base::ThreadPool::PostTask(FROM_HERE,
+                             {base::MayBlock(), base::WithBaseSyncPrimitives()},
+                             base::BindOnce(&UninstallKeystone, scope));
 
   // Deleting the data folder is best-effort. Current running processes such as
   // the crash handler process may still write to the updater log file, thus

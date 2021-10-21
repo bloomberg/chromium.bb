@@ -50,15 +50,6 @@ interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
     method constructor
     method updateUI
-interface BidirectionalStream
-    attribute @@toStringTag
-    getter readable
-    getter readingAborted
-    getter writable
-    getter writingAborted
-    method abortReading
-    method abortWriting
-    method constructor
 interface Blob
     attribute @@toStringTag
     getter size
@@ -113,14 +104,12 @@ interface CacheStorage
     method open
 interface CanMakePaymentEvent : ExtendableEvent
     attribute @@toStringTag
-    getter currency
     getter methodData
     getter modifiers
     getter paymentRequestOrigin
     getter topOrigin
     method constructor
     method respondWith
-    method respondWithMinimalUI
 interface CanvasFilter
     attribute @@toStringTag
     method constructor
@@ -404,19 +393,6 @@ interface DOMStringList
     method constructor
     method contains
     method item
-interface DatagramDuplexStream
-    attribute @@toStringTag
-    getter incomingHighWaterMark
-    getter incomingMaxAge
-    getter outgoingHighWaterMark
-    getter outgoingMaxAge
-    getter readable
-    getter writable
-    method constructor
-    setter incomingHighWaterMark
-    setter incomingMaxAge
-    setter outgoingHighWaterMark
-    setter outgoingMaxAge
 interface DecompressionStream
     attribute @@toStringTag
     getter readable
@@ -734,7 +710,6 @@ interface IDBObjectStore
     method openCursor
     method openKeyCursor
     method put
-    method putAllValues
     setter name
 interface IDBOpenDBRequest : IDBRequest
     attribute @@toStringTag
@@ -1317,12 +1292,6 @@ interface ReadableStreamDefaultReader
     method constructor
     method read
     method releaseLock
-interface ReceiveStream : ReadableStream
-    attribute @@toStringTag
-    getter readable
-    getter readingAborted
-    method abortReading
-    method constructor
 interface ReportingObserver
     attribute @@toStringTag
     method constructor
@@ -1393,12 +1362,6 @@ interface SecurityPolicyViolationEvent : Event
     getter sourceFile
     getter statusCode
     getter violatedDirective
-    method constructor
-interface SendStream : WritableStream
-    attribute @@toStringTag
-    getter writable
-    getter writingAborted
-    method abortWriting
     method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
@@ -2962,8 +2925,6 @@ interface WebSocketStream
 interface WebTransport
     attribute @@toStringTag
     getter closed
-    getter datagramReadable
-    getter datagramWritable
     getter datagrams
     getter incomingBidirectionalStreams
     getter incomingUnidirectionalStreams
@@ -2972,11 +2933,29 @@ interface WebTransport
     method constructor
     method createBidirectionalStream
     method createUnidirectionalStream
-    method setDatagramWritableQueueExpirationDuration
+interface WebTransportBidirectionalStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method constructor
+interface WebTransportDatagramDuplexStream
+    attribute @@toStringTag
+    getter incomingHighWaterMark
+    getter incomingMaxAge
+    getter maxDatagramSize
+    getter outgoingHighWaterMark
+    getter outgoingMaxAge
+    getter readable
+    getter writable
+    method constructor
+    setter incomingHighWaterMark
+    setter incomingMaxAge
+    setter outgoingHighWaterMark
+    setter outgoingMaxAge
 interface WebTransportError : DOMException
     attribute @@toStringTag
-    getter applicationProtocolCode
     getter source
+    getter streamErrorCode
     method constructor
 interface WindowClient : Client
     attribute @@toStringTag

@@ -132,22 +132,15 @@
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/skia_util.h"
 
 using ScrollThread = cc::InputHandler::ScrollThread;
 
 namespace cc {
 namespace {
-
-// The threshold which determines at what point during a scroll, should the
-// tree priority change from SMOOTHNESS_TAKES_PRIORITY to
-// NEW_CONTENT_TAKES_PRIORITY. The threshold represents visible checkerboarded
-// area.
-const float kVisibleCheckerboardedThresholdForPreferNewContent = 0.3f;
 
 // In BuildHitTestData we iterate all layers to find all layers that overlap
 // OOPIFs, but when the number of layers is greater than
@@ -542,7 +535,8 @@ void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
 void LayerTreeHostImpl::BeginMainFrameAborted(
     CommitEarlyOutReason reason,
     std::vector<std::unique_ptr<SwapPromise>> swap_promises,
-    const viz::BeginFrameArgs& args) {
+    const viz::BeginFrameArgs& args,
+    bool scroll_and_viewport_changes_synced) {
   if (reason == CommitEarlyOutReason::ABORTED_NOT_VISIBLE ||
       reason == CommitEarlyOutReason::FINISHED_NO_UPDATES) {
     frame_trackers_.NotifyMainFrameCausedNoDamage(args);
@@ -562,6 +556,12 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
         swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE);
     }
   }
+
+  // Notify the browser controls manager that we have processed any
+  // controls constraint update.
+  if (scroll_and_viewport_changes_synced && browser_controls_manager()) {
+    browser_controls_manager()->NotifyConstraintSyncedToMainThread();
+  }
 }
 
 void LayerTreeHostImpl::ReadyToCommit(
@@ -574,13 +574,19 @@ void LayerTreeHostImpl::ReadyToCommit(
     total_frame_counter_.Reset();
     dropped_frame_counter_.OnFcpReceived();
   }
+  // Notify the browser controls manager that we have processed any
+  // controls constraint update.
+  if (browser_controls_manager()) {
+    browser_controls_manager()->NotifyConstraintSyncedToMainThread();
+  }
 }
 
-void LayerTreeHostImpl::BeginCommit() {
+void LayerTreeHostImpl::BeginCommit(int source_frame_number) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BeginCommit");
 
   if (!CommitToActiveTree())
     CreatePendingTree();
+  sync_tree()->set_source_frame_number(source_frame_number);
 }
 
 void LayerTreeHostImpl::CommitComplete() {
@@ -952,16 +958,15 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   if (!InnerViewportScrollNode())
     return;
 
-  gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
+  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
   gfx::SizeF scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size(
       active_tree_->InnerViewportScrollNode()->container_bounds);
 
   // TODO(miletus) : Pass in ScrollOffset.
-  page_scale_animation_ =
-      PageScaleAnimation::Create(ScrollOffsetToVector2dF(scroll_total),
-                                 active_tree_->current_page_scale_factor(),
-                                 viewport_size, scrollable_size);
+  page_scale_animation_ = PageScaleAnimation::Create(
+      scroll_total, active_tree_->current_page_scale_factor(), viewport_size,
+      scrollable_size);
 
   if (anchor_point) {
     gfx::Vector2dF anchor(target_offset);
@@ -1325,16 +1330,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         append_quads_data.use_default_lower_bound_deadline;
   }
 
-  if (total_visible_area > 0 &&
-      GetActivelyScrollingType() != ActivelyScrollingType::kNone) {
-    float visible_area_checkerboarded_ratio =
-        (checkerboarded_no_recording_content_area +
-         checkerboarded_needs_raster_content_area) /
-        total_visible_area;
-    if (visible_area_checkerboarded_ratio >
-        kVisibleCheckerboardedThresholdForPreferNewContent) {
-      SetCurrentScrollDidCheckerboardLargeArea();
-    }
+  if (GetActivelyScrollingType() != ActivelyScrollingType::kNone &&
+      checkerboarded_no_recording_content_area > 0) {
+    SetCurrentScrollCheckerboardsDueToNoRecording();
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -2236,8 +2234,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   if (InnerViewportScrollNode()) {
     // TODO(miletus) : Change the metadata to hold ScrollOffset.
-    metadata.root_scroll_offset =
-        gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+    metadata.root_scroll_offset = active_tree_->TotalScrollOffset();
   }
 
   metadata.display_transform_hint = active_tree_->display_transform_hint();
@@ -2257,8 +2254,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
     FrameData* frame) {
   RenderFrameMetadata metadata;
-  metadata.root_scroll_offset =
-      gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+  metadata.root_scroll_offset = active_tree_->TotalScrollOffset();
 
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
@@ -2543,7 +2539,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
       frame->deadline_in_frames.value_or(0u), CurrentBeginFrameArgs().interval,
       frame->use_default_lower_bound_deadline);
 
-  constexpr auto kFudgeDelta = base::TimeDelta::FromMilliseconds(1);
+  constexpr auto kFudgeDelta = base::Milliseconds(1);
   constexpr auto kTwiceOfDefaultInterval =
       viz::BeginFrameArgs::DefaultInterval() * 2;
   constexpr auto kMinDelta = kTwiceOfDefaultInterval - kFudgeDelta;
@@ -3886,7 +3882,7 @@ float LayerTreeHostImpl::CurrentBottomControlsShownRatio() const {
   return active_tree_->CurrentBottomControlsShownRatio();
 }
 
-gfx::ScrollOffset LayerTreeHostImpl::ViewportScrollOffset() const {
+gfx::Vector2dF LayerTreeHostImpl::ViewportScrollOffset() const {
   return viewport_->TotalScrollOffset();
 }
 
@@ -3922,10 +3918,10 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
     return false;
   }
 
-  gfx::ScrollOffset current_offset =
+  gfx::Vector2dF current_offset =
       scroll_tree.current_scroll_offset(scroll_node.element_id);
-  gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
-      current_offset + gfx::ScrollOffset(delta), scroll_node);
+  gfx::Vector2dF target_offset = scroll_tree.ClampScrollOffsetToLimits(
+      current_offset + delta, scroll_node);
 
   // Start the animation one full frame in. Without any offset, the animation
   // doesn't start until next frame, increasing latency, and preventing our
@@ -3934,7 +3930,7 @@ bool LayerTreeHostImpl::ScrollAnimationCreateInternal(
 
   if (autoscroll_velocity) {
     mutator_host_->ImplOnlyAutoScrollAnimationCreate(
-        scroll_node.element_id, gfx::ScrollOffset(delta), current_offset,
+        scroll_node.element_id, delta, current_offset,
         autoscroll_velocity.value(), animation_start_offset);
   } else {
     mutator_host_->ImplOnlyScrollAnimationCreate(
@@ -4103,17 +4099,17 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
     return false;
 
-  gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
+  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
 
   if (!page_scale_animation_->IsAnimationStarted())
     page_scale_animation_->StartAnimation(monotonic_time);
 
   active_tree_->SetPageScaleOnActiveTree(
       page_scale_animation_->PageScaleFactorAtTime(monotonic_time));
-  gfx::ScrollOffset next_scroll = gfx::ScrollOffset(
-      page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
+  gfx::Vector2dF next_scroll =
+      gfx::Vector2dF(page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
 
-  viewport().ScrollByInnerFirst(next_scroll.DeltaFrom(scroll_total));
+  viewport().ScrollByInnerFirst(next_scroll - scroll_total);
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_ = nullptr;
@@ -4769,7 +4765,7 @@ void LayerTreeHostImpl::SetMutatorsNeedRebuildPropertyTrees() {}
 void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     ElementId element_id,
     LayerTreeImpl* tree,
-    const gfx::ScrollOffset& scroll_offset) {
+    const gfx::Vector2dF& scroll_offset) {
   if (!tree)
     return;
 
@@ -4851,7 +4847,7 @@ void LayerTreeHostImpl::SetElementTransformMutated(
 void LayerTreeHostImpl::SetElementScrollOffsetMutated(
     ElementId element_id,
     ElementListType list_type,
-    const gfx::ScrollOffset& scroll_offset) {
+    const gfx::Vector2dF& scroll_offset) {
   if (list_type == ElementListType::ACTIVE) {
     SetTreeLayerScrollOffsetMutated(element_id, active_tree(), scroll_offset);
     ShowScrollbarsForImplScroll(element_id);
@@ -4906,14 +4902,14 @@ void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(
   }
 }
 
-gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
+gfx::Vector2dF LayerTreeHostImpl::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   if (active_tree()) {
     return active_tree()->property_trees()->scroll_tree.current_scroll_offset(
         element_id);
   }
 
-  return gfx::ScrollOffset();
+  return gfx::Vector2dF();
 }
 
 bool LayerTreeHostImpl::CommitToActiveTree() const {

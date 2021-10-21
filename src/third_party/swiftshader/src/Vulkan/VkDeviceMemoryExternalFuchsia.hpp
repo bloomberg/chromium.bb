@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "VkDeviceMemory.hpp"
 #include "VkStringify.hpp"
 
 #include "System/Debug.hpp"
@@ -21,12 +22,12 @@
 
 namespace zircon {
 
-class VmoExternalMemory : public vk::DeviceMemory::ExternalBase
+class VmoExternalMemory : public vk::DeviceMemory, public vk::ObjectBase<VmoExternalMemory, VkDeviceMemory>
 {
 public:
-	// Helper struct to parse the VkMemoryAllocateInfo.pNext chain and
-	// extract relevant information related to the handle type supported
-	// by this DeviceMemory::ExternalBase subclass.
+	// Helper struct which reads the parsed allocation info and
+	// extracts relevant information related to the handle type
+	// supported by this DeviceMemory subclass.
 	struct AllocateInfo
 	{
 		bool importHandle = false;
@@ -35,7 +36,7 @@ public:
 
 		AllocateInfo() = default;
 
-		// Used the parsed allocation info to initialize a AllocateInfo.
+		// Use the parsed allocation info to initialize a AllocateInfo.
 		AllocateInfo(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo)
 		{
 			if(extendedAllocationInfo.importMemoryZirconHandleInfo)
@@ -67,8 +68,9 @@ public:
 		return info.importHandle || info.exportHandle;
 	}
 
-	explicit VmoExternalMemory(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo)
-	    : allocateInfo(extendedAllocationInfo)
+	explicit VmoExternalMemory(const VkMemoryAllocateInfo *pCreateInfo, void *mem, const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo, vk::Device *pDevice)
+	    : vk::DeviceMemory(pCreateInfo, pDevice)
+	    , allocateInfo(extendedAllocationInfo)
 	{
 	}
 
@@ -77,7 +79,7 @@ public:
 		closeVmo();
 	}
 
-	VkResult allocate(size_t size, void **pBuffer) override
+	VkResult allocateBuffer() override
 	{
 		if(allocateInfo.importHandle)
 		{
@@ -87,7 +89,7 @@ public:
 		else
 		{
 			ASSERT(allocateInfo.exportHandle);
-			zx_status_t status = zx_vmo_create(size, 0, &vmoHandle);
+			zx_status_t status = zx_vmo_create(allocationSize, 0, &vmoHandle);
 			if(status != ZX_OK)
 			{
 				TRACE("zx_vmo_create() returned %d", status);
@@ -102,22 +104,22 @@ public:
 		                                 0,  // vmar_offset
 		                                 vmoHandle,
 		                                 0,  // vmo_offset
-		                                 size,
+		                                 allocationSize,
 		                                 &addr);
 		if(status != ZX_OK)
 		{
 			TRACE("zx_vmar_map() failed with %d", status);
 			return VK_ERROR_MEMORY_MAP_FAILED;
 		}
-		*pBuffer = reinterpret_cast<void *>(addr);
+		buffer = reinterpret_cast<void *>(addr);
 		return VK_SUCCESS;
 	}
 
-	void deallocate(void *buffer, size_t size) override
+	void freeBuffer() override
 	{
 		zx_status_t status = zx_vmar_unmap(zx_vmar_root_self(),
 		                                   reinterpret_cast<zx_vaddr_t>(buffer),
-		                                   size);
+		                                   allocationSize);
 		if(status != ZX_OK)
 		{
 			TRACE("zx_vmar_unmap() failed with %d", status);

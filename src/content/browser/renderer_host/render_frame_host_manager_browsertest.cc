@@ -4446,9 +4446,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       a_site_instance->GetSiteInfo().storage_partition_config().is_default());
 
   // Verify that the iframe uses the default StoragePartition.
-  EXPECT_EQ(2UL, rfh->GetFramesInSubtree().size());
+  EXPECT_EQ(1UL, rfh->child_count());
   SiteInstanceImpl* b_site_instance = static_cast<SiteInstanceImpl*>(
-      rfh->GetFramesInSubtree()[1]->GetSiteInstance());
+      rfh->child_at(0)->current_frame_host()->GetSiteInstance());
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(b_site_instance->IsDefaultSiteInstance());
   } else {
@@ -5522,6 +5522,12 @@ class PageEffectiveURLContentBrowserClient : public ContentBrowserClient {
   PageEffectiveURLContentBrowserClient(const GURL& url_to_modify,
                                        const GURL& url_to_return)
       : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
+
+  PageEffectiveURLContentBrowserClient(
+      const PageEffectiveURLContentBrowserClient&) = delete;
+  PageEffectiveURLContentBrowserClient& operator=(
+      const PageEffectiveURLContentBrowserClient&) = delete;
+
   ~PageEffectiveURLContentBrowserClient() override = default;
 
  private:
@@ -5534,8 +5540,6 @@ class PageEffectiveURLContentBrowserClient : public ContentBrowserClient {
 
   GURL url_to_modify_;
   GURL url_to_return_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageEffectiveURLContentBrowserClient);
 };
 
 // Ensure that same-document navigations for URLs with effective URLs don't
@@ -7843,7 +7847,7 @@ class RenderFrameHostManagerUnloadBrowserTest
   // processing to prevent any test flakiness.  This is the time that the ping
   // request will have to make it from the renderer to the test server.
   void ExtendSubframeUnloadTimeoutForTerminationPing(RenderFrameHostImpl* rfh) {
-    rfh->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+    rfh->SetSubframeUnloadTimeoutForTesting(base::Seconds(30));
   }
 
  protected:
@@ -8167,7 +8171,7 @@ class AssertForegroundHelper {
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::cref(renderer_process), port_provider),
-        base::TimeDelta::FromMilliseconds(1));
+        base::Milliseconds(1));
   }
 #else   // defined(OS_MAC)
   // Same as above without the Mac specific base::PortProvider.
@@ -8178,7 +8182,7 @@ class AssertForegroundHelper {
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::cref(renderer_process)),
-        base::TimeDelta::FromMilliseconds(1));
+        base::Milliseconds(1));
   }
 #endif  // defined(OS_MAC)
 
@@ -8667,6 +8671,12 @@ class RenderFrameHostManagerDefaultProcessTest
     feature_list_.InitAndEnableFeature(
         features::kProcessSharingWithStrictSiteInstances);
   }
+
+  RenderFrameHostManagerDefaultProcessTest(
+      const RenderFrameHostManagerDefaultProcessTest&) = delete;
+  RenderFrameHostManagerDefaultProcessTest& operator=(
+      const RenderFrameHostManagerDefaultProcessTest&) = delete;
+
   ~RenderFrameHostManagerDefaultProcessTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -8681,8 +8691,6 @@ class RenderFrameHostManagerDefaultProcessTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerDefaultProcessTest);
 };
 
 // Ensure that the default process can be used for URLs that don't assign a site
@@ -8977,14 +8985,17 @@ class RenderFrameHostManagerNoSiteIsolationTest
     : public RenderFrameHostManagerTest {
  public:
   RenderFrameHostManagerNoSiteIsolationTest() = default;
+
+  RenderFrameHostManagerNoSiteIsolationTest(
+      const RenderFrameHostManagerNoSiteIsolationTest&) = delete;
+  RenderFrameHostManagerNoSiteIsolationTest& operator=(
+      const RenderFrameHostManagerNoSiteIsolationTest&) = delete;
+
   ~RenderFrameHostManagerNoSiteIsolationTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerNoSiteIsolationTest);
 };
 
 // Ensure that when a process that allows any site gets reused by new

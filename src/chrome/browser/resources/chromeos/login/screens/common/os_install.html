@@ -21,6 +21,9 @@ found in the LICENSE file. -->
 <dom-module id="os-install-element">
   <template>
     <style include="oobe-dialog-host-styles">
+      a {
+        width: fit-content;
+      }
       ul {
         list-style-position: outside;
         padding-inline-start: 20px;
@@ -43,36 +46,52 @@ found in the LICENSE file. -->
         padding-inline-end: 20px;
         padding-inline-start: 20px;
       }
+      .intro-content {
+        color: var(--oobe-header-text-color);
+      }
+      .intro-footer {
+        color: var(--oobe-footer-text-color);
+      }
     </style>
 
     <oobe-adaptive-dialog id="osInstallDialogIntro"
         role="dialog" for-step="intro"
-        aria-label$="[[i18nDynamic(locale, 'osInstallDialogIntroTitle')]]">
+        aria-label$="[[i18nDynamic(
+            locale, 'osInstallDialogIntroTitle', osName_)]]">
       <iron-icon slot="icon" icon="oobe-32:googleg"></iron-icon>
-      <h1 slot="title">[[i18nDynamic(locale, 'osInstallDialogIntroTitle')]]</h1>
+      <h1 slot="title" id="osInstallDialogIntroTitleId">
+        [[i18nDynamic(locale, 'osInstallDialogIntroTitle', osName_)]]</h1>
       <div slot="subtitle">
-        <strong>
-          [[i18nDynamic(locale, 'osInstallDialogIntroSubtitle')]]
-        </strong>
+        [[i18nDynamic(locale, 'osInstallDialogIntroSubtitle', osName_)]]
       </div>
-      <html-echo slot="content" content="[[getIntroBodyHtml_(locale)]]"
-          class="flex layout vertical center center-justified">
-      </html-echo>
+      <div slot="content" class="flex layout vertical center-justified">
+        <p class="intro-content">
+          [[i18nDynamic(locale, 'osInstallDialogIntroBody0', osName_)]]
+        </p>
+        <p class="intro-content">
+          [[i18nDynamic(locale, 'osInstallDialogIntroBody1')]]
+        </p>
+        <p class="intro-footer">
+          [[i18nDynamic(locale, 'osInstallDialogIntroFooter', osName_)]]
+        </p>
+      </div>
       <div slot="back-navigation">
         <oobe-back-button id="osInstallExitButton" on-click="onBack_">
         </oobe-back-button>
       </div>
       <div slot="bottom-buttons">
-        <oobe-next-button
-            text-key="osInstallDialogIntroNextButton" class="focus-on-show"
-            id="osInstallIntroNextButton"
-            inverse on-click="onIntroNextButtonPressed_"></oobe-next-button>
+        <oobe-next-button class="focus-on-show" id="osInstallIntroNextButton"
+            inverse on-click="onIntroNextButtonPressed_">
+          <div slot="text">
+            [[i18nDynamic(locale, 'osInstallDialogIntroNextButton', osName_)]]
+          </div>
+        </oobe-next-button>
       </div>
     </oobe-adaptive-dialog>
 
     <oobe-modal-dialog id="osInstallDialogConfirm" ignore-popstate>
-      <div slot="title">
-        [[i18nDynamic(locale, 'osInstallDialogConfirmTitle')]]
+      <div slot="title" id="osInstallDialogConfirmTitleId">
+        [[i18nDynamic(locale, 'osInstallDialogConfirmTitle', osName_)]]
       </div>
       <html-echo slot="content" content="[[getConfirmBodyHtml_(locale)]]">
       </html-echo>
@@ -90,10 +109,12 @@ found in the LICENSE file. -->
 
     <oobe-loading-dialog id="osInstallDialogInProgress"
         role="dialog" for-step="in-progress"
-        title-key="osInstallDialogInProgressTitle"
         subtitle-key="osInstallDialogInProgressSubtitle"
-        aria-label$="[[i18nDynamic(locale, 'enableDebuggingScreenTitle')]]">
+        aria-label$="[[i18nDynamic(
+            locale, 'enableDebuggingScreenTitle', osName_)]]">
       <iron-icon slot="icon" icon="oobe-32:googleg"></iron-icon>
+      <div slot="title" id="osInstallDialogInProgressTitleId">
+        [[i18nDynamic(locale, 'osInstallDialogInProgressTitle', osName_)]]</div>
     </oobe-loading-dialog>
 
     <oobe-adaptive-dialog id="osInstallDialogError"
@@ -101,24 +122,30 @@ found in the LICENSE file. -->
         aria-label$="[[i18nDynamic(locale, 'osInstallDialogErrorTitle')]]">
       <iron-icon slot="icon" icon="oobe-32:warning"></iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'osInstallDialogErrorTitle')]]</h1>
-      <div slot="subtitle" for-step="no-destination-device-found">
-        [[i18nDynamic(locale, 'osInstallDialogErrorNoDestSubtitle')]]
+      <div slot="subtitle" for-step="no-destination-device-found"
+          id="osInstallDialogErrorNoDestSubtitleId">
+        [[i18nDynamic(locale, 'osInstallDialogErrorNoDestSubtitle', osName_)]]
       </div>
-      <html-echo slot="content" for-step="no-destination-device-found"
-          class="flex layout vertical center center-justified"
-          content="[[getErrorNoDestContentHtml_(locale)]]">
-      </html-echo>
-      <html-echo slot="subtitle" for-step="failed"
-          content="[[getErrorFailedSubtitleHtml_(locale)]]">
-      </html-echo>
-      <a slot="subtitle" id="serviceLogsLink" class="oobe-local-link"
-          on-click="onServiceLogsLinkClicked_" is="action-link">
-        [[i18nDynamic(locale, 'osInstallDialogErrorServiceLogsLink')]]
-      </a>
+      <div slot="content" for-step="no-destination-device-found"
+          class="flex layout vertical center-justified">
+        <html-echo content="[[getErrorNoDestContentHtml_(locale, osName_)]]">
+        </html-echo>
+        <a id="noDestLogsLink" is="action-link" class="oobe-local-link"
+            on-click="onServiceLogsLinkClicked_">
+          [[i18nDynamic(locale, 'osInstallDialogErrorViewLogs')]]
+        </a>
+      </div>
+      <div slot="subtitle" for-step="failed">
+        <html-echo content="[[getErrorFailedSubtitleHtml_(locale, osName_)]]">
+        </html-echo>
+        <a id="serviceLogsLink" is="action-link" class="oobe-local-link"
+            on-click="onServiceLogsLinkClicked_">
+          [[i18nDynamic(locale, 'osInstallDialogErrorViewLogs')]]
+        </a>
       </div>
       <div slot="content" for-step="failed"
           class="flex layout vertical center center-justified">
-        <img src="../../images/1x/error.svg" class="oobe-illustration">
+        <img src="../../images/error.svg" class="oobe-illustration">
       </div>
       <div slot="bottom-buttons">
         <oobe-text-button
@@ -138,18 +165,23 @@ found in the LICENSE file. -->
       <iron-icon slot="icon" icon="oobe-32:googleg"></iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'osInstallDialogSuccessTitle')]]
       </h1>
+      <div slot="subtitle" id="osInstallDialogSuccessSubtitile">
+          [[osInstallDialogSuccessSubtitile_]]</div>
+      <div slot="content" class="flex layout vertical center center-justified">
+        <img src="../../images/os-install-success.svg"
+            class="oobe-illustration">
+      </div>
       <div slot="bottom-buttons">
         <oobe-text-button
-            text-key="osInstallDialogShutdownButton" class="focus-on-show"
-            id="osInstallSuccessShutdownButton"
-            inverse on-click="onSuccessShutdownButtonPressed_">
+            text-key="osInstallDialogSuccessRestartButton" class="focus-on-show"
+            id="osInstallSuccessRestartButton"
+            inverse on-click="onSuccessRestartButtonPressed_">
         </oobe-next-button>
       </div>
     </oobe-adaptive-dialog>
 
     <oobe-modal-dialog id="serviceLogsDialog" ignore-popstate
-        on-close="focusServiceLogsLink_"
-        on-cancel="focusServiceLogsLink_">
+        on-close="focusLogsLink_" on-cancel="focusLogsLink_">
       <div slot="title">
         [[i18nDynamic(locale, 'osInstallDialogServiceLogsTitle')]]
       </div>

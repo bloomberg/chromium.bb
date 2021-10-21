@@ -6,6 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -27,8 +28,6 @@
 namespace ash {
 
 namespace {
-
-constexpr int kBarHeight = 40;
 
 // A boolean pref indicates whether the bar is set to show or hide through the
 // context menu. Showing the bar if this pref is true, hiding otherwise.
@@ -52,7 +51,7 @@ std::unique_ptr<views::Widget> CreatePersistentDesksBarWidget() {
   gfx::Rect bounds = display::Screen::GetScreen()
                          ->GetDisplayNearestWindow(root_window)
                          .bounds();
-  bounds.set_height(kBarHeight);
+  bounds.set_height(PersistentDesksBarController::kBarHeight);
   params.bounds = bounds;
   params.name = "PersistentDesksBarWidget";
 
@@ -114,12 +113,14 @@ void PersistentDesksBarController::OnActiveUserPrefServiceChanged(
   UpdateBarStateOnPrefChanges();
 }
 
-void PersistentDesksBarController::OnOverviewModeStarting() {
+void PersistentDesksBarController::OnOverviewModeWillStart() {
+  overview_mode_in_progress_ = true;
   DestroyBarWidget();
 }
 
 void PersistentDesksBarController::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
+  overview_mode_in_progress_ = false;
   if (!canceled)
     MaybeInitBarWidget();
 }
@@ -251,6 +252,8 @@ void PersistentDesksBarController::MaybeInitBarWidget() {
   // created in the primary display.
   WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
       ->SetPersistentDeskBarHeight(kBarHeight);
+
+  UMA_HISTOGRAM_BOOLEAN("Ash.Desks.BentoBarIsVisible", true);
 }
 
 void PersistentDesksBarController::DestroyBarWidget() {
@@ -289,8 +292,17 @@ void PersistentDesksBarController::UpdateBarOnWindowDestroying(
 }
 
 bool PersistentDesksBarController::ShouldPersistentDesksBarBeCreated() const {
-  if (!desks_restore_util::HasPrimaryUserUsedDesksRecently())
+  // `kBentoBar` feature is running as an experiment now. And we will only
+  // enable it for a specific group of existing desks users, see
+  // `kUserHasUsedDesksRecently` for more details. But we also want to enable it
+  // if the user has explicitly enabled `kBentoBar` from chrome://flags or from
+  // the command line. Even though the user is not in the group of existing
+  // desks users.
+  if (!base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kBentoBar.name) &&
+      !desks_restore_util::HasPrimaryUserUsedDesksRecently()) {
     return false;
+  }
 
   if (!IsEnabled())
     return false;
@@ -299,8 +311,7 @@ bool PersistentDesksBarController::ShouldPersistentDesksBarBeCreated() const {
 
   // Do not create the bar in tablet mode, overview mode or if there is
   // only one desk.
-  if (TabletMode::Get()->InTabletMode() ||
-      shell->overview_controller()->InOverviewSession() ||
+  if (TabletMode::Get()->InTabletMode() || overview_mode_in_progress_ ||
       DesksController::Get()->desks().size() == 1) {
     return false;
   }

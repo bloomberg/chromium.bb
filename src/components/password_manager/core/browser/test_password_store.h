@@ -41,6 +41,9 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
   explicit TestPasswordStore(password_manager::IsAccountStore is_account_store =
                                  password_manager::IsAccountStore(false));
 
+  TestPasswordStore(const TestPasswordStore&) = delete;
+  TestPasswordStore& operator=(const TestPasswordStore&) = delete;
+
   using PasswordMap = std::map<std::string /* signon_realm */,
                                std::vector<PasswordForm>,
                                std::less<>>;
@@ -61,13 +64,11 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
  protected:
   ~TestPasswordStore() override;
 
-  scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
-      const override;
-
   // PasswordStoreBackend interface
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
+  void Shutdown(base::OnceClosure shutdown_completed) override;
   void GetAllLoginsAsync(LoginsReply callback) override;
   void GetAutofillableLoginsAsync(LoginsReply callback) override;
   void FillMatchingLoginsAsync(
@@ -116,10 +117,14 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
 
   const std::unique_ptr<PasswordStoreSync::MetadataStore> metadata_store_;
 
+  // TaskRunner for tasks that run on the main sequence (usually the UI thread).
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+
+  // TaskRunner for all the background operations.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
   // Number of calls of FillMatchingLogins() method.
   int fill_matching_logins_calls_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPasswordStore);
 };
 
 }  // namespace password_manager

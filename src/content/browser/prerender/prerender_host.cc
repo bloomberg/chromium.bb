@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
@@ -124,8 +125,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
     web_contents_.NotifySwappedFromRenderManager(
         /*old_frame=*/nullptr,
-        frame_tree_->root()->render_manager()->current_frame_host(),
-        /*is_main_frame=*/true);
+        frame_tree_->root()->render_manager()->current_frame_host());
   }
 
   ~PageHolder() override {
@@ -229,7 +229,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // and ideally we'd do this at the same time when transferring the proxies
     // from the StoredPage into RenderFrameHostManager. However, this is a
     // temporary solution until we move this into BrowsingInstanceFrameState,
-    // along with RenderFrameHostProxy.
+    // along with RenderFrameProxyHost.
     page->render_frame_host->frame_tree_node()->set_frame_name_for_activation(
         frame_tree_->root()->unique_name(), frame_tree_->root()->frame_name());
     for (auto& it : page->proxy_hosts) {
@@ -309,10 +309,11 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
   std::unique_ptr<FrameTree> frame_tree_;
 };
 
-PrerenderHost::PrerenderHost(blink::mojom::PrerenderAttributesPtr attributes,
+PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
                              RenderFrameHostImpl& initiator_render_frame_host)
-    : attributes_(std::move(attributes)),
+    : attributes_(attributes),
       initiator_origin_(initiator_render_frame_host.GetLastCommittedOrigin()),
+      initiator_url_(initiator_render_frame_host.GetLastCommittedURL()),
       initiator_process_id_(initiator_render_frame_host.GetProcess()->GetID()),
       initiator_frame_token_(initiator_render_frame_host.GetFrameToken()) {
   DCHECK(blink::features::IsPrerender2Enabled());
@@ -344,7 +345,7 @@ bool PrerenderHost::StartPrerendering() {
   Observe(page_holder_->GetWebContents());
 
   // Start prerendering navigation.
-  NavigationController::LoadURLParams load_url_params(attributes_->url);
+  NavigationController::LoadURLParams load_url_params(attributes_.url);
   load_url_params.initiator_origin = initiator_origin_;
   load_url_params.initiator_process_id = initiator_process_id_;
   load_url_params.initiator_frame_token = initiator_frame_token_;
@@ -352,8 +353,7 @@ bool PrerenderHost::StartPrerendering() {
   // Just use the referrer from attributes, as NoStatePrefetch does.
   // TODO(crbug.com/1176054): For cross-origin prerender, follow the spec steps
   // for "sufficiently-strict speculative navigation referrer policies".
-  if (attributes_->referrer)
-    load_url_params.referrer = Referrer(*attributes_->referrer);
+  load_url_params.referrer = attributes_.referrer;
 
   // TODO(https://crbug.com/1189034): Should we set `override_user_agent` here?
   // Things seem to work without it.
@@ -435,6 +435,13 @@ void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   if (is_prerender_main_frame) {
     DCHECK(!is_ready_for_activation_);
     is_ready_for_activation_ = true;
+  }
+}
+
+void PrerenderHost::OnVisibilityChanged(Visibility visibility) {
+  TRACE_EVENT("navigation", "PrerenderHost::OnVisibilityChanged");
+  if (visibility == Visibility::HIDDEN) {
+    Cancel(FinalStatus::kTriggerBackgrounded);
   }
 }
 
@@ -689,12 +696,6 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return false;
   }
 
-  DCHECK(common_params_->history_url_for_data_url.is_empty());
-  if (potential_activation.history_url_for_data_url.is_empty() !=
-      common_params_->history_url_for_data_url.is_empty()) {
-    return false;
-  }
-
   // The previews_state is always set to NO_PREVIEWS in BeginNavigation and the
   // previews code was removed, so no need to compare it here as it's not used.
   // TODO(crbug.com/1232909): remove this previews_state.
@@ -791,7 +792,7 @@ void PrerenderHost::RecordFinalStatus(FinalStatus status) {
 }
 
 const GURL& PrerenderHost::GetInitialUrl() const {
-  return attributes_->url;
+  return attributes_.url;
 }
 
 void PrerenderHost::AddObserver(Observer* observer) {

@@ -852,7 +852,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordCaptureEventScheduledFromPref) {
   // Pick a delay and store the deadline in the pref
-  base::TimeDelta delay = base::TimeDelta::FromDays(13);
+  base::TimeDelta delay = base::Days(13);
   SetDelayInPref(profile()->GetPrefs(),
                  prefs::kSafeBrowsingNextPasswordCaptureEventLogTime, delay);
 
@@ -1296,66 +1296,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
-  std::vector<size_t> placeholder_offsets;
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
-                                                         &placeholder_offsets));
-}
-
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyGetWarningDetailTextCheckSavedDomains) {
-  ReusedPasswordAccountType reused_password_type;
-  reused_password_type.set_account_type(
-      ReusedPasswordAccountType::SAVED_PASSWORD);
-  std::vector<std::string> domains{"www.example.com"};
-  service_->set_saved_passwords_matching_domains(domains);
-  std::u16string warning_text = l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_1_DOMAIN,
-      base::UTF8ToUTF16(domains[0]));
-  std::vector<size_t> placeholder_offsets;
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
-                                                         &placeholder_offsets));
-
-  placeholder_offsets.clear();
-  domains.push_back("www.2.example.com");
-  service_->set_saved_passwords_matching_domains(domains);
-  warning_text = l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_2_DOMAIN,
-      base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
-                                                         &placeholder_offsets));
-
-  placeholder_offsets.clear();
-  domains.push_back("www.3.example.com");
-  service_->set_saved_passwords_matching_domains(domains);
-  warning_text = l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_3_DOMAIN,
-      base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]),
-      base::UTF8ToUTF16(domains[2]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
-                                                         &placeholder_offsets));
-  // Default domains should be prioritzed over other domains.
-  placeholder_offsets.clear();
-  domains.push_back("amazon.com");
-  service_->set_saved_passwords_matching_domains(domains);
-  warning_text = l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_CHECK_PASSWORD_DETAILS_SAVED_3_DOMAIN, u"amazon.com",
-      base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]));
-  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type,
-                                                         &placeholder_offsets));
-}
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyGetPlaceholdersForSavedPasswordWarningText) {
-  std::vector<std::string> domains{"www.example.com"};
-  domains.push_back("www.2.example.com");
-  domains.push_back("www.3.example.com");
-  domains.push_back("amazon.com");
-  service_->set_saved_passwords_matching_domains(domains);
-  // Default domains should be prioritzed over other domains.
-  std::vector<std::u16string> expected_placeholders{
-      u"amazon.com", base::UTF8ToUTF16(domains[0]),
-      base::UTF8ToUTF16(domains[1])};
-  EXPECT_EQ(expected_placeholders,
-            service_->GetPlaceholdersForSavedPasswordWarningText());
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -1373,23 +1314,20 @@ TEST_F(ChromePasswordProtectionServiceTest,
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
   reused_password_type.set_is_account_syncing(true);
-  std::vector<size_t> placeholder_offsets;
-  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
-                                   reused_password_type, &placeholder_offsets));
+  EXPECT_EQ(warning_text_sync,
+            service_->GetWarningDetailText(reused_password_type));
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   reused_password_type.set_is_account_syncing(false);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(reused_password_type,
-                                           &placeholder_offsets));
+            service_->GetWarningDetailText(reused_password_type));
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         safe_browsing::kPasswordProtectionForSignedInUsers);
     reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
     EXPECT_EQ(warning_text_non_sync,
-              service_->GetWarningDetailText(reused_password_type,
-                                             &placeholder_offsets));
+              service_->GetWarningDetailText(reused_password_type));
   }
 
   reused_password_type.set_account_type(ReusedPasswordAccountType::GSUITE);
@@ -1397,13 +1335,11 @@ TEST_F(ChromePasswordProtectionServiceTest,
   CoreAccountInfo core_account_info = SetPrimaryAccount(kTestEmail);
   SetUpSyncAccount(std::string("example.com"), core_account_info);
   EXPECT_EQ(warning_text_with_org_name,
-            service_->GetWarningDetailText(reused_password_type,
-                                           &placeholder_offsets));
+            service_->GetWarningDetailText(reused_password_type));
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   EXPECT_EQ(generic_enterprise_warning_text,
-            service_->GetWarningDetailText(reused_password_type,
-                                           &placeholder_offsets));
+            service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
@@ -1417,13 +1353,11 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextGmail) {
       safe_browsing::kPasswordProtectionForSignedInUsers);
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
-  std::vector<size_t> placeholder_offsets;
   EXPECT_EQ(warning_text_non_sync,
-            service_->GetWarningDetailText(reused_password_type,
-                                           &placeholder_offsets));
+            service_->GetWarningDetailText(reused_password_type));
   reused_password_type.set_is_account_syncing(true);
-  EXPECT_EQ(warning_text_sync, service_->GetWarningDetailText(
-                                   reused_password_type, &placeholder_offsets));
+  EXPECT_EQ(warning_text_sync,
+            service_->GetWarningDetailText(reused_password_type));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanShowInterstitial) {
@@ -1576,6 +1510,26 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetPingNotSentReason) {
               service_->GetPingNotSentReason(
                   LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                   GURL("about:blank"), reused_password_type));
+  }
+}
+
+TEST_F(ChromePasswordProtectionServiceTest, VerifyPageLoadToken) {
+  // Feature disabled
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(kSafeBrowsingPageLoadToken);
+    auto request = std::make_unique<LoginReputationClientRequest>();
+    service_->FillUserPopulation(GURL("https:www.example.com/"), request.get());
+    ASSERT_EQ(0, request->population().page_load_tokens_size());
+  }
+
+  // Feature enabled
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(kSafeBrowsingPageLoadToken);
+    auto request = std::make_unique<LoginReputationClientRequest>();
+    service_->FillUserPopulation(GURL("https:www.example.com/"), request.get());
+    ASSERT_EQ(1, request->population().page_load_tokens_size());
   }
 }
 

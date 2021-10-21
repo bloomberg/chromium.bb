@@ -485,6 +485,20 @@ static bool WasmExceptionsEnabledCallback(v8::Local<v8::Context> context) {
       execution_context);
 }
 
+static bool WasmDynamicTieringEnabledCallback(v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context)
+    return false;
+
+  bool result = RuntimeEnabledFeatures::WebAssemblyDynamicTieringEnabled(
+      execution_context);
+  if (result) {
+    UseCounter::Count(execution_context,
+                      WebFeature::kWebAssemblyDynamicTiering);
+  }
+  return result;
+}
+
 v8::Local<v8::Value> NewRangeException(v8::Isolate* isolate,
                                        const char* message) {
   return v8::Exception::RangeError(
@@ -645,6 +659,8 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback);
   isolate->SetWasmExceptionsEnabledCallback(WasmExceptionsEnabledCallback);
+  isolate->SetWasmDynamicTieringEnabledCallback(
+      WasmDynamicTieringEnabledCallback);
   isolate->SetHostImportModuleDynamicallyCallback(HostImportModuleDynamically);
   isolate->SetHostInitializeImportMetaObjectCallback(
       HostGetImportMetaProperties);
@@ -773,6 +789,11 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
+
+  // The ArrayBuffer partition is placed inside V8's virtual memory cage if it
+  // is enabled. For that reason, the partition can only be initialized after V8
+  // has been initialized.
+  WTF::Partitions::InitializeArrayBufferPartition();
 }
 
 static void ReportFatalErrorInWorker(const char* location,
@@ -801,6 +822,8 @@ void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInWorker);
   isolate->SetModifyCodeGenerationFromStringsCallback(
       CodeGenerationCheckCallbackInMainThread);
+  isolate->SetAllowWasmCodeGenerationCallback(
+      WasmCodeGenerationCheckCallbackInMainThread);
 }
 
 }  // namespace blink

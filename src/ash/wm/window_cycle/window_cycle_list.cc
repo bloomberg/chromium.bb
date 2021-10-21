@@ -40,9 +40,7 @@ bool g_disable_initial_delay = false;
 
 // Delay before the UI fade in animation starts. This is so users can switch
 // quickly between windows without bringing up the UI.
-constexpr base::TimeDelta kShowDelayDuration =
-    base::TimeDelta::FromMilliseconds(150);
-
+constexpr base::TimeDelta kShowDelayDuration = base::Milliseconds(150);
 
 // The alt-tab cycler widget is not activatable (except when ChromeVox is on),
 // so we use WindowTargeter to send input events to the widget.
@@ -238,6 +236,12 @@ aura::Window* WindowCycleList::GetWindowAtPoint(const ui::LocatedEvent* event) {
   return cycle_view_
              ? cycle_view_->GetWindowAtPoint(ConvertEventToScreen(event))
              : nullptr;
+}
+
+bool WindowCycleList::IsEventInTabSliderContainer(
+    const ui::LocatedEvent* event) {
+  return cycle_view_ &&
+         cycle_view_->IsEventInTabSliderContainer(ConvertEventToScreen(event));
 }
 
 bool WindowCycleList::ShouldShowUi() {

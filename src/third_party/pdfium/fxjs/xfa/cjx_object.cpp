@@ -26,6 +26,8 @@
 #include "third_party/base/check_op.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/contains.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 #include "xfa/fgas/crt/cfgas_decimal.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
@@ -166,7 +168,7 @@ CJS_Result CJX_Object::RunMethod(
                     params);
 }
 
-void CJX_Object::ThrowTooManyOccurancesException(const WideString& obj) const {
+void CJX_Object::ThrowTooManyOccurrencesException(const WideString& obj) const {
   ThrowException(WideString::FromASCII("The element [") + obj +
                  WideString::FromASCII(
                      "] has violated its allowable number of occurrences."));

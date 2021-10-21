@@ -95,7 +95,7 @@ namespace dawn_native { namespace metal {
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
-        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
+        Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
             const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
@@ -113,11 +113,13 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
-        void CreateComputePipelineAsyncImpl(
-            std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
-            size_t blueprintHash,
-            WGPUCreateComputePipelineAsyncCallback callback,
-            void* userdata) override;
+        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                            size_t blueprintHash,
+                                            WGPUCreateComputePipelineAsyncCallback callback,
+                                            void* userdata) override;
+        void InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                               WGPUCreateRenderPipelineAsyncCallback callback,
+                                               void* userdata) override;
 
         void InitTogglesFromDriver();
         void ShutDownImpl() override;

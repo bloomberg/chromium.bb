@@ -72,17 +72,15 @@ namespace {
 
 // The interval for CastTransport to send Frame/PacketEvents to Session for
 // logging.
-constexpr base::TimeDelta kSendEventsInterval = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kSendEventsInterval = base::Seconds(1);
 
 // The duration for OFFER/ANSWER exchange. If timeout, notify the client that
 // the session failed to start.
-constexpr base::TimeDelta kOfferAnswerExchangeTimeout =
-    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kOfferAnswerExchangeTimeout = base::Seconds(15);
 
 // Amount of time to wait before assuming the Cast Receiver does not support
 // querying for capabilities via GET_CAPABILITIES.
-constexpr base::TimeDelta kGetCapabilitiesTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kGetCapabilitiesTimeout = base::Seconds(30);
 
 // Used for OFFER/ANSWER message exchange. Some receivers will error out on
 // payloadType values other than the ones hard-coded here.
@@ -100,6 +98,10 @@ constexpr int kSupportedRemotingVersion = 2;
 class TransportClient final : public media::cast::CastTransport::Client {
  public:
   explicit TransportClient(Session* session) : session_(session) {}
+
+  TransportClient(const TransportClient&) = delete;
+  TransportClient& operator=(const TransportClient&) = delete;
+
   ~TransportClient() override {}
 
   // media::cast::CastTransport::Client implementation.
@@ -121,8 +123,6 @@ class TransportClient final : public media::cast::CastTransport::Client {
 
  private:
   Session* const session_;  // Outlives this class.
-
-  DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
 
 // Generates a string with cryptographically secure random bytes.
@@ -335,6 +335,9 @@ class Session::AudioCapturingCallback final
     DCHECK(!audio_data_callback_.is_null());
   }
 
+  AudioCapturingCallback(const AudioCapturingCallback&) = delete;
+  AudioCapturingCallback& operator=(const AudioCapturingCallback&) = delete;
+
   ~AudioCapturingCallback() override {}
 
  private:
@@ -364,8 +367,6 @@ class Session::AudioCapturingCallback final
 
   const AudioDataCallback audio_data_callback_;
   base::OnceClosure error_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioCapturingCallback);
 };
 
 Session::Session(
@@ -606,7 +607,7 @@ void Session::SetConstraints(const openscreen::cast::Answer& answer,
         std::min(video_config->max_bitrate, video.bit_rate_limits.maximum);
     video_config->max_playout_delay =
         std::min(video_config->max_playout_delay,
-                 base::TimeDelta::FromMilliseconds(video.max_delay.count()));
+                 base::Milliseconds(video.max_delay.count()));
     video_config->max_frame_rate =
         std::min(video_config->max_frame_rate,
                  static_cast<double>(video.maximum.frame_rate));
@@ -623,7 +624,7 @@ void Session::SetConstraints(const openscreen::cast::Answer& answer,
         std::min(audio_config->max_bitrate, audio.bit_rate_limits.maximum);
     audio_config->max_playout_delay =
         std::min(audio_config->max_playout_delay,
-                 base::TimeDelta::FromMilliseconds(audio.max_delay.count()));
+                 base::Milliseconds(audio.max_delay.count()));
     // Currently, Chrome only supports stereo, so audio.max_channels is ignored.
   }
 }

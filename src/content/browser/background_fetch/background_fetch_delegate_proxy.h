@@ -32,9 +32,9 @@ class RenderFrameHostImpl;
 class StoragePartitionImpl;
 
 // This class was previously responsible for passing messages between
-// BackgroundFetchJobControllers on the service worker core thread and
-// BackgroundFetchDelegate on the UI thread. It may no longer be needed
-// now that these are the same thread.
+// BackgroundFetchJobControllers on ServiceWorkerContext's thread and
+// BackgroundFetchDelegate on the UI thread. It may no longer be needed now that
+// these are the same thread.
 //
 // Lives on the UI thread.
 class CONTENT_EXPORT BackgroundFetchDelegateProxy
@@ -79,6 +79,10 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy
 
   explicit BackgroundFetchDelegateProxy(
       base::WeakPtr<StoragePartitionImpl> storage_partition);
+
+  BackgroundFetchDelegateProxy(const BackgroundFetchDelegateProxy&) = delete;
+  BackgroundFetchDelegateProxy& operator=(const BackgroundFetchDelegateProxy&) =
+      delete;
 
   ~BackgroundFetchDelegateProxy() override;
 
@@ -179,8 +183,6 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDelegateProxy);
 };
 
 }  // namespace content

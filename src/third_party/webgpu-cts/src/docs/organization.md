@@ -23,7 +23,7 @@ the root and first few levels looks like the following (some nodes omitted for s
   objects exposed exactly the correct members, and that methods throw when passed incomplete
   dictionaries.
 - **`web-platform`** with tests for Web platform-specific interactions like `GPUSwapChain` and
-  `<canvas>`, WebXR and `GPUCommandEncoder.copyImageBitmapToTexture`.
+  `<canvas>`, WebXR and `GPUQueue.copyExternalImageToTexture`.
 
 At the same time test hierarchies can be used to split the testing of a single sub-object into
 several file for maintainability. For example `GPURenderPipeline` has a large descriptor and some

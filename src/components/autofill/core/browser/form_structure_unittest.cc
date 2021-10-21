@@ -107,15 +107,6 @@ class FormStructureTestImpl : public test::FormStructureTest {
     return FormStructure(form).ShouldBeQueried();
   }
 
-  void SetUpForEncoder() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled.
-        {features::kAutofillMetadataUploads},
-        // Disabled.
-        {});
-  }
-
   FieldRendererId MakeFieldRendererId() {
     return FieldRendererId(++id_counter_);
   }
@@ -2308,14 +2299,13 @@ TEST_P(ParameterizedFormStructureTest, EncodeQueryRequest) {
     query_form->add_fields()->set_signature(747221617U);
     query_form->add_fields()->set_signature(4108155786U);
     if (autofill_across_iframes) {
-      AutofillPageQueryRequest::Form* query_form = query.add_forms();
+      query_form = query.add_forms();
       query_form->set_signature(12345UL);
       query_form->add_fields()->set_signature(1917667676U);
       query_form->add_fields()->set_signature(747221617U);
       query_form->add_fields()->set_signature(4108155786U);
-    }
-    if (autofill_across_iframes) {
-      AutofillPageQueryRequest::Form* query_form = query.add_forms();
+
+      query_form = query.add_forms();
       query_form->set_signature(67890UL);
       query_form->add_fields()->set_signature(2226358947U);
     }
@@ -4619,7 +4609,6 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_IsFormTag) {
 }
 
 TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
-  SetUpForEncoder();
   struct FieldMetadata {
     const char *id, *name, *label, *placeholder, *aria_label, *aria_description,
         *css_classes;
@@ -4784,7 +4773,6 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_RichMetadata) {
 TEST_F(FormStructureTestImpl, Metadata_OnlySendFullUrlWithUserConsent) {
   for (bool has_consent : {true, false}) {
     SCOPED_TRACE(testing::Message() << " has_consent=" << has_consent);
-    SetUpForEncoder();
     FormData form;
     form.id_attribute = u"form-id";
     form.url = GURL("http://www.foo.com/");
@@ -6244,12 +6232,9 @@ TEST_P(ParameterizedFormStructureTest,
                                        nullptr, nullptr);
 
   if (section_with_renderer_ids) {
-    EXPECT_FALSE(form_structure.phone_rationalized_
-                     ["fullName_00000000000000000000000000000000_11-default"]);
-    form_structure.RationalizePhoneNumbersInSection(
-        "fullName_00000000000000000000000000000000_11-default");
-    EXPECT_TRUE(form_structure.phone_rationalized_
-                    ["fullName_00000000000000000000000000000000_11-default"]);
+    EXPECT_FALSE(form_structure.phone_rationalized_["fullName_0_11-default"]);
+    form_structure.RationalizePhoneNumbersInSection("fullName_0_11-default");
+    EXPECT_TRUE(form_structure.phone_rationalized_["fullName_0_11-default"]);
   } else {
     EXPECT_FALSE(form_structure.phone_rationalized_["fullName_1-default"]);
     form_structure.RationalizePhoneNumbersInSection("fullName_1-default");
@@ -8125,18 +8110,12 @@ TEST_P(ParameterizedFormStructureTest, NoAutocompleteSectionNames) {
   ASSERT_EQ(6U, form_structure.field_count());
 
   if (section_with_renderer_ids) {
-    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
-              form_structure.field(0)->section);
-    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
-              form_structure.field(1)->section);
-    EXPECT_EQ("fullName_00000000000000000000000000000000_11-default",
-              form_structure.field(2)->section);
-    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
-              form_structure.field(3)->section);
-    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
-              form_structure.field(4)->section);
-    EXPECT_EQ("fullName_00000000000000000000000000000000_14-default",
-              form_structure.field(5)->section);
+    EXPECT_EQ("fullName_0_11-default", form_structure.field(0)->section);
+    EXPECT_EQ("fullName_0_11-default", form_structure.field(1)->section);
+    EXPECT_EQ("fullName_0_11-default", form_structure.field(2)->section);
+    EXPECT_EQ("fullName_0_14-default", form_structure.field(3)->section);
+    EXPECT_EQ("fullName_0_14-default", form_structure.field(4)->section);
+    EXPECT_EQ("fullName_0_14-default", form_structure.field(5)->section);
   } else {
     EXPECT_EQ("fullName_1-default", form_structure.field(0)->section);
     EXPECT_EQ("fullName_1-default", form_structure.field(1)->section);
@@ -8283,8 +8262,7 @@ TEST_P(ParameterizedFormStructureTest, SplitByRecurringFieldType) {
   EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
   EXPECT_EQ("blue-shipping-default", form_structure.field(2)->section);
   if (section_with_renderer_ids) {
-    EXPECT_EQ("country_00000000000000000000000000000000_14-default",
-              form_structure.field(3)->section);
+    EXPECT_EQ("country_0_14-default", form_structure.field(3)->section);
   } else {
     EXPECT_EQ("country_2-default", form_structure.field(3)->section);
   }
@@ -8353,8 +8331,7 @@ TEST_P(ParameterizedFormStructureTest,
   EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
   EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
   if (section_with_renderer_ids) {
-    EXPECT_EQ("country_00000000000000000000000000000000_14-default",
-              form_structure.field(3)->section);
+    EXPECT_EQ("country_0_14-default", form_structure.field(3)->section);
   } else {
     EXPECT_EQ("country_2-default", form_structure.field(3)->section);
   }

@@ -14,7 +14,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
@@ -387,8 +386,9 @@ void MediaSessionImpl::MediaPictureInPictureChanged(
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
-                                 int player_id,
-                                 media::MediaContentType media_content_type) {
+                                 int player_id) {
+  media::MediaContentType media_content_type = observer->GetMediaContentType();
+
   if (media_content_type == media::MediaContentType::OneShot)
     return AddOneShotPlayer(observer, player_id);
   if (media_content_type == media::MediaContentType::Pepper)
@@ -1244,8 +1244,9 @@ void MediaSessionImpl::GetMediaImageBitmap(
     return;
   }
 
+  const gfx::Size preferred_size(desired_size_px, desired_size_px);
   web_contents()->DownloadImage(
-      image.src, false /* is_favicon */, desired_size_px /* preferred_size */,
+      image.src, false /* is_favicon */, preferred_size,
       desired_size_px /* max_bitmap_size */, false /* bypass_cache */,
       base::BindOnce(&MediaSessionImpl::OnImageDownloadComplete,
                      base::Unretained(this),
@@ -1817,6 +1818,6 @@ void MediaSessionImpl::SetShouldThrottleDurationUpdateForTest(
   should_throttle_duration_update_ = should_throttle;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl);
 
 }  // namespace content

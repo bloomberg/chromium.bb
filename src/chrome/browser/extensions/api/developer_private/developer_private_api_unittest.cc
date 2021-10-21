@@ -116,6 +116,11 @@ bool WasItemChangedEventDispatched(
 }  // namespace
 
 class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
+ public:
+  DeveloperPrivateApiUnitTest(const DeveloperPrivateApiUnitTest&) = delete;
+  DeveloperPrivateApiUnitTest& operator=(const DeveloperPrivateApiUnitTest&) =
+      delete;
+
  protected:
   DeveloperPrivateApiUnitTest() {}
   ~DeveloperPrivateApiUnitTest() override {}
@@ -179,8 +184,6 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   std::unique_ptr<Browser> browser_;
 
   std::vector<std::unique_ptr<TestExtensionDir>> test_extension_dirs_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateApiUnitTest);
 };
 
 bool DeveloperPrivateApiUnitTest::RunFunction(
@@ -838,6 +841,10 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
         observation_.Observe(registry);
       }
 
+      UnloadedRegistryObserver(const UnloadedRegistryObserver&) = delete;
+      UnloadedRegistryObserver& operator=(const UnloadedRegistryObserver&) =
+          delete;
+
       void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                const Extension* extension,
                                UnloadedExtensionReason reason) override {
@@ -852,8 +859,6 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
       base::FilePath expected_path_;
       base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
           observation_{this};
-
-      DISALLOW_COPY_AND_ASSIGN(UnloadedRegistryObserver);
     };
 
     UnloadedRegistryObserver unload_observer(path, registry());
@@ -900,10 +905,10 @@ TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
                                 "retryGuid": "%s"}])",
                            retry_guid.c_str());
     api_test_utils::RunFunction(function.get(), args, profile());
-    scoped_refptr<const Extension> extension =
+    scoped_refptr<const Extension> reloaded_extension =
         observer.WaitForExtensionLoaded();
-    ASSERT_TRUE(extension);
-    EXPECT_EQ(extension->path(), path);
+    ASSERT_TRUE(reloaded_extension);
+    EXPECT_EQ(reloaded_extension->path(), path);
     EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
   }
 }
@@ -1858,12 +1863,15 @@ class DeveloperPrivateApiSupervisedUserUnitTest
     : public DeveloperPrivateApiUnitTest {
  public:
   DeveloperPrivateApiSupervisedUserUnitTest() = default;
+
+  DeveloperPrivateApiSupervisedUserUnitTest(
+      const DeveloperPrivateApiSupervisedUserUnitTest&) = delete;
+  DeveloperPrivateApiSupervisedUserUnitTest& operator=(
+      const DeveloperPrivateApiSupervisedUserUnitTest&) = delete;
+
   ~DeveloperPrivateApiSupervisedUserUnitTest() override = default;
 
   bool ProfileIsSupervised() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateApiSupervisedUserUnitTest);
 };
 
 // Tests trying to call loadUnpacked when the profile shouldn't be allowed to.

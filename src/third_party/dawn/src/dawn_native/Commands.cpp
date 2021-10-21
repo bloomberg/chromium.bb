@@ -158,6 +158,12 @@ namespace dawn_native {
                     cmd->~SetStencilReferenceCmd();
                     break;
                 }
+                case Command::SetValidatedBufferLocationsInternal: {
+                    SetValidatedBufferLocationsInternalCmd* cmd =
+                        commands->NextCommand<SetValidatedBufferLocationsInternalCmd>();
+                    cmd->~SetValidatedBufferLocationsInternalCmd();
+                    break;
+                }
                 case Command::SetViewport: {
                     SetViewportCmd* cmd = commands->NextCommand<SetViewportCmd>();
                     cmd->~SetViewportCmd();
@@ -189,6 +195,12 @@ namespace dawn_native {
                 case Command::SetVertexBuffer: {
                     SetVertexBufferCmd* cmd = commands->NextCommand<SetVertexBufferCmd>();
                     cmd->~SetVertexBufferCmd();
+                    break;
+                }
+                case Command::WriteBuffer: {
+                    WriteBufferCmd* write = commands->NextCommand<WriteBufferCmd>();
+                    commands->NextData<uint8_t>(write->size);
+                    write->~WriteBufferCmd();
                     break;
                 }
                 case Command::WriteTimestamp: {
@@ -307,6 +319,10 @@ namespace dawn_native {
                 commands->NextCommand<SetStencilReferenceCmd>();
                 break;
 
+            case Command::SetValidatedBufferLocationsInternal:
+                commands->NextCommand<SetValidatedBufferLocationsInternalCmd>();
+                break;
+
             case Command::SetViewport:
                 commands->NextCommand<SetViewportCmd>();
                 break;
@@ -335,6 +351,10 @@ namespace dawn_native {
                 commands->NextCommand<SetVertexBufferCmd>();
                 break;
             }
+
+            case Command::WriteBuffer:
+                commands->NextCommand<WriteBufferCmd>();
+                break;
 
             case Command::WriteTimestamp: {
                 commands->NextCommand<WriteTimestampCmd>();

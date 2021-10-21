@@ -511,26 +511,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
   sm_.Replay();
 }
 
-class ShelfNotificationBadgeSpokenFeedbackTest : public SpokenFeedbackTest {
- protected:
-  ShelfNotificationBadgeSpokenFeedbackTest() {
-    scoped_features_.InitWithFeatures({::features::kNotificationIndicator}, {});
-  }
-  ~ShelfNotificationBadgeSpokenFeedbackTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
-                         ShelfNotificationBadgeSpokenFeedbackTest,
-                         ::testing::Values(kTestAsNormalUser,
-                                           kTestAsGuestUser));
-
 // Verifies that an announcement is triggered when focusing a ShelfItem with a
 // notification badge shown.
-IN_PROC_BROWSER_TEST_P(ShelfNotificationBadgeSpokenFeedbackTest,
-                       ShelfNotificationBadgeAnnouncement) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfNotificationBadgeAnnouncement) {
   EnableChromeVox();
 
   // Create and add a test app to the shelf model.
@@ -926,7 +909,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TouchExploreStatusTray) {
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, tray_center, base::TimeTicks::Now(),
@@ -964,14 +947,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1280, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1280, 400), base::TimeTicks::Now(),
@@ -1024,14 +1007,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1080, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1080, 400), base::TimeTicks::Now(),
@@ -1102,14 +1085,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1580, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1580, 400), base::TimeTicks::Now(),
@@ -1517,6 +1500,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ClipboardCopySpeech) {
 class OobeSpokenFeedbackTest : public OobeBaseTest {
  protected:
   OobeSpokenFeedbackTest() = default;
+
+  OobeSpokenFeedbackTest(const OobeSpokenFeedbackTest&) = delete;
+  OobeSpokenFeedbackTest& operator=(const OobeSpokenFeedbackTest&) = delete;
+
   ~OobeSpokenFeedbackTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1530,9 +1517,6 @@ class OobeSpokenFeedbackTest : public OobeBaseTest {
   }
 
   test::SpeechMonitor sm_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeSpokenFeedbackTest);
 };
 
 IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
@@ -1610,7 +1594,7 @@ class SigninToUserProfileSwitchTest : public OobeSpokenFeedbackTest {
 // TODO(crbug.com/1184714): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   // Force sync screen.
-  auto reset = WizardController::ForceBrandedBuildForTesting(true);
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
   sm_.ExpectSpeechPattern("*");
 

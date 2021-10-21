@@ -30,18 +30,19 @@ class GattClientManagerImpl
  public:
   // If a Connect request takes longer than this amount of time, we will treat
   // it as a failure.
-  static constexpr base::TimeDelta kConnectTimeout =
-      base::TimeDelta::FromSeconds(40);
+  static constexpr base::TimeDelta kConnectTimeout = base::Seconds(40);
   // If a Disconnect request takes longer than this amount of time, we will
   // treat it as a failure.
-  static constexpr base::TimeDelta kDisconnectTimeout =
-      base::TimeDelta::FromSeconds(10);
+  static constexpr base::TimeDelta kDisconnectTimeout = base::Seconds(10);
   // If a ReadRemoteRssi request takes longer than this amount of time, we will
   // treat it as a failure.
-  static constexpr base::TimeDelta kReadRemoteRssiTimeout =
-      base::TimeDelta::FromSeconds(10);
+  static constexpr base::TimeDelta kReadRemoteRssiTimeout = base::Seconds(10);
 
   explicit GattClientManagerImpl(bluetooth_v2_shlib::GattClient* gatt_client);
+
+  GattClientManagerImpl(const GattClientManagerImpl&) = delete;
+  GattClientManagerImpl& operator=(const GattClientManagerImpl&) = delete;
+
   ~GattClientManagerImpl() override;
 
   void InitializeOnIoThread();
@@ -192,7 +193,6 @@ class GattClientManagerImpl
 
   base::WeakPtr<GattClientManagerImpl> weak_this_;
   std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GattClientManagerImpl);
 };
 
 }  // namespace bluetooth

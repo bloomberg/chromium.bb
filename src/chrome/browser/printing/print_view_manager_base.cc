@@ -155,7 +155,8 @@ void GetDefaultPrintSettingsReplyOnIO(
     mojom::PrintManagerHost::GetDefaultPrintSettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   mojom::PrintParamsPtr params = mojom::PrintParams::New();
-  if (printer_query && printer_query->last_status() == PrintingContext::OK) {
+  if (printer_query &&
+      printer_query->last_status() == mojom::ResultCode::kSuccess) {
     RenderParamsFromPrintSettings(printer_query->settings(), params.get());
     params->document_cookie = printer_query->cookie();
   }
@@ -237,13 +238,13 @@ void UpdatePrintSettingsReplyOnIO(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(printer_query);
   mojom::PrintPagesParamsPtr params = CreateEmptyPrintPagesParamsPtr();
-  if (printer_query->last_status() == PrintingContext::OK) {
+  if (printer_query->last_status() == mojom::ResultCode::kSuccess) {
     RenderParamsFromPrintSettings(printer_query->settings(),
                                   params->params.get());
     params->params->document_cookie = printer_query->cookie();
     params->pages = PageRange::GetPages(printer_query->settings().ranges());
   }
-  bool canceled = printer_query->last_status() == PrintingContext::CANCEL;
+  bool canceled = printer_query->last_status() == mojom::ResultCode::kCanceled;
 #if defined(OS_WIN)
   if (canceled) {
     content::GetUIThreadTaskRunner({})->PostTask(
@@ -291,7 +292,7 @@ void ScriptedPrintReplyOnIO(
     mojom::PrintManagerHost::ScriptedPrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   mojom::PrintPagesParamsPtr params = CreateEmptyPrintPagesParamsPtr();
-  if (printer_query->last_status() == PrintingContext::OK &&
+  if (printer_query->last_status() == mojom::ResultCode::kSuccess &&
       printer_query->settings().dpi()) {
     RenderParamsFromPrintSettings(printer_query->settings(),
                                   params->params.get());
@@ -369,6 +370,10 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
   SetPrintingRFH(rfh);
   GetPrintRenderFrame(rfh)->PrintRequestedPages();
+
+  for (auto& observer : GetObservers())
+    observer.OnPrintNow(rfh);
+
   return true;
 }
 
@@ -428,7 +433,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
 
   // Check if the job was cancelled. This should only happen on Windows when
   // the system dialog is cancelled.
-  if (printer_query->last_status() == PrintingContext::CANCEL) {
+  if (printer_query->last_status() == mojom::ResultCode::kCanceled) {
     queue_->QueuePrinterQuery(std::move(printer_query));
 #if defined(OS_WIN)
     content::GetUIThreadTaskRunner({})->PostTask(
@@ -728,6 +733,14 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie) {
   ReleasePrinterQuery();
 }
 
+void PrintViewManagerBase::AddObserver(Observer& observer) {
+  observers_.AddObserver(&observer);
+}
+
+void PrintViewManagerBase::RemoveObserver(Observer& observer) {
+  observers_.RemoveObserver(&observer);
+}
+
 void PrintViewManagerBase::ShowInvalidPrinterSettingsError() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ShowWarningMessageBox,
@@ -976,8 +989,7 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
   // - If we're looping because of renderer page generation, the renderer could
   // be CPU bound, the page overly complex/large or the system just
   // memory-bound.
-  static constexpr base::TimeDelta kPrinterSettingsTimeout =
-      base::TimeDelta::FromSeconds(60);
+  static constexpr base::TimeDelta kPrinterSettingsTimeout = base::Seconds(60);
   base::OneShotTimer quit_timer;
   base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   quit_timer.Start(FROM_HERE, kPrinterSettingsTimeout,

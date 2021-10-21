@@ -109,8 +109,7 @@ constexpr int32_t kFormHighlightAlpha = 100;
 
 constexpr int kMaxPasswordTries = 3;
 
-constexpr base::TimeDelta kTouchLongPressTimeout =
-    base::TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kTouchLongPressTimeout = base::Milliseconds(300);
 
 // Windows has native panning capabilities. No need to use our own.
 #if defined(OS_WIN)
@@ -123,8 +122,7 @@ constexpr int32_t kLoadingTextVerticalOffset = 50;
 
 // The maximum amount of time we'll spend doing a paint before we give back
 // control of the thread.
-constexpr base::TimeDelta kMaxProgressivePaintTime =
-    base::TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kMaxProgressivePaintTime = base::Milliseconds(300);
 
 // The maximum amount of time we'll spend doing the first paint. This is less
 // than the above to keep things smooth if the user is scrolling quickly. This
@@ -138,7 +136,7 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 // The scrollbar will always be responsive since it is managed by a separate
 // process.
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 FontMappingMode g_font_mapping_mode = FontMappingMode::kNoMapping;
 
@@ -946,6 +944,10 @@ bool PDFiumEngine::HandleInputEvent(const blink::WebInputEvent& event) {
     case blink::WebInputEvent::Type::kMouseEnter:
       OnMouseEnter(static_cast<const blink::WebMouseEvent&>(event));
       break;
+    case blink::WebInputEvent::Type::kKeyDown:
+      // Blink mostly sends `kRawKeyDown`, but sometimes generates `kKeyDown`,
+      // such as when tabbing between frames. Pepper treats them equivalently
+      // (see content/renderer/pepper/event_conversion.cc), so we will, too.
     case blink::WebInputEvent::Type::kRawKeyDown:
       rv = OnKeyDown(static_cast<const blink::WebKeyboardEvent&>(event));
       break;
@@ -3744,6 +3746,12 @@ void PDFiumEngine::OnSelectionPositionChanged() {
 
 gfx::Size PDFiumEngine::ApplyDocumentLayout(
     const DocumentLayout::Options& options) {
+  layout_.SetOptions(options);
+
+  // Don't actually update layout until the document finishes loading.
+  if (!document_loaded_)
+    return layout_.size();
+
   // We need to return early if the layout would not change, otherwise calling
   // client_->ScrollToPage() would send another "viewport" message, triggering
   // an infinite loop.
@@ -3751,7 +3759,6 @@ gfx::Size PDFiumEngine::ApplyDocumentLayout(
   // TODO(crbug.com/1013800): The current implementation computes layout twice
   // (here, and in InvalidateAllPages()). This shouldn't be too expensive at
   // realistic page counts, but could be avoided.
-  layout_.SetOptions(options);
   UpdateDocumentLayout(&layout_);
   if (!layout_.dirty())
     return layout_.size();

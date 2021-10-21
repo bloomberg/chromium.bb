@@ -48,13 +48,9 @@ const size_t kDataFrameHeaderLength = 2;
 
 class TestStream : public QuicSimpleServerStream {
  public:
-  TestStream(QuicStreamId stream_id,
-             QuicSpdySession* session,
-             StreamType type,
+  TestStream(QuicStreamId stream_id, QuicSpdySession* session, StreamType type,
              QuicSimpleServerBackend* quic_simple_server_backend)
-      : QuicSimpleServerStream(stream_id,
-                               session,
-                               type,
+      : QuicSimpleServerStream(stream_id, session, type,
                                quic_simple_server_backend) {}
 
   ~TestStream() override = default;
@@ -62,8 +58,7 @@ class TestStream : public QuicSimpleServerStream {
   MOCK_METHOD(void, WriteHeadersMock, (bool fin), ());
   MOCK_METHOD(void, WriteEarlyHintsHeadersMock, (bool fin), ());
 
-  size_t WriteHeaders(spdy::Http2HeaderBlock header_block,
-                      bool fin,
+  size_t WriteHeaders(spdy::Http2HeaderBlock header_block, bool fin,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
                       /*ack_listener*/) override {
     if (header_block[":status"] == "103") {
@@ -116,18 +111,13 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
   const size_t kMaxStreamsForTest = 100;
 
   MockQuicSimpleServerSession(
-      QuicConnection* connection,
-      MockQuicSessionVisitor* owner,
+      QuicConnection* connection, MockQuicSessionVisitor* owner,
       MockQuicCryptoServerStreamHelper* helper,
       QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache,
       QuicSimpleServerBackend* quic_simple_server_backend)
-      : QuicSimpleServerSession(DefaultQuicConfig(),
-                                CurrentSupportedVersions(),
-                                connection,
-                                owner,
-                                helper,
-                                crypto_config,
+      : QuicSimpleServerSession(DefaultQuicConfig(), CurrentSupportedVersions(),
+                                connection, owner, helper, crypto_config,
                                 compressed_certs_cache,
                                 quic_simple_server_backend) {
     if (VersionHasIetfQuicFrames(connection->transport_version())) {
@@ -148,47 +138,35 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
       delete;
   ~MockQuicSimpleServerSession() override = default;
 
-  MOCK_METHOD(void,
-              OnConnectionClosed,
+  MOCK_METHOD(void, OnConnectionClosed,
               (const QuicConnectionCloseFrame& frame,
                ConnectionCloseSource source),
               (override));
-  MOCK_METHOD(QuicSpdyStream*,
-              CreateIncomingStream,
-              (QuicStreamId id),
+  MOCK_METHOD(QuicSpdyStream*, CreateIncomingStream, (QuicStreamId id),
               (override));
   MOCK_METHOD(QuicConsumedData, WritevData,
               (QuicStreamId id, size_t write_length, QuicStreamOffset offset,
                StreamSendingState state, TransmissionType type,
                EncryptionLevel level),
               (override));
-  MOCK_METHOD(void,
-              OnStreamHeaderList,
-              (QuicStreamId stream_id,
-               bool fin,
-               size_t frame_len,
+  MOCK_METHOD(void, OnStreamHeaderList,
+              (QuicStreamId stream_id, bool fin, size_t frame_len,
                const QuicHeaderList& header_list),
               (override));
-  MOCK_METHOD(void,
-              OnStreamHeadersPriority,
+  MOCK_METHOD(void, OnStreamHeadersPriority,
               (QuicStreamId stream_id,
                const spdy::SpdyStreamPrecedence& precedence),
               (override));
-  MOCK_METHOD(void,
-              MaybeSendRstStreamFrame,
-              (QuicStreamId stream_id,
-               QuicRstStreamErrorCode error,
+  MOCK_METHOD(void, MaybeSendRstStreamFrame,
+              (QuicStreamId stream_id, QuicResetStreamError error,
                QuicStreamOffset bytes_written),
               (override));
-  MOCK_METHOD(void,
-              MaybeSendStopSendingFrame,
-              (QuicStreamId stream_id, QuicRstStreamErrorCode error),
-              (override));
+  MOCK_METHOD(void, MaybeSendStopSendingFrame,
+              (QuicStreamId stream_id, QuicResetStreamError error), (override));
 
   using QuicSession::ActivateStream;
 
-  QuicConsumedData ConsumeData(QuicStreamId id,
-                               size_t write_length,
+  QuicConsumedData ConsumeData(QuicStreamId id, size_t write_length,
                                QuicStreamOffset offset,
                                StreamSendingState state,
                                TransmissionType /*type*/,
@@ -211,23 +189,17 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
 class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
  public:
   QuicSimpleServerStreamTest()
-      : connection_(
-            new StrictMock<MockQuicConnection>(&helper_,
-                                               &alarm_factory_,
-                                               Perspective::IS_SERVER,
-                                               SupportedVersions(GetParam()))),
+      : connection_(new StrictMock<MockQuicConnection>(
+            &helper_, &alarm_factory_, Perspective::IS_SERVER,
+            SupportedVersions(GetParam()))),
         crypto_config_(new QuicCryptoServerConfig(
-            QuicCryptoServerConfig::TESTING,
-            QuicRandom::GetInstance(),
+            QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
             crypto_test_utils::ProofSourceForTesting(),
             KeyExchangeSource::Default())),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        session_(connection_,
-                 &session_owner_,
-                 &session_helper_,
-                 crypto_config_.get(),
-                 &compressed_certs_cache_,
+        session_(connection_, &session_owner_, &session_helper_,
+                 crypto_config_.get(), &compressed_certs_cache_,
                  &memory_cache_backend_),
         quic_response_(new QuicBackendResponse),
         body_("hello world") {
@@ -298,8 +270,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicHeaderList header_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(Tests,
-                         QuicSimpleServerStreamTest,
+INSTANTIATE_TEST_SUITE_P(Tests, QuicSimpleServerStreamTest,
                          ::testing::ValuesIn(AllSupportedVersions()),
                          ::testing::PrintToStringParamName());
 
@@ -350,10 +321,15 @@ TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorInStopReading) {
   stream_->CloseWriteSide();
 
   if (session_.version().UsesHttp3()) {
-    EXPECT_CALL(session_, MaybeSendStopSendingFrame(_, QUIC_STREAM_NO_ERROR))
+    EXPECT_CALL(session_,
+                MaybeSendStopSendingFrame(_, QuicResetStreamError::FromInternal(
+                                                 QUIC_STREAM_NO_ERROR)))
         .Times(1);
   } else {
-    EXPECT_CALL(session_, MaybeSendRstStreamFrame(_, QUIC_STREAM_NO_ERROR, _))
+    EXPECT_CALL(
+        session_,
+        MaybeSendRstStreamFrame(
+            _, QuicResetStreamError::FromInternal(QUIC_STREAM_NO_ERROR), _))
         .Times(1);
   }
   stream_->StopReading();
@@ -480,11 +456,16 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
 
   InSequence s;
   if (session_.version().UsesHttp3()) {
-    EXPECT_CALL(session_, MaybeSendStopSendingFrame(promised_stream->id(),
-                                                    QUIC_STREAM_CANCELLED));
+    EXPECT_CALL(session_,
+                MaybeSendStopSendingFrame(
+                    promised_stream->id(),
+                    QuicResetStreamError::FromInternal(QUIC_STREAM_CANCELLED)));
   }
-  EXPECT_CALL(session_, MaybeSendRstStreamFrame(promised_stream->id(),
-                                                QUIC_STREAM_CANCELLED, 0));
+  EXPECT_CALL(
+      session_,
+      MaybeSendRstStreamFrame(
+          promised_stream->id(),
+          QuicResetStreamError::FromInternal(QUIC_STREAM_CANCELLED), 0));
 
   promised_stream->DoSendResponse();
 }
@@ -695,11 +676,14 @@ TEST_P(QuicSimpleServerStreamTest,
         .Times(AnyNumber());
   }
 
-  EXPECT_CALL(session_, MaybeSendRstStreamFrame(_,
-                                                session_.version().UsesHttp3()
-                                                    ? QUIC_STREAM_CANCELLED
-                                                    : QUIC_RST_ACKNOWLEDGEMENT,
-                                                _))
+  EXPECT_CALL(
+      session_,
+      MaybeSendRstStreamFrame(
+          _,
+          session_.version().UsesHttp3()
+              ? QuicResetStreamError::FromInternal(QUIC_STREAM_CANCELLED)
+              : QuicResetStreamError::FromInternal(QUIC_RST_ACKNOWLEDGEMENT),
+          _))
       .Times(1);
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);

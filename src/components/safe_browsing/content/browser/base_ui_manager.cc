@@ -40,6 +40,10 @@ const void* const kAllowlistKey = &kAllowlistKey;
 class AllowlistUrlSet : public base::SupportsUserData::Data {
  public:
   AllowlistUrlSet() {}
+
+  AllowlistUrlSet(const AllowlistUrlSet&) = delete;
+  AllowlistUrlSet& operator=(const AllowlistUrlSet&) = delete;
+
   bool Contains(const GURL& url, SBThreatType* threat_type) {
     auto found = map_.find(url);
     if (found == map_.end())
@@ -88,7 +92,6 @@ class AllowlistUrlSet : public base::SupportsUserData::Data {
   // in order to solve a problem where upon reloading an interstitial, a site
   // would be re-added to and removed from the allowlist in the wrong order.
   std::map<GURL, std::pair<SBThreatType, int>> pending_;
-  DISALLOW_COPY_AND_ASSIGN(AllowlistUrlSet);
 };
 
 // Returns the URL that should be used in a AllowlistUrlSet for the
@@ -128,8 +131,9 @@ bool BaseUIManager::IsAllowlisted(const UnsafeResource& resource) {
     entry = GetNavigationEntryForResource(resource);
   }
 
-  WebContents* web_contents = resource.web_contents_getter.Run();
-  // |web_contents_getter| can return null after RenderFrameHost is destroyed.
+  content::WebContents* web_contents =
+      security_interstitials::GetWebContentsForResource(resource);
+  // |web_contents| can be null after RenderFrameHost is destroyed.
   if (!web_contents)
     return false;
 
@@ -227,7 +231,8 @@ void BaseUIManager::DisplayBlockingPage(const UnsafeResource& resource) {
 
   // The tab might have been closed. If it was closed, just act as if "Don't
   // Proceed" had been chosen.
-  WebContents* web_contents = resource.web_contents_getter.Run();
+  content::WebContents* web_contents =
+      security_interstitials::GetWebContentsForResource(resource);
   if (!web_contents) {
     OnBlockingPageDone(std::vector<UnsafeResource>{resource},
                        false /* proceed */, web_contents,

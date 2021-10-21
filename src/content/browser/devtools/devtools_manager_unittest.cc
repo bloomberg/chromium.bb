@@ -31,7 +31,6 @@
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::TimeDelta;
 
 namespace content {
 namespace {
@@ -39,6 +38,9 @@ namespace {
 class TestDevToolsClientHost : public DevToolsAgentHostClient {
  public:
   TestDevToolsClientHost() : closed_(false) {}
+
+  TestDevToolsClientHost(const TestDevToolsClientHost&) = delete;
+  TestDevToolsClientHost& operator=(const TestDevToolsClientHost&) = delete;
 
   ~TestDevToolsClientHost() override { EXPECT_TRUE(closed_); }
 
@@ -70,8 +72,6 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
  private:
   bool closed_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDevToolsClientHost);
 };
 
 int TestDevToolsClientHost::close_counter = 0;
@@ -143,7 +143,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start a timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout();
   task_environment()->FastForwardBy(kHungRendererDelay +
-                                    base::TimeDelta::FromMilliseconds(10));
+                                    base::Milliseconds(10));
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
@@ -151,7 +151,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start a timeout.
   inspected_rvh->GetWidget()->StartInputEventAckTimeout();
   task_environment()->FastForwardBy(kHungRendererDelay +
-                                    base::TimeDelta::FromMilliseconds(10));
+                                    base::Milliseconds(10));
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->SetDelegate(nullptr);

@@ -68,6 +68,9 @@ class ServiceWorkerContainerHost::PendingUpdateVersion {
     version_ = std::move(other.version_);
   }
 
+  PendingUpdateVersion(const PendingUpdateVersion&) = delete;
+  PendingUpdateVersion& operator=(const PendingUpdateVersion&) = delete;
+
   ~PendingUpdateVersion() {
     if (version_)
       version_->DecrementPendingUpdateHintCount();
@@ -85,7 +88,6 @@ class ServiceWorkerContainerHost::PendingUpdateVersion {
 
  private:
   scoped_refptr<ServiceWorkerVersion> version_;
-  DISALLOW_COPY_AND_ASSIGN(PendingUpdateVersion);
 };
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
@@ -106,7 +108,8 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
       client_uuid_(base::GenerateGUID()),
       is_parent_frame_secure_(is_parent_frame_secure),
       container_(std::move(container_remote)),
-      client_info_(frame_tree_node_id) {
+      client_info_(ServiceWorkerClientInfo()),
+      ongoing_navigation_frame_tree_node_id_(frame_tree_node_id) {
   DCHECK(IsContainerForWindowClient());
   DCHECK(context_);
   DCHECK(container_.is_bound());
@@ -789,6 +792,7 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsContainerForWindowClient());
 
+  ongoing_navigation_frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
   client_info_->SetRenderFrameHostId(rfh_id);
 
   if (controller_)
@@ -812,7 +816,7 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   }
 
   auto* rfh = RenderFrameHostImpl::FromID(rfh_id);
-  // |rfh| may be null in tests (but it should not happen in production).
+  // `rfh` may be null in tests (but it should not happen in production).
   if (rfh)
     rfh->AddServiceWorkerContainerHost(client_uuid(), GetWeakPtr());
 
@@ -862,7 +866,8 @@ void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
 void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin) {
+    const absl::optional<url::Origin>& top_frame_origin,
+    const blink::StorageKey& storage_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GURL previous_url = url_;
 
@@ -870,9 +875,21 @@ void ServiceWorkerContainerHost::UpdateUrls(
   url_ = url;
   site_for_cookies_ = site_for_cookies;
   top_frame_origin_ = top_frame_origin;
-  key_ = IsContainerForClient()
-             ? blink::StorageKey(url::Origin::Create(GetOrigin()))
-             : blink::StorageKey(url::Origin::Create(url));
+  key_ = storage_key;
+
+#if DCHECK_IS_ON()
+  const url::Origin origin_to_dcheck = IsContainerForClient()
+                                           ? url::Origin::Create(GetOrigin())
+                                           : url::Origin::Create(url);
+  DCHECK((origin_to_dcheck.opaque() && key_.origin().opaque()) ||
+         // If GetUrlForScopeMatch() is a blob URL, GetOrigin() incorrectly
+         // returns an empty URL.
+         (IsContainerForClient() && GetUrlForScopeMatch().SchemeIsBlob()) ||
+         origin_to_dcheck.IsSameOriginWith(key_.origin()))
+      << origin_to_dcheck << " and " << key_.origin() << " should be equal.";
+  // TODO(https://crbug.com/1199077): Make `top_frame_origin` non-optional and
+  // DCHECK that it's value is compatible with storage key's top_frame_site.
+#endif
 
   // The remaining parts of this function don't make sense for service worker
   // execution contexts. Return early.
@@ -1063,6 +1080,14 @@ int ServiceWorkerContainerHost::GetProcessId() const {
   }
   DCHECK(IsContainerForWorkerClient());
   return process_id_for_worker_client_;
+}
+
+int ServiceWorkerContainerHost::GetFrameTreeNodeIdForOngoingNavigation(
+    base::PassKey<StoragePartitionImpl>) const {
+  DCHECK(IsContainerForWindowClient());
+  DCHECK_NE(ongoing_navigation_frame_tree_node_id_,
+            RenderFrameHost::kNoFrameTreeNodeId);
+  return ongoing_navigation_frame_tree_node_id_;
 }
 
 const std::string& ServiceWorkerContainerHost::client_uuid() const {
@@ -1672,7 +1697,7 @@ void ServiceWorkerContainerHost::InheritControllerFrom(
   DCHECK(blob_url.SchemeIsBlob());
 
   UpdateUrls(blob_url, net::SiteForCookies::FromUrl(blob_url),
-             creator_host.top_frame_origin());
+             creator_host.top_frame_origin(), creator_host.key());
 
   // Let `scope_match_url_for_blob_client_` be the creator's url for scope match
   // because a client should be handled by the service worker of its creator.

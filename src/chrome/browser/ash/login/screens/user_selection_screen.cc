@@ -236,6 +236,11 @@ class UserSelectionScreen::DircryptoMigrationChecker {
  public:
   explicit DircryptoMigrationChecker(UserSelectionScreen* owner)
       : owner_(owner) {}
+
+  DircryptoMigrationChecker(const DircryptoMigrationChecker&) = delete;
+  DircryptoMigrationChecker& operator=(const DircryptoMigrationChecker&) =
+      delete;
+
   ~DircryptoMigrationChecker() = default;
 
   // Start to check whether the given user needs dircrypto migration.
@@ -326,8 +331,6 @@ class UserSelectionScreen::DircryptoMigrationChecker {
   std::map<AccountId, bool> needs_dircrypto_migration_cache_;
 
   base::WeakPtrFactory<DircryptoMigrationChecker> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DircryptoMigrationChecker);
 };
 
 // Helper class  to check whether tpm is locked and update UI with time left to
@@ -371,9 +374,9 @@ class UserSelectionScreen::TpmLockedChecker {
     if (reply.dictionary_attack_lockout_in_effect()) {
       // Add `kWaitingOvertimeInSeconds` for safetiness, i.e hiding UI and
       // releasing `wake_lock_` happens after TPM becomes unlocked.
-      dictionary_attack_lockout_time_remaining_ = base::TimeDelta::FromSeconds(
-          reply.dictionary_attack_lockout_seconds_remaining() +
-          kWaitingOvertimeInSeconds);
+      dictionary_attack_lockout_time_remaining_ =
+          base::Seconds(reply.dictionary_attack_lockout_seconds_remaining() +
+                        kWaitingOvertimeInSeconds);
       OnTpmIsLocked();
     } else {
       TpmIsUnlocked();
@@ -382,9 +385,9 @@ class UserSelectionScreen::TpmLockedChecker {
 
   void OnTpmIsLocked() {
     AcquireWakeLock();
-    clock_ticking_animator_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-                                  this, &TpmLockedChecker::UpdateUI);
-    tpm_recheck_.Start(FROM_HERE, base::TimeDelta::FromMinutes(1), this,
+    clock_ticking_animator_.Start(FROM_HERE, base::Seconds(1), this,
+                                  &TpmLockedChecker::UpdateUI);
+    tpm_recheck_.Start(FROM_HERE, base::Minutes(1), this,
                        &TpmLockedChecker::Check);
   }
 
@@ -550,7 +553,7 @@ UserAvatar UserSelectionScreen::BuildAshUserAvatarForUser(
         user.image_bytes()->front() + user.image_bytes()->size());
   } else if (user.HasDefaultImage()) {
     int resource_id =
-        default_user_image::kDefaultImageResourceIDs[user.image_index()];
+        default_user_image::GetDefaultImageResourceId(user.image_index());
     load_image_from_resource(resource_id);
   } else if (user.image_is_stub()) {
     load_image_from_resource(IDR_LOGIN_DEFAULT_USER);

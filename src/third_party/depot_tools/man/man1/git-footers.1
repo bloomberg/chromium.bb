@@ -2,12 +2,12 @@
 .\"     Title: git-footers
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/01/2021
+.\"      Date: 10/05/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 906b5026
+.\"    Source: depot_tools a594dbdd
 .\"  Language: English
 .\"
-.TH "GIT\-FOOTERS" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
+.TH "GIT\-FOOTERS" "1" "10/05/2021" "depot_tools a594dbdd" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -54,7 +54,7 @@ This is a fancy commit message\&.
 .RS 4
 .\}
 .nf
-Cr\-Commit\-Position: refs/heads/master@{#292272}
+Cr\-Commit\-Position: refs/heads/main@{#292272}
 Tech\-Debt\-Introduced: 17 nanoMSOffices
 .fi
 .if n \{\
@@ -84,7 +84,7 @@ footer\&. If that doesn\(cqt exist then it tries a heuristic based on
 .RS 4
 .\}
 .nf
-refs/heads/master@{#292272}
+refs/heads/main@{#292272}
 refs/branch\-heads/branchname
 .fi
 .if n \{\
@@ -99,7 +99,7 @@ Extracts and prints the Chrome commit position number only (292272 in the exampl
 .PP
 \-\-position\-ref
 .RS 4
-Extracts and prints the Chrome commit position ref name only (\fBref/heads/master\fR
+Extracts and prints the Chrome commit position ref name only (\fBref/heads/main\fR
 or
 \fBrefs/branch\-heads/branchname\fR
 in the example above)\&.
@@ -115,16 +115,16 @@ in the example above)\&.
 \fB$ git footers HEAD\fR
 Tech\-Debt\-Introduced: \-4 microMSOffices
 Tech\-Debt\-Introduced: 17 microMSOffices
-Cr\-Commit\-Position: refs/heads/master@{#292272}
+Cr\-Commit\-Position: refs/heads/main@{#292272}
 \fB$ git footers \-\-key Tech\-Debt\-Introduced HEAD\fR
 \-4 microMSOffices
 17 microMSOffices
 \fB$ git footers \-\-position HEAD\fR
-refs/heads/master@{#292272}
+refs/heads/main@{#292272}
 \fB$ git footers \-\-position\-num HEAD\fR
 292272
 \fB$ git footers \-\-position\-ref HEAD\fR
-refs/heads/master
+refs/heads/main
 .fi
 .if n \{\
 .RE

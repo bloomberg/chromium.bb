@@ -24,6 +24,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -102,12 +103,12 @@
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
+#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ui/webui/certificate_provisioning_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
@@ -139,9 +140,6 @@
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "chrome/browser/ui/webui/settings/url_handlers_handler.h"
-#include "chrome/browser/web_applications/url_handler_prefs.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #endif
 
 namespace settings {
@@ -299,11 +297,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(https://crbug.com/1227694): Remove this after migrating all JS usages
-  // of splitSettingsSyncEnabled to syncSettingsCategorizationEnabled and
-  // syncConsentOptionalEnabled.
-  html_source->AddBoolean("splitSettingsSyncEnabled",
-                          chromeos::features::IsSplitSettingsSyncEnabled());
   html_source->AddBoolean(
       "syncSettingsCategorizationEnabled",
       chromeos::features::IsSyncSettingsCategorizationEnabled());
@@ -325,7 +318,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean(
       "privacyReviewEnabled",
-      base::FeatureList::IsEnabled(features::kPrivacyReview));
+      !chrome::ShouldDisplayManagedUi(profile) &&
+          base::FeatureList::IsEnabled(features::kPrivacyReview));
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
@@ -375,9 +369,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // Privacy Sandbox
   html_source->AddResourcePath(
       "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
-  html_source->AddBoolean(
-      "privacySandboxSettings2Enabled",
-      base::FeatureList::IsEnabled(features::kPrivacySandboxSettings2));
 
   TryShowHatsSurveyWithTimeout();
 }
@@ -410,24 +401,23 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
   // under the notification permission that is auto-granted for Android Messages
   // integration in ChromeOS.
   if (!profile->IsGuestSession()) {
-    chromeos::android_sms::AndroidSmsService* android_sms_service =
-        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
+    auto* android_sms_service =
+        ash::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
             profile);
     chromeos::phonehub::PhoneHubManager* phone_hub_manager =
-        chromeos::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
-    web_ui()->AddMessageHandler(
-        std::make_unique<chromeos::settings::MultideviceHandler>(
-            profile->GetPrefs(),
-            chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
-                GetForProfile(profile),
-            phone_hub_manager
-                ? phone_hub_manager->GetNotificationAccessManager()
-                : nullptr,
-            android_sms_service
-                ? android_sms_service->android_sms_pairing_state_tracker()
-                : nullptr,
-            android_sms_service ? android_sms_service->android_sms_app_manager()
-                                : nullptr));
+        ash::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
+    web_ui()->AddMessageHandler(std::make_unique<
+                                chromeos::settings::MultideviceHandler>(
+        profile->GetPrefs(),
+        ash::multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
+            profile),
+        phone_hub_manager ? phone_hub_manager->GetNotificationAccessManager()
+                          : nullptr,
+        android_sms_service
+            ? android_sms_service->android_sms_pairing_state_tracker()
+            : nullptr,
+        android_sms_service ? android_sms_service->android_sms_app_manager()
+                            : nullptr));
   }
 }
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)

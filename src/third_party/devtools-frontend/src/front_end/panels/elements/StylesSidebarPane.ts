@@ -192,7 +192,8 @@ let _stylesSidebarPaneInstance: StylesSidebarPane;
 const STYLE_TAG = '<' +
     'style>';
 
-export class StylesSidebarPane extends ElementsSidebarPane {
+export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventTypes, typeof ElementsSidebarPane>(
+    ElementsSidebarPane) {
   private currentToolbarPane: UI.Widget.Widget|null;
   private animatedToolbarPane: UI.Widget.Widget|null;
   private pendingWidget: UI.Widget.Widget|null;
@@ -571,6 +572,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     if (this.filterRegexInternal) {
       this.updateFilter();
     }
+    this.swatchPopoverHelper().reposition();
     this.nodeStylesUpdatedForTest(node, false);
   }
 
@@ -800,7 +802,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     // Record the elements tool load time after the sidepane has loaded.
     Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
 
-    this.dispatchEventToListeners(Events.StylesUpdateCompleted, {hasStyle: true});
+    this.dispatchEventToListeners(Events.StylesUpdateCompleted, {hasMatchedStyles: false});
   }
 
   private nodeStylesUpdatedForTest(_node: SDK.DOMModel.DOMNode, _rebuild: boolean): void {
@@ -1059,6 +1061,15 @@ export const enum Events {
   InitialUpdateCompleted = 'InitialUpdateCompleted',
   StylesUpdateCompleted = 'StylesUpdateCompleted',
 }
+
+export interface StylesUpdateCompletedEvent {
+  hasMatchedStyles: boolean;
+}
+
+export type EventTypes = {
+  [Events.InitialUpdateCompleted]: void,
+  [Events.StylesUpdateCompleted]: StylesUpdateCompletedEvent,
+};
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1701,7 +1712,7 @@ export class StylePropertiesSection {
     return;
   }
 
-  private onNewRuleClick(event: Common.EventTarget.EventTargetEvent): void {
+  private onNewRuleClick(event: Common.EventTarget.EventTargetEvent<Event>): void {
     event.data.consume();
     const rule = this.styleInternal.parentRule;
     if (!rule || !rule.style.range || rule.styleSheetId === undefined) {
@@ -1936,6 +1947,7 @@ export class StylePropertiesSection {
     } else {
       this.showAllButton.classList.add('hidden');
     }
+    this.parentPane.swatchPopoverHelper().reposition();
   }
 
   isPropertyOverloaded(property: SDK.CSSProperty.CSSProperty): boolean {
@@ -3115,7 +3127,7 @@ export class ButtonProvider implements UI.Toolbar.Provider {
     return buttonProviderInstance;
   }
 
-  private clicked(_event: Common.EventTarget.EventTargetEvent): void {
+  private clicked(): void {
     StylesSidebarPane.instance().createNewRuleInViaInspectorStyleSheet();
   }
 

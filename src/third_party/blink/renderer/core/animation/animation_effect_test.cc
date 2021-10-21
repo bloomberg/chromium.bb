@@ -34,7 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_unrestricteddouble.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -104,6 +104,9 @@ class TestAnimationEffect : public AnimationEffect {
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
     return AnimationTimeDelta::Max();
+  }
+  absl::optional<AnimationTimeDelta> TimelineDuration() const override {
+    return absl::nullopt;
   }
   double TakeLocalTime() {
     DCHECK(local_time_);
@@ -796,7 +799,8 @@ TEST(AnimationAnimationEffectTest, UpdateTiming) {
   EXPECT_EQ("auto", effect->getTiming()->duration()->GetAsString());
   effect_timing = OptionalEffectTiming::Create();
   effect_timing->setDuration(
-      MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(2.5));
+      MakeGarbageCollected<V8UnionCSSNumericValueOrStringOrUnrestrictedDouble>(
+          2.5));
   effect->updateTiming(effect_timing);
   EXPECT_EQ(2.5, effect->getTiming()->duration()->GetAsUnrestrictedDouble());
 }
@@ -830,14 +834,15 @@ TEST(AnimationAnimationEffectTest, UpdateTimingThrowsWhenExpected) {
   exception_state.ClearException();
   effect_timing = OptionalEffectTiming::Create();
   effect_timing->setDuration(
-      MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(-100));
+      MakeGarbageCollected<V8UnionCSSNumericValueOrStringOrUnrestrictedDouble>(
+          -100));
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   exception_state.ClearException();
   effect_timing = OptionalEffectTiming::Create();
   effect_timing->setDuration(
-      MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
+      MakeGarbageCollected<V8UnionCSSNumericValueOrStringOrUnrestrictedDouble>(
           std::numeric_limits<double>::quiet_NaN()));
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
@@ -901,7 +906,8 @@ TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
   effect_timing = OptionalEffectTiming::Create();
   effect_timing->setIterations(3);
   effect_timing->setDuration(
-      MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(2000));
+      MakeGarbageCollected<V8UnionCSSNumericValueOrStringOrUnrestrictedDouble>(
+          2000));
   effect_timing->setDirection("alternate-reverse");
   effect->updateTiming(effect_timing);
 

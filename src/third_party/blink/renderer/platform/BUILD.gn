@@ -430,11 +430,15 @@ component("platform") {
     "bindings/idl_member_installer.h",
     "bindings/microtask.cc",
     "bindings/microtask.h",
+    "bindings/multi_worlds_v8_reference.cc",
+    "bindings/multi_worlds_v8_reference.h",
     "bindings/name_client.h",
     "bindings/no_alloc_direct_call_exception_state.cc",
     "bindings/no_alloc_direct_call_exception_state.h",
     "bindings/no_alloc_direct_call_host.cc",
     "bindings/no_alloc_direct_call_host.h",
+    "bindings/observable_array_base.cc",
+    "bindings/observable_array_base.h",
     "bindings/origin_trial_features.cc",
     "bindings/origin_trial_features.h",
     "bindings/parkable_string.cc",
@@ -474,6 +478,8 @@ component("platform") {
     "bindings/v8_interface_bridge_base.h",
     "bindings/v8_object_constructor.cc",
     "bindings/v8_object_constructor.h",
+    "bindings/v8_object_data_store.cc",
+    "bindings/v8_object_data_store.h",
     "bindings/v8_per_context_data.cc",
     "bindings/v8_per_context_data.h",
     "bindings/v8_per_isolate_data.cc",
@@ -1666,7 +1672,6 @@ component("platform") {
     "//third_party/blink/renderer/platform/loader",
     "//third_party/blink/renderer/platform/network",
     "//third_party/blink/renderer/platform/scheduler",
-    "//third_party/blink/renderer/platform/wtf:buildflags",
     "//third_party/fdlibm",
     "//third_party/pffft:pffft",
     "//ui/gfx",
@@ -1981,7 +1986,7 @@ static_library("test_support") {
 test("blink_platform_unittests") {
   deps = [ ":blink_platform_unittests_sources" ]
 
-  if (is_fuchsia && enable_blink_heap_use_v8_oilpan) {
+  if (is_fuchsia) {
     # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
     # permissions.
     additional_manifest_fragments =
@@ -2160,6 +2165,8 @@ source_set("blink_platform_unittests_sources") {
     "mojo/string16_mojom_traits_test.cc",
     "p2p/filtering_network_manager_test.cc",
     "p2p/ipc_network_manager_test.cc",
+    "peerconnection/metronome_source_test.cc",
+    "peerconnection/metronome_task_queue_factory_test.cc",
     "peerconnection/rtc_encoded_audio_stream_transformer_test.cc",
     "peerconnection/rtc_encoded_video_stream_transformer_test.cc",
     "peerconnection/rtc_rtp_source_test.cc",

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_image_util.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "v8/include/v8.h"
@@ -167,31 +168,178 @@ class CachedVideoFramePool : public GarbageCollected<CachedVideoFramePool>,
 
 // static -- defined out of line to satisfy link time requirements.
 const char CachedVideoFramePool::kSupplementName[] = "CachedVideoFramePool";
-const base::TimeDelta CachedVideoFramePool::kIdleTimeout =
-    base::TimeDelta::FromSeconds(10);
+const base::TimeDelta CachedVideoFramePool::kIdleTimeout = base::Seconds(10);
 
-bool IsSupportedPlanarFormat(const media::VideoFrame& frame) {
-  if (!frame.IsMappable() && !frame.HasGpuMemoryBuffer())
-    return false;
+class CanvasResourceProviderCache
+    : public GarbageCollected<CanvasResourceProviderCache>,
+      public Supplement<ExecutionContext> {
+ public:
+  static const char kSupplementName[];
 
-  const size_t num_planes = frame.layout().num_planes();
+  static CanvasResourceProviderCache& From(ExecutionContext& context) {
+    CanvasResourceProviderCache* supplement =
+        Supplement<ExecutionContext>::From<CanvasResourceProviderCache>(
+            context);
+    if (!supplement) {
+      supplement = MakeGarbageCollected<CanvasResourceProviderCache>(context);
+      Supplement<ExecutionContext>::ProvideTo(context, supplement);
+    }
+    return *supplement;
+  }
+
+  explicit CanvasResourceProviderCache(ExecutionContext& context)
+      : Supplement<ExecutionContext>(context),
+        task_runner_(Thread::Current()->GetTaskRunner()) {}
+  virtual ~CanvasResourceProviderCache() = default;
+
+  // Disallow copy and assign.
+  CanvasResourceProviderCache& operator=(const CanvasResourceProviderCache&) =
+      delete;
+  CanvasResourceProviderCache(const CanvasResourceProviderCache&) = delete;
+
+  CanvasResourceProvider* CreateProvider(IntSize size) {
+    if (size_to_provider_.IsEmpty())
+      PostMonitoringTask();
+
+    last_access_time_ = base::TimeTicks::Now();
+
+    FloatSize key(size);
+    auto iter = size_to_provider_.find(key);
+    if (iter != size_to_provider_.end()) {
+      auto* result = iter->value.get();
+      if (result && result->IsValid())
+        return result;
+    }
+
+    if (size_to_provider_.size() >= kMaxSize)
+      size_to_provider_.clear();
+
+    auto provider = CreateResourceProviderForVideoFrame(size, nullptr);
+    auto* result = provider.get();
+    size_to_provider_.Set(key, std::move(provider));
+    return result;
+  }
+
+  void Trace(Visitor* visitor) const override {
+    Supplement<ExecutionContext>::Trace(visitor);
+  }
+
+ private:
+  static constexpr int kMaxSize = 50;
+  static const base::TimeDelta kIdleTimeout;
+
+  void PostMonitoringTask() {
+    DCHECK(!task_handle_.IsActive());
+    task_handle_ = PostDelayedCancellableTask(
+        *task_runner_, FROM_HERE,
+        WTF::Bind(&CanvasResourceProviderCache::PurgeIdleFramePool,
+                  WrapWeakPersistent(this)),
+        kIdleTimeout);
+  }
+
+  void PurgeIdleFramePool() {
+    if (base::TimeTicks::Now() - last_access_time_ > kIdleTimeout) {
+      size_to_provider_.clear();
+      return;
+    }
+    PostMonitoringTask();
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  HashMap<FloatSize, std::unique_ptr<CanvasResourceProvider>> size_to_provider_;
+  base::TimeTicks last_access_time_;
+  TaskHandle task_handle_;
+};
+
+// static -- defined out of line to satisfy link time requirements.
+const char CanvasResourceProviderCache::kSupplementName[] =
+    "CanvasResourceProviderCache";
+const base::TimeDelta CanvasResourceProviderCache::kIdleTimeout =
+    base::Seconds(10);
+
+absl::optional<media::VideoPixelFormat> CopyToFormat(
+    const media::VideoFrame& frame) {
+  const bool mappable = frame.IsMappable() || frame.HasGpuMemoryBuffer();
+  const bool texturable = frame.HasTextures();
+  if (!(mappable || texturable))
+    return absl::nullopt;
+
+  const size_t num_planes =
+      mappable ? frame.layout().num_planes() : frame.NumTextures();
+
   switch (frame.format()) {
     case media::PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_I420A:
     case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_I444:
-      return num_planes == 3;
-    case media::PIXEL_FORMAT_I420A:
-      return num_planes == 4;
-    case media::PIXEL_FORMAT_NV12:
-      return num_planes == 2;
     case media::PIXEL_FORMAT_XBGR:
-    case media::PIXEL_FORMAT_XRGB:
     case media::PIXEL_FORMAT_ABGR:
+    case media::PIXEL_FORMAT_XRGB:
     case media::PIXEL_FORMAT_ARGB:
-      return num_planes == 1;
+      break;
+    case media::PIXEL_FORMAT_NV12:
+      // Single-texture NV12 is sampled as RGBA even though the underlying
+      // graphics buffer is NV12.
+      if (!mappable && num_planes == 1)
+        return media::PIXEL_FORMAT_XRGB;
+      break;
     default:
-      return false;
+      return absl::nullopt;
   }
+
+  // Make sure layout() is as expected before committing to being able to read
+  // back pixels.
+  if (num_planes != media::VideoFrame::NumPlanes(frame.format()))
+    return absl::nullopt;
+
+  return frame.format();
+}
+
+void CopyMappablePlanes(const media::VideoFrame& src_frame,
+                        const ParsedCopyToOptions& layout,
+                        base::span<uint8_t> dest_buffer) {
+  for (wtf_size_t i = 0; i < layout.num_planes; i++) {
+    const uint8_t* src = src_frame.data(i) +
+                         layout.planes[i].top * src_frame.stride(i) +
+                         layout.planes[i].left_bytes;
+    libyuv::CopyPlane(src, static_cast<int>(src_frame.stride(i)),
+                      dest_buffer.data() + layout.planes[i].offset,
+                      static_cast<int>(layout.planes[i].stride),
+                      static_cast<int>(layout.planes[i].width_bytes),
+                      static_cast<int>(layout.planes[i].height));
+  }
+}
+
+bool CopyTexturablePlanes(const media::VideoFrame& src_frame,
+                          const ParsedCopyToOptions& layout,
+                          base::span<uint8_t> dest_buffer) {
+  auto wrapper = SharedGpuContext::ContextProviderWrapper();
+  if (!wrapper)
+    return false;
+
+  auto* provider = wrapper->ContextProvider();
+  if (!provider)
+    return false;
+
+  auto* ri = provider->RasterInterface();
+  auto* gr_context = provider->GetGrContext();
+  if (!ri)
+    return false;
+
+  for (wtf_size_t i = 0; i < layout.num_planes; i++) {
+    gfx::Rect src_rect(layout.planes[i].left, layout.planes[i].top,
+                       layout.planes[i].width, layout.planes[i].height);
+    uint8_t* dest_pixels = dest_buffer.data() + layout.planes[i].offset;
+    if (!media::ReadbackTexturePlaneToMemorySync(
+            src_frame, i, src_rect, dest_pixels, layout.planes[i].stride, ri,
+            gr_context)) {
+      // It's possible to fail after copying some but not all planes, leaving
+      // the output buffer in a corrupt state D:
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -316,12 +464,11 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
       wrapped_frame->set_color_space(source_frame->ColorSpace());
       if (init->hasTimestamp()) {
-        wrapped_frame->set_timestamp(
-            base::TimeDelta::FromMicroseconds(init->timestamp()));
+        wrapped_frame->set_timestamp(base::Microseconds(init->timestamp()));
       }
       if (init->hasDuration()) {
         wrapped_frame->metadata().frame_duration =
-            base::TimeDelta::FromMicroseconds(init->duration());
+            base::Microseconds(init->duration());
       }
       source_frame = std::move(wrapped_frame);
     }
@@ -343,7 +490,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
     return nullptr;
   }
 
-  const auto timestamp = base::TimeDelta::FromMicroseconds(
+  const auto timestamp = base::Microseconds(
       (init && init->hasTimestamp()) ? init->timestamp() : 0);
 
   const auto paint_image = image->PaintImageForCurrentFrame();
@@ -441,8 +588,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
   frame->set_color_space(gfx_color_space);
   if (init->hasDuration()) {
-    frame->metadata().frame_duration =
-        base::TimeDelta::FromMicroseconds(init->duration());
+    frame->metadata().frame_duration = base::Microseconds(init->duration());
   }
   if (orientation != ImageOrientationEnum::kDefault) {
     frame->metadata().transformation =
@@ -521,7 +667,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   }
 
   // Create a frame.
-  const auto timestamp = base::TimeDelta::FromMicroseconds(init->timestamp());
+  const auto timestamp = base::Microseconds(init->timestamp());
   auto& frame_pool = CachedVideoFramePool::From(*execution_context);
   auto frame = frame_pool.CreateFrame(media_fmt, coded_size, visible_rect,
                                       display_size, timestamp);
@@ -550,8 +696,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   }
 
   if (init->hasDuration()) {
-    frame->metadata().frame_duration =
-        base::TimeDelta::FromMicroseconds(init->duration());
+    frame->metadata().frame_duration = base::Microseconds(init->duration());
   }
 
   // Copy planes.
@@ -569,10 +714,14 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
 absl::optional<V8VideoPixelFormat> VideoFrame::format() const {
   auto local_frame = handle_->frame();
-  if (!local_frame || !IsSupportedPlanarFormat(*local_frame))
+  if (!local_frame)
     return absl::nullopt;
 
-  switch (local_frame->format()) {
+  auto copy_to_format = CopyToFormat(*local_frame);
+  if (!copy_to_format)
+    return absl::nullopt;
+
+  switch (*copy_to_format) {
     case media::PIXEL_FORMAT_I420:
       return V8VideoPixelFormat(V8VideoPixelFormat::Enum::kI420);
     case media::PIXEL_FORMAT_I420A:
@@ -707,16 +856,15 @@ uint32_t VideoFrame::allocationSize(VideoFrameCopyToOptions* options,
     return 0;
   }
 
-  // TODO(crbug.com/1176464): Determine the format readback will occur in, use
-  // that to compute the layout.
-  if (!IsSupportedPlanarFormat(*local_frame)) {
+  auto copy_to_format = CopyToFormat(*local_frame);
+  if (!copy_to_format) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "allocationSize() is not yet implemented when format is null.");
     return 0;
   }
 
-  ParsedCopyToOptions layout(options, local_frame->format(),
+  ParsedCopyToOptions layout(options, *copy_to_format,
                              local_frame->coded_size(),
                              local_frame->visible_rect(), exception_state);
   if (exception_state.HadException())
@@ -737,7 +885,8 @@ ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
   }
 
   // TODO(crbug.com/1176464): Use async texture readback.
-  if (!IsSupportedPlanarFormat(*local_frame)) {
+  auto copy_to_format = CopyToFormat(*local_frame);
+  if (!copy_to_format) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "copyTo() is not yet implemented when format is null.");
@@ -745,7 +894,7 @@ ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
   }
 
   // Compute layout.
-  ParsedCopyToOptions layout(options, local_frame->format(),
+  ParsedCopyToOptions layout(options, *copy_to_format,
                              local_frame->coded_size(),
                              local_frame->visible_rect(), exception_state);
   if (exception_state.HadException())
@@ -762,27 +911,24 @@ ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // Map buffers if necessary.
-  if (!local_frame->IsMappable()) {
-    DCHECK(local_frame->HasGpuMemoryBuffer());
-    local_frame = media::ConvertToMemoryMappedFrame(local_frame);
-    if (!local_frame) {
+  // Copy planes.
+  if (local_frame->IsMappable()) {
+    CopyMappablePlanes(*local_frame, layout, buffer);
+  } else if (local_frame->HasGpuMemoryBuffer()) {
+    auto mapped_frame = media::ConvertToMemoryMappedFrame(local_frame);
+    if (!mapped_frame) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "Failed to read VideoFrame data.");
       return ScriptPromise();
     }
-  }
-
-  // Copy data.
-  for (wtf_size_t i = 0; i < layout.num_planes; i++) {
-    uint8_t* src = local_frame->data(i) +
-                   layout.planes[i].top * local_frame->stride(i) +
-                   layout.planes[i].left_bytes;
-    libyuv::CopyPlane(src, static_cast<int>(local_frame->stride(i)),
-                      buffer.data() + layout.planes[i].offset,
-                      static_cast<int>(layout.planes[i].stride),
-                      static_cast<int>(layout.planes[i].width_bytes),
-                      static_cast<int>(layout.planes[i].height));
+    CopyMappablePlanes(*mapped_frame, layout, buffer);
+  } else {
+    DCHECK(local_frame->HasTextures());
+    if (!CopyTexturablePlanes(*local_frame, layout, buffer)) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Failed to read VideoFrame data.");
+      return ScriptPromise();
+    }
   }
 
   // Convert and return |layout|.
@@ -834,7 +980,17 @@ scoped_refptr<Image> VideoFrame::GetSourceImageForCanvas(
                                                   orientation_enum);
   }
 
-  const auto image = CreateImageFromVideoFrame(local_handle->frame());
+  auto* execution_context =
+      ExecutionContext::From(v8::Isolate::GetCurrent()->GetCurrentContext());
+  auto& provider_cache = CanvasResourceProviderCache::From(*execution_context);
+  auto* resource_provider = provider_cache.CreateProvider(
+      IntSize(local_handle->frame()->natural_size()));
+
+  const auto dest_rect = gfx::Rect(local_handle->frame()->natural_size());
+  auto image = CreateImageFromVideoFrame(local_handle->frame(),
+                                         /*allow_zero_copy_images=*/true,
+                                         resource_provider,
+                                         /*video_renderer=*/nullptr, dest_rect);
   if (!image) {
     *status = kInvalidSourceImageStatus;
     return nullptr;
@@ -863,8 +1019,7 @@ FloatSize VideoFrame::ElementSize(
     const auto orientation_enum = VideoTransformationToImageOrientation(
         local_frame->metadata().transformation.value_or(
             media::kNoTransformation));
-    auto orientation_adjusted_size =
-        FloatSize(local_frame->visible_rect().size());
+    auto orientation_adjusted_size = FloatSize(local_frame->natural_size());
     if (ImageOrientation(orientation_enum).UsesWidthAsHeight())
       return orientation_adjusted_size.TransposedSize();
     return orientation_adjusted_size;
@@ -897,7 +1052,7 @@ IntSize VideoFrame::BitmapSourceSize() const {
     return IntSize();
 
   // ImageBitmaps should always return the size w/o respecting orientation.
-  return IntSize(local_frame->visible_rect().size());
+  return IntSize(local_frame->natural_size());
 }
 
 ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
@@ -924,7 +1079,17 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
                                                  exception_state);
   }
 
-  const auto image = CreateImageFromVideoFrame(local_handle->frame());
+  auto* execution_context =
+      ExecutionContext::From(v8::Isolate::GetCurrent()->GetCurrentContext());
+  auto& provider_cache = CanvasResourceProviderCache::From(*execution_context);
+  auto* resource_provider = provider_cache.CreateProvider(
+      IntSize(local_handle->frame()->natural_size()));
+
+  const auto dest_rect = gfx::Rect(local_handle->frame()->natural_size());
+  auto image = CreateImageFromVideoFrame(local_handle->frame(),
+                                         /*allow_zero_copy_images=*/true,
+                                         resource_provider,
+                                         /*video_renderer=*/nullptr, dest_rect);
   if (!image) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

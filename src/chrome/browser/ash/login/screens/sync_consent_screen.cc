@@ -22,6 +22,7 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_capabilities.h"
@@ -41,12 +42,10 @@ namespace {
 
 // Delay showing chrome sync settings by this amount of time to make them
 // show on top of the restored tabs and windows.
-constexpr base::TimeDelta kSyncConsentSettingsShowDelay =
-    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kSyncConsentSettingsShowDelay = base::Seconds(3);
 
-constexpr base::TimeDelta kWaitTimeout = base::TimeDelta::FromSeconds(10);
-constexpr base::TimeDelta kWaitTimeoutForTest =
-    base::TimeDelta::FromMilliseconds(1);
+constexpr base::TimeDelta kWaitTimeout = base::Seconds(10);
+constexpr base::TimeDelta kWaitTimeoutForTest = base::Milliseconds(1);
 
 absl::optional<bool> sync_disabled_by_policy_for_test;
 absl::optional<bool> sync_engine_initialized_for_test;
@@ -137,13 +136,13 @@ SyncConsentScreen::~SyncConsentScreen() {
     view_->Bind(nullptr);
 }
 
-void SyncConsentScreen::Init() {
+void SyncConsentScreen::Init(const WizardContext* context) {
   if (is_initialized_)
     return;
   is_initialized_ = true;
   user_ = user_manager::UserManager::Get()->GetPrimaryUser();
   profile_ = ProfileHelper::Get()->GetProfileByUser(user_);
-  UpdateScreen();
+  UpdateScreen(*context);
 }
 
 void SyncConsentScreen::Finish(Result result) {
@@ -165,7 +164,7 @@ void SyncConsentScreen::Finish(Result result) {
 }
 
 bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
-  Init();
+  Init(context);
 
   switch (behavior_) {
     case SyncScreenBehavior::kUnknown:
@@ -184,7 +183,7 @@ bool SyncConsentScreen::MaybeSkip(WizardContext* context) {
 }
 
 void SyncConsentScreen::ShowImpl() {
-  Init();
+  Init(context());
 
   if (behavior_ != SyncScreenBehavior::kShow) {
     // Wait for updates and set the loading throbber to be visible.
@@ -212,7 +211,8 @@ void SyncConsentScreen::HideImpl() {
 }
 
 void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {
-  UpdateScreen();
+  DCHECK(context());
+  UpdateScreen(*context());
 }
 
 // TODO(https://crbug.com/1229582) Break SplitSettings names into
@@ -273,6 +273,7 @@ void SyncConsentScreen::UpdateSyncSettings(bool enable_sync) {
       syncer::UserSelectableTypeSet empty_set;
       sync_settings->SetSelectedTypes(/*sync_everything=*/false, empty_set);
     }
+    // TODO(crbug.com/1229582) Revisit the logic in case !enable_sync.
     sync_settings->SetSyncRequested(true);
     sync_settings->SetFirstSetupComplete(
         syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
@@ -325,7 +326,8 @@ void SyncConsentScreen::MaybeEnableSyncForSkip() {
 
 void SyncConsentScreen::OnTimeout() {
   is_timed_out_ = true;
-  UpdateScreen();
+  DCHECK(context());
+  UpdateScreen(*context());
 }
 
 void SyncConsentScreen::SetDelegateForTesting(
@@ -344,8 +346,8 @@ SyncConsentScreen::GetDelegateForTesting() const {
   return test_delegate_;
 }
 
-SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
-    const {
+SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior(
+    const WizardContext& context) const {
   // Skip for users without Gaia account (e.g. Active Directory).
   if (!user_->HasGaiaAccount())
     return SyncScreenBehavior::kSkipNonGaiaAccount;
@@ -357,7 +359,7 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
   // Skip for non-branded (e.g. developer) builds. Check this after the account
   // type checks so we don't try to enable sync in browser_tests for those
   // account types.
-  if (!WizardController::IsBrandedBuild())
+  if (!context.is_branded_build)
     return SyncScreenBehavior::kSkipAndEnableNonBrandedBuild;
 
   const user_manager::UserManager* user_manager =
@@ -383,8 +385,8 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
   return SyncScreenBehavior::kUnknown;
 }
 
-void SyncConsentScreen::UpdateScreen() {
-  const SyncScreenBehavior new_behavior = GetSyncScreenBehavior();
+void SyncConsentScreen::UpdateScreen(const WizardContext& context) {
+  const SyncScreenBehavior new_behavior = GetSyncScreenBehavior(context);
   if (new_behavior == SyncScreenBehavior::kUnknown)
     return;
 
@@ -401,8 +403,7 @@ void SyncConsentScreen::UpdateScreen() {
     timeout_waiter_.AbandonAndStop();
     base::UmaHistogramCustomTimes("OOBE.SyncConsentScreen.LoadingTime",
                                   base::TimeTicks::Now() - start_time_,
-                                  base::TimeDelta::FromMilliseconds(1),
-                                  base::TimeDelta::FromSeconds(10), 50);
+                                  base::Milliseconds(1), base::Seconds(10), 50);
   } else {
     MaybeEnableSyncForSkip();
     Finish(Result::NEXT);
@@ -434,6 +435,11 @@ void SyncConsentScreen::RecordConsent(
     test_delegate_->OnConsentRecordedIds(consent_given, consent_description,
                                          consent_confirmation);
   }
+}
+
+bool SyncConsentScreen::IsProfileSyncDisabledByPolicyForTest() const {
+  return sync_disabled_by_policy_for_test.has_value() &&
+         sync_disabled_by_policy_for_test.value();
 }
 
 bool SyncConsentScreen::IsProfileSyncDisabledByPolicy() const {

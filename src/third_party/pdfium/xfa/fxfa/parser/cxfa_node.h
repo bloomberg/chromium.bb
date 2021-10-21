@@ -95,7 +95,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
     PropertyData() = delete;
 
     XFA_Element property;
-    uint8_t occurance_count;
+    uint8_t occurrence_count;
     Mask<XFA_PropertyFlag> flags;
   };
 
@@ -117,7 +117,7 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
 
   bool HasProperty(XFA_Element property) const;
   bool HasPropertyFlag(XFA_Element property, XFA_PropertyFlag flag) const;
-  uint8_t PropertyOccuranceCount(XFA_Element property) const;
+  uint8_t PropertyOccurrenceCount(XFA_Element property) const;
 
   std::pair<CXFA_Node*, int32_t> GetProperty(int32_t index,
                                              XFA_Element eProperty) const;
@@ -191,6 +191,8 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   const T* GetChild(size_t index, XFA_Element eType, bool bOnlyChild) const {
     return static_cast<const T*>(GetChildInternal(index, eType, bOnlyChild));
   }
+
+  bool IsAncestorOf(const CXFA_Node* that) const;
 
   void InsertChildAndNotify(int32_t index, CXFA_Node* pNode);
   void InsertChildAndNotify(CXFA_Node* pNode, CXFA_Node* pBeforeNode);

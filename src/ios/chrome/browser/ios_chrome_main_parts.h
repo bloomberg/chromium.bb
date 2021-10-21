@@ -10,7 +10,6 @@
 #include "base/allocator/buildflags.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "ios/chrome/browser/ios_chrome_field_trials.h"
 #include "ios/web/public/init/web_main_parts.h"
 
@@ -22,6 +21,10 @@ class IOSThreadProfiler;
 class IOSChromeMainParts : public web::WebMainParts {
  public:
   explicit IOSChromeMainParts(const base::CommandLine& parsed_command_line);
+
+  IOSChromeMainParts(const IOSChromeMainParts&) = delete;
+  IOSChromeMainParts& operator=(const IOSChromeMainParts&) = delete;
+
   ~IOSChromeMainParts() override;
 
  private:
@@ -48,10 +51,6 @@ class IOSChromeMainParts : public web::WebMainParts {
 
   std::unique_ptr<ApplicationContextImpl> application_context_;
 
-  // Statistical testing infrastructure for the entire browser. NULL until
-  // SetUpMetricsAndFieldTrials is called.
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-
   PrefService* local_state_;
 
   IOSChromeFieldTrials ios_field_trials_;
@@ -64,8 +63,6 @@ class IOSChromeMainParts : public web::WebMainParts {
   // Manages heap (memory) profiling. Requires the allocator shim to be enabled.
   std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeMainParts);
 };
 
 #endif  // IOS_CHROME_BROWSER_IOS_CHROME_MAIN_PARTS_H_

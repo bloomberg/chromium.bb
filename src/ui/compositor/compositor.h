@@ -67,7 +67,6 @@ class DelegatedInkPointRenderer;
 }  // namespace mojom
 struct PresentationFeedback;
 class Rect;
-class ScrollOffset;
 class Size;
 }
 
@@ -154,6 +153,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
              bool use_external_begin_frame_control = false,
              bool force_software_compositor = false,
              bool enable_compositing_based_throttling = false);
+
+  Compositor(const Compositor&) = delete;
+  Compositor& operator=(const Compositor&) = delete;
+
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
@@ -237,6 +240,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // the |root_layer|.
   void SetBackgroundColor(SkColor color);
 
+  // Evicts the root surface and sets the LocalSurfaceId of the root to
+  // `surface_id`.
+  void EvictRootSurface(const viz::LocalSurfaceId& surface_id);
+
   // Inform the display corresponding to this compositor if it is visible. When
   // false it does not need to produce any frames. Visibility is reset for each
   // call to CreateLayerTreeFrameSink.
@@ -248,8 +255,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // Gets or sets the scroll offset for the given layer in step with the
   // cc::InputHandler. Returns true if the layer is active on the impl side.
   bool GetScrollOffsetForLayer(cc::ElementId element_id,
-                               gfx::ScrollOffset* offset) const;
-  bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
+                               gfx::Vector2dF* offset) const;
+  bool ScrollLayerTo(cc::ElementId element_id, const gfx::Vector2dF& offset);
 
   // Mac path for transporting vsync parameters to the display. Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
@@ -295,8 +302,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // timeout is null, then no timeout is used.
   std::unique_ptr<CompositorLock> GetCompositorLock(
       CompositorLockClient* client,
-      base::TimeDelta timeout =
-          base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs)) {
+      base::TimeDelta timeout = base::Milliseconds(kCompositorLockTimeoutMs)) {
     return lock_manager_.GetCompositorLock(client, timeout,
                                            host_->DeferMainFrameUpdate());
   }
@@ -337,7 +343,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void DidInitializeLayerTreeFrameSink() override {}
   void DidFailToInitializeLayerTreeFrameSink() override;
   void WillCommit() override {}
-  void DidCommit(base::TimeTicks) override;
+  void DidCommit(base::TimeTicks, base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override {}
@@ -526,8 +532,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
   base::WeakPtrFactory<Compositor> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Compositor);
 };
 
 }  // namespace ui

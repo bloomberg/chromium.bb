@@ -25,7 +25,6 @@
 #include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/full_restore/full_restore_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -35,6 +34,8 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
+#include "ash/wm/window_restore/window_restore_util.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -48,10 +49,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/timer/timer.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/full_restore_utils.h"
-#include "components/full_restore/restore_data.h"
-#include "components/full_restore/window_info.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/restore_data.h"
+#include "components/app_restore/window_info.h"
+#include "components/app_restore/window_properties.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -93,8 +94,7 @@ constexpr int kDeskTraversalsMaxValue = 20;
 // After an desk activation animation starts,
 // |kNumberOfDeskTraversalsHistogramName| will be recorded after this time
 // interval.
-constexpr base::TimeDelta kDeskTraversalsTimeout =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kDeskTraversalsTimeout = base::Seconds(5);
 
 constexpr int kDeskDefaultNameIds[] = {
     IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE, IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
@@ -266,7 +266,7 @@ DesksController::DesksController()
   active_desk_->Activate(/*update_window_activation=*/true);
 
   weekly_active_desks_scheduler_.Start(
-      FROM_HERE, base::TimeDelta::FromDays(7), this,
+      FROM_HERE, base::Days(7), this,
       &DesksController::RecordAndResetNumberOfWeeklyActiveDesks);
 }
 
@@ -491,8 +491,11 @@ void DesksController::ReorderDesk(int old_index, int new_index) {
   // 4. For restoring windows to the right desks, update workspaces of all
   // windows in the affected desks for all simultaneously logged-in users.
   for (int i = starting_affected_index; i <= ending_affected_index; i++) {
-    for (auto* window : desks_[i]->windows())
+    for (auto* window : desks_[i]->windows()) {
+      if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
+        continue;
       window->SetProperty(aura::client::kWindowWorkspaceKey, i);
+    }
   }
 }
 
@@ -630,13 +633,15 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   if (!base::Contains(active_desk_->windows(), window))
     return false;
 
-  if (window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey)) {
+  if (desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
     if (source == DesksMoveWindowFromActiveDeskSource::kDragAndDrop) {
       // Since a visible on all desks window is on all desks, prevent users from
       // moving them manually in overview.
       return false;
-    } else if (source == DesksMoveWindowFromActiveDeskSource::kShortcut) {
-      window->SetProperty(aura::client::kVisibleOnAllWorkspacesKey, false);
+    } else if (source !=
+               DesksMoveWindowFromActiveDeskSource::kVisibleOnAllDesks) {
+      window->SetProperty(aura::client::kWindowWorkspaceKey,
+                          aura::client::kWindowWorkspaceUnassignedWorkspace);
     }
   }
 
@@ -826,8 +831,12 @@ void DesksController::SendToDeskAtIndex(aura::Window* window, int desk_index) {
   if (desk_index < 0 || desk_index >= static_cast<int>(desks_.size()))
     return;
 
-  if (window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey))
-    window->SetProperty(aura::client::kVisibleOnAllWorkspacesKey, false);
+  // If |window| is assigned to all desk, clear it since the user is manually
+  // moving it to a desk.
+  if (desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
+    window->SetProperty(aura::client::kWindowWorkspaceKey,
+                        aura::client::kWindowWorkspaceUnassignedWorkspace);
+  }
 
   const int active_desk_index = GetDeskIndex(active_desk_);
   if (desk_index == active_desk_index)
@@ -851,13 +860,13 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
   desk_template->set_template_name(active_desk_->name());
 
   // Construct |restore_data| for |desk_template|.
-  std::unique_ptr<full_restore::RestoreData> restore_data =
-      std::make_unique<full_restore::RestoreData>();
+  std::unique_ptr<app_restore::RestoreData> restore_data =
+      std::make_unique<app_restore::RestoreData>();
   auto* shell = Shell::Get();
   auto mru_windows =
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* window : mru_windows) {
-    std::unique_ptr<::full_restore::AppLaunchInfo> app_launch_info =
+    std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info =
         shell->shell_delegate()->GetAppLaunchDataForDeskTemplate(window);
     if (!app_launch_info)
       continue;
@@ -865,18 +874,14 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
     // We need to copy |app_launch_info->app_id| to |app_id| as the below
     // function AddAppLaunchInfo() will destroy |app_launch_info|.
     const std::string app_id = app_launch_info->app_id;
-    const int32_t window_id = window->GetProperty(full_restore::kWindowIdKey);
+    const int32_t window_id = window->GetProperty(app_restore::kWindowIdKey);
     restore_data->AddAppLaunchInfo(std::move(app_launch_info));
 
-    std::unique_ptr<full_restore::WindowInfo> window_info = BuildWindowInfo(
+    std::unique_ptr<app_restore::WindowInfo> window_info = BuildWindowInfo(
         window, /*activation_index=*/absl::nullopt, mru_windows);
     // Clear WindowInfo's |desk_id| as a window in template will always launch
     // to a newly created desk.
     window_info->desk_id.reset();
-    // Clear WindowInfo's `visible_on_all_workspaces` as according to the PRD
-    // we don't want the window that is created from desk template is visible
-    // on other desks.
-    window_info->visible_on_all_workspaces.reset();
     restore_data->ModifyWindowInfo(app_id, window_id, *window_info);
   }
   desk_template->set_desk_restore_data(std::move(restore_data));
@@ -923,7 +928,8 @@ void DesksController::CreateAndActivateNewDeskForTemplate(
 }
 
 bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
-    const std::string& app_id) {
+    const std::string& app_id,
+    const app_restore::RestoreData::LaunchList& launch_list) {
   // Iterate through the windows on each desk to see if there is an existing app
   // window instance.
   aura::Window* existing_app_instance_window = nullptr;
@@ -953,22 +959,39 @@ bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
   // No need to shift a window that is visible on all desks.
   // TODO(sammiequon): Remove this property if the window on the new desk should
   // not be visible on all desks.
-  if (existing_app_instance_window->GetProperty(
-          aura::client::kVisibleOnAllWorkspacesKey)) {
-    return false;
+  if (!desks_util::IsWindowVisibleOnAllWorkspaces(
+          existing_app_instance_window)) {
+    DCHECK(src_desk);
+    DCHECK_NE(src_desk, active_desk_);
+    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
+    base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
+    src_desk->MoveWindowToDesk(existing_app_instance_window, active_desk_,
+                               existing_app_instance_window->GetRootWindow(),
+                               /*unminimize=*/false);
+    MaybeUpdateShelfItems(
+        /*windows_on_inactive_desk=*/{},
+        /*windows_on_active_desk=*/{existing_app_instance_window});
+    ReportNumberOfWindowsPerDeskHistogram();
   }
 
-  DCHECK(src_desk);
-  DCHECK_NE(src_desk, active_desk_);
-  DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
-  base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
-  src_desk->MoveWindowToDesk(existing_app_instance_window, active_desk_,
-                             existing_app_instance_window->GetRootWindow(),
-                             /*unminimize=*/false);
-  MaybeUpdateShelfItems(
-      /*windows_on_inactive_desk=*/{},
-      /*windows_on_active_desk=*/{existing_app_instance_window});
-  ReportNumberOfWindowsPerDeskHistogram();
+  // We can now apply properties from the restore data. If we are in this
+  // function, then we are dealing with a single instance app and there should
+  // be at most one entry in the launch list.
+  DCHECK_LE(launch_list.size(), 1u);
+  if (!launch_list.empty()) {
+    if (const auto& app_restore_data = launch_list.begin()->second) {
+      if (app_restore_data->current_bounds) {
+        existing_app_instance_window->SetBounds(
+            *app_restore_data->current_bounds);
+      }
+      if (app_restore_data->activation_index) {
+        existing_app_instance_window->SetProperty(
+            app_restore::kActivationIndexKey,
+            *app_restore_data->activation_index);
+      }
+    }
+    WindowRestoreController::Get()->StackWindow(existing_app_instance_window);
+  }
 
   // TODO(sammiequon): Read something for chromevox, either here or when the
   // whole template launches.
@@ -1133,8 +1156,11 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   // removed desk since indices of those desks shift by one.
   for (int i = removed_desk_index + 1; i < static_cast<int>(desks_.size());
        i++) {
-    for (auto* window : desks_[i]->windows())
+    for (auto* window : desks_[i]->windows()) {
+      if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
+        continue;
       window->SetProperty(aura::client::kWindowWorkspaceKey, i - 1);
+    }
   }
 
   // Record |desk|'s lifetime before it's removed from |desks_|.
@@ -1404,7 +1430,7 @@ void DesksController::RecordAndResetNumberOfWeeklyActiveDesks() {
   Desk::SetWeeklyActiveDesks(1);
 
   weekly_active_desks_scheduler_.Start(
-      FROM_HERE, base::TimeDelta::FromDays(7), this,
+      FROM_HERE, base::Days(7), this,
       &DesksController::RecordAndResetNumberOfWeeklyActiveDesks);
 }
 

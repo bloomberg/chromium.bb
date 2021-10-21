@@ -21,7 +21,7 @@ class ASH_EXPORT CalendarViewController {
       delete;
   ~CalendarViewController();
 
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Gets called when `current_date_ ` changes.
     virtual void OnMonthChanged(const base::Time::Exploded current_month) = 0;
@@ -52,12 +52,34 @@ class ASH_EXPORT CalendarViewController {
   // Gets the month name of the previous month based `current_date_`'s month.
   std::u16string GetPreviousMonthName();
 
+  // Get the current date, which can be today or the first day of the current
+  // month if current month is not today's month.
+  base::Time current_date() { return current_date_; }
+
+  // Getters of the today's row position, top and bottom.
+  int GetTodayRowTopHeight();
+  int GetTodayRowBottomHeight();
+
+  // Getters and setters of the today's row number and row height.
+  int today_row() { return today_row_; }
+  void set_today_row(int row) { today_row_ = row; }
+  int row_height() { return row_height_; }
+  void set_row_height(int height) { row_height_ = height; }
+
  private:
   // The current date, which can be today or the first day of the current month
   // if current month is not today's month.
   base::Time current_date_;
 
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer> observers_;
+
+  // The today's date cell row number (which is index +1) in its
+  // `CalendarMonthView`.
+  int today_row_ = 0;
+
+  // Each row's height. Every row should have the same height, so this height is
+  // only updated once with today's row.
+  int row_height_ = 0;
 };
 
 }  // namespace ash

@@ -21,9 +21,8 @@
 
 namespace {
 
-constexpr base::TimeDelta kMinHeartbeatInterval =
-    base::TimeDelta::FromSeconds(30);
-constexpr base::TimeDelta kMaxHeartbeatInterval = base::TimeDelta::FromDays(1);
+constexpr base::TimeDelta kMinHeartbeatInterval = base::Seconds(30);
+constexpr base::TimeDelta kMaxHeartbeatInterval = base::Days(1);
 
 // Our sender ID we send up with all of our GCM messages.
 const char kHeartbeatGCMAppID[] = "com.google.chromeos.monitoring";
@@ -49,8 +48,7 @@ const char kUpstreamNotificationNotifyKey[] = "notify";
 const char kUpstreamNotificationRegIdKey[] = "registration_id";
 
 // If we get an error registering with GCM, try again in two minutes.
-constexpr base::TimeDelta kRegistrationRetryDelay =
-    base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kRegistrationRetryDelay = base::Minutes(2);
 
 const char kHeartbeatSchedulerScope[] =
     "policy.heartbeat_scheduler.upstream_notification";
@@ -72,7 +70,7 @@ namespace policy {
 
 // static
 const base::TimeDelta HeartbeatScheduler::kDefaultHeartbeatInterval =
-    base::TimeDelta::FromMinutes(2);
+    base::Minutes(2);
 
 // Helper class used to manage GCM registration (handles retrying after
 // errors, etc).
@@ -84,6 +82,10 @@ class HeartbeatRegistrationHelper {
   HeartbeatRegistrationHelper(
       gcm::GCMDriver* gcm_driver,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+
+  HeartbeatRegistrationHelper(const HeartbeatRegistrationHelper&) = delete;
+  HeartbeatRegistrationHelper& operator=(const HeartbeatRegistrationHelper&) =
+      delete;
 
   void Register(RegistrationHelperCallback callback);
 
@@ -106,8 +108,6 @@ class HeartbeatRegistrationHelper {
   // Should remain the last member so it will be destroyed first and
   // invalidate all weak pointers.
   base::WeakPtrFactory<HeartbeatRegistrationHelper> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HeartbeatRegistrationHelper);
 };
 
 HeartbeatRegistrationHelper::HeartbeatRegistrationHelper(
@@ -227,8 +227,8 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // want to use the last trusted value).
   int frequency;
   if (settings->GetInteger(chromeos::kHeartbeatFrequency, &frequency)) {
-    heartbeat_interval_ = EnsureValidHeartbeatInterval(
-        base::TimeDelta::FromMilliseconds(frequency));
+    heartbeat_interval_ =
+        EnsureValidHeartbeatInterval(base::Milliseconds(frequency));
   }
 
   gcm_driver_->AddHeartbeatInterval(kHeartbeatSchedulerScope,

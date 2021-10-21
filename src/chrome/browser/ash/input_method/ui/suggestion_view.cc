@@ -12,7 +12,10 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -122,6 +125,10 @@ SuggestionView::SuggestionView(PressedCallback callback)
   tab_annotation_label_->SetVisible(false);
 
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks, but this focusable View needs to
+  // add a name so that the screen reader knows what to announce.
+  SetProperty(views::kSkipAccessibilityPaintChecks, true);
 }
 
 SuggestionView::~SuggestionView() = default;
@@ -227,14 +234,13 @@ void SuggestionView::SetHighlighted(bool highlighted) {
 }
 
 void SuggestionView::OnThemeChanged() {
+  const auto* color_provider = GetColorProvider();
   down_icon_->SetImage(
       gfx::CreateVectorIcon(kKeyboardArrowDownIcon, kDownIconSize,
-                            GetNativeTheme()->GetSystemColor(
-                                ui::NativeTheme::kColorId_DefaultIconColor)));
+                            color_provider->GetColor(ui::kColorIcon)));
   arrow_icon_->SetImage(
       gfx::CreateVectorIcon(kKeyboardArrowRightIcon, kArrowIconSize,
-                            GetNativeTheme()->GetSystemColor(
-                                ui::NativeTheme::kColorId_DefaultIconColor)));
+                            color_provider->GetColor(ui::kColorIcon)));
   views::View::OnThemeChanged();
 }
 

@@ -1841,16 +1841,16 @@ TEST_F(ApmTest, Process) {
       const int kStatsAggregationFrameNum = 100;  // 1 second.
       if (frame_count % kStatsAggregationFrameNum == 0) {
         // Get echo and delay metrics.
-        AudioProcessingStats stats = apm_->GetStatistics();
+        AudioProcessingStats stats2 = apm_->GetStatistics();
 
         // Echo metrics.
-        const float echo_return_loss = stats.echo_return_loss.value_or(-1.0f);
+        const float echo_return_loss = stats2.echo_return_loss.value_or(-1.0f);
         const float echo_return_loss_enhancement =
-            stats.echo_return_loss_enhancement.value_or(-1.0f);
+            stats2.echo_return_loss_enhancement.value_or(-1.0f);
         const float residual_echo_likelihood =
-            stats.residual_echo_likelihood.value_or(-1.0f);
+            stats2.residual_echo_likelihood.value_or(-1.0f);
         const float residual_echo_likelihood_recent_max =
-            stats.residual_echo_likelihood_recent_max.value_or(-1.0f);
+            stats2.residual_echo_likelihood_recent_max.value_or(-1.0f);
 
         if (!absl::GetFlag(FLAGS_write_apm_ref_data)) {
           const audioproc::Test::EchoMetrics& reference =
@@ -2673,14 +2673,13 @@ class MyEchoControlFactory : public EchoControlFactory {
 
 TEST(ApmConfiguration, EchoControlInjection) {
   // Verify that apm uses an injected echo controller if one is provided.
-  webrtc::Config webrtc_config;
   std::unique_ptr<EchoControlFactory> echo_control_factory(
       new MyEchoControlFactory());
 
   rtc::scoped_refptr<AudioProcessing> apm =
       AudioProcessingBuilderForTesting()
           .SetEchoControlFactory(std::move(echo_control_factory))
-          .Create(webrtc_config);
+          .Create();
 
   Int16FrameData audio;
   audio.num_channels = 1;
@@ -2700,9 +2699,8 @@ TEST(ApmConfiguration, EchoControlInjection) {
 }
 
 rtc::scoped_refptr<AudioProcessing> CreateApm(bool mobile_aec) {
-  Config old_config;
   rtc::scoped_refptr<AudioProcessing> apm =
-      AudioProcessingBuilderForTesting().Create(old_config);
+      AudioProcessingBuilderForTesting().Create();
   if (!apm) {
     return apm;
   }
@@ -3109,6 +3107,18 @@ TEST(AudioProcessing, GainController2ConfigEqual) {
   b_adaptive.dry_run = a_adaptive.dry_run;
   EXPECT_EQ(a, b);
 
+  a_adaptive.headroom_db += 1.0f;
+  b_adaptive.headroom_db = a_adaptive.headroom_db;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.max_gain_db += 1.0f;
+  b_adaptive.max_gain_db = a_adaptive.max_gain_db;
+  EXPECT_EQ(a, b);
+
+  a_adaptive.initial_gain_db += 1.0f;
+  b_adaptive.initial_gain_db = a_adaptive.initial_gain_db;
+  EXPECT_EQ(a, b);
+
   a_adaptive.vad_reset_period_ms++;
   b_adaptive.vad_reset_period_ms = a_adaptive.vad_reset_period_ms;
   EXPECT_EQ(a, b);
@@ -3126,18 +3136,6 @@ TEST(AudioProcessing, GainController2ConfigEqual) {
   a_adaptive.max_output_noise_level_dbfs += 1.0f;
   b_adaptive.max_output_noise_level_dbfs =
       a_adaptive.max_output_noise_level_dbfs;
-  EXPECT_EQ(a, b);
-
-  Toggle(a_adaptive.sse2_allowed);
-  b_adaptive.sse2_allowed = a_adaptive.sse2_allowed;
-  EXPECT_EQ(a, b);
-
-  Toggle(a_adaptive.avx2_allowed);
-  b_adaptive.avx2_allowed = a_adaptive.avx2_allowed;
-  EXPECT_EQ(a, b);
-
-  Toggle(a_adaptive.neon_allowed);
-  b_adaptive.neon_allowed = a_adaptive.neon_allowed;
   EXPECT_EQ(a, b);
 }
 
@@ -3166,6 +3164,18 @@ TEST(AudioProcessing, GainController2ConfigNotEqual) {
   EXPECT_NE(a, b);
   a_adaptive = b_adaptive;
 
+  a_adaptive.headroom_db += 1.0f;
+  EXPECT_NE(a, b);
+  a_adaptive = b_adaptive;
+
+  a_adaptive.max_gain_db += 1.0f;
+  EXPECT_NE(a, b);
+  a_adaptive = b_adaptive;
+
+  a_adaptive.initial_gain_db += 1.0f;
+  EXPECT_NE(a, b);
+  a_adaptive = b_adaptive;
+
   a_adaptive.vad_reset_period_ms++;
   EXPECT_NE(a, b);
   a_adaptive = b_adaptive;
@@ -3179,18 +3189,6 @@ TEST(AudioProcessing, GainController2ConfigNotEqual) {
   a_adaptive = b_adaptive;
 
   a_adaptive.max_output_noise_level_dbfs += 1.0f;
-  EXPECT_NE(a, b);
-  a_adaptive = b_adaptive;
-
-  Toggle(a_adaptive.sse2_allowed);
-  EXPECT_NE(a, b);
-  a_adaptive = b_adaptive;
-
-  Toggle(a_adaptive.avx2_allowed);
-  EXPECT_NE(a, b);
-  a_adaptive = b_adaptive;
-
-  Toggle(a_adaptive.neon_allowed);
   EXPECT_NE(a, b);
   a_adaptive = b_adaptive;
 }

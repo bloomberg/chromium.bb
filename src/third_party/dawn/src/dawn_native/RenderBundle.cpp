@@ -17,6 +17,7 @@
 #include "common/BitSetIterator.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/RenderBundleEncoder.h"
 
 namespace dawn_native {
@@ -24,9 +25,11 @@ namespace dawn_native {
     RenderBundleBase::RenderBundleBase(RenderBundleEncoder* encoder,
                                        const RenderBundleDescriptor* descriptor,
                                        Ref<AttachmentState> attachmentState,
-                                       RenderPassResourceUsage resourceUsage)
-        : ObjectBase(encoder->GetDevice(), kLabelNotImplemented),
+                                       RenderPassResourceUsage resourceUsage,
+                                       IndirectDrawMetadata indirectDrawMetadata)
+        : ApiObjectBase(encoder->GetDevice(), kLabelNotImplemented),
           mCommands(encoder->AcquireCommands()),
+          mIndirectDrawMetadata(std::move(indirectDrawMetadata)),
           mAttachmentState(std::move(attachmentState)),
           mResourceUsage(std::move(resourceUsage)) {
     }
@@ -41,7 +44,11 @@ namespace dawn_native {
     }
 
     RenderBundleBase::RenderBundleBase(DeviceBase* device, ErrorTag errorTag)
-        : ObjectBase(device, errorTag) {
+        : ApiObjectBase(device, errorTag) {
+    }
+
+    ObjectType RenderBundleBase::GetType() const {
+        return ObjectType::RenderBundle;
     }
 
     CommandIterator* RenderBundleBase::GetCommands() {
@@ -56,6 +63,10 @@ namespace dawn_native {
     const RenderPassResourceUsage& RenderBundleBase::GetResourceUsage() const {
         ASSERT(!IsError());
         return mResourceUsage;
+    }
+
+    const IndirectDrawMetadata& RenderBundleBase::GetIndirectDrawMetadata() {
+        return mIndirectDrawMetadata;
     }
 
 }  // namespace dawn_native

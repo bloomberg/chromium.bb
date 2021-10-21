@@ -526,6 +526,13 @@ class Texture final : public RefCountObject<TextureID>,
                               GLenum type,
                               void *pixels);
 
+    angle::Result getCompressedTexImage(const Context *context,
+                                        const PixelPackState &packState,
+                                        Buffer *packBuffer,
+                                        TextureTarget target,
+                                        GLint level,
+                                        void *pixels);
+
     rx::TextureImpl *getImplementation() const { return mTexture; }
 
     // FramebufferAttachmentObject implementation
@@ -615,6 +622,11 @@ class Texture final : public RefCountObject<TextureID>,
 
     angle::Result syncState(const Context *context, Command source);
     bool hasAnyDirtyBit() const { return mDirtyBits.any(); }
+    bool hasAnyDirtyBitExcludingBoundAsAttachmentBit() const
+    {
+        static constexpr DirtyBits kBoundAsAttachment = DirtyBits({DIRTY_BIT_BOUND_AS_ATTACHMENT});
+        return mDirtyBits.any() && mDirtyBits != kBoundAsAttachment;
+    }
 
     // ObserverInterface implementation.
     void onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message) override;

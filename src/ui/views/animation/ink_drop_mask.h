@@ -21,6 +21,9 @@ namespace views {
 // layer it is masking.
 class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
  public:
+  InkDropMask(const InkDropMask&) = delete;
+  InkDropMask& operator=(const InkDropMask&) = delete;
+
   ~InkDropMask() override;
 
   ui::Layer* layer() { return &layer_; }
@@ -34,14 +37,15 @@ class VIEWS_EXPORT InkDropMask : public ui::LayerDelegate {
                                   float new_device_scale_factor) override;
 
   ui::Layer layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropMask);
 };
 
 // An ink-drop mask that paints a specified path.
 class VIEWS_EXPORT PathInkDropMask : public InkDropMask {
  public:
   PathInkDropMask(const gfx::Size& layer_size, const SkPath& path);
+
+  PathInkDropMask(const PathInkDropMask&) = delete;
+  PathInkDropMask& operator=(const PathInkDropMask&) = delete;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InkDropMaskTest, PathInkDropMaskPaintsTriangle);
@@ -50,8 +54,6 @@ class VIEWS_EXPORT PathInkDropMask : public InkDropMask {
   void OnPaintLayer(const ui::PaintContext& context) override;
 
   SkPath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(PathInkDropMask);
 };
 
 }  // namespace views

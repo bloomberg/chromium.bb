@@ -6,6 +6,9 @@ import("//build/config/chrome_build.gni")
 import("//build/util/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//tools/grit/grit_rule.gni")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 grit("autofill_address_rewriter_resources") {
   source = "autofill_address_rewriter_resources.grd"
@@ -59,8 +62,6 @@ static_library("browser") {
     "autofill_download_manager.cc",
     "autofill_download_manager.h",
     "autofill_driver.h",
-    "autofill_driver_factory.cc",
-    "autofill_driver_factory.h",
     "autofill_experiments.cc",
     "autofill_experiments.h",
     "autofill_external_delegate.cc",
@@ -232,12 +233,15 @@ static_library("browser") {
     "payments/autofill_offer_manager.h",
     "payments/autofill_wallet_model_type_controller.cc",
     "payments/autofill_wallet_model_type_controller.h",
+    "payments/card_unmask_challenge_option.h",
     "payments/card_unmask_delegate.cc",
     "payments/card_unmask_delegate.h",
     "payments/credit_card_access_manager.cc",
     "payments/credit_card_access_manager.h",
     "payments/credit_card_cvc_authenticator.cc",
     "payments/credit_card_cvc_authenticator.h",
+    "payments/credit_card_otp_authenticator.cc",
+    "payments/credit_card_otp_authenticator.h",
     "payments/credit_card_save_manager.cc",
     "payments/credit_card_save_manager.h",
     "payments/credit_card_save_strike_database.cc",
@@ -249,7 +253,12 @@ static_library("browser") {
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
-    "payments/payments_request.h",
+    "payments/payments_requests/payments_request.cc",
+    "payments/payments_requests/payments_request.h",
+    "payments/payments_requests/select_challenge_option_request.cc",
+    "payments/payments_requests/select_challenge_option_request.h",
+    "payments/payments_requests/unmask_card_request.cc",
+    "payments/payments_requests/unmask_card_request.h",
     "payments/payments_service_url.cc",
     "payments/payments_service_url.h",
     "payments/payments_util.cc",
@@ -505,6 +514,22 @@ static_library("browser") {
   }
 }
 
+if (is_android) {
+  java_cpp_enum("java_enum_srcjar") {
+    # External code should depend on ":card_unmask_challenge_option_type_java" instead.
+    visibility = [ ":*" ]
+    sources = [ "payments/card_unmask_challenge_option.h" ]
+  }
+
+  android_library("card_unmask_challenge_option_type_java") {
+    srcjar_deps = [ ":java_enum_srcjar" ]
+
+    # Important: the generated enum uses the @IntDef annotation provided by
+    # this dependency.
+    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
+  }
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -524,6 +549,8 @@ static_library("test_support") {
     "mock_autocomplete_history_manager.h",
     "mock_single_field_form_fill_router.cc",
     "mock_single_field_form_fill_router.h",
+    "payments/test/test_credit_card_otp_authenticator.cc",
+    "payments/test/test_credit_card_otp_authenticator.h",
     "payments/test_authentication_requester.cc",
     "payments/test_authentication_requester.h",
     "payments/test_credit_card_save_manager.cc",
@@ -682,7 +709,6 @@ source_set("unit_tests") {
     "autofill_credit_card_policy_handler_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
-    "autofill_driver_factory_unittest.cc",
     "autofill_experiments_unittest.cc",
     "autofill_external_delegate_unittest.cc",
     "autofill_merge_unittest.cc",
@@ -747,6 +773,7 @@ source_set("unit_tests") {
     "payments/autofill_offer_manager_unittest.cc",
     "payments/credit_card_access_manager_unittest.cc",
     "payments/credit_card_cvc_authenticator_unittest.cc",
+    "payments/credit_card_otp_authenticator_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
     "payments/legal_message_line_unittest.cc",

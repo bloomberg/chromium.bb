@@ -384,7 +384,7 @@ Polymer({
 
   /** @override */
   attached() {
-    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
       this.addWebUIListener(
           'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
       this.osSyncBrowserProxy_.sendOsSyncPrefsChanged();
@@ -401,7 +401,7 @@ Polymer({
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
 
-    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
       this.osSyncBrowserProxy_ = OsSyncBrowserProxyImpl.getInstance();
     } else {
       this.syncBrowserProxy_ = SyncBrowserProxyImpl.getInstance();
@@ -1212,6 +1212,26 @@ Polymer({
     return !!managedProperties &&
         managedProperties.type ===
         chromeos.networkConfig.mojom.NetworkType.kTether;
+  },
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  isWireGuard_(managedProperties) {
+    if (!managedProperties) {
+      return false;
+    }
+    if (managedProperties.type !==
+        chromeos.networkConfig.mojom.NetworkType.kVPN) {
+      return false;
+    }
+    if (!managedProperties.typeProperties.vpn) {
+      return false;
+    }
+    return managedProperties.typeProperties.vpn.type ===
+        chromeos.networkConfig.mojom.VpnType.kWireGuard;
   },
 
   /**

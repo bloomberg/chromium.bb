@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "quic/core/congestion_control/bandwidth_sampler.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
 #include "quic/core/congestion_control/windowed_filter.h"
 #include "quic/core/quic_bandwidth.h"
 #include "quic/core/quic_packet_number.h"
@@ -94,6 +95,10 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   // If false, exit STARTUP on loss only if bandwidth is below threshold.
   bool always_exit_startup_on_excess_loss = false;
 
+  // If true, inclue extra acked during STARTUP and proactively reduce extra
+  // acked when bandwidth increases.
+  bool startup_include_extra_acked = false;
+
   /*
    * DRAIN parameters.
    */
@@ -130,12 +135,24 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   // Multiplier to get target inflight (as multiple of BDP) for PROBE_UP phase.
   float probe_bw_probe_inflight_gain = 1.25;
 
+  // When attempting to grow inflight_hi in PROBE_UP, check whether we are cwnd
+  // limited before the current aggregation epoch, instead of before the current
+  // ack event.
+  bool probe_bw_check_cwnd_limited_before_aggregation_epoch = false;
+
   // Pacing gains.
   float probe_bw_probe_up_pacing_gain = 1.25;
   float probe_bw_probe_down_pacing_gain = 0.75;
   float probe_bw_default_pacing_gain = 1.0;
 
   float probe_bw_cwnd_gain = 2.0;
+
+  /*
+   * PROBE_UP parameters.
+   */
+  bool probe_up_includes_acks_after_cwnd_limited = false;
+  bool probe_up_dont_exit_if_no_queue_ = false;
+  bool probe_up_ignore_inflight_hi = false;
 
   /*
    * PROBE_RTT parameters.
@@ -386,6 +403,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     return bandwidth_sampler_.max_ack_height();
   }
 
+  bool cwnd_limited_before_aggregation_epoch() const {
+    return cwnd_limited_before_aggregation_epoch_;
+  }
+
   void EnableOverestimateAvoidance() {
     bandwidth_sampler_.EnableOverestimateAvoidance();
   }
@@ -402,6 +423,22 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     return bandwidth_sampler_.num_ack_aggregation_epochs();
   }
 
+  void SetStartNewAggregationEpochAfterFullRound(bool value) {
+    bandwidth_sampler_.SetStartNewAggregationEpochAfterFullRound(value);
+  }
+
+  void SetLimitMaxAckHeightTrackerBySendRate(bool value) {
+    bandwidth_sampler_.SetLimitMaxAckHeightTrackerBySendRate(value);
+  }
+
+  void SetMaxAckHeightTrackerWindowLength(QuicRoundTripCount value) {
+    bandwidth_sampler_.SetMaxAckHeightTrackerWindowLength(value);
+  }
+
+  void SetReduceExtraAckedOnBandwidthIncrease(bool value) {
+    bandwidth_sampler_.SetReduceExtraAckedOnBandwidthIncrease(value);
+  }
+
   bool MaybeExpireMinRtt(const Bbr2CongestionEvent& congestion_event);
 
   QuicBandwidth BandwidthEstimate() const {
@@ -411,9 +448,6 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   QuicRoundTripCount RoundTripCount() const {
     return round_trip_counter_.Count();
   }
-
-  bool IsCongestionWindowLimited(
-      const Bbr2CongestionEvent& congestion_event) const;
 
   // Return true if the number of loss events exceeds max_loss_events and
   // fraction of bytes lost exceed the loss threshold.
@@ -457,6 +491,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
 
   QuicByteCount max_bytes_delivered_in_round() const {
     return max_bytes_delivered_in_round_;
+  }
+
+  QuicByteCount min_bytes_in_flight_in_round() const {
+    return min_bytes_in_flight_in_round_;
   }
 
   QuicPacketNumber end_of_app_limited_phase() const {
@@ -529,6 +567,9 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   // congestion event) was sent and acked, respectively.
   QuicByteCount max_bytes_delivered_in_round_ = 0;
 
+  // The minimum bytes in flight during this round.
+  QuicByteCount min_bytes_in_flight_in_round_ = 0;
+
   // Max bandwidth in the current round. Updated once per congestion event.
   QuicBandwidth bandwidth_latest_ = QuicBandwidth::Zero();
   // Max bandwidth of recent rounds. Updated once per round.
@@ -545,6 +586,10 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
 
   float cwnd_gain_;
   float pacing_gain_;
+
+  // Whether we are cwnd limited prior to the start of the current aggregation
+  // epoch.
+  bool cwnd_limited_before_aggregation_epoch_ = false;
 
   // STARTUP-centric fields which experimentally used by PROBE_UP.
   bool full_bandwidth_reached_ = false;

@@ -84,7 +84,7 @@ void MetalayerMode::OnDisable() {
 }
 
 const gfx::VectorIcon& MetalayerMode::GetActiveTrayIcon() const {
-  return kPaletteTrayIconMetalayerIcon;
+  return kPaletteModeMetalayerIcon;
 }
 
 const gfx::VectorIcon& MetalayerMode::GetPaletteIcon() const {
@@ -120,7 +120,7 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
     return;
 
   if (event->time_stamp() - previous_stroke_end_ <
-      base::TimeDelta::FromMilliseconds(kMaxStrokeGapWhenWritingMs)) {
+      base::Milliseconds(kMaxStrokeGapWhenWritingMs)) {
     // The press is happening too soon after the release, the user is most
     // likely writing/sketching and does not want the metalayer to activate.
     return;

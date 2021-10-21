@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 
@@ -36,7 +35,6 @@ public class LongScreenshotsEntry {
     private Bitmap mGeneratedBitmap;
     private EntryListener mEntryListener;
     private Callback<Integer> mMemoryTracker;
-    private boolean mBoundsAreRelativeToCapture;
 
     @IntDef({EntryStatus.UNKNOWN, EntryStatus.INSUFFICIENT_MEMORY, EntryStatus.GENERATION_ERROR,
             EntryStatus.BITMAP_GENERATED, EntryStatus.CAPTURE_COMPLETE,
@@ -67,24 +65,16 @@ public class LongScreenshotsEntry {
         void onResult(@EntryStatus int status);
     }
 
-    public LongScreenshotsEntry(
-            BitmapGenerator generator, Rect bounds, Callback<Integer> memoryTracker) {
-        this(generator, bounds, memoryTracker, false);
-    }
-
     /**
      * @param generator BitmapGenerator to be used to capture and composite the website.
      * @param bounds The bounds of the entry.
      * @param memoryTracker Callback to be notified of the entry's memory usage.
-     * @param boundsRelativeToCapture whether the bounds of the entry are relative to the capture or
-     *         the page.
      */
-    public LongScreenshotsEntry(BitmapGenerator generator, Rect bounds,
-            Callback<Integer> memoryTracker, boolean boundsRelativeToCapture) {
+    public LongScreenshotsEntry(
+            BitmapGenerator generator, Rect bounds, Callback<Integer> memoryTracker) {
         mRect = bounds;
         mGenerator = generator;
         mMemoryTracker = memoryTracker;
-        mBoundsAreRelativeToCapture = boundsRelativeToCapture;
     }
 
     static LongScreenshotsEntry createEntryWithStatus(@EntryStatus int status) {
@@ -123,8 +113,7 @@ public class LongScreenshotsEntry {
             return;
         }
         updateStatus(EntryStatus.BITMAP_GENERATION_IN_PROGRESS);
-        mGenerator.compositeBitmap(mRect, this::onBitmapGenerationError, this::onBitmapGenerated,
-                mBoundsAreRelativeToCapture);
+        mGenerator.compositeBitmap(mRect, this::onBitmapGenerationError, this::onBitmapGenerated);
     }
 
     /**
@@ -141,11 +130,6 @@ public class LongScreenshotsEntry {
      */
     public Bitmap getBitmap() {
         return mGeneratedBitmap;
-    }
-
-    @VisibleForTesting
-    public void setBitmapGenerator(BitmapGenerator generator) {
-        mGenerator = generator;
     }
 
     private void onBitmapGenerated(Bitmap bitmap) {

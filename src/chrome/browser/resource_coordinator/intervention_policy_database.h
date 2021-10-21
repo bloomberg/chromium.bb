@@ -14,7 +14,7 @@
 #include "url/origin.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace resource_coordinator {
@@ -38,6 +38,11 @@ class InterventionPolicyDatabase {
   };
 
   InterventionPolicyDatabase();
+
+  InterventionPolicyDatabase(const InterventionPolicyDatabase&) = delete;
+  InterventionPolicyDatabase& operator=(const InterventionPolicyDatabase&) =
+      delete;
+
   ~InterventionPolicyDatabase();
 
   InterventionPolicy GetDiscardingPolicy(const url::Origin& origin) const;
@@ -45,10 +50,9 @@ class InterventionPolicyDatabase {
 
   // Initialize the database with the OriginInterventionsDatabase protobuf
   // stored in |proto_location|.
-  void InitializeDatabaseWithProtoFile(
-      const base::FilePath& proto_location,
-      const base::Version& version,
-      std::unique_ptr<base::DictionaryValue> manifest);
+  void InitializeDatabaseWithProtoFile(const base::FilePath& proto_location,
+                                       const base::Version& version,
+                                       base::Value manifest);
 
   void AddOriginPoliciesForTesting(const url::Origin& origin,
                                    OriginInterventionPolicies policies);
@@ -76,8 +80,6 @@ class InterventionPolicyDatabase {
   InterventionsMap database_;
 
   base::WeakPtrFactory<InterventionPolicyDatabase> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InterventionPolicyDatabase);
 };
 
 }  // namespace resource_coordinator

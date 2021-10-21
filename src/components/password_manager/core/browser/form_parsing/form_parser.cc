@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -976,7 +977,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->all_possible_usernames = std::move(all_possible_usernames);
   result->scheme = PasswordForm::Scheme::kHtml;
   result->blocked_by_user = false;
-  result->type = PasswordForm::Type::kManual;
+  result->type = PasswordForm::Type::kFormSubmission;
   result->server_side_classification_successful = form_predictions.has_value();
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);

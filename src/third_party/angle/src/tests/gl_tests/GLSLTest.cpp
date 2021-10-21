@@ -1199,21 +1199,12 @@ void GLVertexIDIntegerTextureDrawArrays_helper(int first, int count, GLenum err)
 // https://github.com/KhronosGroup/WebGL/blob/master/sdk/tests/conformance2/rendering/vertex-id.html
 TEST_P(GLSLTest_ES3, GLVertexIDIntegerTextureDrawArrays)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(isSwiftshader());
-    // http://anglebug.com/5232
-    ANGLE_SKIP_TEST_IF(IsMetal());
-    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
-    // TODO(anglebug.com/5491): Failing on iOS, probably related to the ARM Mac failure above.
-    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
-    // Have to set a large point size because the window size is much larger than the texture
     constexpr char kVS[] = R"(#version 300 es
 flat out highp int vVertexID;
 void main() {
     vVertexID = gl_VertexID;
     gl_Position = vec4(0,0,0,1);
-    gl_PointSize = 1000.0;
+    gl_PointSize = 1.0;
 })";
 
     constexpr char kFS[] = R"(#version 300 es
@@ -1225,6 +1216,7 @@ void main() {
 
     ANGLE_GL_PROGRAM(program, kVS, kFS);
     glUseProgram(program);
+    glViewport(0, 0, 1, 1);
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -1995,9 +1987,6 @@ TEST_P(GLSLTest, MaxVaryingVec3AndOneFloat)
 // Only fails on D3D9 because of packing limitations.
 TEST_P(GLSLTest, MaxVaryingVec3ArrayAndOneFloatArray)
 {
-    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
-
     GLint maxVaryings = 0;
     glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryings);
 
@@ -2032,9 +2021,6 @@ TEST_P(GLSLTest, MaxVaryingVec2Arrays)
     // TODO(geofflang): Find out why this doesn't compile on Apple AMD OpenGL drivers
     // (http://anglebug.com/1291)
     ANGLE_SKIP_TEST_IF(IsOSX() && IsAMD() && IsOpenGL());
-
-    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
 
     GLint maxVaryings = 0;
     glGetIntegerv(GL_MAX_VARYING_VECTORS, &maxVaryings);
@@ -3392,12 +3378,6 @@ TEST_P(GLSLTest_ES3, AtanVec2)
 // Convers a bug with the unary minus operator on signed integer workaround.
 TEST_P(GLSLTest_ES3, UnaryMinusOperatorSignedInt)
 {
-    // http://anglebug.com/5242
-    // Test times out on dual-GPU MacBook Pros that don't show up as
-    // IsIntel(); skip on all Metal for now.
-    // See also http://anglebug.com/6174 .
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     constexpr char kVS[] =
         "#version 300 es\n"
         "in highp vec4 position;\n"
@@ -3445,12 +3425,6 @@ TEST_P(GLSLTest_ES3, UnaryMinusOperatorSignedInt)
 // Convers a bug with the unary minus operator on unsigned integer workaround.
 TEST_P(GLSLTest_ES3, UnaryMinusOperatorUnsignedInt)
 {
-    // http://anglebug.com/5242
-    // Test times out on dual-GPU MacBook Pros that don't show up as
-    // IsIntel(); skip on all Metal for now.
-    // See also http://anglebug.com/6174 .
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     constexpr char kVS[] =
         "#version 300 es\n"
         "in highp vec4 position;\n"
@@ -5803,6 +5777,30 @@ void main()
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFragmentShader);
     glUseProgram(program);
     GLint uniLoc = glGetUniformLocation(program, "b.q");
+    ASSERT_NE(-1, uniLoc);
+    glUniform1f(uniLoc, 0.5f);
+
+    drawQuad(program.get(), essl1_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests nameless struct uniform arrays.
+TEST_P(GLSLTest, EmbeddedStructUniformArray)
+{
+    const char kFragmentShader[] = R"(precision mediump float;
+uniform struct { float q; } b[2];
+void main()
+{
+    gl_FragColor = vec4(1, 0, 0, 1);
+    if (b[0].q == 0.5)
+    {
+        gl_FragColor = vec4(0, 1, 0, 1);
+    }
+})";
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFragmentShader);
+    glUseProgram(program);
+    GLint uniLoc = glGetUniformLocation(program, "b[0].q");
     ASSERT_NE(-1, uniLoc);
     glUniform1f(uniLoc, 0.5f);
 
@@ -8501,8 +8499,6 @@ void main()
 // Tests that PointCoord behaves the same betweeen a user FBO and the back buffer.
 TEST_P(GLSLTest, PointCoordConsistency)
 {
-    // AMD's OpenGL drivers may have the same issue. http://anglebug.com/1643
-    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
     // http://anglebug.com/4092
     ANGLE_SKIP_TEST_IF(isSwiftshader());
 
@@ -8872,6 +8868,21 @@ foo
 )";
 
     ANGLE_GL_PROGRAM(program, kVS, kFS);
+}
+
+// Test that inactive output variables compile ok in combination with SH_INIT_OUTPUT_VARIABLES
+// (which is enabled on WebGL).
+TEST_P(WebGL2GLSLTest, InactiveOutput)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 _cassgl_2_;
+void main()
+{
+})";
+
+    GLuint shader = CompileShader(GL_FRAGMENT_SHADER, kFS);
+    EXPECT_NE(shader, 0u);
 }
 
 // Test that clamp applied on non-literal indices is correct on es 100 shaders.
@@ -9452,6 +9463,213 @@ void main()
 }
 
 // Test that array UBOs are transformed correctly.
+TEST_P(GLSLTest_ES3, RowMajorMatrix_ReadMat4Test)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outColor;
+
+layout(std140, row_major) uniform Ubo
+{
+    mat4 m1;
+};
+
+void main()
+{
+    outColor = m1[3] / 255.0;
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr size_t kMatrixCount                                     = 1;
+    constexpr std::pair<uint32_t, uint32_t> kMatrixDims[kMatrixCount] = {
+        {4, 4},
+    };
+    constexpr bool kMatrixIsColMajor[kMatrixCount] = {
+        false,
+    };
+
+    float data[kMatrixCount * 4 * 4] = {};
+
+    const uint32_t size =
+        FillBuffer(kMatrixDims, kMatrixIsColMajor, kMatrixCount, data, false, false);
+
+    GLBuffer ubos;
+
+    InitBuffer(program, "Ubo", ubos, 0, data, size, true);
+
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_NEAR(0, 0, 12, 13, 14, 15, 0);
+}
+
+// Test that array UBOs are transformed correctly.
+TEST_P(GLSLTest_ES3, RowMajorMatrix_ReadMat2x3Test)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outColor;
+
+layout(std140, row_major) uniform Ubo
+{
+    mat2x3 m1;
+};
+
+void main()
+{
+    outColor = vec4(m1[1], 0) / 255.0;
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr size_t kMatrixCount                                     = 1;
+    constexpr std::pair<uint32_t, uint32_t> kMatrixDims[kMatrixCount] = {
+        {2, 3},
+    };
+    constexpr bool kMatrixIsColMajor[kMatrixCount] = {
+        false,
+    };
+
+    float data[kMatrixCount * 3 * 4] = {};
+
+    const uint32_t size =
+        FillBuffer(kMatrixDims, kMatrixIsColMajor, kMatrixCount, data, false, false);
+
+    GLBuffer ubos;
+
+    InitBuffer(program, "Ubo", ubos, 0, data, size, true);
+
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_NEAR(0, 0, 4, 5, 6, 0, 0);
+}
+
+TEST_P(GLSLTest_ES3, RowMajorMatrix_ReadMat3x2Test)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outColor;
+
+layout(std140, row_major) uniform Ubo
+{
+    mat3x2 m1;
+};
+
+void main()
+{
+    outColor = vec4(m1[2], 0, 0) / 255.0;
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr size_t kMatrixCount                                     = 1;
+    constexpr std::pair<uint32_t, uint32_t> kMatrixDims[kMatrixCount] = {
+        {3, 2},
+    };
+    constexpr bool kMatrixIsColMajor[kMatrixCount] = {
+        false,
+    };
+
+    float data[kMatrixCount * 2 * 4] = {};
+
+    const uint32_t size =
+        FillBuffer(kMatrixDims, kMatrixIsColMajor, kMatrixCount, data, false, false);
+
+    GLBuffer ubos;
+
+    InitBuffer(program, "Ubo", ubos, 0, data, size, true);
+
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_NEAR(0, 0, 8, 9, 0, 0, 0);
+}
+
+TEST_P(GLSLTest_ES3, RowMajorMatrix_NestedExpression)
+{
+    // Many OpenGL drivers seem to fail this
+    ANGLE_SKIP_TEST_IF((IsLinux() || IsOSX()) && IsOpenGL());
+
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+
+uniform Ubo {
+  layout(row_major) mat4 u_mat[3];
+  layout(row_major) mat4 u_ndx[3];
+} stuff;
+
+precision highp float;
+out vec4 outColor;
+
+void main() {
+  outColor = stuff.u_mat[int(stuff.u_ndx[1][1][3])][2] / 255.0;
+}
+)";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    typedef float vec4[4];
+    typedef vec4 mat4[4];
+
+    constexpr size_t kMatrixCount = 6;
+    mat4 data[]                   = {
+        {
+            {0, 1, 2, 3},      //
+            {4, 5, 6, 7},      //
+            {8, 9, 10, 11},    //
+            {12, 13, 14, 15},  //
+        },
+        {
+            //     +-- we should be looking up this column
+            //     V
+            {0, 4, 8, 12},   //
+            {1, 5, 9, 13},   //
+            {2, 6, 10, 14},  //
+            {3, 7, 11, 15},  //
+        },
+        {
+            {0, 2, 4, 6},      //
+            {8, 10, 12, 14},   //
+            {16, 18, 20, 22},  //
+            {24, 26, 28, 30},  //
+        },
+        {
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+        },
+        {
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 2},  //
+            {0, 0, 0, 0},  //
+            {0, 1, 0, 0},
+            //  ^
+            //  +-- we should be using this element
+        },
+        {
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+            {0, 0, 0, 0},  //
+        },
+    };
+
+    GLBuffer ubos;
+    InitBuffer(program, "Ubo", ubos, 0, data, kMatrixCount, true);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_NEAR(0, 0, 8, 9, 10, 11, 0);
+}
+
+// Test that array UBOs are transformed correctly.
 TEST_P(GLSLTest_ES3, MixedRowAndColumnMajorMatrices_ArrayBufferDeclaration)
 {
     // Fails to compile the shader on Android: http://anglebug.com/3839
@@ -9666,6 +9884,118 @@ void main()
         result = false;
     }
 
+    outColor = result ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr size_t kMatrixCount                                     = 3;
+    constexpr std::pair<uint32_t, uint32_t> kMatrixDims[kMatrixCount] = {
+        {4, 4},
+        {4, 4},
+        {4, 4},
+    };
+    constexpr bool kMatrixIsColMajor[kMatrixCount] = {true, false, false};
+
+    float data[kMatrixCount * 4 * 4] = {};
+
+    const uint32_t size =
+        FillBuffer(kMatrixDims, kMatrixIsColMajor, kMatrixCount, data, false, false);
+
+    GLBuffer ubo;
+    InitBuffer(program, "Ubo", ubo, 0, data, size, true);
+
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+TEST_P(GLSLTest_ES3, MixedRowAndColumnMajorMatrices_ReadSideEffectOrderSurroundedByLoop)
+{
+    // http://anglebug.com/3837
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsOpenGL());
+
+    // IntermTraverser::insertStatementsInParentBlock that's used to move side effects does not
+    // respect the order of evaluation of logical expressions.  http://anglebug.com/3829.
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL());
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outColor;
+
+layout(std140, column_major) uniform Ubo
+{
+    mat4 m1;
+    layout(row_major) mat4 m2[2];
+} ubo;
+
+void main()
+{
+    bool result = false;
+
+    for(int x = 0; x < 1; ++x)
+    {
+        if (x == 0 && ubo.m2[x = 1][1][1] == 5.0) {
+          result = true;
+        }
+    }
+    outColor = result ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr size_t kMatrixCount                                     = 3;
+    constexpr std::pair<uint32_t, uint32_t> kMatrixDims[kMatrixCount] = {
+        {4, 4},
+        {4, 4},
+        {4, 4},
+    };
+    constexpr bool kMatrixIsColMajor[kMatrixCount] = {true, false, false};
+
+    float data[kMatrixCount * 4 * 4] = {};
+
+    const uint32_t size =
+        FillBuffer(kMatrixDims, kMatrixIsColMajor, kMatrixCount, data, false, false);
+
+    GLBuffer ubo;
+    InitBuffer(program, "Ubo", ubo, 0, data, size, true);
+
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(program, essl31_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+TEST_P(GLSLTest_ES3, MixedRowAndColumnMajorMatrices_ReadSideEffectOrderInALoop)
+{
+    // http://anglebug.com/3837
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsOpenGL());
+
+    // IntermTraverser::insertStatementsInParentBlock that's used to move side effects does not
+    // respect the order of evaluation of logical expressions.  http://anglebug.com/3829.
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL());
+
+    constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outColor;
+
+layout(std140, column_major) uniform Ubo
+{
+    mat4 m1;
+    layout(row_major) mat4 m2[2];
+} ubo;
+
+void main()
+{
+    bool result = false;
+
+    for(int x = 0; x == 0 && ubo.m2[x = 1][1][1] == 5.0;)
+    {
+        result = true;
+    }
     outColor = result ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
 })";
 
@@ -12508,6 +12838,83 @@ void main() {
     EXPECT_NE(compileResult, 0);
 }
 
+// Regression test based on fuzzer issue resulting in an AST validation failure.  Struct definition
+// was not found in the tree.  Tests that struct declaration in function return value is visible to
+// instantiations later on.
+TEST_P(GLSLTest, MissingStructDeclarationBug)
+{
+    constexpr char kVS[] = R"(
+struct S
+{
+    vec4 i;
+} p();
+void main()
+{
+    S s;
+})";
+
+    GLuint shader = CompileShader(GL_VERTEX_SHADER, kVS);
+    EXPECT_NE(0u, shader);
+    glDeleteShader(shader);
+}
+
+// Regression test based on fuzzer issue resulting in an AST validation failure.  Struct definition
+// was not found in the tree.  Tests that struct declaration in function return value is visible to
+// other struct declarations.
+TEST_P(GLSLTest, MissingStructDeclarationBug2)
+{
+    constexpr char kVS[] = R"(
+struct T
+{
+    vec4 I;
+} p();
+struct
+{
+    T c;
+};
+void main()
+{
+})";
+
+    GLuint shader = CompileShader(GL_VERTEX_SHADER, kVS);
+    EXPECT_NE(0u, shader);
+    glDeleteShader(shader);
+}
+
+// Regression test for bug in HLSL code generation where the for loop init expression was expected
+// to always have an initializer.
+TEST_P(GLSLTest, HandleExcessiveLoopBug)
+{
+    constexpr char kVS[] = R"(void main(){for(int i;i>6;);})";
+
+    GLuint shader = CompileShader(GL_VERTEX_SHADER, kVS);
+    EXPECT_NE(0u, shader);
+    glDeleteShader(shader);
+}
+
+// Regression test for a validation bug in the translator where func(void, int) was accepted even
+// though it's illegal, and the function was callable as if the void parameter isn't there.
+TEST_P(GLSLTest, NoParameterAfterVoid)
+{
+    constexpr char kVS[] = R"(void f(void, int a){}
+void main(){f(1);})";
+
+    GLuint shader = CompileShader(GL_VERTEX_SHADER, kVS);
+    EXPECT_EQ(0u, shader);
+    glDeleteShader(shader);
+}
+
+// Similar to NoParameterAfterVoid, but tests func(void, void).
+TEST_P(GLSLTest, NoParameterAfterVoid2)
+{
+    constexpr char kVS[] = R"(void f(void, void){}
+void main(){f();})";
+
+    GLuint shader = CompileShader(GL_VERTEX_SHADER, kVS);
+    EXPECT_EQ(0u, shader);
+    glDeleteShader(shader);
+}
+
 // Test that providing more components to a matrix constructor than necessary works.  Based on a
 // clusterfuzz test that caught an OOB array write in glslang.
 TEST_P(GLSLTest, MatrixConstructor)
@@ -13780,6 +14187,24 @@ TEST_P(WebGL2GLSLTest, UnsuccessfulRelinkWithBindAttribLocation)
     glDrawArrays(GL_TRIANGLES, 79, 16);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
+
+// Covers a HLSL compiler bug.
+TEST_P(GLSLTest_ES3, ComplexCrossExpression)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+vec3 a = vec3(0.0);
+out vec4 color;
+void main()
+{
+    cross(max(vec3(0.0), reflect(dot(a, vec3(0.0)), 0.0)), vec3(0.0));
+})";
+
+    ANGLE_GL_PROGRAM(testProgram, essl3_shaders::vs::Simple(), kFS);
+    drawQuad(testProgram, essl3_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    ASSERT_GL_NO_ERROR();
+}
+
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(GLSLTest, WithDirectSPIRVGeneration(ES2_VULKAN()));
@@ -13792,9 +14217,7 @@ ANGLE_INSTANTIATE_TEST_ES3_AND(GLSLTest_ES3, WithDirectSPIRVGeneration(ES3_VULKA
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(GLSLTestLoops);
 ANGLE_INSTANTIATE_TEST_ES3_AND(GLSLTestLoops, WithDirectSPIRVGeneration(ES3_VULKAN()));
 
-ANGLE_INSTANTIATE_TEST_ES2_AND(WebGLGLSLTest,
-                               WithDirectSPIRVGeneration(ES2_VULKAN()),
-                               WithDirectMetalGeneration(ES2_METAL()));
+ANGLE_INSTANTIATE_TEST_ES2_AND(WebGLGLSLTest, WithDirectSPIRVGeneration(ES2_VULKAN()));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGL2GLSLTest);
 ANGLE_INSTANTIATE_TEST_ES3_AND(WebGL2GLSLTest, WithDirectSPIRVGeneration(ES3_VULKAN()));

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 
+#include <memory>
+
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/capture_mode/recording_overlay_view_impl.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -24,6 +27,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/audio_service.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/service_process_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
@@ -73,22 +77,27 @@ void ChromeCaptureModeDelegate::InterruptVideoRecordingIfAny() {
     std::move(interrupt_video_recording_callback_).Run();
 }
 
-base::FilePath ChromeCaptureModeDelegate::GetScreenCaptureDir() const {
-  if (chromeos::LoginState::Get()->IsUserLoggedIn()) {
-    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-        ProfileManager::GetActiveUserProfile());
-    // We use the default downloads directory instead of the one that can be
-    // configured from the browser's settings, since it can point to an invalid
-    // location, which the browser handles by prompting the user to select
-    // another one when accessed, but Capture Mode doesn't have this capability.
-    // We also decided that this browser setting should not affect when the OS
-    // saves the captured files. https://crbug.com/1192406.
-    return download_prefs->GetDefaultDownloadDirectoryForProfile();
+base::FilePath ChromeCaptureModeDelegate::GetUserDefaultDownloadsFolder()
+    const {
+  DCHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
+
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(profile);
+  if (!profile->GetDownloadManager()->GetBrowserContext()) {
+    // Some browser tests use a |content::MockDownloadManager| which doesn't
+    // have a browser context. In this case, just return an empty path.
+    return base::FilePath();
   }
-  base::FilePath tmp_dir;
-  if (!base::GetTempDir(&tmp_dir))
-    LOG(ERROR) << "Failed to find temporary directory.";
-  return tmp_dir;
+
+  DownloadPrefs* download_prefs =
+      DownloadPrefs::FromBrowserContext(ProfileManager::GetActiveUserProfile());
+  // We use the default downloads directory instead of the one that can be
+  // configured from the browser's settings, since it can point to an invalid
+  // location, which the browser handles by prompting the user to select
+  // another one when accessed, but Capture Mode doesn't have this capability.
+  // We also decided that this browser setting should not affect where the OS
+  // saves the captured files. https://crbug.com/1192406.
+  return download_prefs->GetDefaultDownloadDirectoryForProfile();
 }
 
 void ChromeCaptureModeDelegate::ShowScreenCaptureItemInFolder(
@@ -152,7 +161,9 @@ void ChromeCaptureModeDelegate::StartObservingRestrictedContent(
 
 void ChromeCaptureModeDelegate::StopObservingRestrictedContent() {
   interrupt_video_recording_callback_.Reset();
-  policy::DlpContentManager::Get()->OnVideoCaptureStopped();
+  // TODO(https://crbug.com/1256711): Pass a proper callback to save/delete
+  // recording
+  policy::DlpContentManager::Get()->CheckStoppedVideoCapture(base::DoNothing());
 }
 
 mojo::Remote<recording::mojom::RecordingService>
@@ -174,3 +185,9 @@ void ChromeCaptureModeDelegate::OnSessionStateChanged(bool started) {
 }
 
 void ChromeCaptureModeDelegate::OnServiceRemoteReset() {}
+
+std::unique_ptr<ash::RecordingOverlayView>
+ChromeCaptureModeDelegate::CreateRecordingOverlayView() const {
+  return std::make_unique<RecordingOverlayViewImpl>(
+      ProfileManager::GetPrimaryUserProfile());
+}

@@ -22,6 +22,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/devtools_observer.mojom.h"
+#include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/public/mojom/url_request.mojom.h"
@@ -114,6 +115,14 @@ bool StructTraits<network::mojom::WebBundleTokenParamsDataView,
   return true;
 }
 
+bool StructTraits<network::mojom::NetLogParamsDataView,
+                  network::ResourceRequest::NetLogParams>::
+    Read(network::mojom::NetLogParamsDataView data,
+         network::ResourceRequest::NetLogParams* out) {
+  out->source_id = data.source_id();
+  return true;
+}
+
 bool StructTraits<
     network::mojom::URLRequestDataView,
     network::ResourceRequest>::Read(network::mojom::URLRequestDataView data,
@@ -158,7 +167,8 @@ bool StructTraits<
       !data.ReadRecursivePrefetchToken(&out->recursive_prefetch_token) ||
       !data.ReadWebBundleTokenParams(&out->web_bundle_token_params) ||
       !data.ReadDevtoolsAcceptedStreamTypes(
-          &out->devtools_accepted_stream_types)) {
+          &out->devtools_accepted_stream_types) ||
+      !data.ReadNetLogParams(&out->net_log_params)) {
     // Note that data.ReadTrustTokenParams is temporarily handled below.
     return false;
   }
@@ -196,6 +206,7 @@ bool StructTraits<
   out->is_fetch_like_api = data.is_fetch_like_api();
   out->is_favicon = data.is_favicon();
   out->obey_origin_policy = data.obey_origin_policy();
+  out->target_ip_address_space = data.target_ip_address_space();
   return true;
 }
 

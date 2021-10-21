@@ -36,11 +36,16 @@ class DownloadCommands {
     ANNOTATE,                  // Open an app to annotate the image.
     DEEP_SCAN,                 // Send file to Safe Browsing for deep scanning.
     BYPASS_DEEP_SCANNING,      // Bypass the prompt to deep scan.
+    MAX
   };
 
   // |model| must outlive DownloadCommands.
   // TODO(shaktisahu): Investigate if model lifetime is shorter than |this|.
   explicit DownloadCommands(base::WeakPtr<DownloadUIModel> model);
+
+  DownloadCommands(const DownloadCommands&) = delete;
+  DownloadCommands& operator=(const DownloadCommands&) = delete;
+
   virtual ~DownloadCommands();
 
   bool IsCommandEnabled(Command command) const;
@@ -67,8 +72,6 @@ class DownloadCommands {
   base::WeakPtr<DownloadUIModel> model_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadCommands);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMMANDS_H_

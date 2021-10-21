@@ -118,8 +118,8 @@ class FakeWebState : public web::FakeWebState {
         base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
           policyDecision = decision;
         });
-    decider_->ShouldAllowResponse(response, for_main_frame,
-                                  std::move(callback));
+    web::WebStatePolicyDecider::ResponseInfo response_info(for_main_frame);
+    decider_->ShouldAllowResponse(response, response_info, std::move(callback));
     return policyDecision.ShouldAllowNavigation();
   }
   void WebStateDestroyed() {
@@ -666,13 +666,13 @@ TEST_F(AccountConsistencyServiceTest, GAIACookieMissingOnSignin) {
                                         signin::GAIA_SERVICE_TYPE_ADDSESSION))
       .Times(2);
 
-  SimulateNavigateToURLWithInterruption(response, delegate);
+  SimulateNavigateToURL(response, delegate);
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(kGAIACookieOnNavigationHistogram, 0);
 
   SimulateExternalSourceRemovesAllGoogleDomainCookies();
 
-  [[delegate expect] onAddAccount];
+  // Gaia cookie is not restored due to one-hour time restriction.
   SimulateNavigateToURLWithInterruption(response, delegate);
   histogram_tester.ExpectTotalCount(kGAIACookieOnNavigationHistogram, 1);
 
@@ -789,7 +789,7 @@ TEST_F(AccountConsistencyServiceTest, SetGaiaCookieUpdateBeforeDelay) {
   SimulateNavigateToURL(response, nil);
 
   // Advance clock, but stay within the one-hour Gaia update time.
-  base::TimeDelta oneMinuteDelta = base::TimeDelta::FromMinutes(1);
+  base::TimeDelta oneMinuteDelta = base::Minutes(1);
   task_environment_.FastForwardBy(oneMinuteDelta);
   SimulateNavigateToURLWithInterruption(response, nil);
 
@@ -815,7 +815,7 @@ TEST_F(AccountConsistencyServiceTest, SetGaiaCookieUpdateAfterDelay) {
   SimulateNavigateToURL(response, nil);
 
   // Advance clock past the one-hour Gaia update time.
-  base::TimeDelta twoHourDelta = base::TimeDelta::FromHours(2);
+  base::TimeDelta twoHourDelta = base::Hours(2);
   task_environment_.FastForwardBy(twoHourDelta);
   SimulateNavigateToURL(response, nil);
 

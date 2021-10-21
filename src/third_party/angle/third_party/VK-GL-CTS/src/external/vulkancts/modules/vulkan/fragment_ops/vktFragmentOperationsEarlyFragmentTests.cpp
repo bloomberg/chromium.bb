@@ -465,7 +465,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 		vk.cmdDraw(*cmdBuffer, numVertices, 1u, 0u, 0u);
 		endRenderPass(vk, *cmdBuffer);
 
-		copyImageToBuffer(vk, *cmdBuffer, *colorImage, *colorBuffer, renderSize, VK_ACCESS_SHADER_WRITE_BIT);
+		copyImageToBuffer(vk, *cmdBuffer, *colorImage, *colorBuffer, renderSize, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
 		endCommandBuffer(vk, *cmdBuffer);
 		submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -719,9 +719,10 @@ tcu::TestStatus EarlyFragmentDiscardTestInstance::iterate (void)
 		vk.cmdDraw(*cmdBuffer, numVertices, 1u, 0u, 0u);
 		endRenderPass(vk, *cmdBuffer);
 
-		copyImageToBuffer(vk, *cmdBuffer, *colorImage, *colorBuffer, renderSize, VK_ACCESS_SHADER_WRITE_BIT);
-		VkImageAspectFlags dsAspect = m_testMode == MODE_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_STENCIL_BIT;
-		copyImageToBuffer(vk, *cmdBuffer, *testImage, *dsBuffer, renderSize, VK_ACCESS_SHADER_WRITE_BIT, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, 1u, dsAspect, dsAspect);
+		copyImageToBuffer(vk, *cmdBuffer, *colorImage, *colorBuffer, renderSize, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+		VkImageAspectFlags	dsAspect = m_testMode == MODE_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_STENCIL_BIT;
+		VkImageLayout		dsImageLayout = m_testMode == MODE_DEPTH ? VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
+		copyImageToBuffer(vk, *cmdBuffer, *testImage, *dsBuffer, renderSize, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, dsImageLayout, 1u, dsAspect, dsAspect);
 
 		endCommandBuffer(vk, *cmdBuffer);
 		submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -740,7 +741,10 @@ tcu::TestStatus EarlyFragmentDiscardTestInstance::iterate (void)
 	// Verify depth-stencil output
 	{
 		invalidateAlloc(vk, device, *dsBufferAlloc);
-		tcu::TextureFormat format = mapVkFormat(depthStencilFormat);
+		// the buffer holds only one aspect of d/s format
+		tcu::TextureFormat format = vk::mapVkFormat(m_testMode == MODE_STENCIL ? VK_FORMAT_S8_UINT : depthStencilFormat);
+		DE_ASSERT(format.order == tcu::TextureFormat::D || format.order == tcu::TextureFormat::S);
+
 		const tcu::ConstPixelBufferAccess	dsPixelAccess (format, renderSize.x(), renderSize.y(), 1, dsBufferAlloc->getHostPtr());
 
 		for(int z = 0; z < dsPixelAccess.getDepth(); z++)
@@ -1114,7 +1118,7 @@ Move<VkRenderPass> EarlyFragmentSampleMaskTestInstance::makeRenderPass (const De
 		VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,												// VkStructureType		sType;
 		DE_NULL,																				// const void*			pNext;
 	    hasDepthStencil ? 1u : 0u,																// deUint32         attachment
-		VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL,												// VkImageLayout    layout
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,										// VkImageLayout    layout
 	    m_testMode == MODE_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_STENCIL_BIT		// VkImageAspectFlags	aspectMask;
 	};
 
@@ -1132,7 +1136,7 @@ Move<VkRenderPass> EarlyFragmentSampleMaskTestInstance::makeRenderPass (const De
 		VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,												// VkStructureType		sType;
 		DE_NULL,																				// const void*			pNext;
 	    hasDepthStencil ? 3u : 0u,																// deUint32         attachment
-		VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL,												// VkImageLayout    layout
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,										// VkImageLayout    layout
 	    m_testMode == MODE_DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_STENCIL_BIT		// VkImageAspectFlags	aspectMask;
 	};
 

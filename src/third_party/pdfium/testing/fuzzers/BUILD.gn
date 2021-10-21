@@ -127,6 +127,7 @@ source_set("fuzzer_init_public") {
     configs += [ "//v8:external_startup_data" ]
     deps += [
       "../:test_support",
+      "../../fxjs",
       "//v8",
       "//v8:v8_libplatform",
     ]
@@ -463,6 +464,7 @@ pdfium_fuzzer("pdf_cmap_fuzzer") {
   deps = [
     "../../:freetype_common",
     "../../core/fpdfapi/font",
+    "../../core/fxcrt",
     "../../third_party:pdfium_base",
   ]
 }

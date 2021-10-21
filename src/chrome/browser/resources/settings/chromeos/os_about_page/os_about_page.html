@@ -34,8 +34,9 @@
     fill: var(--cros-icon-color-prominent);
   }
 
-  iron-icon[icon='cr:error-outline'] {
-    fill: var(--cros-text-color-alert);
+  iron-icon[icon='cr:error-outline'],
+  iron-icon[icon='os-settings:end-of-life'] {
+    fill: var(--cros-icon-color-alert);
   }
 
   .settings-box .start {
@@ -48,6 +49,12 @@
 
   #regulatoryInfo img {
     width: 330px;
+  }
+
+  @media(prefers-color-scheme: dark) {
+    #regulatoryInfo img {
+      filter: invert(1);
+    }
   }
 </style>
 <settings-section page-title="$i18n{aboutOsPageTitle}" section="about">

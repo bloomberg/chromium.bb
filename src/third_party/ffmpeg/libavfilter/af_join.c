@@ -50,6 +50,8 @@ typedef struct JoinContext {
     char    *channel_layout_str;
     uint64_t channel_layout;
 
+    int64_t  eof_pts;
+
     int      nb_channels;
     ChannelMap *channels;
 
@@ -192,10 +194,8 @@ static av_cold int join_init(AVFilterContext *ctx)
         if (!pad.name)
             return AVERROR(ENOMEM);
 
-        if ((ret = ff_insert_inpad(ctx, i, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_inpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
 
     return 0;
@@ -208,10 +208,6 @@ static av_cold void join_uninit(AVFilterContext *ctx)
 
     for (i = 0; i < s->inputs && s->input_frames; i++) {
         av_frame_free(&s->input_frames[i]);
-    }
-
-    for (i = 0; i < ctx->nb_inputs; i++) {
-        av_freep(&ctx->input_pads[i].name);
     }
 
     av_freep(&s->channels);
@@ -236,7 +232,7 @@ static int join_query_formats(AVFilterContext *ctx)
     }
 
     if ((ret = ff_set_common_formats(ctx, ff_planar_sample_fmts())) < 0 ||
-        (ret = ff_set_common_samplerates(ctx, ff_all_samplerates())) < 0)
+        (ret = ff_set_common_all_samplerates(ctx)) < 0)
         return ret;
 
     return 0;
@@ -372,12 +368,15 @@ static int try_push_frame(AVFilterContext *ctx)
     int i, j, ret;
 
     for (i = 0; i < ctx->nb_inputs; i++) {
-        if (!s->input_frames[i])
-            return 0;
-        nb_samples = FFMIN(nb_samples, s->input_frames[i]->nb_samples);
+        if (!s->input_frames[i]) {
+            nb_samples = 0;
+            break;
+        } else {
+            nb_samples = FFMIN(nb_samples, s->input_frames[i]->nb_samples);
+        }
     }
     if (!nb_samples)
-        return 0;
+        goto eof;
 
     /* setup the output frame */
     frame = av_frame_alloc();
@@ -454,6 +453,9 @@ static int try_push_frame(AVFilterContext *ctx)
                FFMIN(FF_ARRAY_ELEMS(frame->data), s->nb_channels));
     }
 
+    s->eof_pts = frame->pts + av_rescale_q(frame->nb_samples,
+                                           av_make_q(1, outlink->sample_rate),
+                                           outlink->time_base);
     ret = ff_filter_frame(outlink, frame);
 
     for (i = 0; i < ctx->nb_inputs; i++)
@@ -464,6 +466,16 @@ static int try_push_frame(AVFilterContext *ctx)
 fail:
     av_frame_free(&frame);
     return ret;
+eof:
+    for (i = 0; i < ctx->nb_inputs; i++) {
+        if (ff_outlink_get_status(ctx->inputs[i]) &&
+            ff_inlink_queued_samples(ctx->inputs[i]) <= 0 &&
+            !s->input_frames[i]) {
+            ff_outlink_set_status(outlink, AVERROR_EOF, s->eof_pts);
+        }
+    }
+
+    return 0;
 }
 
 static int activate(AVFilterContext *ctx)
@@ -479,16 +491,13 @@ static int activate(AVFilterContext *ctx)
         ret = ff_inlink_consume_frame(ctx->inputs[0], &s->input_frames[0]);
         if (ret < 0) {
             return ret;
-        } else if (ff_inlink_acknowledge_status(ctx->inputs[0], &status, &pts)) {
-            ff_outlink_set_status(ctx->outputs[0], status, pts);
+        } else if (ret == 0 && ff_inlink_acknowledge_status(ctx->inputs[0], &status, &pts)) {
+            ff_outlink_set_status(ctx->outputs[0], status, s->eof_pts);
             return 0;
-        } else {
-            if (ff_outlink_frame_wanted(ctx->outputs[0]) && !s->input_frames[0]) {
-                ff_inlink_request_frame(ctx->inputs[0]);
-                return 0;
-            }
         }
-        if (!s->input_frames[0]) {
+
+        if (!s->input_frames[0] && ff_outlink_frame_wanted(ctx->outputs[0])) {
+            ff_inlink_request_frame(ctx->inputs[0]);
             return 0;
         }
     }
@@ -498,20 +507,17 @@ static int activate(AVFilterContext *ctx)
     for (i = 1; i < ctx->nb_inputs && nb_samples > 0; i++) {
         if (s->input_frames[i])
             continue;
+        ret = ff_inlink_consume_samples(ctx->inputs[i], nb_samples, nb_samples, &s->input_frames[i]);
+        if (ret < 0) {
+            return ret;
+        } else if (ff_inlink_acknowledge_status(ctx->inputs[i], &status, &pts)) {
+            ff_outlink_set_status(ctx->outputs[0], status, pts);
+            return 0;
+        }
 
-        if (ff_inlink_check_available_samples(ctx->inputs[i], nb_samples) > 0) {
-            ret = ff_inlink_consume_samples(ctx->inputs[i], nb_samples, nb_samples, &s->input_frames[i]);
-            if (ret < 0) {
-                return ret;
-            } else if (ff_inlink_acknowledge_status(ctx->inputs[i], &status, &pts)) {
-                ff_outlink_set_status(ctx->outputs[0], status, pts);
-                return 0;
-            }
-        } else {
-            if (ff_outlink_frame_wanted(ctx->outputs[0])) {
-                ff_inlink_request_frame(ctx->inputs[i]);
-                return 0;
-            }
+        if (!s->input_frames[i]) {
+            ff_inlink_request_frame(ctx->inputs[i]);
+            return 0;
         }
     }
 
@@ -524,7 +530,6 @@ static const AVFilterPad avfilter_af_join_outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = join_config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_join = {
@@ -538,6 +543,6 @@ const AVFilter ff_af_join = {
     .activate       = activate,
     .query_formats  = join_query_formats,
     .inputs         = NULL,
-    .outputs        = avfilter_af_join_outputs,
+    FILTER_OUTPUTS(avfilter_af_join_outputs),
     .flags          = AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

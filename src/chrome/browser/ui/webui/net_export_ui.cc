@@ -46,7 +46,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/intent_helper.h"
+#include "components/browser_ui/share/android/intent_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -88,6 +88,10 @@ class NetExportMessageHandler
       public net_log::NetExportFileWriter::StateObserver {
  public:
   NetExportMessageHandler();
+
+  NetExportMessageHandler(const NetExportMessageHandler&) = delete;
+  NetExportMessageHandler& operator=(const NetExportMessageHandler&) = delete;
+
   ~NetExportMessageHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -155,8 +159,6 @@ class NetExportMessageHandler
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   base::WeakPtrFactory<NetExportMessageHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetExportMessageHandler);
 };
 
 NetExportMessageHandler::NetExportMessageHandler()
@@ -309,10 +311,9 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
   std::string body =
       "Please add some informative text about the network issues.";
   base::FilePath::StringType file_to_attach(file_to_send.value());
-  chrome::android::SendEmail(
-      base::UTF8ToUTF16(email), base::UTF8ToUTF16(subject),
-      base::UTF8ToUTF16(body), base::UTF8ToUTF16(title),
-      base::UTF8ToUTF16(file_to_attach));
+  browser_ui::SendEmail(base::UTF8ToUTF16(email), base::UTF8ToUTF16(subject),
+                        base::UTF8ToUTF16(body), base::UTF8ToUTF16(title),
+                        base::UTF8ToUTF16(file_to_attach));
 #endif
 }
 

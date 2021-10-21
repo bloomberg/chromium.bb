@@ -78,6 +78,10 @@ class AutofillAgent : public content::RenderFrameObserver,
                 PasswordGenerationAgent* password_generation_agent,
                 AutofillAssistantAgent* autofill_assistant_agent,
                 blink::AssociatedInterfaceRegistry* registry);
+
+  AutofillAgent(const AutofillAgent&) = delete;
+  AutofillAgent& operator=(const AutofillAgent&) = delete;
+
   ~AutofillAgent() override;
 
   void BindPendingReceiver(
@@ -115,7 +119,7 @@ class AutofillAgent : public content::RenderFrameObserver,
       const std::string& selector,
       int index,
       GetElementFormAndFieldDataAtIndexCallback callback) override;
-  void SetAssistantActionState(bool running) override;
+  void SetAssistantKeyboardSuppressState(bool suppress) override;
   void EnableHeavyFormDataScraping() override;
   void SetFieldsEligibleForManualFilling(
       const std::vector<FieldRendererId>& fields) override;
@@ -324,8 +328,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Last form which was interacted with by the user.
   blink::WebFormElement last_interacted_form_;
 
-  // When dealing with forms that don't use a <form> tag, we keep track of the
-  // elements the user has modified so we can determine when submission occurs.
+  // When dealing with an unowned form, we keep track of the unowned fields
+  // the user has modified so we can determine when submission occurs.
   std::set<FieldRendererId> formless_elements_user_edited_;
 
   // The form user interacted, it is used if last_interacted_form_ or formless
@@ -398,8 +402,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   const scoped_refptr<FieldDataManager> field_data_manager_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };
 
 }  // namespace autofill

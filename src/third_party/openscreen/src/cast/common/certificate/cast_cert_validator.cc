@@ -111,8 +111,8 @@ CastDeviceCertPolicy GetAudioPolicy(const std::vector<X509*>& path) {
       if (policies) {
         // Check for |audio_only_policy_oid| in the set of policies.
         uint32_t policy_count = sk_POLICYINFO_num(policies);
-        for (uint32_t i = 0; i < policy_count; ++i) {
-          POLICYINFO* info = sk_POLICYINFO_value(policies, i);
+        for (uint32_t j = 0; j < policy_count; ++j) {
+          POLICYINFO* info = sk_POLICYINFO_value(policies, j);
           if (OBJ_length(info->policyid) == audio_only_policy_oid.length &&
               memcmp(OBJ_get0_data(info->policyid), audio_only_policy_oid.data,
                      audio_only_policy_oid.length) == 0) {

@@ -18,8 +18,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/sms/sms_metrics.h"
 #include "content/browser/sms/user_consent_handler.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -30,7 +29,6 @@
 #include "third_party/blink/public/common/sms/webotp_constants.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom-shared.h"
 
-using blink::WebOTPServiceDestroyedReason;
 using blink::mojom::SmsStatus;
 using Outcome = blink::WebOTPServiceOutcome;
 
@@ -125,7 +123,7 @@ WebOTPService::WebOTPService(
     const OriginList& origin_list,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::WebOTPService> receiver)
-    : DocumentServiceBase(host, std::move(receiver)),
+    : DocumentService(host, std::move(receiver)),
       fetcher_(fetcher),
       origin_list_(origin_list),
       timeout_timer_(FROM_HERE,
@@ -203,7 +201,13 @@ void WebOTPService::OnReceive(const OriginList& origin_list,
                          render_frame_host()->GetPageUkmSourceId());
 
   one_time_code_ = one_time_code;
-
+  // This function cannot get called during prerendering because WebOTPService
+  // is deferred during prerendering by MojoBinderPolicyApplier. This DCHECK
+  // proves we don't have to worry about prerendering when using
+  // WebContents::FromRenderFrameHost() below (see function comments for
+  // WebContents::FromRenderFrameHost() for more details).
+  DCHECK_NE(render_frame_host()->GetLifecycleState(),
+            RenderFrameHost::LifecycleState::kPrerendering);
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   // With UserConsent API, users can see and interact with the permission prompt
@@ -271,22 +275,6 @@ void WebOTPService::OnFailure(FailureType failure_type) {
 void WebOTPService::Abort() {
   DCHECK(callback_);
   CompleteRequest(SmsStatus::kAborted);
-}
-
-void WebOTPService::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  switch (load_details.type) {
-    case NavigationType::NAVIGATION_TYPE_NEW_ENTRY:
-      RecordDestroyedReason(WebOTPServiceDestroyedReason::kNavigateNewPage);
-      break;
-    case NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY:
-      RecordDestroyedReason(
-          WebOTPServiceDestroyedReason::kNavigateExistingPage);
-      break;
-    default:
-      // Ignore cases we don't care about.
-      break;
-  }
 }
 
 void WebOTPService::CompleteRequest(blink::mojom::SmsStatus status) {

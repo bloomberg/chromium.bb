@@ -36,6 +36,9 @@ class BluetoothPairingWinrt {
           custom_pairing,
       ConnectCallback callback);
 
+  BluetoothPairingWinrt(const BluetoothPairingWinrt&) = delete;
+  BluetoothPairingWinrt& operator=(const BluetoothPairingWinrt&) = delete;
+
   ~BluetoothPairingWinrt();
 
   // Initiates the pairing procedure.
@@ -65,6 +68,10 @@ class BluetoothPairingWinrt {
               ABI::Windows::Devices::Enumeration::IDevicePairingResult>
                   pairing_result);
 
+  void OnSetPinCodeDeferralCompletion(HRESULT hr);
+  void OnRejectPairing(HRESULT hr);
+  void OnCancelPairing(HRESULT hr);
+
   // Weak. This is the device object that owns this pairing instance.
   BluetoothDeviceWinrt* device_;
 
@@ -89,11 +96,10 @@ class BluetoothPairingWinrt {
       ABI::Windows::Devices::Enumeration::IDevicePairingRequestedEventArgs>
       pairing_requested_;
 
+  bool was_cancelled_ = false;
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BluetoothPairingWinrt> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothPairingWinrt);
 };
 
 }  // namespace device

@@ -269,10 +269,9 @@ void PageLoadMetricsWebContentsObserver::DidStopLoading() {
 
 void PageLoadMetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1190112): Using IsActive as a proxy for "is in
-  // primary FrameTree". Add support for Prerender.
+  // TODO(https://crbug.com/1190112): Support non-primary FrameTrees.
   if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->GetRenderFrameHost()->IsActive()) {
+      !navigation_handle->GetRenderFrameHost()->GetPage().IsPrimary()) {
     return;
   }
 
@@ -305,7 +304,7 @@ void PageLoadMetricsWebContentsObserver::DidFinishNavigation(
     navigation_type_ = navigation_type;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PageLoadMetricsWebContentsObserver)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PageLoadMetricsWebContentsObserver);
 
 }  // namespace
 

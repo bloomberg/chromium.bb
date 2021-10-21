@@ -57,6 +57,8 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
       ChooseRsuDisableWriteProtectCallback callback) override;
   void GetRsuDisableWriteProtectChallenge(
       GetRsuDisableWriteProtectChallengeCallback callback) override;
+  void GetRsuDisableWriteProtectHwid(
+      GetRsuDisableWriteProtectHwidCallback callback) override;
   void GetRsuDisableWriteProtectChallengeQrCode(
       GetRsuDisableWriteProtectChallengeQrCodeCallback callback) override;
   void SetRsuDisableWriteProtectCode(
@@ -90,9 +92,20 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
                             uint8_t sku_index,
                             SetDeviceInformationCallback callback) override;
 
-  void FinalizeAndReboot(FinalizeAndRebootCallback callback) override;
-  void FinalizeAndShutdown(FinalizeAndShutdownCallback callback) override;
-  void CutoffBattery(CutoffBatteryCallback callback) override;
+  void GetCalibrationComponentList(
+      GetCalibrationComponentListCallback callback) override;
+  void GetCalibrationSetupInstructions(
+      GetCalibrationSetupInstructionsCallback callback) override;
+  void StartCalibration(
+      const std::vector<::rmad::CalibrationComponentStatus>& components,
+      StartCalibrationCallback callback) override;
+  void RunCalibrationStep(RunCalibrationStepCallback callback) override;
+  void ContinueCalibration(ContinueCalibrationCallback callback) override;
+  void CalibrationComplete(CalibrationCompleteCallback callback) override;
+
+  void EndRmaAndReboot(EndRmaAndRebootCallback callback) override;
+  void EndRmaAndShutdown(EndRmaAndShutdownCallback callback) override;
+  void EndRmaAndCutoffBattery(EndRmaAndCutoffBatteryCallback callback) override;
 
   void ObserveError(
       ::mojo::PendingRemote<mojom::ErrorObserver> observer) override;
@@ -107,18 +120,24 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
           observer) override;
   void ObservePowerCableState(
       ::mojo::PendingRemote<mojom::PowerCableStateObserver> observer) override;
+  void ObserveFinalizationStatus(
+      ::mojo::PendingRemote<mojom::FinalizationObserver> observer) override;
 
   void BindInterface(
       mojo::PendingReceiver<mojom::ShimlessRmaService> pending_receiver);
 
   // RmadClient::Observer interface.
   void Error(rmad::RmadErrorCode error) override;
-  void CalibrationProgress(rmad::RmadComponent component,
-                           double progress) override;
+  void CalibrationProgress(
+      const rmad::CalibrationComponentStatus& component_status) override;
+  void CalibrationOverallProgress(
+      rmad::CalibrationOverallStatus status) override;
   void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
                             double progress) override;
   void HardwareWriteProtectionState(bool enabled) override;
   void PowerCableState(bool plugged_in) override;
+  void HardwareVerificationResult(const rmad::HardwareVerificationResult&
+                                      hardware_verification_result) override;
 
   void OsUpdateProgress(update_engine::Operation operation, double progress);
 
@@ -143,6 +162,8 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
                                 int64_t update_size);
 
   rmad::RmadState state_proto_;
+  bool can_abort_ = false;
+  bool can_go_back_ = false;
 
   mojo::Remote<mojom::ErrorObserver> error_observer_;
   mojo::Remote<mojom::OsUpdateObserver> os_update_observer_;
@@ -151,6 +172,7 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   mojo::Remote<mojom::HardwareWriteProtectionStateObserver>
       hwwp_state_observer_;
   mojo::Remote<mojom::PowerCableStateObserver> power_cable_observer_;
+  mojo::Remote<mojom::FinalizationObserver> finalization_observer_;
   mojo::Receiver<mojom::ShimlessRmaService> receiver_{this};
 
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>

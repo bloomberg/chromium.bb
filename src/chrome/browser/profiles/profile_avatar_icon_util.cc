@@ -37,16 +37,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/native_theme/native_theme.h"
 #include "url/url_canon.h"
 
 #if defined(OS_WIN)
@@ -138,6 +138,9 @@ class AvatarImageSource : public gfx::CanvasImageSource {
                     AvatarPosition position,
                     AvatarBorder border);
 
+  AvatarImageSource(const AvatarImageSource&) = delete;
+  AvatarImageSource& operator=(const AvatarImageSource&) = delete;
+
   ~AvatarImageSource() override;
 
   // CanvasImageSource override:
@@ -151,8 +154,6 @@ class AvatarImageSource : public gfx::CanvasImageSource {
   const AvatarPosition position_;
   const AvatarBorder border_;
   const profiles::AvatarShape shape_;
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarImageSource);
 };
 
 AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
@@ -298,6 +299,10 @@ class ImageWithBackgroundSource : public gfx::CanvasImageSource {
         image_(image),
         background_(background) {}
 
+  ImageWithBackgroundSource(const ImageWithBackgroundSource&) = delete;
+  ImageWithBackgroundSource& operator=(const ImageWithBackgroundSource&) =
+      delete;
+
   ~ImageWithBackgroundSource() override = default;
 
   // gfx::CanvasImageSource override.
@@ -309,8 +314,6 @@ class ImageWithBackgroundSource : public gfx::CanvasImageSource {
  private:
   const gfx::ImageSkia image_;
   const SkColor background_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageWithBackgroundSource);
 };
 
 }  // namespace
@@ -364,9 +367,8 @@ constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
 
 ui::ImageModel GetGuestAvatar(int size) {
-    return ui::ImageModel::FromVectorIcon(
-        kUserAccountAvatarIcon, ui::NativeTheme::kColorId_AvatarIconGuest,
-        size);
+  return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon,
+                                        ui::kColorAvatarIconGuest, size);
 }
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,

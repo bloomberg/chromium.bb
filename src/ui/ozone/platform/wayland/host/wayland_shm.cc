@@ -15,15 +15,16 @@ constexpr uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
 }  // namespace
 
 // static
-void WaylandShm::Register(WaylandConnection* connection) {
-  connection->RegisterGlobalObjectFactory("wl_shm", &WaylandShm::Instantiate);
-}
+constexpr char WaylandShm::kInterfaceName[];
 
 // static
 void WaylandShm::Instantiate(WaylandConnection* connection,
                              wl_registry* registry,
                              uint32_t name,
+                             const std::string& interface,
                              uint32_t version) {
+  DCHECK_EQ(interface, kInterfaceName);
+
   if (connection->shm_)
     return;
 
@@ -41,7 +42,7 @@ WaylandShm::WaylandShm(wl_shm* shm, WaylandConnection* connection)
 
 WaylandShm::~WaylandShm() = default;
 
-wl::Object<wl_buffer> WaylandShm::CreateBuffer(base::ScopedFD fd,
+wl::Object<wl_buffer> WaylandShm::CreateBuffer(const base::ScopedFD& fd,
                                                size_t length,
                                                const gfx::Size& size) {
   if (!fd.is_valid() || length == 0 || size.IsEmpty())

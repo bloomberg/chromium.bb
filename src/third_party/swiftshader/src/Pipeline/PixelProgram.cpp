@@ -206,16 +206,12 @@ void PixelProgram::executeShader(Int cMask[4], Int sMask[4], Int zMask[4], const
 		spirvShader->clearPhis(&routine);
 	}
 
-	for(int i = 0; i < RENDERTARGETS; i++)
+	for(int i = 0; i < MAX_COLOR_BUFFERS; i++)
 	{
 		c[i].x = routine.outputs[i * 4];
 		c[i].y = routine.outputs[i * 4 + 1];
 		c[i].z = routine.outputs[i * 4 + 2];
 		c[i].w = routine.outputs[i * 4 + 3];
-		outputMasks[i] = ((spirvShader->outputs[i * 4 + 0].Type != SpirvShader::ATTRIBTYPE_UNUSED) ? 0x1 : 0x0) |
-		                 ((spirvShader->outputs[i * 4 + 1].Type != SpirvShader::ATTRIBTYPE_UNUSED) ? 0x2 : 0x0) |
-		                 ((spirvShader->outputs[i * 4 + 2].Type != SpirvShader::ATTRIBTYPE_UNUSED) ? 0x4 : 0x0) |
-		                 ((spirvShader->outputs[i * 4 + 3].Type != SpirvShader::ATTRIBTYPE_UNUSED) ? 0x8 : 0x0);
 	}
 
 	clampColor(c);
@@ -245,11 +241,6 @@ void PixelProgram::executeShader(Int cMask[4], Int sMask[4], Int zMask[4], const
 		for(unsigned int q : samples)
 		{
 			z[q] = routine.getVariable(it->second.Id)[it->second.FirstComponent];
-
-			if(state.depthClamp)
-			{
-				z[q] = Min(Max(z[q], Float4(state.minDepthClamp)), Float4(state.maxDepthClamp));
-			}
 		}
 	}
 }
@@ -272,18 +263,25 @@ Bool PixelProgram::alphaTest(Int cMask[4], const SampleSet &samples)
 	return pass != 0x0;
 }
 
-void PixelProgram::rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], const SampleSet &samples)
+void PixelProgram::blendColor(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], const SampleSet &samples)
 {
-	for(int index = 0; index < RENDERTARGETS; index++)
+	for(int index = 0; index < MAX_COLOR_BUFFERS; index++)
 	{
 		if(!state.colorWriteActive(index))
 		{
 			continue;
 		}
 
-		auto format = state.targetFormat[index];
+		auto format = state.colorFormat[index];
 		switch(format)
 		{
+		case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+		case VK_FORMAT_B5G6R5_UNORM_PACK16:
+		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+		case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
 		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 		case VK_FORMAT_R5G6B5_UNORM_PACK16:
 		case VK_FORMAT_B8G8R8A8_UNORM:
@@ -356,19 +354,26 @@ void PixelProgram::rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4
 	}
 }
 
-void PixelProgram::clampColor(Vector4f oC[RENDERTARGETS])
+void PixelProgram::clampColor(Vector4f oC[MAX_COLOR_BUFFERS])
 {
-	for(int index = 0; index < RENDERTARGETS; index++)
+	for(int index = 0; index < MAX_COLOR_BUFFERS; index++)
 	{
 		if(!state.colorWriteActive(index) && !(index == 0 && state.alphaToCoverage))
 		{
 			continue;
 		}
 
-		switch(state.targetFormat[index])
+		switch(state.colorFormat[index])
 		{
 		case VK_FORMAT_UNDEFINED:
 			break;
+		case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+		case VK_FORMAT_B5G6R5_UNORM_PACK16:
+		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+		case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
 		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 		case VK_FORMAT_R5G6B5_UNORM_PACK16:
 		case VK_FORMAT_B8G8R8A8_UNORM:
@@ -423,7 +428,7 @@ void PixelProgram::clampColor(Vector4f oC[RENDERTARGETS])
 		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
 			break;
 		default:
-			UNSUPPORTED("VkFormat: %d", int(state.targetFormat[index]));
+			UNSUPPORTED("VkFormat: %d", int(state.colorFormat[index]));
 		}
 	}
 }

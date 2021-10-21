@@ -14,6 +14,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 class TestPictureInPictureWindowController
     : public content::PictureInPictureWindowController {
@@ -254,10 +258,10 @@ TEST_F(OverlayWindowViewsTest, UpdateMaximumSize) {
   EXPECT_EQ(gfx::Size(4000, 4000), overlay_window().GetMaximumSize());
 
   // If the maximum size decreases then we should shrink to fit.
-  SetDisplayWorkArea({0, 0, 1000, 1000});
+  SetDisplayWorkArea({0, 0, 1000, 2000});
   overlay_window().OnNativeWidgetMove();
-  EXPECT_EQ(gfx::Size(500, 500), overlay_window().GetBounds().size());
-  EXPECT_EQ(gfx::Size(500, 500), overlay_window().GetMaximumSize());
+  EXPECT_EQ(gfx::Size(500, 800), overlay_window().GetBounds().size());
+  EXPECT_EQ(gfx::Size(500, 1000), overlay_window().GetMaximumSize());
 }
 
 TEST_F(OverlayWindowViewsTest, IgnoreInvalidMaximumSize) {
@@ -336,4 +340,38 @@ TEST_F(OverlayWindowViewsTest, HitTestFrameView) {
   views::NonClientView* non_client_view = overlay_window().non_client_view();
   EXPECT_EQ(non_client_view->frame_view()->HitTestPoint(point), false);
   EXPECT_EQ(non_client_view->HitTestPoint(point), true);
+}
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+// With pillarboxing, the close button doesn't cover the video area. Make sure
+// hovering the button doesn't get handled like normal mouse exit events
+// causing the controls to hide.
+TEST_F(OverlayWindowViewsTest, NoMouseExitWithinWindowBounds) {
+  overlay_window().UpdateVideoSize({10, 400});
+
+  const auto close_button_bounds = overlay_window().GetCloseControlsBounds();
+  const auto video_bounds =
+      overlay_window().video_layer_for_testing()->bounds();
+  ASSERT_FALSE(video_bounds.Contains(close_button_bounds));
+
+  const gfx::Point moved_location(video_bounds.origin() + gfx::Vector2d(5, 5));
+  ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, moved_location, moved_location,
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  overlay_window().OnMouseEvent(&moved_event);
+  ASSERT_TRUE(overlay_window().AreControlsVisible());
+
+  const gfx::Point exited_location(close_button_bounds.CenterPoint());
+  ui::MouseEvent exited_event(ui::ET_MOUSE_EXITED, exited_location,
+                              exited_location, ui::EventTimeForNow(),
+                              ui::EF_NONE, ui::EF_NONE);
+  overlay_window().OnMouseEvent(&exited_event);
+  EXPECT_TRUE(overlay_window().AreControlsVisible());
+}
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+TEST_F(OverlayWindowViewsTest, ShowControlsOnFocus) {
+  EXPECT_FALSE(overlay_window().AreControlsVisible());
+  overlay_window().OnNativeFocus();
+  EXPECT_TRUE(overlay_window().AreControlsVisible());
 }

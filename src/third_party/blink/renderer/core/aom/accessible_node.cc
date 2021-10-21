@@ -926,6 +926,13 @@ AccessibleNodeList* AccessibleNode::childNodes() {
 
 void AccessibleNode::appendChild(AccessibleNode* child,
                                  ExceptionState& exception_state) {
+  if (child == this) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "An AccessibleNode cannot be a child of itself");
+    return;
+  }
+
   if (child->element()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -1032,6 +1039,8 @@ const AtomicString& AccessibleNode::InterfaceName() const {
 ExecutionContext* AccessibleNode::GetExecutionContext() const {
   if (element_)
     return element_->GetExecutionContext();
+  if (document_)
+    return document_->GetExecutionContext();
 
   if (parent_)
     return parent_->GetExecutionContext();

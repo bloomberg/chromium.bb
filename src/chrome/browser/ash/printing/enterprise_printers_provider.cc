@@ -25,7 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -42,8 +42,8 @@ std::vector<std::string> ConvertToVector(const base::ListValue* list) {
 }
 
 void AddPrintersFromMap(
-    const std::unordered_map<std::string, Printer>& printer_map,
-    std::vector<Printer>* printer_list) {
+    const std::unordered_map<std::string, chromeos::Printer>& printer_map,
+    std::vector<chromeos::Printer>* printer_list) {
   for (auto& printer_kv : printer_map) {
     printer_list->push_back(printer_kv.second);
   }
@@ -52,7 +52,7 @@ void AddPrintersFromMap(
 class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
                                        public BulkPrintersCalculator::Observer {
  public:
-  EnterprisePrintersProviderImpl(ash::CrosSettings* settings, Profile* profile)
+  EnterprisePrintersProviderImpl(CrosSettings* settings, Profile* profile)
       : profile_(profile) {
     // initialization of pref_change_registrar
     pref_change_registrar_.Init(profile->GetPrefs());
@@ -93,6 +93,11 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     BindPref(prefs::kRecommendedPrinters,
              &EnterprisePrintersProviderImpl::UpdateUserRecommendedPrinters);
   }
+
+  EnterprisePrintersProviderImpl(const EnterprisePrintersProviderImpl&) =
+      delete;
+  EnterprisePrintersProviderImpl& operator=(
+      const EnterprisePrintersProviderImpl&) = delete;
 
   ~EnterprisePrintersProviderImpl() override {
     if (device_printers_)
@@ -143,9 +148,9 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
       // unique so we'll hash the record.  This will not collide with the
       // UUIDs generated for user entries.
       std::string id = base::MD5String(printer_json);
-      printer_dictionary.value().SetStringKey(kPrinterId, id);
+      printer_dictionary.value().SetStringKey(chromeos::kPrinterId, id);
 
-      auto new_printer = RecommendedPrinterToPrinter(
+      auto new_printer = chromeos::RecommendedPrinterToPrinter(
           base::Value::AsDictionaryValue(printer_dictionary.value()));
       if (!new_printer) {
         LOG(WARNING) << "Recommended printer is malformed.";
@@ -191,7 +196,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
 
   void RecalculateCurrentPrintersList() {
     complete_ = true;
-    std::vector<Printer> current_printers;
+    std::vector<chromeos::Printer> current_printers;
     AddPrintersFromMap(recommended_printers_, &current_printers);
 
     if (device_printers_) {
@@ -249,13 +254,13 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   }
 
   // current partial results
-  std::unordered_map<std::string, Printer> recommended_printers_;
+  std::unordered_map<std::string, chromeos::Printer> recommended_printers_;
   bool device_printers_is_complete_ = true;
   bool user_printers_is_complete_ = true;
 
   // current final results
   bool complete_ = false;
-  std::vector<Printer> printers_;
+  std::vector<chromeos::Printer> printers_;
 
   // Calculators for bulk printers from device and user policies. Unowned.
   base::WeakPtr<BulkPrintersCalculator> device_printers_;
@@ -273,7 +278,6 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   base::ObserverList<EnterprisePrintersProvider::Observer>::Unchecked
       observers_;
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(EnterprisePrintersProviderImpl);
 };
 
 }  // namespace
@@ -287,9 +291,9 @@ void EnterprisePrintersProvider::RegisterProfilePrefs(
 
 // static
 std::unique_ptr<EnterprisePrintersProvider> EnterprisePrintersProvider::Create(
-    ash::CrosSettings* settings,
+    CrosSettings* settings,
     Profile* profile) {
   return std::make_unique<EnterprisePrintersProviderImpl>(settings, profile);
 }
 
-}  // namespace chromeos
+}  // namespace ash

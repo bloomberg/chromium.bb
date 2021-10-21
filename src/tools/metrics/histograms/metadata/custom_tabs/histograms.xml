@@ -35,7 +35,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.ClientAppId" enum="ClientAppId"
-    expires_after="2022-01-16">
+    expires_after="2022-03-20">
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: AppId declared by the launching application in EXTRA_APPLICATION_ID
@@ -84,7 +84,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.ConnectionStatusOnReturn.GSA"
-    enum="CustomTabsConnection" expires_after="2021-12-12">
+    enum="CustomTabsConnection" expires_after="2022-04-24">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -326,7 +326,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CustomTabs.WarmupStateOnLaunch" enum="WarmupStateOnLaunch"
-    expires_after="2022-01-09">
+    expires_after="2022-03-13">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Recorded only on Android. Reports whether warmup() has been called when a

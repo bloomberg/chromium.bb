@@ -156,6 +156,11 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     return native_window;
   }
 
+  DesktopNativeWidgetTopLevelHandler(
+      const DesktopNativeWidgetTopLevelHandler&) = delete;
+  DesktopNativeWidgetTopLevelHandler& operator=(
+      const DesktopNativeWidgetTopLevelHandler&) = delete;
+
   // aura::WindowObserver overrides
   void OnWindowDestroying(aura::Window* window) override {
     window->RemoveObserver(this);
@@ -197,8 +202,6 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
 
   Widget* top_level_widget_ = nullptr;
   aura::Window* child_window_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetTopLevelHandler);
 };
 
 class DesktopNativeWidgetAuraWindowParentingClient
@@ -209,6 +212,12 @@ class DesktopNativeWidgetAuraWindowParentingClient
       : root_window_(root_window) {
     aura::client::SetWindowParentingClient(root_window_, this);
   }
+
+  DesktopNativeWidgetAuraWindowParentingClient(
+      const DesktopNativeWidgetAuraWindowParentingClient&) = delete;
+  DesktopNativeWidgetAuraWindowParentingClient& operator=(
+      const DesktopNativeWidgetAuraWindowParentingClient&) = delete;
+
   ~DesktopNativeWidgetAuraWindowParentingClient() override {
     aura::client::SetWindowParentingClient(root_window_, nullptr);
   }
@@ -216,6 +225,9 @@ class DesktopNativeWidgetAuraWindowParentingClient
   // Overridden from client::WindowParentingClient:
   aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override {
+    // TODO(crbug.com/1236997): Re-enable this logic once Fuchsia's windowing
+    // APIs provide the required functionality.
+#if !defined(OS_FUCHSIA)
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
                          ui::SHOW_STATE_FULLSCREEN;
     bool is_menu = window->GetType() == aura::client::WINDOW_TYPE_MENU;
@@ -231,13 +243,12 @@ class DesktopNativeWidgetAuraWindowParentingClient
           window, root_window_ /* context */, bounds, is_fullscreen, is_menu,
           root_z_order);
     }
+#endif  // !defined(OS_FUCHSIA)
     return root_window_;
   }
 
  private:
   aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraWindowParentingClient);
 };
 
 }  // namespace
@@ -246,6 +257,11 @@ class RootWindowDestructionObserver : public aura::WindowObserver {
  public:
   explicit RootWindowDestructionObserver(DesktopNativeWidgetAura* parent)
       : parent_(parent) {}
+
+  RootWindowDestructionObserver(const RootWindowDestructionObserver&) = delete;
+  RootWindowDestructionObserver& operator=(
+      const RootWindowDestructionObserver&) = delete;
+
   ~RootWindowDestructionObserver() override = default;
 
  private:
@@ -257,8 +273,6 @@ class RootWindowDestructionObserver : public aura::WindowObserver {
   }
 
   DesktopNativeWidgetAura* parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(RootWindowDestructionObserver);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

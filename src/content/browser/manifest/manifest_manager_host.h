@@ -17,8 +17,6 @@
 
 namespace content {
 
-class RenderFrameHostImpl;
-
 // ManifestManagerHost is a helper class that allows callers to get the Manifest
 // associated with the main frame of the observed WebContents. It handles the
 // IPC messaging with the child process.
@@ -27,6 +25,9 @@ class ManifestManagerHost
     : public RenderDocumentHostUserData<ManifestManagerHost>,
       public blink::mojom::ManifestUrlChangeObserver {
  public:
+  ManifestManagerHost(const ManifestManagerHost&) = delete;
+  ManifestManagerHost& operator=(const ManifestManagerHost&) = delete;
+
   ~ManifestManagerHost() override;
 
   using GetManifestCallback =
@@ -63,7 +64,6 @@ class ManifestManagerHost
   // blink::mojom::ManifestUrlChangeObserver:
   void ManifestUrlChanged(const GURL& manifest_url) override;
 
-  RenderFrameHostImpl* manifest_manager_frame_;
   mojo::Remote<blink::mojom::ManifestManager> manifest_manager_;
   CallbackMap callbacks_;
 
@@ -71,7 +71,6 @@ class ManifestManagerHost
       manifest_url_change_observer_receiver_{this};
 
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
-  DISALLOW_COPY_AND_ASSIGN(ManifestManagerHost);
 };
 
 }  // namespace content

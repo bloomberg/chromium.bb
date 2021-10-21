@@ -26,10 +26,13 @@ tests = [
   'layout.gdef-varstore',
   'layout.gdef-attachlist',
   'layout.notonastaliqurdu',
+  'layout.tinos',
+  'layout.duplicate_features',
   'cmap',
   'cmap14',
   'sbix',
   'colr',
+  'math',
 # TODO: re-enable once colrv1 subsetting is stabilized.
 # 'colrv1.notoemoji',
 # 'colrv1',
@@ -43,6 +46,7 @@ repack_tests = [
   'basic',
   'prioritization',
   'table_duplication',
+  'isolation',
 ]
 
 

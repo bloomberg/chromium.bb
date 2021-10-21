@@ -353,7 +353,7 @@ typedef ptrdiff_t  FT_PtrDist;
     }                                                              \
   FT_END_STMNT
 
-#ifdef  __arm__
+#if defined( __GNUC__ ) && __GNUC__ < 7 && defined( __arm__ )
   /* Work around a bug specific to GCC which make the compiler fail to */
   /* optimize a division and modulo operation on the same parameters   */
   /* into a single call to `__aeabi_idivmod'.  See                     */
@@ -1953,7 +1953,7 @@ typedef ptrdiff_t  FT_PtrDist;
     ras.cell_null->x     = CELL_MAX_X_VALUE;
     ras.cell_null->area  = 0;
     ras.cell_null->cover = 0;
-    ras.cell_null->next  = NULL;;
+    ras.cell_null->next  = NULL;
 
     /* set up vertical bands */
     ras.ycells     = (PCell*)buffer;

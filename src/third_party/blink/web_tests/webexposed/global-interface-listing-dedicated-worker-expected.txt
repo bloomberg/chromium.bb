@@ -78,15 +78,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method match
 [Worker]     method matchAll
 [Worker]     setter onprogress
-[Worker] interface BidirectionalStream
-[Worker]     attribute @@toStringTag
-[Worker]     getter readable
-[Worker]     getter readingAborted
-[Worker]     getter writable
-[Worker]     getter writingAborted
-[Worker]     method abortReading
-[Worker]     method abortWriting
-[Worker]     method constructor
 [Worker] interface Blob
 [Worker]     attribute @@toStringTag
 [Worker]     getter size
@@ -389,19 +380,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method contains
 [Worker]     method item
-[Worker] interface DatagramDuplexStream
-[Worker]     attribute @@toStringTag
-[Worker]     getter incomingHighWaterMark
-[Worker]     getter incomingMaxAge
-[Worker]     getter outgoingHighWaterMark
-[Worker]     getter outgoingMaxAge
-[Worker]     getter readable
-[Worker]     getter writable
-[Worker]     method constructor
-[Worker]     setter incomingHighWaterMark
-[Worker]     setter incomingMaxAge
-[Worker]     setter outgoingHighWaterMark
-[Worker]     setter outgoingMaxAge
 [Worker] interface DecompressionStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter readable
@@ -729,7 +707,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
 [Worker]     method put
-[Worker]     method putAllValues
 [Worker]     setter name
 [Worker] interface IDBOpenDBRequest : IDBRequest
 [Worker]     attribute @@toStringTag
@@ -1344,12 +1321,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method read
 [Worker]     method releaseLock
-[Worker] interface ReceiveStream : ReadableStream
-[Worker]     attribute @@toStringTag
-[Worker]     getter readable
-[Worker]     getter readingAborted
-[Worker]     method abortReading
-[Worker]     method constructor
 [Worker] interface ReportingObserver
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -1420,12 +1391,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter sourceFile
 [Worker]     getter statusCode
 [Worker]     getter violatedDirective
-[Worker]     method constructor
-[Worker] interface SendStream : WritableStream
-[Worker]     attribute @@toStringTag
-[Worker]     getter writable
-[Worker]     getter writingAborted
-[Worker]     method abortWriting
 [Worker]     method constructor
 [Worker] interface Serial : EventTarget
 [Worker]     attribute @@toStringTag
@@ -3198,8 +3163,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface WebTransport
 [Worker]     attribute @@toStringTag
 [Worker]     getter closed
-[Worker]     getter datagramReadable
-[Worker]     getter datagramWritable
 [Worker]     getter datagrams
 [Worker]     getter incomingBidirectionalStreams
 [Worker]     getter incomingUnidirectionalStreams
@@ -3208,11 +3171,29 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method createBidirectionalStream
 [Worker]     method createUnidirectionalStream
-[Worker]     method setDatagramWritableQueueExpirationDuration
+[Worker] interface WebTransportBidirectionalStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
+[Worker] interface WebTransportDatagramDuplexStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter incomingHighWaterMark
+[Worker]     getter incomingMaxAge
+[Worker]     getter maxDatagramSize
+[Worker]     getter outgoingHighWaterMark
+[Worker]     getter outgoingMaxAge
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
+[Worker]     setter incomingHighWaterMark
+[Worker]     setter incomingMaxAge
+[Worker]     setter outgoingHighWaterMark
+[Worker]     setter outgoingMaxAge
 [Worker] interface WebTransportError : DOMException
 [Worker]     attribute @@toStringTag
-[Worker]     getter applicationProtocolCode
 [Worker]     getter source
+[Worker]     getter streamErrorCode
 [Worker]     method constructor
 [Worker] interface Worker : EventTarget
 [Worker]     attribute @@toStringTag

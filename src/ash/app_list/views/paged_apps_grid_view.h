@@ -42,10 +42,26 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
                                      public PaginationModelObserver,
                                      public ui::ImplicitAnimationObserver {
  public:
+  class ContainerDelegate {
+   public:
+    virtual ~ContainerDelegate() = default;
+
+    // Returns true if |point| lies within the bounds of this grid view plus a
+    // buffer area surrounding it that can trigger page flip.
+    virtual bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const = 0;
+
+    // Returns whether |point| is in the bottom drag buffer, and not over the
+    // shelf.
+    virtual bool IsPointWithinBottomDragBuffer(
+        const gfx::Point& point,
+        int page_flip_zone_size) const = 0;
+  };
+
   PagedAppsGridView(ContentsView* contents_view,
                     AppListA11yAnnouncer* a11y_announcer,
                     AppsGridViewFolderDelegate* folder_delegate,
-                    AppListFolderController* folder_controller);
+                    AppListFolderController* folder_controller,
+                    ContainerDelegate* container_delegate);
   PagedAppsGridView(const PagedAppsGridView&) = delete;
   PagedAppsGridView& operator=(const PagedAppsGridView&) = delete;
   ~PagedAppsGridView() override;
@@ -63,6 +79,17 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
                      float apps_opacity_change_start,
                      float apps_opacity_change_end);
 
+  // Sets the number of max rows and columns in grid pages. Special-cases the
+  // first page, which may allow smaller number of rows in certain cases (to
+  // make room for other UI elements like continue section).
+  // For non-folder item grid, this generally describes the number of slots
+  // shown in the page. For folders, the number of displayed slots will also
+  // depend on number of items in the grid (e.g. folder with 4 items will have
+  // 2x2 grid).
+  void SetMaxColumnsAndRows(int max_columns,
+                            int max_rows_on_first_page,
+                            int max_rows);
+
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -71,7 +98,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void Layout() override;
 
   // AppsGridView:
-  void Init() override;
   gfx::Size GetTileViewSize() const override;
   gfx::Insets GetTilePadding() const override;
   gfx::Size GetTileGridSize() const override;
@@ -89,8 +115,10 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void HandleScrollFromAppListView(const gfx::Vector2d& offset,
                                    ui::EventType type) override;
   void SetFocusAfterEndDrag() override;
+  void CalculateIdealBoundsForNonFolder() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
-  int TilesPerPage(int page) const override;
+  int GetMaxRowsInPage(int page) const override;
+  gfx::Vector2d GetGridCenteringOffset(int page) const override;
   void UpdatePaging() override;
   void RecordPageMetrics() override;
   const gfx::Vector2d CalculateTransitionOffset(
@@ -123,10 +151,20 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Gets the PaginationModel used for the grid view.
   PaginationModel* pagination_model() { return &pagination_model_; }
 
+  void set_first_page_offset(int offset) { first_page_offset_ = offset; }
+
  private:
   friend class test::AppsGridViewTest;
 
   class FadeoutLayerDelegate;
+
+  // Returns the size reserved for a single apps grid page. May not match the
+  // tile grid size when the first page selected, as the first page may have
+  // reduced number of tiles.
+  gfx::Size GetPageSize() const;
+
+  // Gets the tile grid size on the provided apps grid page.
+  gfx::Size GetTileGridSizeForPage(int page) const;
 
   // Indicates whether the drag event (from the gesture or mouse) should be
   // handled by PagedAppsGridView.
@@ -139,14 +177,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
 
   // Returns true if the page is the right target to flip to.
   bool IsValidPageFlipTarget(int page) const;
-
-  // Returns true if |point| lies within the bounds of this grid view plus a
-  // buffer area surrounding it that can trigger page flip.
-  bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const;
-
-  // Returns whether |point| is in the bottom drag buffer, and not over the
-  // shelf.
-  bool IsPointWithinBottomDragBuffer(const gfx::Point& point) const;
 
   // Obtains the target page to flip for |drag_point|.
   int GetPageFlipTargetForDrag(const gfx::Point& drag_point);
@@ -194,6 +224,10 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Created by AppListMainView, owned by views hierarchy.
   ContentsView* const contents_view_;
 
+  // Used to get information about whether a point is within the page flip drag
+  // buffer area around this view.
+  ContainerDelegate* const container_delegate_;
+
   // Depends on |pagination_model_|.
   std::unique_ptr<PaginationController> pagination_controller_;
 
@@ -237,10 +271,20 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // card during cardified state.
   std::vector<std::unique_ptr<ui::Layer>> background_cards_;
 
-  // Whether the AppListBubble is enabled.
-  const bool is_app_list_bubble_enabled_;
+  // Whether the feature ProductivityLauncher is enabled.
+  const bool is_productivity_launcher_enabled_;
+
+  // Maximum number of rows on the first grid page.
+  int max_rows_on_first_page_ = 0;
+
+  // Maximum number of rows allowed in apps grid pages.
+  int max_rows_ = 0;
 
   PaginationModel pagination_model_{this};
+
+  // The amount that tiles need to be offset on the y-axis to avoid overlap
+  // with the recent apps and continue section.
+  int first_page_offset_ = 0;
 
   base::WeakPtrFactory<PagedAppsGridView> weak_ptr_factory_{this};
 };

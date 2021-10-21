@@ -27,7 +27,7 @@
 namespace {
 
 // Only keep track of the last response for a short period of time.
-constexpr base::TimeDelta kLastRequestDelta = base::TimeDelta::FromMinutes(15);
+constexpr base::TimeDelta kLastRequestDelta = base::Minutes(15);
 
 // Keep track of the last response. This is only kept in memory, so once Chrome
 // quits it is forgotten.
@@ -90,6 +90,11 @@ class PerDeviceProvisioningPermissionRequest final
         origin_(origin),
         callback_(std::move(callback)) {}
 
+  PerDeviceProvisioningPermissionRequest(
+      const PerDeviceProvisioningPermissionRequest&) = delete;
+  PerDeviceProvisioningPermissionRequest& operator=(
+      const PerDeviceProvisioningPermissionRequest&) = delete;
+
   void PermissionDecided(ContentSetting result, bool is_one_time) {
     DCHECK(!is_one_time);
     const bool granted = result == ContentSetting::CONTENT_SETTING_ALLOW;
@@ -117,8 +122,6 @@ class PerDeviceProvisioningPermissionRequest final
 
   const url::Origin origin_;
   base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PerDeviceProvisioningPermissionRequest);
 };
 
 }  // namespace

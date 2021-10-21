@@ -19,7 +19,8 @@
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_policy_signout_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/user_policy_signout/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -114,7 +115,8 @@
 
   self.viewController = [[SyncScreenViewController alloc] init];
   self.viewController.delegate = self;
-
+  self.viewController.syncTypesRestricted =
+      HasManagedSyncDataType(browserState);
   // Setup mediator.
   self.mediator = [[SyncScreenMediator alloc]
       initWithAuthenticationService:authenticationService
@@ -126,7 +128,9 @@
                                         browserState)
                    syncSetupService:syncSetupService
               unifiedConsentService:UnifiedConsentServiceFactory::
-                                        GetForBrowserState(browserState)];
+                                        GetForBrowserState(browserState)
+                        syncService:SyncServiceFactory::GetForBrowserState(
+                                        self.browser->GetBrowserState())];
 
   self.mediator.delegate = self;
   self.mediator.consumer = self.viewController;
@@ -136,9 +140,7 @@
   BOOL animated = self.baseNavigationController.topViewController != nil;
   [self.baseNavigationController setViewControllers:@[ self.viewController ]
                                            animated:animated];
-  if (@available(iOS 13, *)) {
-    self.viewController.modalInPresentation = YES;
-  }
+  self.viewController.modalInPresentation = YES;
 }
 
 - (void)stop {
@@ -156,31 +158,23 @@
 #pragma mark - SyncScreenViewControllerDelegate
 
 - (void)didTapPrimaryActionButton {
-  [self startSyncWithAdvancedSettings:NO];
+  [self startSyncOrAdvancedSettings:NO];
 }
 
 - (void)didTapSecondaryActionButton {
   base::UmaHistogramEnumeration("FirstRun.Stage",
                                 first_run::kSyncScreenCompletionWithoutSync);
-  // The sync view will only be displayed if the user accepted sign in
-  // previously in the flow. If the "Don't turn on sync" button is tapped, the
-  // user will be reverted to the signed in not syncing state, since this is the
-  // only possible previous state.
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  AuthenticationService* authenticationService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  ChromeIdentity* syncingIdentity =
-      authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSync);
-  if (syncingIdentity) {
-    authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
-                                   /*force_clear_browsing_data=*/false, nil);
-    authenticationService->SignIn(syncingIdentity);
-  }
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
+  // Call StopAndClear() to clear the encryption passphrase, in case the
+  // user entered it before canceling the sync opt-in flow, and also to set
+  // sync as requested.
+  syncService->StopAndClear();
   [self.delegate willFinishPresenting];
 }
 
 - (void)showSyncSettings {
-  [self startSyncWithAdvancedSettings:YES];
+  [self startSyncOrAdvancedSettings:YES];
 }
 
 - (void)addConsentStringID:(const int)stringID {
@@ -239,8 +233,8 @@
   [self.delegate skipAll];
 }
 
-// Starts syncing from |advancedSettings|.
-- (void)startSyncWithAdvancedSettings:(BOOL)advancedSettings {
+// Starts syncing or opens |advancedSettings|.
+- (void)startSyncOrAdvancedSettings:(BOOL)advancedSettings {
   self.advancedSettingsRequested = advancedSettings;
   int confirmationID = advancedSettings
                            ? self.viewController.openSettingsStringID

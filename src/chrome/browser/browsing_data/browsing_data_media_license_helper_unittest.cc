@@ -40,6 +40,10 @@ const char kClearKeyCdmPluginId[] = "application_x-ppapi-clearkey-cdm";
 class AwaitCompletionHelper {
  public:
   AwaitCompletionHelper() : start_(false), already_quit_(false) {}
+
+  AwaitCompletionHelper(const AwaitCompletionHelper&) = delete;
+  AwaitCompletionHelper& operator=(const AwaitCompletionHelper&) = delete;
+
   virtual ~AwaitCompletionHelper() {}
 
   void BlockUntilNotified() {
@@ -74,8 +78,6 @@ class AwaitCompletionHelper {
   // immediately.
   bool start_;
   bool already_quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwaitCompletionHelper);
 };
 
 // The FileSystem APIs are all asynchronous; this testing class wraps up the
@@ -92,6 +94,11 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     helper_ = BrowsingDataMediaLicenseHelper::Create(filesystem_context_);
     base::RunLoop().RunUntilIdle();
   }
+
+  BrowsingDataMediaLicenseHelperTest(
+      const BrowsingDataMediaLicenseHelperTest&) = delete;
+  BrowsingDataMediaLicenseHelperTest& operator=(
+      const BrowsingDataMediaLicenseHelperTest&) = delete;
 
   ~BrowsingDataMediaLicenseHelperTest() override {
     // Avoid memory leaks.
@@ -129,10 +136,10 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
   virtual void PopulateTestMediaLicenseData(const GURL& origin1,
                                             const GURL& origin2,
                                             const GURL& origin3) {
-    const base::Time ten_days_ago = now_ - base::TimeDelta::FromDays(10);
-    const base::Time twenty_days_ago = now_ - base::TimeDelta::FromDays(20);
-    const base::Time thirty_days_ago = now_ - base::TimeDelta::FromDays(30);
-    const base::Time sixty_days_ago = now_ - base::TimeDelta::FromDays(60);
+    const base::Time ten_days_ago = now_ - base::Days(10);
+    const base::Time twenty_days_ago = now_ - base::Days(20);
+    const base::Time thirty_days_ago = now_ - base::Days(30);
+    const base::Time sixty_days_ago = now_ - base::Days(60);
 
     std::string clearkey_fsid = CreateFileSystem(kClearKeyCdmPluginId, origin1);
     storage::FileSystemURL clearkey_file =
@@ -268,8 +275,6 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
   // Storage to pass information back from callbacks.
   std::unique_ptr<std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>>
       media_license_info_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataMediaLicenseHelperTest);
 };
 
 // Verifies that the BrowsingDataMediaLicenseHelper correctly handles an empty

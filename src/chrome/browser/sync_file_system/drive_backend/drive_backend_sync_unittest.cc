@@ -84,6 +84,10 @@ class DriveBackendSyncTest : public testing::Test,
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         pending_remote_changes_(0),
         pending_local_changes_(0) {}
+
+  DriveBackendSyncTest(const DriveBackendSyncTest&) = delete;
+  DriveBackendSyncTest& operator=(const DriveBackendSyncTest&) = delete;
+
   ~DriveBackendSyncTest() override {}
 
   void SetUp() override {
@@ -601,8 +605,6 @@ class DriveBackendSyncTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DriveBackendSyncTest);
 };
 
 TEST_F(DriveBackendSyncTest, LocalToRemoteBasicTest) {
@@ -1090,7 +1092,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFile) {
           app_root_folder_id, "conflict_to_pending_remote", "foo", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() + base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() + base::Days(1)));
 
   FetchRemoteChanges();
 
@@ -1100,7 +1102,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFolder_AddFile) {
           app_root_folder_id, "conflict_to_existing_remote", "foo", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() + base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() + base::Days(1)));
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
@@ -1310,7 +1312,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFolder) {
                 app_root_folder_id, "conflict_to_pending_remote", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() - base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() - base::Days(1)));
 
   FetchRemoteChanges();
 
@@ -1319,7 +1321,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFolder) {
                 app_root_folder_id, "conflict_to_existing_remote", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() - base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() - base::Days(1)));
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
@@ -1389,7 +1391,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFile) {
           app_root_folder_id, "conflict_to_pending_remote", "foo", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() + base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() + base::Days(1)));
 
   FetchRemoteChanges();
 
@@ -1399,7 +1401,7 @@ TEST_F(DriveBackendSyncTest, ConflictTest_AddFile_AddFile) {
           app_root_folder_id, "conflict_to_existing_remote", "bar", &file_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->UpdateModificationTime(
-                file_id, base::Time::Now() + base::TimeDelta::FromDays(1)));
+                file_id, base::Time::Now() + base::Days(1)));
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();

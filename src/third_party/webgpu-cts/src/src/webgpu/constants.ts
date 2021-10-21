@@ -63,14 +63,14 @@ export const DefaultLimits = {
   maxTextureDimension1D: 8192,
   maxTextureDimension2D: 8192,
   maxTextureDimension3D: 2048,
-  maxTextureArrayLayers: 2048,
+  maxTextureArrayLayers: 256,
 
   maxBindGroups: 4,
   maxDynamicUniformBuffersPerPipelineLayout: 8,
   maxDynamicStorageBuffersPerPipelineLayout: 4,
   maxSampledTexturesPerShaderStage: 16,
   maxSamplersPerShaderStage: 16,
-  maxStorageBuffersPerShaderStage: 4,
+  maxStorageBuffersPerShaderStage: 8,
   maxStorageTexturesPerShaderStage: 4,
   maxUniformBuffersPerShaderStage: 12,
 

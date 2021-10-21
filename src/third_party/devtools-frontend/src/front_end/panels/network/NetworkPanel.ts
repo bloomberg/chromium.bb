@@ -48,6 +48,7 @@ import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Search from '../search/search.js';
 
 import {BlockedURLsPane} from './BlockedURLsPane.js';
+import type {RequestActivatedEvent} from './NetworkDataGridNode.js';
 import {Events} from './NetworkDataGridNode.js';
 import {NetworkItemView} from './NetworkItemView.js';
 import {NetworkLogView} from './NetworkLogView.js';
@@ -369,13 +370,14 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     return this.throttlingSelect;
   }
 
-  private onWindowChanged(event: Common.EventTarget.EventTargetEvent): void {
+  private onWindowChanged(event: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.WindowChangedEvent>):
+      void {
     const startTime = Math.max(this.calculator.minimumBoundary(), event.data.startTime / 1000);
     const endTime = Math.min(this.calculator.maximumBoundary(), event.data.endTime / 1000);
     this.networkLogView.setWindow(startTime, endTime);
   }
 
-  private async searchToggleClick(_event: Common.EventTarget.EventTargetEvent): Promise<void> {
+  private async searchToggleClick(): Promise<void> {
     const action = UI.ActionRegistry.ActionRegistry.instance().action('network.search');
     if (action) {
       await action.execute();
@@ -401,8 +403,8 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     this.panelToolbar.appendToolbarItem(this.filterBar.filterButton());
     updateSidebarToggle();
     splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, updateSidebarToggle);
-    searchToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, event => {
-      this.searchToggleClick(event);
+    searchToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+      this.searchToggleClick();
     });
     this.panelToolbar.appendToolbarItem(searchToggle);
     this.panelToolbar.appendSeparator();
@@ -638,29 +640,21 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     this.hideRequestPanel();
   }
 
-  private onRowSizeChanged(_event: Common.EventTarget.EventTargetEvent): void {
+  private onRowSizeChanged(): void {
     this.updateUI();
   }
 
-  private onRequestSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const request = (event.data as SDK.NetworkRequest.NetworkRequest | null);
+  private onRequestSelected(event: Common.EventTarget.EventTargetEvent<SDK.NetworkRequest.NetworkRequest|null>): void {
+    const request = event.data;
     this.currentRequest = request;
     this.networkOverview.setHighlightedRequest(request);
     this.updateNetworkItemView();
   }
 
-  private onRequestActivated(event: {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any,
-  }): void {
-    const eventData = (event.data as {
-      showPanel: boolean,
-      tab: NetworkForward.UIRequestLocation.UIRequestTabs,
-      takeFocus: (boolean | undefined),
-    });
-    if (eventData.showPanel) {
-      this.showRequestPanel(eventData.tab, /* takeFocus */ eventData.takeFocus);
+  private onRequestActivated(event: Common.EventTarget.EventTargetEvent<RequestActivatedEvent>): void {
+    const {showPanel, tab, takeFocus} = event.data;
+    if (showPanel) {
+      this.showRequestPanel(tab, takeFocus);
     } else {
       this.hideRequestPanel();
     }
@@ -766,18 +760,18 @@ export class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     appendRevealItem.call(this, request);
   }
 
-  private onFilmFrameSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const timestamp = (event.data as number);
+  private onFilmFrameSelected(event: Common.EventTarget.EventTargetEvent<number>): void {
+    const timestamp = event.data;
     this.overviewPane.setWindowTimes(0, timestamp);
   }
 
-  private onFilmFrameEnter(event: Common.EventTarget.EventTargetEvent): void {
-    const timestamp = (event.data as number);
+  private onFilmFrameEnter(event: Common.EventTarget.EventTargetEvent<number>): void {
+    const timestamp = event.data;
     this.networkOverview.selectFilmStripFrame(timestamp);
     this.networkLogView.selectFilmStripFrame(timestamp / 1000);
   }
 
-  private onFilmFrameExit(_event: Common.EventTarget.EventTargetEvent): void {
+  private onFilmFrameExit(): void {
     this.networkOverview.clearFilmStripFrame();
     this.networkLogView.clearFilmStripFrame();
   }

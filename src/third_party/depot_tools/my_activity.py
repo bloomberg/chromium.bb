@@ -57,13 +57,10 @@ import fix_encoding
 import gclient_utils
 import gerrit_util
 
-
 if sys.version_info.major == 2:
-  logging.warning(
-      'Python 2 is deprecated. Run my_activity.py using vpython3.')
-  import urllib as urllib_parse
-else:
-  import urllib.parse as urllib_parse
+  logging.critical(
+      'Python 2 is not supported. Run my_activity.py using vpython3.')
+
 
 try:
   import dateutil  # pylint: disable=import-error
@@ -348,7 +345,7 @@ class MyActivity(object):
     http = self.monorail_get_auth_http()
     url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
            '/%s/issues') % project
-    query_data = urllib_parse.urlencode(query)
+    query_data = urllib.parse.urlencode(query)
     url = url + '?' + query_data
     _, body = http.request(url)
     self.show_progress()

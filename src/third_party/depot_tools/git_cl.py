@@ -46,6 +46,7 @@ import owners_client
 import owners_finder
 import presubmit_canned_checks
 import presubmit_support
+import rustfmt
 import scm
 import setup_color
 import split_cl
@@ -2064,7 +2065,7 @@ class Changelist(object):
     print('Issue %s has been submitted.' % self.GetIssueURL())
     links = self._GetChangeCommit().get('web_links', [])
     for link in links:
-      if link.get('name') == 'gitiles' and link.get('url'):
+      if link.get('name') in ['gitiles', 'browse'] and link.get('url'):
         print('Landed as: %s' % link.get('url'))
         break
     return 0
@@ -5065,6 +5066,34 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
   return return_value
 
 
+def _RunRustFmt(opts, rust_diff_files, top_dir, upstream_commit):
+  """Runs rustfmt.  Just like _RunClangFormatDiff returns 2 to indicate that
+  presubmit checks have failed (and returns 0 otherwise)."""
+
+  if not rust_diff_files:
+    return 0
+
+  # Locate the rustfmt binary.
+  try:
+    rustfmt_tool = rustfmt.FindRustfmtToolInChromiumTree()
+  except rustfmt.NotFoundError as e:
+    DieWithError(e)
+
+  # TODO(crbug.com/1231317): Support formatting only the changed lines
+  # if `opts.full or settings.GetFormatFullByDefault()` is False.  See also:
+  # https://github.com/emilio/rustfmt-format-diff
+  cmd = [rustfmt_tool]
+  if opts.dry_run:
+    cmd.append('--check')
+  cmd += rust_diff_files
+  rustfmt_exitcode = subprocess2.call(cmd)
+
+  if opts.presubmit and rustfmt_exitcode != 0:
+    return 2
+  else:
+    return 0
+
+
 def MatchingFileType(file_name, extensions):
   """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
@@ -5076,6 +5105,7 @@ def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
   GN_EXTS = ['.gn', '.gni', '.typemap']
+  RUST_EXTS = ['.rs']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--upstream', help='Branch to check against')
@@ -5109,6 +5139,18 @@ def CMDformat(parser, args):
                     help='Print diff to stdout rather than modifying files.')
   parser.add_option('--presubmit', action='store_true',
                     help='Used when running the script from a presubmit.')
+
+  parser.add_option('--rust-fmt',
+                    dest='use_rust_fmt',
+                    action='store_true',
+                    default=rustfmt.IsRustfmtSupported(),
+                    help='Enables formatting of Rust file types using rustfmt.')
+  parser.add_option(
+      '--no-rust-fmt',
+      dest='use_rust_fmt',
+      action='store_false',
+      help='Disables formatting of Rust file types using rustfmt.')
+
   opts, args = parser.parse_args(args)
 
   if opts.python is not None and opts.no_python:
@@ -5158,12 +5200,19 @@ def CMDformat(parser, args):
         x for x in diff_files if MatchingFileType(x, CLANG_EXTS)
     ]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
+  rust_diff_files = [x for x in diff_files if MatchingFileType(x, RUST_EXTS)]
   gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
   top_dir = settings.GetRoot()
 
   return_value = _RunClangFormatDiff(opts, clang_diff_files, top_dir,
                                      upstream_commit)
+
+  if opts.use_rust_fmt:
+    rust_fmt_return_value = _RunRustFmt(opts, rust_diff_files, top_dir,
+                                        upstream_commit)
+    if rust_fmt_return_value == 2:
+      return_value = 2
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files

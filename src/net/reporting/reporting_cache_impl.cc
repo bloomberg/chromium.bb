@@ -183,23 +183,51 @@ void ReportingCacheImpl::IncrementReportsAttempts(
   context_->NotifyCachedReportsUpdated();
 }
 
+ReportingEndpoint::Statistics* ReportingCacheImpl::GetEndpointStats(
+    const ReportingEndpointGroupKey& group_key,
+    const GURL& url) {
+  if (group_key.IsDocumentEndpoint()) {
+    const auto document_endpoints_source_it =
+        document_endpoints_.find(group_key.reporting_source.value());
+    // The reporting source may have been removed while the upload was in
+    // progress. In that case, we no longer care about the stats for the
+    // endpoint associated with the destroyed reporting source.
+    if (document_endpoints_source_it == document_endpoints_.end())
+      return nullptr;
+    const auto document_endpoint_it =
+        base::ranges::find_if(document_endpoints_source_it->second,
+                              [&group_key](ReportingEndpoint endpoint) {
+                                return endpoint.group_key == group_key;
+                              });
+    // The endpoint may have been removed while the upload was in progress. In
+    // that case, we no longer care about the stats for the removed endpoint.
+    if (document_endpoint_it == document_endpoints_source_it->second.end())
+      return nullptr;
+    return &document_endpoint_it->stats;
+  } else {
+    EndpointMap::iterator endpoint_it = FindEndpointIt(group_key, url);
+    // The endpoint may have been removed while the upload was in progress. In
+    // that case, we no longer care about the stats for the removed endpoint.
+    if (endpoint_it == endpoints_.end())
+      return nullptr;
+    return &endpoint_it->second.stats;
+  }
+}
+
 void ReportingCacheImpl::IncrementEndpointDeliveries(
     const ReportingEndpointGroupKey& group_key,
     const GURL& url,
     int reports_delivered,
     bool successful) {
-  EndpointMap::iterator endpoint_it = FindEndpointIt(group_key, url);
-  // The endpoint may have been removed while the upload was in progress. In
-  // that case, we no longer care about the stats for the removed endpoint.
-  if (endpoint_it == endpoints_.end())
+  ReportingEndpoint::Statistics* stats = GetEndpointStats(group_key, url);
+  if (!stats)
     return;
 
-  ReportingEndpoint::Statistics& stats = endpoint_it->second.stats;
-  ++stats.attempted_uploads;
-  stats.attempted_reports += reports_delivered;
+  ++stats->attempted_uploads;
+  stats->attempted_reports += reports_delivered;
   if (successful) {
-    ++stats.successful_uploads;
-    stats.successful_reports += reports_delivered;
+    ++stats->successful_uploads;
+    stats->successful_reports += reports_delivered;
   }
 }
 
@@ -364,16 +392,21 @@ void ReportingCacheImpl::RemoveSourceAndEndpoints(
                report->status != ReportingReport::Status::SUCCESS;
       }));
   document_endpoints_.erase(reporting_source);
+  isolation_info_.erase(reporting_source);
   expired_sources_.erase(reporting_source);
   context_->NotifyEndpointsUpdated();
 }
 
 void ReportingCacheImpl::OnParsedReportingEndpointsHeader(
     const base::UnguessableToken& reporting_source,
+    const IsolationInfo& isolation_info,
     std::vector<ReportingEndpoint> endpoints) {
   DCHECK(!reporting_source.is_empty());
   DCHECK(!endpoints.empty());
+  DCHECK_EQ(0u, document_endpoints_.count(reporting_source));
+  DCHECK_EQ(0u, isolation_info_.count(reporting_source));
   document_endpoints_.insert({reporting_source, std::move(endpoints)});
+  isolation_info_.insert({reporting_source, isolation_info});
   context_->NotifyEndpointsUpdated();
 }
 
@@ -759,10 +792,14 @@ size_t ReportingCacheImpl::GetReportingSourceCountForTesting() const {
 void ReportingCacheImpl::SetV1EndpointForTesting(
     const ReportingEndpointGroupKey& group_key,
     const base::UnguessableToken& reporting_source,
+    const IsolationInfo& isolation_info,
     const GURL& url) {
   DCHECK(!reporting_source.is_empty());
   DCHECK(group_key.IsDocumentEndpoint());
   DCHECK_EQ(reporting_source, group_key.reporting_source.value());
+  DCHECK_EQ(group_key.network_isolation_key,
+            isolation_info.network_isolation_key());
+
   ReportingEndpoint::EndpointInfo info;
   info.url = url;
   ReportingEndpoint new_endpoint(group_key, info);
@@ -775,6 +812,15 @@ void ReportingCacheImpl::SetV1EndpointForTesting(
     document_endpoints_.insert({reporting_source, std::move(endpoints)});
   } else {
     document_endpoints_.insert({reporting_source, {std::move(new_endpoint)}});
+  }
+  // If this is the first time we've used this reporting_source, then add the
+  // isolation info. Otherwise, ensure that it is the same as what was used
+  // previously.
+  if (isolation_info_.count(reporting_source) == 0) {
+    isolation_info_.insert({reporting_source, isolation_info});
+  } else {
+    DCHECK(isolation_info_.at(reporting_source)
+               .IsEqualForTesting(isolation_info));  // IN-TEST
   }
   context_->NotifyEndpointsUpdated();
 }
@@ -835,6 +881,20 @@ void ReportingCacheImpl::SetEndpointForTesting(
   EnforcePerClientAndGlobalEndpointLimits(client_it);
   ConsistencyCheckClients();
   context_->NotifyCachedClientsUpdated();
+}
+
+IsolationInfo ReportingCacheImpl::GetIsolationInfoForEndpoint(
+    const ReportingEndpoint& endpoint) const {
+  // V0 endpoint groups do not support credentials.
+  if (!endpoint.group_key.reporting_source.has_value()) {
+    return IsolationInfo::CreatePartial(
+        IsolationInfo::RequestType::kOther,
+        endpoint.group_key.network_isolation_key);
+  }
+  const auto it =
+      isolation_info_.find(endpoint.group_key.reporting_source.value());
+  DCHECK(it != isolation_info_.end());
+  return it->second;
 }
 
 ReportingCacheImpl::Client::Client(

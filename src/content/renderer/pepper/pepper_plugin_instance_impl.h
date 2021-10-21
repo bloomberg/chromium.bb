@@ -67,7 +67,8 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 struct PP_Point;
 
@@ -503,6 +504,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   class ExternalDocumentLoader : public blink::WebAssociatedURLLoaderClient {
    public:
     ExternalDocumentLoader();
+
+    ExternalDocumentLoader(const ExternalDocumentLoader&) = delete;
+    ExternalDocumentLoader& operator=(const ExternalDocumentLoader&) = delete;
+
     ~ExternalDocumentLoader() override;
 
     void ReplayReceivedData(WebAssociatedURLLoaderClient* document_loader);
@@ -516,8 +521,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     std::list<std::string> data_;
     bool finished_loading_;
     std::unique_ptr<blink::WebURLError> error_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExternalDocumentLoader);
   };
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive

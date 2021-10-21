@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
-#include "ui/base/ime/chromeos/fake_input_method_delegate.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/mock_input_method_manager.h"
+#include "ui/base/ime/ash/component_extension_ime_manager.h"
+#include "ui/base/ime/ash/fake_ime_keyboard.h"
+#include "ui/base/ime/ash/fake_input_method_delegate.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/mock_input_method_manager.h"
 
 namespace ash {
 namespace input_method {
@@ -24,9 +24,14 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
    public:
     explicit State(MockInputMethodManagerImpl* manager);
 
+    State(const State&) = delete;
+    State& operator=(const State&) = delete;
+
     // MockInputMethodManager::State:
     scoped_refptr<InputMethodManager::State> Clone() const override;
-    std::unique_ptr<InputMethodDescriptors> GetActiveInputMethods()
+    std::unique_ptr<InputMethodDescriptors>
+    GetEnabledInputMethodsSortedByLocalizedDisplayNames() const override;
+    std::unique_ptr<InputMethodDescriptors> GetEnabledInputMethods()
         const override;
     const InputMethodDescriptor* GetInputMethodFromId(
         const std::string& input_method_id) const override;
@@ -41,11 +46,14 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
 
    private:
     MockInputMethodManager* const manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   MockInputMethodManagerImpl();
+
+  MockInputMethodManagerImpl(const MockInputMethodManagerImpl&) = delete;
+  MockInputMethodManagerImpl& operator=(const MockInputMethodManagerImpl&) =
+      delete;
+
   ~MockInputMethodManagerImpl() override;
 
   // MockInputMethodManager:
@@ -94,8 +102,6 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
   FakeImeKeyboard keyboard_;
   bool mod3_used_ = false;
   std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInputMethodManagerImpl);
 };
 
 }  // namespace input_method

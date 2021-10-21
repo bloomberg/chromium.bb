@@ -330,7 +330,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.BookmarkAppLaunchContainer"
-    enum="AppLaunchContainer" expires_after="2021-12-12">
+    enum="AppLaunchContainer" expires_after="2022-04-10">
   <owner>phillis@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -342,7 +342,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.BookmarkAppLaunchSource" enum="AppLaunchSource"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>phillis@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -652,6 +652,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="ExtensionsDatabaseOpen">
     <variant name=""/>
     <variant name=".Rules" summary="Rules backing stores"/>
+    <variant name=".Scripts" summary="Scripts backing stores"/>
     <variant name=".Settings" summary="Settings backing stores"/>
     <variant name=".State" summary="State backing stores"/>
   </token>
@@ -688,7 +689,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime"
-    units="ms" expires_after="2021-11-14">
+    units="ms" expires_after="2022-04-17">
   <owner>karandeepb@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -701,7 +702,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime.SingleExtension2"
-    units="microseconds" expires_after="2021-10-10">
+    units="microseconds" expires_after="2022-10-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -714,7 +715,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions3"
-    units="microseconds" expires_after="2021-10-10">
+    units="microseconds" expires_after="2022-10-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -727,7 +728,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime"
-    units="ms" expires_after="2021-10-25">
+    units="ms" expires_after="2022-10-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
   <summary>
@@ -749,7 +750,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.LoadRulesetResult"
-    enum="LoadRulesetResult" expires_after="2021-11-14">
+    enum="LoadRulesetResult" expires_after="2022-04-24">
   <owner>karandeepb@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -759,7 +760,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2"
-    units="rules" expires_after="2021-10-25">
+    units="rules" expires_after="2022-10-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -797,7 +798,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderAdded"
-    enum="WebRequest.RequestHeader" expires_after="2022-01-02">
+    enum="WebRequest.RequestHeader" expires_after="2022-05-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
@@ -809,7 +810,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderChanged"
-    enum="WebRequest.RequestHeader" expires_after="2021-12-19">
+    enum="WebRequest.RequestHeader" expires_after="2022-05-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
@@ -845,7 +846,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ResponseHeaderChanged"
-    enum="WebRequest.ResponseHeader" expires_after="2021-10-31">
+    enum="WebRequest.ResponseHeader" expires_after="2022-04-24">
   <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
@@ -857,7 +858,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ResponseHeaderRemoved"
-    enum="WebRequest.ResponseHeader" expires_after="2021-12-19">
+    enum="WebRequest.ResponseHeader" expires_after="2022-05-01">
   <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
@@ -881,7 +882,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.UpdateDynamicRulesStatus"
-    enum="UpdateDynamicRulesStatus" expires_after="2021-11-14">
+    enum="UpdateDynamicRulesStatus" expires_after="2022-04-24">
   <owner>karandeepb@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -927,7 +928,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Blessed" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-24">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -950,7 +951,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_ContentScript" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-05-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1018,7 +1019,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DidInitializeServiceWorkerContextOnWorkerThread"
-    units="ms" expires_after="2021-12-01">
+    units="ms" expires_after="2022-04-24">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1070,7 +1071,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.DisableReason" enum="ExtensionDisableReason"
-    expires_after="2021-12-12">
+    expires_after="2022-04-24">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -1118,9 +1119,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.EsbAllowlistOmahaAttribute"
-    enum="ExtensionAllowlistOmahaAttributeValue" expires_after="2021-10-01">
+    enum="ExtensionAllowlistOmahaAttributeValue" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Reports the value of the Safe Browsing CRX allowlist custom omaha attribute
     when an update check occurs for an extension.
@@ -1151,7 +1152,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.EventPageIdleTime" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-24">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>The time an extension's event page has spent unloaded.</summary>
@@ -1276,7 +1277,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheCount" units="units"
-    expires_after="2022-02-01">
+    expires_after="2022-05-01">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1287,7 +1288,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheSize" units="MB"
-    expires_after="2022-02-01">
+    expires_after="2022-05-01">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1347,7 +1348,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ExtensionReenabledRemotely" units="count"
-    expires_after="2021-12-19">
+    expires_after="2022-04-10">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1403,7 +1404,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ExtensionUninstalled" units="units"
-    expires_after="2021-11-14">
+    expires_after="2022-05-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>An extension has been uninstalled.</summary>
@@ -1490,7 +1491,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledAndBlackListed" units="count"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1503,7 +1504,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ForceInstalledCacheStatus"
     enum="ExtensionInstallationDownloadingCacheStatus"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>poromov@chromium.org</owner>
@@ -1514,7 +1515,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledCreationStage"
-    enum="ExtensionInstallCreationStage" expires_after="2021-12-26">
+    enum="ExtensionInstallCreationStage" expires_after="2022-04-03">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1529,7 +1530,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledDownloadingStage"
-    enum="ExtensionInstallationDownloadingStage" expires_after="2022-02-06">
+    enum="ExtensionInstallationDownloadingStage" expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1545,7 +1546,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ForceInstalledFailureCacheStatus"
     enum="ExtensionInstallationDownloadingCacheStatus"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1559,7 +1560,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureCrxInstallError"
-    enum="ExtensionInstallationCrxInstallError" expires_after="2022-02-06">
+    enum="ExtensionInstallationCrxInstallError" expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1572,7 +1573,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureManifestInvalidAppStatusError"
-    enum="ManifestInvalidAppStatusError" expires_after="2022-01-23">
+    enum="ManifestInvalidAppStatusError" expires_after="2022-04-03">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1587,7 +1588,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureNoUpdatesInfo"
-    enum="ExtensionNoUpdatesInfo" expires_after="2022-02-20">
+    enum="ExtensionNoUpdatesInfo" expires_after="2022-04-24">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1602,7 +1603,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2022-02-06">
+    enum="ExtensionInstallationFailureReason" expires_after="2022-04-10">
 <!-- Name completed by histogram_suffixes name="ExtensionSource" -->
 
   <owner>burunduk@chromium.org</owner>
@@ -1638,7 +1639,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureSandboxUnpackFailureReason2"
-    enum="ExtensionUnpackFailureReason" expires_after="2022-02-01">
+    enum="ExtensionUnpackFailureReason" expires_after="2022-04-03">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1704,7 +1705,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.ForceInstalledFailureStuckInInitialCreationStageAreExtensionsEnabled"
-    enum="BooleanEnabled" expires_after="2022-02-01">
+    enum="BooleanEnabled" expires_after="2022-04-10">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1724,7 +1725,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Extensions.ForceInstalledFailureWithCrxHeaderInvalidIsCWS"
     enum="IsForceInstalledExtensionFailedWithCrxHeaderInvalidFromCWSBoolean"
-    expires_after="2021-12-26">
+    expires_after="2022-04-03">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1738,7 +1739,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.ForceInstalledFailureWithCrxHeaderInvalidIsFromCache"
-    enum="BooleanCacheHit" expires_after="2022-01-09">
+    enum="BooleanCacheHit" expires_after="2022-04-03">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1751,7 +1752,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledLoadTime" units="ms"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1762,7 +1763,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledNotLoadedDisableReason"
-    enum="ExtensionDisableReason" expires_after="2022-02-06">
+    enum="ExtensionDisableReason" expires_after="2022-04-10">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1787,7 +1788,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured"
-    enum="Boolean" expires_after="2022-02-06">
+    enum="Boolean" expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1821,7 +1822,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutAndNotInstalledCount"
-    units="units" expires_after="2022-02-06">
+    units="units" expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1832,7 +1833,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutCount" units="units"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1880,7 +1881,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTotalCandidateCount" units="units"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1938,13 +1939,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ForceToolbarPinnedCount" units="extensions"
-    expires_after="2022-02-06">
+    expires_after="2022-04-24">
+  <obsolete>
+    Code removed 2021/10.
+  </obsolete>
   <owner>nicolaso@chromium.org</owner>
   <owner>chrome-enterprise-team-core@google.com</owner>
   <summary>
     Number of extensions that are &quot;force-pinned&quot; in the
     ExtensionSettings policy. Recorded after policies are parsed, or refreshed.
     Only recorded if non-zero.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ForceToolbarPinnedCount2" units="extensions"
+    expires_after="2022-04-24">
+  <owner>nicolaso@chromium.org</owner>
+  <owner>chrome-enterprise-team-core@google.com</owner>
+  <summary>
+    Number of force installed extensions that are &quot;force-pinned&quot; in
+    the ExtensionSettings policy. Recorded after policies are parsed, or
+    refreshed. Only recorded if non-zero.
   </summary>
 </histogram>
 
@@ -2128,14 +2143,36 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.GoogleDocOffline.AvailabilityOnResourceRequest"
-    enum="GoogleDocsExtensionAvailablity" expires_after="2021-11-21">
+    enum="GoogleDocsExtensionAvailablity" expires_after="2022-09-01">
   <owner>rhalavati@chromium.org</owner>
-  <owner>chrome-privacy-core@google.com</owner>
+  <owner>chrome-incognito@google.com</owner>
   <summary>
     This histogram records requests to use resources from Google Docs Offline
     extension, along with whether the extension has been available or not and
     the request has been done from incognito mode or not. Note that this request
     is double counted for the imports.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Greylist.Disabled" enum="ExtensionLocation"
+    expires_after="2022-09-07">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@chromium.org</owner>
+  <summary>
+    Emits the Extension::Location of a newly-disabled greylisted extension.
+    Logged when SafeBrowsingVerdictHandler greylists and disables an installed
+    extension.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Greylist.Enabled" enum="ExtensionLocation"
+    expires_after="2022-09-07">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@chromium.org</owner>
+  <summary>
+    Emits the Extension::Location of an extension that was ungreylisted. Logged
+    when SafeBrowsingVerdictHandler ungreylists and enables an installed
+    extension.
   </summary>
 </histogram>
 
@@ -2537,9 +2574,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.InstallFrictionDialogAction"
-    enum="ExtensionInstallFrictionDialogAction" expires_after="2021-10-01">
+    enum="ExtensionInstallFrictionDialogAction" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Action taken in the extension install friction dialog displayed to Enhanced
     Safe Browsing users before installing an extension that is not included in
@@ -2570,7 +2607,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.InstallPrompt.Type2"
-    enum="ExtensionInstallPromptType" expires_after="2021-12-12">
+    enum="ExtensionInstallPromptType" expires_after="2022-04-03">
   <owner>meacer@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -2800,14 +2837,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>The number of platform apps loaded at profile open.</summary>
 </histogram>
 
-<histogram name="Extensions.LoadTheme" units="units" expires_after="2022-02-20">
+<histogram name="Extensions.LoadTheme" units="units" expires_after="2022-04-24">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>The number of themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType"
-    expires_after="2021-12-05">
+    expires_after="2022-04-10">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2841,7 +2878,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Extensions.Management_Refresh" units="ms" expires_after="M100">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
-  <summary>Measures how long ExtensionManagement::Refresh takes.</summary>
+  <summary>
+    Measures how long ExtensionManagement::Refresh takes. This reloads all
+    enterprise-related policies for all extensions, and is called both at
+    startup and any time the enterprise policy changes.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.ManifestFetchFailureRetryCountGoogleUrl"
@@ -3112,7 +3153,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.NewTabPageOverrides" units="units"
-    expires_after="2021-12-05">
+    expires_after="2022-05-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <summary>
@@ -3141,9 +3182,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.NotAllowlistedDisabled" units="extensions"
-    expires_after="2021-10-01">
+    expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     The total number of disabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for all users on profile
@@ -3152,9 +3193,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.NotAllowlistedDisabledAndEsbUser"
-    units="extensions" expires_after="2021-10-01">
+    units="extensions" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     The total number of disabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for only for Enhanced Safe Browsing
@@ -3163,9 +3204,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.NotAllowlistedEnabled" units="extensions"
-    expires_after="2021-12-05">
+    expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     The total number of enabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for all users on profile
@@ -3174,9 +3215,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.NotAllowlistedEnabledAndEsbUser" units="extensions"
-    expires_after="2021-10-01">
+    expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     The total number of enabled extensions that are not present in the Enhanced
     Safe Browsing CRX allowlist. Recorded for only for Enhanced Safe Browsing
@@ -3411,7 +3452,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime2" units="ms"
-    expires_after="2021-12-01">
+    expires_after="2022-04-03">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3549,7 +3590,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.RegistrationStatus"
-    enum="Boolean" expires_after="2021-10-01">
+    enum="Boolean" expires_after="2022-10-01">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -3558,7 +3599,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.RegistrationTime"
-    units="ms" expires_after="2021-10-01">
+    units="ms" expires_after="2022-10-01">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -3567,7 +3608,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2021-10-01">
+    enum="Boolean" expires_after="2022-10-01">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -3576,7 +3617,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerTime" units="ms"
-    expires_after="2021-10-01">
+    expires_after="2022-10-01">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -3685,7 +3726,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.Toolbar.InvocationSource"
-    enum="ExtensionActionInvocationSource" expires_after="2022-01-02">
+    enum="ExtensionActionInvocationSource" expires_after="2022-05-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3856,7 +3897,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.WebRequest.KeepaliveRequestState"
-    enum="ExtensionInProgressRequestState" expires_after="2022-01-02">
+    enum="ExtensionInProgressRequestState" expires_after="2022-04-24">
   <owner>yhirano@chromium.org</owner>
   <owner>kinuko@chromium.org</owner>
   <summary>
@@ -4086,9 +4127,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Extensions.WebStoreInstall.EsbAllowlistParameter"
-    enum="WebStoreInstallAllowlistParameter" expires_after="2021-10-01">
+    enum="WebStoreInstallAllowlistParameter" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Reports the Safe Browsing CRX allowlist state received from Chrome Web Store
     when a user presses on &quot;Add to Chrome&quot; in Chrome Web Store.
@@ -4097,9 +4138,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.WebStoreInstall.NotAllowlistedInstalledWithFriction"
-    enum="Boolean" expires_after="2021-10-01">
+    enum="Boolean" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Reports when a user with install friction dialog enabled tries to install an
     extension that is not included in the Safe Browsing CRX allowlist. 'True' if
@@ -4110,9 +4151,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Extensions.WebStoreInstall.NotAllowlistedInstalledWithoutFriction"
-    enum="Boolean" expires_after="2021-10-01">
+    enum="Boolean" expires_after="2022-10-01">
   <owner>jeffcyr@google.com</owner>
-  <owner>lucferron@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Reports when a user with install friction dialog disabled tries to install
     an extension that is not included in the Safe Browsing CRX allowlist. 'True'

@@ -19,6 +19,10 @@ namespace test {
 class TestCallbacks {
  public:
   TestCallbacks();
+
+  TestCallbacks(const TestCallbacks&) = delete;
+  TestCallbacks& operator=(const TestCallbacks&) = delete;
+
   virtual ~TestCallbacks();
 
   void ResetCallbackObservations();
@@ -57,8 +61,6 @@ class TestCallbacks {
 
   // The return value for AnimationsEnded().
   bool should_delete_observer_on_animations_ended_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbacks);
 };
 
 TestCallbacks::TestCallbacks() {}
@@ -102,6 +104,11 @@ class TestCallbacksThatExplicitlyDeletesObserver : public TestCallbacks {
  public:
   TestCallbacksThatExplicitlyDeletesObserver();
 
+  TestCallbacksThatExplicitlyDeletesObserver(
+      const TestCallbacksThatExplicitlyDeletesObserver&) = delete;
+  TestCallbacksThatExplicitlyDeletesObserver& operator=(
+      const TestCallbacksThatExplicitlyDeletesObserver&) = delete;
+
   void set_observer_to_delete_in_animation_started(
       CallbackLayerAnimationObserver* observer) {
     observer_to_delete_in_animation_started_ = observer;
@@ -125,8 +132,6 @@ class TestCallbacksThatExplicitlyDeletesObserver : public TestCallbacks {
   // The observer to delete, if non-NULL, in AnimationsEnded().
   CallbackLayerAnimationObserver* observer_to_delete_in_animation_ended_ =
       nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbacksThatExplicitlyDeletesObserver);
 };
 
 TestCallbacksThatExplicitlyDeletesObserver::
@@ -165,12 +170,15 @@ class TestCallbackLayerAnimationObserver
       AnimationEndedCallback animation_ended_callback,
       bool* destroyed);
 
+  TestCallbackLayerAnimationObserver(
+      const TestCallbackLayerAnimationObserver&) = delete;
+  TestCallbackLayerAnimationObserver& operator=(
+      const TestCallbackLayerAnimationObserver&) = delete;
+
   ~TestCallbackLayerAnimationObserver() override;
 
  private:
   bool* destroyed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbackLayerAnimationObserver);
 };
 
 TestCallbackLayerAnimationObserver::TestCallbackLayerAnimationObserver(
@@ -212,6 +220,12 @@ TestCallbackLayerAnimationObserver::~TestCallbackLayerAnimationObserver() {
 class CallbackLayerAnimationObserverTest : public testing::Test {
  public:
   CallbackLayerAnimationObserverTest();
+
+  CallbackLayerAnimationObserverTest(
+      const CallbackLayerAnimationObserverTest&) = delete;
+  CallbackLayerAnimationObserverTest& operator=(
+      const CallbackLayerAnimationObserverTest&) = delete;
+
   ~CallbackLayerAnimationObserverTest() override;
 
  protected:
@@ -228,9 +242,6 @@ class CallbackLayerAnimationObserverTest : public testing::Test {
   // List of managaged sequences created by CreateLayerAnimationSequence() that
   // need to be destroyed.
   std::vector<std::unique_ptr<LayerAnimationSequence>> sequences_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CallbackLayerAnimationObserverTest);
 };
 
 CallbackLayerAnimationObserverTest::CallbackLayerAnimationObserverTest()
@@ -261,13 +272,15 @@ class CallbackLayerAnimationObserverTestOverwrite
  public:
   CallbackLayerAnimationObserverTestOverwrite();
 
+  CallbackLayerAnimationObserverTestOverwrite(
+      const CallbackLayerAnimationObserverTestOverwrite&) = delete;
+  CallbackLayerAnimationObserverTestOverwrite& operator=(
+      const CallbackLayerAnimationObserverTestOverwrite&) = delete;
+
  protected:
   void AnimationStarted(const CallbackLayerAnimationObserver& observer);
 
   std::unique_ptr<CallbackLayerAnimationObserver> CreateAnimationObserver();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CallbackLayerAnimationObserverTestOverwrite);
 };
 
 CallbackLayerAnimationObserverTestOverwrite::

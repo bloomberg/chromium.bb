@@ -16,7 +16,6 @@
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "content/browser/metrics/histogram_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +25,6 @@
 namespace content {
 
 using base::Time;
-using base::TimeDelta;
 using base::TimeTicks;
 
 namespace {
@@ -192,7 +190,7 @@ void HistogramSynchronizer::FetchHistograms() {
     return;
 
   current_synchronizer->RegisterAndNotifyAllProcesses(
-      HistogramSynchronizer::UNKNOWN, base::TimeDelta::FromMinutes(1));
+      HistogramSynchronizer::UNKNOWN, base::Minutes(1));
 }
 
 void FetchHistogramsAsynchronously(scoped_refptr<base::TaskRunner> task_runner,

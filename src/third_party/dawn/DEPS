@@ -9,6 +9,7 @@ vars = {
   'swiftshader_git': 'https://swiftshader.googlesource.com',
 
   'dawn_standalone': True,
+  'dawn_node': False, # Also fetches dependencies required for building NodeJS bindings.
 }
 
 deps = {
@@ -96,7 +97,7 @@ deps = {
 
   # WGSL support
   'third_party/tint': {
-    'url': '{dawn_git}/tint@bde949427a95f9bd62f6887b132ffb6c113b4579',
+    'url': '{dawn_git}/tint@7ff308fd18007665d75c7847242cf6e68db5be99',
   },
 
   # GLFW for tests and samples
@@ -122,7 +123,7 @@ deps = {
   },
 
   'third_party/swiftshader': {
-    'url': '{swiftshader_git}/SwiftShader@314508f788b26560503ef4bcc8693c6b01fc8abf',
+    'url': '{swiftshader_git}/SwiftShader@562df4889b8140479d1429e67391f80025493e94',
     'condition': 'dawn_standalone',
   },
 
@@ -134,6 +135,25 @@ deps = {
   'third_party/zlib': {
     'url': '{chromium_git}/chromium/src/third_party/zlib@c29ee8c9c3824ca013479bf8115035527967fe02',
     'condition': 'dawn_standalone',
+  },
+
+  'third_party/abseil-cpp': {
+    'url': '{chromium_git}/chromium/src/third_party/abseil-cpp@789af048b388657987c59d4da406859034fe310f',
+    'condition': 'dawn_standalone',
+  },
+
+  # Dependencies required to build Dawn NodeJS bindings
+  'third_party/node-api-headers': {
+    'url': '{github_git}/nodejs/node-api-headers.git@d68505e4055ecb630e14c26c32e5c2c65e179bba',
+    'condition': 'dawn_node',
+  },
+  'third_party/node-addon-api': {
+    'url': '{github_git}/nodejs/node-addon-api.git@4a3de56c3e4ed0031635a2f642b27efeeed00add',
+    'condition': 'dawn_node',
+  },
+  'third_party/gpuweb': {
+    'url': '{github_git}/gpuweb/gpuweb.git@67edc187f5305a72456663c34d51153601b79f3b',
+    'condition': 'dawn_node',
   },
 }
 

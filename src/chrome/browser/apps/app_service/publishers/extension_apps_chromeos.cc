@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/containers/extend.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observation.h"
@@ -24,11 +25,14 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -51,9 +55,9 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -616,6 +620,10 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
 }
 
 bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
+  // QuickOffice has file_handlers which we need to register.
+  if (extension->id() == extension_misc::kQuickOfficeComponentExtensionId) {
+    return true;
+  }
   if (!extension->is_app() || IsBlocklisted(extension->id())) {
     return false;
   }
@@ -651,7 +659,15 @@ bool ExtensionAppsChromeOs::ShouldShownInLauncher(
 apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
-  const bool is_app_disabled = base::Contains(disabled_apps_, extension->id());
+  // If Lacros is publishing chrome apps, then by default ash chrome apps should
+  // be disabled. There is a keep-list that serves as the exception.
+  const bool disable_for_lacros =
+      extension->is_platform_app() &&
+      crosapi::browser_util::IsLacrosChromeAppsEnabled() &&
+      !apps::ExtensionAppRunsInAsh(extension->id());
+  const bool is_app_disabled =
+      base::Contains(disabled_apps_, extension->id()) || disable_for_lacros;
+
   apps::mojom::AppPtr app = ConvertImpl(
       extension,
       is_app_disabled ? apps::mojom::Readiness::kDisabledByPolicy : readiness);
@@ -665,11 +681,16 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
 
-  if (is_app_disabled && is_disabled_apps_mode_hidden_) {
+  if (is_app_disabled &&
+      (is_disabled_apps_mode_hidden_ || disable_for_lacros)) {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
     app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
   }
+
+  // Add file_handlers.
+  base::Extend(app->intent_filters,
+               apps_util::CreateChromeAppIntentFilters(extension));
 
   return app;
 }
@@ -779,12 +800,12 @@ content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
 
   auto* web_contents = ExtensionAppsBase::LaunchImpl(std::move(params));
 
-  std::unique_ptr<full_restore::AppLaunchInfo> launch_info;
+  std::unique_ptr<app_restore::AppLaunchInfo> launch_info;
   int session_id = GetSessionIdForRestoreFromWebContents(web_contents);
   if (!SessionID::IsValidValue(session_id)) {
     // Save all launch information for platform apps, which can launch via
     // event, e.g. file app.
-    launch_info = std::make_unique<full_restore::AppLaunchInfo>(
+    launch_info = std::make_unique<app_restore::AppLaunchInfo>(
         params_for_restore.app_id, params_for_restore.container,
         params_for_restore.disposition, params_for_restore.display_id,
         std::move(params_for_restore.launch_files),

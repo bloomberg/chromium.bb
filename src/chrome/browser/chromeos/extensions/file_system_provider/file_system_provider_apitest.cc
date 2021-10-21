@@ -45,6 +45,11 @@ class NotificationButtonClicker : public RequestManager::Observer {
   explicit NotificationButtonClicker(
       const ProvidedFileSystemInfo& file_system_info)
       : file_system_info_(file_system_info) {}
+
+  NotificationButtonClicker(const NotificationButtonClicker&) = delete;
+  NotificationButtonClicker& operator=(const NotificationButtonClicker&) =
+      delete;
+
   ~NotificationButtonClicker() override {}
 
   // RequestManager::Observer overrides.
@@ -74,8 +79,6 @@ class NotificationButtonClicker : public RequestManager::Observer {
   }
 
   ProvidedFileSystemInfo file_system_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationButtonClicker);
 };
 
 // Simulates clicking on the unresponsive notification's abort button. Also,
@@ -88,6 +91,10 @@ class AbortOnUnresponsivePerformer : public Observer {
     DCHECK(service_);
     service_->AddObserver(this);
   }
+
+  AbortOnUnresponsivePerformer(const AbortOnUnresponsivePerformer&) = delete;
+  AbortOnUnresponsivePerformer& operator=(const AbortOnUnresponsivePerformer&) =
+      delete;
 
   ~AbortOnUnresponsivePerformer() override { service_->RemoveObserver(this); }
 
@@ -118,8 +125,6 @@ class AbortOnUnresponsivePerformer : public Observer {
  private:
   Service* service_;  // Not owned.
   std::vector<std::unique_ptr<NotificationButtonClicker>> clickers_;
-
-  DISALLOW_COPY_AND_ASSIGN(AbortOnUnresponsivePerformer);
 };
 
 }  // namespace
@@ -127,6 +132,10 @@ class AbortOnUnresponsivePerformer : public Observer {
 class FileSystemProviderApiTest : public ExtensionApiTest {
  public:
   FileSystemProviderApiTest() {}
+
+  FileSystemProviderApiTest(const FileSystemProviderApiTest&) = delete;
+  FileSystemProviderApiTest& operator=(const FileSystemProviderApiTest&) =
+      delete;
 
   // Loads a helper testing extension.
   void SetUpOnMainThread() override {
@@ -147,7 +156,6 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
 
  private:
   ash::FakeChromeUserManager user_manager_;
-  DISALLOW_COPY_AND_ASSIGN(FileSystemProviderApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {

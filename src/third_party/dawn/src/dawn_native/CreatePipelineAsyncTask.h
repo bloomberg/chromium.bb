@@ -52,17 +52,17 @@ namespace dawn_native {
         WGPUCreateComputePipelineAsyncCallback mCreateComputePipelineAsyncCallback;
     };
 
-    struct CreateRenderPipelineAsyncCallbackTask final : CreatePipelineAsyncCallbackTaskBase {
+    struct CreateRenderPipelineAsyncCallbackTask : CreatePipelineAsyncCallbackTaskBase {
         CreateRenderPipelineAsyncCallbackTask(Ref<RenderPipelineBase> pipeline,
                                               std::string errorMessage,
                                               WGPUCreateRenderPipelineAsyncCallback callback,
                                               void* userdata);
 
-        void Finish() final;
+        void Finish() override;
         void HandleShutDown() final;
         void HandleDeviceLoss() final;
 
-      private:
+      protected:
         Ref<RenderPipelineBase> mPipeline;
         WGPUCreateRenderPipelineAsyncCallback mCreateRenderPipelineAsyncCallback;
     };
@@ -72,23 +72,37 @@ namespace dawn_native {
     class CreateComputePipelineAsyncTask {
       public:
         CreateComputePipelineAsyncTask(Ref<ComputePipelineBase> nonInitializedComputePipeline,
-                                       std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
                                        size_t blueprintHash,
                                        WGPUCreateComputePipelineAsyncCallback callback,
                                        void* userdata);
 
-        virtual ~CreateComputePipelineAsyncTask() = default;
         void Run();
 
         static void RunAsync(std::unique_ptr<CreateComputePipelineAsyncTask> task);
 
-      protected:
+      private:
         Ref<ComputePipelineBase> mComputePipeline;
         size_t mBlueprintHash;
         WGPUCreateComputePipelineAsyncCallback mCallback;
         void* mUserdata;
+    };
 
-        std::unique_ptr<FlatComputePipelineDescriptor> mAppliedDescriptor;
+    // CreateRenderPipelineAsyncTask defines all the inputs and outputs of
+    // CreateRenderPipelineAsync() tasks, which are the same among all the backends.
+    class CreateRenderPipelineAsyncTask {
+      public:
+        CreateRenderPipelineAsyncTask(Ref<RenderPipelineBase> nonInitializedRenderPipeline,
+                                      WGPUCreateRenderPipelineAsyncCallback callback,
+                                      void* userdata);
+
+        void Run();
+
+        static void RunAsync(std::unique_ptr<CreateRenderPipelineAsyncTask> task);
+
+      private:
+        Ref<RenderPipelineBase> mRenderPipeline;
+        WGPUCreateRenderPipelineAsyncCallback mCallback;
+        void* mUserdata;
     };
 
 }  // namespace dawn_native

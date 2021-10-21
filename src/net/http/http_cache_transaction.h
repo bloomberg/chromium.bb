@@ -87,6 +87,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   Transaction(RequestPriority priority,
               HttpCache* cache);
+
+  Transaction(const Transaction&) = delete;
+  Transaction& operator=(const Transaction&) = delete;
+
   ~Transaction() override;
 
   // Virtual so it can be extended for testing.
@@ -208,6 +212,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   struct NetworkTransactionInfo {
     NetworkTransactionInfo();
+
+    NetworkTransactionInfo(const NetworkTransactionInfo&) = delete;
+    NetworkTransactionInfo& operator=(const NetworkTransactionInfo&) = delete;
+
     ~NetworkTransactionInfo();
 
     // Load timing information for the last network request, if any. Set in the
@@ -218,8 +226,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     int64_t total_sent_bytes = 0;
     ConnectionAttempts old_connection_attempts;
     IPEndPoint old_remote_endpoint;
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkTransactionInfo);
   };
 
   enum State {
@@ -680,8 +686,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   bool in_do_loop_;
 
   base::WeakPtrFactory<Transaction> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Transaction);
 };
 
 }  // namespace net

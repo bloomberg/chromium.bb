@@ -13,6 +13,10 @@
 class ChromeShellDelegate : public ash::ShellDelegate {
  public:
   ChromeShellDelegate();
+
+  ChromeShellDelegate(const ChromeShellDelegate&) = delete;
+  ChromeShellDelegate& operator=(const ChromeShellDelegate&) = delete;
+
   ~ChromeShellDelegate() override;
 
   // ash::ShellDelegate:
@@ -30,9 +34,6 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   bool IsTabDrag(const ui::OSExchangeData& drop_data) override;
   int GetBrowserWebUITabStripHeight() override;
-  aura::Window* CreateBrowserForTabDrop(
-      aura::Window* source_window,
-      const ui::OSExchangeData& drop_data) override;
   void BindBluetoothSystemFactory(
       mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver)
       override;
@@ -53,14 +54,14 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   bool IsLoggingRedirectDisabled() const override;
   base::FilePath GetPrimaryUserDownloadsFolder() const override;
   void OpenFeedbackPageForPersistentDesksBar() override;
-  std::unique_ptr<::full_restore::AppLaunchInfo>
-  GetAppLaunchDataForDeskTemplate(aura::Window* window) const override;
+  std::unique_ptr<app_restore::AppLaunchInfo> GetAppLaunchDataForDeskTemplate(
+      aura::Window* window) const override;
+  desks_storage::DeskModel* GetDeskModel() override;
+  void SetPinnedFromExo(aura::Window* window,
+                        chromeos::WindowPinType type) override;
 
   static void SetDisableLoggingRedirectForTesting(bool value);
   static void ResetDisableLoggingRedirectForTesting();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_

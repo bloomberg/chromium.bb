@@ -75,6 +75,9 @@ class WatchTimeRecorderTest : public testing::Test {
         provider_.BindNewPipeAndPassReceiver());
   }
 
+  WatchTimeRecorderTest(const WatchTimeRecorderTest&) = delete;
+  WatchTimeRecorderTest& operator=(const WatchTimeRecorderTest&) = delete;
+
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(mojom::PlaybackPropertiesPtr properties) {
@@ -209,13 +212,11 @@ class WatchTimeRecorderTest : public testing::Test {
   const std::vector<base::StringPiece> mtbr_keys_;
   const std::vector<base::StringPiece> smooth_keys_;
   const std::vector<base::StringPiece> discard_keys_;
-
-  DISALLOW_COPY_AND_ASSIGN(WatchTimeRecorderTest);
 };
 
 TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(25);
-  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(50);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(25);
+  constexpr base::TimeDelta kWatchTime2 = base::Seconds(50);
 
   for (int i = 0; i <= static_cast<int>(WatchTimeKey::kWatchTimeKeyMax); ++i) {
     const WatchTimeKey key = static_cast<WatchTimeKey>(i);
@@ -365,8 +366,8 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
 }
 
 TEST_F(WatchTimeRecorderTest, TestBasicReportingMediaStream) {
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(25);
-  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(50);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(25);
+  constexpr base::TimeDelta kWatchTime2 = base::Seconds(50);
 
   for (int i = 0; i <= static_cast<int>(WatchTimeKey::kWatchTimeKeyMax); ++i) {
     const WatchTimeKey key = static_cast<WatchTimeKey>(i);
@@ -518,7 +519,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReportingMediaStream) {
 TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
   Initialize(true, false, true, true);
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(50);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(50);
   for (auto key : computation_keys_)
     wtr_->RecordWatchTime(key, kWatchTime);
   wtr_->UpdateUnderflowCount(1);
@@ -544,7 +545,7 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
   // Now rerun the test with a small amount of watch time and ensure rebuffering
   // isn't recorded because we haven't met the watch time requirements.
   ResetMetricRecorders();
-  constexpr base::TimeDelta kWatchTimeShort = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeShort = base::Seconds(5);
   for (auto key : computation_keys_)
     wtr_->RecordWatchTime(key, kWatchTimeShort);
   wtr_->UpdateUnderflowCount(1);
@@ -562,7 +563,7 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetricsMediaStream) {
   Initialize(true, false, true, true,
              mojom::MediaStreamType::kLocalDeviceCapture);
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(50);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(50);
   for (auto key : computation_keys_)
     wtr_->RecordWatchTime(key, kWatchTime);
   wtr_->UpdateUnderflowCount(1);
@@ -590,7 +591,7 @@ TEST_F(WatchTimeRecorderTest, TestDiscardMetrics) {
   Initialize(true, false, true, true);
   wtr_->UpdateSecondaryProperties(CreateSecondaryProperties());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(5);
   for (auto key : computation_keys_)
     wtr_->RecordWatchTime(key, kWatchTime);
 
@@ -616,7 +617,7 @@ TEST_F(WatchTimeRecorderTest, TestDiscardMetricsMediaStream) {
              mojom::MediaStreamType::kLocalDeviceCapture);
   wtr_->UpdateSecondaryProperties(CreateSecondaryProperties());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(5);
   for (auto key : computation_keys_)
     wtr_->RecordWatchTime(key, kWatchTime);
 
@@ -651,7 +652,7 @@ TEST_F(WatchTimeRecorderTest, TestFinalizeNoDuplication) {
   wtr_->UpdateSecondaryProperties(secondary_properties.Clone());
 
   // Verify that UKM is reported along with the watch time.
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(4);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(4);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
 
   // Finalize everything. UKM is only recorded at destruction, so this should do
@@ -821,7 +822,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties.Clone());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(4);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(4);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
@@ -894,7 +895,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties.Clone());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(54);
   const base::TimeDelta kWatchTime2 = kWatchTime * 2;
   const base::TimeDelta kWatchTime3 = kWatchTime / 3;
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime2);
@@ -914,8 +915,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoDisplayPictureInPicture,
                         kWatchTime3);
   wtr_->UpdateUnderflowCount(3);
-  constexpr base::TimeDelta kUnderflowDuration =
-      base::TimeDelta::FromMilliseconds(500);
+  constexpr base::TimeDelta kUnderflowDuration = base::Milliseconds(500);
   wtr_->UpdateUnderflowDuration(2, kUnderflowDuration);
   wtr_->UpdateVideoDecodeStats(10, 2);
   wtr_->OnError(PIPELINE_ERROR_DECODE);
@@ -926,7 +926,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
 
   wtr_->SetAutoplayInitiated(true);
 
-  wtr_->OnDurationChanged(base::TimeDelta::FromSeconds(9500));
+  wtr_->OnDurationChanged(base::Seconds(9500));
 
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
@@ -1005,7 +1005,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackgroundMuted) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties.Clone());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(54);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoBackgroundAll, kWatchTime);
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
@@ -1077,7 +1077,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoDuration) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties.Clone());
 
-  wtr_->OnDurationChanged(base::TimeDelta::FromSeconds(12345));
+  wtr_->OnDurationChanged(base::Seconds(12345));
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -1229,7 +1229,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmMediaStreamType) {
     Initialize(properties.Clone());
     wtr_->UpdateSecondaryProperties(CreateSecondaryProperties());
 
-    constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(1);
+    constexpr base::TimeDelta kWatchTime = base::Seconds(1);
     wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
     wtr_.reset();
     base::RunLoop().RunUntilIdle();
@@ -1254,7 +1254,7 @@ TEST_F(WatchTimeRecorderTest, NoSecondaryProperties) {
                                      false, mojom::MediaStreamType::kNone);
   Initialize(properties.Clone());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(54);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
   wtr_.reset();
   base::RunLoop().RunUntilIdle();
@@ -1276,7 +1276,7 @@ TEST_F(WatchTimeRecorderTest, SingleSecondaryPropertiesUnknownToKnown) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties1.Clone());
 
-  constexpr base::TimeDelta kWatchTime = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kWatchTime = base::Seconds(54);
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime);
 
   mojom::SecondaryPlaybackPropertiesPtr secondary_properties2 =
@@ -1349,9 +1349,8 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesNoFinalize) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties1.Clone());
 
-  constexpr base::TimeDelta kUnderflowDuration =
-      base::TimeDelta::FromMilliseconds(250);
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kUnderflowDuration = base::Milliseconds(250);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(54);
   const int kUnderflowCount1 = 2;
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime1);
   wtr_->UpdateUnderflowCount(kUnderflowCount1);
@@ -1369,7 +1368,7 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesNoFinalize) {
           EncryptionScheme::kCenc, gfx::Size(800, 600));
   wtr_->UpdateSecondaryProperties(secondary_properties2.Clone());
 
-  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(25);
+  constexpr base::TimeDelta kWatchTime2 = base::Seconds(25);
   const int kUnderflowCount2 = 3;
 
   // Watch time and underflow counts continue to accumulate during property
@@ -1378,7 +1377,7 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesNoFinalize) {
                         kWatchTime1 + kWatchTime2);
   wtr_->UpdateUnderflowCount(kUnderflowCount1 + kUnderflowCount2);
   wtr_->OnError(PIPELINE_ERROR_DECODE);
-  wtr_->OnDurationChanged(base::TimeDelta::FromSeconds(5125));
+  wtr_->OnDurationChanged(base::Seconds(5125));
 
   constexpr int kDecodedFrameCount2 = 20;
   constexpr int kDroppedFrameCount2 = 10;
@@ -1487,9 +1486,8 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesNoFinalizeNo2ndWT) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties1.Clone());
 
-  constexpr base::TimeDelta kUnderflowDuration =
-      base::TimeDelta::FromMilliseconds(250);
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kUnderflowDuration = base::Milliseconds(250);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(54);
   const int kUnderflowCount1 = 2;
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime1);
   wtr_->UpdateUnderflowCount(kUnderflowCount1);
@@ -1607,9 +1605,8 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesWithFinalize) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties1.Clone());
 
-  constexpr base::TimeDelta kUnderflowDuration =
-      base::TimeDelta::FromMilliseconds(250);
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kUnderflowDuration = base::Milliseconds(250);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(54);
   const int kUnderflowCount1 = 2;
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime1);
   wtr_->UpdateUnderflowCount(kUnderflowCount1);
@@ -1631,7 +1628,7 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesWithFinalize) {
           EncryptionScheme::kUnencrypted, gfx::Size(800, 600));
   wtr_->UpdateSecondaryProperties(secondary_properties2.Clone());
 
-  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(25);
+  constexpr base::TimeDelta kWatchTime2 = base::Seconds(25);
   const int kUnderflowCount2 = 3;
 
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime2);
@@ -1739,9 +1736,8 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesRebufferCarryover) {
   Initialize(properties.Clone());
   wtr_->UpdateSecondaryProperties(secondary_properties1.Clone());
 
-  constexpr base::TimeDelta kUnderflowDuration =
-      base::TimeDelta::FromMilliseconds(250);
-  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(54);
+  constexpr base::TimeDelta kUnderflowDuration = base::Milliseconds(250);
+  constexpr base::TimeDelta kWatchTime1 = base::Seconds(54);
   const int kUnderflowCount1 = 2;
   wtr_->RecordWatchTime(WatchTimeKey::kAudioVideoAll, kWatchTime1);
   wtr_->UpdateUnderflowCount(kUnderflowCount1);
@@ -1757,7 +1753,7 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesRebufferCarryover) {
           EncryptionScheme::kUnencrypted, gfx::Size(800, 600));
   wtr_->UpdateSecondaryProperties(secondary_properties2.Clone());
 
-  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(25);
+  constexpr base::TimeDelta kWatchTime2 = base::Seconds(25);
   const int kUnderflowCount2 = 3;
 
   // Watch time and underflow counts continue to accumulate during property
@@ -1772,7 +1768,7 @@ TEST_F(WatchTimeRecorderTest, MultipleSecondaryPropertiesRebufferCarryover) {
   wtr_->UpdateUnderflowDuration(kUnderflowCount1, kUnderflowDuration * 1.5);
 
   wtr_->OnError(PIPELINE_ERROR_DECODE);
-  wtr_->OnDurationChanged(base::TimeDelta::FromSeconds(5125));
+  wtr_->OnDurationChanged(base::Seconds(5125));
 
   wtr_.reset();
   base::RunLoop().RunUntilIdle();

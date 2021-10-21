@@ -42,7 +42,6 @@
 namespace em = enterprise_management;
 
 using ash::attestation::MockTpmChallengeKeySubtle;
-using base::TimeDelta;
 using base::test::IsJson;
 using base::test::ParseJson;
 using base::test::RunOnceCallback;
@@ -98,8 +97,7 @@ constexpr char kPublicKeyBase64[] =
 constexpr char kCertProfileId[] = "cert_profile_1";
 constexpr char kCertProfileName[] = "Certificate Profile 1";
 constexpr char kCertProfileVersion[] = "cert_profile_version_1";
-constexpr base::TimeDelta kCertProfileRenewalPeriod =
-    base::TimeDelta::FromSeconds(0);
+constexpr base::TimeDelta kCertProfileRenewalPeriod = base::Seconds(0);
 // Prefix + certificate profile name.
 constexpr char kCertScopeStrUser[] = "google/chromeos/user";
 constexpr char kCertScopeStrDevice[] = "google/chromeos/device";
@@ -448,7 +446,7 @@ class CertProvisioningWorkerTest : public ::testing::Test {
     EXPECT_CALL(*platform_keys_service_, RemoveKey).Times(0);
   }
 
-  void FastForwardBy(TimeDelta delta) {
+  void FastForwardBy(base::TimeDelta delta) {
     task_environment_.FastForwardBy(delta);
   }
 
@@ -623,9 +621,10 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
 
     EXPECT_CALL(*platform_keys_service_,
                 GenerateRSAKey(TokenId::kUser, kNonVaKeyModulusLengthBits,
+                               /*sw_backed=*/false,
                                /*callback=*/_))
         .Times(1)
-        .WillOnce(RunOnceCallback<2>(GetPublicKey(), Status::kSuccess));
+        .WillOnce(RunOnceCallback<3>(GetPublicKey(), Status::kSuccess));
 
     EXPECT_START_CSR_OK_WITHOUT_VA(
         ClientCertProvisioningStartCsr(kCertScopeStrUser, kCertProfileId,
@@ -757,7 +756,7 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
       CertScope::kDevice, GetProfile(), &testing_pref_service_, cert_profile,
       &cloud_policy_client_, MakeInvalidator(), GetStateChangeCallback(),
       GetResultCallback());
-  const TimeDelta delay = TimeDelta::FromSeconds(30);
+  const base::TimeDelta delay = base::Seconds(30);
 
   EXPECT_CALL(state_change_callback_observer_, StateChangeCallback)
       .Times(AtLeast(1));
@@ -869,11 +868,11 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
       &cloud_policy_client_, MakeInvalidator(), GetStateChangeCallback(),
       GetResultCallback());
 
-  const TimeDelta start_csr_delay = TimeDelta::FromSeconds(30);
-  const TimeDelta finish_csr_delay = TimeDelta::FromSeconds(30);
-  const TimeDelta download_cert_server_delay = TimeDelta::FromMilliseconds(100);
-  const TimeDelta download_cert_real_delay = TimeDelta::FromSeconds(10);
-  const TimeDelta small_delay = TimeDelta::FromMilliseconds(500);
+  const base::TimeDelta start_csr_delay = base::Seconds(30);
+  const base::TimeDelta finish_csr_delay = base::Seconds(30);
+  const base::TimeDelta download_cert_server_delay = base::Milliseconds(100);
+  const base::TimeDelta download_cert_real_delay = base::Seconds(10);
+  const base::TimeDelta small_delay = base::Milliseconds(500);
 
   EXPECT_CALL(state_change_callback_observer_, StateChangeCallback)
       .Times(AtLeast(1));
@@ -992,10 +991,10 @@ TEST_F(CertProvisioningWorkerTest, ServiceActivationPendingResponse) {
       &cloud_policy_client_, MakeInvalidator(), GetStateChangeCallback(),
       GetResultCallback());
 
-  const TimeDelta kSmallDelay = TimeDelta::FromMilliseconds(500);
-  const TimeDelta kExpectedStartCsrDelay = TimeDelta::FromHours(1);
-  const TimeDelta kExpectedFinishCsrDelay = TimeDelta::FromHours(1);
-  const TimeDelta kExpectedDownloadCsrDelay = TimeDelta::FromHours(8);
+  const base::TimeDelta kSmallDelay = base::Milliseconds(500);
+  const base::TimeDelta kExpectedStartCsrDelay = base::Hours(1);
+  const base::TimeDelta kExpectedFinishCsrDelay = base::Hours(1);
+  const base::TimeDelta kExpectedDownloadCsrDelay = base::Hours(8);
 
   EXPECT_CALL(state_change_callback_observer_, StateChangeCallback)
       .Times(AtLeast(1));
@@ -1119,10 +1118,10 @@ TEST_F(CertProvisioningWorkerTest, InvalidationRespected) {
       &cloud_policy_client_, MakeInvalidator(&mock_invalidator),
       GetStateChangeCallback(), GetResultCallback());
 
-  const TimeDelta start_csr_delay = TimeDelta::FromSeconds(30);
-  const TimeDelta finish_csr_delay = TimeDelta::FromSeconds(30);
-  const TimeDelta download_cert_server_delay = TimeDelta::FromMilliseconds(100);
-  const TimeDelta small_delay = TimeDelta::FromMilliseconds(500);
+  const base::TimeDelta start_csr_delay = base::Seconds(30);
+  const base::TimeDelta finish_csr_delay = base::Seconds(30);
+  const base::TimeDelta download_cert_server_delay = base::Milliseconds(100);
+  const base::TimeDelta small_delay = base::Milliseconds(500);
 
   EXPECT_CALL(state_change_callback_observer_, StateChangeCallback)
       .Times(AtLeast(1));
@@ -1266,7 +1265,7 @@ TEST_F(CertProvisioningWorkerTest, StatusErrorHandling) {
   }
 
   worker.DoStep();
-  FastForwardBy(TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
 
   VerifyDeleteKeyCalledOnce(kCertScope);
 }
@@ -1308,7 +1307,7 @@ TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
   }
 
   worker->DoStep();
-  FastForwardBy(TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
 
   VerifyDeleteKeyCalledOnce(kCertScope);
 
@@ -1354,7 +1353,7 @@ TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
   }
 
   worker->DoStep();
-  FastForwardBy(TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
 
   VerifyDeleteKeyCalledOnce(kCertScope);
 }
@@ -1372,8 +1371,8 @@ TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {
       &cloud_policy_client_, MakeInvalidator(), GetStateChangeCallback(),
       GetResultCallback());
 
-  TimeDelta next_delay = TimeDelta::FromSeconds(30);
-  const TimeDelta small_delay = TimeDelta::FromMilliseconds(500);
+  base::TimeDelta next_delay = base::Seconds(30);
+  const base::TimeDelta small_delay = base::Milliseconds(500);
 
   EXPECT_CALL(state_change_callback_observer_, StateChangeCallback)
       .Times(AtLeast(1));
@@ -1490,7 +1489,7 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
   }
 
   worker.DoStep();
-  FastForwardBy(TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
 
   histogram_tester.ExpectBucketCount("ChromeOS.CertProvisioning.Result.User",
                                      CertProvisioningWorkerState::kFailed, 1);
@@ -1527,7 +1526,7 @@ class PrefServiceObserver {
 };
 
 TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
-  const base::TimeDelta kRenewalPeriod = base::TimeDelta::FromSeconds(1200300);
+  const base::TimeDelta kRenewalPeriod = base::Seconds(1200300);
   CertProfile cert_profile(kCertProfileId, kCertProfileName,
                            kCertProfileVersion,
                            /*is_va_enabled=*/true, kRenewalPeriod);
@@ -1775,7 +1774,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationOnFailure) {
   }
 
   worker->DoStep();
-  FastForwardBy(TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
 
   VerifyDeleteKeyCalledOnce(kCertScope);
 }
@@ -1800,7 +1799,7 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
     EXPECT_PREPARE_KEY_OK(*mock_tpm_challenge_key, StartPrepareKeyStep);
 
     EXPECT_START_CSR_TRY_LATER(ClientCertProvisioningStartCsr,
-                               TimeDelta::FromSeconds(30).InMilliseconds());
+                               base::Seconds(30).InMilliseconds());
 
     worker.DoStep();
     EXPECT_EQ(worker.GetState(),
@@ -1821,7 +1820,7 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
         .Times(1);
 
     worker.DoStep();
-    FastForwardBy(TimeDelta::FromSeconds(1));
+    FastForwardBy(base::Seconds(1));
 
     VerifyDeleteKeyCalledOnce(kCertScope);
 
@@ -1898,7 +1897,7 @@ TEST_F(CertProvisioningWorkerTest, CancelDeviceWorker) {
     EXPECT_CALL(callback_observer_,
                 Callback(cert_profile, CertProvisioningWorkerState::kCanceled))
         .Times(1);
-    FastForwardBy(TimeDelta::FromSeconds(1));
+    FastForwardBy(base::Seconds(1));
 
     VerifyDeleteKeyCalledOnce(kCertScope);
   }

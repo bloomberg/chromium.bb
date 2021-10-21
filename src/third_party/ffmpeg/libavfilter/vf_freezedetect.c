@@ -90,10 +90,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -210,7 +207,6 @@ static const AVFilterPad freezedetect_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad freezedetect_outputs[] = {
@@ -218,7 +214,6 @@ static const AVFilterPad freezedetect_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_freezedetect = {
@@ -228,7 +223,7 @@ const AVFilter ff_vf_freezedetect = {
     .priv_class    = &freezedetect_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = freezedetect_inputs,
-    .outputs       = freezedetect_outputs,
+    FILTER_INPUTS(freezedetect_inputs),
+    FILTER_OUTPUTS(freezedetect_outputs),
     .activate      = activate,
 };

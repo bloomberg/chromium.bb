@@ -31,6 +31,7 @@ using chromeos::bluetooth_config::mojom::BatteryProperties;
 using chromeos::bluetooth_config::mojom::BluetoothDeviceProperties;
 using chromeos::bluetooth_config::mojom::BluetoothSystemState;
 using chromeos::bluetooth_config::mojom::DeviceBatteryInfo;
+using chromeos::bluetooth_config::mojom::DeviceBatteryInfoPtr;
 using chromeos::bluetooth_config::mojom::DeviceConnectionState;
 using chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties;
 using chromeos::bluetooth_config::mojom::PairedBluetoothDevicePropertiesPtr;
@@ -73,12 +74,26 @@ class BluetoothFeaturePodControllerTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
+  DeviceBatteryInfoPtr CreateDefaultBatteryInfo() {
+    DeviceBatteryInfoPtr battery_info = DeviceBatteryInfo::New();
+    battery_info->default_properties = BatteryProperties::New();
+    battery_info->default_properties->battery_percentage = kBatteryPercentage;
+    return battery_info;
+  }
+
   void ExpectBluetoothDetailedViewFocused() {
     EXPECT_TRUE(tray_view_->detailed_view());
     const FeaturePodIconButton::Views& children =
         tray_view_->detailed_view()->children();
     EXPECT_EQ(1u, children.size());
     EXPECT_STREQ("BluetoothDetailedViewImpl", children.at(0)->GetClassName());
+  }
+
+  void LockScreen() {
+    scoped_bluetooth_config_test_helper_.session_manager()->SessionStarted();
+    scoped_bluetooth_config_test_helper_.session_manager()->SetSessionState(
+        session_manager::SessionState::LOCKED);
+    base::RunLoop().RunUntilIdle();
   }
 
   void PressIcon() {
@@ -268,11 +283,7 @@ TEST_F(BluetoothFeaturePodControllerTest, HasCorrectMetadataWithOneDevice) {
   EXPECT_EQ(base::ASCIIToUTF16(kDeviceNickname), label_button->GetLabelText());
 
   // Change the device battery information and reset the paired device list.
-  paired_device->device_properties->battery_info = DeviceBatteryInfo::New();
-  paired_device->device_properties->battery_info->default_properties =
-      BatteryProperties::New();
-  paired_device->device_properties->battery_info->default_properties
-      ->battery_percentage = kBatteryPercentage;
+  paired_device->device_properties->battery_info = CreateDefaultBatteryInfo();
   SetConnectedDevice(paired_device);
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -285,12 +296,13 @@ TEST_F(BluetoothFeaturePodControllerTest,
        HasCorrectMetadataWithMultipleDevice) {
   SetSystemState(BluetoothSystemState::kEnabled);
 
-  // Create a device with zero configuration, mark it as connected, and reset
-  // the list of paired devices with multiple duplicates of it.
+  // Create a device with basic battery information, mark it as connected, and
+  // reset the list of paired devices with multiple duplicates of it.
   auto paired_device = PairedBluetoothDeviceProperties::New();
   paired_device->device_properties = BluetoothDeviceProperties::New();
   paired_device->device_properties->connection_state =
       DeviceConnectionState::kConnected;
+  paired_device->device_properties->battery_info = CreateDefaultBatteryInfo();
 
   std::vector<PairedBluetoothDevicePropertiesPtr> paired_devices;
   for (int i = 0; i < kMultipleDeviceCount; ++i) {
@@ -342,6 +354,18 @@ TEST_F(BluetoothFeaturePodControllerTest,
   EXPECT_TRUE(feature_pod_button_->IsToggled());
   PressLabel();
   ExpectBluetoothDetailedViewFocused();
+}
+
+TEST_F(BluetoothFeaturePodControllerTest,
+       FeaturePodIsDisabledWhenBluetoothCannotBeModified) {
+  EXPECT_TRUE(feature_pod_button_->GetEnabled());
+
+  // The lock screen is one of multiple session states where Bluetooth cannot be
+  // modified. For more information see
+  // chromeos::bluetooth_config::SystemPropertiesProvider.
+  LockScreen();
+
+  EXPECT_FALSE(feature_pod_button_->GetEnabled());
 }
 
 }  // namespace ash

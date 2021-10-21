@@ -65,7 +65,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 typedef XID Drawable;
 
 extern "C" {
@@ -73,7 +73,7 @@ extern "C" {
 }
 
 #include "ui/gfx/x/connection.h"  // nogncheck
-#endif
+#endif                            // BUILDFLAG(USE_VAAPI_X11)
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -87,14 +87,14 @@ using media_gpu_vaapi::kModuleVa_prot;
 
 using media_gpu_vaapi::kModuleVa;
 using media_gpu_vaapi::kModuleVa_drm;
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 using media_gpu_vaapi::kModuleVa_x11;
-#endif
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 using media_gpu_vaapi::InitializeStubs;
 using media_gpu_vaapi::IsVaInitialized;
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 using media_gpu_vaapi::IsVa_x11Initialized;
-#endif
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 using media_gpu_vaapi::IsVa_drmInitialized;
 using media_gpu_vaapi::StubPathMap;
 
@@ -196,22 +196,46 @@ const char* VaapiFunctionName(VaapiFunctions function) {
     report_error_to_uma_cb_.Run(function);                       \
   } while (0)
 
-#define VA_LOG_ON_ERROR(va_error, function)        \
-  do {                                             \
-    if ((va_error) != VA_STATUS_SUCCESS)           \
-      LOG_VA_ERROR_AND_REPORT(va_error, function); \
+#define VA_LOG_ON_ERROR(va_res, function)                        \
+  do {                                                           \
+    const VAStatus va_res_va_log_on_error = (va_res);            \
+    if (va_res_va_log_on_error != VA_STATUS_SUCCESS)             \
+      LOG_VA_ERROR_AND_REPORT(va_res_va_log_on_error, function); \
   } while (0)
 
-#define VA_SUCCESS_OR_RETURN(va_error, function, ret) \
-  do {                                                \
-    if ((va_error) != VA_STATUS_SUCCESS) {            \
-      LOG_VA_ERROR_AND_REPORT(va_error, function);    \
-      return (ret);                                   \
-    }                                                 \
-    DVLOG(3) << VaapiFunctionName(function);          \
+#define VA_SUCCESS_OR_RETURN(va_res, function, ret)                  \
+  do {                                                               \
+    const VAStatus va_res_va_sucess_or_return = (va_res);            \
+    if (va_res_va_sucess_or_return != VA_STATUS_SUCCESS) {           \
+      LOG_VA_ERROR_AND_REPORT(va_res_va_sucess_or_return, function); \
+      return (ret);                                                  \
+    }                                                                \
+    DVLOG(3) << VaapiFunctionName(function);                         \
   } while (0)
 
 namespace {
+
+uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
+  switch (fmt) {
+    case gfx::BufferFormat::BGRX_8888:
+      return VA_FOURCC_BGRX;
+    case gfx::BufferFormat::BGRA_8888:
+      return VA_FOURCC_BGRA;
+    case gfx::BufferFormat::RGBX_8888:
+      return VA_FOURCC_RGBX;
+    case gfx::BufferFormat::RGBA_8888:
+      return VA_FOURCC_RGBA;
+    case gfx::BufferFormat::YVU_420:
+      return VA_FOURCC_YV12;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return VA_FOURCC_NV12;
+    case gfx::BufferFormat::P010:
+      return VA_FOURCC_P010;
+    default:
+      NOTREACHED() << gfx::BufferFormatToString(fmt);
+      return 0;
+  }
+}
 
 media::VAImplementation VendorStringToImplementationType(
     const std::string& va_vendor_string) {
@@ -535,10 +559,20 @@ VADisplayState::VADisplayState()
 bool VADisplayState::Initialize() {
   base::AutoLock auto_lock(va_lock_);
 
+#if defined(USE_OZONE) && defined(OS_LINUX)
+  // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
+  // Linux. See comment in OzonePlatform::PlatformProperties::supports_vaapi
+  // for more details. This will also require revisiting everything that's
+  // guarded by USE_VAAPI_X11. For example, if USE_VAAPI_X11 is true, but the
+  // user chooses the Wayland backend for Ozone at runtime, then many things (if
+  // not all) that we do for X11 won't apply.
+  if (!ui::OzonePlatform::GetInstance()->GetPlatformProperties().supports_vaapi)
+    return false;
+#endif
+
   bool libraries_initialized = IsVaInitialized() && IsVa_drmInitialized();
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform())
-    libraries_initialized = libraries_initialized && IsVa_x11Initialized();
+#if BUILDFLAG(USE_VAAPI_X11)
+  libraries_initialized = libraries_initialized && IsVa_x11Initialized();
 #endif
   if (!libraries_initialized)
     return false;
@@ -553,34 +587,25 @@ bool VADisplayState::Initialize() {
   return success;
 }
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 
 absl::optional<VADisplay> GetVADisplayStateX11(const base::ScopedFD& drm_fd) {
-  bool use_drm_as_fallback = false;
   switch (gl::GetGLImplementation()) {
     case gl::kGLImplementationEGLGLES2:
       return vaGetDisplayDRM(drm_fd.get());
 
     case gl::kGLImplementationNone:
-      use_drm_as_fallback = true;
-      FALLTHROUGH;
 
     case gl::kGLImplementationDesktopGL: {
-      if (!features::IsUsingOzonePlatform()) {
-        VADisplay display =
-            vaGetDisplay(x11::Connection::Get()->GetXlibDisplay());
-        if (vaDisplayIsValid(display))
-          return display;
-        return vaGetDisplayDRM(drm_fd.get());
-      }
-      break;
+      VADisplay display =
+          vaGetDisplay(x11::Connection::Get()->GetXlibDisplay());
+      if (vaDisplayIsValid(display))
+        return display;
+      return vaGetDisplayDRM(drm_fd.get());
     }
 
-    case gl::kGLImplementationEGLANGLE: {
-      if (!features::IsUsingOzonePlatform())
-        return vaGetDisplay(x11::Connection::Get()->GetXlibDisplay());
-      break;
-    }
+    case gl::kGLImplementationEGLANGLE:
+      return vaGetDisplay(x11::Connection::Get()->GetXlibDisplay());
 
     default:
       LOG(WARNING) << "VAAPI video acceleration not available for "
@@ -588,10 +613,6 @@ absl::optional<VADisplay> GetVADisplayStateX11(const base::ScopedFD& drm_fd) {
                           gl::GetGLImplementationParts());
       return absl::nullopt;
   }
-
-  if (use_drm_as_fallback)
-    return vaGetDisplayDRM(drm_fd.get());
-  return absl::nullopt;
 }
 
 #else
@@ -609,11 +630,11 @@ absl::optional<VADisplay> GetVADisplayState(const base::ScopedFD& drm_fd) {
   }
 }
 
-#endif  // defined(USE_X11)
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 
 bool VADisplayState::InitializeVaDisplay_Locked() {
   absl::optional<VADisplay> display =
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
       GetVADisplayStateX11(drm_fd_);
 #else
       GetVADisplayState(drm_fd_);
@@ -678,10 +699,9 @@ bool VADisplayState::InitializeOnce() {
   if (!InitializeVaDisplay_Locked() || !InitializeVaDriver_Locked())
     return false;
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
       implementation_type_ == VAImplementation::kIntelIHD) {
-    DCHECK(!features::IsUsingOzonePlatform());
     constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
     // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
     // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
@@ -698,7 +718,7 @@ bool VADisplayState::InitializeOnce() {
     if (!InitializeVaDisplay_Locked() || !InitializeVaDriver_Locked())
       return false;
   }
-#endif  // USE_X11
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 
   return true;
 }
@@ -864,7 +884,8 @@ bool GetRequiredAttribs(const base::Lock* va_lock,
     }
 
     const uint32_t packed_header_attributes =
-        (VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE);
+        (VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE |
+         VA_ENC_PACKED_HEADER_SLICE);
     if ((packed_header_attributes & attrib.value) == packed_header_attributes) {
       required_attribs->push_back(
           {VAConfigAttribEncPackedHeaders, packed_header_attributes});
@@ -1438,6 +1459,41 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
 }
 
 // static
+std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
+    VideoCodecProfile media_profile,
+    VAProfile va_profile) {
+  std::vector<SVCScalabilityMode> scalability_modes;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (media_profile == VP9PROFILE_PROFILE0) {
+    scalability_modes.push_back(SVCScalabilityMode::kL1T2);
+    scalability_modes.push_back(SVCScalabilityMode::kL1T3);
+    if (base::FeatureList::IsEnabled(kVaapiVp9kSVCHWEncoding) &&
+        GetDefaultVaEntryPoint(
+            VaapiWrapper::kEncodeConstantQuantizationParameter, va_profile) ==
+            VAEntrypointEncSliceLP) {
+      scalability_modes.push_back(SVCScalabilityMode::kL2T2Key);
+      scalability_modes.push_back(SVCScalabilityMode::kL2T3Key);
+      scalability_modes.push_back(SVCScalabilityMode::kL3T2Key);
+      scalability_modes.push_back(SVCScalabilityMode::kL3T3Key);
+    }
+  }
+
+  if (media_profile >= H264PROFILE_MIN && media_profile <= H264PROFILE_MAX) {
+    // TODO(b/199487660): Enable H.264 temporal layer encoding on AMD once their
+    // drivers support them.
+    VAImplementation implementation = VaapiWrapper::GetImplementationType();
+    if (base::FeatureList::IsEnabled(kVaapiH264TemporalLayerHWEncoding) &&
+        (implementation == VAImplementation::kIntelI965 ||
+         implementation == VAImplementation::kIntelIHD)) {
+      scalability_modes.push_back(SVCScalabilityMode::kL1T2);
+      scalability_modes.push_back(SVCScalabilityMode::kL1T3);
+    }
+  }
+#endif
+  return scalability_modes;
+}
+
+// static
 VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
   VideoEncodeAccelerator::SupportedProfiles profiles;
@@ -1462,6 +1518,8 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
     constexpr int kMaxEncoderFramerate = 30;
     profile.max_framerate_numerator = kMaxEncoderFramerate;
     profile.max_framerate_denominator = 1;
+    profile.scalability_modes =
+        GetSupportedScalabilityModes(media_profile, va_profile);
     profiles.push_back(profile);
   }
   return profiles;
@@ -1750,29 +1808,6 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
       return VA_RT_FORMAT_YUV420;
     case gfx::BufferFormat::P010:
       return VA_RT_FORMAT_YUV420_10BPP;
-    default:
-      NOTREACHED() << gfx::BufferFormatToString(fmt);
-      return 0;
-  }
-}
-
-// static
-uint32_t VaapiWrapper::BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
-  switch (fmt) {
-    case gfx::BufferFormat::BGRX_8888:
-      return VA_FOURCC_BGRX;
-    case gfx::BufferFormat::BGRA_8888:
-      return VA_FOURCC_BGRA;
-    case gfx::BufferFormat::RGBX_8888:
-      return VA_FOURCC_RGBX;
-    case gfx::BufferFormat::RGBA_8888:
-      return VA_FOURCC_RGBA;
-    case gfx::BufferFormat::YVU_420:
-      return VA_FOURCC_YV12;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return VA_FOURCC_NV12;
-    case gfx::BufferFormat::P010:
-      return VA_FOURCC_P010;
     default:
       NOTREACHED() << gfx::BufferFormatToString(fmt);
       return 0;
@@ -2419,11 +2454,10 @@ bool VaapiWrapper::MapAndCopyAndExecute(
   return Execute_Locked(va_surface_id, va_buffer_ids);
 }
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                                         x11::Pixmap x_pixmap,
                                         gfx::Size dest_size) {
-  DCHECK(!features::IsUsingOzonePlatform());
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
@@ -2437,7 +2471,7 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
   VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAPutSurface, false);
   return true;
 }
-#endif  // USE_X11
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 
 std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
     VASurfaceID va_surface_id,
@@ -2677,6 +2711,25 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
   return true;
 }
 
+bool VaapiWrapper::GetSupportedPackedHeaders(VideoCodecProfile profile,
+                                             bool& packed_sps,
+                                             bool& packed_pps,
+                                             bool& packed_slice) {
+  const VAProfile va_profile =
+      ProfileToVAProfile(profile, CodecMode::kEncodeConstantBitrate);
+  VAConfigAttrib attrib{};
+  attrib.type = VAConfigAttribEncPackedHeaders;
+  base::AutoLock auto_lock(*va_lock_);
+  const VAStatus va_res = vaGetConfigAttributes(va_display_, va_profile,
+                                                va_entrypoint_, &attrib, 1);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAGetConfigAttributes, false);
+  packed_sps = attrib.value & VA_ENC_PACKED_HEADER_SEQUENCE;
+  packed_pps = attrib.value & VA_ENC_PACKED_HEADER_PICTURE;
+  packed_slice = attrib.value & VA_ENC_PACKED_HEADER_SLICE;
+
+  return true;
+}
+
 bool VaapiWrapper::IsRotationSupported() {
   base::AutoLock auto_lock(*va_lock_);
   VAProcPipelineCaps pipeline_caps;
@@ -2717,6 +2770,11 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
       return false;
   }
 
+  // Note that since we store pointers to these regions in our mapping below,
+  // these may be accessed after the Unmap() below. These must therefore live
+  // until the end of the function.
+  VARectangle input_region;
+  VARectangle output_region;
   {
     ScopedVABufferMapping mapping(va_lock_, va_display_,
                                   va_buffer_for_vpp_->id());
@@ -2731,7 +2789,6 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     if (!dest_rect)
       dest_rect.emplace(gfx::Rect(va_surface_dest.size()));
 
-    VARectangle input_region;
     input_region.x = src_rect->x();
     input_region.y = src_rect->y();
     input_region.width = src_rect->width();
@@ -2740,7 +2797,6 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     pipeline_param->surface = va_surface_src.id();
     pipeline_param->surface_color_standard = VAProcColorStandardNone;
 
-    VARectangle output_region;
     output_region.x = dest_rect->x();
     output_region.y = dest_rect->y();
     output_region.width = dest_rect->width();
@@ -2765,38 +2821,39 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
         break;
     }
 
-    VA_SUCCESS_OR_RETURN(mapping.Unmap(), VaapiFunctions::kVAUnmapBuffer,
-                         false);
+    const VAStatus va_res = mapping.Unmap();
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAUnmapBuffer, false);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<base::ScopedClosureRunner> protected_session_detacher;
+  base::ScopedClosureRunner protected_session_detacher;
   if (va_protected_session_id != VA_INVALID_ID) {
-    VA_SUCCESS_OR_RETURN(vaAttachProtectedSession(va_display_, va_context_id_,
-                                                  va_protected_session_id),
-                         VaapiFunctions::kVAAttachProtectedSession, false);
+    const VAStatus va_res = vaAttachProtectedSession(
+        va_display_, va_context_id_, va_protected_session_id);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAAttachProtectedSession,
+                         false);
     // Note that we use a lambda expression to wrap vaDetachProtectedSession()
     // because the function in |protected_session_detacher| must return void.
-    protected_session_detacher =
-        std::make_unique<base::ScopedClosureRunner>(base::BindOnce(
-            [](VADisplay va_display, VAContextID va_context_id) {
-              vaDetachProtectedSession(va_display, va_context_id);
-            },
-            va_display_, va_context_id_));
+    protected_session_detacher.ReplaceClosure(base::BindOnce(
+        [](VADisplay va_display, VAContextID va_context_id) {
+          vaDetachProtectedSession(va_display, va_context_id);
+        },
+        va_display_, va_context_id_));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  VA_SUCCESS_OR_RETURN(
-      vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id()),
-      VaapiFunctions::kVABeginPicture, false);
+  TRACE_EVENT2("media,gpu", "VaapiWrapper::BlitSurface", "src_rect",
+               src_rect->ToString(), "dest_rect", dest_rect->ToString());
+
+  VAStatus va_res =
+      vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id());
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVABeginPicture, false);
 
   VABufferID va_buffer_id = va_buffer_for_vpp_->id();
-  VA_SUCCESS_OR_RETURN(
-      vaRenderPicture(va_display_, va_context_id_, &va_buffer_id, 1),
-      VaapiFunctions::kVARenderPicture_Vpp, false);
-
-  VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_context_id_),
-                       VaapiFunctions::kVAEndPicture, false);
+  va_res = vaRenderPicture(va_display_, va_context_id_, &va_buffer_id, 1);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVARenderPicture_Vpp, false);
+  va_res = vaEndPicture(va_display_, va_context_id_);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAEndPicture, false);
 
   return true;
 }
@@ -2810,9 +2867,8 @@ void VaapiWrapper::PreSandboxInitialization() {
 
   paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
   paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform())
-    paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
+#if BUILDFLAG(USE_VAAPI_X11)
+  paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);

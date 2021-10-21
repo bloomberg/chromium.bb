@@ -193,12 +193,9 @@ class ParserImpl : Reader {
   /// @returns a Tint type, or nullptr
   const Type* ConvertType(uint32_t type_id, PtrAs ptr_as = PtrAs::Ptr);
 
-  /// Emits an alias type declaration for the given type, if necessary, and
-  /// also updates the mapping of the SPIR-V type ID to the alias type.
-  /// Do so for the types requiring user-specified names:
-  /// - struct types
-  /// - decorated arrays and runtime arrays
-  /// TODO(dneto): I expect images and samplers to require names as well.
+  /// Emits an alias type declaration for array or runtime-sized array type,
+  /// when needed to distinguish between differently-decorated underlying types.
+  /// Updates the mapping of the SPIR-V type ID to the alias type.
   /// This is a no-op if the parser has already failed.
   /// @param type_id the SPIR-V ID for the type
   /// @param type the type that might get an alias
@@ -446,12 +443,12 @@ class ParserImpl : Reader {
   /// @returns a new expression
   TypedExpression MakeConstantExpression(uint32_t id);
 
-  /// Creates an AST expression node for a SPIR-V constant.
+  /// Creates an AST expression node for a scalar SPIR-V constant.
   /// @param source the source location
   /// @param ast_type the AST type for the value
   /// @param spirv_const the internal representation of the SPIR-V constant.
   /// @returns a new expression
-  TypedExpression MakeConstantExpressionForSpirvConstant(
+  TypedExpression MakeConstantExpressionForScalarSpirvConstant(
       Source source,
       const Type* ast_type,
       const spvtools::opt::analysis::Constant* spirv_const);
@@ -698,12 +695,16 @@ class ParserImpl : Reader {
   /// Converts a specific SPIR-V type to a Tint type. Matrix case
   const Type* ConvertType(const spvtools::opt::analysis::Matrix* mat_ty);
   /// Converts a specific SPIR-V type to a Tint type. RuntimeArray case
+  /// Distinct SPIR-V array types map to distinct Tint array types.
   /// @param rtarr_ty the Tint type
   const Type* ConvertType(
+      uint32_t type_id,
       const spvtools::opt::analysis::RuntimeArray* rtarr_ty);
   /// Converts a specific SPIR-V type to a Tint type. Array case
+  /// Distinct SPIR-V array types map to distinct Tint array types.
   /// @param arr_ty the Tint type
-  const Type* ConvertType(const spvtools::opt::analysis::Array* arr_ty);
+  const Type* ConvertType(uint32_t type_id,
+                          const spvtools::opt::analysis::Array* arr_ty);
   /// Converts a specific SPIR-V type to a Tint type. Struct case.
   /// SPIR-V allows distinct struct type definitions for two OpTypeStruct
   /// that otherwise have the same set of members (and struct and member
@@ -740,7 +741,8 @@ class ParserImpl : Reader {
   /// @returns the signed type
   const Type* SignedTypeFor(const Type* type);
 
-  /// Parses the array or runtime-array decorations.
+  /// Parses the array or runtime-array decorations. Sets 0 if no explicit
+  /// stride was found, and therefore the implicit stride should be used.
   /// @param spv_type the SPIR-V array or runtime-array type.
   /// @param array_stride pointer to the array stride
   /// @returns true on success.

@@ -586,25 +586,49 @@ bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
 
 bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::PermissionsPolicyFeature feature,
-    ReportOptions report_on_failure,
-    const String& message) const {
+    ReportOptions report_option,
+    const String& message) {
   bool should_report;
   bool enabled = security_context_.IsFeatureEnabled(feature, &should_report);
 
-  if (should_report && report_on_failure == ReportOptions::kReportOnFailure) {
+  if (should_report && report_option == ReportOptions::kReportOnFailure) {
     mojom::blink::PolicyDisposition disposition =
         enabled ? mojom::blink::PolicyDisposition::kReport
                 : mojom::blink::PolicyDisposition::kEnforce;
+
     ReportPermissionsPolicyViolation(feature, disposition, message);
   }
   return enabled;
 }
 
 bool ExecutionContext::IsFeatureEnabled(
+    mojom::blink::PermissionsPolicyFeature feature) const {
+  bool should_report;
+  return security_context_.IsFeatureEnabled(feature, &should_report);
+}
+
+bool ExecutionContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature) const {
+  DCHECK(GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type() ==
+         mojom::blink::PolicyValueType::kBool);
+  return IsFeatureEnabled(feature, PolicyValue::CreateBool(true));
+}
+
+bool ExecutionContext::IsFeatureEnabled(
+    mojom::blink::DocumentPolicyFeature feature,
+    PolicyValue threshold_value) const {
+  // The default value for any feature should be true unless restricted by
+  // document policy
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
+    return true;
+  return security_context_.IsFeatureEnabled(feature, threshold_value).enabled;
+}
+
+bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::DocumentPolicyFeature feature,
     ReportOptions report_option,
     const String& message,
-    const String& source_file) const {
+    const String& source_file) {
   DCHECK(GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type() ==
          mojom::blink::PolicyValueType::kBool);
   return IsFeatureEnabled(feature, PolicyValue::CreateBool(true), report_option,
@@ -616,7 +640,7 @@ bool ExecutionContext::IsFeatureEnabled(
     PolicyValue threshold_value,
     ReportOptions report_option,
     const String& message,
-    const String& source_file) const {
+    const String& source_file) {
   // The default value for any feature should be true unless restricted by
   // document policy
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())

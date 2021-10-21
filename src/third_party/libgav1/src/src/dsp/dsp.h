@@ -785,7 +785,9 @@ using InitializeScalingLutFunc = void (*)(int num_points,
 // |scaling_shift| is applied as a right shift after scaling, so that scaling
 // down is possible. It is found in FilmGrainParams, but supplied directly to
 // BlendNoiseWithImageLumaFunc because it's the only member used.
-// The pointer arguments do not alias one another.
+// The dest plane may point to the source plane, depending on the value of
+// frame_header.show_existing_frame. |noise_image_ptr| and scaling_lut.* do not
+// alias other arguments.
 using BlendNoiseWithImageLumaFunc = void (*)(
     const void* noise_image_ptr, int min_value, int max_value,
     int scaling_shift, int width, int height, int start_height,

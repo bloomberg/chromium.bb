@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 
 namespace features {
@@ -135,14 +136,17 @@ CONTENT_EXPORT extern const base::Feature kNotificationTriggers;
 CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
 CONTENT_EXPORT extern const base::Feature kOriginPolicy;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
+CONTENT_EXPORT extern const base::Feature kPaymentRequestBasicCard;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
-CONTENT_EXPORT extern const base::Feature kProcessHostOnUI;
 CONTENT_EXPORT extern const base::Feature kPlzServiceWorker;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
 CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
+CONTENT_EXPORT extern const base::Feature
+    kPrivateNetworkAccessRespectPreflightResults;
+CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessSendPreflights;
 CONTENT_EXPORT extern const base::Feature kProactivelySwapBrowsingInstance;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithDefaultSiteInstances;
@@ -162,13 +166,10 @@ CONTENT_EXPORT extern const base::Feature kSecurePaymentConfirmationDebug;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
-CONTENT_EXPORT extern const base::Feature kServiceWorkerPrefersUnusedProcess;
 CONTENT_EXPORT extern const base::Feature
     kServiceWorkerTerminationOnNoControllee;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBufferOnDesktop;
-CONTENT_EXPORT extern const base::Feature
-    kSignedExchangePrefetchCacheForNavigations;
 CONTENT_EXPORT extern const base::Feature
     kSignedExchangeReportingForDistributors;
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
@@ -243,17 +244,18 @@ CONTENT_EXPORT extern const base::Feature kWebAssemblySimd;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTiering;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
 CONTENT_EXPORT extern const base::Feature kWebAuth;
-CONTENT_EXPORT extern const base::Feature kWebAuthAssertionTransport;
+CONTENT_EXPORT extern const base::Feature kWebAuthAuthenticatorAttachment;
 CONTENT_EXPORT extern const base::Feature kWebAuthCable;
 CONTENT_EXPORT extern const base::Feature kWebAuthConditionalUI;
 CONTENT_EXPORT extern const base::Feature kWebBluetoothNewPermissionsBackend;
+CONTENT_EXPORT extern const base::Feature kWebBluetoothBondOnDemand;
 CONTENT_EXPORT extern const base::Feature kWebBundles;
 CONTENT_EXPORT extern const base::Feature kWebBundlesFromNetwork;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
 CONTENT_EXPORT extern const base::Feature kWebID;
+CONTENT_EXPORT extern const base::Feature kWebMidi;
 CONTENT_EXPORT extern const base::Feature kWebOtpBackendAuto;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
-CONTENT_EXPORT extern const base::Feature kWebPaymentsMinimalUI;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUICodeCache;
 CONTENT_EXPORT extern const base::Feature kWebUIReportOnlyTrustedTypes;
@@ -263,11 +265,11 @@ CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoom;
-CONTENT_EXPORT extern const base::Feature kAccessibilityPageZoomUpdatedUI;
 CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
+CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteGlobal;
 CONTENT_EXPORT extern const base::Feature kUserMediaScreenCapturing;
 CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;

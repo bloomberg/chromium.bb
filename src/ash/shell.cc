@@ -147,7 +147,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/event_client_impl.h"
-#include "ash/wm/full_restore/full_restore_controller.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
@@ -168,6 +168,7 @@
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
@@ -185,7 +186,7 @@
 #include "chromeos/dbus/usb/usbguard_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/system/devicemode.h"
-#include "components/full_restore/features.h"
+#include "components/app_restore/features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -239,6 +240,10 @@ using views::Widget;
 class AshVisibilityController : public ::wm::VisibilityController {
  public:
   AshVisibilityController() = default;
+
+  AshVisibilityController(const AshVisibilityController&) = delete;
+  AshVisibilityController& operator=(const AshVisibilityController&) = delete;
+
   ~AshVisibilityController() override = default;
 
  private:
@@ -247,8 +252,6 @@ class AshVisibilityController : public ::wm::VisibilityController {
                                                  bool visible) override {
     return AnimateOnChildWindowVisibilityChanged(window, visible);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
 }  // namespace
@@ -582,10 +585,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
     tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
   }
 
-  if (base::FeatureList::IsEnabled(features::kFastPair)) {
-    quick_pair_mediator_ = quick_pair::Mediator::Factory::Create();
-  }
-
   PowerStatus::Initialize();
 
   session_controller_->AddObserver(this);
@@ -659,7 +658,7 @@ Shell::~Shell() {
   keyboard_controller_->DestroyVirtualKeyboard();
 
   // Depends on |tablet_mode_controller_|.
-  full_restore_controller_.reset();
+  window_restore_controller_.reset();
   shelf_controller_->Shutdown();
   shelf_config_->Shutdown();
 
@@ -773,6 +772,7 @@ Shell::~Shell() {
   lock_state_controller_.reset();
   backlights_forced_off_setter_.reset();
 
+  float_controller_.reset();
   screen_pinning_controller_.reset();
 
   multidevice_notification_presenter_.reset();
@@ -1019,6 +1019,12 @@ void Shell::Init(
   // display manager was properly initialized.
   privacy_screen_controller_ = std::make_unique<PrivacyScreenController>();
 
+  // Fast Pair depends on the display manager, so initialize it after
+  // display manager was properly initialized.
+  if (base::FeatureList::IsEnabled(features::kFastPair)) {
+    quick_pair_mediator_ = quick_pair::Mediator::Factory::Create();
+  }
+
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
@@ -1155,9 +1161,7 @@ void Shell::Init(
       std::make_unique<FullscreenMagnifierController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
   assistant_controller_ = std::make_unique<AssistantControllerImpl>();
-  if (chromeos::features::IsQuickAnswersEnabled()) {
-    quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
-  }
+  quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.
@@ -1227,6 +1231,10 @@ void Shell::Init(
   // to initialize itself.
   shelf_config_->Init();
 
+  // The `shelf_controller_` needs `app_list_controller_` to initialize
+  // launcher_nudge_controller_.
+  shelf_controller_->Init();
+
   nearby_share_controller_ = std::make_unique<NearbyShareControllerImpl>();
   nearby_share_delegate_ = shell_delegate_->CreateNearbyShareDelegate(
       nearby_share_controller_.get());
@@ -1241,10 +1249,10 @@ void Shell::Init(
   // WindowTreeHostManager to host the keyboard window.
   keyboard_controller_->CreateVirtualKeyboard(std::move(keyboard_ui_factory));
 
-  // Create full restore controller after WindowTreeHostManager::InitHosts()
+  // Create window restore controller after WindowTreeHostManager::InitHosts()
   // since it may need to add observers to root windows.
   if (full_restore::features::IsFullRestoreEnabled())
-    full_restore_controller_ = std::make_unique<FullRestoreController>();
+    window_restore_controller_ = std::make_unique<WindowRestoreController>();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::mojom::CursorType::kPointer);
@@ -1293,6 +1301,9 @@ void Shell::Init(
     marker_controller_ = std::make_unique<MarkerController>();
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
   }
+
+  if (features::IsWindowControlMenuEnabled())
+    float_controller_ = std::make_unique<FloatController>();
 
   // Injects the factory which fulfills the implementation of the text context
   // menu exclusive to CrOS.

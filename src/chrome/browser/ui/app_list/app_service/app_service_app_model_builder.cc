@@ -56,14 +56,17 @@ class AppServiceAppModelBuilder::CrostiniFolderObserver
 
     if (!parent_->GetSyncItem(ash::kCrostiniFolderId,
                               sync_pb::AppListSpecifics::TYPE_FOLDER)) {
-      item->SetDefaultPositionIfApplicable(parent_->model_updater());
+      item->model_updater()->SetItemPosition(
+          item->id(),
+          item->CalculateDefaultPositionIfApplicable(parent_->model_updater()));
     }
 
     // Reset the folder name whether it's in the sync service or not
     // to ensure the "Linux apps" string is translated into the current
     // language, even if that's a different language then the folder was created
     // with.
-    item->SetName(
+    item->model_updater()->SetItemName(
+        item->id(),
         l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
   }
 

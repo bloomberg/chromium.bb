@@ -13,10 +13,12 @@
     <link rel="stylesheet" href="/css/flash.css">
     <link rel="stylesheet" href="/css/focus_ring.css">
     <link rel="stylesheet" href="/css/inkdrop.css">
+    <link rel="stylesheet" href="/css/mode/mode.css">
+    <link rel="stylesheet" href="/css/mode/scan.css">
+    <link rel="stylesheet" href="/css/mode/video.css">
     <link rel="stylesheet" href="/css/new_feature_toast.css">
     <link rel="stylesheet" href="/css/ptz_panel.css">
-    <link rel="stylesheet" href="/css/review_document.css">
-    <link rel="stylesheet" href="/css/scan.css">
+    <link rel="stylesheet" href="/css/review.css">
     <script type="module" src="/js/init.js"></script>
   </head>
   <body class="sound mirror mic grid-3x3 view-splash">
@@ -131,6 +133,9 @@
                 i18n-label="record_video_start_button">
           <div class="red-dot"></div>
           <div class="white-square"></div>
+          <svg id="shutter-progress-bar">
+            <circle></circle>
+          </svg>
         </button>
         <button id="start-takephoto" class="shutter" tabindex="0"
                 i18n-label="take_photo_button"></button>
@@ -149,7 +154,8 @@
                 i18n-label="gallery_button" hidden></button>
       </div>
       <div id="mode-selector" class="bottom-stripe">
-        <div id="modes-group" class="buttons">
+        <div id="modes-group" class="buttons" role="radiogroup"
+             i18n-aria="aria_camera_mode_group">
           <div class="mode-item">
             <input type="radio" name="mode"
                  data-mode="video" tabindex="0"
@@ -187,19 +193,37 @@
           </div>
         </div>
       </div>
-      <div id="scan-modes-group">
-        <div id="scan-document-option" class="scan-mode-item">
+      <div id="scan-modes-group" class="mode-subgroup" role="radiogroup"
+           i18n-aria="aria_scan_type_group">
+        <div id="scan-document-option" class="item">
           <input id="scan-document" type="radio" tabindex="0"
                  name="scan-type" data-scantype="document"
                  i18n-aria="scan_document_option">
           <div class="label" i18n-text="label_scan_document_option"
                aria-hidden="true"></div>
         </div>
-        <div class="scan-mode-item">
+        <div class="item">
           <input id="scan-barcode" type="radio" tabindex="0"
                  name="scan-type" data-scantype="barcode"
                  i18n-aria="scan_qrcode_option">
           <div class="label" i18n-text="label_scan_qrcode_option"
+               aria-hidden="true"></div>
+        </div>
+      </div>
+      <div id="record-types-group" class="mode-subgroup" role="radiogroup"
+           i18n-aria="aria_record_type_group">
+        <div class="item">
+          <input type="radio" tabindex="0" name="record-type"
+                 data-state="record-type-normal"
+                 i18n-aria="record_normal_video_option" checked>
+          <div class="label" i18n-text="label_record_normal_video_option"
+               aria-hidden="true"></div>
+        </div>
+        <div class="item">
+          <input type="radio" tabindex="0" name="record-type"
+                 data-state="record-type-gif"
+                 i18n-aria="record_gif_video_option">
+          <div class="label" i18n-text="label_record_gif_video_option"
                aria-hidden="true"></div>
         </div>
       </div>
@@ -253,18 +277,13 @@
         <div id="timer-tick-msg"></div>
       </div>
     </div>
-    <div id="view-review-document">
-      <div id="document-frame">
-        <img id="document-image">
+    <div id="view-review">
+      <div id="review-frame">
+        <img id="review-image">
       </div>
-      <div id="review-document-button-groups">
-        <button id="save-pdf-document" class="text-button pill primary dark
-                inkdrop" tabindex="0" i18n-text="label_save_pdf_document">
-        </button>
-        <button id="save-photo-document" class="text-button pill secondary dark
-                inkdrop" tabindex="0" i18n-text="label_save_photo_document">
-        </button>
-        <button id="retake-document" class="text-button pill secondary dark
+      <div class="button-groups">
+        <div class="positive-button-groups"></div>
+        <button id="review-retake" class="text-button pill secondary dark
                 inkdrop" tabindex="0" i18n-text="label_retake"></button>
       </div>
     </div>
@@ -298,7 +317,6 @@
       </div>
     </div>
     <div id="view-document-mode-dialog">
-      <div id="dim-preview"></div>
       <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg"
            aria-live="polite">
         <div id="icon-scan-area">
@@ -538,17 +556,16 @@
           <span i18n-text="expert_multistream_recording"></span>
         </label>
         <label class="menu-item inkdrop">
+          <input id="expert-enable-gif-recording" class="icon" type="checkbox"
+                 tabindex="0" data-state="show-gif-recording-option"
+                 data-key="show-gif-recording-option">
+          <span i18n-text="expert_show_gif_recording_option"></span>
+        </label>
+        <label class="menu-item inkdrop">
           <input id="expert-enable-expert-mode" class="icon" type="checkbox"
                  tabindex="0" data-state="expert"
                  data-key="expert">
           <span i18n-text="expert_enable_expert_mode"></span>
-        </label>
-        <label class="menu-item inkdrop">
-          <input id="expert-enable-gif-recording" class="icon" type="checkbox"
-                 tabindex="0" data-state="enable-gif-recording"
-                 data-key="enable-gif-recording">
-          <!-- TODO(b:191950622): Handle i18n translation of the text here.-->
-          <span>Enable GIF Recording</span>
         </label>
       </div>
       <div id="spinner" class="centered-overlay"></div>
@@ -641,6 +658,9 @@
       <div id="new-feature-toast" tabindex="0">
         <span class="new-feature-toast-text" aria-hidden="true"></span>
       </div>
+    </template>
+    <template id="text-button-template">
+      <button class="text-button pill dark inkdrop" tabindex="0"></button>
     </template>
   </body>
 </html>

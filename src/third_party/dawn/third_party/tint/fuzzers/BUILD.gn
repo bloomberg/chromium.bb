@@ -66,10 +66,12 @@ if (build_with_chromium) {
     ]
 
     sources = [
+      "data_builder.h",
       "random_generator.cc",
       "random_generator.h",
       "tint_common_fuzzer.cc",
       "tint_common_fuzzer.h",
+      "transform_builder.h",
     ]
   }
 
@@ -79,8 +81,8 @@ if (build_with_chromium) {
     sources = [
       "cli.cc",
       "cli.h",
-      "tint_init_fuzzer.cc",
-      "tint_init_fuzzer.h",
+      "fuzzer_init.cc",
+      "fuzzer_init.h",
     ]
   }
   if (tint_build_wgsl_reader) {
@@ -335,6 +337,11 @@ if (build_with_chromium) {
         ":tint_regex_msl_writer_fuzzer",
         ":tint_wgsl_reader_msl_writer_fuzzer",
       ]
+    }
+    if (tint_build_wgsl_reader && tint_build_hlsl_writer &&
+        tint_build_msl_writer && tint_build_spv_writer &&
+        tint_build_wgsl_writer) {
+      deps += [ ":tint_black_box_fuzz_target" ]
     }
   }
 } else {

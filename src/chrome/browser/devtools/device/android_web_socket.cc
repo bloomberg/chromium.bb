@@ -69,6 +69,9 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     thread_checker_.DetachFromThread();
   }
 
+  WebSocketImpl(const WebSocketImpl&) = delete;
+  WebSocketImpl& operator=(const WebSocketImpl&) = delete;
+
   void StartListening() {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(socket_);
@@ -88,7 +91,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       return;
     int mask = base::RandInt(0, 0x7FFFFFFF);
     std::string encoded_frame;
-    encoder_->EncodeFrame(message, mask, &encoded_frame);
+    encoder_->EncodeTextFrame(message, mask, &encoded_frame);
     SendData(encoded_frame);
   }
 
@@ -123,7 +126,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     WebSocket::ParseResult parse_result = encoder_->DecodeFrame(
         response_buffer_, &bytes_consumed, &output);
 
-    while (parse_result == WebSocket::FRAME_OK) {
+    while (parse_result == WebSocket::FRAME_OK_FINAL) {
       response_buffer_ = response_buffer_.substr(bytes_consumed);
       response_task_runner_->PostTask(
           FROM_HERE,
@@ -182,7 +185,6 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
   std::string response_buffer_;
   std::string request_buffer_;
   base::ThreadChecker thread_checker_;
-  DISALLOW_COPY_AND_ASSIGN(WebSocketImpl);
 
   base::WeakPtrFactory<WebSocketImpl> weak_factory_{this};
 };

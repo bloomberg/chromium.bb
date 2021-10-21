@@ -10,23 +10,68 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/values.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "printing/backend/print_backend.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
 #include "printing/printed_document.h"
 #include "printing/printing_context.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if !BUILDFLAG(ENABLE_OOP_PRINTING)
+#error "Out-of-process printing must be enabled."
+#endif
 
 namespace crash_keys {
 class ScopedPrinterInfo;
 }
 
 namespace printing {
+
+class SandboxedPrintBackendHostImpl : public mojom::SandboxedPrintBackendHost {
+ public:
+  explicit SandboxedPrintBackendHostImpl(
+      mojo::PendingReceiver<mojom::SandboxedPrintBackendHost> receiver);
+  SandboxedPrintBackendHostImpl(const SandboxedPrintBackendHostImpl&) = delete;
+  SandboxedPrintBackendHostImpl& operator=(
+      const SandboxedPrintBackendHostImpl&) = delete;
+  ~SandboxedPrintBackendHostImpl() override;
+
+ private:
+  // mojom::SandboxedPrintBackendHost
+  void BindBackend(
+      mojo::PendingReceiver<mojom::PrintBackendService> receiver) override;
+
+  mojo::Receiver<mojom::SandboxedPrintBackendHost> receiver_;
+  std::unique_ptr<mojom::PrintBackendService> print_backend_service_;
+};
+
+class UnsandboxedPrintBackendHostImpl
+    : public mojom::UnsandboxedPrintBackendHost {
+ public:
+  explicit UnsandboxedPrintBackendHostImpl(
+      mojo::PendingReceiver<mojom::UnsandboxedPrintBackendHost> receiver);
+  UnsandboxedPrintBackendHostImpl(const UnsandboxedPrintBackendHostImpl&) =
+      delete;
+  UnsandboxedPrintBackendHostImpl& operator=(
+      const UnsandboxedPrintBackendHostImpl&) = delete;
+  ~UnsandboxedPrintBackendHostImpl() override;
+
+ private:
+  // mojom::UnsandboxedPrintBackendHost
+  void BindBackend(
+      mojo::PendingReceiver<mojom::PrintBackendService> receiver) override;
+
+  mojo::Receiver<mojom::UnsandboxedPrintBackendHost> receiver_;
+  std::unique_ptr<mojom::PrintBackendService> print_backend_service_;
+};
 
 class PrintBackendServiceImpl : public mojom::PrintBackendService {
  public:
@@ -73,6 +118,10 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
   void FetchCapabilities(
       const std::string& printer_name,
       mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
+  void UpdatePrintSettings(
+      base::flat_map<std::string, base::Value> job_settings,
+      mojom::PrintBackendService::UpdatePrintSettingsCallback callback)
+      override;
   void StartPrinting(
       int document_cookie,
       const std::u16string& document_name,

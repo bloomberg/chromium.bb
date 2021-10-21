@@ -284,7 +284,7 @@ static int channelmap_query_formats(AVFilterContext *ctx)
     int ret;
 
     if ((ret = ff_set_common_formats    (ctx,  ff_planar_sample_fmts()))  < 0 ||
-        (ret = ff_set_common_samplerates (ctx             , ff_all_samplerates()                )) < 0 ||
+        (ret = ff_set_common_all_samplerates(ctx                              )) < 0 ||
         (ret = ff_add_channel_layout(&channel_layouts, s->output_layout)) < 0 ||
         (ret = ff_channel_layouts_ref(channel_layouts,
                                       &ctx->outputs[0]->incfg.channel_layouts)) < 0)
@@ -383,11 +383,10 @@ static const AVFilterPad avfilter_af_channelmap_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_AUDIO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = channelmap_filter_frame,
         .config_props   = channelmap_config_input,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_channelmap_outputs[] = {
@@ -395,7 +394,6 @@ static const AVFilterPad avfilter_af_channelmap_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO
     },
-    { NULL }
 };
 
 const AVFilter ff_af_channelmap = {
@@ -405,6 +403,6 @@ const AVFilter ff_af_channelmap = {
     .query_formats = channelmap_query_formats,
     .priv_size     = sizeof(ChannelMapContext),
     .priv_class    = &channelmap_class,
-    .inputs        = avfilter_af_channelmap_inputs,
-    .outputs       = avfilter_af_channelmap_outputs,
+    FILTER_INPUTS(avfilter_af_channelmap_inputs),
+    FILTER_OUTPUTS(avfilter_af_channelmap_outputs),
 };

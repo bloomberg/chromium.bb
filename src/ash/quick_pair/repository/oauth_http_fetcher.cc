@@ -30,6 +30,26 @@ OAuthHttpFetcher::~OAuthHttpFetcher() = default;
 
 void OAuthHttpFetcher::ExecuteGetRequest(const GURL& url,
                                          FetchCompleteCallback callback) {
+  request_type_ = RequestType::GET;
+  StartRequest(url, std::move(callback));
+}
+
+void OAuthHttpFetcher::ExecutePostRequest(const GURL& url,
+                                          const std::string& body,
+                                          FetchCompleteCallback callback) {
+  request_type_ = RequestType::POST;
+  body_ = body;
+  StartRequest(url, std::move(callback));
+}
+
+void OAuthHttpFetcher::ExecuteDeleteRequest(const GURL& url,
+                                            FetchCompleteCallback callback) {
+  request_type_ = RequestType::DELETE;
+  StartRequest(url, std::move(callback));
+}
+
+void OAuthHttpFetcher::StartRequest(const GURL& url,
+                                    FetchCompleteCallback callback) {
   QP_LOG(VERBOSE) << __func__ << ": executing request to: " << url;
 
   if (has_call_started_) {
@@ -68,7 +88,6 @@ void OAuthHttpFetcher::OnAccessTokenFetched(
     QP_LOG(WARNING) << __func__ << ": Failed to retrieve access token. "
                     << error.ToString();
     std::move(callback_).Run(nullptr);
-    Reset();
     return;
   }
 
@@ -77,7 +96,6 @@ void OAuthHttpFetcher::OnAccessTokenFetched(
   if (!url_loader_factory) {
     QP_LOG(WARNING) << __func__ << ": No SharedURLLoaderFactory is available.";
     std::move(callback_).Run(nullptr);
-    Reset();
     return;
   }
 
@@ -87,18 +105,43 @@ void OAuthHttpFetcher::OnAccessTokenFetched(
                            access_token_info.token);
 }
 
-void OAuthHttpFetcher::Reset() {
-  url_ = GURL();
-  callback_.Reset();
-  has_call_started_ = false;
-}
-
 GURL OAuthHttpFetcher::CreateApiCallUrl() {
   return url_;
 }
 
 std::string OAuthHttpFetcher::CreateApiCallBody() {
-  return std::string();
+  switch (request_type_) {
+    case RequestType::GET:
+    case RequestType::DELETE:
+      return std::string();
+
+    case RequestType::POST:
+      return body_;
+  }
+}
+
+std::string OAuthHttpFetcher::CreateApiCallBodyContentType() {
+  switch (request_type_) {
+    case RequestType::GET:
+    case RequestType::DELETE:
+      return std::string();
+
+    case RequestType::POST:
+      return "application/x-protobuf";
+  }
+}
+
+std::string OAuthHttpFetcher::GetRequestTypeForBody(const std::string& body) {
+  switch (request_type_) {
+    case RequestType::GET:
+      return "GET";
+
+    case RequestType::POST:
+      return "POST";
+
+    case RequestType::DELETE:
+      return "DELETE";
+  }
 }
 
 void OAuthHttpFetcher::ProcessApiCallSuccess(
@@ -106,7 +149,6 @@ void OAuthHttpFetcher::ProcessApiCallSuccess(
     std::unique_ptr<std::string> body) {
   QP_LOG(INFO) << __func__;
   std::move(callback_).Run(std::move(body));
-  Reset();
 }
 
 void OAuthHttpFetcher::ProcessApiCallFailure(
@@ -115,7 +157,6 @@ void OAuthHttpFetcher::ProcessApiCallFailure(
     std::unique_ptr<std::string> body) {
   QP_LOG(WARNING) << __func__ << ": net_err=" << net_error;
   std::move(callback_).Run(nullptr);
-  Reset();
 }
 
 net::PartialNetworkTrafficAnnotationTag

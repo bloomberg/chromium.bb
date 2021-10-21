@@ -72,6 +72,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_selection_model.h"
@@ -83,11 +84,11 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/controls/image_view.h"
@@ -95,6 +96,7 @@
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_targeter.h"
@@ -1135,6 +1137,8 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
                                         ThemeProperties::COLOR_TOOLBAR);
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+
+  SetProperty(views::kElementIdentifierKey, kTabStripIdentifier);
 }
 
 TabStrip::~TabStrip() {
@@ -3136,7 +3140,7 @@ void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
 //
 // TODO(sky): revisit this when touch events are really plumbed through.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  constexpr auto kMouseMoveTime = base::TimeDelta::FromMilliseconds(200);
+  constexpr auto kMouseMoveTime = base::Milliseconds(200);
   constexpr int kMouseMoveCountBeforeConsiderReal = 3;
 #endif
 
@@ -3373,7 +3377,7 @@ void TabStrip::ResizeLayoutTabsFromTouch() {
 
 void TabStrip::StartResizeLayoutTabsFromTouchTimer() {
   // Amount of time we delay before resizing after a close from a touch.
-  constexpr auto kTouchResizeLayoutTime = base::TimeDelta::FromSeconds(2);
+  constexpr auto kTouchResizeLayoutTime = base::Seconds(2);
 
   resize_layout_timer_.Stop();
   resize_layout_timer_.Start(FROM_HERE, kTouchResizeLayoutTime, this,
@@ -3956,3 +3960,5 @@ ADD_READONLY_PROPERTY_METADATA(int, ActiveTabWidth)
 ADD_READONLY_PROPERTY_METADATA(int, InactiveTabWidth)
 ADD_READONLY_PROPERTY_METADATA(int, AvailableWidthForTabStrip)
 END_METADATA
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(TabStrip, kTabStripIdentifier);

@@ -33,6 +33,9 @@ class ImageSkia;
 
 namespace ash {
 
+class AmbientClient;
+class AmbientAccessTokenController;
+
 // Class to handle photos in ambient mode.
 class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
  public:
@@ -48,7 +51,12 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
 
   using PhotoDownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
-  AmbientPhotoController();
+  AmbientPhotoController(AmbientClient& ambient_client,
+                         AmbientAccessTokenController& access_token_controller);
+
+  AmbientPhotoController(const AmbientPhotoController&) = delete;
+  AmbientPhotoController& operator=(const AmbientPhotoController&) = delete;
+
   ~AmbientPhotoController() override;
 
   // Start/stop updating the screen contents.
@@ -230,8 +238,6 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   gfx::ImageSkia related_image_;
 
   base::WeakPtrFactory<AmbientPhotoController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AmbientPhotoController);
 };
 
 }  // namespace ash

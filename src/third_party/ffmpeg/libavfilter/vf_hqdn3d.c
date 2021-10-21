@@ -244,10 +244,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void calc_coefs(AVFilterContext *ctx)
@@ -340,7 +337,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.out = out;
     td.direct = direct;
     /* one thread per plane */
-    ctx->internal->execute(ctx, do_denoise, &td, NULL, 3);
+    ff_filter_execute(ctx, do_denoise, &td, NULL, 3);
 
     if (ctx->is_disabled) {
         av_frame_free(&out);
@@ -386,7 +383,6 @@ static const AVFilterPad avfilter_vf_hqdn3d_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 
@@ -395,7 +391,6 @@ static const AVFilterPad avfilter_vf_hqdn3d_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_hqdn3d = {
@@ -406,8 +401,8 @@ const AVFilter ff_vf_hqdn3d = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = avfilter_vf_hqdn3d_inputs,
-    .outputs       = avfilter_vf_hqdn3d_outputs,
+    FILTER_INPUTS(avfilter_vf_hqdn3d_inputs),
+    FILTER_OUTPUTS(avfilter_vf_hqdn3d_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

@@ -772,9 +772,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DownloadDoesntDismissDialog) {
   EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IsBlocked());
 }
 
+#if defined(OS_MAC)
+// Flaky on Mac 10.11 CI builder. See https://crbug.com/1251684.
+#define MAYBE_SadTabCancelsDialogs DISABLED_SadTabCancelsDialogs
+#else
+#define MAYBE_SadTabCancelsDialogs SadTabCancelsDialogs
+#endif
+
 // Make sure that dialogs are closed after a renderer process dies, and that
 // subsequent navigations work.  See http://crbug/com/343265.
-IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SadTabCancelsDialogs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL beforeunload_url(embedded_test_server()->GetURL("/beforeunload.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), beforeunload_url));
@@ -1490,6 +1497,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   // Write out the pinned tabs.
   PinnedTabCodec::WritePinnedTabs(browser()->profile());
 
+  // Set last What's New version to the current version so there is no What's
+  // New tab shown on launch (for the non-first-run case).
+  g_browser_process->local_state()->SetInteger(prefs::kLastWhatsNewVersion,
+                                               CHROME_VERSION_MAJOR);
+
   // Close the browser window.
   browser()->window()->Close();
 
@@ -1674,8 +1686,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DisableMenuItemsWhenIncognitoIsForced) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_OPTIONS));
 
   // Set Incognito to FORCED.
-  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
+  IncognitoModePrefs::SetAvailability(
+      browser()->profile()->GetPrefs(),
+      IncognitoModePrefs::Availability::kForced);
   // Bookmarks & Settings commands should get disabled.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER));
@@ -1729,8 +1742,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
                        NoNewIncognitoWindowWhenIncognitoIsDisabled) {
   CommandUpdater* command_updater = browser()->command_controller();
   // Set Incognito to DISABLED.
-  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
-                                      IncognitoModePrefs::DISABLED);
+  IncognitoModePrefs::SetAvailability(
+      browser()->profile()->GetPrefs(),
+      IncognitoModePrefs::Availability::kDisabled);
   // Make sure New Incognito Window command is disabled. All remaining commands
   // should be enabled.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_NEW_INCOGNITO_WINDOW));
@@ -1777,8 +1791,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithExtensionsDisabled,
                        DisableExtensionsAndSettingsWhenIncognitoIsDisabled) {
   CommandUpdater* command_updater = browser()->command_controller();
   // Set Incognito to DISABLED.
-  IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
-                                      IncognitoModePrefs::DISABLED);
+  IncognitoModePrefs::SetAvailability(
+      browser()->profile()->GetPrefs(),
+      IncognitoModePrefs::Availability::kDisabled);
   // Make sure Manage Extensions command is disabled.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_MANAGE_EXTENSIONS));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_NEW_WINDOW));
@@ -1811,14 +1826,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
 
   // Set Incognito to FORCED.
-  IncognitoModePrefs::SetAvailability(popup_browser->profile()->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
+  IncognitoModePrefs::SetAvailability(
+      popup_browser->profile()->GetPrefs(),
+      IncognitoModePrefs::Availability::kForced);
   // OPTIONS and IMPORT_SETTINGS are disabled when Incognito is forced.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
   // Set Incognito to AVAILABLE.
-  IncognitoModePrefs::SetAvailability(popup_browser->profile()->GetPrefs(),
-                                      IncognitoModePrefs::ENABLED);
+  IncognitoModePrefs::SetAvailability(
+      popup_browser->profile()->GetPrefs(),
+      IncognitoModePrefs::Availability::kEnabled);
   // OPTIONS and IMPORT_SETTINGS are still disabled since it is a non-normal UI.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_OPTIONS));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
@@ -2318,8 +2335,6 @@ class ClickModifierTest : public InProcessBrowserTest {
     EXPECT_EQ(url, web_contents->GetURL());
 
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-      content::WebContents* web_contents =
-          browser->tab_strip_model()->GetActiveWebContents();
       content::TestNavigationObserver same_tab_observer(web_contents);
       SimulateMouseClick(web_contents, modifiers, button);
       same_tab_observer.Wait();

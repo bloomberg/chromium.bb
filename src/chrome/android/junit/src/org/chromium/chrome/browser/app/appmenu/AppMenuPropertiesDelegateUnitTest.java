@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.app.appmenu;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -42,6 +43,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.device.ShadowDeviceConditions;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -55,13 +57,13 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuUiState;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
+import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.components.webapps.AppBannerManager;
-import org.chromium.content.browser.ContentFeatureListImpl;
-import org.chromium.content.browser.ContentFeatureListImplJni;
-import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
@@ -74,6 +76,7 @@ import java.util.List;
  * Unit tests for {@link AppMenuPropertiesDelegateImpl}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Features.EnableFeatures({ChromeFeatureList.READ_LATER, ChromeFeatureList.BOOKMARKS_REFRESH})
 public class AppMenuPropertiesDelegateUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -106,8 +109,6 @@ public class AppMenuPropertiesDelegateUnitTest {
     @Mock
     private UpdateMenuItemHelper mUpdateMenuItemHelper;
     @Mock
-    private ContentFeatureListImpl.Natives mContentFeatureListJniMock;
-    @Mock
     private UserPrefs.Natives mUserPrefsJniMock;
     @Mock
     private Profile mProfile;
@@ -117,6 +118,8 @@ public class AppMenuPropertiesDelegateUnitTest {
     private TabModelFilterProvider mTabModelFilterProvider;
     @Mock
     private TabModelFilter mTabModelFilter;
+    @Mock
+    public WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeJniMock;
 
     private OneshotSupplierImpl<OverviewModeBehavior> mOverviewModeSupplier =
             new OneshotSupplierImpl<>();
@@ -148,8 +151,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         mMenuUiState = new MenuUiState();
         doReturn(mMenuUiState).when(mUpdateMenuItemHelper).getUiState();
 
-        mJniMocker.mock(ContentFeatureListImplJni.TEST_HOOKS, mContentFeatureListJniMock);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJniMock);
+        mJniMocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeJniMock);
         Profile.setLastUsedProfileForTesting(mProfile);
         Mockito.when(mUserPrefsJniMock.get(mProfile)).thenReturn(mPrefService);
         FeatureList.setTestCanUseDefaultsForTesting();
@@ -157,7 +160,7 @@ public class AppMenuPropertiesDelegateUnitTest {
         mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(
                 ContextUtils.getApplicationContext(), mActivityTabProvider,
                 mMultiWindowModeStateDispatcher, mTabModelSelector, mToolbarManager, mDecorView,
-                mOverviewModeSupplier, mBookmarkBridgeSupplier));
+                mOverviewModeSupplier, null, mBookmarkBridgeSupplier));
     }
 
     @After
@@ -252,7 +255,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         setMenuOptions(false /*isNativePage*/, true /*showTranslate*/, false /*showUpdate*/,
                 false /*showMoveToOtherWindow*/, false /*showReaderModePrefs*/,
-                true /*showAddToHomeScreen*/, false /*showPaintPreview*/);
+                true /*showAddToHomeScreen*/, false /*showPaintPreview*/,
+                true /*isAutoDarkEnabled*/);
 
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
         Menu menu = createTestMenu();
@@ -263,11 +267,12 @@ public class AppMenuPropertiesDelegateUnitTest {
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.share_row_menu_id, R.id.find_in_page_id,
                 R.id.translate_id, R.id.add_to_homescreen_id, R.id.request_desktop_site_row_menu_id,
-                R.id.divider_line_id, R.id.preferences_id, R.id.help_id};
+                R.id.auto_dark_web_contents_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
+                R.id.help_id};
         Integer[] expectedTitles = {0, R.string.menu_new_tab, R.string.menu_new_incognito_tab, 0,
                 R.string.menu_history, R.string.menu_downloads, R.string.menu_bookmarks,
                 R.string.menu_recent_tabs, 0, 0, R.string.menu_find_in_page,
-                R.string.menu_translate, R.string.menu_add_to_homescreen, 0, 0,
+                R.string.menu_translate, R.string.menu_add_to_homescreen, 0, 0, 0,
                 R.string.menu_settings, R.string.menu_help};
         Integer[] expectedActionBarItems = {R.id.forward_menu_id, R.id.bookmark_this_page_id,
                 R.id.offline_page_id, R.id.info_menu_id, R.id.reload_menu_id};
@@ -282,7 +287,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         setMenuOptions(false /*isNativePage*/, true /*showTranslate*/, false /*showUpdate*/,
                 false /*showMoveToOtherWindow*/, false /*showReaderModePrefs*/,
-                true /*showAddToHomeScreen*/, false /*showPaintPreview*/);
+                true /*showAddToHomeScreen*/, false /*showPaintPreview*/,
+                true /*isAutoDarkEnabled*/);
         doReturn(new AppBannerManager.InstallStringPair(R.string.menu_add_to_homescreen_install,
                          R.string.menu_add_to_homescreen_install))
                 .when(mAppMenuPropertiesDelegate)
@@ -297,12 +303,12 @@ public class AppMenuPropertiesDelegateUnitTest {
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.translate_id, R.id.share_row_menu_id,
                 R.id.find_in_page_id, R.id.add_to_homescreen_id,
-                R.id.request_desktop_site_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
-                R.id.help_id};
+                R.id.request_desktop_site_row_menu_id, R.id.auto_dark_web_contents_row_menu_id,
+                R.id.divider_line_id, R.id.preferences_id, R.id.help_id};
         Integer[] expectedTitles = {0, R.string.menu_new_tab, R.string.menu_new_incognito_tab, 0,
                 R.string.menu_history, R.string.menu_downloads, R.string.menu_bookmarks,
                 R.string.menu_recent_tabs, 0, 0, R.string.menu_find_in_page,
-                R.string.menu_translate, R.string.menu_add_to_homescreen_install, 0, 0,
+                R.string.menu_translate, R.string.menu_add_to_homescreen_install, 0, 0, 0,
                 R.string.menu_settings, R.string.menu_help};
         Integer[] expectedActionBarItems = {R.id.forward_menu_id, R.id.bookmark_this_page_id,
                 R.id.offline_page_id, R.id.info_menu_id, R.id.reload_menu_id};
@@ -317,7 +323,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         setMenuOptions(false /*isNativePage*/, true /*showTranslate*/, false /*showUpdate*/,
                 false /*showMoveToOtherWindow*/, false /*showReaderModePrefs*/,
-                true /*showAddToHomeScreen*/, false /*showPaintPreview*/);
+                true /*showAddToHomeScreen*/, false /*showPaintPreview*/,
+                true /*isAutoDarkEnabled*/);
         doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowManagedByMenuItem(any(Tab.class));
 
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
@@ -329,7 +336,8 @@ public class AppMenuPropertiesDelegateUnitTest {
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.share_row_menu_id, R.id.find_in_page_id,
                 R.id.translate_id, R.id.add_to_homescreen_id, R.id.request_desktop_site_row_menu_id,
-                R.id.divider_line_id, R.id.preferences_id, R.id.help_id, R.id.managed_by_menu_id};
+                R.id.auto_dark_web_contents_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
+                R.id.help_id, R.id.managed_by_menu_id};
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
@@ -339,7 +347,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         setMenuOptions(false /*isNativePage*/, true /*showTranslate*/, true /*showUpdate*/,
                 true /*showMoveToOtherWindow*/, true /*showReaderModePrefs*/,
-                true /*showAddToHomeScreen*/, true /*showPaintPreview*/);
+                true /*showAddToHomeScreen*/, true /*showPaintPreview*/,
+                true /*isAutoDarkEnabled*/);
 
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
         Menu menu = createTestMenu();
@@ -355,7 +364,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         setMenuOptions(false /*isNativePage*/, true /*showTranslate*/, true /*showUpdate*/,
                 false /*showMoveToOtherWindow*/, true /*showReaderModePrefs*/,
-                true /*showAddToHomeScreen*/, false /*showPaintPreview*/);
+                true /*showAddToHomeScreen*/, false /*showPaintPreview*/,
+                true /*isAutoDarkEnabled*/);
         doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowIconBeforeItem();
 
         Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
@@ -424,9 +434,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                 .getAddToHomeScreenTitle(mTab);
 
         // Ensure the get image descriptions option is shown as needed
-        when(mContentFeatureListJniMock.isEnabled(
-                     ContentFeatureList.EXPERIMENTAL_ACCESSIBILITY_LABELS))
-                .thenReturn(true);
         when(mPrefService.getBoolean(Pref.ACCESSIBILITY_IMAGE_LABELS_ENABLED_ANDROID))
                 .thenReturn(false);
 
@@ -443,8 +450,8 @@ public class AppMenuPropertiesDelegateUnitTest {
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.share_row_menu_id, R.id.get_image_descriptions_id,
                 R.id.find_in_page_id, R.id.add_to_homescreen_id,
-                R.id.request_desktop_site_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
-                R.id.help_id};
+                R.id.request_desktop_site_row_menu_id, R.id.auto_dark_web_contents_row_menu_id,
+                R.id.divider_line_id, R.id.preferences_id, R.id.help_id};
 
         assertMenuItemsAreEqual(menu, expectedItems);
 
@@ -481,6 +488,7 @@ public class AppMenuPropertiesDelegateUnitTest {
         doReturn(false)
                 .when(mAppMenuPropertiesDelegate)
                 .shouldShowManagedByMenuItem(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).isAutoDarkWebContentsEnabled();
         setUpIncognitoMocks();
     }
 
@@ -564,7 +572,7 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     private void setMenuOptions(boolean isNativePage, boolean showTranslate, boolean showUpdate,
             boolean showMoveToOtherWindow, boolean showReaderModePrefs, boolean showAddToHomeScreen,
-            boolean showPaintPreview) {
+            boolean showPaintPreview, boolean isAutoDarkEnabled) {
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL));
         when(mTab.isNativePage()).thenReturn(isNativePage);
         doReturn(showTranslate)
@@ -586,5 +594,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         doReturn(showPaintPreview)
                 .when(mAppMenuPropertiesDelegate)
                 .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        when(mWebsitePreferenceBridgeJniMock.getContentSetting(any(), anyInt(), any(), any()))
+                .thenReturn(isAutoDarkEnabled ? ContentSettingValues.DEFAULT
+                                              : ContentSettingValues.BLOCK);
     }
 }

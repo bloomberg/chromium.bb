@@ -260,6 +260,13 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                               GLenum type,
                               void *pixels) override;
 
+    angle::Result getCompressedTexImage(const gl::Context *context,
+                                        const gl::PixelPackState &packState,
+                                        gl::Buffer *packBuffer,
+                                        gl::TextureTarget target,
+                                        GLint level,
+                                        void *pixels) override;
+
     ANGLE_INLINE bool hasBeenBoundAsImage() const { return mState.hasBeenBoundAsImage(); }
     ANGLE_INLINE const gl::OffsetBindingPointer<gl::Buffer> &getBuffer() const
     {
@@ -296,7 +303,6 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                         const vk::Format &format,
                         uint32_t imageLevelOffset,
                         uint32_t imageLayerOffset,
-                        gl::LevelIndex imageBaseLevel,
                         bool selfOwned);
     void updateImageHelper(ContextVk *contextVk, size_t imageCopyBufferAlignment);
     vk::ImageViewHelper &getImageViews()
@@ -456,10 +462,6 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     // Queues a flush of any modified image attributes. The image will be reallocated with its new
     // attributes at the next opportunity.
     angle::Result respecifyImageStorage(ContextVk *contextVk);
-    angle::Result respecifyImageStorageAndLevels(ContextVk *contextVk,
-                                                 gl::LevelIndex previousFirstAllocateLevelGL,
-                                                 gl::LevelIndex baseLevelGL,
-                                                 gl::LevelIndex maxLevelGL);
 
     // Update base and max levels, and re-create image if needed.
     angle::Result updateBaseMaxLevels(ContextVk *contextVk,

@@ -32,19 +32,23 @@ class GFX_EXPORT CrashIdHelper {
  public:
   static CrashIdHelper* Get();
 
+  CrashIdHelper(const CrashIdHelper&) = delete;
+  CrashIdHelper& operator=(const CrashIdHelper&) = delete;
+
   // Registers the thread used for logging.
   static void RegisterMainThread(base::PlatformThreadId thread_id);
 
   // RAII style class that unregisters in the destructor.
   class GFX_EXPORT ScopedLogger {
    public:
+    ScopedLogger(const ScopedLogger&) = delete;
+    ScopedLogger& operator=(const ScopedLogger&) = delete;
+
     ~ScopedLogger();
 
    private:
     friend class CrashIdHelper;
     ScopedLogger();
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedLogger);
   };
 
   // Adds |id| to the list of active debugging ids. When the returned object
@@ -79,8 +83,6 @@ class GFX_EXPORT CrashIdHelper {
   crash_reporter::CrashKeyString<128> debugging_crash_key_{"widget-id"};
 
   static base::PlatformThreadId main_thread_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashIdHelper);
 };
 
 }  // namespace gfx

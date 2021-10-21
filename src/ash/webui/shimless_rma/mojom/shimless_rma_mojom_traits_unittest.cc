@@ -29,8 +29,8 @@ void TestProtoToMojo(
 
   for (auto enum_pair : enums) {
     EXPECT_EQ(
-        enum_pair.first,
-        (mojo::EnumTraits<MojoEnum, ProtoEnum>::ToMojom(enum_pair.second)))
+        (mojo::EnumTraits<MojoEnum, ProtoEnum>::ToMojom(enum_pair.second)),
+        enum_pair.first)
         << "enum " << enum_pair.first << " != " << enum_pair.second;
   }
 }
@@ -89,7 +89,8 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
        {mojom::RmaState::kProvisionDevice, rmad::RmadState::kProvisionDevice},
        {mojom::RmaState::kWaitForManualWPEnable,
         rmad::RmadState::kWpEnablePhysical},
-       {mojom::RmaState::kRepairComplete, rmad::RmadState::kFinalize}});
+       {mojom::RmaState::kFinalize, rmad::RmadState::kFinalize},
+       {mojom::RmaState::kRepairComplete, rmad::RmadState::kRepairComplete}});
 
   // rmad::RmadState::STATE_NOT_SET is used when RMA is not active so the
   // toMojo conversion is reachable, unlike most other enums.
@@ -97,14 +98,14 @@ TEST_F(ShimlessRmaMojoToProtoTest, StatesMatch) {
   EXPECT_EQ(static_cast<int32_t>(rmad::RmadState::STATE_NOT_SET), 0);
   // This test hits a NOTREACHED so it is a release mode only test.
   EXPECT_EQ(
-      mojom::RmaState::kUnknown,
       (mojo::EnumTraits<mojom::RmaState, rmad::RmadState::StateCase>::ToMojom(
-          rmad::RmadState::STATE_NOT_SET)));
+          rmad::RmadState::STATE_NOT_SET)),
+      mojom::RmaState::kUnknown);
   for (auto enum_pair : enums) {
     EXPECT_EQ(
-        enum_pair.first,
         (mojo::EnumTraits<mojom::RmaState, rmad::RmadState::StateCase>::ToMojom(
-            enum_pair.second)))
+            enum_pair.second)),
+        enum_pair.first)
         << "enum " << enum_pair.first << " != " << enum_pair.second;
   }
 }

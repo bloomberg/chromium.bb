@@ -23,6 +23,12 @@ class CardUnmaskPromptView;
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
   explicit CardUnmaskPromptControllerImpl(PrefService* pref_service);
+
+  CardUnmaskPromptControllerImpl(const CardUnmaskPromptControllerImpl&) =
+      delete;
+  CardUnmaskPromptControllerImpl& operator=(
+      const CardUnmaskPromptControllerImpl&) = delete;
+
   virtual ~CardUnmaskPromptControllerImpl();
 
   // This should be OnceCallback<unique_ptr<CardUnmaskPromptView>> but there are
@@ -84,7 +90,8 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_ = nullptr;
 
-  AutofillClient::PaymentsRpcResult unmasking_result_ = AutofillClient::NONE;
+  AutofillClient::PaymentsRpcResult unmasking_result_ =
+      AutofillClient::PaymentsRpcResult::kNone;
   int unmasking_number_of_attempts_ = 0;
   base::Time shown_timestamp_;
   // Timestamp of the last time the user clicked the Verify button.
@@ -94,8 +101,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
   base::WeakPtrFactory<CardUnmaskPromptControllerImpl> weak_pointer_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImpl);
 };
 
 }  // namespace autofill

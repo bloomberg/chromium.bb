@@ -76,17 +76,13 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
     const enum AVPixelFormat *pix_fmts;
-    AVFilterFormats *fmts_list;
 
     if (!strcmp(ctx->filter->name, "rgbashift"))
         pix_fmts = rgb_pix_fmts;
     else
         pix_fmts = yuv_pix_fmts;
 
-    fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 #define DEFINE_SMEAR(depth, type, div)                                                    \
@@ -363,10 +359,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                             in->data[0], in->linesize[0],
                             s->linesize[0], s->height[0]);
     }
-    ctx->internal->execute(ctx, s->filter_slice, out, NULL,
-                           FFMIN3(s->height[1],
-                                  s->height[2],
-                                  ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->filter_slice, out, NULL,
+                      FFMIN3(s->height[1],
+                             s->height[2],
+                             ff_filter_get_nb_threads(ctx)));
     s->in = NULL;
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -433,7 +429,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -441,7 +436,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 AVFILTER_DEFINE_CLASS(chromashift);
@@ -452,8 +446,8 @@ const AVFilter ff_vf_chromashift = {
     .priv_size     = sizeof(ChromaShiftContext),
     .priv_class    = &chromashift_class,
     .query_formats = query_formats,
-    .outputs       = outputs,
-    .inputs        = inputs,
+    FILTER_OUTPUTS(outputs),
+    FILTER_INPUTS(inputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -481,8 +475,8 @@ const AVFilter ff_vf_rgbashift = {
     .priv_size     = sizeof(ChromaShiftContext),
     .priv_class    = &rgbashift_class,
     .query_formats = query_formats,
-    .outputs       = outputs,
-    .inputs        = inputs,
+    FILTER_OUTPUTS(outputs),
+    FILTER_INPUTS(inputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
@@ -192,7 +193,8 @@ void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoCommit");
   DCHECK(task_runner_provider_->IsMainThread());
 
-  layer_tree_host_->WillCommit();
+  int source_frame_number = layer_tree_host_->SourceFrameNumber();
+  layer_tree_host_->WillCommit(nullptr);
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host_->GetId(), commit_args.frame_id.sequence_number);
 
@@ -202,12 +204,14 @@ void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
     DebugScopedSetImplThread impl(task_runner_provider_);
 
     host_impl_->ReadyToCommit(commit_args, nullptr);
-    host_impl_->BeginCommit();
+    host_impl_->BeginCommit(source_frame_number);
 
     if (host_impl_->EvictedUIResourcesExist())
       layer_tree_host_->GetUIResourceManager()->RecreateUIResources();
 
-    layer_tree_host_->FinishCommitOnImplThread(host_impl_.get());
+    layer_tree_host_->FinishCommitOnImplThread(
+        host_impl_.get(),
+        layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises());
 
     if (scheduler_on_impl_thread_) {
       scheduler_on_impl_thread_->DidCommit();
@@ -242,8 +246,8 @@ void SingleThreadProxy::CommitComplete() {
       << "Activation is expected to have synchronously occurred by now.";
 
   DebugScopedSetMainThread main(task_runner_provider_);
-  layer_tree_host_->CommitComplete();
   layer_tree_host_->DidBeginMainFrame();
+  layer_tree_host_->CommitComplete();
 
   next_frame_is_newly_committed_frame_ = true;
 }
@@ -899,12 +903,15 @@ void SingleThreadProxy::DoBeginMainFrame(
     std::unique_ptr<CompositorCommitData> commit_data =
         host_impl_->ProcessCompositorDeltas();
     layer_tree_host_->ApplyCompositorChanges(commit_data.get());
+    did_apply_compositor_deltas_ = true;
   }
   layer_tree_host_->ApplyMutatorEvents(host_impl_->TakeMutatorEvents());
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
   layer_tree_host_->RequestMainFrameUpdate(false /* record_cc_metrics */);
+  // Reset the flag for the next time around. It has been used for this frame.
+  did_apply_compositor_deltas_ = false;
 }
 
 void SingleThreadProxy::DoPainting() {
@@ -929,7 +936,8 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
   host_impl_->BeginMainFrameAborted(
       reason, std::move(empty_swap_promises),
-      scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args());
+      scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args(),
+      did_apply_compositor_deltas_);
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 

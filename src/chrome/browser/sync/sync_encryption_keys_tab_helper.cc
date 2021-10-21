@@ -54,6 +54,9 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
     DCHECK(sync_service);
   }
 
+  EncryptionKeyApi(const EncryptionKeyApi&) = delete;
+  EncryptionKeyApi& operator=(const EncryptionKeyApi&) = delete;
+
   void BindReceiver(mojo::PendingAssociatedReceiver<
                         chrome::mojom::SyncEncryptionKeysExtension> receiver,
                     content::RenderFrameHost* rfh) {
@@ -103,8 +106,6 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
   content::RenderFrameHostReceiverSet<
       chrome::mojom::SyncEncryptionKeysExtension>
       receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(EncryptionKeyApi);
 };
 
 // static
@@ -177,4 +178,4 @@ bool SyncEncryptionKeysTabHelper::IsEncryptionKeysApiBoundForTesting() {
   return encryption_key_api_ != nullptr;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncEncryptionKeysTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncEncryptionKeysTabHelper);

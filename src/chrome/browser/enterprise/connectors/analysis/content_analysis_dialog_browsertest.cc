@@ -29,9 +29,9 @@ namespace enterprise_connectors {
 
 namespace {
 
-constexpr base::TimeDelta kNoDelay = base::TimeDelta::FromSeconds(0);
-constexpr base::TimeDelta kSmallDelay = base::TimeDelta::FromMilliseconds(300);
-constexpr base::TimeDelta kNormalDelay = base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kNoDelay = base::Seconds(0);
+constexpr base::TimeDelta kSmallDelay = base::Milliseconds(300);
+constexpr base::TimeDelta kNormalDelay = base::Milliseconds(500);
 
 constexpr char kBlockingScansForDlpAndMalware[] = R"(
 {
@@ -529,8 +529,8 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogCancelPendingScanBrowserTest,
       base::BindOnce(
           [](bool* called, const ContentAnalysisDelegate::Data& data,
              const ContentAnalysisDelegate::Result& result) {
-            for (bool result : result.paths_results)
-              ASSERT_FALSE(result);
+            for (bool paths_result : result.paths_results)
+              ASSERT_FALSE(paths_result);
             *called = true;
           },
           &called),
@@ -636,8 +636,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDialogAppearanceBrowserTest, Test) {
       base::BindLambdaForTesting(
           [this, &called](const ContentAnalysisDelegate::Data& data,
                           const ContentAnalysisDelegate::Result& result) {
-            for (bool result : result.paths_results)
-              ASSERT_EQ(result, success());
+            for (bool paths_result : result.paths_results)
+              ASSERT_EQ(paths_result, success());
             called = true;
           }),
       access_point());
@@ -695,8 +695,8 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDialogCustomMessageAppearanceBrowserTest,
       base::BindLambdaForTesting(
           [this, &called](const ContentAnalysisDelegate::Data& data,
                           const ContentAnalysisDelegate::Result& result) {
-            for (bool result : result.paths_results)
-              ASSERT_EQ(result, success());
+            for (bool paths_result : result.paths_results)
+              ASSERT_EQ(paths_result, success());
             called = true;
           }),
       access_point());
@@ -794,8 +794,7 @@ class ContentAnalysisDialogPlainTests : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests, TestCustomMessage) {
   enterprise_connectors::ContentAnalysisDialog::
-      SetMinimumPendingDialogTimeForTesting(
-          base::TimeDelta::FromMilliseconds(0));
+      SetMinimumPendingDialogTimeForTesting(base::Milliseconds(0));
 
   std::unique_ptr<MockCustomMessageDelegate> delegate =
       std::make_unique<MockCustomMessageDelegate>(

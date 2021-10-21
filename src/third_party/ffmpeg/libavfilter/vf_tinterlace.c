@@ -103,10 +103,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void lowpass_line_c(uint8_t *dstp, ptrdiff_t width, const uint8_t *srcp,
@@ -543,7 +540,6 @@ static const AVFilterPad tinterlace_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad tinterlace_outputs[] = {
@@ -552,7 +548,6 @@ static const AVFilterPad tinterlace_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_out_props,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_tinterlace = {
@@ -561,8 +556,8 @@ const AVFilter ff_vf_tinterlace = {
     .priv_size     = sizeof(TInterlaceContext),
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = tinterlace_inputs,
-    .outputs       = tinterlace_outputs,
+    FILTER_INPUTS(tinterlace_inputs),
+    FILTER_OUTPUTS(tinterlace_outputs),
     .priv_class    = &tinterlace_class,
 };
 
@@ -574,7 +569,7 @@ const AVFilter ff_vf_interlace = {
     .init          = init_interlace,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = tinterlace_inputs,
-    .outputs       = tinterlace_outputs,
+    FILTER_INPUTS(tinterlace_inputs),
+    FILTER_OUTPUTS(tinterlace_outputs),
     .priv_class    = &interlace_class,
 };

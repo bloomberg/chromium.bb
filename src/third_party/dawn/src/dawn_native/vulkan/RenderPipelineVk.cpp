@@ -14,6 +14,7 @@
 
 #include "dawn_native/vulkan/RenderPipelineVk.h"
 
+#include "dawn_native/CreatePipelineAsyncTask.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/PipelineLayoutVk.h"
@@ -34,6 +35,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::VertexStepMode::Instance:
                     return VK_VERTEX_INPUT_RATE_INSTANCE;
             }
+            UNREACHABLE();
         }
 
         VkFormat VulkanVertexFormat(wgpu::VertexFormat format) {
@@ -116,6 +118,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::PrimitiveTopology::TriangleStrip:
                     return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
             }
+            UNREACHABLE();
         }
 
         bool ShouldEnablePrimitiveRestart(wgpu::PrimitiveTopology topology) {
@@ -130,6 +133,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::PrimitiveTopology::TriangleStrip:
                     return true;
             }
+            UNREACHABLE();
         }
 
         VkFrontFace VulkanFrontFace(wgpu::FrontFace face) {
@@ -139,6 +143,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::FrontFace::CW:
                     return VK_FRONT_FACE_CLOCKWISE;
             }
+            UNREACHABLE();
         }
 
         VkCullModeFlagBits VulkanCullMode(wgpu::CullMode mode) {
@@ -150,6 +155,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::CullMode::Back:
                     return VK_CULL_MODE_BACK_BIT;
             }
+            UNREACHABLE();
         }
 
         VkBlendFactor VulkanBlendFactor(wgpu::BlendFactor factor) {
@@ -181,6 +187,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::BlendFactor::OneMinusConstant:
                     return VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
             }
+            UNREACHABLE();
         }
 
         VkBlendOp VulkanBlendOperation(wgpu::BlendOperation operation) {
@@ -196,6 +203,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::BlendOperation::Max:
                     return VK_BLEND_OP_MAX;
             }
+            UNREACHABLE();
         }
 
         VkColorComponentFlags VulkanColorWriteMask(wgpu::ColorWriteMask mask,
@@ -267,6 +275,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::StencilOperation::DecrementWrap:
                     return VK_STENCIL_OP_DECREMENT_AND_WRAP;
             }
+            UNREACHABLE();
         }
 
         VkPipelineDepthStencilStateCreateInfo ComputeDepthStencilDesc(
@@ -319,42 +328,61 @@ namespace dawn_native { namespace vulkan {
     }  // anonymous namespace
 
     // static
-    ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
+    Ref<RenderPipeline> RenderPipeline::CreateUninitialized(
         Device* device,
         const RenderPipelineDescriptor* descriptor) {
-        Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
-        DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline;
+        return AcquireRef(new RenderPipeline(device, descriptor));
     }
 
-    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
+    MaybeError RenderPipeline::Initialize() {
         Device* device = ToBackend(GetDevice());
 
-        VkPipelineShaderStageCreateInfo shaderStages[2];
-        {
-            // Generate a new VkShaderModule with BindingRemapper tint transform for each
-            // pipeline
-            DAWN_TRY_ASSIGN(shaderStages[0].module,
-                            ToBackend(descriptor->vertex.module)
-                                ->GetTransformedModuleHandle(descriptor->vertex.entryPoint,
-                                                             ToBackend(GetLayout())));
-            DAWN_TRY_ASSIGN(shaderStages[1].module,
-                            ToBackend(descriptor->fragment->module)
-                                ->GetTransformedModuleHandle(descriptor->fragment->entryPoint,
-                                                             ToBackend(GetLayout())));
-            shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStages[0].pNext = nullptr;
-            shaderStages[0].flags = 0;
-            shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-            shaderStages[0].pSpecializationInfo = nullptr;
-            shaderStages[0].pName = descriptor->vertex.entryPoint;
+        // There are at most 2 shader stages in render pipeline, i.e. vertex and fragment
+        std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+        std::array<std::vector<SpecializationDataEntry>, 2> specializationDataEntriesPerStages;
+        std::array<std::vector<VkSpecializationMapEntry>, 2> specializationMapEntriesPerStages;
+        std::array<VkSpecializationInfo, 2> specializationInfoPerStages;
+        uint32_t stageCount = 0;
 
-            shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            shaderStages[1].pNext = nullptr;
-            shaderStages[1].flags = 0;
-            shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-            shaderStages[1].pSpecializationInfo = nullptr;
-            shaderStages[1].pName = descriptor->fragment->entryPoint;
+        for (auto stage : IterateStages(this->GetStageMask())) {
+            VkPipelineShaderStageCreateInfo shaderStage;
+
+            const ProgrammableStage& programmableStage = GetStage(stage);
+            DAWN_TRY_ASSIGN(shaderStage.module,
+                            ToBackend(programmableStage.module)
+                                ->GetTransformedModuleHandle(programmableStage.entryPoint.c_str(),
+                                                             ToBackend(GetLayout())));
+
+            shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            shaderStage.pNext = nullptr;
+            shaderStage.flags = 0;
+            shaderStage.pSpecializationInfo = nullptr;
+            shaderStage.pName = programmableStage.entryPoint.c_str();
+
+            switch (stage) {
+                case dawn_native::SingleShaderStage::Vertex: {
+                    shaderStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                    break;
+                }
+                case dawn_native::SingleShaderStage::Fragment: {
+                    shaderStage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    break;
+                }
+                default: {
+                    // For render pipeline only Vertex and Fragment stage is possible
+                    DAWN_UNREACHABLE();
+                    break;
+                }
+            }
+
+            shaderStage.pSpecializationInfo =
+                GetVkSpecializationInfo(programmableStage, &specializationInfoPerStages[stageCount],
+                                        &specializationDataEntriesPerStages[stageCount],
+                                        &specializationMapEntriesPerStages[stageCount]);
+
+            DAWN_ASSERT(stageCount < 2);
+            shaderStages[stageCount] = shaderStage;
+            stageCount++;
         }
 
         PipelineVertexInputStateCreateInfoTemporaryAllocations tempAllocations;
@@ -395,7 +423,7 @@ namespace dawn_native { namespace vulkan {
         rasterization.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterization.pNext = nullptr;
         rasterization.flags = 0;
-        rasterization.depthClampEnable = VK_FALSE;
+        rasterization.depthClampEnable = ShouldClampDepth() ? VK_TRUE : VK_FALSE;
         rasterization.rasterizerDiscardEnable = VK_FALSE;
         rasterization.polygonMode = VK_POLYGON_MODE_FILL;
         rasterization.cullMode = VulkanCullMode(GetCullMode());
@@ -425,30 +453,35 @@ namespace dawn_native { namespace vulkan {
         VkPipelineDepthStencilStateCreateInfo depthStencilState =
             ComputeDepthStencilDesc(GetDepthStencilState());
 
-        // Initialize the "blend state info" that will be chained in the "create info" from the data
-        // pre-computed in the ColorState
+        VkPipelineColorBlendStateCreateInfo colorBlend;
+        // colorBlend may hold pointers to elements in colorBlendAttachments, so it must have a
+        // definition scope as same as colorBlend
         ityp::array<ColorAttachmentIndex, VkPipelineColorBlendAttachmentState, kMaxColorAttachments>
             colorBlendAttachments;
-        const auto& fragmentOutputsWritten =
-            GetStage(SingleShaderStage::Fragment).metadata->fragmentOutputsWritten;
-        for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
-            const ColorTargetState* target = GetColorTargetState(i);
-            colorBlendAttachments[i] = ComputeColorDesc(target, fragmentOutputsWritten[i]);
+        if (GetStageMask() & wgpu::ShaderStage::Fragment) {
+            // Initialize the "blend state info" that will be chained in the "create info" from the
+            // data pre-computed in the ColorState
+            const auto& fragmentOutputsWritten =
+                GetStage(SingleShaderStage::Fragment).metadata->fragmentOutputsWritten;
+            for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
+                const ColorTargetState* target = GetColorTargetState(i);
+                colorBlendAttachments[i] = ComputeColorDesc(target, fragmentOutputsWritten[i]);
+            }
+
+            colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            colorBlend.pNext = nullptr;
+            colorBlend.flags = 0;
+            // LogicOp isn't supported so we disable it.
+            colorBlend.logicOpEnable = VK_FALSE;
+            colorBlend.logicOp = VK_LOGIC_OP_CLEAR;
+            colorBlend.attachmentCount = static_cast<uint32_t>(GetColorAttachmentsMask().count());
+            colorBlend.pAttachments = colorBlendAttachments.data();
+            // The blend constant is always dynamic so we fill in a dummy value
+            colorBlend.blendConstants[0] = 0.0f;
+            colorBlend.blendConstants[1] = 0.0f;
+            colorBlend.blendConstants[2] = 0.0f;
+            colorBlend.blendConstants[3] = 0.0f;
         }
-        VkPipelineColorBlendStateCreateInfo colorBlend;
-        colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        colorBlend.pNext = nullptr;
-        colorBlend.flags = 0;
-        // LogicOp isn't supported so we disable it.
-        colorBlend.logicOpEnable = VK_FALSE;
-        colorBlend.logicOp = VK_LOGIC_OP_CLEAR;
-        colorBlend.attachmentCount = static_cast<uint32_t>(GetColorAttachmentsMask().count());
-        colorBlend.pAttachments = colorBlendAttachments.data();
-        // The blend constant is always dynamic so we fill in a dummy value
-        colorBlend.blendConstants[0] = 0.0f;
-        colorBlend.blendConstants[1] = 0.0f;
-        colorBlend.blendConstants[2] = 0.0f;
-        colorBlend.blendConstants[3] = 0.0f;
 
         // Tag all state as dynamic but stencil masks and depth bias.
         VkDynamicState dynamicStates[] = {
@@ -463,19 +496,21 @@ namespace dawn_native { namespace vulkan {
         dynamic.dynamicStateCount = sizeof(dynamicStates) / sizeof(dynamicStates[0]);
         dynamic.pDynamicStates = dynamicStates;
 
-        // Get a VkRenderPass that matches the attachment formats for this pipeline, load ops don't
-        // matter so set them all to LoadOp::Load
+        // Get a VkRenderPass that matches the attachment formats for this pipeline, load/store ops
+        // don't matter so set them all to LoadOp::Load / StoreOp::Store
         VkRenderPass renderPass = VK_NULL_HANDLE;
         {
             RenderPassCacheQuery query;
 
             for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
-                query.SetColor(i, GetColorAttachmentFormat(i), wgpu::LoadOp::Load, false);
+                query.SetColor(i, GetColorAttachmentFormat(i), wgpu::LoadOp::Load,
+                               wgpu::StoreOp::Store, false);
             }
 
             if (HasDepthStencilAttachment()) {
                 query.SetDepthStencil(GetDepthStencilFormat(), wgpu::LoadOp::Load,
-                                      wgpu::LoadOp::Load);
+                                      wgpu::StoreOp::Store, wgpu::LoadOp::Load,
+                                      wgpu::StoreOp::Store);
             }
 
             query.SetSampleCount(GetSampleCount());
@@ -489,8 +524,8 @@ namespace dawn_native { namespace vulkan {
         createInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.stageCount = 2;
-        createInfo.pStages = shaderStages;
+        createInfo.stageCount = stageCount;
+        createInfo.pStages = shaderStages.data();
         createInfo.pVertexInputState = &vertexInputCreateInfo;
         createInfo.pInputAssemblyState = &inputAssembly;
         createInfo.pTessellationState = nullptr;
@@ -498,7 +533,8 @@ namespace dawn_native { namespace vulkan {
         createInfo.pRasterizationState = &rasterization;
         createInfo.pMultisampleState = &multisample;
         createInfo.pDepthStencilState = &depthStencilState;
-        createInfo.pColorBlendState = &colorBlend;
+        createInfo.pColorBlendState =
+            (GetStageMask() & wgpu::ShaderStage::Fragment) ? &colorBlend : nullptr;
         createInfo.pDynamicState = &dynamic;
         createInfo.layout = ToBackend(GetLayout())->GetHandle();
         createInfo.renderPass = renderPass;
@@ -552,15 +588,15 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Build the create info
-        VkPipelineVertexInputStateCreateInfo mCreateInfo;
-        mCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        mCreateInfo.pNext = nullptr;
-        mCreateInfo.flags = 0;
-        mCreateInfo.vertexBindingDescriptionCount = bindingCount;
-        mCreateInfo.pVertexBindingDescriptions = tempAllocations->bindings.data();
-        mCreateInfo.vertexAttributeDescriptionCount = attributeCount;
-        mCreateInfo.pVertexAttributeDescriptions = tempAllocations->attributes.data();
-        return mCreateInfo;
+        VkPipelineVertexInputStateCreateInfo createInfo;
+        createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.vertexBindingDescriptionCount = bindingCount;
+        createInfo.pVertexBindingDescriptions = tempAllocations->bindings.data();
+        createInfo.vertexAttributeDescriptionCount = attributeCount;
+        createInfo.pVertexAttributeDescriptions = tempAllocations->attributes.data();
+        return createInfo;
     }
 
     RenderPipeline::~RenderPipeline() {
@@ -572,6 +608,15 @@ namespace dawn_native { namespace vulkan {
 
     VkPipeline RenderPipeline::GetHandle() const {
         return mHandle;
+    }
+
+    void RenderPipeline::InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                         WGPUCreateRenderPipelineAsyncCallback callback,
+                                         void* userdata) {
+        std::unique_ptr<CreateRenderPipelineAsyncTask> asyncTask =
+            std::make_unique<CreateRenderPipelineAsyncTask>(std::move(renderPipeline), callback,
+                                                            userdata);
+        CreateRenderPipelineAsyncTask::RunAsync(std::move(asyncTask));
     }
 
 }}  // namespace dawn_native::vulkan

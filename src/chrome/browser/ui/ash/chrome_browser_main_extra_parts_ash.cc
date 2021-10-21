@@ -70,7 +70,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
 #include "chrome/browser/exo_parts.h"
@@ -86,6 +86,11 @@ class ChromeShelfControllerInitializer
   ChromeShelfControllerInitializer() {
     session_manager::SessionManager::Get()->AddObserver(this);
   }
+
+  ChromeShelfControllerInitializer(const ChromeShelfControllerInitializer&) =
+      delete;
+  ChromeShelfControllerInitializer& operator=(
+      const ChromeShelfControllerInitializer&) = delete;
 
   ~ChromeShelfControllerInitializer() override {
     if (!chrome_shelf_controller_)
@@ -115,8 +120,6 @@ class ChromeShelfControllerInitializer
  private:
   std::unique_ptr<ChromeShelfItemFactory> chrome_shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeShelfControllerInitializer);
 };
 
 }  // namespace internal
@@ -142,10 +145,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chromeos::features::IsAmbientModeEnabled())
     ambient_client_ = std::make_unique<AmbientClientImpl>();
 
-  if (chromeos::features::IsQuickAnswersEnabled()) {
-    quick_answers_browser_client_ =
-        std::make_unique<QuickAnswersBrowserClientImpl>();
-  }
+  quick_answers_browser_client_ =
+      std::make_unique<QuickAnswersBrowserClientImpl>();
 
   media_notification_provider_ =
       std::make_unique<MediaNotificationProviderImpl>();
@@ -174,7 +175,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 
   ime_controller_client_ = std::make_unique<ImeControllerClientImpl>(
-      chromeos::input_method::InputMethodManager::Get());
+      ash::input_method::InputMethodManager::Get());
   ime_controller_client_->Init();
 
   in_session_auth_dialog_client_ =
@@ -223,7 +224,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
 
-  if (chromeos::features::IsProjectorEnabled()) {
+  if (ash::features::IsProjectorEnabled()) {
     projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
     projector_client_ = std::make_unique<ProjectorClientImpl>();
   }
@@ -336,6 +337,11 @@ class ChromeBrowserMainExtraPartsAsh::UserProfileLoadedObserver
   UserProfileLoadedObserver() {
     session_observation_.Observe(session_manager::SessionManager::Get());
   }
+
+  UserProfileLoadedObserver(const UserProfileLoadedObserver&) = delete;
+  UserProfileLoadedObserver& operator=(const UserProfileLoadedObserver&) =
+      delete;
+
   ~UserProfileLoadedObserver() override = default;
 
   // session_manager::SessionManagerObserver:
@@ -358,6 +364,4 @@ class ChromeBrowserMainExtraPartsAsh::UserProfileLoadedObserver
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
       session_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UserProfileLoadedObserver);
 };

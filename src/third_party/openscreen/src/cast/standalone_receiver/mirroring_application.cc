@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cast/common/public/cast_streaming_app_ids.h"
 #include "cast/common/public/message_port.h"
 #include "cast/streaming/constants.h"
 #include "cast/streaming/environment.h"
@@ -25,7 +26,7 @@ MirroringApplication::MirroringApplication(TaskRunner* task_runner,
                                            ApplicationAgent* agent)
     : task_runner_(task_runner),
       interface_address_(interface_address),
-      app_ids_({kMirroringAppId, kMirroringAudioOnlyAppId}),
+      app_ids_(GetCastStreamingAppIds()),
       agent_(agent) {
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(agent_);
@@ -44,8 +45,7 @@ const std::vector<std::string>& MirroringApplication::GetAppIds() const {
 bool MirroringApplication::Launch(const std::string& app_id,
                                   const Json::Value& app_params,
                                   MessagePort* message_port) {
-  if ((app_id != kMirroringAppId && app_id != kMirroringAudioOnlyAppId) ||
-      !message_port || current_session_) {
+  if (!IsCastStreamingAppId(app_id) || !message_port || current_session_) {
     return false;
   }
 

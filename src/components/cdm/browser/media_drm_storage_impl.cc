@@ -22,6 +22,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "media/base/media_drm_key_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -509,6 +510,10 @@ class InitializationSerializer {
   }
 
   InitializationSerializer() = default;
+
+  InitializationSerializer(const InitializationSerializer&) = delete;
+  InitializationSerializer& operator=(const InitializationSerializer&) = delete;
+
   ~InitializationSerializer() = default;
 
   void FetchOriginId(
@@ -592,7 +597,6 @@ class InitializationSerializer {
       pending_requests_;
 
   THREAD_CHECKER(thread_checker_);
-  DISALLOW_COPY_AND_ASSIGN(InitializationSerializer);
 };
 
 }  // namespace
@@ -717,7 +721,7 @@ MediaDrmStorageImpl::MediaDrmStorageImpl(
     GetOriginIdCB get_origin_id_cb,
     AllowEmptyOriginIdCB allow_empty_origin_id_cb,
     mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver)
-    : DocumentServiceBase(render_frame_host, std::move(receiver)),
+    : DocumentService(render_frame_host, std::move(receiver)),
       pref_service_(pref_service),
       get_origin_id_cb_(get_origin_id_cb),
       allow_empty_origin_id_cb_(allow_empty_origin_id_cb) {

@@ -103,29 +103,30 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     ~DetailedInfo();
 
     DetailedInfo& Init(NodeType type);
-    DetailedInfo& InitHost(const GURL& origin);
-    DetailedInfo& InitCookie(const net::CanonicalCookie* cookie);
-    DetailedInfo& InitDatabase(const content::StorageUsageInfo* usage_info);
+    DetailedInfo& InitHost(const GURL& host);
+    DetailedInfo& InitCookie(const net::CanonicalCookie* canonical_cookie);
+    DetailedInfo& InitDatabase(
+        const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitLocalStorage(
-        const content::StorageUsageInfo* local_storage_info);
+        const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitSessionStorage(
-        const content::StorageUsageInfo* session_storage_info);
-    DetailedInfo& InitAppCache(const content::StorageUsageInfo* usage_info);
-    DetailedInfo& InitIndexedDB(const content::StorageUsageInfo* usage_info);
+        const content::StorageUsageInfo* storage_usage_info);
+    DetailedInfo& InitAppCache(
+        const content::StorageUsageInfo* storage_usage_info);
+    DetailedInfo& InitIndexedDB(
+        const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitFileSystem(
-        const browsing_data::FileSystemHelper::FileSystemInfo*
-            file_system_info);
-    DetailedInfo& InitQuota(
-        const BrowsingDataQuotaHelper::QuotaInfo* quota_info);
+        const browsing_data::FileSystemHelper::FileSystemInfo* file_system);
+    DetailedInfo& InitQuota(const BrowsingDataQuotaHelper::QuotaInfo* quota);
     DetailedInfo& InitServiceWorker(
-        const content::StorageUsageInfo* usage_info);
+        const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitSharedWorker(
         const browsing_data::SharedWorkerHelper::SharedWorkerInfo*
-            shared_worker_info);
-    DetailedInfo& InitCacheStorage(const content::StorageUsageInfo* usage_info);
+            shared_worker);
+    DetailedInfo& InitCacheStorage(
+        const content::StorageUsageInfo* storage_usage_info);
     DetailedInfo& InitMediaLicense(
-        const BrowsingDataMediaLicenseHelper::MediaLicenseInfo*
-            media_license_info);
+        const BrowsingDataMediaLicenseHelper::MediaLicenseInfo* media_license);
 
     NodeType node_type;
     url::Origin origin;
@@ -145,6 +146,10 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   CookieTreeNode() {}
   explicit CookieTreeNode(const std::u16string& title)
       : ui::TreeNode<CookieTreeNode>(title) {}
+
+  CookieTreeNode(const CookieTreeNode&) = delete;
+  CookieTreeNode& operator=(const CookieTreeNode&) = delete;
+
   ~CookieTreeNode() override {}
 
   // Recursively traverse the child nodes of this node and collect the storage
@@ -174,9 +179,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   void ReportDeletionToAuditService(
       const url::Origin& origin,
       AccessContextAuditDatabase::StorageAPIType type);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeNode);
 };
 
 // CookieTreeRootNode ---------------------------------------------------------
@@ -184,6 +186,10 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
 class CookieTreeRootNode : public CookieTreeNode {
  public:
   explicit CookieTreeRootNode(CookiesTreeModel* model);
+
+  CookieTreeRootNode(const CookieTreeRootNode&) = delete;
+  CookieTreeRootNode& operator=(const CookieTreeRootNode&) = delete;
+
   ~CookieTreeRootNode() override;
 
   CookieTreeHostNode* GetOrCreateHostNode(const GURL& url);
@@ -194,8 +200,6 @@ class CookieTreeRootNode : public CookieTreeNode {
 
  private:
   CookiesTreeModel* model_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeRootNode);
 };
 
 // CookieTreeHostNode -------------------------------------------------------
@@ -205,6 +209,10 @@ class CookieTreeHostNode : public CookieTreeNode {
   static std::u16string TitleForUrl(const GURL& url);
 
   explicit CookieTreeHostNode(const GURL& url);
+
+  CookieTreeHostNode(const CookieTreeHostNode&) = delete;
+  CookieTreeHostNode& operator=(const CookieTreeHostNode&) = delete;
+
   ~CookieTreeHostNode() override;
 
   // CookieTreeNode methods:
@@ -263,8 +271,6 @@ class CookieTreeHostNode : public CookieTreeNode {
   GURL url_;
 
   std::string canonicalized_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeHostNode);
 };
 
 // CookiesTreeModel -----------------------------------------------------------

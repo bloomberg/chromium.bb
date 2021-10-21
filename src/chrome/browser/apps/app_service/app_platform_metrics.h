@@ -90,6 +90,9 @@ enum class InstallTime {
 extern const char kAppRunningDuration[];
 extern const char kAppActivatedCount[];
 
+extern const char kAppLaunchPerAppTypeHistogramName[];
+extern const char kAppLaunchPerAppTypeV2HistogramName[];
+
 extern const char kArcHistogramName[];
 extern const char kBuiltInHistogramName[];
 extern const char kCrostiniHistogramName[];
@@ -140,10 +143,10 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   static std::string GetAppsCountHistogramNameForTest(
       AppTypeName app_type_name);
 
-  // UMA metrics name for installed apps count per InstallSource in Chrome OS.
-  static std::string GetAppsCountPerInstallSourceHistogramNameForTest(
+  // UMA metrics name for installed apps count per InstallReason in Chrome OS.
+  static std::string GetAppsCountPerInstallReasonHistogramNameForTest(
       AppTypeName app_type_name,
-      apps::mojom::InstallSource install_source);
+      apps::mojom::InstallReason install_reason);
 
   // UMA metrics name for apps running duration in Chrome OS.
   static std::string GetAppsRunningDurationHistogramNameForTest(
@@ -271,6 +274,14 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
 
   // Records the previous app readiness status.
   void RecordAppReadinessStatus(const apps::AppUpdate& update);
+
+  // Gets the source id for a Crostini app_id.
+  ukm::SourceId GetSourceIdForCrostini(const std::string& app_id);
+
+  // Gets the app type of a given app_id. Checks multiple sources, not just the
+  // app registry cache, so can identify apps which aren't registered with app
+  // service.
+  mojom::AppType GetAppType(const std::string& app_id);
 
   Profile* const profile_ = nullptr;
 

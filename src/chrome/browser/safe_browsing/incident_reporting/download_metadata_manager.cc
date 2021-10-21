@@ -65,6 +65,9 @@ const base::FilePath::CharType kDownloadMetadataBasename[] =
 // it is in progress.
 class DownloadItemData : public base::SupportsUserData::Data {
  public:
+  DownloadItemData(const DownloadItemData&) = delete;
+  DownloadItemData& operator=(const DownloadItemData&) = delete;
+
   ~DownloadItemData() override {}
 
   // Sets the ClientDownloadRequest for a given DownloadItem.
@@ -84,8 +87,6 @@ class DownloadItemData : public base::SupportsUserData::Data {
       : request_(std::move(request)) {}
 
   std::unique_ptr<ClientDownloadRequest> request_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemData);
 };
 
 // Make the key's value unique by setting it to its own location.
@@ -222,6 +223,9 @@ class DownloadMetadataManager::ManagerContext
   ManagerContext(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  content::DownloadManager* download_manager);
 
+  ManagerContext(const ManagerContext&) = delete;
+  ManagerContext& operator=(const ManagerContext&) = delete;
+
   // Detaches this context from its owner. The owner must not access the context
   // following this call. The context will be deleted immediately if it is not
   // waiting for a metadata load with either recorded operations or pending
@@ -334,8 +338,6 @@ class DownloadMetadataManager::ManagerContext
   std::list<GetDownloadDetailsCallback> get_details_callbacks_;
 
   base::WeakPtrFactory<ManagerContext> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ManagerContext);
 };
 
 

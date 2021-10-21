@@ -133,19 +133,20 @@
 #include "chromeos/ui/frame/frame_header.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "chromeos/ui/wm/desks/desks_helper.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/variations/pref_names.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_action.h"
@@ -171,7 +172,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/throughput_tracker.h"
@@ -359,24 +360,26 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
 }
 
 api::autotest_private::AppInstallSource GetAppInstallSource(
-    apps::mojom::InstallSource source) {
-  switch (source) {
-    case apps::mojom::InstallSource::kUnknown:
+    apps::mojom::InstallReason install_reason) {
+  switch (install_reason) {
+    case apps::mojom::InstallReason::kUnknown:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_UNKNOWN;
-    case apps::mojom::InstallSource::kSystem:
+    case apps::mojom::InstallReason::kSystem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYSTEM;
-    case apps::mojom::InstallSource::kPolicy:
+    case apps::mojom::InstallReason::kPolicy:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_POLICY;
-    case apps::mojom::InstallSource::kOem:
+    case apps::mojom::InstallReason::kOem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_OEM;
-    case apps::mojom::InstallSource::kDefault:
+    case apps::mojom::InstallReason::kDefault:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_DEFAULT;
-    case apps::mojom::InstallSource::kSync:
+    case apps::mojom::InstallReason::kSync:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYNC;
-    case apps::mojom::InstallSource::kUser:
+    case apps::mojom::InstallReason::kUser:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_USER;
+    case apps::mojom::InstallReason::kSubApp:
+      return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SUBAPP;
   }
   NOTREACHED();
   return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_NONE;
@@ -476,6 +479,12 @@ std::string SetWhitelistedPref(Profile* profile,
   // profile.
   if (pref_name == prefs::kEnableAdbSideloadingRequested) {
     DCHECK(value.is_bool());
+    g_browser_process->local_state()->Set(pref_name, value);
+    return std::string();
+  }
+  if (pref_name == variations::prefs::kVariationsCompressedSeed ||
+      pref_name == variations::prefs::kVariationsSeedSignature) {
+    DCHECK(value.is_string());
     g_browser_process->local_state()->Set(pref_name, value);
     return std::string();
   }
@@ -882,6 +891,11 @@ class WindowStateChangeObserver : public aura::WindowObserver {
               expected_type_);
     scoped_observation_.Observe(window);
   }
+
+  WindowStateChangeObserver(const WindowStateChangeObserver&) = delete;
+  WindowStateChangeObserver& operator=(const WindowStateChangeObserver&) =
+      delete;
+
   ~WindowStateChangeObserver() override {}
 
   // aura::WindowObserver:
@@ -907,8 +921,6 @@ class WindowStateChangeObserver : public aura::WindowObserver {
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       scoped_observation_{this};
   base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
 };
 
 class WindowBoundsChangeObserver : public aura::WindowObserver {
@@ -976,7 +988,7 @@ class EventGenerator {
       : input_injector_(
             ui::OzonePlatform::GetInstance()->CreateSystemInputInjector()),
         host_(host),
-        interval_(base::TimeDelta::FromSeconds(1) /
+        interval_(base::Seconds(1) /
                   std::max(host->compositor()->refresh_rate(), 60.0f)),
         closure_(std::move(closure)),
         weak_ptr_factory_(this) {
@@ -1833,11 +1845,11 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
     package_value->SetKey("lastBackupAndroidId",
                           base::Value(base::NumberToString(
                               package_info->last_backup_android_id)));
-    package_value->SetKey("lastBackupTime",
-                          base::Value(base::Time::FromDeltaSinceWindowsEpoch(
-                                          base::TimeDelta::FromMicroseconds(
-                                              package_info->last_backup_time))
-                                          .ToJsTime()));
+    package_value->SetKey(
+        "lastBackupTime",
+        base::Value(base::Time::FromDeltaSinceWindowsEpoch(
+                        base::Microseconds(package_info->last_backup_time))
+                        .ToJsTime()));
     package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
     package_value->SetKey("system", base::Value(package_info->system));
     package_value->SetKey("vpnProvider",
@@ -2513,7 +2525,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
 
   // Set up a timer to finish waiting after 10 seconds
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(10),
+      FROM_HERE, base::Seconds(10),
       base::BindOnce(
           &AutotestPrivateGetPrinterListFunction::RespondWithTimeoutError,
           this));
@@ -2738,7 +2750,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   // when timeout.
   enabled_ = params->enabled;
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      FROM_HERE, base::Milliseconds(params->timeout_ms),
       base::BindOnce(&AutotestPrivateSetAssistantEnabledFunction::Timeout,
                      this));
   return RespondLater();
@@ -2834,6 +2846,10 @@ class AssistantInteractionHelper
 
   AssistantInteractionHelper()
       : query_status_(std::make_unique<base::DictionaryValue>()) {}
+
+  AssistantInteractionHelper(const AssistantInteractionHelper&) = delete;
+  AssistantInteractionHelper& operator=(const AssistantInteractionHelper&) =
+      delete;
 
   ~AssistantInteractionHelper() override {
     if (GetAssistant()) {
@@ -2957,8 +2973,6 @@ class AssistantInteractionHelper
 
   // Callback triggered when interaction finished with non-empty response.
   OnInteractionFinishedCallback on_interaction_finished_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantInteractionHelper);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3000,7 +3014,7 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   // to |this| to avoid being destructed. Also make sure we stop and respond
   // when timeout.
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      FROM_HERE, base::Milliseconds(params->timeout_ms),
       base::BindOnce(&AutotestPrivateSendAssistantTextQueryFunction::Timeout,
                      this));
 
@@ -3064,7 +3078,7 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
 
   // Start waiting for the response before time out.
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(params->timeout_s),
+      FROM_HERE, base::Seconds(params->timeout_s),
       base::BindOnce(
           &AutotestPrivateWaitForAssistantQueryStatusFunction::Timeout, this));
   return RespondLater();
@@ -3260,7 +3274,7 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
     app.publisher_id = update.PublisherId();
     app.additional_search_terms = update.AdditionalSearchTerms();
     app.type = GetAppType(update.AppType());
-    app.install_source = GetAppInstallSource(update.InstallSource());
+    app.install_source = GetAppInstallSource(update.InstallReason());
     app.readiness = GetAppReadiness(update.Readiness());
     app.show_in_launcher = ConvertMojomOptionalBool(update.ShowInLauncher());
     app.show_in_search = ConvertMojomOptionalBool(update.ShowInSearch());
@@ -3553,7 +3567,7 @@ void AutotestPrivateSetOverviewModeStateFunction::OnOverviewModeChanged(
         FROM_HERE,
         base::BindOnce(&AutotestPrivateSetOverviewModeStateFunction::Respond,
                        this, std::move(arg)),
-        base::TimeDelta::FromSeconds(1));
+        base::Seconds(1));
   } else {
     Respond(std::move(arg));
   }
@@ -3883,7 +3897,7 @@ AutotestPrivateGetAppWindowListFunction::Run() {
                    << ") isn't available even though it is an ARC window.";
       }
 
-      std::string* app_id = window->GetProperty(full_restore::kAppIdKey);
+      std::string* app_id = window->GetProperty(app_restore::kAppIdKey);
       if (app_id) {
         window_info.full_restore_window_app_id =
             std::make_unique<std::string>(*app_id);
@@ -3923,8 +3937,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
           views::CAPTION_BUTTON_ICON_MINIMIZE,
           views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
           views::CAPTION_BUTTON_ICON_CLOSE,
-          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_LEFT_TOP_SNAPPED,
+          views::CAPTION_BUTTON_ICON_RIGHT_BOTTOM_SNAPPED,
           views::CAPTION_BUTTON_ICON_BACK,
           views::CAPTION_BUTTON_ICON_LOCATION,
           views::CAPTION_BUTTON_ICON_MENU,
@@ -4105,6 +4119,10 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
       std::move(callback_).Run();
     }
   }
+
+  PWABannerObserver(const PWABannerObserver&) = delete;
+  PWABannerObserver& operator=(const PWABannerObserver&) = delete;
+
   ~PWABannerObserver() override {}
 
   void OnInstallableWebAppStatusUpdated() override {
@@ -4137,8 +4155,6 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
       observation_{this};
   base::OnceCallback<void()> callback_;
   webapps::AppBannerManager* app_banner_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PWABannerObserver);
 };
 
 // Used to notify when a WPA is installed.
@@ -4151,6 +4167,10 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
     observation_.Observe(
         &web_app::WebAppProvider::GetForTest(profile)->registrar());
   }
+
+  PWARegistrarObserver(const PWARegistrarObserver&) = delete;
+  PWARegistrarObserver& operator=(const PWARegistrarObserver&) = delete;
+
   ~PWARegistrarObserver() override {}
 
   void OnWebAppInstalled(const web_app::AppId& app_id) override {
@@ -4163,8 +4183,6 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
                           web_app::AppRegistrarObserver>
       observation_{this};
   base::OnceCallback<void(const web_app::AppId&)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PWARegistrarObserver);
 };
 
 AutotestPrivateInstallPWAForCurrentURLFunction::
@@ -4203,7 +4221,7 @@ AutotestPrivateInstallPWAForCurrentURLFunction::Run() {
   // - There is no way to know whether ExecuteCommand fails.
   // - Current URL might not have a valid PWA.
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      FROM_HERE, base::Milliseconds(params->timeout_ms),
       base::BindOnce(
           &AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout, this));
   return RespondLater();
@@ -4649,58 +4667,6 @@ void AutotestPrivateSetMetricsEnabledFunction::OnDeviceSettingsStored() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateStartTracingFunction
-///////////////////////////////////////////////////////////////////////////////
-AutotestPrivateStartTracingFunction::AutotestPrivateStartTracingFunction() =
-    default;
-AutotestPrivateStartTracingFunction::~AutotestPrivateStartTracingFunction() =
-    default;
-
-ExtensionFunction::ResponseAction AutotestPrivateStartTracingFunction::Run() {
-  std::unique_ptr<api::autotest_private::StartTracing::Params> params(
-      api::autotest_private::StartTracing::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  std::unique_ptr<base::Value> config_value = params->config.ToValue();
-  base::trace_event::TraceConfig config(*config_value.get());
-
-  if (!content::TracingController::GetInstance()->StartTracing(
-          config,
-          base::BindOnce(&AutotestPrivateStartTracingFunction::OnStartTracing,
-                         this))) {
-    return RespondNow(Error("Failed to start tracing"));
-  }
-
-  return RespondLater();
-}
-
-void AutotestPrivateStartTracingFunction::OnStartTracing() {
-  Respond(NoArguments());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateStopTracingFunction
-///////////////////////////////////////////////////////////////////////////////
-AutotestPrivateStopTracingFunction::AutotestPrivateStopTracingFunction() =
-    default;
-AutotestPrivateStopTracingFunction::~AutotestPrivateStopTracingFunction() =
-    default;
-
-ExtensionFunction::ResponseAction AutotestPrivateStopTracingFunction::Run() {
-  if (!content::TracingController::GetInstance()->StopTracing(
-          content::TracingController::CreateStringEndpoint(base::BindOnce(
-              &AutotestPrivateStopTracingFunction::OnTracingComplete, this)))) {
-    return RespondNow(Error("Failed to stop tracing"));
-  }
-  return RespondLater();
-}
-
-void AutotestPrivateStopTracingFunction::OnTracingComplete(
-    std::unique_ptr<std::string> trace) {
-  base::Value value(*trace.get());
-  Respond(OneArgument(std::move(value)));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetArcTouchModeFunction
 ///////////////////////////////////////////////////////////////////////////////
 AutotestPrivateSetArcTouchModeFunction::
@@ -5081,6 +5047,14 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
                       base::NumberToString(display_id)})));
   }
 
+  // ThroughputTracker::Stop does not invoke the report callback when
+  // gpu-process crashes and has no valid data to report. Start a timer to
+  // handle this case.
+  timeout_timer_.Start(
+      FROM_HERE, base::Seconds(5),
+      base::BindOnce(&AutotestPrivateStopSmoothnessTrackingFunction::OnTimeOut,
+                     this, display_id));
+
   it->second.callback = base::BindOnce(
       &AutotestPrivateStopSmoothnessTrackingFunction::OnReportData, this);
   it->second.stopping = true;
@@ -5091,6 +5065,11 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
 
 void AutotestPrivateStopSmoothnessTrackingFunction::OnReportData(
     const cc::FrameSequenceMetrics::CustomReportData& data) {
+  if (did_respond())
+    return;
+
+  timeout_timer_.AbandonAndStop();
+
   api::autotest_private::ThroughputTrackerAnimationData result_data;
   result_data.frames_expected = data.frames_expected;
   result_data.frames_produced = data.frames_produced;
@@ -5099,6 +5078,21 @@ void AutotestPrivateStopSmoothnessTrackingFunction::OnReportData(
   Respond(ArgumentList(
       api::autotest_private::StopSmoothnessTracking::Results::Create(
           result_data)));
+}
+
+void AutotestPrivateStopSmoothnessTrackingFunction::OnTimeOut(
+    int64_t display_id) {
+  if (did_respond())
+    return;
+
+  // Clean up the non-functional tracker.
+  auto* infos = GetDisplaySmoothnessTrackerInfos();
+  auto it = infos->find(display_id);
+  if (it == infos->end())
+    return;
+  infos->erase(it);
+
+  Respond(Error("Smoothness is not available"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5121,7 +5115,7 @@ AutotestPrivateWaitForAmbientPhotoAnimationFunction::Run() {
 
   // Wait for photo transition animation completed in ambient mode.
   ash::AutotestAmbientApi().WaitForPhotoTransitionAnimationCompleted(
-      params->num_completions, base::TimeDelta::FromSeconds(params->timeout),
+      params->num_completions, base::Seconds(params->timeout),
       /*on_complete=*/
       base::BindOnce(&AutotestPrivateWaitForAmbientPhotoAnimationFunction::
                          OnPhotoTransitionAnimationCompleted,

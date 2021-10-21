@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
@@ -241,8 +242,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     @Override
     protected void addCustomActionButton(
             Drawable drawable, String description, OnClickListener listener) {
-        ImageButton button = (ImageButton) LayoutInflater.from(getContext())
-                                     .inflate(R.layout.custom_tabs_toolbar_button, null);
+        ImageButton button =
+                (ImageButton) LayoutInflater.from(getContext())
+                        .inflate(R.layout.custom_tabs_toolbar_button, mCustomActionButtons, false);
         button.setOnLongClickListener(this);
         button.setOnClickListener(listener);
         button.setVisibility(VISIBLE);
@@ -726,9 +728,11 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 if (webContents == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
+                // For now we don't show "store info" row for custom tab.
                 new ChromePageInfo(mModalDialogManagerSupplier, getContentPublisher(),
-                        OpenedFromSource.TOOLBAR)
-                        .show(currentTab, PageInfoController.NO_HIGHLIGHTED_PERMISSION);
+                        OpenedFromSource.TOOLBAR, /*storeInfoActionHandlerSupplier=*/null)
+                        .show(currentTab, PageInfoController.NO_HIGHLIGHTED_PERMISSION,
+                                /*fromStoreIcon=*/false);
             });
         }
 
@@ -892,14 +896,16 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         private void updateUseDarkColors() {
             updateButtonsTint();
-            if (mUrlCoordinator.setUseDarkTextColors(mUseDarkColors)) {
+            @OmniboxTheme
+            int omniboxTheme = mUseDarkColors ? OmniboxTheme.LIGHT_THEME : OmniboxTheme.DARK_THEME;
+            if (mUrlCoordinator.setOmniboxTheme(omniboxTheme)) {
                 // Update the URL to make it use the new color scheme.
                 updateUrlBar();
             }
 
             mTitleBar.setTextColor(ApiCompatibilityUtils.getColor(getResources(),
-                    mUseDarkColors ? R.color.default_text_color_dark
-                                   : R.color.default_text_color_light));
+                    mUseDarkColors ? R.color.branded_url_text_on_light_bg
+                                   : R.color.branded_url_text_on_dark_bg));
         }
 
         @Override

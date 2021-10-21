@@ -20,12 +20,13 @@
 #include "storage/browser/file_system/file_system_quota_util.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
 namespace storage {
 class FileSystemContext;
-}
+}  // namespace storage
 
 namespace browsing_data {
 
@@ -77,16 +78,17 @@ void FileSystemHelper::FetchFileSystemInfoInFileThread(FetchCallback callback) {
     storage::FileSystemQuotaUtil* quota_util =
         filesystem_context_->GetQuotaUtil(type);
     DCHECK(quota_util);
-    std::vector<url::Origin> origins =
-        quota_util->GetOriginsForTypeOnFileTaskRunner(type);
-    for (const auto& current : origins) {
-      if (!HasWebScheme(current.GetURL()))
+    std::vector<blink::StorageKey> storage_keys =
+        quota_util->GetStorageKeysForTypeOnFileTaskRunner(type);
+    for (const auto& current : storage_keys) {
+      if (!HasWebScheme(current.origin().GetURL()))
         continue;  // Non-websafe state is not considered browsing data.
-      int64_t usage = quota_util->GetOriginUsageOnFileTaskRunner(
+      int64_t usage = quota_util->GetStorageKeyUsageOnFileTaskRunner(
           filesystem_context_.get(), current, type);
       auto inserted =
           file_system_info_map
-              .insert(std::make_pair(current.GetURL(), FileSystemInfo(current)))
+              .insert(std::make_pair(current.origin().GetURL(),
+                                     FileSystemInfo(current.origin())))
               .first;
       inserted->second.usage_map[type] = usage;
     }
@@ -99,10 +101,14 @@ void FileSystemHelper::FetchFileSystemInfoInFileThread(FetchCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
+// TODO(https://crbug.com/1254031): Refactor DeleteFileSystemOriginInFileThread
+// to replace url::Origin parameter with blink::StorageKey; replace in-line
+// conversion to StorageKey below with parameter
 void FileSystemHelper::DeleteFileSystemOriginInFileThread(
     const url::Origin& origin) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
-  filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin);
+  filesystem_context_->DeleteDataForStorageKeyOnFileTaskRunner(
+      blink::StorageKey(origin));
 }
 
 void FileSystemHelper::DidFetchFileSystemInfo(

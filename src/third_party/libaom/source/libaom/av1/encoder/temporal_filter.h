@@ -89,6 +89,12 @@ typedef struct {
    * Number of frames in the frame buffer.
    */
   int num_frames;
+
+  /*!
+   * Output filtered frame
+   */
+  YV12_BUFFER_CONFIG *output_frame;
+
   /*!
    * Index of the frame to be filtered.
    */
@@ -207,21 +213,22 @@ void av1_tf_do_filtering_row(struct AV1_COMP *cpi, struct ThreadData *td,
  * -15 means to filter the 17-th frame, which is a key frame in one-pass mode.
  *
  * \ingroup src_frame_proc
- * \param[in]   cpi                        Top level encoder instance structure
- * \param[in]   filter_frame_lookahead_idx The index of the to-filter frame in
- *                                         the lookahead buffer cpi->lookahead.
- * \param[in]   update_type                This frame's update type.
- * \param[in]   is_forward_keyframe        Indicate whether this is a forward
- *                                         keyframe.
- * \param[in,out]   show_existing_arf      Whether to show existing ARF. This
- *                                         field is updated in this function.
+ * \param[in]      cpi                        Top level encoder instance
+ * structure \param[in]      filter_frame_lookahead_idx The index of the
+ * to-filter frame in the lookahead buffer cpi->lookahead. \param[in]
+ * update_type                This frame's update type. \param[in]
+ * is_forward_keyframe        Indicate whether this is a forward keyframe.
+ * \param[in,out]  show_existing_arf          Whether to show existing ARF. This
+ *                                            field is updated in this function.
+ * \param[out]     output_frame               Ouput filtered frame.
  *
  * \return Whether temporal filtering is successfully done.
  */
 int av1_temporal_filter(struct AV1_COMP *cpi,
                         const int filter_frame_lookahead_idx,
                         FRAME_UPDATE_TYPE update_type, int is_forward_keyframe,
-                        int *show_existing_arf);
+                        int *show_existing_arf,
+                        YV12_BUFFER_CONFIG *output_frame);
 
 /*!\cond */
 // Helper function to get `q` used for encoding.

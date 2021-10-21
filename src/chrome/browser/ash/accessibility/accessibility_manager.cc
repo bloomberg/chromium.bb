@@ -63,6 +63,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -89,7 +90,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
@@ -216,6 +217,11 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
     widget_->AddObserver(this);
   }
 
+  AccessibilityPanelWidgetObserver(const AccessibilityPanelWidgetObserver&) =
+      delete;
+  AccessibilityPanelWidgetObserver& operator=(
+      const AccessibilityPanelWidgetObserver&) = delete;
+
   ~AccessibilityPanelWidgetObserver() override { CHECK(!IsInObserverList()); }
 
   void OnWidgetClosing(views::Widget* widget) override {
@@ -236,8 +242,6 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
   views::Widget* widget_;
 
   base::OnceCallback<void()> on_destroying_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -406,6 +410,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
     PrefService* prefs = (*it)->GetPrefs();
     if (prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
+        prefs->GetBoolean(::prefs::kLiveCaptionEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled) ||
         prefs->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled) ||
@@ -453,6 +458,27 @@ void AccessibilityManager::OnLargeCursorChanged() {
 bool AccessibilityManager::IsLargeCursorEnabled() const {
   return profile_ && profile_->GetPrefs()->GetBoolean(
                          prefs::kAccessibilityLargeCursorEnabled);
+}
+
+void AccessibilityManager::EnableLiveCaption(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(::prefs::kLiveCaptionEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+void AccessibilityManager::OnLiveCaptionChanged() {
+  AccessibilityStatusEventDetails details(
+      AccessibilityNotificationType::kToggleLiveCaption,
+      IsLiveCaptionEnabled());
+  NotifyAccessibilityStatusChanged(details);
+}
+
+bool AccessibilityManager::IsLiveCaptionEnabled() const {
+  return profile_ &&
+         profile_->GetPrefs()->GetBoolean(::prefs::kLiveCaptionEnabled);
 }
 
 void AccessibilityManager::EnableStickyKeys(bool enabled) {
@@ -1278,6 +1304,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Add(
         prefs::kAccessibilityLargeCursorDipSize,
         base::BindRepeating(&AccessibilityManager::OnLargeCursorChanged,
+                            base::Unretained(this)));
+    pref_change_registrar_->Add(
+        ::prefs::kLiveCaptionEnabled,
+        base::BindRepeating(&AccessibilityManager::OnLiveCaptionChanged,
                             base::Unretained(this)));
     pref_change_registrar_->Add(
         prefs::kAccessibilityStickyKeysEnabled,

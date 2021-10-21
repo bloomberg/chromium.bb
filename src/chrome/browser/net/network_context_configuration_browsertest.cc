@@ -237,6 +237,11 @@ class NetworkContextConfigurationBrowserTest
     return std::move(response);
   }
 
+  NetworkContextConfigurationBrowserTest(
+      const NetworkContextConfigurationBrowserTest&) = delete;
+  NetworkContextConfigurationBrowserTest& operator=(
+      const NetworkContextConfigurationBrowserTest&) = delete;
+
   ~NetworkContextConfigurationBrowserTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -647,6 +652,7 @@ class NetworkContextConfigurationBrowserTest
         ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->GetCookieList(
         url, net::CookieOptions::MakeAllInclusive(),
+        net::CookiePartitionKeychain(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
                const net::CookieAccessResultList& cookies,
@@ -725,8 +731,6 @@ class NetworkContextConfigurationBrowserTest
   std::unique_ptr<network::SimpleURLLoader> live_during_shutdown_simple_loader_;
   std::unique_ptr<content::SimpleURLLoaderTestHelper>
       live_during_shutdown_simple_loader_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
@@ -1661,6 +1665,12 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationProxyOnStartBrowserTest() {}
+
+  NetworkContextConfigurationProxyOnStartBrowserTest(
+      const NetworkContextConfigurationProxyOnStartBrowserTest&) = delete;
+  NetworkContextConfigurationProxyOnStartBrowserTest& operator=(
+      const NetworkContextConfigurationProxyOnStartBrowserTest&) = delete;
+
   ~NetworkContextConfigurationProxyOnStartBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1668,9 +1678,6 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
         switches::kProxyServer,
         embedded_test_server()->host_port_pair().ToString());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationProxyOnStartBrowserTest);
 };
 
 // Test that when there's a proxy configuration at startup, the initial requests
@@ -1689,6 +1696,11 @@ class NetworkContextConfigurationHttpPacBrowserTest
  public:
   NetworkContextConfigurationHttpPacBrowserTest()
       : pac_test_server_(net::test_server::EmbeddedTestServer::TYPE_HTTP) {}
+
+  NetworkContextConfigurationHttpPacBrowserTest(
+      const NetworkContextConfigurationHttpPacBrowserTest&) = delete;
+  NetworkContextConfigurationHttpPacBrowserTest& operator=(
+      const NetworkContextConfigurationHttpPacBrowserTest&) = delete;
 
   ~NetworkContextConfigurationHttpPacBrowserTest() override {}
 
@@ -1713,8 +1725,6 @@ class NetworkContextConfigurationHttpPacBrowserTest
 
  private:
   net::test_server::EmbeddedTestServer pac_test_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationHttpPacBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
@@ -1729,6 +1739,11 @@ class NetworkContextConfigurationFilePacBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFilePacBrowserTest() {}
+
+  NetworkContextConfigurationFilePacBrowserTest(
+      const NetworkContextConfigurationFilePacBrowserTest&) = delete;
+  NetworkContextConfigurationFilePacBrowserTest& operator=(
+      const NetworkContextConfigurationFilePacBrowserTest&) = delete;
 
   ~NetworkContextConfigurationFilePacBrowserTest() override {}
 
@@ -1748,8 +1763,6 @@ class NetworkContextConfigurationFilePacBrowserTest
 
  private:
   base::ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFilePacBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFilePacBrowserTest, FilePac) {
@@ -1764,6 +1777,12 @@ class NetworkContextConfigurationDataPacBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationDataPacBrowserTest() {}
+
+  NetworkContextConfigurationDataPacBrowserTest(
+      const NetworkContextConfigurationDataPacBrowserTest&) = delete;
+  NetworkContextConfigurationDataPacBrowserTest& operator=(
+      const NetworkContextConfigurationDataPacBrowserTest&) = delete;
+
   ~NetworkContextConfigurationDataPacBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1772,9 +1791,6 @@ class NetworkContextConfigurationDataPacBrowserTest
     command_line->AppendSwitchASCII(switches::kProxyPacUrl,
                                     "data:," + GetPacScript());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationDataPacBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDataPacBrowserTest, DataPac) {
@@ -1789,6 +1805,12 @@ class NetworkContextConfigurationProxySettingsBrowserTest
   const size_t kDefaultMaxConnectionsPerProxy = 32;
 
   NetworkContextConfigurationProxySettingsBrowserTest() = default;
+
+  NetworkContextConfigurationProxySettingsBrowserTest(
+      const NetworkContextConfigurationProxySettingsBrowserTest&) = delete;
+  NetworkContextConfigurationProxySettingsBrowserTest& operator=(
+      const NetworkContextConfigurationProxySettingsBrowserTest&) = delete;
+
   ~NetworkContextConfigurationProxySettingsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -1866,8 +1888,7 @@ class NetworkContextConfigurationProxySettingsBrowserTest
     // Then wait for any remaining connections that we should NOT get.
     base::RunLoop ugly_100ms_wait;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, ugly_100ms_wait.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(100));
+        FROM_HERE, ugly_100ms_wait.QuitClosure(), base::Milliseconds(100));
     ugly_100ms_wait.Run();
 
     // Stop the server.
@@ -1883,8 +1904,6 @@ class NetworkContextConfigurationProxySettingsBrowserTest
   // records each observed request to ensure we see only as many connections as
   // we expect.
   std::unordered_set<std::string> observed_request_urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationProxySettingsBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxySettingsBrowserTest,
@@ -1898,6 +1917,14 @@ class NetworkContextConfigurationManagedProxySettingsBrowserTest
   const size_t kTestMaxConnectionsPerProxy = 37;
 
   NetworkContextConfigurationManagedProxySettingsBrowserTest() = default;
+
+  NetworkContextConfigurationManagedProxySettingsBrowserTest(
+      const NetworkContextConfigurationManagedProxySettingsBrowserTest&) =
+      delete;
+  NetworkContextConfigurationManagedProxySettingsBrowserTest& operator=(
+      const NetworkContextConfigurationManagedProxySettingsBrowserTest&) =
+      delete;
+
   ~NetworkContextConfigurationManagedProxySettingsBrowserTest() override =
       default;
 
@@ -1916,10 +1943,6 @@ class NetworkContextConfigurationManagedProxySettingsBrowserTest
   size_t GetExpectedMaxConnectionsPerProxy() const override {
     return kTestMaxConnectionsPerProxy;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      NetworkContextConfigurationManagedProxySettingsBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(
@@ -1952,7 +1975,7 @@ class NetworkContextConfigurationReportingAndNelBrowserTest
 
     // Make report delivery happen instantly.
     net::ReportingPolicy policy;
-    policy.delivery_interval = base::TimeDelta::FromSeconds(0);
+    policy.delivery_interval = base::Seconds(0);
     net::ReportingPolicy::UsePolicyForTesting(policy);
   }
 

@@ -89,6 +89,9 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
     PowerManagerClient::Get()->AddObserver(this);
   }
 
+  PowerMonitor(const PowerMonitor&) = delete;
+  PowerMonitor& operator=(const PowerMonitor&) = delete;
+
   ~PowerMonitor() override { PowerManagerClient::Get()->RemoveObserver(this); }
 
  private:
@@ -102,7 +105,7 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
         FROM_HERE,
         base::BindOnce(&PowerMonitor::ResetWakingUp,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(5));
+        base::Seconds(5));
     service_->OnSuspendDone();
     service_->UpdateAppState();
     // Note that `this` may get deleted after `UpdateAppState` is called.
@@ -112,8 +115,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
 
   EasyUnlockService* service_;
   base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
 };
 
 EasyUnlockService::EasyUnlockService(

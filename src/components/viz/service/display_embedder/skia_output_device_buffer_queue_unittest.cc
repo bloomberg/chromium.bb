@@ -209,15 +209,10 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
     presentation_callbacks_.push_back(std::move(presentation_callback));
   }
 
-  bool ScheduleOverlayPlane(int z_order,
-                            gfx::OverlayTransform transform,
-                            gl::GLImage* image,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            const gfx::Rect& damage_rect,
-                            float opacity,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
+  bool ScheduleOverlayPlane(
+      gl::GLImage* image,
+      std::unique_ptr<gfx::GpuFence> gpu_fence,
+      const gfx::OverlayPlaneData& overlay_plane_data) override {
     return true;
   }
 
@@ -290,8 +285,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   }
 
   virtual DidSwapBufferCompleteCallback GetDidSwapBuffersCompleteCallback() {
-    return base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
-                                       const gfx::Size&, gfx::GpuFenceHandle>();
+    return base::DoNothing();
   }
 
   void SetUpOnGpu() override {
@@ -404,18 +398,11 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   }
 
   virtual void SwapBuffers() {
-    auto present_callback =
-        base::DoNothing::Once<const gfx::PresentationFeedback&>();
-
-    output_device_->SwapBuffers(std::move(present_callback),
-                                OutputSurfaceFrame());
+    output_device_->SwapBuffers(base::DoNothing(), OutputSurfaceFrame());
   }
 
   void CommitOverlayPlanes() {
-    auto present_callback =
-        base::DoNothing::Once<const gfx::PresentationFeedback&>();
-
-    output_device_->CommitOverlayPlanes(std::move(present_callback),
+    output_device_->CommitOverlayPlanes(base::DoNothing(),
                                         OutputSurfaceFrame());
   }
 

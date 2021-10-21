@@ -21,14 +21,24 @@
 #include "content/services/auction_worklet/console.h"
 #include "gin/public/isolate_holder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-locker.h"
+#include "v8/include/v8-persistent-handle.h"
+
+namespace v8 {
+class UnboundScript;
+}  // namespace v8
 
 namespace v8_inspector {
 class V8Inspector;
 }  // namespace v8_inspector
 
 namespace auction_worklet {
+
+class AuctionV8DevToolsAgent;
 
 // Helper for Javascript operations. Owns a V8 isolate, and manages operations
 // on it. Must be deleted after all V8 objects created using its isolate. It
@@ -93,8 +103,8 @@ class AuctionV8Helper
   // not is remove access the Date object. It also (for now) installs some
   // rudimentary console emulation.
   v8::Local<v8::Context> CreateContext(
-      v8::Handle<v8::ObjectTemplate> global_template =
-          v8::Handle<v8::ObjectTemplate>());
+      v8::Local<v8::ObjectTemplate> global_template =
+          v8::Local<v8::ObjectTemplate>());
 
   // Creates a v8::String from an ASCII string literal, which should never fail.
   v8::Local<v8::String> CreateStringFromLiteral(const char* ascii_string);
@@ -215,12 +225,36 @@ class AuctionV8Helper
   // Calls Resume on all registered context group IDs.
   void ResumeAllForTesting();
 
-  // Returns the v8 inspector if one has been set. For now, null if
-  // SetV8InspectorForTesting hasn't been called.
+  // Establishes a debugger connection, initializing debugging objects if
+  // needed, and associating the connection with the given `context_group_id`.
+  //
+  // The debugger Mojo objects will primarily live on the v8 thread, but
+  // `mojo_sequence` will be used for a secondary communication channel in case
+  // the v8 thread is blocked. It must be distinct from v8_runner(). Only the
+  // value passed in for `mojo_sequence` the first time this method is called
+  // will be used.
+  void ConnectDevToolsAgent(
+      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
+      scoped_refptr<base::SequencedTaskRunner> mojo_sequence,
+      int context_group_id);
+
+  // Returns the v8 inspector if one has been set. null if ConnectDevToolsAgent
+  // (or SetV8InspectorForTesting) hasn't been called.
   v8_inspector::V8Inspector* inspector();
 
   void SetV8InspectorForTesting(
       std::unique_ptr<v8_inspector::V8Inspector> v8_inspector);
+
+  // Temporarily disables (and re-enables) script timeout for the currently
+  // running script. Total time elapsed when not paused will be kept track of.
+  //
+  // Must be called when within RunScript() only.
+  void PauseTimeoutTimer();
+  void ResumeTimeoutTimer();
+
+  // Returns the sequence where the timeout timer runs.
+  // This may be called on any thread.
+  scoped_refptr<base::SequencedTaskRunner> GetTimeoutTimerRunnerForTesting();
 
   // Helper for formatting script name for debug messages.
   std::string FormatScriptName(v8::Local<v8::UnboundScript> script);
@@ -228,6 +262,7 @@ class AuctionV8Helper
  private:
   friend class base::RefCountedDeleteOnSequence<AuctionV8Helper>;
   friend class base::DeleteHelper<AuctionV8Helper>;
+  class ScriptTimeoutHelper;
 
   // Sets values of console_buffer() and console_script_name() to those
   // passed-in to its constructor for duration of its existence, and clears
@@ -255,6 +290,7 @@ class AuctionV8Helper
                                  v8::Local<v8::Value> val);
 
   scoped_refptr<base::SequencedTaskRunner> v8_runner_;
+  scoped_refptr<base::SequencedTaskRunner> timer_task_runner_;
 
   std::unique_ptr<gin::IsolateHolder> isolate_holder_
       GUARDED_BY_CONTEXT(sequence_checker_);
@@ -270,12 +306,19 @@ class AuctionV8Helper
       GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
   std::string console_script_name_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  ScriptTimeoutHelper* timeout_helper_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      nullptr;
+
   int last_context_group_id_ GUARDED_BY_CONTEXT(sequence_checker_) = 0;
 
   // This is keyed by group IDs, and is used to keep track of what's valid.
   std::map<int, base::OnceClosure> resume_callbacks_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // Destruction order between `devtools_agent_` and `v8_inspector_` is
+  // relevant; see also comment in ~AuctionV8Helper().
+  std::unique_ptr<AuctionV8DevToolsAgent> devtools_agent_
+      GUARDED_BY_CONTEXT(sequence_checker_);
   std::unique_ptr<v8_inspector::V8Inspector> v8_inspector_
       GUARDED_BY_CONTEXT(sequence_checker_);
 

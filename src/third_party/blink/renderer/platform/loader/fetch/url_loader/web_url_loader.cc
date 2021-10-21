@@ -642,7 +642,8 @@ bool WebURLLoader::Context::OnReceivedRedirect(
       WebString::FromUTF8(redirect_info.new_referrer),
       ReferrerUtils::NetToMojoReferrerPolicy(redirect_info.new_referrer_policy),
       WebString::FromUTF8(redirect_info.new_method), response,
-      has_devtools_request_id_, removed_headers);
+      has_devtools_request_id_, removed_headers,
+      redirect_info.insecure_scheme_was_upgraded);
 }
 
 void WebURLLoader::Context::OnReceivedResponse(
@@ -782,8 +783,6 @@ void WebURLLoader::PopulateURLResponse(
   response->SetIsLegacyTLSVersion(head.is_legacy_tls_version);
   response->SetHasRangeRequested(head.has_range_requested);
   response->SetTimingAllowPassed(head.timing_allow_passed);
-  response->SetAppCacheID(head.appcache_id);
-  response->SetAppCacheManifestURL(KURL(head.appcache_manifest_url));
   response->SetWasCached(!head.load_timing.request_start_time.is_null() &&
                          head.response_time <
                              head.load_timing.request_start_time);

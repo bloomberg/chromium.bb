@@ -493,15 +493,18 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
   bool incognito = false;
   if (create_data && create_data->incognito) {
     incognito = *create_data->incognito;
-    if (incognito && incognito_availability == IncognitoModePrefs::DISABLED) {
+    if (incognito &&
+        incognito_availability == IncognitoModePrefs::Availability::kDisabled) {
       *error = tabs_constants::kIncognitoModeIsDisabled;
       return false;
     }
-    if (!incognito && incognito_availability == IncognitoModePrefs::FORCED) {
+    if (!incognito &&
+        incognito_availability == IncognitoModePrefs::Availability::kForced) {
       *error = tabs_constants::kIncognitoModeIsForced;
       return false;
     }
-  } else if (incognito_availability == IncognitoModePrefs::FORCED) {
+  } else if (incognito_availability ==
+             IncognitoModePrefs::Availability::kForced) {
     // If incognito argument is not specified explicitly, we default to
     // incognito when forced so by policy.
     incognito = true;
@@ -731,7 +734,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   // (otherwise that resets the locked mode for devices in tablet mode).
   if (create_data &&
       create_data->state == windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    tabs_util::SetLockedFullscreenState(new_window, true);
+    tabs_util::SetLockedFullscreenState(
+        new_window, chromeos::WindowPinType::kTrustedPinned);
   }
 
   std::unique_ptr<base::Value> result;
@@ -831,11 +835,13 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   if (is_locked_fullscreen &&
       params->update_info.state != windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
       params->update_info.state != windows::WINDOW_STATE_NONE) {
-    tabs_util::SetLockedFullscreenState(browser, false);
+    tabs_util::SetLockedFullscreenState(browser,
+                                        chromeos::WindowPinType::kNone);
   } else if (!is_locked_fullscreen &&
              params->update_info.state ==
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    tabs_util::SetLockedFullscreenState(browser, true);
+    tabs_util::SetLockedFullscreenState(
+        browser, chromeos::WindowPinType::kTrustedPinned);
   }
 
   if (show_state != ui::SHOW_STATE_FULLSCREEN &&
@@ -2053,7 +2059,7 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
 
 void TabsCaptureVisibleTabFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
-  constexpr base::TimeDelta kSecond = base::TimeDelta::FromSeconds(1);
+  constexpr base::TimeDelta kSecond = base::Seconds(1);
   QuotaLimitHeuristic::Config limit = {
       tabs::MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND, kSecond};
 

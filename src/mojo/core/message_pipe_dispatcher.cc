@@ -46,6 +46,9 @@ class MessagePipeDispatcher::PortObserverThunk
   explicit PortObserverThunk(scoped_refptr<MessagePipeDispatcher> dispatcher)
       : dispatcher_(dispatcher) {}
 
+  PortObserverThunk(const PortObserverThunk&) = delete;
+  PortObserverThunk& operator=(const PortObserverThunk&) = delete;
+
  private:
   ~PortObserverThunk() override = default;
 
@@ -53,8 +56,6 @@ class MessagePipeDispatcher::PortObserverThunk
   void OnPortStatusChanged() override { dispatcher_->OnPortStatusChanged(); }
 
   scoped_refptr<MessagePipeDispatcher> dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(PortObserverThunk);
 };
 
 #if DCHECK_IS_ON()
@@ -64,6 +65,10 @@ class MessagePipeDispatcher::PortObserverThunk
 class PeekSizeMessageFilter : public ports::MessageFilter {
  public:
   PeekSizeMessageFilter() = default;
+
+  PeekSizeMessageFilter(const PeekSizeMessageFilter&) = delete;
+  PeekSizeMessageFilter& operator=(const PeekSizeMessageFilter&) = delete;
+
   ~PeekSizeMessageFilter() override = default;
 
   // ports::MessageFilter:
@@ -78,8 +83,6 @@ class PeekSizeMessageFilter : public ports::MessageFilter {
 
  private:
   size_t message_size_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(PeekSizeMessageFilter);
 };
 
 #endif  // DCHECK_IS_ON()

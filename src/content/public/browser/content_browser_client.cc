@@ -49,6 +49,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/client_cert_store.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
@@ -297,13 +298,26 @@ bool ContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 #endif
 }
 
-bool ContentBrowserClient::ShouldDisableSiteIsolation() {
+bool ContentBrowserClient::ShouldDisableSiteIsolation(
+    SiteIsolationMode site_isolation_mode) {
   return false;
 }
 
 std::vector<std::string>
 ContentBrowserClient::GetAdditionalSiteIsolationModes() {
   return std::vector<std::string>();
+}
+
+bool ContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // For short-term testing, use kDirectSockets to enable isolated application
+  // level. DirectSocket WPT and browser tests require application isolation
+  // level.
+  //
+  // TODO(crbug.com/1206150): Figure out a better way to enable isolated
+  // application level in tests.
+  return base::FeatureList::IsEnabled(features::kDirectSockets);
 }
 
 size_t ContentBrowserClient::GetMaxRendererProcessCountOverride() {
@@ -988,6 +1002,7 @@ bool ContentBrowserClient::HandleExternalProtocol(
     int frame_tree_node_id,
     NavigationUIData* navigation_data,
     bool is_main_frame,
+    network::mojom::WebSandboxFlags sandbox_flags,
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const absl::optional<url::Origin>& initiating_origin,
@@ -1030,6 +1045,10 @@ base::FilePath ContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
 
 bool ContentBrowserClient::ShouldSandboxAudioService() {
   return base::FeatureList::IsEnabled(features::kAudioServiceSandbox);
+}
+
+bool ContentBrowserClient::ShouldSandboxNetworkService() {
+  return sandbox::policy::features::IsNetworkSandboxEnabled();
 }
 
 blink::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
@@ -1106,7 +1125,6 @@ ContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
 }
 
 void ContentBrowserClient::AugmentNavigationDownloadPolicy(
-    WebContents* web_contents,
     RenderFrameHost* frame_host,
     bool user_gesture,
     blink::NavigationDownloadPolicy* download_policy) {}

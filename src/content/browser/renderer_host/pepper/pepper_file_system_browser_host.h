@@ -41,6 +41,11 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
                               PP_Instance instance,
                               PP_Resource resource,
                               PP_FileSystemType type);
+
+  PepperFileSystemBrowserHost(const PepperFileSystemBrowserHost&) = delete;
+  PepperFileSystemBrowserHost& operator=(const PepperFileSystemBrowserHost&) =
+      delete;
+
   ~PepperFileSystemBrowserHost() override;
 
   // Opens the PepperFileSystemBrowserHost to use an existing file system at the
@@ -59,9 +64,6 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   PP_FileSystemType GetType() const { return type_; }
   bool IsOpened() const;
   GURL GetRootUrl() const;
-
-  // Can only call this if ProcessHostOnUI is disabled.
-  scoped_refptr<storage::FileSystemContext> GetFileSystemContext() const;
 
   // Returns a callback which can be run on the IO thread to return a
   // FileSystemOperationRunner  Supports FileIOs direct access on the host side.
@@ -243,8 +245,6 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   scoped_refptr<IOThreadState> io_thread_state_;
 
   base::WeakPtrFactory<PepperFileSystemBrowserHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperFileSystemBrowserHost);
 };
 
 }  // namespace content

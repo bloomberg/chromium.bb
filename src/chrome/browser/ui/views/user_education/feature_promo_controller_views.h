@@ -56,11 +56,13 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   bool MaybeShowPromoWithParams(
       const base::Feature& iph_feature,
       const FeaturePromoBubbleParams& params,
+      views::View* anchor_view,
       BubbleCloseCallback close_callback = BubbleCloseCallback());
 
   // Builds the CreateParams from the BubbleParams.
   FeaturePromoBubbleView::CreateParams GetBaseCreateParams(
-      const FeaturePromoBubbleParams& params);
+      const FeaturePromoBubbleParams& params,
+      views::View* anchor_view);
 
   // Only for security or privacy critical promos. Immedialy shows a
   // promo with |params|, cancelling any normal promo and blocking any
@@ -69,13 +71,20 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // Returns an ID that can be passed to CloseBubbleForCriticalPromo()
   // if successful. This can fail if another critical promo is showing.
   absl::optional<base::Token> ShowCriticalPromo(
-      const FeaturePromoBubbleParams& params);
+      const FeaturePromoBubbleParams& params,
+      views::View* anchor_view);
 
   // Ends a promo started by ShowCriticalPromo() if it's still showing.
   void CloseBubbleForCriticalPromo(const base::Token& critical_promo_id);
 
   // Returns whether a critical promo is showing for the given `Token`.
   bool CriticalPromoIsShowing(const base::Token& critical_promo_id) const;
+
+  // For systems where there are rendering issues of e.g. displaying the
+  // omnibox and a bubble in the same region on the screen, dismisses a non-
+  // critical promo bubble which overlaps a given screen region. Returns true
+  // if a bubble is closed as a result.
+  bool DismissNonCriticalBubbleInRegion(const gfx::Rect& screen_bounds);
 
   // FeaturePromoController:
   bool MaybeShowPromo(
@@ -93,6 +102,14 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // Gets the IPH backend. Provided for convenience.
   feature_engagement::Tracker* feature_engagement_tracker() { return tracker_; }
 
+  // Blocks a check that the anchor view for the IPH is in an active window
+  // before showing the IPH. Intended for browser and unit tests.
+  static void BlockActiveWindowCheckForTesting();
+
+  // Returns true if the IPH should be allowed to show in an inactive window.
+  // False by default, but browser and unit tests may modify this behavior.
+  static bool IsActiveWindowCheckBlockedForTesting();
+
   // Blocks any further promos from showing. Additionally cancels the
   // current promo unless an outstanding PromoHandle from
   // CloseBubbleAndContinuePromo exists. Intended for browser tests.
@@ -105,12 +122,14 @@ class FeaturePromoControllerViews : public FeaturePromoController {
  private:
   bool MaybeShowPromoImpl(const base::Feature& iph_feature,
                           const FeaturePromoBubbleParams& params,
+                          views::View* anchor_view,
                           BubbleCloseCallback close_callback);
 
   // Called when PromoHandle is destroyed to finish the promo.
   void FinishContinuedPromo() override;
 
-  bool ShowPromoBubbleImpl(const FeaturePromoBubbleParams& params);
+  bool ShowPromoBubbleImpl(const FeaturePromoBubbleParams& params,
+                           views::View* anchor_view);
 
   void HandleBubbleClosed();
 
@@ -155,6 +174,7 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // it.
   views::ViewTracker anchor_view_tracker_;
 
+  static bool active_window_check_blocked_for_testing;
   bool promos_blocked_for_testing_ = false;
 
   base::WeakPtrFactory<FeaturePromoControllerViews> weak_ptr_factory_{this};

@@ -9,7 +9,8 @@
 #include <set>
 #include <vector>
 
-#include "base/containers/flat_set.h"
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
@@ -264,48 +265,6 @@ bool ShouldCheckCors(const GURL& request_url,
   return true;
 }
 
-absl::optional<CorsErrorStatus> CheckRedirectLocation(
-    const GURL& url,
-    mojom::RequestMode request_mode,
-    const absl::optional<url::Origin>& origin,
-    bool cors_flag,
-    bool tainted) {
-  // If |actualResponse|’s location URL’s scheme is not an HTTP(S) scheme,
-  // then return a network error.
-  // This should be addressed in //net.
-
-  // Note: The redirect count check is done elsewhere.
-
-  const bool url_has_credentials = url.has_username() || url.has_password();
-  // If |request|’s mode is "cors", |actualResponse|’s location URL includes
-  // credentials, and either |request|’s tainted origin flag is set or
-  // |request|’s origin is not same origin with |actualResponse|’s location
-  // URL’s origin, then return a network error.
-  DCHECK(!IsCorsEnabledRequestMode(request_mode) || origin);
-  if (IsCorsEnabledRequestMode(request_mode) && url_has_credentials &&
-      (tainted || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
-    return CorsErrorStatus(mojom::CorsError::kRedirectContainsCredentials);
-  }
-
-  // If CORS flag is set and |actualResponse|’s location URL includes
-  // credentials, then return a network error.
-  if (cors_flag && url_has_credentials)
-    return CorsErrorStatus(mojom::CorsError::kRedirectContainsCredentials);
-
-  return absl::nullopt;
-}
-
-// https://wicg.github.io/cors-rfc1918/#http-headerdef-access-control-allow-external
-absl::optional<CorsErrorStatus> CheckExternalPreflight(
-    const absl::optional<std::string>& allow_external) {
-  if (!allow_external)
-    return CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowExternal);
-  if (*allow_external == kLowerCaseTrue)
-    return absl::nullopt;
-  return CorsErrorStatus(mojom::CorsError::kPreflightInvalidAllowExternal,
-                         *allow_external);
-}
-
 bool IsCorsEnabledRequestMode(mojom::RequestMode mode) {
   return mode == mojom::RequestMode::kCors ||
          mode == mojom::RequestMode::kCorsWithForcedPreflight;
@@ -346,19 +305,17 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   //
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
-  static const char* const safe_names[] = {
+  static constexpr auto safe_names = base::MakeFixedFlatSet<base::StringPiece>({
       "accept",
       "accept-language",
       "content-language",
       "intervention",
       "content-type",
       "save-data",
-      // The Device Memory header field is a number that indicates the client’s
-      // device memory i.e. approximate amount of ram in GiB. The header value
-      // must satisfy ABNF  1*DIGIT [ "." 1*DIGIT ]
-      // See
-      // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
-      // for more details.
+
+      // These four were deprecated and replaced by variants with a `sec-ch-`
+      // prefix to conform with the proposal:
+      // https://wicg.github.io/client-hints-infrastructure/
       "device-memory",
       "dpr",
       "width",
@@ -369,12 +326,6 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       //
       // https://wicg.github.io/responsive-image-client-hints/#sec-ch-viewport-height
       "sec-ch-viewport-height",
-
-      // The `Lang` header field is a proposed replacement for
-      // `Accept-Language`, using the Client Hints infrastructure.
-      //
-      // https://tools.ietf.org/html/draft-west-lang-client-hint
-      "lang",
 
       // The `Sec-CH-UA-*` header fields are proposed replacements for
       // `User-Agent`, using the Client Hints infrastructure.
@@ -402,9 +353,19 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       //
       // https://wicg.github.io/user-preference-media-features-headers/#sec-ch-prefers-color-scheme
       "sec-ch-prefers-color-scheme",
-  };
-  if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
-      std::end(safe_names))
+
+      // The Device Memory header field is a number that indicates the client’s
+      // device memory i.e. approximate amount of ram in GiB. The header value
+      // must satisfy ABNF  1*DIGIT [ "." 1*DIGIT ]
+      // See
+      // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
+      // for more details.
+      "sec-ch-device-memory",
+      "sec-ch-dpr",
+      "sec-ch-width",
+      "sec-ch-viewport-width",
+  });
+  if (!base::Contains(safe_names, lower_name))
     return false;
 
   // Client hints are device specific, and not origin specific. As such all

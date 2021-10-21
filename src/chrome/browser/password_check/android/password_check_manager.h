@@ -224,7 +224,7 @@ class PasswordCheckManager
 
   // Handle to the password store, powering both `saved_passwords_presenter_`
   // and `insecure_credentials_manager_`.
-  scoped_refptr<password_manager::PasswordStore> password_store_ =
+  scoped_refptr<password_manager::PasswordStoreInterface> password_store_ =
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS);
 

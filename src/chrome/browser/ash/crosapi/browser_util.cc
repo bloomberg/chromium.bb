@@ -51,6 +51,7 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/automation.mojom.h"
+#include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
@@ -63,8 +64,10 @@
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
@@ -74,6 +77,7 @@
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/crosapi/mojom/remoting.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
+#include "chromeos/crosapi/mojom/structured_metrics_service.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
@@ -85,6 +89,7 @@
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -98,6 +103,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -236,13 +242,19 @@ absl::optional<std::vector<uint8_t>> GetDeviceAccountPolicy(
 // Returns the device specific data needed for Lacros.
 mojom::DevicePropertiesPtr GetDeviceProperties() {
   mojom::DevicePropertiesPtr result = mojom::DeviceProperties::New();
-  if (ash::DeviceSettingsService::IsInitialized() &&
-      ash::DeviceSettingsService::Get()->policy_data() &&
-      ash::DeviceSettingsService::Get()->policy_data()->has_request_token()) {
-    result->device_dm_token =
-        ash::DeviceSettingsService::Get()->policy_data()->request_token();
-  } else {
-    result->device_dm_token = "";
+  result->device_dm_token = "";
+
+  if (ash::DeviceSettingsService::IsInitialized()) {
+    const enterprise_management::PolicyData* policy_data =
+        ash::DeviceSettingsService::Get()->policy_data();
+
+    if (policy_data && policy_data->has_request_token())
+      result->device_dm_token = policy_data->request_token();
+
+    if (policy_data && !policy_data->device_affiliation_ids().empty()) {
+      const auto& ids = policy_data->device_affiliation_ids();
+      result->device_affiliation_ids = {ids.begin(), ids.end()};
+    }
   }
 
   return result;
@@ -332,6 +344,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::AppPublisher>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AppServiceProxy>(),
     MakeInterfaceVersionEntry<crosapi::mojom::AppWindowTracker>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::BrowserAppInstanceRegistry>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserServiceHost>(),
     MakeInterfaceVersionEntry<crosapi::mojom::BrowserVersionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CertDatabase>(),
@@ -347,9 +360,11 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::IdentityManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::IdleService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ImageWriter>(),
     MakeInterfaceVersionEntry<crosapi::mojom::KeystoreService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::KioskSessionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::LocalPrinter>(),
     MakeInterfaceVersionEntry<
         chromeos::machine_learning::mojom::MachineLearningService>(),
@@ -363,6 +378,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Remoting>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ResourceManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::StructuredMetricsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SnapshotCapturer>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SystemDisplay>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TaskManager>(),
@@ -372,6 +388,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::WebPageInfoFactory>(),
     MakeInterfaceVersionEntry<device::mojom::HidConnection>(),
     MakeInterfaceVersionEntry<device::mojom::HidManager>(),
+    MakeInterfaceVersionEntry<
+        media::stable::mojom::StableVideoDecoderFactory>(),
     MakeInterfaceVersionEntry<media_session::mojom::MediaControllerManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManager>(),
     MakeInterfaceVersionEntry<media_session::mojom::AudioFocusManagerDebug>(),
@@ -421,8 +439,22 @@ bool IsDataWipeRequiredInternal(base::Version data_version,
   return true;
 }
 
+Channel GetChannelFromString(const std::string channel_str) {
+  if (channel_str == browser_util::kLacrosStabilityChannelCanary)
+    return Channel::CANARY;
+  if (channel_str == browser_util::kLacrosStabilityChannelDev)
+    return Channel::DEV;
+  if (channel_str == browser_util::kLacrosStabilityChannelBeta)
+    return Channel::BETA;
+  if (channel_str == browser_util::kLacrosStabilityChannelStable)
+    return Channel::STABLE;
+
+  NOTREACHED();
+  return Channel::UNKNOWN;
+}
+
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 46,
+    crosapi::mojom::Crosapi::Version_ == 52,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
@@ -435,12 +467,26 @@ const ComponentInfo kLacrosDogfoodCanaryInfo = {
     "lacros-dogfood-canary", "hkifppleldbgkdlijbdfkdpedggaopda"};
 const ComponentInfo kLacrosDogfoodDevInfo = {
     "lacros-dogfood-dev", "ldobopbhiamakmncndpkeelenhdmgfhk"};
+const ComponentInfo kLacrosDogfoodBetaInfo = {
+    "lacros-dogfood-beta", "hnfmbeciphpghlfgpjfbcdifbknombnk"};
 const ComponentInfo kLacrosDogfoodStableInfo = {
-    "lacros-dogfood-stable", "hnfmbeciphpghlfgpjfbcdifbknombnk"};
+    "lacros-dogfood-stable", "ehpjbaiafkpkmhjocnenjbbhmecnfcjb"};
+
+const auto lacros_stability_channel_to_component_info =
+    base::MakeFixedFlatMap<std::string, const ComponentInfo*>({
+        {kLacrosStabilityChannelCanary, &kLacrosDogfoodCanaryInfo},
+        {kLacrosStabilityChannelDev, &kLacrosDogfoodDevInfo},
+        {kLacrosStabilityChannelBeta, &kLacrosDogfoodBetaInfo},
+        {kLacrosStabilityChannelStable, &kLacrosDogfoodStableInfo},
+    });
 
 // When this feature is enabled, Lacros will be available on stable channel.
 const base::Feature kLacrosAllowOnStableChannel{
     "LacrosAllowOnStableChannel", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// A kill switch for lacros chrome apps.
+const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When this feature is enabled, Lacros is allowed to roll out by policy to
 // Googlers.
@@ -450,9 +496,10 @@ const base::Feature kLacrosGooglePolicyRollout{
 const Channel kLacrosDefaultChannel = Channel::DEV;
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
-const char kLacrosStabilityLeastStable[] = "least-stable";
-const char kLacrosStabilityLessStable[] = "less-stable";
-const char kLacrosStabilityMoreStable[] = "more-stable";
+const char kLacrosStabilityChannelCanary[] = "canary";
+const char kLacrosStabilityChannelDev[] = "dev";
+const char kLacrosStabilityChannelBeta[] = "beta";
+const char kLacrosStabilityChannelStable[] = "stable";
 
 const char kLacrosSelectionSwitch[] = "lacros-selection";
 const char kLacrosSelectionRootfs[] = "rootfs";
@@ -657,6 +704,16 @@ bool IsLacrosAllowedToLaunch() {
   return user_manager::UserManager::Get()->GetLoggedInUsers().size() <= 1;
 }
 
+bool IsLacrosChromeAppsEnabled() {
+  if (base::FeatureList::IsEnabled(kLacrosDisableChromeApps))
+    return false;
+
+  if (!IsLacrosPrimaryBrowser())
+    return false;
+
+  return true;
+}
+
 bool IsLacrosWindow(const aura::Window* window) {
   const std::string* app_id = exo::GetShellApplicationId(window);
   if (!app_id)
@@ -763,6 +820,13 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
   params->device_properties = GetDeviceProperties();
   params->device_settings = GetDeviceSettings();
+  // |metrics_service| could be nullptr in tests.
+  if (auto* metrics_service = g_browser_process->metrics_service()) {
+    // Send metrics service client id to Lacros if it's present.
+    std::string client_id = metrics_service->GetClientId();
+    if (!client_id.empty())
+      params->metrics_service_client_id = client_id;
+  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kOndeviceHandwritingSwitch)) {
@@ -798,7 +862,13 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   build_flags.emplace_back(
       crosapi::mojom::BuildFlag::kUseChromeosProtectedMedia);
 #endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_AV1)
+  build_flags.emplace_back(crosapi::mojom::BuildFlag::kUseChromeosProtectedAv1);
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_AV1)
   params->build_flags = std::move(build_flags);
+
+  params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
+  params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
   return params;
 }
 
@@ -984,14 +1054,7 @@ Channel GetStatefulLacrosChannel() {
   if (cmdline->HasSwitch(browser_util::kLacrosStabilitySwitch)) {
     std::string value =
         cmdline->GetSwitchValueASCII(browser_util::kLacrosStabilitySwitch);
-    if (value == browser_util::kLacrosStabilityLeastStable)
-      return Channel::CANARY;
-    if (value == browser_util::kLacrosStabilityLessStable)
-      return Channel::DEV;
-    // Marked as "beta" channel since it gets updated every 2 weeks from beta
-    // branch.
-    if (value == browser_util::kLacrosStabilityMoreStable)
-      return Channel::BETA;
+    return GetChannelFromString(value);
   }
 
   return Channel::UNKNOWN;
@@ -1002,12 +1065,7 @@ ComponentInfo GetLacrosComponentInfo() {
   if (cmdline->HasSwitch(browser_util::kLacrosStabilitySwitch)) {
     std::string value =
         cmdline->GetSwitchValueASCII(browser_util::kLacrosStabilitySwitch);
-    if (value == browser_util::kLacrosStabilityLeastStable)
-      return kLacrosDogfoodCanaryInfo;
-    if (value == browser_util::kLacrosStabilityLessStable)
-      return kLacrosDogfoodDevInfo;
-    if (value == browser_util::kLacrosStabilityMoreStable)
-      return kLacrosDogfoodStableInfo;
+    return *lacros_stability_channel_to_component_info.at(value);
   }
   // Use once a week / Dev style updates by default.
   return kLacrosDogfoodDevInfo;

@@ -69,10 +69,7 @@ static int query_formats(AVFilterContext *ctx)
     static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_BGR24, AV_PIX_FMT_BGRA, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 typedef struct OCVContext {
@@ -416,7 +413,6 @@ static const AVFilterPad avfilter_vf_ocv_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_vf_ocv_outputs[] = {
@@ -424,7 +420,6 @@ static const AVFilterPad avfilter_vf_ocv_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_ocv = {
@@ -435,6 +430,6 @@ const AVFilter ff_vf_ocv = {
     .query_formats = query_formats,
     .init          = init,
     .uninit        = uninit,
-    .inputs        = avfilter_vf_ocv_inputs,
-    .outputs       = avfilter_vf_ocv_outputs,
+    FILTER_INPUTS(avfilter_vf_ocv_inputs),
+    FILTER_OUTPUTS(avfilter_vf_ocv_outputs),
 };

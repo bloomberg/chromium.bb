@@ -13,13 +13,12 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace {
 constexpr float kStrokeWidth = 4;
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(200);
 static constexpr SkColor kRingColor = SkColorSetRGB(66, 133, 224);
 static constexpr SkColor kBackgroundColor = SkColorSetRGB(218, 220, 224);
 }  // namespace

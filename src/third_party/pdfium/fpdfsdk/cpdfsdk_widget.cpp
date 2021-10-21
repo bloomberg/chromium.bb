@@ -6,10 +6,6 @@
 
 #include "fpdfsdk/cpdfsdk_widget.h"
 
-#include <memory>
-#include <sstream>
-#include <utility>
-
 #include "constants/annotation_common.h"
 #include "constants/appearance.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -30,10 +26,10 @@
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_appstream.h"
-#include "fpdfsdk/cpdfsdk_fieldaction.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
+#include "fpdfsdk/formfiller/cffl_fieldaction.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
@@ -206,7 +202,7 @@ bool CPDFSDK_Widget::HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT) const {
 }
 
 bool CPDFSDK_Widget::OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
-                                  CPDFSDK_FieldAction* data,
+                                  CFFL_FieldAction* data,
                                   const CPDFSDK_PageView* pPageView) {
   auto* pContext = static_cast<CPDFXFA_Context*>(
       m_pPageView->GetFormFillEnv()->GetDocExtension());
@@ -300,7 +296,7 @@ void CPDFSDK_Widget::Synchronize(bool bSynchronizeElse) {
 
 bool CPDFSDK_Widget::HandleXFAAAction(
     CPDF_AAction::AActionType type,
-    CPDFSDK_FieldAction* data,
+    CFFL_FieldAction* data,
     CPDFSDK_FormFillEnvironment* pFormFillEnv) {
   auto* pContext =
       static_cast<CPDFXFA_Context*>(pFormFillEnv->GetDocExtension());
@@ -381,6 +377,12 @@ bool CPDFSDK_Widget::IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode mode) {
 FormFieldType CPDFSDK_Widget::GetFieldType() const {
   CPDF_FormField* pField = GetFormField();
   return pField ? pField->GetFieldType() : FormFieldType::kUnknown;
+}
+
+void CPDFSDK_Widget::SetRect(const CFX_FloatRect& rect) {
+  DCHECK(rect.right - rect.left >= 1.0f);
+  DCHECK(rect.top - rect.bottom >= 1.0f);
+  GetAnnotDict()->SetRectFor(pdfium::annotation::kRect, rect);
 }
 
 bool CPDFSDK_Widget::IsAppearanceValid() {
@@ -794,7 +796,7 @@ CFX_Color CPDFSDK_Widget::GetFillPWLColor() const {
 }
 
 bool CPDFSDK_Widget::OnAAction(CPDF_AAction::AActionType type,
-                               CPDFSDK_FieldAction* data,
+                               CFFL_FieldAction* data,
                                const CPDFSDK_PageView* pPageView) {
   CPDFSDK_FormFillEnvironment* pFormFillEnv = pPageView->GetFormFillEnv();
 

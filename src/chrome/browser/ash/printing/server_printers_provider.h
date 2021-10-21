@@ -16,7 +16,7 @@
 
 class Profile;
 
-namespace chromeos {
+namespace ash {
 
 // Given a list of external print servers, uses ServerPrintersFetcher to track
 // list of printers exposed by them. These printers are called server printers.
@@ -27,6 +27,10 @@ namespace chromeos {
 class ServerPrintersProvider {
  public:
   static std::unique_ptr<ServerPrintersProvider> Create(Profile* profile);
+
+  ServerPrintersProvider(const ServerPrintersProvider&) = delete;
+  ServerPrintersProvider& operator=(const ServerPrintersProvider&) = delete;
+
   virtual ~ServerPrintersProvider() = default;
 
   using OnPrintersUpdateCallback = base::RepeatingCallback<void(bool complete)>;
@@ -39,18 +43,17 @@ class ServerPrintersProvider {
   // |servers_are_complete| is true if all policies have been parsed and
   // applied. |servers| contains the current list of print servers to query for
   // printers.
-  virtual void OnServersChanged(bool servers_are_complete,
-                                const std::map<GURL, PrintServer>& servers) = 0;
+  virtual void OnServersChanged(
+      bool servers_are_complete,
+      const std::map<GURL, chromeos::PrintServer>& servers) = 0;
 
-  virtual std::vector<PrinterDetector::DetectedPrinter> GetPrinters() = 0;
+  virtual std::vector<chromeos::PrinterDetector::DetectedPrinter>
+  GetPrinters() = 0;
 
  protected:
   ServerPrintersProvider() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServerPrintersProvider);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_SERVER_PRINTERS_PROVIDER_H_

@@ -62,6 +62,10 @@ class NetLogProxySource;
 // to being compatible with the network service.
 class SystemNetworkContextManager {
  public:
+  SystemNetworkContextManager(const SystemNetworkContextManager&) = delete;
+  SystemNetworkContextManager& operator=(const SystemNetworkContextManager&) =
+      delete;
+
   ~SystemNetworkContextManager();
 
   // Creates the global instance of SystemNetworkContextManager. If an
@@ -136,6 +140,11 @@ class SystemNetworkContextManager {
   // It lives here so it can outlive chrome://net-export/ if the tab is closed
   // or destroyed, and so that it's destroyed before Mojo is shut down.
   net_log::NetExportFileWriter* GetNetExportFileWriter();
+
+  // Returns whether the network sandbox is enabled. This depends on  policy but
+  // also feature status from sandbox. Called before there is an instance of
+  // SystemNetworkContextManager.
+  static bool IsNetworkSandboxEnabled();
 
   // Flushes all pending SSL configuration changes.
   void FlushSSLConfigManagerForTesting();
@@ -218,8 +227,6 @@ class SystemNetworkContextManager {
 
   StubResolverConfigReader stub_resolver_config_reader_;
   static StubResolverConfigReader* stub_resolver_config_reader_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };
 
 #endif  // CHROME_BROWSER_NET_SYSTEM_NETWORK_CONTEXT_MANAGER_H_

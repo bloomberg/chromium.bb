@@ -70,7 +70,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/snapshot/snapshot.h"
 
 #if defined(OS_POSIX)
@@ -123,6 +123,11 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {
  public:
   TestJavaScriptDialogManager() {}
+
+  TestJavaScriptDialogManager(const TestJavaScriptDialogManager&) = delete;
+  TestJavaScriptDialogManager& operator=(const TestJavaScriptDialogManager&) =
+      delete;
+
   ~TestJavaScriptDialogManager() override {}
 
   void Handle() {
@@ -176,7 +181,6 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   DialogClosedCallback callback_;
   bool handle_ = false;
   bool is_handled_ = false;
-  DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
 
 }  // namespace

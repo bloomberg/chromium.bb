@@ -181,7 +181,6 @@ public class PaymentRequestService
         void onConnectionTerminated();
         void onAbortCalled();
         void onCompleteHandled();
-        void onMinimalUIReady();
         void onUiDisplayed();
         void onPaymentUiServiceCreated(PaymentUiServiceTestInterface uiService);
         void onClosed();
@@ -437,14 +436,10 @@ public class PaymentRequestService
      *        usage, can be null.
      * @param options The payment options specified by the merchant, need validation before
      *        usage, can be null.
-     * @param googlePayBridgeEligible True when the renderer process deems the current request
-     *        eligible for the skip-to-GPay experimental flow. It is ultimately up to the
-     *        browser process to determine whether to trigger it.
      * @return Whether the initialization is successful.
      */
     public boolean init(@Nullable PaymentMethodData[] rawMethodData,
-            @Nullable PaymentDetails details, @Nullable PaymentOptions options,
-            boolean googlePayBridgeEligible) {
+            @Nullable PaymentDetails details, @Nullable PaymentOptions options) {
         if (mRenderFrameHost.getLastCommittedOrigin() == null
                 || mRenderFrameHost.getLastCommittedURL() == null) {
             abortForInvalidDataFromRenderer(ErrorStrings.NO_FRAME);
@@ -527,8 +522,6 @@ public class PaymentRequestService
         }
 
         mBrowserPaymentRequest = mDelegate.createBrowserPaymentRequest(this);
-        mBrowserPaymentRequest.onWhetherGooglePayBridgeEligible(
-                googlePayBridgeEligible, mWebContents, rawMethodData);
         @Nullable
         Map<String, PaymentMethodData> methodData = getValidatedMethodData(rawMethodData);
         if (methodData == null) {
@@ -631,7 +624,15 @@ public class PaymentRequestService
     public void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         Log.d(TAG, debugMessage);
         if (mClient != null) {
-            mClient.onError(reason, debugMessage);
+            boolean isSpc = PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                                    PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                    && mSpec != null && mSpec.isSecurePaymentConfirmationRequested();
+            // Secure Payment Confirmation should make it indistinguishable
+            // to the merchant page as for whether the error is caused by
+            // user aborting or lack of credentials.
+            mClient.onError(isSpc ? PaymentErrorReason.NOT_ALLOWED_ERROR : reason,
+                    isSpc ? ErrorStrings.WEB_AUTHN_OPERATION_TIMED_OUT_OR_NOT_ALLOWED
+                          : debugMessage);
         }
         close();
         if (sNativeObserverForTest != null) {
@@ -1831,10 +1832,16 @@ public class PaymentRequestService
     @Override
     public void onInstrumentDetailsError(String errorMessage) {
         mInvokedPaymentApp = null;
-        if (mBrowserPaymentRequest == null) return;
-        mBrowserPaymentRequest.onInstrumentDetailsError(errorMessage);
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
         if (sNativeObserverForTest != null) sNativeObserverForTest.onErrorDisplayed();
+        if (mBrowserPaymentRequest == null) return;
+        if (mBrowserPaymentRequest.hasSkippedAppSelector()) {
+            assert !TextUtils.isEmpty(errorMessage);
+            mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
+            disconnectFromClientWithDebugMessage(errorMessage, PaymentErrorReason.USER_CANCEL);
+        } else {
+            mBrowserPaymentRequest.showAppSelectorAfterPaymentAppInvokeFailed();
+        }
     }
 
     @VisibleForTesting

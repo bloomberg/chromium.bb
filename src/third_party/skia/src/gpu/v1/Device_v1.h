@@ -28,12 +28,8 @@ namespace skgpu::v1 {
 /**
  *  Subclass of BaseDevice, which directs all drawing to the GrGpu owned by the canvas.
  */
-class Device : public BaseDevice  {
+class Device final : public BaseDevice  {
 public:
-    GrSurfaceProxyView readSurfaceView() override {
-        return fSurfaceDrawContext->readSurfaceView();
-    }
-
     bool wait(int numSemaphores,
               const GrBackendSemaphore* waitSemaphores,
               bool deleteSemaphoresAfterWait) override;
@@ -218,16 +214,6 @@ private:
                          const SkRect& dst,
                          SkFilterMode,
                          const SkPaint&);
-
-    static std::unique_ptr<SurfaceDrawContext> MakeSurfaceDrawContext(GrRecordingContext*,
-                                                                      SkBudgeted,
-                                                                      const SkImageInfo&,
-                                                                      SkBackingFit,
-                                                                      int sampleCount,
-                                                                      GrMipmapped,
-                                                                      GrProtected,
-                                                                      GrSurfaceOrigin,
-                                                                      const SkSurfaceProps&);
 
     friend class ::SkSurface_Gpu;      // for access to surfaceProps
     using INHERITED = BaseDevice;

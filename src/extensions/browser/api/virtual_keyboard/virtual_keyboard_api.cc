@@ -12,9 +12,7 @@
 #include "extensions/common/api/virtual_keyboard.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/base/ime/chromeos/input_method_manager.h"
-
-using chromeos::input_method::InputMethodManager;
+#include "ui/base/ime/ash/input_method_manager.h"
 #endif
 
 namespace extensions {
@@ -28,6 +26,7 @@ VirtualKeyboardRestrictFeaturesFunction::Run() {
       api::virtual_keyboard::RestrictFeatures::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  using ::ash::input_method::InputMethodManager;
   InputMethodManager* input_method_manager = InputMethodManager::Get();
   if (input_method_manager) {
     if (params->restrictions.handwriting_enabled) {

@@ -62,7 +62,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
-#include "components/no_state_prefetch/common/prerender_final_status.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -96,6 +96,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "net/base/proxy_string_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -524,7 +525,6 @@ class PrefetchProxyBrowserTest
     cmd->AppendSwitch("prefetch-proxy-never-send-decoy-requests-for-testing");
     // For the proxy.
     cmd->AppendSwitch("ignore-certificate-errors");
-    cmd->AppendSwitch("force-enable-metrics-reporting");
     cmd->AppendSwitchASCII("isolated-prerender-tunnel-proxy",
                            GetProxyURL().spec());
     cmd->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -628,26 +628,23 @@ class PrefetchProxyBrowserTest
   }
 
   bool RequestHasClientHints(const net::test_server::HttpRequest& request) {
-    for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& header = elem.second;
       // The UA {mobile} Client Hint is whitelisted so we don't check it.
-      if (std::string(network::kClientHintsNameMapping[i]) ==
-          std::string(kAllowedUAClientHint)) {
+      if (header == std::string(kAllowedUAClientHint)) {
         continue;
       }
 
-      if (std::string(network::kClientHintsNameMapping[i]) ==
-          std::string(kAllowedUAMobileClientHint)) {
+      if (header == std::string(kAllowedUAMobileClientHint)) {
         continue;
       }
 
-      if (std::string(network::kClientHintsNameMapping[i]) ==
-          std::string(kAllowedUAPlatformClientHint)) {
+      if (header == std::string(kAllowedUAPlatformClientHint)) {
         continue;
       }
 
-      if (base::Contains(request.headers,
-                         network::kClientHintsNameMapping[i])) {
-        LOG(WARNING) << "request has " << network::kClientHintsNameMapping[i];
+      if (base::Contains(request.headers, header)) {
+        LOG(WARNING) << "request has " << header;
 
         return true;
       }
@@ -668,7 +665,8 @@ class PrefetchProxyBrowserTest
       EXPECT_EQ(config->rules.proxies_for_https.size(), 0U);
     } else {
       ASSERT_EQ(config->rules.proxies_for_https.size(), 1U);
-      EXPECT_EQ(GURL(config->rules.proxies_for_https.Get().ToURI()),
+      EXPECT_EQ(GURL(net::ProxyServerToProxyUri(
+                    config->rules.proxies_for_https.Get())),
                 GetProxyURL());
     }
   }
@@ -1539,8 +1537,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
-  base::HistogramTester histogram_tester;
-
   PrefetchProxyTabHelper* tab_helper =
       PrefetchProxyTabHelper::FromWebContents(GetWebContents());
 
@@ -1588,7 +1584,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   {
     base::RunLoop run_loop;
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(10));
+        FROM_HERE, run_loop.QuitClosure(), base::Seconds(10));
     run_loop.Run();
   }
   {

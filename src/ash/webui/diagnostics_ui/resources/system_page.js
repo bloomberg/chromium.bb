@@ -114,7 +114,11 @@ Polymer({
     this.fetchSystemInfo_();
     this.browserProxy_ = DiagnosticsBrowserProxyImpl.getInstance();
     this.browserProxy_.initialize();
-    this.addCautionBannerEventListeners_();
+
+    // Only use inner banner behavior if system page is in stand-alone mode.
+    if (!this.isNetworkingEnabled) {
+      this.addCautionBannerEventListeners_();
+    }
   },
 
   /** @private */
@@ -193,5 +197,18 @@ Polymer({
    */
   onNavigationPageChanged({isActive}) {
     this.isActive = isActive;
+    if (isActive) {
+      // Focus the topmost system page element.
+      this.$$('#overviewCard').$$('#overviewCardContainer').focus();
+    }
+  },
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  getCardContainerClass_() {
+    let cardContainer = 'diagnostics-cards-container';
+    return `${cardContainer}${this.isNetworkingEnabled ? '-nav' : ''}`;
   },
 });

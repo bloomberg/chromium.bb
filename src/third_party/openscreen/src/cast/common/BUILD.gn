@@ -82,6 +82,8 @@ source_set("channel") {
 source_set("public") {
   sources = [
     "public/cast_socket.h",
+    "public/cast_streaming_app_ids.cc",
+    "public/cast_streaming_app_ids.h",
     "public/message_port.h",
     "public/receiver_info.cc",
     "public/receiver_info.h",
@@ -154,6 +156,7 @@ source_set("unittests") {
     "channel/message_framer_unittest.cc",
     "channel/namespace_router_unittest.cc",
     "channel/virtual_connection_router_unittest.cc",
+    "public/cast_streaming_app_ids_unittest.cc",
     "public/receiver_info_unittest.cc",
   ]
 

@@ -19,6 +19,10 @@
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-initialization.h"
+#include "v8/include/v8-object.h"
 
 namespace shared_storage_worklet {
 
@@ -89,9 +93,14 @@ void SharedStorageWorkletGlobalScope::OnModuleScriptDownloaded(
   // Now the module script is downloaded, initialize the worklet environment.
   InitV8();
 
+  // TODO(yaoxia): we may need a new IsolateType here. For now, set it to
+  // `kBlinkWorkerThread` even though it's not technically for blink worker:
+  // this is the best approximate type and is the only type that allows multiple
+  // isolates in one process (see CanHaveMultipleIsolates(isolate_type) in
+  // gin/v8_isolate_memory_dump_provider.cc).
   isolate_holder_ = std::make_unique<gin::IsolateHolder>(
-      base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kUseLocker,
-      gin::IsolateHolder::IsolateType::kUtility);
+      base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kSingleThread,
+      gin::IsolateHolder::IsolateType::kBlinkWorkerThread);
 
   WorkletV8Helper::HandleScope scope(Isolate());
   global_context_.Reset(Isolate(), v8::Context::New(Isolate()));
@@ -172,6 +181,17 @@ void SharedStorageWorkletGlobalScope::RunURLSelectionOperation(
     const std::vector<uint8_t>& serialized_data,
     mojom::SharedStorageWorkletService::RunURLSelectionOperationCallback
         callback) {
+  if (!isolate_holder_) {
+    // TODO(yaoxia): if this operation comes while fetching the module script,
+    // we might want to queue the operation to be handled later after addModule
+    // completes. http://crbug/1249581
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/"The module script hasn't been loaded.",
+        /*length=*/0);
+    return;
+  }
+
   WorkletV8Helper::HandleScope scope(Isolate());
   url_selection_operation_handler_->RunOperation(
       LocalContext(), name, urls, serialized_data, std::move(callback));
@@ -181,6 +201,16 @@ void SharedStorageWorkletGlobalScope::RunOperation(
     const std::string& name,
     const std::vector<uint8_t>& serialized_data,
     mojom::SharedStorageWorkletService::RunOperationCallback callback) {
+  if (!isolate_holder_) {
+    // TODO(yaoxia): if this operation comes while fetching the module script,
+    // we might want to queue the operation to be handled later after addModule
+    // completes. http://crbug/1249581
+    std::move(callback).Run(
+        /*success=*/false,
+        /*error_message=*/"The module script hasn't been loaded.");
+    return;
+  }
+
   WorkletV8Helper::HandleScope scope(Isolate());
   unnamed_operation_handler_->RunOperation(
       LocalContext(), name, serialized_data, std::move(callback));

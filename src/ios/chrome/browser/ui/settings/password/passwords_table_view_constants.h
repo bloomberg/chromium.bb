@@ -12,7 +12,6 @@ extern NSString* const kPasswordsTableViewId;
 extern NSString* const kPasswordsExportConfirmViewId;
 extern NSString* const kPasswordsSearchBarId;
 extern NSString* const kPasswordsScrimViewId;
-extern NSString* const kPasswordsAddPasswordButtonId;
 
 // The accessibility identifier of the password details table view.
 extern NSString* const kPasswordDetailsTableViewId;
@@ -23,6 +22,9 @@ extern NSString* const kPasswordsAddPasswordCancelButtonId;
 // The accessibility identifier of the save password item.
 extern NSString* const kSavePasswordSwitchTableViewId;
 extern NSString* const kSavePasswordManagedTableViewId;
+
+// The accessibility identifier of the password in other apps item.
+extern NSString* const kSettingsPasswordsInOtherAppsCellId;
 
 // The accessibility identifier of the password issues table view.
 extern NSString* const kPasswordIssuesTableViewId;

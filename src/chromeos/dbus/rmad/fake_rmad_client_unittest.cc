@@ -67,10 +67,16 @@ class TestObserver : public RmadClient::Observer {
   int num_error() const { return num_error_; }
   rmad::RmadErrorCode last_error() const { return last_error_; }
   int num_calibration_progress() const { return num_calibration_progress_; }
-  rmad::RmadComponent last_calibration_component() const {
-    return last_calibration_component_;
+  const rmad::CalibrationComponentStatus& last_calibration_component_status()
+      const {
+    return last_calibration_component_status_;
   }
-  float last_calibration_progress() const { return last_calibration_progress_; }
+  int num_calibration_overall_progress() const {
+    return num_calibration_overall_progress_;
+  }
+  rmad::CalibrationOverallStatus last_calibration_overall_status() const {
+    return last_calibration_overall_status_;
+  }
   int num_provisioning_progress() const { return num_provisioning_progress_; }
   rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step() const {
     return last_provisioning_step_;
@@ -86,6 +92,13 @@ class TestObserver : public RmadClient::Observer {
   }
   int num_power_cable_state() { return num_power_cable_state_; }
   bool last_power_cable_state() { return last_power_cable_state_; }
+  int num_hardware_verification_result() const {
+    return num_hardware_verification_result_;
+  }
+  const rmad::HardwareVerificationResult& last_hardware_verification_result()
+      const {
+    return last_hardware_verification_result_;
+  }
 
   // Called when an error occurs outside of state transitions.
   // e.g. while calibrating devices.
@@ -95,11 +108,17 @@ class TestObserver : public RmadClient::Observer {
   }
 
   // Called when calibration progress is updated.
-  void CalibrationProgress(rmad::RmadComponent component,
-                           double progress) override {
+  void CalibrationProgress(
+      const rmad::CalibrationComponentStatus& componentStatus) override {
     num_calibration_progress_++;
-    last_calibration_component_ = component;
-    last_calibration_progress_ = progress;
+    last_calibration_component_status_ = componentStatus;
+  }
+
+  // Called when calibration progress is updated.
+  void CalibrationOverallProgress(
+      rmad::CalibrationOverallStatus status) override {
+    num_calibration_overall_progress_++;
+    last_calibration_overall_status_ = status;
   }
 
   // Called when provisioning progress is updated.
@@ -122,14 +141,23 @@ class TestObserver : public RmadClient::Observer {
     last_power_cable_state_ = plugged_in;
   }
 
+  // Called when hardware verification completes.
+  void HardwareVerificationResult(
+      const rmad::HardwareVerificationResult& last_hardware_verification_result)
+      override {
+    num_hardware_verification_result_++;
+    last_hardware_verification_result_ = last_hardware_verification_result;
+  }
+
  private:
   RmadClient* client_;  // Not owned.
   int num_error_ = 0;
   rmad::RmadErrorCode last_error_ = rmad::RmadErrorCode::RMAD_ERROR_NOT_SET;
   int num_calibration_progress_ = 0;
-  rmad::RmadComponent last_calibration_component_ =
-      rmad::RmadComponent::RMAD_COMPONENT_UNKNOWN;
-  float last_calibration_progress_ = 0.0f;
+  rmad::CalibrationComponentStatus last_calibration_component_status_;
+  int num_calibration_overall_progress_ = 0;
+  rmad::CalibrationOverallStatus last_calibration_overall_status_ =
+      rmad::CalibrationOverallStatus::RMAD_CALIBRATION_OVERALL_UNKNOWN;
   int num_provisioning_progress_ = 0;
   rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step_ =
       rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_UNKNOWN;
@@ -138,6 +166,8 @@ class TestObserver : public RmadClient::Observer {
   bool last_hardware_write_protection_state_ = true;
   int num_power_cable_state_ = 0;
   bool last_power_cable_state_ = true;
+  int num_hardware_verification_result_ = 0;
+  rmad::HardwareVerificationResult last_hardware_verification_result_;
 };  // namespace chromeos
 
 rmad::RmadState CreateWelcomeState() {
@@ -473,11 +503,28 @@ TEST_F(FakeRmadClientTest, CalibrationProgressObservation) {
   TestObserver observer_1(client_);
 
   fake_client_()->TriggerCalibrationProgressObservation(
-      rmad::RmadComponent::RMAD_COMPONENT_LID_ACCELEROMETER, 0.5);
+      rmad::RmadComponent::RMAD_COMPONENT_LID_ACCELEROMETER,
+      rmad::CalibrationComponentStatus::RMAD_CALIBRATION_IN_PROGRESS, 0.5);
   EXPECT_EQ(1, observer_1.num_calibration_progress());
   EXPECT_EQ(rmad::RmadComponent::RMAD_COMPONENT_LID_ACCELEROMETER,
-            observer_1.last_calibration_component());
-  EXPECT_EQ(0.5, observer_1.last_calibration_progress());
+            observer_1.last_calibration_component_status().component());
+  EXPECT_EQ(rmad::CalibrationComponentStatus::RMAD_CALIBRATION_IN_PROGRESS,
+            observer_1.last_calibration_component_status().status());
+  EXPECT_EQ(0.5, observer_1.last_calibration_component_status().progress());
+}
+
+// Tests that synchronous observers are notified about overall calibration
+// progress.
+TEST_F(FakeRmadClientTest, CalibrationOverallProgressObservation) {
+  TestObserver observer_1(client_);
+
+  fake_client_()->TriggerCalibrationOverallProgressObservation(
+      rmad::CalibrationOverallStatus::
+          RMAD_CALIBRATION_OVERALL_CURRENT_ROUND_COMPLETE);
+  EXPECT_EQ(1, observer_1.num_calibration_overall_progress());
+  EXPECT_EQ(rmad::CalibrationOverallStatus::
+                RMAD_CALIBRATION_OVERALL_CURRENT_ROUND_COMPLETE,
+            observer_1.last_calibration_overall_status());
 }
 
 // Tests that synchronous observers are notified about provisioning progress.
@@ -516,6 +563,26 @@ TEST_F(FakeRmadClientTest, PowerCableStateObservation) {
   fake_client_()->TriggerPowerCableStateObservation(true);
   EXPECT_EQ(2, observer_1.num_power_cable_state());
   EXPECT_EQ(true, observer_1.last_power_cable_state());
+}
+
+// Tests that synchronous observers are notified about hardware verification
+// status.
+TEST_F(FakeRmadClientTest, HardwareVerificationResultObservation) {
+  TestObserver observer_1(client_);
+
+  fake_client_()->TriggerHardwareVerificationResultObservation(false,
+                                                               "fatal error");
+  EXPECT_EQ(1, observer_1.num_hardware_verification_result());
+  EXPECT_EQ(false,
+            observer_1.last_hardware_verification_result().is_compliant());
+  EXPECT_EQ("fatal error",
+            observer_1.last_hardware_verification_result().error_str());
+
+  fake_client_()->TriggerHardwareVerificationResultObservation(true, "ok");
+  EXPECT_EQ(2, observer_1.num_hardware_verification_result());
+  EXPECT_EQ(true,
+            observer_1.last_hardware_verification_result().is_compliant());
+  EXPECT_EQ("ok", observer_1.last_hardware_verification_result().error_str());
 }
 
 }  // namespace

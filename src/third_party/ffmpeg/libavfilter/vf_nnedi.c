@@ -205,10 +205,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static float dot_dsp(const NNEDIContext *const s, const float *kernel, const float *input,
@@ -674,7 +671,8 @@ static int get_frame(AVFilterContext *ctx, int is_second)
     dst->interlaced_frame = 0;
     dst->pts = s->pts;
 
-    ctx->internal->execute(ctx, filter_slice, dst, NULL, FFMIN(s->planeheight[1] / 2, s->nb_threads));
+    ff_filter_execute(ctx, filter_slice, dst, NULL,
+                      FFMIN(s->planeheight[1] / 2, s->nb_threads));
 
     if (s->field == -2 || s->field > 1)
         s->field_n = !s->field_n;
@@ -1143,7 +1141,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame  = filter_frame,
         .config_props  = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1153,7 +1150,6 @@ static const AVFilterPad outputs[] = {
         .config_props  = config_output,
         .request_frame = request_frame,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_nnedi = {
@@ -1164,8 +1160,8 @@ const AVFilter ff_vf_nnedi = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

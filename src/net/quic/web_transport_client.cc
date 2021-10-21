@@ -5,7 +5,6 @@
 #include "net/quic/web_transport_client.h"
 
 #include "net/quic/dedicated_web_transport_http3_client.h"
-#include "net/quic/quic_transport_client.h"
 
 namespace net {
 
@@ -20,16 +19,52 @@ class FailedWebTransportClient : public WebTransportClient {
                ErrorToString(net_error),
                /*safe_to_report_details=*/true),
         visitor_(visitor) {}
-  void Connect() override { visitor_->OnConnectionFailed(); }
+  void Connect() override { visitor_->OnConnectionFailed(error_); }
+  void Close(const absl::optional<WebTransportCloseInfo>& close_info) override {
+    NOTREACHED();
+  }
 
   quic::WebTransportSession* session() override { return nullptr; }
-  const WebTransportError& error() const override { return error_; }
 
  private:
   WebTransportError error_;
   WebTransportClientVisitor* visitor_;
 };
 }  // namespace
+
+std::ostream& operator<<(std::ostream& os, WebTransportState state) {
+  switch (state) {
+    case WebTransportState::NEW:
+      os << "NEW";
+      break;
+    case WebTransportState::CONNECTING:
+      os << "CONNECTING";
+      break;
+    case WebTransportState::CONNECTED:
+      os << "CONNECTED";
+      break;
+    case WebTransportState::CLOSED:
+      os << "CLOSED";
+      break;
+    case WebTransportState::FAILED:
+      os << "FAILED";
+      break;
+    default:
+      os << "[" << static_cast<int>(state) << "]";
+      break;
+  }
+  return os;
+}
+
+WebTransportCloseInfo::WebTransportCloseInfo() = default;
+WebTransportCloseInfo::WebTransportCloseInfo(uint32_t code,
+                                             base::StringPiece reason)
+    : code(code), reason(reason) {}
+WebTransportCloseInfo::~WebTransportCloseInfo() = default;
+bool WebTransportCloseInfo::operator==(
+    const WebTransportCloseInfo& other) const {
+  return code == other.code && reason == other.reason;
+}
 
 WebTransportClientVisitor::~WebTransportClientVisitor() = default;
 
@@ -47,14 +82,6 @@ std::unique_ptr<WebTransportClient> CreateWebTransportClient(
     const NetworkIsolationKey& isolation_key,
     URLRequestContext* context,
     const WebTransportParameters& parameters) {
-  if (url.scheme() == url::kQuicTransportScheme) {
-    if (!parameters.enable_quic_transport) {
-      return std::make_unique<FailedWebTransportClient>(
-          ERR_DISALLOWED_URL_SCHEME, visitor);
-    }
-    return std::make_unique<QuicTransportClient>(
-        url, origin, visitor, isolation_key, context, parameters);
-  }
   if (url.scheme() == url::kHttpsScheme) {
     if (!parameters.enable_web_transport_http3) {
       return std::make_unique<FailedWebTransportClient>(

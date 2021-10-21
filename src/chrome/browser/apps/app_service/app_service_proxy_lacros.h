@@ -35,6 +35,7 @@ class WebAppsPublisherHost;
 
 namespace apps {
 
+class BrowserAppInstanceForwarder;
 class BrowserAppInstanceTracker;
 
 struct IntentLaunchInfo {
@@ -56,7 +57,6 @@ struct IntentLaunchInfo {
 // See components/services/app_service/README.md.
 class AppServiceProxyLacros : public KeyedService,
                               public apps::IconLoader,
-                              public apps::AppRegistryCache::Observer,
                               public crosapi::mojom::AppServiceSubscriber {
  public:
   explicit AppServiceProxyLacros(Profile* profile);
@@ -216,6 +216,16 @@ class AppServiceProxyLacros : public KeyedService,
   void AddPreferredApp(const std::string& app_id,
                        const apps::mojom::IntentPtr& intent);
 
+  // Sets |app_id| as the preferred app for all of its supported links ('view'
+  // intent filters with a scheme and host). Any existing preferred apps for
+  // those links will have all their supported links unset, as if
+  // RemoveSupportedLinksPreference was called for that app.
+  void SetSupportedLinksPreference(const std::string& app_id);
+
+  // Removes all supported link filters from the preferred app list for
+  // |app_id|.
+  void RemoveSupportedLinksPreference(const std::string& app_id);
+
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode);
 
@@ -298,11 +308,6 @@ class AppServiceProxyLacros : public KeyedService,
               apps::mojom::AppType app_type,
               bool should_notify_initialized) override;
 
-  // apps::AppRegistryCache::Observer overrides:
-  void OnAppUpdate(const apps::AppUpdate& update) override;
-  void OnAppRegistryCacheWillBeDestroyed(
-      apps::AppRegistryCache* cache) override;
-
   apps::mojom::IntentFilterPtr FindBestMatchingFilter(
       const apps::mojom::IntentPtr& intent);
 
@@ -327,8 +332,11 @@ class AppServiceProxyLacros : public KeyedService,
   // on Chrome.
   std::unique_ptr<apps::BrowserAppLauncher> browser_app_launcher_;
 
+  // Keeps track of local browser apps.
   std::unique_ptr<apps::BrowserAppInstanceTracker>
       browser_app_instance_tracker_;
+  // Sends browser app status events to Ash.
+  std::unique_ptr<BrowserAppInstanceForwarder> browser_app_instance_forwarder_;
 
   bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;

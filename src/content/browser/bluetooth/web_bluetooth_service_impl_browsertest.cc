@@ -160,6 +160,11 @@ class TestBluetoothDelegate : public BluetoothDelegate {
     prompt_ = prompt.get();
     return std::move(prompt);
   }
+  void ShowDeviceCredentialsPrompt(RenderFrameHost* frame,
+                                   const std::u16string& device_identifier,
+                                   CredentialsCallback callback) override {
+    NOTREACHED();
+  }
   blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       RenderFrameHost* frame,
       const std::string& device_address) override {
@@ -592,9 +597,9 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothServiceImplBrowserTest,
 
   EXPECT_CALL(*adapter(), AddObserver(_));
 
-  ASSERT_EQ(2u, GetWebContents()->GetAllFrames().size());
+  RenderFrameHost* sub_frame = ChildFrameAt(GetWebContents(), 0);
+  ASSERT_TRUE(sub_frame);
 
-  RenderFrameHost* sub_frame = GetWebContents()->GetAllFrames().back();
   constexpr char kErrorMessage[] =
       "NotFoundError: Web Bluetooth API globally disabled.";
 

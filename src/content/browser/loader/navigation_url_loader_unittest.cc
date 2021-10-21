@@ -85,6 +85,7 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         std::make_unique<NavigationRequestInfo>(
             std::move(common_params), std::move(begin_params),
+            network::mojom::WebSandboxFlags::kNone,
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
@@ -97,7 +98,8 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
-            absl::nullopt /* devtools_accepted_stream_types */));
+            absl::nullopt /* devtools_accepted_stream_types */,
+            false /* is_pdf */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, nullptr, delegate,
@@ -161,7 +163,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   GURL url = https_server.GetURL("/");
 
   // Set HSTS for the test domain in order to make SSL errors fatal.
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  base::Time expiry = base::Time::Now() + base::Days(1000);
   bool include_subdomains = false;
   auto* storage_partition = browser_context_->GetDefaultStoragePartition();
   base::RunLoop run_loop;

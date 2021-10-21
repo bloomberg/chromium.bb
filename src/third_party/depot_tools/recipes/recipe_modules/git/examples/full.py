@@ -80,9 +80,7 @@ def RunSteps(api):
   api.git.new_branch('refactor')  # Upstream is origin/main by default.
 
   if api.properties.get('set_both_upstream_and_upstream_current'):
-    api.git.new_branch('failed_new_branch',
-                       upstream='will_fail',
-                       upstream_current=True)
+    api.git.new_branch('failed_new_branch', upstream='will_fail', upstream_current=True) #pylint: disable = line-too-long
   # And use upstream kwarg to set up different upstream for tracking.
   api.git.new_branch('feature', upstream='refactor')
   # A new branching tracking the current branch, which is 'feature'.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 
+#include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
 #include "third_party/blink/public/mojom/mobile_metrics/mobile_friendliness.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -26,7 +27,6 @@
 
 namespace blink {
 
-using mojom::blink::ViewportStatus;
 static constexpr int kSmallFontThreshold = 9;
 static constexpr int kTimeBudgetExceeded = -2;
 
@@ -37,7 +37,7 @@ static constexpr double kMaximumScalePreventsZoomingThreshold = 1.2;
 // Finding bad tap targets may takes too time for big page and should abort if
 // it takes more than 5ms.
 static constexpr base::TimeDelta kTimeBudgetForBadTapTarget =
-    base::TimeDelta::FromMilliseconds(5);
+    base::Milliseconds(5);
 
 MobileFriendlinessChecker::MobileFriendlinessChecker(LocalFrameView& frame_view)
     : frame_view_(&frame_view),
@@ -150,7 +150,7 @@ bool IsTapTargetCandidate(const Node* node) {
 // x_positions: Collects and inserts every x dimension positions.
 // vertices: Inserts y dimension keyed vertex positions with its attribute.
 // Returns total count of tap targets.
-// Returns -1 if time limit exceeded.
+// Returns kTimeBudgetExceeded if time limit exceeded.
 int ExtractAndCountAllTapTargets(
     LayoutObject* const root,
     int finger_radius,
@@ -163,7 +163,7 @@ int ExtractAndCountAllTapTargets(
   int tap_targets = 0;
   for (LayoutObject* object = root; object;) {
     if (IsTimeBudgetExpired(started))
-      return -1;
+      return kTimeBudgetExceeded;
 
     Node* node = object->GetNode();
     const ComputedStyle* style = object->Style();
@@ -187,11 +187,11 @@ int ExtractAndCountAllTapTargets(
         object = object->NextInPreOrder();
         continue;
       }
-      const int top = clampTo<int>(rect.Y() - finger_radius + scroll_offset);
+      const int top = ClampTo<int>(rect.Y() - finger_radius + scroll_offset);
       const int bottom =
-          clampTo<int>(rect.MaxY() + finger_radius + scroll_offset);
-      const int left = clampTo<int>(rect.X() - finger_radius);
-      const int right = clampTo<int>(rect.MaxX() + finger_radius);
+          ClampTo<int>(rect.MaxY() + finger_radius + scroll_offset);
+      const int left = ClampTo<int>(rect.X() - finger_radius);
+      const int right = ClampTo<int>(rect.MaxX() + finger_radius);
       const int center = right / 2 + left / 2;
       if (top > max_height) {
         break;
@@ -245,7 +245,7 @@ void CompressKeyWithVector(const Vector<int>& positions,
 // Precondition: |vertex| must be sorted by its |first|.
 // rightmost_position: Rightmost x position in all vertices.
 // Returns bad tap targets count.
-// Returns -1 if time limit exceeded.
+// Returns kTimeBudgetExceeded if time limit exceeded.
 int CountBadTapTargets(wtf_size_t rightmost_position,
                        const Vector<std::pair<int, EdgeOrCenter>>& vertices,
                        const base::Time& started) {
@@ -275,7 +275,7 @@ int CountBadTapTargets(wtf_size_t rightmost_position,
       }
     }
     if (IsTimeBudgetExpired(started))
-      return -1;
+      return kTimeBudgetExceeded;
   }
   return bad_tap_targets;
 }
@@ -285,14 +285,17 @@ int CountBadTapTargets(wtf_size_t rightmost_position,
 // Counts and calculate ration of bad tap targets. The process is a surface scan
 // with region tracking by Fenwick tree. The detail of the algorithm is
 // go/bad-tap-target-ukm
-void MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
+int MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   base::Time started = base::Time::Now();
   constexpr float kOneDipInMm = 0.15875;
-  const float scale_factor = frame_view_->GetChromeClient()
-                                 ->GetScreenInfo(frame_view_->GetFrame())
-                                 .device_scale_factor;
+  double initial_scale = frame_view_->GetPage()
+                             ->GetPageScaleConstraintsSet()
+                             .FinalConstraints()
+                             .initial_scale;
+  DCHECK_GT(initial_scale, 0);
   const int finger_radius =
-      std::floor((3 / kOneDipInMm) / scale_factor);  // 3mm in logical pixel.
+      std::floor((3 / kOneDipInMm) / initial_scale);  // 3mm in logical pixel.
+
   Vector<std::pair<int, EdgeOrCenter>> vertices;
   Vector<int> x_positions;
 
@@ -308,10 +311,8 @@ void MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   const int all_tap_targets = ExtractAndCountAllTapTargets(
       frame_view_->GetFrame().GetDocument()->GetLayoutView(), finger_radius,
       scroll_y, screen_height, x_positions, started, vertices);
-  if (all_tap_targets == -1) {
-    mobile_friendliness_.bad_tap_targets_ratio = kTimeBudgetExceeded;
-    return;
-  }
+  if (all_tap_targets <= 0)
+    return all_tap_targets;  // Means there is no tap target or timeout.
 
   // Compress x dimension of all vertices to save memory.
   // This will reduce rightmost position of vertices without sacrificing
@@ -333,27 +334,24 @@ void MobileFriendlinessChecker::ComputeBadTapTargetsRatio() {
   // Sweep x-compressed y-ordered vertices to detect bad tap targets.
   const int bad_tap_targets =
       CountBadTapTargets(x_positions.size(), vertices, started);
-  if (bad_tap_targets == -1) {
-    mobile_friendliness_.bad_tap_targets_ratio = kTimeBudgetExceeded;
-    return;
-  }
+  if (bad_tap_targets == kTimeBudgetExceeded)
+    return kTimeBudgetExceeded;
 
-  if (all_tap_targets > 0) {
-    mobile_friendliness_.bad_tap_targets_ratio =
-        bad_tap_targets * 100.0 / all_tap_targets;
-  } else {
-    mobile_friendliness_.bad_tap_targets_ratio = 0;
-  }
+  return bad_tap_targets * 100.0 / all_tap_targets;
 }
 
 void MobileFriendlinessChecker::EvaluateNow() {
+  // This checker has nothing to do.
+  if (!tap_target_check_enabled_ && !font_size_check_enabled_)
+    return;
+
   // If detached, there's no need to calculate any metrics.
   // Or if this is before FCP, there's nothing to evaluate.
   if (!frame_view_->GetChromeClient() || !fcp_detected_)
     return;
 
   if (tap_target_check_enabled_)
-    ComputeBadTapTargetsRatio();
+    mobile_friendliness_.bad_tap_targets_ratio = ComputeBadTapTargetsRatio();
 
   if (font_size_check_enabled_)
     mobile_friendliness_.small_text_ratio = text_area_sizes_.SmallTextRatio();
@@ -366,49 +364,37 @@ void MobileFriendlinessChecker::EvaluateNow() {
 
 void MobileFriendlinessChecker::NotifyViewportUpdated(
     const ViewportDescription& viewport) {
+  if (viewport.type != ViewportDescription::Type::kViewportMeta)
+    return;
+
   const double zoom = viewport.zoom_is_explicit ? viewport.zoom : 1.0;
+  mobile_friendliness_.viewport_device_width =
+      viewport.max_width.IsDeviceWidth();
+  if (viewport.max_width.IsFixed()) {
+    mobile_friendliness_.viewport_hardcoded_width =
+        viewport.max_width.GetFloatValue();
+    // Convert value from Blink space to device-independent pixels.
+    if (viewport_scalar_ != 0)
+      mobile_friendliness_.viewport_hardcoded_width /= viewport_scalar_;
+  }
 
-  switch (viewport.type) {
-    case ViewportDescription::Type::kUserAgentStyleSheet:
-      if (mobile_friendliness_.viewport_device_width ==
-          ViewportStatus::kUnknown)
-        mobile_friendliness_.viewport_device_width = ViewportStatus::kNo;
+  if (viewport.zoom_is_explicit) {
+    mobile_friendliness_.viewport_initial_scale_x10 =
+        std::round(viewport.zoom * 10);
+  }
 
-      if (mobile_friendliness_.allow_user_zoom == ViewportStatus::kUnknown)
-        mobile_friendliness_.allow_user_zoom = ViewportStatus::kYes;
-      break;
-    case ViewportDescription::Type::kViewportMeta:
-      mobile_friendliness_.viewport_device_width =
-          viewport.max_width.IsDeviceWidth() ? ViewportStatus::kYes
-                                             : ViewportStatus::kNo;
-      if (viewport.max_width.IsFixed()) {
-        mobile_friendliness_.viewport_hardcoded_width =
-            viewport.max_width.GetFloatValue();
-        // Convert value from Blink space to device-independent pixels.
-        if (viewport_scalar_ != 0)
-          mobile_friendliness_.viewport_hardcoded_width /= viewport_scalar_;
-      }
-      if (viewport.zoom_is_explicit) {
-        mobile_friendliness_.viewport_initial_scale_x10 =
-            std::round(viewport.zoom * 10);
-      }
-      if (viewport.user_zoom_is_explicit) {
-        mobile_friendliness_.allow_user_zoom =
-            viewport.user_zoom ? ViewportStatus::kYes : ViewportStatus::kNo;
-      }
-      if (viewport.max_zoom_is_explicit &&
-          viewport.max_zoom / zoom < kMaximumScalePreventsZoomingThreshold) {
-        mobile_friendliness_.allow_user_zoom = ViewportStatus::kNo;
-      }
-      break;
-    default:
-      return;
+  if (viewport.user_zoom_is_explicit) {
+    mobile_friendliness_.allow_user_zoom = viewport.user_zoom;
+    // If zooming is only allowed slightly.
+    if (viewport.max_zoom / zoom < kMaximumScalePreventsZoomingThreshold)
+      mobile_friendliness_.allow_user_zoom = false;
   }
 }
 
 int MobileFriendlinessChecker::TextAreaWithFontSize::SmallTextRatio() const {
   if (total_text_area == 0)
     return 0;
+
   return small_font_area * 100 / total_text_area;
 }
 
@@ -433,15 +419,13 @@ void MobileFriendlinessChecker::ComputeSmallTextRatio(
         style.ClipBottom().IsZero())
       return;
 
-    double actual_font_size = style.FontSize();
     double initial_scale = frame_view_->GetPage()
                                ->GetPageScaleConstraintsSet()
                                .FinalConstraints()
                                .initial_scale;
-    if (initial_scale > 0)
-      actual_font_size *= initial_scale;
-    actual_font_size /= viewport_scalar_;
-
+    DCHECK_GT(initial_scale, 0);
+    double actual_font_size =
+        style.FontSize() * initial_scale / viewport_scalar_;
     double area = text->PhysicalAreaSize();
     if (actual_font_size < kSmallFontThreshold)
       text_area_sizes_.small_font_area += area;

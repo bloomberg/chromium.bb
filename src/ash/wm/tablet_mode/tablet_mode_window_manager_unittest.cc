@@ -72,6 +72,11 @@ void SetShelfAutoHideBehaviorPref(int64_t display_id,
 class TabletModeWindowManagerTest : public AshTestBase {
  public:
   TabletModeWindowManagerTest() = default;
+
+  TabletModeWindowManagerTest(const TabletModeWindowManagerTest&) = delete;
+  TabletModeWindowManagerTest& operator=(const TabletModeWindowManagerTest&) =
+      delete;
+
   ~TabletModeWindowManagerTest() override = default;
 
   // Initialize parameters for test windows.  If |can_maximize| is not
@@ -179,9 +184,6 @@ class TabletModeWindowManagerTest : public AshTestBase {
   SplitViewController* split_view_controller() {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManagerTest);
 };
 
 // Test that creating the object and destroying it without any windows should
@@ -1420,6 +1422,10 @@ namespace {
 class TestObserver : public WindowStateObserver {
  public:
   TestObserver() = default;
+
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   ~TestObserver() override = default;
 
   // WindowStateObserver:
@@ -1465,8 +1471,6 @@ class TestObserver : public WindowStateObserver {
   int post_count_ = 0;
   bool post_layer_visibility_ = false;
   WindowStateType last_old_state_ = WindowStateType::kDefault;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 }  // namespace
@@ -1736,8 +1740,7 @@ TEST_F(TabletModeWindowManagerTest,
             1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
   // Exit tablet mode and verify the window stays in the same position.
   DestroyTabletModeWindowManager();
-  EXPECT_EQ(window->bounds().width(),
-            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+  EXPECT_EQ(window->bounds().width(), 1200 * 0.33);
 
   // Now test the 2 windows case.
   std::unique_ptr<aura::Window> window2(
@@ -1760,8 +1763,7 @@ TEST_F(TabletModeWindowManagerTest,
             1200 - window->bounds().width() - kSplitviewDividerShortSideLength);
   // Exit tablet mode and verify the windows stay in the same position.
   DestroyTabletModeWindowManager();
-  EXPECT_EQ(window->bounds().width(),
-            1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
+  EXPECT_EQ(window->bounds().width(), 1200 * 0.33);
   EXPECT_EQ(window2->bounds().width(), 1200 - window->bounds().width());
 }
 

@@ -40,6 +40,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -81,7 +82,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/form_submission.h"
@@ -1201,6 +1201,7 @@ void FrameLoader::CommitDocumentLoader(
     const absl::optional<Document::UnloadEventTiming>& unload_timing,
     HistoryItem* previous_history_item,
     CommitReason commit_reason) {
+  TRACE_EVENT("blink", "FrameLoader::CommitDocumentLoader");
   document_loader_ = document_loader;
   CHECK(document_loader_);
 

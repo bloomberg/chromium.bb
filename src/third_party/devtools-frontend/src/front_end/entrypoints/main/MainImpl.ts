@@ -209,13 +209,24 @@ export class MainImpl {
       localStorage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, storagePrefix);
     }
 
-    const hostStorage: Common.Settings.SettingsBackingStore = {
+    const hostUnsyncedStorage: Common.Settings.SettingsBackingStore = {
+      register: (name: string) =>
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, {synced: false}),
       set: Host.InspectorFrontendHost.InspectorFrontendHostInstance.setPreference,
       remove: Host.InspectorFrontendHost.InspectorFrontendHostInstance.removePreference,
       clear: Host.InspectorFrontendHost.InspectorFrontendHostInstance.clearPreferences,
     };
-    const globalStorage = new Common.Settings.SettingsStorage(prefs, hostStorage, storagePrefix);
-    Common.Settings.Settings.instance({forceNew: true, globalStorage, localStorage});
+    const hostSyncedStorage: Common.Settings.SettingsBackingStore = {
+      ...hostUnsyncedStorage,
+      register: (name: string) =>
+          Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, {synced: true}),
+    };
+    // `prefs` is retrieved via `getPreferences` host binding and contains both synced and unsynced settings.
+    // As such, we use `prefs` to initialize both the synced and the global storage. This is fine as an individual
+    // setting can't change storage buckets during a single DevTools session.
+    const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
+    const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
+    Common.Settings.Settings.instance({forceNew: true, syncedStorage, globalStorage, localStorage});
 
     // @ts-ignore layout test global
     self.Common.settings = Common.Settings.Settings.instance();
@@ -241,9 +252,6 @@ export class MainImpl {
         'blackboxJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
     Root.Runtime.experiments.register(
         'ignoreListJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
-    Root.Runtime.experiments.register(
-        'cssOverview', 'CSS Overview', undefined, 'https://developer.chrome.com/blog/new-in-devtools-87/#css-overview');
-    Root.Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Root.Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
     Root.Runtime.experiments.register(
@@ -259,7 +267,6 @@ export class MainImpl {
     Root.Runtime.experiments.register(
         'showOptionToNotTreatGlobalObjectsAsRoots',
         'Show option to take heap snapshot where globals are not treated as root');
-    Root.Runtime.experiments.register('sourceDiff', 'Source diff');
     Root.Runtime.experiments.register(
         'sourceOrderViewer', 'Source order viewer', undefined,
         'https://developer.chrome.com/blog/new-in-devtools-92/#source-order');
@@ -318,8 +325,15 @@ export class MainImpl {
         'hideIssuesFeature', 'Enable experimental hide issues menu', undefined,
         'https://developer.chrome.com/blog/new-in-devtools-94/#hide-issues');
 
+    // Hide Issues Feature.
+    Root.Runtime.experiments.register('groupAndHideIssuesByKind', 'Allow grouping and hiding of issues by IssueKind');
+
     // Localized DevTools, hide "locale selector" setting behind an experiment.
     Root.Runtime.experiments.register(Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS, 'Enable localized DevTools');
+
+    // Checkbox in the Settings UI to enable Chrome Sync is behind this experiment.
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.SYNC_SETTINGS, 'Sync DevTools settings with Chrome Sync');
 
     Root.Runtime.experiments.enableExperimentsByDefault([
       Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS,
@@ -327,6 +341,9 @@ export class MainImpl {
       'hideIssuesFeature',
       'bfcacheDebugging',
     ]);
+
+    // Debugging of Reporting API
+    Root.Runtime.experiments.register('reportingApiDebugging', 'Enable Reporting API panel in the Application panel');
 
     Root.Runtime.experiments.cleanUpStaleExperiments();
     const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
@@ -521,6 +538,9 @@ export class MainImpl {
       Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
     }
 
+    // Initialize ARIAUtils.alert Element
+    UI.ARIAUtils.alertElementInstance();
+
     // Allow UI cycles to repaint prior to creating connection.
     setTimeout(this.initializeTarget.bind(this), 0);
     MainImpl.timeEnd('Main._showAppUI');
@@ -555,7 +575,7 @@ export class MainImpl {
       if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
         promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
       } else {
-        const changeListener = async(event: Common.EventTarget.EventTargetEvent): Promise<void> => {
+        const changeListener = async(event: Common.EventTarget.EventTargetEvent<unknown>): Promise<void> => {
           if (!event.data) {
             return;
           }
@@ -576,19 +596,16 @@ export class MainImpl {
   private registerMessageSinkListener(): void {
     Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, messageAdded);
 
-    function messageAdded(event: Common.EventTarget.EventTargetEvent): void {
-      const message = (event.data as Common.Console.Message);
+    function messageAdded({data: message}: Common.EventTarget.EventTargetEvent<Common.Console.Message>): void {
       if (message.show) {
         Common.Console.Console.instance().show();
       }
     }
   }
 
-  private revealSourceLine(event: Common.EventTarget.EventTargetEvent): void {
-    const url = (event.data['url'] as string);
-    const lineNumber = (event.data['lineNumber'] as number);
-    const columnNumber = (event.data['columnNumber'] as number);
-
+  private revealSourceLine(
+      event: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.RevealSourceLineEvent>): void {
+    const {url, lineNumber, columnNumber} = event.data;
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
     if (uiSourceCode) {
       Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));

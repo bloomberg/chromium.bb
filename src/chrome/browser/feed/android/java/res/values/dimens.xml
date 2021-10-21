@@ -34,4 +34,12 @@
     <dimen name="back_to_top_bubble_vertical_padding">10dp</dimen>
     <dimen name="back_to_top_bubble_image_size">12dp</dimen>
     <dimen name="back_to_top_bubble_image_margin_end">9dp</dimen>
+
+    <!-- No content dimensions. -->
+    <dimen name="no_content_padding">16dp</dimen>
+    <dimen name="no_content_text_padding">8dp</dimen>
+
+    <dimen name="content_suggestions_card_modern_margin">0dp</dimen>
+    <dimen name="content_suggestions_card_modern_padding">16dp</dimen>
+    <dimen name="ntp_wide_card_lateral_margins">36dp</dimen>
 </resources>

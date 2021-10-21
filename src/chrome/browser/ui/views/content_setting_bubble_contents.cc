@@ -30,12 +30,13 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -72,6 +73,10 @@ struct LayoutRow {
 class MediaComboboxModel : public ui::ComboboxModel {
  public:
   explicit MediaComboboxModel(blink::mojom::MediaStreamType type);
+
+  MediaComboboxModel(const MediaComboboxModel&) = delete;
+  MediaComboboxModel& operator=(const MediaComboboxModel&) = delete;
+
   ~MediaComboboxModel() override;
 
   blink::mojom::MediaStreamType type() const { return type_; }
@@ -84,8 +89,6 @@ class MediaComboboxModel : public ui::ComboboxModel {
 
  private:
   blink::mojom::MediaStreamType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
 };
 
 // A view representing one or more rows, each containing a label and combobox
@@ -244,7 +247,7 @@ void ContentSettingBubbleContents::ListItemContainer::AddItem(
     item_icon->SetBorder(
         views::CreateEmptyBorder(kTitleDescriptionListItemInset));
     item_icon->SetImage(ui::ImageModel::FromVectorIcon(
-        *item.image, ui::NativeTheme::kColorId_LabelEnabledColor,
+        *item.image, ui::kColorLabelForeground,
         GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
         item.has_blocked_badge ? &vector_icons::kBlockedBadgeIcon
                                : &gfx::kNoneIcon));
@@ -583,8 +586,7 @@ void ContentSettingBubbleContents::Init() {
 
 void ContentSettingBubbleContents::StyleLearnMoreButton() {
   DCHECK(learn_more_button_);
-  SkColor text_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor text_color = GetColorProvider()->GetColor(ui::kColorLabelForeground);
   views::SetImageFromVectorIcon(learn_more_button_,
                                 vector_icons::kHelpOutlineIcon, text_color);
 }

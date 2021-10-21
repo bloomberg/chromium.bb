@@ -35,6 +35,12 @@ class DemoSessionMetricsRecorderTest : public AshTestBase {
  public:
   DemoSessionMetricsRecorderTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  DemoSessionMetricsRecorderTest(const DemoSessionMetricsRecorderTest&) =
+      delete;
+  DemoSessionMetricsRecorderTest& operator=(
+      const DemoSessionMetricsRecorderTest&) = delete;
+
   ~DemoSessionMetricsRecorderTest() override = default;
 
   // AshTestBase:
@@ -153,9 +159,6 @@ class DemoSessionMetricsRecorderTest : public AshTestBase {
 
   // Owned by metics_recorder_.
   base::MockRepeatingTimer* mock_timer_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionMetricsRecorderTest);
 };
 
 // Verify samples are correct when one app window is active.
@@ -677,14 +680,14 @@ TEST_F(DemoSessionMetricsRecorderTest, DwellTime) {
   // Simulate user activity for 10 seconds.
   SendUserActivity();
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
   SendUserActivity();
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
   SendUserActivity();
 
   // Simulate a session "timing out" after 60 seconds.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment()->FastForwardBy(base::Seconds(60));
   DeleteMetricsRecorder();
 
   // The recorded dwell time should be 10 seconds.

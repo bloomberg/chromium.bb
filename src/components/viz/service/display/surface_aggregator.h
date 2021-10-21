@@ -54,14 +54,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                     DisplayResourceProvider* provider,
                     bool aggregate_only_damaged,
                     bool needs_surface_damage_rect_list);
+
+  SurfaceAggregator(const SurfaceAggregator&) = delete;
+  SurfaceAggregator& operator=(const SurfaceAggregator&) = delete;
+
   ~SurfaceAggregator();
 
   // These constants are used for all time related metrics recorded in
   // SurfaceAggregator.
-  static constexpr base::TimeDelta kHistogramMinTime =
-      base::TimeDelta::FromMicroseconds(5);
-  static constexpr base::TimeDelta kHistogramMaxTime =
-      base::TimeDelta::FromMilliseconds(10);
+  static constexpr base::TimeDelta kHistogramMinTime = base::Microseconds(5);
+  static constexpr base::TimeDelta kHistogramMaxTime = base::Milliseconds(10);
   static constexpr int kHistogramTimeBuckets = 50;
 
   // |target_damage| represents an area on the output surface that might have
@@ -387,10 +389,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   base::TimeTicks expected_display_time_;
   int64_t display_trace_id_ = -1;
 
-  // This is the set of aggregated pass ids that has damage from contributing
-  // content.
-  base::flat_set<AggregatedRenderPassId> contributing_content_damaged_passes_;
-
   // Map from SurfaceRange to Surface for current aggregation.
   base::flat_map<SurfaceRange, Surface*> resolved_surface_ranges_;
 
@@ -411,10 +409,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // True if the frame that's currently being aggregated has copy requests.
   // This is valid during Aggregate after PrewalkSurface is called.
   bool has_copy_requests_ = false;
-
-  // True if the frame that's currently being aggregated has cached render
-  // passes. This is valid during Aggregate after PrewalkSurface is called.
-  bool has_cached_render_passes_ = false;
 
   // True if any RenderPasses in the aggregated frame have a backdrop filter
   // that moves pixels. This is valid during Aggregate after PrewalkSurface is
@@ -461,8 +455,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // Used to generate new unique render pass ids in the aggregated namespace.
   AggregatedRenderPassId::Generator render_pass_id_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceAggregator);
 };
 
 }  // namespace viz

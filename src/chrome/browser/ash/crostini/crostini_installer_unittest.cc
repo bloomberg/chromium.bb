@@ -97,6 +97,9 @@ class CrostiniInstallerTest : public testing::Test {
             TestingBrowserProcess::GetGlobal())),
         browser_part_(g_browser_process->platform_part()) {}
 
+  CrostiniInstallerTest(const CrostiniInstallerTest&) = delete;
+  CrostiniInstallerTest& operator=(const CrostiniInstallerTest&) = delete;
+
   void SetUp() override {
     component_manager_ =
         base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
@@ -188,8 +191,6 @@ class CrostiniInstallerTest : public testing::Test {
   std::unique_ptr<ScopedTestingLocalState> local_state_;
   scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
   BrowserProcessPlatformPartTestApi browser_part_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniInstallerTest);
 };
 
 TEST_F(CrostiniInstallerTest, InstallFlow) {
@@ -283,12 +284,12 @@ TEST_F(CrostiniInstallerTest, CancelAfterStart) {
   // Hang the installer flow waiting for Tremplin to start, so we get a chance
   // to cancel it.
   waiting_fake_concierge_client_->set_send_tremplin_started_signal_delay(
-      base::TimeDelta::FromDays(1));
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+      base::Days(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
 
   check.Call("calling Cancel()");
   Cancel();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
 
   histogram_tester_.ExpectUniqueSample(
       "Crostini.SetupResult",

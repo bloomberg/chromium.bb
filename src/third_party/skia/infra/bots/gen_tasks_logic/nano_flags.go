@@ -123,6 +123,9 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 					configs = append(configs, "vkmsaa8")
 				}
 			}
+			if b.gpu("QuadroP400", "MaliG77") {
+				configs = append(configs, "vkdmsaa")
+			}
 		}
 		if b.extraConfig("Metal") {
 			configs = []string{"mtl"}
@@ -156,6 +159,9 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 		if b.os("ChromeOS") {
 			// Just run GLES for now - maybe add gles_msaa4 in the future
 			configs = []string{"gles"}
+		}
+		if b.extraConfig("SwiftShader") {
+			configs = []string{"gles", "glesdmsaa"}
 		}
 	}
 

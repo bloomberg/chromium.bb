@@ -53,6 +53,9 @@ class ContentSettingImageModel {
     NUM_IMAGE_TYPES
   };
 
+  ContentSettingImageModel(const ContentSettingImageModel&) = delete;
+  ContentSettingImageModel& operator=(const ContentSettingImageModel&) = delete;
+
   virtual ~ContentSettingImageModel() {}
 
   // Generates a vector of all image models to be used within one window.
@@ -155,7 +158,6 @@ class ContentSettingImageModel {
   const bool image_type_should_notify_accessibility_;
   bool should_auto_open_bubble_ = false;
   bool should_show_promo_ = false;
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
 };
 
 // A subclass for an image model tied to a single content type.
@@ -166,6 +168,11 @@ class ContentSettingSimpleImageModel : public ContentSettingImageModel {
       ContentSettingsType content_type,
       bool image_type_should_notify_accessibility = false);
 
+  ContentSettingSimpleImageModel(const ContentSettingSimpleImageModel&) =
+      delete;
+  ContentSettingSimpleImageModel& operator=(
+      const ContentSettingSimpleImageModel&) = delete;
+
   // ContentSettingImageModel implementation.
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
@@ -175,22 +182,22 @@ class ContentSettingSimpleImageModel : public ContentSettingImageModel {
 
  private:
   ContentSettingsType content_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingSimpleImageModel);
 };
 
 class ContentSettingFramebustBlockImageModel : public ContentSettingImageModel {
  public:
   ContentSettingFramebustBlockImageModel();
 
+  ContentSettingFramebustBlockImageModel(
+      const ContentSettingFramebustBlockImageModel&) = delete;
+  ContentSettingFramebustBlockImageModel& operator=(
+      const ContentSettingFramebustBlockImageModel&) = delete;
+
   bool UpdateAndGetVisibility(content::WebContents* web_contents) override;
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
       content::WebContents* web_contents) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingFramebustBlockImageModel);
 };
 
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_

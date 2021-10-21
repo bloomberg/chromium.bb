@@ -12,8 +12,11 @@ namespace ash {
 
 class FakeLoginDisplayHost::FakeBaseScreen : public BaseScreen {
  public:
-  explicit FakeBaseScreen(chromeos::OobeScreenId screen_id)
+  explicit FakeBaseScreen(OobeScreenId screen_id)
       : BaseScreen(screen_id, OobeScreenPriority::DEFAULT) {}
+
+  FakeBaseScreen(const FakeBaseScreen&) = delete;
+  FakeBaseScreen& operator=(const FakeBaseScreen&) = delete;
 
   ~FakeBaseScreen() override = default;
 
@@ -21,8 +24,6 @@ class FakeLoginDisplayHost::FakeBaseScreen : public BaseScreen {
   // BaseScreen:
   void ShowImpl() override {}
   void HideImpl() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBaseScreen);
 };
 
 FakeLoginDisplayHost::FakeLoginDisplayHost()
@@ -79,6 +80,10 @@ KioskLaunchController* FakeLoginDisplayHost::GetKioskLaunchController() {
   return nullptr;
 }
 
+WizardContext* FakeLoginDisplayHost::GetWizardContext() {
+  return nullptr;
+}
+
 void FakeLoginDisplayHost::StartUserAdding(
     base::OnceClosure completion_callback) {}
 
@@ -116,6 +121,8 @@ bool FakeLoginDisplayHost::IsUserAllowlisted(
 void FakeLoginDisplayHost::ShowGaiaDialog(const AccountId& prefilled_account) {}
 
 void FakeLoginDisplayHost::ShowOsInstallScreen() {}
+
+void FakeLoginDisplayHost::ShowGuestTosScreen() {}
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 

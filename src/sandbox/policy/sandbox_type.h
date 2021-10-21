@@ -82,7 +82,7 @@ enum class SandboxType {
   kMirroring,
 #endif  // defined(OS_MAC)
 
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
   // The print backend service process which interfaces with operating system
   // print drivers.
   kPrintBackend,
@@ -139,6 +139,10 @@ inline constexpr sandbox::policy::SandboxType MapToSandboxType(
       return sandbox::policy::SandboxType::kSpeechRecognition;
     case sandbox::mojom::Sandbox::kUtility:
       return sandbox::policy::SandboxType::kUtility;
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+    case sandbox::mojom::Sandbox::kPrintBackend:
+      return sandbox::policy::SandboxType::kPrintBackend;
+#endif
 #if defined(OS_FUCHSIA)
     case sandbox::mojom::Sandbox::kVideoCapture:
       return sandbox::policy::SandboxType::kVideoCapture;

@@ -8,7 +8,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
 
@@ -23,6 +22,10 @@ void FakePasswordStoreBackend::InitBackend(
     base::OnceCallback<void(bool)> completion) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(completion), /*success=*/true));
+}
+
+void FakePasswordStoreBackend::Shutdown(base::OnceClosure shutdown_completed) {
+  std::move(shutdown_completed).Run();
 }
 
 void FakePasswordStoreBackend::GetAllLoginsAsync(LoginsReply callback) {

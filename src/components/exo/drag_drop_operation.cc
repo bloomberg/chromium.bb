@@ -6,6 +6,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/check.h"
+#include "base/pickle.h"
 #include "base/strings/string_split.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
@@ -29,8 +30,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/transform_util.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -226,6 +227,8 @@ DragDropOperation::DragDropOperation(
                      origin->window()),
       base::BindOnce(&DragDropOperation::OnFileContentsRead,
                      weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DragDropOperation::OnWebCustomDataRead,
+                     weak_ptr_factory_.GetWeakPtr()),
       counter_);
 }
 
@@ -286,6 +289,17 @@ void DragDropOperation::OnFileContentsRead(const std::string& mime_type,
   DCHECK(os_exchange_data_);
   os_exchange_data_->SetFileContents(filename,
                                      std::string(data.begin(), data.end()));
+  mime_type_ = mime_type;
+  counter_.Run();
+}
+
+void DragDropOperation::OnWebCustomDataRead(const std::string& mime_type,
+                                            const std::vector<uint8_t>& data) {
+  DCHECK(os_exchange_data_);
+  base::Pickle pickle(reinterpret_cast<const char*>(data.data()), data.size());
+  os_exchange_data_->SetPickledData(
+      ui::ClipboardFormatType::WebCustomDataType(), pickle);
+
   mime_type_ = mime_type;
   counter_.Run();
 }

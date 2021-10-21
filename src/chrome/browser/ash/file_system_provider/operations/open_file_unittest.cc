@@ -40,6 +40,10 @@ class CallbackLogger {
    public:
     Event(int file_handle, base::File::Error result)
         : file_handle_(file_handle), result_(result) {}
+
+    Event(const Event&) = delete;
+    Event& operator=(const Event&) = delete;
+
     virtual ~Event() {}
 
     int file_handle() { return file_handle_; }
@@ -48,11 +52,13 @@ class CallbackLogger {
    private:
     int file_handle_;
     base::File::Error result_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
   CallbackLogger() {}
+
+  CallbackLogger(const CallbackLogger&) = delete;
+  CallbackLogger& operator=(const CallbackLogger&) = delete;
+
   virtual ~CallbackLogger() {}
 
   void OnOpenFile(int file_handle, base::File::Error result) {
@@ -63,8 +69,6 @@ class CallbackLogger {
 
  private:
   std::vector<std::unique_ptr<Event>> events_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
 
 }  // namespace

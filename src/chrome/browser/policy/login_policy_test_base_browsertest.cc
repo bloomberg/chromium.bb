@@ -28,7 +28,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -93,10 +93,9 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
 
   Profile* const profile = GetProfileForActiveUser();
 
-  chromeos::input_method::InputMethodManager* imm =
-      chromeos::input_method::InputMethodManager::Get();
+  auto* imm = ash::input_method::InputMethodManager::Get();
   ASSERT_TRUE(imm);
-  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
+  scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
       imm->GetActiveIMEState();
   ASSERT_TRUE(ime_state.get());
 
@@ -107,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   EXPECT_TRUE(imm->MigrateInputMethods(&input_methods));
 
   // No restrictions and current input method should be "xkb:us::eng" (default).
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethodIds().size());
   EXPECT_EQ(input_methods[0], ime_state->GetCurrentInputMethod().id());
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[1]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
@@ -127,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   // Only "xkb:fr::fra", "xkb:de::ger" should be allowed, current input method
   // should be "xkb:fr::fra", enabling "xkb:us::eng" should not be possible,
   // enabling "xkb:de::ger" should be possible.
-  EXPECT_EQ(2U, ime_state->GetAllowedInputMethods().size());
-  EXPECT_EQ(2U, ime_state->GetActiveInputMethods()->size());
+  EXPECT_EQ(2U, ime_state->GetAllowedInputMethodIds().size());
+  EXPECT_EQ(2U, ime_state->GetEnabledInputMethods()->size());
   EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
   EXPECT_FALSE(ime_state->EnableInputMethod(input_methods[0]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
@@ -144,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
                                          base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethodIds().size());
   EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
@@ -154,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
                                          base::DictionaryValue(), profile);
 
   // No restrictions and current input method should still be "xkb:fr::fra".
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethodIds().size());
   EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
@@ -255,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
   // Make sure that session startup finishes before letting chrome exit.
   // Rationale: We've seen CHECK-failures when exiting chrome right after
   // a new profile is created, see e.g. https://crbug.com/1002066.
-  chromeos::test::WaitForPrimaryUserSessionStart();
+  ash::test::WaitForPrimaryUserSessionStart();
 }
 
 }  // namespace policy

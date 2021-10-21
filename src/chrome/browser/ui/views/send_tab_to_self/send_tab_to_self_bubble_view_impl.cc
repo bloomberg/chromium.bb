@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -22,9 +23,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_color_id.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
@@ -131,13 +131,6 @@ const views::View* SendTabToSelfBubbleViewImpl::GetButtonContainerForTesting()
 
 void SendTabToSelfBubbleViewImpl::Init() {
   auto* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      gfx::Insets(provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                  0,
-                  provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                  0));
   int width =
       provider->GetDistanceMetric(views::DISTANCE_BUBBLE_PREFERRED_WIDTH);
   // TODO(crbug.com/1243793): Use views::BoxLayout since there's only 1 column.
@@ -148,21 +141,26 @@ void SendTabToSelfBubbleViewImpl::Init() {
                      views::GridLayout::kFixedSize,
                      views::GridLayout::ColumnSize::kFixed, width, width);
 
-  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2)) {
+  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) ||
+      share::AreUpcomingSharingFeaturesEnabled()) {
     CreateHintTextLabel(layout);
   }
 
   CreateDevicesScrollView(layout);
 
+  int bottom_margin = provider->GetDistanceMetric(
+      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL);
   if (base::FeatureList::IsEnabled(
           send_tab_to_self::kSendTabToSelfManageDevicesLink)) {
     CreateManageDevicesLink(layout);
     // Remove the extra bottom space because the link has a different background
     // color.
-    gfx::Insets margins = GetInsets();
-    margins.set_bottom(0);
-    set_margins(margins);
+    bottom_margin = 0;
   }
+  set_margins(
+      gfx::Insets(provider->GetDistanceMetric(
+                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
+                  0, bottom_margin, 0));
 }
 
 void SendTabToSelfBubbleViewImpl::AddedToWidget() {
@@ -240,7 +238,7 @@ void SendTabToSelfBubbleViewImpl::CreateManageDevicesLink(
   layout->StartRow(1.0f, 0);
   auto* container = layout->AddView(std::make_unique<views::View>());
   container->SetBackground(views::CreateThemedSolidBackground(
-      container, ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor));
+      container, ui::kColorMenuItemBackgroundHighlighted));
 
   auto* provider = ChromeLayoutProvider::Get();
   gfx::Insets margins = provider->GetInsetsMetric(views::INSETS_DIALOG);

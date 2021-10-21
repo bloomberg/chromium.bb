@@ -63,9 +63,13 @@ namespace dawn_native {
     // An optional parameter of Adapter::CreateDevice() to send additional information when creating
     // a Device. For example, we can use it to enable a workaround, optimization or feature.
     struct DAWN_NATIVE_EXPORT DeviceDescriptor {
+        // TODO(dawn:1149): remove once requiredExtensions is no longer used.
         std::vector<const char*> requiredExtensions;
+        std::vector<const char*> requiredFeatures;
         std::vector<const char*> forceEnabledToggles;
         std::vector<const char*> forceDisabledToggles;
+
+        const WGPURequiredLimits* requiredLimits = nullptr;
     };
 
     // A struct to record the information of a toggle. A toggle is a code path in Dawn device that
@@ -77,10 +81,10 @@ namespace dawn_native {
         const char* url;
     };
 
-    // A struct to record the information of an extension. An extension is a GPU feature that is not
+    // A struct to record the information of a feature. A feature is a GPU feature that is not
     // required to be supported by all Dawn backends and can only be used when it is enabled on the
     // creation of device.
-    using ExtensionInfo = ToggleInfo;
+    using FeatureInfo = ToggleInfo;
 
     // An adapter is an object that represent on possibility of creating devices in the system.
     // Most of the time it will represent a combination of a physical GPU and an API. Not that the
@@ -107,7 +111,11 @@ namespace dawn_native {
         void GetProperties(wgpu::AdapterProperties* properties) const;
 
         std::vector<const char*> GetSupportedExtensions() const;
+        std::vector<const char*> GetSupportedFeatures() const;
         WGPUDeviceProperties GetAdapterProperties() const;
+        bool GetLimits(WGPUSupportedLimits* limits) const;
+
+        void SetUseTieredLimits(bool useTieredLimits);
 
         // Check that the Adapter is able to support importing external images. This is necessary
         // to implement the swapchain and interop APIs in Chromium.
@@ -119,6 +127,10 @@ namespace dawn_native {
         // a device descriptor and a pointer to backend specific options.
         // On an error, nullptr is returned.
         WGPUDevice CreateDevice(const DeviceDescriptor* deviceDescriptor = nullptr);
+
+        void RequestDevice(const DeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
 
         // Reset the backend device object for testing purposes.
         void ResetInternalDeviceForTesting();

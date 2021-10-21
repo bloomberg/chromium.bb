@@ -32,6 +32,8 @@ void IntraPredFilterInit_NEON();
 
 #if LIBGAV1_ENABLE_NEON
 #define LIBGAV1_Dsp8bpp_FilterIntraPredictor LIBGAV1_CPU_NEON
+
+#define LIBGAV1_Dsp10bpp_FilterIntraPredictor LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_INTRAPRED_FILTER_NEON_H_

@@ -68,6 +68,7 @@ component("modules") {
     "//third_party/blink/renderer/modules/cache_storage",
     "//third_party/blink/renderer/modules/canvas",
     "//third_party/blink/renderer/modules/clipboard",
+    "//third_party/blink/renderer/modules/closewatcher",
     "//third_party/blink/renderer/modules/compute_pressure",
     "//third_party/blink/renderer/modules/contacts_picker",
     "//third_party/blink/renderer/modules/content_index",
@@ -112,7 +113,6 @@ component("modules") {
     "//third_party/blink/renderer/modules/mediasource",
     "//third_party/blink/renderer/modules/mediastream",
     "//third_party/blink/renderer/modules/media",
-    "//third_party/blink/renderer/modules/modalclosewatcher",
     "//third_party/blink/renderer/modules/native_io",
     "//third_party/blink/renderer/modules/navigatorcontentutils",
     "//third_party/blink/renderer/modules/netinfo",
@@ -161,7 +161,12 @@ component("modules") {
     "//third_party/blink/renderer/modules/xr",
   ]
 
-  if (is_android) {
+  # This uses target_os rather than current_os (which is what is_android is set
+  # from) for the case of generating the v8 context snapshot for android. When
+  # generating the snapshot for android, blink is compiled with
+  # current_os="linux" and target_os="android". Using target_os is necessary as
+  # we need to compile in the same way as would happen when current_os="android".
+  if (target_os == "android") {
     sub_modules += [ "//third_party/blink/renderer/modules/remote_objects" ]
   } else {
     sub_modules += [
@@ -199,8 +204,6 @@ source_set("modules_testing") {
   sources = [
     "accessibility/testing/internals_accessibility.cc",
     "accessibility/testing/internals_accessibility.h",
-    "canvas/canvas2d/testing/internals_canvas_rendering_context_2d.cc",
-    "canvas/canvas2d/testing/internals_canvas_rendering_context_2d.h",
     "mediastream/testing/internals_media_stream.cc",
     "mediastream/testing/internals_media_stream.h",
     "netinfo/testing/internals_net_info.cc",
@@ -561,6 +564,7 @@ source_set("unit_tests") {
     "push_messaging/push_message_data_test.cc",
     "push_messaging/push_subscription_test.cc",
     "remoteplayback/remote_playback_test.cc",
+    "scheduler/dom_scheduler_test.cc",
     "screen_orientation/screen_orientation_controller_test.cc",
     "sensor/ambient_light_sensor_test.cc",
     "sensor/sensor_test_utils.cc",
@@ -604,10 +608,6 @@ source_set("unit_tests") {
     "xr/xr_test_utils.cc",
     "xr/xr_view_test.cc",
   ]
-
-  if (is_android) {
-    sources += [ "payments/skip_to_gpay_utils_test.cc" ]
-  }
 
   if (rtc_use_h264) {
     sources += [ "mediarecorder/h264_encoder_unittest.cc" ]
@@ -665,7 +665,12 @@ source_set("unit_tests") {
     "//v8",
   ]
 
-  if (!is_android) {
+  # This uses target_os rather than current_os (which is what is_android is set
+  # from) for the case of generating the v8 context snapshot for android. When
+  # generating the snapshot for android, blink is compiled with
+  # current_os="linux" and target_os="android". Using target_os is necessary as
+  # we need to compile in the same way as would happen when current_os="android".
+  if (target_os != "android") {
     deps += [ "//third_party/blink/renderer/modules/direct_sockets:unit_tests" ]
   }
 

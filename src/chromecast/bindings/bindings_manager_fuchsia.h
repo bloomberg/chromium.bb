@@ -5,10 +5,11 @@
 #ifndef CHROMECAST_BINDINGS_BINDINGS_MANAGER_FUCHSIA_H_
 #define CHROMECAST_BINDINGS_BINDINGS_MANAGER_FUCHSIA_H_
 
+#include <fuchsia/mem/cpp/fidl.h>
+
 #include <map>
 #include <string>
 
-#include "base/callback.h"
 #include "chromecast/bindings/bindings_manager.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 
@@ -20,6 +21,10 @@ class BindingsManagerFuchsia : public chromium::cast::ApiBindings,
                                public BindingsManager {
  public:
   BindingsManagerFuchsia();
+
+  BindingsManagerFuchsia(const BindingsManagerFuchsia&) = delete;
+  BindingsManagerFuchsia& operator=(const BindingsManagerFuchsia&) = delete;
+
   ~BindingsManagerFuchsia() override;
 
   // BindingsManager implementation:
@@ -37,8 +42,6 @@ class BindingsManagerFuchsia : public chromium::cast::ApiBindings,
   // Stores all bindings, keyed on the string-based IDs provided by the
   // ApiBindings interface.
   std::map<std::string, fuchsia::mem::Buffer> bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(BindingsManagerFuchsia);
 };
 
 }  // namespace bindings

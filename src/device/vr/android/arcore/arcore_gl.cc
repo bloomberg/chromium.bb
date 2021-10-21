@@ -36,8 +36,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/angle_conversions.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/gpu_fence.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -807,7 +807,8 @@ bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
   if (animating_frame->index != frame_index) {
     DVLOG(1) << __func__ << ": wrong frame index, got " << frame_index
              << ", expected " << animating_frame->index;
-    mojo::ReportBadMessage("SubmitFrame called with wrong frame index");
+    presentation_receiver_.ReportBadMessage(
+        "SubmitFrame called with wrong frame index");
     CloseBindingsIfOpen();
     pending_shutdown_ = true;
     return false;
@@ -854,10 +855,8 @@ base::TimeDelta ArCoreGl::EstimatedArCoreFrameTime() {
   DCHECK_GE(range.max, range.min);
 
   // The min frame time corresponds to the max frame rate and vice versa.
-  base::TimeDelta min_frametime =
-      base::TimeDelta::FromSecondsD(1.0f / range.max);
-  base::TimeDelta max_frametime =
-      base::TimeDelta::FromSecondsD(1.0f / range.min);
+  base::TimeDelta min_frametime = base::Seconds(1.0f / range.max);
+  base::TimeDelta max_frametime = base::Seconds(1.0f / range.min);
 
   base::TimeDelta frametime =
       average_camera_frametime_.GetAverageOrDefault(min_frametime);
@@ -1422,7 +1421,7 @@ void ArCoreGl::SetInputSourceButtonListener(
     mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>) {
   // Input eventing is not supported. This call should not
   // be made on this device.
-  mojo::ReportBadMessage("Input eventing is not supported.");
+  frame_data_receiver_.ReportBadMessage("Input eventing is not supported.");
 }
 
 void ArCoreGl::SubscribeToHitTest(

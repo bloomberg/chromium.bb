@@ -40,6 +40,7 @@ struct graph_t
   {
     vertex_t () :
         distance (0),
+        space (0),
         incoming_edges (0),
         start (0),
         end (0),
@@ -49,6 +50,7 @@ struct graph_t
 
     hb_serialize_context_t::object_t obj;
     int64_t distance;
+    int64_t space;
     unsigned incoming_edges;
     unsigned start;
     unsigned end;
@@ -77,7 +79,7 @@ struct graph_t
 
       int64_t modified_distance =
           hb_min (hb_max(distance + distance_modifier (), 0), 0x7FFFFFFFFF);
-      return (modified_distance << 24) | (0x00FFFFFF & order);
+      return (modified_distance << 22) | (0x003FFFFF & order);
     }
 
     int64_t distance_modifier () const
@@ -91,7 +93,7 @@ struct graph_t
   struct overflow_record_t
   {
     unsigned parent;
-    const hb_serialize_context_t::object_t::link_t* link;
+    unsigned child;
   };
 
   struct clone_buffer_t
@@ -329,47 +331,138 @@ struct graph_t
   }
 
   /*
-   * Creates a copy of child and re-assigns the link from
-   * parent to the clone. The copy is a shallow copy, objects
-   * linked from child are not duplicated.
+   * Finds any links using 32 bits and isolates the subgraphs they point too.
    */
-  void duplicate (unsigned parent_idx, unsigned child_idx)
+  bool isolate_32bit_links ()
   {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %d => %d",
-               parent_idx, child_idx);
+    bool made_changes = false;
+    hb_set_t target_links;
+    unsigned root_index = root_idx ();
+    int64_t next_space = 0;
+    for (unsigned i = 0; i <= root_index; i++)
+    {
+      if (i == root_index && root_idx () > i)
+        // root index may have moved due to graph modifications.
+        i = root_idx ();
 
+      for (auto& l : vertices_[i].obj.links)
+      {
+        if (l.width == 4 && !l.is_signed)
+        {
+          isolate_subgraph (l.objidx);
+          vertices_[l.objidx].space = next_space++;
+          distance_invalid = true;
+          made_changes = true;
+        }
+      }
+    }
+    return made_changes;
+  }
+
+  /*
+   * Isolates the subgraph of nodes reachable from root. Any links to nodes in the subgraph
+   * that originate from outside of the subgraph will be removed by duplicating the linked to
+   * object.
+   */
+  bool isolate_subgraph (unsigned root_idx)
+  {
+    update_incoming_edge_count ();
+    hb_hashmap_t<unsigned, unsigned> subgraph;
+
+    // incoming edges to root_idx should be all 32 bit in length so we don't need to de-dup these
+    // set the subgraph incoming edge count to match all of root_idx's incoming edges
+    subgraph.set (root_idx, vertices_[root_idx].incoming_edges);
+    find_subgraph (root_idx, subgraph);
+
+    hb_hashmap_t<unsigned, unsigned> index_map;
+    bool made_changes = false;
+    for (auto entry : subgraph.iter ())
+    {
+      const auto& node = vertices_[entry.first];
+      unsigned subgraph_incoming_edges = entry.second;
+
+      if (subgraph_incoming_edges < node.incoming_edges)
+      {
+        // Only  de-dup objects with incoming links from outside the subgraph.
+        made_changes = true;
+        duplicate_subgraph (entry.first, index_map);
+      }
+    }
+
+    if (!made_changes)
+      return false;
+
+    auto new_subgraph =
+        + subgraph.keys ()
+        | hb_map([&] (unsigned node_idx) {
+          if (index_map.has (node_idx)) return index_map[node_idx];
+          return node_idx;
+        })
+        ;
+    remap_obj_indices (index_map, new_subgraph);
+    return true;
+  }
+
+  void find_subgraph (unsigned node_idx, hb_hashmap_t<unsigned, unsigned>& subgraph)
+  {
+    for (const auto& link : vertices_[node_idx].obj.links)
+    {
+      if (subgraph.has (link.objidx))
+      {
+        subgraph.set (link.objidx, subgraph[link.objidx] + 1);
+        continue;
+      }
+      subgraph.set (link.objidx, 1);
+      find_subgraph (link.objidx, subgraph);
+    }
+  }
+
+  /*
+   * duplicates all nodes in the subgraph reachable from node_idx. Does not re-assign
+   * links. index_map is updated with mappings from old id to new id. If a duplication has already
+   * been performed for a given index, then it will be skipped.
+   */
+  void duplicate_subgraph (unsigned node_idx, hb_hashmap_t<unsigned, unsigned>& index_map)
+  {
+    if (index_map.has (node_idx))
+      return;
+
+    index_map.set (node_idx, duplicate (node_idx));
+    for (const auto& l : object (node_idx).links) {
+      duplicate_subgraph (l.objidx, index_map);
+    }
+  }
+
+  /*
+   * Creates a copy of node_idx and returns it's new index.
+   */
+  unsigned duplicate (unsigned node_idx)
+  {
     positions_invalid = true;
+    distance_invalid = true;
 
     auto* clone = vertices_.push ();
-    auto& child = vertices_[child_idx];
+    auto& child = vertices_[node_idx];
     clone_buffer_t* buffer = clone_buffers_.push ();
     if (vertices_.in_error ()
         || clone_buffers_.in_error ()
         || !check_success (buffer->copy (child.obj))) {
-      return;
+      return -1;
     }
 
     clone->obj.head = buffer->head;
     clone->obj.tail = buffer->tail;
     clone->distance = child.distance;
+    clone->space = child.space;
+    clone->incoming_edges = 0;
 
     for (const auto& l : child.obj.links)
+    {
       clone->obj.links.push (l);
+      vertices_[l.objidx].incoming_edges++;
+    }
 
     check_success (!clone->obj.links.in_error ());
-
-    auto& parent = vertices_[parent_idx];
-    unsigned clone_idx = vertices_.length - 2;
-    for (unsigned i = 0; i < parent.obj.links.length; i++)
-    {
-      auto& l = parent.obj.links[i];
-      if (l.objidx == child_idx)
-      {
-        l.objidx = clone_idx;
-        clone->incoming_edges++;
-        child.incoming_edges--;
-      }
-    }
 
     // The last object is the root of the graph, so swap back the root to the end.
     // The root's obj idx does change, however since it's root nothing else refers to it.
@@ -377,6 +470,57 @@ struct graph_t
     vertex_t root = vertices_[vertices_.length - 2];
     vertices_[vertices_.length - 2] = *clone;
     vertices_[vertices_.length - 1] = root;
+
+    return vertices_.length - 2;
+  }
+
+  /*
+   * Creates a copy of child and re-assigns the link from
+   * parent to the clone. The copy is a shallow copy, objects
+   * linked from child are not duplicated.
+   */
+  bool duplicate (unsigned parent_idx, unsigned child_idx)
+  {
+    update_incoming_edge_count ();
+
+    unsigned links_to_child = 0;
+    for (const auto& l : vertices_[parent_idx].obj.links)
+    {
+      if (l.objidx == child_idx) links_to_child++;
+    }
+
+    if (vertices_[child_idx].incoming_edges <= links_to_child)
+    {
+      // Can't duplicate this node, doing so would orphan the original one as all remaining links
+      // to child are from parent.
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "  Not duplicating %d => %d",
+                 parent_idx, child_idx);
+      return false;
+    }
+
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "  Duplicating %d => %d",
+               parent_idx, child_idx);
+
+    unsigned clone_idx = duplicate (child_idx);
+    if (clone_idx == (unsigned) -1) return false;
+    // duplicate shifts the root node idx, so if parent_idx was root update it.
+    if (parent_idx == clone_idx) parent_idx++;
+    auto& clone = vertices_[clone_idx];
+    auto& child = vertices_[child_idx];
+
+    auto& parent = vertices_[parent_idx];
+    for (unsigned i = 0; i < parent.obj.links.length; i++)
+    {
+      auto& l = parent.obj.links[i];
+      if (l.objidx == child_idx)
+      {
+        l.objidx = clone_idx;
+        clone.incoming_edges++;
+        child.incoming_edges--;
+      }
+    }
+
+    return true;
   }
 
   /*
@@ -414,7 +558,7 @@ struct graph_t
 
         overflow_record_t r;
         r.parent = parent_idx;
-        r.link = &link;
+        r.child = link.objidx;
         overflows->push (r);
       }
     }
@@ -430,10 +574,14 @@ struct graph_t
     update_incoming_edge_count ();
     for (const auto& o : overflows)
     {
-      const auto& child = vertices_[o.link->objidx];
-      DEBUG_MSG (SUBSET_REPACK, nullptr, "  overflow from %d => %d (%d incoming , %d outgoing)",
+      const auto& parent = vertices_[o.parent];
+      const auto& child = vertices_[o.child];
+      DEBUG_MSG (SUBSET_REPACK, nullptr,
+                 "  overflow from %d (%d in, %d out) => %d (%d in, %d out)",
                  o.parent,
-                 o.link->objidx,
+                 parent.incoming_edges,
+                 parent.obj.links.length,
+                 o.child,
                  child.incoming_edges,
                  child.obj.links.length);
     }
@@ -530,8 +678,8 @@ struct graph_t
         if (visited.has (link.objidx)) continue;
 
         const auto& child = vertices_[link.objidx].obj;
-        int64_t child_weight = child.tail - child.head +
-                               ((int64_t) 1 << (link.width * 8));
+        int64_t child_weight = (child.tail - child.head) +
+                               ((int64_t) 1 << (link.width * 8)) * (vertices_[link.objidx].space + 1);
         int64_t child_distance = next_distance + child_weight;
 
         if (child_distance < vertices_[link.objidx].distance)
@@ -591,6 +739,27 @@ struct graph_t
         return offset >= 0 && offset < ((int32_t) 1 << 24);
       else
         return offset >= 0 && offset < (1 << 16);
+    }
+  }
+
+  /*
+   * Updates all objidx's in all links using the provided mapping. Corrects incoming edge counts.
+   */
+  template<typename Iterator, hb_requires (hb_is_iterator (Iterator))>
+  void remap_obj_indices (const hb_hashmap_t<unsigned, unsigned>& id_map,
+                          Iterator subgraph)
+  {
+    if (!id_map) return;
+    for (unsigned i : subgraph)
+    {
+      for (unsigned j = 0; j < vertices_[i].obj.links.length; j++)
+      {
+        auto& link = vertices_[i].obj.links[j];
+        if (!id_map.has (link.objidx)) continue;
+        vertices_[link.objidx].incoming_edges--;
+        link.objidx = id_map[link.objidx];
+        vertices_[link.objidx].incoming_edges++;
+      }
     }
   }
 
@@ -667,6 +836,52 @@ struct graph_t
   bool successful;
 };
 
+static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& overflows,
+                                hb_set_t& priority_bumped_parents,
+                                graph_t& sorted_graph)
+{
+  bool resolution_attempted = false;
+
+  // Try resolving the furthest overflows first.
+  for (int i = overflows.length - 1; i >= 0; i--)
+  {
+    const graph_t::overflow_record_t& r = overflows[i];
+    const auto& child = sorted_graph.vertices_[r.child];
+    if (child.is_shared ())
+    {
+      // The child object is shared, we may be able to eliminate the overflow
+      // by duplicating it.
+      if (!sorted_graph.duplicate (r.parent, r.child)) continue;
+      return true;
+    }
+
+    if (child.is_leaf () && !priority_bumped_parents.has (r.parent))
+    {
+      // This object is too far from it's parent, attempt to move it closer.
+      //
+      // TODO(garretrieger): initially limiting this to leaf's since they can be
+      //                     moved closer with fewer consequences. However, this can
+      //                     likely can be used for non-leafs as well.
+      // TODO(garretrieger): add a maximum priority, don't try to raise past this.
+      // TODO(garretrieger): also try lowering priority of the parent. Make it
+      //                     get placed further up in the ordering, closer to it's children.
+      //                     this is probably preferable if the total size of the parent object
+      //                     is < then the total size of the children (and the parent can be moved).
+      //                     Since in that case moving the parent will cause a smaller increase in
+      //                     the length of other offsets.
+      sorted_graph.raise_childrens_priority (r.parent);
+      priority_bumped_parents.add (r.parent);
+      resolution_attempted = true;
+      continue;
+    }
+
+    // TODO(garretrieger): add additional offset resolution strategies
+    // - Promotion to extension lookups.
+    // - Table splitting.
+  }
+
+  return resolution_attempted;
+}
 
 /*
  * Attempts to modify the topological sorting of the provided object graph to
@@ -680,7 +895,9 @@ struct graph_t
  */
 inline void
 hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& packed,
-                      hb_serialize_context_t* c) {
+                      hb_tag_t table_tag,
+                      hb_serialize_context_t* c,
+                      unsigned max_rounds = 10) {
   // Kahn sort is ~twice as fast as shortest distance sort and works for many fonts
   // so try it first to save time.
   graph_t sorted_graph (packed);
@@ -693,68 +910,34 @@ hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& pac
 
   sorted_graph.sort_shortest_distance ();
 
+  if ((table_tag == HB_OT_TAG_GPOS
+       ||  table_tag == HB_OT_TAG_GSUB)
+      && sorted_graph.will_overflow ())
+  {
+    if (sorted_graph.isolate_32bit_links ())
+    {
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "Isolated extension sub tables.");
+      sorted_graph.sort_shortest_distance ();
+    }
+  }
+
   unsigned round = 0;
   hb_vector_t<graph_t::overflow_record_t> overflows;
   // TODO(garretrieger): select a good limit for max rounds.
   while (!sorted_graph.in_error ()
          && sorted_graph.will_overflow (&overflows)
-         && round++ < 10) {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Over flow resolution round %d ===", round);
+         && round++ < max_rounds) {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %d ===", round);
     sorted_graph.print_overflows (overflows);
 
-    bool resolution_attempted = false;
     hb_set_t priority_bumped_parents;
-    // Try resolving the furthest overflows first.
-    for (int i = overflows.length - 1; i >= 0; i--)
+    if (!_process_overflows (overflows, priority_bumped_parents, sorted_graph))
     {
-      const graph_t::overflow_record_t& r = overflows[i];
-      const auto& child = sorted_graph.vertices_[r.link->objidx];
-      if (child.is_shared ())
-      {
-        // The child object is shared, we may be able to eliminate the overflow
-        // by duplicating it.
-        sorted_graph.duplicate (r.parent, r.link->objidx);
-        resolution_attempted = true;
-
-        // Stop processing overflows for this round so that object order can be
-        // updated to account for the newly added object.
-        break;
-      }
-
-      if (child.is_leaf () && !priority_bumped_parents.has (r.parent))
-      {
-        // This object is too far from it's parent, attempt to move it closer.
-        //
-        // TODO(garretrieger): initially limiting this to leaf's since they can be
-        //                     moved closer with fewer consequences. However, this can
-        //                     likely can be used for non-leafs as well.
-        // TODO(garretrieger): add a maximum priority, don't try to raise past this.
-        // TODO(garretrieger): also try lowering priority of the parent. Make it
-        //                     get placed further up in the ordering, closer to it's children.
-        //                     this is probably preferable if the total size of the parent object
-        //                     is < then the total size of the children (and the parent can be moved).
-        //                     Since in that case moving the parent will cause a smaller increase in
-        //                     the length of other offsets.
-        sorted_graph.raise_childrens_priority (r.parent);
-        priority_bumped_parents.add (r.parent);
-        resolution_attempted = true;
-        continue;
-      }
-
-      // TODO(garretrieger): add additional offset resolution strategies
-      // - Promotion to extension lookups.
-      // - Table splitting.
+      DEBUG_MSG (SUBSET_REPACK, nullptr, "No resolution available :(");
+      break;
     }
 
-    if (resolution_attempted)
-    {
-      sorted_graph.sort_shortest_distance ();
-      continue;
-    }
-
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "No resolution available :(");
-    c->err (HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
-    return;
+    sorted_graph.sort_shortest_distance ();
   }
 
   if (sorted_graph.in_error ())
@@ -762,8 +945,14 @@ hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& pac
     c->err (HB_SERIALIZE_ERROR_OTHER);
     return;
   }
+
+  if (sorted_graph.will_overflow ())
+  {
+    c->err (HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Offset overflow resolution failed.");
+    return;
+  }
   sorted_graph.serialize (c);
 }
-
 
 #endif /* HB_REPACKER_HH */

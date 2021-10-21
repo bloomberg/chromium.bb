@@ -139,6 +139,19 @@ TieTag MakeTieTag(DcSctpSocketCallbacks& cb) {
                 static_cast<uint64_t>(tie_tag_lower));
 }
 
+SctpImplementation DeterminePeerImplementation(
+    rtc::ArrayView<const uint8_t> cookie) {
+  if (cookie.size() > 8) {
+    absl::string_view magic(reinterpret_cast<const char*>(cookie.data()), 8);
+    if (magic == "dcSCTP00") {
+      return SctpImplementation::kDcsctp;
+    }
+    if (magic == "KAME-BSD") {
+      return SctpImplementation::kUsrSctp;
+    }
+  }
+  return SctpImplementation::kOther;
+}
 }  // namespace
 
 DcSctpSocket::DcSctpSocket(absl::string_view log_prefix,
@@ -184,6 +197,9 @@ std::string DcSctpSocket::log_prefix() const {
 }
 
 bool DcSctpSocket::IsConsistent() const {
+  if (tcb_ != nullptr && tcb_->reassembly_queue().HasMessages()) {
+    return false;
+  }
   switch (state_) {
     case State::kClosed:
       return (tcb_ == nullptr && !t1_init_->is_running() &&
@@ -265,6 +281,9 @@ void DcSctpSocket::MakeConnectionParameters() {
 }
 
 void DcSctpSocket::Connect() {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   if (state_ == State::kClosed) {
     MakeConnectionParameters();
     RTC_DLOG(LS_INFO)
@@ -280,10 +299,52 @@ void DcSctpSocket::Connect() {
                          << "Called Connect on a socket that is not closed";
   }
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
+}
+
+void DcSctpSocket::RestoreFromState(const DcSctpSocketHandoverState& state) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
+  if (state_ != State::kClosed) {
+    callbacks_.OnError(ErrorKind::kUnsupportedOperation,
+                       "Only closed socket can be restored from state");
+  } else {
+    if (state.socket_state ==
+        DcSctpSocketHandoverState::SocketState::kConnected) {
+      VerificationTag my_verification_tag =
+          VerificationTag(state.my_verification_tag);
+      connect_params_.verification_tag = my_verification_tag;
+
+      Capabilities capabilities;
+      capabilities.partial_reliability = state.capabilities.partial_reliability;
+      capabilities.message_interleaving =
+          state.capabilities.message_interleaving;
+      capabilities.reconfig = state.capabilities.reconfig;
+
+      send_queue_.RestoreFromState(state);
+
+      tcb_ = std::make_unique<TransmissionControlBlock>(
+          timer_manager_, log_prefix_, options_, capabilities, callbacks_,
+          send_queue_, my_verification_tag, TSN(state.my_initial_tsn),
+          VerificationTag(state.peer_verification_tag),
+          TSN(state.peer_initial_tsn), static_cast<size_t>(0),
+          TieTag(state.tie_tag), packet_sender_,
+          [this]() { return state_ == State::kEstablished; }, &state);
+      RTC_DLOG(LS_VERBOSE) << log_prefix() << "Created peer TCB from state: "
+                           << tcb_->ToString();
+
+      SetState(State::kEstablished, "restored from handover state");
+      callbacks_.OnConnected();
+    }
+  }
+
+  RTC_DCHECK(IsConsistent());
 }
 
 void DcSctpSocket::Shutdown() {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   if (tcb_ != nullptr) {
     // https://tools.ietf.org/html/rfc4960#section-9.2
     // "Upon receipt of the SHUTDOWN primitive from its upper layer, the
@@ -307,10 +368,12 @@ void DcSctpSocket::Shutdown() {
     InternalClose(ErrorKind::kNoError, "");
   }
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
 }
 
 void DcSctpSocket::Close() {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   if (state_ != State::kClosed) {
     if (tcb_ != nullptr) {
       SctpPacket::Builder b = tcb_->PacketBuilder();
@@ -325,7 +388,6 @@ void DcSctpSocket::Close() {
     RTC_DLOG(LS_INFO) << log_prefix() << "Called Close on a closed socket";
   }
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
 }
 
 void DcSctpSocket::CloseConnectionBecauseOfTooManyTransmissionErrors() {
@@ -357,6 +419,9 @@ void DcSctpSocket::InternalClose(ErrorKind error, absl::string_view message) {
 
 SendStatus DcSctpSocket::Send(DcSctpMessage message,
                               const SendOptions& send_options) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   if (message.payload().empty()) {
     callbacks_.OnError(ErrorKind::kProtocolViolation,
                        "Unable to send empty message");
@@ -391,12 +456,14 @@ SendStatus DcSctpSocket::Send(DcSctpMessage message,
   }
 
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
   return SendStatus::kSuccess;
 }
 
 ResetStreamsStatus DcSctpSocket::ResetStreams(
     rtc::ArrayView<const StreamID> outgoing_streams) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   if (tcb_ == nullptr) {
     callbacks_.OnError(ErrorKind::kWrongSequence,
                        "Can't reset streams as the socket is not connected");
@@ -418,11 +485,11 @@ ResetStreamsStatus DcSctpSocket::ResetStreams(
   }
 
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
   return ResetStreamsStatus::kPerformed;
 }
 
 SocketState DcSctpSocket::state() const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   switch (state_) {
     case State::kClosed:
       return SocketState::kClosed;
@@ -444,23 +511,28 @@ SocketState DcSctpSocket::state() const {
 }
 
 void DcSctpSocket::SetMaxMessageSize(size_t max_message_size) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   options_.max_message_size = max_message_size;
 }
 
 size_t DcSctpSocket::buffered_amount(StreamID stream_id) const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   return send_queue_.buffered_amount(stream_id);
 }
 
 size_t DcSctpSocket::buffered_amount_low_threshold(StreamID stream_id) const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   return send_queue_.buffered_amount_low_threshold(stream_id);
 }
 
 void DcSctpSocket::SetBufferedAmountLowThreshold(StreamID stream_id,
                                                  size_t bytes) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   send_queue_.SetBufferedAmountLowThreshold(stream_id, bytes);
 }
 
 Metrics DcSctpSocket::GetMetrics() const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
   Metrics metrics = metrics_;
 
   if (tcb_ != nullptr) {
@@ -600,6 +672,9 @@ bool DcSctpSocket::ValidatePacket(const SctpPacket& packet) {
 }
 
 void DcSctpSocket::HandleTimeout(TimeoutID timeout_id) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   timer_manager_.HandleTimeout(timeout_id);
 
   if (tcb_ != nullptr && tcb_->HasTooManyTxErrors()) {
@@ -608,10 +683,12 @@ void DcSctpSocket::HandleTimeout(TimeoutID timeout_id) {
   }
 
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
 }
 
 void DcSctpSocket::ReceivePacket(rtc::ArrayView<const uint8_t> data) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
   ++metrics_.rx_packets_count;
 
   if (packet_observer_ != nullptr) {
@@ -627,7 +704,6 @@ void DcSctpSocket::ReceivePacket(rtc::ArrayView<const uint8_t> data) {
     callbacks_.OnError(ErrorKind::kParseFailed,
                        "Failed to parse received SCTP packet");
     RTC_DCHECK(IsConsistent());
-    callbacks_.TriggerDeferred();
     return;
   }
 
@@ -642,7 +718,6 @@ void DcSctpSocket::ReceivePacket(rtc::ArrayView<const uint8_t> data) {
     RTC_DLOG(LS_VERBOSE) << log_prefix()
                          << "Packet failed verification tag check - dropping";
     RTC_DCHECK(IsConsistent());
-    callbacks_.TriggerDeferred();
     return;
   }
 
@@ -660,7 +735,6 @@ void DcSctpSocket::ReceivePacket(rtc::ArrayView<const uint8_t> data) {
   }
 
   RTC_DCHECK(IsConsistent());
-  callbacks_.TriggerDeferred();
 }
 
 void DcSctpSocket::DebugPrintOutgoing(rtc::ArrayView<const uint8_t> payload) {
@@ -1108,6 +1182,8 @@ void DcSctpSocket::HandleInitAck(
   }
   Capabilities capabilities = GetCapabilities(options_, chunk->parameters());
   t1_init_->Stop();
+
+  peer_implementation_ = DeterminePeerImplementation(cookie->data());
 
   tcb_ = std::make_unique<TransmissionControlBlock>(
       timer_manager_, log_prefix_, options_, capabilities, callbacks_,
@@ -1574,6 +1650,42 @@ void DcSctpSocket::SendShutdownAck() {
   packet_sender_.Send(tcb_->PacketBuilder().Add(ShutdownAckChunk()));
   t2_shutdown_->set_duration(tcb_->current_rto());
   t2_shutdown_->Start();
+}
+
+HandoverReadinessStatus DcSctpSocket::GetHandoverReadiness() const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  HandoverReadinessStatus status;
+  if (state_ != State::kClosed && state_ != State::kEstablished) {
+    status.Add(HandoverUnreadinessReason::kWrongConnectionState);
+  }
+  status.Add(send_queue_.GetHandoverReadiness());
+  if (tcb_) {
+    status.Add(tcb_->GetHandoverReadiness());
+  }
+  return status;
+}
+
+absl::optional<DcSctpSocketHandoverState>
+DcSctpSocket::GetHandoverStateAndClose() {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  CallbackDeferrer::ScopedDeferrer deferrer(callbacks_);
+
+  if (!GetHandoverReadiness().IsReady()) {
+    return absl::nullopt;
+  }
+
+  DcSctpSocketHandoverState state;
+
+  if (state_ == State::kClosed) {
+    state.socket_state = DcSctpSocketHandoverState::SocketState::kClosed;
+  } else if (state_ == State::kEstablished) {
+    state.socket_state = DcSctpSocketHandoverState::SocketState::kConnected;
+    tcb_->AddHandoverState(state);
+    send_queue_.AddHandoverState(state);
+    InternalClose(ErrorKind::kNoError, "handover");
+  }
+
+  return std::move(state);
 }
 
 }  // namespace dcsctp

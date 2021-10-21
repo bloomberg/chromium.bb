@@ -18,16 +18,24 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_impl.h"
+#include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/common/constants.h"
 #include "ui/display/types/display_constants.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/common/chrome_features.h"
+#endif
 
 namespace apps {
 
@@ -133,8 +141,6 @@ void AppServiceProxyBase::Initialize() {
     receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
     app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
   }
-
-  Observe(&app_registry_cache_);
 }
 
 mojo::Remote<apps::mojom::AppService>& AppServiceProxyBase::AppService() {
@@ -376,6 +382,37 @@ std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
   return app_ids;
 }
 
+bool ShouldIgnoreApp(const apps::AppUpdate& update) {
+  // We don't ignore apps disabled by policy as they cause URL loads to be
+  // blocked.
+  bool is_ready =
+      update.Readiness() == apps::mojom::Readiness::kReady ||
+      update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy;
+  bool show_in_launcher =
+      update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+  // TODO(1240906): Find a way to properly filter in/out apps that should
+  // participate in intent handling.
+  bool is_exempt =
+      web_app::IsSystemAppIdWithFileHandlers(update.AppId()) ||
+      update.AppId() == file_manager::kAudioPlayerAppId ||
+      update.AppId() == extension_misc::kQuickOfficeComponentExtensionId;
+  return !is_ready || (!show_in_launcher && !is_exempt);
+}
+
+std::string GetActivityLabel(const apps::mojom::IntentFilterPtr& filter,
+                             const apps::AppUpdate& update) {
+  if (filter->activity_label && !filter->activity_label->empty()) {
+    return filter->activity_label.value();
+  } else {
+    return update.Name();
+  }
+}
+
+struct IndexAndGeneric {
+  size_t index;
+  bool is_generic;
+};
+
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
     const apps::mojom::IntentPtr& intent,
     bool exclude_browsers,
@@ -391,42 +428,53 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
                                     &exclude_browsers,
                                     &exclude_browser_tab_apps](
                                        const apps::AppUpdate& update) {
-      // TODO(1240906): Find a way to properly filter in/out apps that should
-      // participate in intent handling.
-      if (!apps_util::IsInstalled(update.Readiness()) ||
-          (update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue &&
-           !web_app::IsSystemAppIdWithFileHandlers(update.AppId()))) {
+      if (ShouldIgnoreApp(update)) {
         return;
       }
       if (exclude_browser_tab_apps &&
           update.WindowMode() == mojom::WindowMode::kBrowser) {
         return;
       }
-      std::set<std::string> existing_activities;
+      // |activity_label| -> {index, is_generic}
+      std::map<std::string, IndexAndGeneric> best_handler_map;
+      bool is_file_handling_intent =
+          intent->files.has_value() && intent->files->size() > 0;
+      size_t index = 0;
       for (const auto& filter : update.IntentFilters()) {
         if (exclude_browsers && apps_util::IsBrowserFilter(filter)) {
           continue;
         }
         if (apps_util::IntentMatchesFilter(intent, filter)) {
-          IntentLaunchInfo entry;
-          entry.app_id = update.AppId();
-          std::string activity_label;
-          if (filter->activity_label &&
-              !filter->activity_label.value().empty()) {
-            activity_label = filter->activity_label.value();
-          } else {
-            activity_label = update.Name();
+          // Return the first non-generic match if it exists, otherwise the
+          // first generic match.
+          bool generic = false;
+          if (is_file_handling_intent) {
+            generic = apps_util::IsGenericFileHandler(intent, filter);
           }
-          if (base::Contains(existing_activities, activity_label)) {
-            continue;
+          std::string activity_label = GetActivityLabel(filter, update);
+          // Replace the best handler if it is generic and we have a non-generic
+          // one.
+          auto it = best_handler_map.find(activity_label);
+          if (it == best_handler_map.end() ||
+              (it->second.is_generic && !generic)) {
+            best_handler_map[activity_label] = IndexAndGeneric{index, generic};
           }
-          existing_activities.insert(activity_label);
-          entry.activity_label = activity_label;
-          entry.activity_name = filter->activity_name.value_or("");
-          entry.is_file_extension_match =
-              apps_util::FilterIsForFileExtensions(filter);
-          intent_launch_info.push_back(entry);
         }
+        index++;
+      }
+      const auto& filters = update.IntentFilters();
+      for (const auto& handler_entry : best_handler_map) {
+        const mojom::IntentFilterPtr& filter =
+            filters[handler_entry.second.index];
+        IntentLaunchInfo entry;
+        entry.app_id = update.AppId();
+        entry.activity_label = GetActivityLabel(filter, update);
+        entry.activity_name = filter->activity_name.value_or("");
+        entry.is_generic_file_handler =
+            apps_util::IsGenericFileHandler(intent, filter);
+        entry.is_file_extension_match =
+            apps_util::FilterIsForFileExtensions(filter);
+        intent_launch_info.push_back(entry);
       }
     });
   }
@@ -434,11 +482,9 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
 }
 
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForFiles(
-    const std::vector<GURL>& filesystem_urls,
-    const std::vector<std::string>& mime_types) {
+    std::vector<apps::mojom::IntentFilePtr> files) {
   return GetAppsForIntent(
-      apps_util::CreateViewIntentFromFiles(filesystem_urls, mime_types), false,
-      false);
+      apps_util::CreateViewIntentFromFiles(std::move(files)), false, false);
 }
 
 void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
@@ -456,15 +502,73 @@ void AppServiceProxyBase::AddPreferredApp(
     return;
   }
   auto intent_filter = FindBestMatchingFilter(intent);
-  if (!intent_filter) {
+  if (!intent_filter || !app_service_.is_connected()) {
     return;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Link capturing behavior is changing with the launch of this feature so that
+  // link capturing is enabled on a per app (rather than per-intent-filter)
+  // basis. Non-Chrome OS platforms do not currently use persistent link
+  // capturing preferences and so this is not a breaking change for them.
+  bool supported_links_behavior_enabled =
+      base::FeatureList::IsEnabled(features::kAppManagementIntentSettings);
+#else
+  bool supported_links_behavior_enabled = true;
+#endif
+
+  if (supported_links_behavior_enabled) {
+    // Treat kUseBrowserForLink like an app with a single supported link, so
+    // that any apps with overlapping supported links will have their preference
+    // removed correctly.
+    if (app_id == apps::kUseBrowserForLink) {
+      std::vector<apps::mojom::IntentFilterPtr> filters;
+      filters.push_back(std::move(intent_filter));
+      app_service_->SetSupportedLinksPreference(apps::mojom::AppType::kUnknown,
+                                                app_id, std::move(filters));
+      return;
+    }
+
+    if (apps_util::IsSupportedLinkForApp(app_id, intent_filter)) {
+      SetSupportedLinksPreference(app_id);
+      return;
+    }
+  }
+
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
+  constexpr bool kFromPublisher = false;
+  app_service_->AddPreferredApp(app_registry_cache_.GetAppType(app_id), app_id,
+                                std::move(intent_filter), intent->Clone(),
+                                kFromPublisher);
+}
+
+void AppServiceProxyBase::SetSupportedLinksPreference(
+    const std::string& app_id) {
+  DCHECK(!app_id.empty());
+  if (!app_service_.is_connected()) {
+    return;
+  }
+
+  std::vector<apps::mojom::IntentFilterPtr> filters;
+  AppRegistryCache().ForOneApp(
+      app_id, [&app_id, &filters](const AppUpdate& app) {
+        for (auto& filter : app.IntentFilters()) {
+          if (apps_util::IsSupportedLinkForApp(app_id, filter)) {
+            filters.push_back(std::move(filter));
+          }
+        }
+      });
+
+  app_service_->SetSupportedLinksPreference(
+      app_registry_cache_.GetAppType(app_id), app_id, std::move(filters));
+}
+
+void AppServiceProxyBase::RemoveSupportedLinksPreference(
+    const std::string& app_id) {
+  DCHECK(!app_id.empty());
   if (app_service_.is_connected()) {
-    constexpr bool kFromPublisher = false;
-    app_service_->AddPreferredApp(app_registry_cache_.GetAppType(app_id),
-                                  app_id, std::move(intent_filter),
-                                  intent->Clone(), kFromPublisher);
+    app_service_->RemoveSupportedLinksPreference(
+        app_registry_cache_.GetAppType(app_id), app_id);
   }
 }
 
@@ -487,7 +591,8 @@ void AppServiceProxyBase::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                                  bool should_notify_initialized) {
   if (app_service_.is_connected()) {
     for (const auto& delta : deltas) {
-      if (!apps_util::IsInstalled(delta->readiness)) {
+      if (delta->readiness != apps::mojom::Readiness::kUnknown &&
+          !apps_util::IsInstalled(delta->readiness)) {
         app_service_->RemovePreferredApp(delta->app_type, delta->app_id);
       }
     }
@@ -519,22 +624,14 @@ void AppServiceProxyBase::OnPreferredAppRemoved(
   preferred_apps_.DeletePreferredApp(app_id, intent_filter);
 }
 
+void AppServiceProxyBase::OnPreferredAppsChanged(
+    apps::mojom::PreferredAppChangesPtr changes) {
+  preferred_apps_.ApplyBulkUpdate(std::move(changes));
+}
+
 void AppServiceProxyBase::InitializePreferredApps(
     PreferredAppsList::PreferredApps preferred_apps) {
   preferred_apps_.Init(preferred_apps);
-}
-
-void AppServiceProxyBase::OnAppUpdate(const apps::AppUpdate& update) {
-  if (!update.ReadinessChanged() ||
-      !apps_util::IsInstalled(update.Readiness())) {
-    return;
-  }
-  preferred_apps_.DeleteAppId(update.AppId());
-}
-
-void AppServiceProxyBase::OnAppRegistryCacheWillBeDestroyed(
-    apps::AppRegistryCache* cache) {
-  Observe(nullptr);
 }
 
 apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(

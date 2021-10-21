@@ -43,7 +43,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
 // it's ARGB. YUV_MATRIX(), YUV_ORDER() conditionally remap YUV to YVU for ABGR.
@@ -568,7 +568,8 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   VideoImageGenerator(scoped_refptr<VideoFrame> frame)
       : cc::PaintImageGenerator(
             SkImageInfo::MakeN32Premul(frame->visible_rect().width(),
-                                       frame->visible_rect().height())),
+                                       frame->visible_rect().height(),
+                                       frame->ColorSpace().ToSkColorSpace())),
         frame_(std::move(frame)) {
     DCHECK(!frame_->HasTextures());
   }
@@ -587,6 +588,13 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
     PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
                                                            row_bytes);
+
+    if (!SkColorSpace::Equals(GetSkImageInfo().colorSpace(),
+                              info.colorSpace())) {
+      SkPixmap src(GetSkImageInfo(), pixels, row_bytes);
+      if (!src.readPixels(info, pixels, row_bytes))
+        return false;
+    }
     return true;
   }
 
@@ -775,11 +783,10 @@ class VideoTextureBacking : public cc::TextureBacking {
 };
 
 PaintCanvasVideoRenderer::PaintCanvasVideoRenderer()
-    : cache_deleting_timer_(
-          FROM_HERE,
-          base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
-          this,
-          &PaintCanvasVideoRenderer::ResetCache),
+    : cache_deleting_timer_(FROM_HERE,
+                            base::Seconds(kTemporaryResourceDeletionDelay),
+                            this,
+                            &PaintCanvasVideoRenderer::ResetCache),
       renderer_stable_id_(cc::PaintImage::GetNextId()) {}
 
 PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() = default;

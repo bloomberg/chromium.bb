@@ -9,14 +9,16 @@
 #include "chromeos/printing/printer_configuration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 class PpdResolutionTrackerTest : public testing::Test {
  public:
   PpdResolutionTrackerTest() = default;
-  ~PpdResolutionTrackerTest() override = default;
 
-  DISALLOW_COPY_AND_ASSIGN(PpdResolutionTrackerTest);
+  PpdResolutionTrackerTest(const PpdResolutionTrackerTest&) = delete;
+  PpdResolutionTrackerTest& operator=(const PpdResolutionTrackerTest&) = delete;
+
+  ~PpdResolutionTrackerTest() override = default;
 };
 
 TEST_F(PpdResolutionTrackerTest, PendingResolution) {
@@ -41,7 +43,7 @@ TEST_F(PpdResolutionTrackerTest, MarkPpdResolutionSuccessful) {
   tracker.MarkResolutionPending(printer_id);
 
   const std::string& expected_effective_make_and_model = "printer_make_model";
-  Printer::PpdReference ref;
+  chromeos::Printer::PpdReference ref;
   ref.effective_make_and_model = expected_effective_make_and_model;
 
   tracker.MarkResolutionSuccessful(printer_id, ref);
@@ -94,7 +96,7 @@ TEST_F(PpdResolutionTrackerTest, MultipleResolutions) {
 
   const std::string& expected_effective_make_and_model1 =
       "printer_make_model_1";
-  Printer::PpdReference ref1;
+  chromeos::Printer::PpdReference ref1;
   ref1.effective_make_and_model = expected_effective_make_and_model1;
 
   tracker.MarkResolutionSuccessful(printer_id_1, ref1);
@@ -118,4 +120,4 @@ TEST_F(PpdResolutionTrackerTest, MultipleResolutions) {
             tracker.GetPpdReference(printer_id_1).effective_make_and_model);
 }
 
-}  // namespace chromeos
+}  // namespace ash

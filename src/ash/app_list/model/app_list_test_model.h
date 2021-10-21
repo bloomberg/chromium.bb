@@ -27,6 +27,10 @@ class AppListTestModel : public AppListModel {
   class AppListTestItem : public AppListItem {
    public:
     AppListTestItem(const std::string& id, AppListTestModel* model);
+
+    AppListTestItem(const AppListTestItem&) = delete;
+    AppListTestItem& operator=(const AppListTestItem&) = delete;
+
     ~AppListTestItem() override;
     void Activate(int event_flags);
     std::unique_ptr<ui::SimpleMenuModel> CreateContextMenuModel();
@@ -36,13 +40,14 @@ class AppListTestModel : public AppListModel {
 
    private:
     AppListTestModel* const model_;
-
-    DISALLOW_COPY_AND_ASSIGN(AppListTestItem);
   };
 
   static const char kItemType[];
 
   AppListTestModel();
+
+  AppListTestModel(const AppListTestModel&) = delete;
+  AppListTestModel& operator=(const AppListTestModel&) = delete;
 
   // Raw pointer version convenience versions of AppListModel methods.
   AppListItem* AddItem(AppListItem* item);
@@ -85,8 +90,6 @@ class AppListTestModel : public AppListModel {
   int activate_count_ = 0;
   AppListItem* last_activated_ = nullptr;
   int naming_index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListTestModel);
 };
 
 }  // namespace test

@@ -34,8 +34,8 @@
 #include "content/public/common/result_codes.h"
 #include "fuchsia/base/inspect.h"
 #include "fuchsia/base/legacymetrics_client.h"
+#include "fuchsia/engine/browser/cdm_provider_service.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/media_resource_provider_service.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "fuchsia/engine/browser/web_engine_memory_inspector.h"
@@ -54,11 +54,10 @@ namespace {
 base::NoDestructor<fidl::InterfaceRequest<fuchsia::web::Context>>
     g_test_request;
 
-constexpr base::TimeDelta kMetricsReportingInterval =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kMetricsReportingInterval = base::Minutes(1);
 
 constexpr base::TimeDelta kChildProcessHistogramFetchTimeout =
-    base::TimeDelta::FromSeconds(10);
+    base::Seconds(10);
 
 // Merge child process' histogram deltas into the browser process' histograms.
 void FetchHistogramsFromChildProcesses(
@@ -182,14 +181,16 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
                           base::Unretained(this)));
 
   // Configure Ozone with an Aura implementation of the Screen abstraction.
-  screen_ = std::make_unique<aura::ScreenOzone>();
+  std::unique_ptr<aura::ScreenOzone> screen_ozone =
+      std::make_unique<aura::ScreenOzone>();
+  screen_ozone.get()->Initialize();
+  screen_ = std::move(screen_ozone);
   display::Screen::SetScreenInstance(screen_.get());
 
-  // Create the MediaResourceProviderService at startup rather than on-demand,
+  // Create the CdmProviderService at startup rather than on-demand,
   // to allow it to perform potentially expensive startup work in the
   // background.
-  media_resource_provider_service_ =
-      std::make_unique<MediaResourceProviderService>();
+  cdm_provider_service_ = std::make_unique<CdmProviderService>();
 
   // Disable RenderFrameHost's Javascript injection restrictions so that the
   // Context and Frames can implement their own JS injection policy at a higher
@@ -219,7 +220,7 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   // In browser tests |ui_task| runs the "body" of each test.
   if (parameters_.ui_task) {
     // Since the main loop won't run, there is nothing to quit.
-    quit_closure_ = base::DoNothing::Once();
+    quit_closure_ = base::DoNothing();
 
     std::move(*parameters_.ui_task).Run();
     delete parameters_.ui_task;

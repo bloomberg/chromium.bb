@@ -6,6 +6,7 @@
 #define NET_BASE_ISOLATION_INFO_H_
 
 #include <set>
+#include <string>
 
 #include "base/unguessable_token.h"
 #include "net/base/net_export.h"
@@ -92,10 +93,10 @@ class NET_EXPORT IsolationInfo {
   // CreateForInternalRequest with a fresh opaque origin.
   static IsolationInfo CreateTransient();
 
-  // Creates a non-transient IsolationInfo. Just like a transient IsolationInfo
-  // (no SameSite cookies, opaque Origins), but does write data to disk, so this
-  // allows use of the disk cache with a transient NIK.
-  static IsolationInfo CreateOpaqueAndNonTransient();
+  // Creates an IsolationInfo from the serialized contents. Returns a nullopt
+  // if deserialization fails or if data is inconsistent.
+  static absl::optional<IsolationInfo> Deserialize(
+      const std::string& serialized);
 
   // Creates an IsolationInfo with the provided parameters. If the parameters
   // are inconsistent, DCHECKs. In particular:
@@ -144,7 +145,6 @@ class NET_EXPORT IsolationInfo {
       const absl::optional<url::Origin>& top_frame_origin,
       const absl::optional<url::Origin>& frame_origin,
       const SiteForCookies& site_for_cookies,
-      bool opaque_and_non_transient,
       absl::optional<std::set<SchemefulSite>> party_context = absl::nullopt,
       const base::UnguessableToken* nonce = nullptr);
 
@@ -191,8 +191,6 @@ class NET_EXPORT IsolationInfo {
   //          policy. It MUST NEVER be used for any kind of SECURITY check.
   const SiteForCookies& site_for_cookies() const { return site_for_cookies_; }
 
-  bool opaque_and_non_transient() const { return opaque_and_non_transient_; }
-
   // Return |party_context| which exclude the top frame origin and the frame
   // origin.
   // TODO(mmenke): Make this function PartyContextForTesting() after switching
@@ -204,12 +202,15 @@ class NET_EXPORT IsolationInfo {
 
   bool IsEqualForTesting(const IsolationInfo& other) const;
 
+  // Serialize the `IsolationInfo` into a string. Fails if transient, returning
+  // an empty string.
+  std::string Serialize() const;
+
  private:
   IsolationInfo(RequestType request_type,
                 const absl::optional<url::Origin>& top_frame_origin,
                 const absl::optional<url::Origin>& frame_origin,
                 const SiteForCookies& site_for_cookies,
-                bool opaque_and_non_transient,
                 const base::UnguessableToken* nonce,
                 absl::optional<std::set<SchemefulSite>> party_context);
 
@@ -223,8 +224,6 @@ class NET_EXPORT IsolationInfo {
   net::NetworkIsolationKey network_isolation_key_;
 
   SiteForCookies site_for_cookies_;
-
-  bool opaque_and_non_transient_ = false;
 
   // Having a nonce is a way to force a transient opaque `IsolationInfo`
   // for non-opaque origins.

@@ -486,6 +486,9 @@ int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type) {
     case DocumentMarker::kSuggestion:
       result = ax::mojom::blink::MarkerType::kSuggestion;
       break;
+    case DocumentMarker::kHighlight:
+      result = ax::mojom::blink::MarkerType::kHighlight;
+      break;
     default:
       result = ax::mojom::blink::MarkerType::kNone;
       break;
@@ -1250,8 +1253,7 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
       node_data->SetRestriction(ax::mojom::blink::Restriction::kDisabled);
       break;
     case AXRestriction::kRestrictionNone:
-      if (CanSetValueAttribute())
-        node_data->AddAction(ax::mojom::blink::Action::kSetValue);
+      SerializeActionAttributes(node_data);
       break;
   }
 
@@ -1399,11 +1401,19 @@ const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute() {
     return role_str;
   }
 
-  // Landmarks are the only native roles exposed in xml-roles, matching Firefox.
-  if (ui::IsLandmark(RoleValue()))
-    return ARIARoleName(RoleValue());
+  ax::mojom::blink::Role landmark_role = RoleValue();
+  if (landmark_role == ax::mojom::blink::Role::kFooter) {
+    // - Treat <footer> as "contentinfo" in xml-roles object attribute.
+    landmark_role = ax::mojom::blink::Role::kContentInfo;
+  } else if (landmark_role == ax::mojom::blink::Role::kHeader) {
+    // - Treat <header> as "banner" in xml-roles object attribute.
+    landmark_role = ax::mojom::blink::Role::kBanner;
+  } else if (!ui::IsLandmark(RoleValue())) {
+    // Landmarks are the only roles exposed in xml-roles, matching Firefox.
+    return g_null_atom;
+  }
 
-  return g_null_atom;
+  return ARIARoleName(landmark_role);
 }
 
 void AXObject::SerializeElementAttributes(ui::AXNodeData* node_data) {
@@ -1632,6 +1642,15 @@ void AXObject::SerializeChooserPopupAttributes(ui::AXNodeData* node_data) {
   controls_ids.push_back(chooser_popup_id);
   node_data->AddIntListAttribute(
       ax::mojom::blink::IntListAttribute::kControlsIds, controls_ids);
+}
+
+void AXObject::SerializeActionAttributes(ui::AXNodeData* node_data) {
+  if (CanSetValueAttribute())
+    node_data->AddAction(ax::mojom::blink::Action::kSetValue);
+  if (IsSlider()) {
+    node_data->AddAction(ax::mojom::blink::Action::kDecrement);
+    node_data->AddAction(ax::mojom::blink::Action::kIncrement);
+  }
 }
 
 void AXObject::TruncateAndAddStringAttribute(
@@ -2514,12 +2533,23 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
       return true;
   }
 
-  // The ignored state of media controls can change without a layout update.
-  // Keep them in the tree at all times so that the serializer isn't
-  // accidentally working with unincluded nodes, which is not allowed.
-  if (node->IsInUserAgentShadowRoot() &&
-      IsA<HTMLMediaElement>(node->OwnerShadowHost())) {
-    return true;
+  if (const Element* owner = node->OwnerShadowHost()) {
+    // The ignored state of media controls can change without a layout update.
+    // Keep them in the tree at all times so that the serializer isn't
+    // accidentally working with unincluded nodes, which is not allowed.
+    if (IsA<HTMLMediaElement>(owner))
+      return true;
+
+    // Do not include ignored descendants of an <input type="number"> because
+    // they interfere with AXPosition code that assumes a plain input field
+    // structure. Specifically, caret moved events will not be emitted for the
+    // final offset because the associated tree position for that offset is an
+    // ignored node. In some cases platform accessibility code will instead
+    // incorrectly emit a caret moved event for the AXPosition which follows the
+    // input.
+    if (IsA<HTMLInputElement>(owner) &&
+        DynamicTo<HTMLInputElement>(owner)->type() == input_type_names::kNumber)
+      return false;
   }
 
   Element* element = GetElement();
@@ -3058,7 +3088,7 @@ bool AXObject::ComputeIsHiddenViaStyle() const {
     return false;
 
   // content-visibility:hidden or content-visibility: auto.
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*node)) {
     // Ensure contents of head, style and script are never exposed.
     // Note: an AXObject is created for <title> to gather the document's name.
     DCHECK(!Traversal<SVGStyleElement>::FirstAncestorOrSelf(*node)) << node;
@@ -3112,7 +3142,7 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
     return false;
 
   // Display-locked elements are available for text/name resolution.
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*node))
     return false;
 
   Document* document = GetDocument();

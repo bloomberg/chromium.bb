@@ -27,6 +27,7 @@ class Value;
 
 namespace chromeos {
 
+class CellularPolicyHandler;
 class NetworkConfigurationHandler;
 struct NetworkProfile;
 class NetworkProfileHandler;
@@ -37,6 +38,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       public NetworkProfileObserver,
       public PolicyApplicator::ConfigurationHandler {
  public:
+  ManagedNetworkConfigurationHandlerImpl(
+      const ManagedNetworkConfigurationHandlerImpl&) = delete;
+  ManagedNetworkConfigurationHandlerImpl& operator=(
+      const ManagedNetworkConfigurationHandlerImpl&) = delete;
+
   ~ManagedNetworkConfigurationHandlerImpl() override;
 
   // ManagedNetworkConfigurationHandler overrides
@@ -106,6 +112,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   bool CanRemoveNetworkConfig(const std::string& guid,
                               const std::string& profile_path) const override;
 
+  // This method should be called when the policy has been fully applied and is
+  // reflected in NetworkStateHandler, so it is safe to notify obserers.
+  // Notifying observers is the last step of policy application to
+  // |service_path|.
+  void NotifyPolicyAppliedToNetwork(
+      const std::string& service_path) const override;
+
+  void OnCellularPoliciesApplied(const NetworkProfile& profile) override;
+
   bool AllowOnlyPolicyCellularNetworks() const override;
   bool AllowOnlyPolicyWiFiToConnect() const override;
   bool AllowOnlyPolicyWiFiToConnectIfAvailable() const override;
@@ -154,7 +169,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   // Handlers may be null in tests so long as they do not execute any paths
   // that require the handlers.
-  void Init(NetworkStateHandler* network_state_handler,
+  void Init(CellularPolicyHandler* cellular_policy_handler,
+            NetworkStateHandler* network_state_handler,
             NetworkProfileHandler* network_profile_handler,
             NetworkConfigurationHandler* network_configuration_handler,
             NetworkDeviceHandler* network_device_handler,
@@ -230,6 +246,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   UserToPoliciesMap policies_by_user_;
 
   // Local references to the associated handler instances.
+  CellularPolicyHandler* cellular_policy_handler_ = nullptr;
   NetworkStateHandler* network_state_handler_ = nullptr;
   NetworkProfileHandler* network_profile_handler_ = nullptr;
   NetworkConfigurationHandler* network_configuration_handler_ = nullptr;
@@ -255,8 +272,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // For Shill client callbacks
   base::WeakPtrFactory<ManagedNetworkConfigurationHandlerImpl>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandlerImpl);
 };
 
 }  // namespace chromeos

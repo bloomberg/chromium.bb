@@ -58,6 +58,7 @@ constexpr char kTestAccountEmail[] = "test.account.email@example.com";
 
 constexpr char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
 constexpr char kTerminateUponInputFieldName[] = "terminateUponInput";
+constexpr char kAckedUserPresenceFieldName[] = "ackedUserPresence";
 
 // Macro expecting success. We are using a macro because a function would
 // report any error against the line in the function, and not against the
@@ -77,10 +78,12 @@ constexpr char kTerminateUponInputFieldName[] = "terminateUponInput";
     EXPECT_EQ(result.payload, CreateErrorPayload(error_code, ##__VA_ARGS__)); \
   })
 
-em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
-                                       base::TimeDelta age_of_command,
-                                       base::TimeDelta idleness_cutoff,
-                                       bool terminate_upon_input) {
+em::RemoteCommand GenerateCommandProto(
+    RemoteCommandJob::UniqueIDType unique_id,
+    base::TimeDelta age_of_command,
+    base::TimeDelta idleness_cutoff,
+    bool terminate_upon_input,
+    absl::optional<bool> acked_user_presence) {
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_DEVICE_START_CRD_SESSION);
@@ -93,15 +96,19 @@ em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
                    base::Value((int)idleness_cutoff.InSeconds()));
   root_dict.SetKey(kTerminateUponInputFieldName,
                    base::Value(terminate_upon_input));
+  if (acked_user_presence.has_value()) {
+    root_dict.SetKey(kAckedUserPresenceFieldName,
+                     base::Value(acked_user_presence.value()));
+  }
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
   return command_proto;
 }
 
-class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
+class StubCrdHostDelegate : public DeviceCommandStartCrdSessionJob::Delegate {
  public:
-  StubCRDHostDelegate() = default;
-  ~StubCRDHostDelegate() override = default;
+  StubCrdHostDelegate() = default;
+  ~StubCrdHostDelegate() override = default;
 
   void SetHasActiveSession(bool value) { has_active_session_ = value; }
   void MakeAccessCodeFetchFail() { access_code_success_ = false; }
@@ -109,20 +116,20 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
   // Returns if TerminateSession() was called to terminate the active session.
   bool IsActiveSessionTerminated() const { return terminate_session_called_; }
 
-  // Returns the |SessionParameters| sent to the last StartCRDHostAndGetCode()
+  // Returns the |SessionParameters| sent to the last StartCrdHostAndGetCode()
   // call.
   SessionParameters session_parameters() {
     EXPECT_TRUE(received_session_parameters_.has_value());
     return received_session_parameters_.value_or(SessionParameters{});
   }
 
-  // DeviceCommandStartCRDSessionJob::Delegate implementation:
+  // DeviceCommandStartCrdSessionJob::Delegate implementation:
   bool HasActiveSession() const override;
   void TerminateSession(base::OnceClosure callback) override;
-  void StartCRDHostAndGetCode(
+  void StartCrdHostAndGetCode(
       const SessionParameters& parameters,
-      DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
-      DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
+      DeviceCommandStartCrdSessionJob::AccessCodeCallback success_callback,
+      DeviceCommandStartCrdSessionJob::ErrorCallback error_callback) override;
 
  private:
   bool has_active_session_ = false;
@@ -131,27 +138,27 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
   absl::optional<SessionParameters> received_session_parameters_;
 };
 
-bool StubCRDHostDelegate::HasActiveSession() const {
+bool StubCrdHostDelegate::HasActiveSession() const {
   return has_active_session_;
 }
 
-void StubCRDHostDelegate::TerminateSession(base::OnceClosure callback) {
+void StubCrdHostDelegate::TerminateSession(base::OnceClosure callback) {
   has_active_session_ = false;
   terminate_session_called_ = true;
   std::move(callback).Run();
 }
 
-void StubCRDHostDelegate::StartCRDHostAndGetCode(
+void StubCrdHostDelegate::StartCrdHostAndGetCode(
     const SessionParameters& parameters,
-    DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
-    DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
+    DeviceCommandStartCrdSessionJob::AccessCodeCallback success_callback,
+    DeviceCommandStartCrdSessionJob::ErrorCallback error_callback) {
   received_session_parameters_ = parameters;
 
   if (access_code_success_) {
     std::move(success_callback).Run(kTestAccessCode);
   } else {
     std::move(error_callback)
-        .Run(DeviceCommandStartCRDSessionJob::FAILURE_CRD_HOST_ERROR,
+        .Run(DeviceCommandStartCrdSessionJob::FAILURE_CRD_HOST_ERROR,
              std::string());
   }
 }
@@ -163,9 +170,9 @@ struct Result {
 
 }  // namespace
 
-class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
+class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
  public:
-  DeviceCommandStartCRDSessionJobTest()
+  DeviceCommandStartCrdSessionJobTest()
       : ash::DeviceSettingsTestBase(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
@@ -203,7 +210,7 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
 
   std::string CreateSuccessPayload(const std::string& access_code);
   std::string CreateErrorPayload(
-      DeviceCommandStartCRDSessionJob::ResultCode result_code,
+      DeviceCommandStartCrdSessionJob::ResultCode result_code,
       const std::string& error_message);
   std::string CreateNotIdlePayload(base::TimeDelta idleness);
 
@@ -271,6 +278,8 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
 
   void SetTerminateUponInput(bool value) { terminate_upon_input_ = value; }
 
+  void SetAckedUserPresence(bool value) { acked_user_presence_ = value; }
+
   void SetRobotAccountUserName(const std::string& user_name) {
     DeviceOAuth2TokenService* token_service =
         DeviceOAuth2TokenServiceFactory::Get();
@@ -282,19 +291,19 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
   void DeleteUserActivityDetector() { user_activity_detector_ = nullptr; }
   void DeleteUserManager() { user_manager_enabler_ = nullptr; }
 
-  StubCRDHostDelegate& crd_host_delegate() { return crd_host_delegate_; }
-  DeviceCommandStartCRDSessionJob& job() { return job_; }
+  StubCrdHostDelegate& crd_host_delegate() { return crd_host_delegate_; }
+  DeviceCommandStartCrdSessionJob& job() { return job_; }
 
  private:
   ash::FakeChromeUserManager& user_manager() { return *user_manager_; }
 
   void InitializeJob() {
-    bool success =
-        job().Init(base::TimeTicks::Now(),
-                   GenerateCommandProto(
-                       kUniqueID, base::TimeTicks::Now() - test_start_time_,
-                       idleness_cutoff_, terminate_upon_input_),
-                   nullptr);
+    bool success = job().Init(
+        base::TimeTicks::Now(),
+        GenerateCommandProto(
+            kUniqueID, base::TimeTicks::Now() - test_start_time_,
+            idleness_cutoff_, terminate_upon_input_, acked_user_presence_),
+        nullptr);
 
     if (oauth_token_)
       job().SetOAuthTokenForTest(oauth_token_.value());
@@ -310,7 +319,7 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
     InitializeJob();
     bool launched = job().Run(
         base::Time::Now(), base::TimeTicks::Now(),
-        base::BindOnce(&DeviceCommandStartCRDSessionJobTest::OnJobFinished,
+        base::BindOnce(&DeviceCommandStartCrdSessionJobTest::OnJobFinished,
                        base::Unretained(this)));
     EXPECT_TRUE(launched);
   }
@@ -327,8 +336,9 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
   std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
 
   absl::optional<std::string> oauth_token_;
-  base::TimeDelta idleness_cutoff_ = base::TimeDelta::FromSeconds(30);
+  base::TimeDelta idleness_cutoff_ = base::Seconds(30);
   bool terminate_upon_input_ = false;
+  absl::optional<bool> acked_user_presence_;
 
   // Automatically installed as a singleton upon creation.
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
@@ -336,8 +346,8 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestingPrefServiceSimple local_state_;
 
-  StubCRDHostDelegate crd_host_delegate_;
-  DeviceCommandStartCRDSessionJob job_{&crd_host_delegate_};
+  StubCrdHostDelegate crd_host_delegate_;
+  DeviceCommandStartCrdSessionJob job_{&crd_host_delegate_};
 
   // Future value that will be populated with the result once the remote command
   // job is completed.
@@ -346,19 +356,19 @@ class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
   base::TimeTicks test_start_time_;
 };
 
-std::string DeviceCommandStartCRDSessionJobTest::CreateSuccessPayload(
+std::string DeviceCommandStartCrdSessionJobTest::CreateSuccessPayload(
     const std::string& access_code) {
   std::string payload;
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey(kResultCodeFieldName,
-              base::Value(DeviceCommandStartCRDSessionJob::SUCCESS));
+              base::Value(DeviceCommandStartCrdSessionJob::SUCCESS));
   root.SetKey(kResultAccessCodeFieldName, base::Value(access_code));
   base::JSONWriter::Write(root, &payload);
   return payload;
 }
 
-std::string DeviceCommandStartCRDSessionJobTest::CreateErrorPayload(
-    DeviceCommandStartCRDSessionJob::ResultCode result_code,
+std::string DeviceCommandStartCrdSessionJobTest::CreateErrorPayload(
+    DeviceCommandStartCrdSessionJob::ResultCode result_code,
     const std::string& error_message = "") {
   std::string payload;
   base::Value root(base::Value::Type::DICTIONARY);
@@ -369,19 +379,19 @@ std::string DeviceCommandStartCRDSessionJobTest::CreateErrorPayload(
   return payload;
 }
 
-std::string DeviceCommandStartCRDSessionJobTest::CreateNotIdlePayload(
+std::string DeviceCommandStartCrdSessionJobTest::CreateNotIdlePayload(
     base::TimeDelta idleness) {
   std::string payload;
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey(kResultCodeFieldName,
-              base::Value(DeviceCommandStartCRDSessionJob::FAILURE_NOT_IDLE));
+              base::Value(DeviceCommandStartCrdSessionJob::FAILURE_NOT_IDLE));
   root.SetKey(kResultLastActivityFieldName,
               base::Value(static_cast<int>(idleness.InSeconds())));
   base::JSONWriter::Write(root, &payload);
   return payload;
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldSucceedIfAccessTokenCanBeFetched) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
@@ -391,7 +401,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldTerminateActiveSessionAndThenSucceed) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
@@ -404,7 +414,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_TRUE(crd_host_delegate().IsActiveSessionTerminated());
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailIfOAuthTokenServiceIsNotRunning) {
   DeviceOAuth2TokenServiceFactory::Shutdown();
 
@@ -413,66 +423,74 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
+               DeviceCommandStartCrdSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailIfUserActivityDetectorIsNotRunning) {
   DeleteUserActivityDetector();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
+               DeviceCommandStartCrdSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailIfUserManagerIsNotRunning) {
   DeleteUserManager();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
+               DeviceCommandStartCrdSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForManagedGuestUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForManagedGuestUser) {
+  base::test::ScopedFeatureList disable_crd_for_user_sessions_;
+  disable_crd_for_user_sessions_.InitAndDisableFeature(
+      features::kCrdForManagedUserSessions);
+
   LogInAsManagedGuestSessionUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForGuestUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForGuestUser) {
   LogInAsGuestUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForAffiliatedUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForAffiliatedUser) {
+  base::test::ScopedFeatureList disable_crd_for_user_sessions_;
+  disable_crd_for_user_sessions_.InitAndDisableFeature(
+      features::kCrdForManagedUserSessions);
+
   LogInAsAffiliatedUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForRegularUser) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailForRegularUser) {
   LogInAsRegularUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailForKioskUserWithoutAutoLaunch) {
   LogInAsKioskAppUser();
 
@@ -482,10 +500,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldSucceedForKioskUserWithZeroDelayAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -498,7 +516,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailForArcKioskUserWithoutAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -509,10 +527,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldSucceedForArcKioskUserWithZeroDelayAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -525,7 +543,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailForWebKioskUserWithoutAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -536,10 +554,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldSucceedForWebKioskUserWithZeroDelayAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -552,13 +570,13 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailIfDeviceIdleTimeIsLessThanIdlenessCutoffValue) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
 
-  const auto idleness_cutoff = base::TimeDelta::FromSeconds(10);
-  const auto device_idle_time = base::TimeDelta::FromSeconds(9);
+  const auto idleness_cutoff = base::Seconds(10);
+  const auto device_idle_time = base::Seconds(9);
 
   SetDeviceIdleTime(device_idle_time);
   SetIdlenessCutoff(idleness_cutoff);
@@ -569,13 +587,13 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_EQ(result.payload, CreateNotIdlePayload(device_idle_time));
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldSucceedIfDeviceIdleTimeIsMoreThanIdlenessCutoffValue) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
 
-  const auto idleness_cutoff = base::TimeDelta::FromSeconds(10);
-  const auto device_idle_time = base::TimeDelta::FromSeconds(11);
+  const auto idleness_cutoff = base::Seconds(10);
+  const auto device_idle_time = base::Seconds(11);
 
   SetDeviceIdleTime(device_idle_time);
   SetIdlenessCutoff(idleness_cutoff);
@@ -585,18 +603,18 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldFailIfWeCantFetchTheOAuthToken) {
   LogInAsAutoLaunchedKioskAppUser();
   ClearOAuthToken();
 
   Result result = RunJobAndWaitForResult();
 
-  EXPECT_ERROR(result, DeviceCommandStartCRDSessionJob::FAILURE_NO_OAUTH_TOKEN,
+  EXPECT_ERROR(result, DeviceCommandStartCrdSessionJob::FAILURE_NO_OAUTH_TOKEN,
                kTestNoOAuthTokenReason);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailIfCRDHostReportsAnError) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldFailIfCrdHostReportsAnError) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
 
@@ -604,10 +622,10 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailIfCRDHostReportsAnError) {
 
   Result result = RunJobAndWaitForResult();
 
-  EXPECT_ERROR(result, DeviceCommandStartCRDSessionJob::FAILURE_CRD_HOST_ERROR);
+  EXPECT_ERROR(result, DeviceCommandStartCrdSessionJob::FAILURE_CRD_HOST_ERROR);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldPassOAuthTokenToDelegate) {
+TEST_F(DeviceCommandStartCrdSessionJobTest, ShouldPassOAuthTokenToDelegate) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken("the-oauth-token");
 
@@ -618,7 +636,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldPassOAuthTokenToDelegate) {
             crd_host_delegate().session_parameters().oauth_token);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldPassRobotAccountNameToDelegate) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
@@ -632,8 +650,8 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
             crd_host_delegate().session_parameters().user_name);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
-       ShouldPassTerminateUponInputTrueToDelegate) {
+TEST_F(DeviceCommandStartCrdSessionJobTest,
+       ShouldPassTerminateUponInputTrueToDelegateForKioskUser) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
 
@@ -646,7 +664,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
             crd_host_delegate().session_parameters().terminate_upon_input);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
+TEST_F(DeviceCommandStartCrdSessionJobTest,
        ShouldPassTerminateUponInputFalseToDelegate) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
@@ -660,8 +678,70 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
             crd_host_delegate().session_parameters().terminate_upon_input);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest,
-       ShouldPassShowConfirmationDialogFalseToDelegateForKioskUsers) {
+TEST_F(
+    DeviceCommandStartCrdSessionJobTest,
+    ShouldPassTerminateUponInputTrueToDelegateForKioskUserIfAckedUserPresenceSetFalse) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetAckedUserPresence(false);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(true,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(
+    DeviceCommandStartCrdSessionJobTest,
+    ShouldPassTerminateUponInputFalseToDelegateForKioskUserIfAckedUserPresenceSetTrue) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetAckedUserPresence(true);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(
+    DeviceCommandStartCrdSessionJobTest,
+    TerminateUponInputFieldShouldBeIgnoredIfAckedUserPresenseFieldIsSetFalse) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(false);
+  SetAckedUserPresence(false);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(true,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(
+    DeviceCommandStartCrdSessionJobTest,
+    TerminateUponInputFieldShouldBeIgnoredIfAckedUserPresenseFieldIsSetTrue) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(true);
+  SetAckedUserPresence(true);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCrdSessionJobTest,
+       ShouldPassShowConfirmationDialogFalseToDelegateForKioskUser) {
   LogInAsAutoLaunchedKioskAppUser();
   SetOAuthToken(kTestOAuthToken);
 
@@ -672,27 +752,27 @@ TEST_F(DeviceCommandStartCRDSessionJobTest,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
-// This test fixture enables the |kCRDForManagedUserSessions| feature flag,
+// This test fixture enables the |kCrdForManagedUserSessions| feature flag,
 // and tests the additional functionality enabled by the flag.
-class DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest
-    : public DeviceCommandStartCRDSessionJobTest {
+class DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest
+    : public DeviceCommandStartCrdSessionJobTest {
  public:
-  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest() = default;
-  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest(
-      const DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest&) =
+  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest() = default;
+  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest(
+      const DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest&) =
       delete;
-  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest& operator=(
-      const DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest&) =
+  DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest& operator=(
+      const DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest&) =
       delete;
-  ~DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest() override =
+  ~DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest() override =
       default;
 
  private:
   base::test::ScopedFeatureList enable_crd_for_user_sessions_{
-      features::kCRDForManagedUserSessions};
+      features::kCrdForManagedUserSessions};
 };
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldSucceedForKioskUserWithZeroDelayAutoLaunch) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -705,36 +785,36 @@ TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
-       ShouldFailForRegularUsers) {
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldFailForRegularUser) {
   LogInAsRegularUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
-       ShouldFailForGuestUsers) {
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldFailForGuestUser) {
   // Note that guest user != managed guest user
   LogInAsGuestUser();
 
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldFailIfNoUserIsLoggedIn) {
   Result result = RunJobAndWaitForResult();
 
   EXPECT_ERROR(result,
-               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+               DeviceCommandStartCrdSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldSucceedForManagedGuestUser) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -744,7 +824,7 @@ TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldSucceedForAffiliatedUser) {
   SetOAuthToken(kTestOAuthToken);
 
@@ -754,7 +834,7 @@ TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
   EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldPassShowConfirmationDialogTrueToDelegateForManagedGuestUser) {
   LogInAsManagedGuestSessionUser();
   SetOAuthToken(kTestOAuthToken);
@@ -766,7 +846,7 @@ TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
        ShouldPassShowConfirmationDialogTrueToDelegateForAffiliatedUser) {
   LogInAsAffiliatedUser();
   SetOAuthToken(kTestOAuthToken);
@@ -776,6 +856,62 @@ TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
 
   EXPECT_EQ(true,
             crd_host_delegate().session_parameters().show_confirmation_dialog);
+}
+
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldPassTerminateUponInputFalseToDelegateForAffiliatedUser) {
+  LogInAsAffiliatedUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(true);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldPassTerminateUponInputFalseToDelegateForManagedGuestUser) {
+  LogInAsManagedGuestSessionUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(true);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldNeverSendTerminateUponInputTrueToDelegateForAffiliatedUser) {
+  LogInAsAffiliatedUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetAckedUserPresence(false);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCrdSessionJobWithCrdForUserSessionsFeatureTest,
+       ShouldNeverSendTerminateUponInputTrueToDelegateForManagedGuestUser) {
+  LogInAsManagedGuestSessionUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetAckedUserPresence(false);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
 }
 
 }  // namespace policy

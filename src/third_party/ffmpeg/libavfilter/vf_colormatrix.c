@@ -413,10 +413,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_UYVY422,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int filter_frame(AVFilterLink *link, AVFrame *in)
@@ -473,17 +470,17 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     td.c7 = color->yuv_convert[color->mode][2][2];
 
     if (in->format == AV_PIX_FMT_YUV444P)
-        ctx->internal->execute(ctx, process_slice_yuv444p, &td, NULL,
-                               FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, process_slice_yuv444p, &td, NULL,
+                          FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
     else if (in->format == AV_PIX_FMT_YUV422P)
-        ctx->internal->execute(ctx, process_slice_yuv422p, &td, NULL,
-                               FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, process_slice_yuv422p, &td, NULL,
+                          FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
     else if (in->format == AV_PIX_FMT_YUV420P)
-        ctx->internal->execute(ctx, process_slice_yuv420p, &td, NULL,
-                               FFMIN(in->height / 2, ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, process_slice_yuv420p, &td, NULL,
+                          FFMIN(in->height / 2, ff_filter_get_nb_threads(ctx)));
     else
-        ctx->internal->execute(ctx, process_slice_uyvy422, &td, NULL,
-                               FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, process_slice_uyvy422, &td, NULL,
+                          FFMIN(in->height, ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -496,7 +493,6 @@ static const AVFilterPad colormatrix_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad colormatrix_outputs[] = {
@@ -504,7 +500,6 @@ static const AVFilterPad colormatrix_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_colormatrix = {
@@ -513,8 +508,8 @@ const AVFilter ff_vf_colormatrix = {
     .priv_size     = sizeof(ColorMatrixContext),
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = colormatrix_inputs,
-    .outputs       = colormatrix_outputs,
+    FILTER_INPUTS(colormatrix_inputs),
+    FILTER_OUTPUTS(colormatrix_outputs),
     .priv_class    = &colormatrix_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

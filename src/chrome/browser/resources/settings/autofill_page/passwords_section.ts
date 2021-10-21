@@ -33,9 +33,9 @@ import './avatar_icon.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -44,14 +44,14 @@ import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_prox
 import {loadTimeData} from '../i18n_setup.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {StoredAccount, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.js';
+import {PrefsMixin} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, Router} from '../router.js';
 
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MergeExceptionsStoreCopiesBehavior, MergeExceptionsStoreCopiesBehaviorInterface} from './merge_exceptions_store_copies_behavior.js';
+import {MergeExceptionsStoreCopiesMixin, MergeExceptionsStoreCopiesMixinInterface} from './merge_exceptions_store_copies_mixin.js';
 import {MergePasswordsStoreCopiesBehavior, MergePasswordsStoreCopiesBehaviorInterface} from './merge_passwords_store_copies_behavior.js';
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
@@ -90,15 +90,13 @@ interface PasswordsSectionElement {
 const PasswordsSectionElementBase =
     mixinBehaviors(
         [
-          I18nBehavior,
-          WebUIListenerBehavior,
-          MergeExceptionsStoreCopiesBehavior,
           MergePasswordsStoreCopiesBehavior,
-          PrefsBehavior,
         ],
-        GlobalScrollTargetMixin(PasswordCheckMixin(PolymerElement))) as {
-      new (): PolymerElement & I18nBehavior & WebUIListenerBehavior &
-      MergeExceptionsStoreCopiesBehaviorInterface &
+        PrefsMixin(GlobalScrollTargetMixin(
+            MergeExceptionsStoreCopiesMixin(WebUIListenerMixin(
+                I18nMixin(PasswordCheckMixin(PolymerElement))))))) as {
+      new (): PolymerElement & I18nMixinInterface &
+      WebUIListenerMixinInterface & MergeExceptionsStoreCopiesMixinInterface &
       MergePasswordsStoreCopiesBehaviorInterface & PasswordCheckMixinInterface
     };
 
@@ -195,13 +193,13 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
       },
 
       /**
-       * Whether the edit dialog and removal notification should show
+       * If true, the edit dialog and removal notification show
        * information about which location(s) a password is stored.
        */
-      shouldShowStorageDetails_: {
+      isAccountStoreUser_: {
         type: Boolean,
         value: false,
-        computed: 'computeShouldShowStorageDetails_(' +
+        computed: 'computeIsAccountStoreUser_(' +
             'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
       },
 
@@ -265,6 +263,15 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
       // </if>
 
       showPasswordsExportDialog_: Boolean,
+
+      showAddPasswordDialog_: Boolean,
+
+      showAddPasswordButton_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('addPasswordsInSettingsEnabled');
+        }
+      },
     };
   }
 
@@ -283,7 +290,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
   private numberOfDevicePasswords_: number;
   private hasPasswordExceptions_: boolean;
   private shouldShowBanner_: boolean;
-  private shouldShowStorageDetails_: boolean;
+  private isAccountStoreUser_: boolean;
   private shouldShowDevicePasswordsLink_: boolean;
   private shouldOfferTrustedVaultOptIn_: boolean;
   private hasLeakedCredentials_: boolean;
@@ -301,6 +308,8 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
   // </if>
 
   private showPasswordsExportDialog_: boolean;
+  private showAddPasswordDialog_: boolean;
+  private showAddPasswordButton_: boolean;
 
   private activeDialogAnchorStack_: Array<HTMLElement>;
   private passwordManager_: PasswordManagerProxy =
@@ -446,7 +455,7 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
         this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
   }
 
-  private computeShouldShowStorageDetails_(): boolean {
+  private computeIsAccountStoreUser_(): boolean {
     return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
   }
 
@@ -603,6 +612,17 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
 
   private onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
+  }
+
+  private onAddPasswordTap_() {
+    this.showAddPasswordDialog_ = true;
+    this.activeDialogAnchorStack_.push(
+        this.shadowRoot!.querySelector('#addPasswordButton')!);
+  }
+
+  private onAddPasswordDialogClosed_() {
+    this.showAddPasswordDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
   }
 

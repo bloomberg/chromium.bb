@@ -156,6 +156,10 @@ class FrameFetchContext : public blink::ResourceFetchContext {
   explicit FrameFetchContext(blink::WebLocalFrame* frame) : frame_(frame) {
     DCHECK(frame_);
   }
+
+  FrameFetchContext(const FrameFetchContext&) = delete;
+  FrameFetchContext& operator=(const FrameFetchContext&) = delete;
+
   ~FrameFetchContext() override = default;
 
   blink::WebLocalFrame* frame() const { return frame_; }
@@ -168,7 +172,6 @@ class FrameFetchContext : public blink::ResourceFetchContext {
 
  private:
   blink::WebLocalFrame* frame_;
-  DISALLOW_COPY_AND_ASSIGN(FrameFetchContext);
 };
 
 // Obtains the media ContextProvider and calls the given callback on the same
@@ -232,9 +235,8 @@ void LogRoughness(
       measurement.frame_size.height() > 700) {
     base::UmaHistogramCustomTimes(
         base::JoinString({kRoughnessHistogramName, suffix}, "."),
-        base::TimeDelta::FromMillisecondsD(measurement.roughness),
-        base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromMilliseconds(99), 100);
+        base::Milliseconds(measurement.roughness), base::Milliseconds(1),
+        base::Milliseconds(99), 100);
     // TODO(liberato): Record freezing, once we're sure that we're computing the
     // score we want.  For now, don't record anything so we don't have a mis-
     // match of UMA values.

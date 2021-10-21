@@ -39,10 +39,6 @@ const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 const char kCloudManagementEnrollmentMandatory[] =
     "policy.cloud_management_enrollment_mandatory";
 
-// Boolean that specifies whether the cloud policy will override conflicting
-// machine policy.
-const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
-
 // Integer that sets the minimal limit on the data size in the clipboard to be
 // checked against Data Leak Prevention rules.
 const char kDlpClipboardCheckSizeLimit[] =
@@ -73,6 +69,10 @@ const char kTargetBlankImpliesNoOpener[] =
 // Boolean policy preference to disable the BackForwardCache feature.
 const char kBackForwardCacheEnabled[] = "policy.back_forward_cache_enabled";
 #endif  // defined(OS_ANDROID)
+
+// Boolean policy to force enable WebSQL in third-party contexts.
+const char kWebSQLInThirdPartyContextEnabled[] =
+    "policy.web_sql_in_third_party_context_enabled";
 
 }  // namespace policy_prefs
 }  // namespace policy

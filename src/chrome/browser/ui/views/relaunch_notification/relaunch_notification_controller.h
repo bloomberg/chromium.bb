@@ -54,14 +54,19 @@ class RelaunchNotificationController : public UpgradeObserver {
   // |upgrade_detector| is expected to be the process-wide detector, and must
   // outlive the controller.
   explicit RelaunchNotificationController(UpgradeDetector* upgrade_detector);
+
+  RelaunchNotificationController(const RelaunchNotificationController&) =
+      delete;
+  RelaunchNotificationController& operator=(
+      const RelaunchNotificationController&) = delete;
+
   ~RelaunchNotificationController() override;
 
  protected:
   // The length of the final countdown given to the user before the browser is
   // summarily relaunched on Chrome desktop, or the device is rebooted on
   // Chrome OS.
-  static constexpr base::TimeDelta kRelaunchGracePeriod =
-      base::TimeDelta::FromHours(1);
+  static constexpr base::TimeDelta kRelaunchGracePeriod = base::Hours(1);
 
   RelaunchNotificationController(UpgradeDetector* upgrade_detector,
                                  const base::Clock* clock,
@@ -200,8 +205,6 @@ class RelaunchNotificationController : public UpgradeObserver {
   // overridden to required. Changes to the policy value will not affect the
   // notification type.
   bool notification_type_required_overridden_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationController);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_RELAUNCH_NOTIFICATION_RELAUNCH_NOTIFICATION_CONTROLLER_H_

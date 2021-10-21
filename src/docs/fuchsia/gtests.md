@@ -17,6 +17,11 @@ shuts the emulator down when finished.
 $ out/fuchsia/bin/run_base_unittests
 ```
 
+The flag `--custom-image` can be used to specify the Fuchsia boot image used
+by the emulator. For instance, setting
+`--custom-image=workstation.qemu-x64-release` would run the test on a
+workstation image.
+
 ## Run on an physical device
 
 Note the `-d` flag, which is an alias for `--device`.
@@ -88,10 +93,9 @@ arguments to the test runner script:
 * `--single-process-tests` to run all the tests in the same process. Unlike the
   above option, this will run the tests directly in the test launcher process,
   making it easier to attach a debugger.
-* `system-log-file=[/path/to/syslog]` to specify the file to write system logs
-  to. Or `system-log-file=-` to write the system logs to stdout. By default,
-  Chromium logs are written to the system log on Fuchsia. This argument is known
-  to cause `IOError` python exceptions with a QEMU target.
+* "--logs-dir=[/path/to/log/directory]` to specify the directory to write logs
+  to. By default, Chromium logs are written to the "system_log" file in that
+  directory.
 * `--gtest_repeat=[number] --gtest_break_on_failure` to run a test or test suite
   a certain number of times until it fails. This is useful to investigate flaky
   tests.

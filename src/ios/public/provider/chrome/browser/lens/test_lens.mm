@@ -14,9 +14,14 @@
 namespace ios {
 namespace provider {
 
-UIViewController* NewLensViewController(LensConfiguration* config) {
+id<ChromeLensController> NewChromeLensController(LensConfiguration* config) {
   // Lens is not supported for tests.
   return nil;
+}
+
+bool IsLensSupported() {
+  // Lens is not supported for tests.
+  return false;
 }
 
 }  // namespace provider

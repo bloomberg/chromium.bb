@@ -18,8 +18,9 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/shared_impl/resource.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 #include "v8/include/v8-util.h"
-#include "v8/include/v8.h"
 
 struct PP_Var;
 
@@ -61,6 +62,9 @@ class MessageChannel :
   // is only valid as long as the object in |result| is alive.
   static MessageChannel* Create(PepperPluginInstanceImpl* instance,
                                 v8::Persistent<v8::Object>* result);
+
+  MessageChannel(const MessageChannel&) = delete;
+  MessageChannel& operator=(const MessageChannel&) = delete;
 
   ~MessageChannel() override;
 
@@ -201,8 +205,6 @@ class MessageChannel :
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
   base::WeakPtrFactory<MessageChannel> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };
 
 }  // namespace content

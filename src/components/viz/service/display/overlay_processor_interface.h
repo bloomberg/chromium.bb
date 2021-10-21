@@ -18,6 +18,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
+#include "ui/gfx/overlay_priority_hint.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -76,6 +77,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // default values for the primary plane, this is a partial list of
   // OverlayCandidate.
   struct VIZ_SERVICE_EXPORT OutputSurfaceOverlayPlane {
+    OutputSurfaceOverlayPlane();
+    OutputSurfaceOverlayPlane(const OutputSurfaceOverlayPlane&);
+    OutputSurfaceOverlayPlane& operator=(const OutputSurfaceOverlayPlane&);
+    ~OutputSurfaceOverlayPlane();
     // Display's rotation information.
     gfx::OverlayTransform transform;
     // Rect on the display to position to. This takes in account of Display's
@@ -92,11 +97,16 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
     gfx::ColorSpace color_space;
     // Enable blending when we have underlay.
     bool enable_blending;
+    // Opacity of the overlay independent of buffer alpha. When rendered:
+    // src-alpha = |opacity| * buffer-component-alpha.
+    float opacity;
     // TODO(weiliangc): Should be replaced by SharedImage mailbox.
     // Gpu fence to wait for before overlay is ready for display.
     unsigned gpu_fence_id;
     // Mailbox corresponding to the buffer backing the primary plane.
     gpu::Mailbox mailbox;
+    // Hints for overlay prioritization.
+    gfx::OverlayPriorityHint priority_hint;
   };
 
   // TODO(weiliangc): Eventually the asymmetry between primary plane and
@@ -108,6 +118,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       const gfx::BufferFormat& buffer_format,
       const gfx::ColorSpace& color_space,
       bool has_alpha,
+      float opacity,
       const gpu::Mailbox& mailbox);
 
   static std::unique_ptr<OverlayProcessorInterface> CreateOverlayProcessor(
@@ -118,6 +129,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       gpu::SharedImageInterface* shared_image_interface,
       const RendererSettings& renderer_settings,
       const DebugRendererSettings* debug_settings);
+
+  OverlayProcessorInterface(const OverlayProcessorInterface&) = delete;
+  OverlayProcessorInterface& operator=(const OverlayProcessorInterface&) =
+      delete;
 
   virtual ~OverlayProcessorInterface() = default;
 
@@ -187,9 +202,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 
  protected:
   OverlayProcessorInterface() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverlayProcessorInterface);
 };
 
 }  // namespace viz

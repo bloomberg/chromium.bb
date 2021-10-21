@@ -387,7 +387,8 @@ void PageLoadTracker::PageHidden() {
         !back_forward_cache_restores_.back()
              .first_background_time.has_value()) {
       back_forward_cache_restores_.back().first_background_time =
-          background_time - navigation_start_after_back_forward_cache_restore_;
+          background_time -
+          back_forward_cache_restores_.back().navigation_start_time;
     }
   }
   visibility_tracker_.OnHidden();
@@ -976,6 +977,11 @@ const NormalizedCLSData& PageLoadTracker::GetNormalizedCLSData(
   return metrics_update_dispatcher_.normalized_cls_data(bfcache_strategy);
 }
 
+const NormalizedResponsivenessMetrics&
+PageLoadTracker::GetNormalizedResponsivenessMetrics() const {
+  return metrics_update_dispatcher_.normalized_responsiveness_metrics();
+}
+
 const mojom::InputTiming& PageLoadTracker::GetPageInputTiming() const {
   return metrics_update_dispatcher_.page_input_timing();
 }
@@ -1030,14 +1036,12 @@ void PageLoadTracker::OnEnterBackForwardCache() {
 
 void PageLoadTracker::OnRestoreFromBackForwardCache(
     content::NavigationHandle* navigation_handle) {
-  navigation_start_after_back_forward_cache_restore_ =
-      navigation_handle->NavigationStart();
-
   DCHECK(!visibility_tracker_.currently_in_foreground());
   bool visible =
       GetWebContents()->GetVisibility() == content::Visibility::VISIBLE;
 
-  BackForwardCacheRestore back_forward_cache_restore(visible);
+  BackForwardCacheRestore back_forward_cache_restore(
+      visible, navigation_handle->NavigationStart());
   back_forward_cache_restores_.push_back(back_forward_cache_restore);
 
   if (visible)
@@ -1049,8 +1053,10 @@ void PageLoadTracker::OnRestoreFromBackForwardCache(
   }
 
   // Reset the page end reason to END_NONE. The page has been restored, its
-  // previous end reason is no longer relevant.
+  // previous end reason is no longer relevant. Similarly, its page end time is
+  // no longer accurate, so reset that as well.
   page_end_reason_ = END_NONE;
+  page_end_time_ = base::TimeTicks();
 }
 
 void PageLoadTracker::OnV8MemoryChanged(

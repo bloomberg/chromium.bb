@@ -112,15 +112,16 @@ const char kNewTabHtml[] = "<html>NewTabOverride!</html>";
 class ContentScriptApiTest : public ExtensionApiTest {
  public:
   ContentScriptApiTest() {}
+
+  ContentScriptApiTest(const ContentScriptApiTest&) = delete;
+  ContentScriptApiTest& operator=(const ContentScriptApiTest&) = delete;
+
   ~ContentScriptApiTest() override {}
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentScriptApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptAllFrames) {
@@ -338,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, FetchExemptFromCSP) {
 
   // Create and load an extension that will inject a content script which does a
   // fetch based on the host document's "fetchUrl" url search parameter.
-  constexpr char kManifest[] =
+  constexpr char kFetchManifest[] =
       R"(
       {
         "name":"Fetch redirect test",
@@ -362,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, FetchExemptFromCSP) {
   )";
 
   TestExtensionDir test_dir;
-  test_dir.WriteManifest(kManifest);
+  test_dir.WriteManifest(kFetchManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
   ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
 
@@ -1079,7 +1080,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
                                   var iframe = document.createElement('iframe');
                                   document.body.appendChild(iframe);
                                   window.name = 'main-frame'; )"));
-  content::RenderFrameHost* subframe1 = web_contents->GetAllFrames()[1];
+  content::RenderFrameHost* subframe1 = ChildFrameAt(web_contents, 0);
   ASSERT_TRUE(
       content::ExecJs(subframe1, "var w = window.open('', 'main-frame');"));
   EXPECT_EQ(subframe1, web_contents->GetOpener());
@@ -1210,6 +1211,11 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
 class ContentScriptRelatedFrameTest : public ContentScriptApiTest {
  public:
   ContentScriptRelatedFrameTest() = default;
+
+  ContentScriptRelatedFrameTest(const ContentScriptRelatedFrameTest&) = delete;
+  ContentScriptRelatedFrameTest& operator=(
+      const ContentScriptRelatedFrameTest&) = delete;
+
   ~ContentScriptRelatedFrameTest() override = default;
 
   void SetUpOnMainThread() override;
@@ -1283,8 +1289,6 @@ class ContentScriptRelatedFrameTest : public ContentScriptApiTest {
 
   // The test directory used to load our extension.
   TestExtensionDir test_extension_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentScriptRelatedFrameTest);
 };
 
 constexpr char ContentScriptRelatedFrameTest::kMarkerSpanId[];
@@ -1308,7 +1312,7 @@ void ContentScriptRelatedFrameTest::SetUpOnMainThread() {
       embedded_test_server()->GetURL("path-test.example", "/iframe.html");
   data_url_ = GURL("data:text/html,<html>Hi</html>");
 
-  constexpr char kManifest[] =
+  constexpr char kContentScriptManifest[] =
       R"({
            "name": "Content Script injection in related frames",
            "manifest_version": 2,
@@ -1332,8 +1336,8 @@ void ContentScriptRelatedFrameTest::SetUpOnMainThread() {
   const char* extra_property = "";
   if (IncludeMatchOriginAsFallback())
     extra_property = R"("match_origin_as_fallback": true,)";
-  std::string manifest =
-      base::StringPrintf(kManifest, extra_property, extra_property);
+  std::string manifest = base::StringPrintf(kContentScriptManifest,
+                                            extra_property, extra_property);
   test_extension_dir_.WriteManifest(manifest);
 
   std::string script = base::StringPrintf(
@@ -1726,6 +1730,9 @@ class NTPInterceptionTest : public ExtensionApiTest {
   NTPInterceptionTest()
       : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
+  NTPInterceptionTest(const NTPInterceptionTest&) = delete;
+  NTPInterceptionTest& operator=(const NTPInterceptionTest&) = delete;
+
   // ExtensionApiTest override:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -1744,7 +1751,6 @@ class NTPInterceptionTest : public ExtensionApiTest {
 
  private:
   net::EmbeddedTestServer https_test_server_;
-  DISALLOW_COPY_AND_ASSIGN(NTPInterceptionTest);
 };
 
 // Ensure extensions can't inject a content script into the New Tab page.

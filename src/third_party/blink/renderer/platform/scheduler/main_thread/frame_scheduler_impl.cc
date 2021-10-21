@@ -79,8 +79,7 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
 
   FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
   DCHECK(frame_scheduler);
-  task_queue->GetTaskQueue()->SetQueuePriority(
-      frame_scheduler->ComputePriority(task_queue));
+  task_queue->SetQueuePriority(frame_scheduler->ComputePriority(task_queue));
 }
 
 }  // namespace
@@ -356,7 +355,7 @@ void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
   // The duration of task time under which AddTaskTime buffers rather than
   // sending the task time update to the delegate.
   constexpr base::TimeDelta kTaskDurationSendThreshold =
-      base::TimeDelta::FromMilliseconds(100);
+      base::Milliseconds(100);
   if (!delegate_)
     return;
   task_time_ += time;
@@ -482,7 +481,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociatedUnfreezable:
-      return DoesNotUseVirtualTimeTaskQueueTraits();
+      return CanRunWhenVirtualTimePausedTaskQueueTraits();
     case TaskType::kInternalPostMessageForwarding:
       // postMessages to remote frames hop through the scheduler so that any
       // IPCs generated in the same task arrive first. These tasks must be
@@ -522,7 +521,7 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     // The web scheduling API task types are used by WebSchedulingTaskQueues.
     // The associated TaskRunner should be obtained by creating a
     // WebSchedulingTaskQueue with CreateWebSchedulingTaskQueue().
-    case TaskType::kExperimentalWebScheduling:
+    case TaskType::kWebSchedulingPostedTask:
       // Not a valid frame-level TaskType.
       NOTREACHED();
       return QueueTraits();
@@ -1334,7 +1333,7 @@ void FrameSchedulerImpl::OnIPCTaskPostedWhileInBackForwardCache(
   base::UmaHistogramCustomTimes(
       "BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame."
       "TimeUntilIPCReceived",
-      duration, base::TimeDelta(), base::TimeDelta::FromMinutes(5), 100);
+      duration, base::TimeDelta(), base::Minutes(5), 100);
 }
 
 WTF::HashSet<SchedulingPolicy::Feature>
@@ -1462,7 +1461,7 @@ FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
 }
 
 MainThreadTaskQueue::QueueTraits
-FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
+FrameSchedulerImpl::CanRunWhenVirtualTimePausedTaskQueueTraits() {
   return QueueTraits().SetCanRunWhenVirtualTimePaused(true);
 }
 

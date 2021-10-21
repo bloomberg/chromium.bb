@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/common/render_accessibility.mojom-test-utils.h"
 #include "content/common/render_accessibility.mojom.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
@@ -82,6 +81,10 @@ class TestAXImageAnnotator : public AXImageAnnotator {
       mojo::PendingRemote<image_annotation::mojom::Annotator> annotator)
       : AXImageAnnotator(render_accessibility,
                          std::move(annotator)) {}
+
+  TestAXImageAnnotator(const TestAXImageAnnotator&) = delete;
+  TestAXImageAnnotator& operator=(const TestAXImageAnnotator&) = delete;
+
   ~TestAXImageAnnotator() override = default;
 
  private:
@@ -98,13 +101,15 @@ class TestAXImageAnnotator : public AXImageAnnotator {
         image.GetNode().To<blink::WebElement>().GetAttribute("SRC").Utf8();
     return image_id;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(TestAXImageAnnotator);
 };
 
 class MockAnnotationService : public image_annotation::mojom::Annotator {
  public:
   MockAnnotationService() = default;
+
+  MockAnnotationService(const MockAnnotationService&) = delete;
+  MockAnnotationService& operator=(const MockAnnotationService&) = delete;
+
   ~MockAnnotationService() override = default;
 
   mojo::PendingRemote<image_annotation::mojom::Annotator> GetRemote() {
@@ -141,8 +146,6 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   }
 
   mojo::ReceiverSet<image_annotation::mojom::Annotator> receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAnnotationService);
 };
 
 class RenderAccessibilityHostInterceptor
@@ -261,6 +264,11 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     RenderFrameImpl::InstallCreateHook(
         &RenderAccessibilityTestRenderFrame::CreateTestRenderFrame);
   }
+
+  RenderAccessibilityImplTest(const RenderAccessibilityImplTest&) = delete;
+  RenderAccessibilityImplTest& operator=(const RenderAccessibilityImplTest&) =
+      delete;
+
   ~RenderAccessibilityImplTest() override = default;
 
   void ScheduleSendPendingAccessibilityEvents() {
@@ -399,8 +407,6 @@ class RenderAccessibilityImplTest : public RenderViewTest {
 
  private:
   IPC::TestSink* sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImplTest);
 };
 
 TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
@@ -932,6 +938,12 @@ class MockPluginAccessibilityTreeSource : public content::PluginAXTreeSource {
     root_node_ =
         std::make_unique<ui::AXNode>(ax_tree_.get(), nullptr, root_node_id, 0);
   }
+
+  MockPluginAccessibilityTreeSource(const MockPluginAccessibilityTreeSource&) =
+      delete;
+  MockPluginAccessibilityTreeSource& operator=(
+      const MockPluginAccessibilityTreeSource&) = delete;
+
   ~MockPluginAccessibilityTreeSource() override {}
   bool GetTreeData(ui::AXTreeData* data) const override { return true; }
   ui::AXNode* GetRoot() const override { return root_node_.get(); }
@@ -977,7 +989,6 @@ class MockPluginAccessibilityTreeSource : public content::PluginAXTreeSource {
   std::unique_ptr<ui::AXTree> ax_tree_;
   std::unique_ptr<ui::AXNode> root_node_;
   bool action_target_called_ = false;
-  DISALLOW_COPY_AND_ASSIGN(MockPluginAccessibilityTreeSource);
 };
 
 TEST_F(RenderAccessibilityImplTest, TestAXActionTargetFromNodeId) {
@@ -1230,12 +1241,14 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
 class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
  public:
   AXImageAnnotatorTest() = default;
+
+  AXImageAnnotatorTest(const AXImageAnnotatorTest&) = delete;
+  AXImageAnnotatorTest& operator=(const AXImageAnnotatorTest&) = delete;
+
   ~AXImageAnnotatorTest() override = default;
 
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalAccessibilityLabels);
     RenderAccessibilityImplTest::SetUp();
     // TODO(nektar): Add the ability to test the AX action that labels images
     // only once.
@@ -1245,8 +1258,8 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
     GetRenderAccessibilityImpl()->ax_image_annotator_ =
         std::make_unique<TestAXImageAnnotator>(GetRenderAccessibilityImpl(),
                                                mock_annotator().GetRemote());
-    GetRenderAccessibilityImpl()->tree_source_->RemoveImageAnnotator();
-    GetRenderAccessibilityImpl()->tree_source_->AddImageAnnotator(
+    GetRenderAccessibilityImpl()->tree_source_->RemoveBlinkImageAnnotator();
+    GetRenderAccessibilityImpl()->tree_source_->AddBlinkImageAnnotator(
         GetRenderAccessibilityImpl()->ax_image_annotator_.get());
     BlinkAXTreeSource::IgnoreProtocolChecksForTesting();
   }
@@ -1261,8 +1274,6 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   MockAnnotationService mock_annotator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXImageAnnotatorTest);
 };
 
 TEST_F(AXImageAnnotatorTest, OnImageAdded) {
@@ -1402,8 +1413,7 @@ class TimeDelayBlinkAXTreeSource : public BlinkAXTreeSource {
                      ui::AXNodeData* out_data) const override {
     BlinkAXTreeSource::SerializeNode(node, out_data);
     if (time_delay_ms_) {
-      task_environment_->FastForwardBy(
-          base::TimeDelta::FromMilliseconds(time_delay_ms_));
+      task_environment_->FastForwardBy(base::Milliseconds(time_delay_ms_));
       time_delay_ms_ = 0;
     }
   }
@@ -1480,7 +1490,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
 
   // After 1000 seconds have passed, the next time we send an event we should
   // send URL-keyed metrics.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  task_environment_.FastForwardBy(base::Seconds(1000));
   GetRenderAccessibilityImpl()->HandleAXEvent(
       ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();

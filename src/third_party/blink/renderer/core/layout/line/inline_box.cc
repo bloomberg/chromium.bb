@@ -37,12 +37,14 @@ namespace blink {
 
 class LayoutObject;
 
-struct SameSizeAsInlineBox : DisplayItemClient {
+struct SameSizeAsInlineBox : GarbageCollected<SameSizeAsInlineBox>,
+                             DisplayItemClient {
   ~SameSizeAsInlineBox() override = default;
   Member<void*> members[4];
   LayoutPoint b;
   LayoutUnit c;
   uint32_t bitfields;
+  void Trace(Visitor* visitor) const {}
 };
 
 ASSERT_SIZE(InlineBox, SameSizeAsInlineBox);
@@ -366,14 +368,14 @@ bool CanUseInlineBox(const LayoutObject& node) {
 
 #if DCHECK_IS_ON()
 
-void showTree(const blink::InlineBox* b) {
+void ShowTree(const blink::InlineBox* b) {
   if (b)
     b->ShowTreeForThis();
   else
     fprintf(stderr, "Cannot showTree for (nil) InlineBox.\n");
 }
 
-void showLineTree(const blink::InlineBox* b) {
+void ShowLineTree(const blink::InlineBox* b) {
   if (b)
     b->ShowLineTreeForThis();
   else

@@ -19,6 +19,7 @@
 
 class GURL;
 @class ReadingListAddCommand;
+@class SearchImageWithLensCommand;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
@@ -84,8 +85,8 @@ class GURL;
 // omnibox.
 - (void)focusFakebox;
 
-// Searches for an image in the current tab.
-- (void)searchByImage:(UIImage*)image;
+// Search for an image with Lens, using |command| parameters.
+- (void)searchImageWithLens:(SearchImageWithLensCommand*)command;
 
 // Shows/Hides the activity indicator overlay that appears over the view to
 // prevent interaction with the web page.

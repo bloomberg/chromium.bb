@@ -23,7 +23,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/attestation_policy_observer.h"
 #include "chrome/browser/ash/attestation/enrollment_certificate_uploader_impl.h"
-#include "chrome/browser/ash/attestation/enrollment_policy_observer.h"
+#include "chrome/browser/ash/attestation/enrollment_id_upload_manager.h"
 #include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/reporting/login_logout_reporter.h"
@@ -34,11 +34,15 @@
 #include "chrome/browser/ash/policy/rsu/lookup_key_uploader.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/legacy_device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/managed_session_service.h"
 #include "chrome/browser/ash/policy/uploading/heartbeat_scheduler.h"
 #include "chrome/browser/ash/policy/uploading/status_uploader.h"
 #include "chrome/browser/ash/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -72,8 +76,7 @@ const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 // by Device Policy.
 // Keep the default value in sync with device_status_frequency in
 // DeviceReportingProto in components/policy/proto/chrome_device_policy.proto.
-constexpr base::TimeDelta kDeviceStatusUploadFrequency =
-    base::TimeDelta::FromHours(3);
+constexpr base::TimeDelta kDeviceStatusUploadFrequency = base::Hours(3);
 
 // Checks whether forced re-enrollment is enabled.
 bool IsForcedReEnrollmentEnabled() {
@@ -99,7 +102,7 @@ DeviceCloudPolicyManagerAsh::DeviceCloudPolicyManagerAsh(
       task_runner_(task_runner),
       local_state_(nullptr) {}
 
-DeviceCloudPolicyManagerAsh::~DeviceCloudPolicyManagerAsh() {}
+DeviceCloudPolicyManagerAsh::~DeviceCloudPolicyManagerAsh() = default;
 
 void DeviceCloudPolicyManagerAsh::Initialize(PrefService* local_state) {
   CHECK(local_state);
@@ -128,6 +131,7 @@ void DeviceCloudPolicyManagerAsh::Shutdown() {
   heartbeat_scheduler_.reset();
   syslog_uploader_.reset();
   status_uploader_.reset();
+  managed_session_service_.reset();
   external_data_manager_->Disconnect();
   state_keys_update_subscription_ = {};
   CloudPolicyManager::Shutdown();
@@ -203,8 +207,8 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   enrollment_certificate_uploader_ =
       std::make_unique<ash::attestation::EnrollmentCertificateUploaderImpl>(
           client());
-  enrollment_policy_observer_ =
-      std::make_unique<ash::attestation::EnrollmentPolicyObserver>(
+  enrollment_id_upload_manager_ =
+      std::make_unique<ash::attestation::EnrollmentIdUploadManager>(
           client(), enrollment_certificate_uploader_.get());
   lookup_key_uploader_ = std::make_unique<LookupKeyUploader>(
       device_store(), g_browser_process->local_state(),
@@ -233,14 +237,18 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   // themselves track the current state of the monitoring settings and only
   // perform monitoring if it is active.
   if (install_attributes->IsCloudManaged()) {
+    managed_session_service_ =
+        std::make_unique<policy::ManagedSessionService>();
+    // TODO(b/199169968):: Pass managed_session_service_ to
+    // DeviceStatusCollector instance.
     CreateStatusUploader();
     syslog_uploader_ =
         std::make_unique<SystemLogUploader>(nullptr, task_runner_);
     heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
         g_browser_process->gcm_driver(), client(), device_store_.get(),
         install_attributes->GetDeviceId(), task_runner_);
-    login_logout_reporter_ =
-        std::make_unique<chromeos::reporting::LoginLogoutReporter>();
+    login_logout_reporter_ = ash::reporting::LoginLogoutReporter::Create(
+        managed_session_service_.get());
     user_added_removed_reporter_ =
         std::make_unique<::reporting::UserAddedRemovedReporter>();
   }
@@ -293,11 +301,26 @@ void DeviceCloudPolicyManagerAsh::NotifyDisconnected() {
 }
 
 void DeviceCloudPolicyManagerAsh::CreateStatusUploader() {
+  std::unique_ptr<StatusCollector> collector;
+  bool granular_reporting_enabled;
+  ash::CrosSettings* settings = ash::CrosSettings::Get();
+
+  if (!settings->GetBoolean(chromeos::kEnableDeviceGranularReporting,
+                            &granular_reporting_enabled)) {
+    granular_reporting_enabled = true;
+  }
+
+  if (granular_reporting_enabled) {
+    collector = std::make_unique<DeviceStatusCollector>(
+        local_state_, chromeos::system::StatisticsProvider::GetInstance());
+  } else {
+    collector = std::make_unique<LegacyDeviceStatusCollector>(
+        local_state_, chromeos::system::StatisticsProvider::GetInstance());
+  }
+
   status_uploader_ = std::make_unique<StatusUploader>(
-      client(),
-      std::make_unique<DeviceStatusCollector>(
-          local_state_, chromeos::system::StatisticsProvider::GetInstance()),
-      task_runner_, kDeviceStatusUploadFrequency);
+      client(), std::move(collector), task_runner_,
+      kDeviceStatusUploadFrequency);
 }
 
 }  // namespace policy

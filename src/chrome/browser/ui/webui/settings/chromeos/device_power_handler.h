@@ -58,6 +58,10 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   class TestAPI {
    public:
     explicit TestAPI(PowerHandler* handler);
+
+    TestAPI(const TestAPI&) = delete;
+    TestAPI& operator=(const TestAPI&) = delete;
+
     ~TestAPI();
 
     void RequestPowerManagementSettings();
@@ -68,11 +72,13 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
 
    private:
     PowerHandler* handler_;  // Not owned.
-
-    DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
   explicit PowerHandler(PrefService* prefs);
+
+  PowerHandler(const PowerHandler&) = delete;
+  PowerHandler& operator=(const PowerHandler&) = delete;
+
   ~PowerHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -174,8 +180,6 @@ class PowerHandler : public ::settings::SettingsPageUIHandler,
   bool last_has_lid_ = true;
 
   base::WeakPtrFactory<PowerHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PowerHandler);
 };
 
 }  // namespace settings

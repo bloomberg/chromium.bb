@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/permissions/attestation_permission_request.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "device/fido/features.h"
 #include "device/fido/filter.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -37,6 +39,10 @@
 #include "device/fido/features.h"
 #include "device/fido/win/webauthn_api.h"
 #endif  // defined(OS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#endif
 
 namespace extensions {
 
@@ -277,6 +283,20 @@ CryptotokenPrivateCanMakeU2fApiRequestFunction::Run() {
       cryptotoken_private::CanMakeU2fApiRequest::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // The `chrome.tabs` API doesn't work in Chrome OS sign-in contexts (e.g.
+  // device login with some SAML provider making a U2F request). This means that
+  // in these contexts we can't figure out the sender frame of the original U2F
+  // API request and therefore can't show a permission prompt or check for
+  // origin trial enrollment. Hence, just let these requests succeed without
+  // further checks.
+  if (!ash::ProfileHelper::IsRegularProfile(
+          Profile::FromBrowserContext(browser_context()))) {
+    DCHECK_EQ(params->options.tab_id, api::tabs::TAB_ID_NONE);
+    return RespondNow(OneArgument(base::Value(true)));
+  }
+#endif
+
   content::WebContents* web_contents = nullptr;
   if (!ExtensionTabUtil::GetTabById(params->options.tab_id, browser_context(),
                                     true /* include incognito windows */,
@@ -284,7 +304,8 @@ CryptotokenPrivateCanMakeU2fApiRequestFunction::Run() {
     return RespondNow(Error("cannot find specified tab"));
   }
 
-  content::RenderFrameHost* frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* frame = RenderFrameHostForTabAndFrameId(
+      browser_context(), params->options.tab_id, params->options.frame_id);
   if (!frame) {
     return RespondNow(Error("cannot find frame"));
   }
@@ -300,15 +321,25 @@ CryptotokenPrivateCanMakeU2fApiRequestFunction::Run() {
                                frame->GetLastCommittedURL(), response_headers,
                                extension_misc::kCryptotokenDeprecationTrialName,
                                base::Time::Now()));
+  const bool u2f_api_enterprise_policy_enabled =
+      Profile::FromBrowserContext(browser_context())
+          ->GetPrefs()
+          ->GetBoolean(extensions::pref_names::kU2fSecurityKeyApiEnabled);
+
   DCHECK(
       base::FeatureList::IsEnabled(extensions_features::kU2FSecurityKeyAPI) ||
-      u2f_api_origin_trial_enabled);
+      u2f_api_enterprise_policy_enabled || u2f_api_origin_trial_enabled);
 
   // Don't show a permission prompt if its feature flag is disabled, or if the
   // site enrolled in the deprecation trial (since they're obviously aware of
-  // the deprecation).
+  // the deprecation), or if the enterprise policy to override U2F
+  // deprecation-related changes has been enabled.
+  //
+  // Also don't show the prompt in "non-regular" ChromeOS profiles, which
+  // includes CrOS SAML sign-in context that doesn't support permission prompts
+  // (crbug.com/1257293).
   if (!base::FeatureList::IsEnabled(device::kU2fPermissionPrompt) ||
-      u2f_api_origin_trial_enabled) {
+      u2f_api_enterprise_policy_enabled || u2f_api_origin_trial_enabled) {
     return RespondNow(OneArgument(base::Value(true)));
   }
 

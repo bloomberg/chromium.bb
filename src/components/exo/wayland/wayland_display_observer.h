@@ -39,7 +39,12 @@ class WaylandDisplayHandler : public display::DisplayObserver,
  public:
   WaylandDisplayHandler(WaylandDisplayOutput* output,
                         wl_resource* output_resource);
+
+  WaylandDisplayHandler(const WaylandDisplayHandler&) = delete;
+  WaylandDisplayHandler& operator=(const WaylandDisplayHandler&) = delete;
+
   ~WaylandDisplayHandler() override;
+  void Initialize();
   void AddObserver(WaylandDisplayObserver* observer);
   int64_t id() const;
 
@@ -52,6 +57,9 @@ class WaylandDisplayHandler : public display::DisplayObserver,
   void OnXdgOutputCreated(wl_resource* xdg_output_resource);
   // Unset the xdg output object.
   void UnsetXdgOutputResource();
+
+ protected:
+  wl_resource* output_resource() const { return output_resource_; }
 
  private:
   // Overridden from WaylandDisplayObserver:
@@ -74,8 +82,6 @@ class WaylandDisplayHandler : public display::DisplayObserver,
   base::ObserverList<WaylandDisplayObserver> observers_;
 
   display::ScopedDisplayObserver display_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayHandler);
 };
 
 }  // namespace wayland

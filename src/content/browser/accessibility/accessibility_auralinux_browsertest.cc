@@ -58,6 +58,12 @@ static bool IsAtkObjectEditable(AtkObject* object) {
 class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
  public:
   AccessibilityAuraLinuxBrowserTest() = default;
+
+  AccessibilityAuraLinuxBrowserTest(const AccessibilityAuraLinuxBrowserTest&) =
+      delete;
+  AccessibilityAuraLinuxBrowserTest& operator=(
+      const AccessibilityAuraLinuxBrowserTest&) = delete;
+
   ~AccessibilityAuraLinuxBrowserTest() override = default;
 
  protected:
@@ -105,8 +111,6 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
   // at a given node and for a node with the given role and returns its AtkText
   // interface if found, otherwise returns nullptr.
   AtkText* FindNode(AtkObject* root, const AtkRole role) const;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityAuraLinuxBrowserTest);
 };
 
 void AccessibilityAuraLinuxBrowserTest::CheckTextAtOffset(
@@ -2172,6 +2176,41 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   atk_text_get_range_extents(atk_text, 0, 7, AtkCoordType::ATK_XY_SCREEN,
                              &atk_rect);
   g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestCaretMovedInNumberInput) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<input type="number" value="12">
+      )HTML");
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  auto caret_callback =
+      G_CALLBACK(+[](AtkText*, int new_position, int* out_caret_position) {
+        *out_caret_position = new_position;
+      });
+  int out_caret_position = -1;
+  AtkText* input_text = FindNode(ATK_ROLE_SPIN_BUTTON);
+  g_signal_connect(input_text, "text-caret-moved", caret_callback,
+                   &out_caret_position);
+
+  atk_text_set_caret_offset(input_text, 0);
+  waiter.WaitForNotification();
+  EXPECT_EQ(atk_text_get_caret_offset(input_text), 0);
+  EXPECT_EQ(out_caret_position, 0);
+
+  atk_text_set_caret_offset(input_text, 1);
+  waiter.WaitForNotification();
+  EXPECT_EQ(atk_text_get_caret_offset(input_text), 1);
+  EXPECT_EQ(out_caret_position, 1);
+
+  atk_text_set_caret_offset(input_text, 2);
+  waiter.WaitForNotification();
+  EXPECT_EQ(atk_text_get_caret_offset(input_text), 2);
+  EXPECT_EQ(out_caret_position, 2);
+
+  g_object_unref(input_text);
 }
 
 }  // namespace content

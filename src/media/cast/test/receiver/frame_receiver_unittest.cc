@@ -42,6 +42,10 @@ FrameId GetFirstTestFrameId() {
 class FakeFrameClient {
  public:
   FakeFrameClient() : num_called_(0) {}
+
+  FakeFrameClient(const FakeFrameClient&) = delete;
+  FakeFrameClient& operator=(const FakeFrameClient&) = delete;
+
   virtual ~FakeFrameClient() = default;
 
   void AddExpectedResult(FrameId expected_frame_id,
@@ -66,8 +70,6 @@ class FakeFrameClient {
  private:
   base::circular_deque<std::pair<FrameId, base::TimeTicks>> expected_results_;
   int num_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFrameClient);
 };
 }  // namespace
 
@@ -204,7 +206,7 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
 
   // Deliver one frame to the receiver and expect to get one frame back.
   const base::TimeDelta target_playout_delay =
-      base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
+      base::Milliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
       GetFirstTestFrameId(), testing_clock_.NowTicks() + target_playout_delay);
   FeedOneFrameIntoReceiver();
@@ -242,7 +244,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
       .WillRepeatedly(testing::Return());
 
   const base::TimeDelta time_advance_per_frame =
-      base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
+      base::Seconds(1) / config_.target_frame_rate;
   const RtpTimeDelta rtp_advance_per_frame =
       RtpTimeDelta::FromTimeDelta(time_advance_per_frame, config_.rtp_timebase);
 
@@ -259,7 +261,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
 
   // Receive one frame and expect to see the first request satisfied.
   const base::TimeDelta target_playout_delay =
-      base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
+      base::Milliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
       GetFirstTestFrameId(), first_frame_capture_time + target_playout_delay);
   rtp_header_.rtp_timestamp = RtpTimeTicks();
@@ -356,7 +358,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
       .WillRepeatedly(testing::Return());
 
   const base::TimeDelta time_advance_per_frame =
-      base::TimeDelta::FromSeconds(1) / config_.target_frame_rate;
+      base::Seconds(1) / config_.target_frame_rate;
   const RtpTimeDelta rtp_advance_per_frame =
       RtpTimeDelta::FromTimeDelta(time_advance_per_frame, config_.rtp_timebase);
 
@@ -373,7 +375,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
 
   // Receive one frame and expect to see the first request satisfied.
   const base::TimeDelta target_playout_delay =
-      base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
+      base::Milliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
       GetFirstTestFrameId(), first_frame_capture_time + target_playout_delay);
   rtp_header_.rtp_timestamp = RtpTimeTicks();

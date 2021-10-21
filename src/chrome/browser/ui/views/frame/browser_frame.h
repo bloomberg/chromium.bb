@@ -55,6 +55,10 @@ enum class TabDragKind {
 class BrowserFrame : public views::Widget, public views::ContextMenuController {
  public:
   explicit BrowserFrame(BrowserView* browser_view);
+
+  BrowserFrame(const BrowserFrame&) = delete;
+  BrowserFrame& operator=(const BrowserFrame&) = delete;
+
   ~BrowserFrame() override;
 
   // Initialize the frame (creates the underlying native window).
@@ -123,6 +127,8 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   bool GetAccelerator(int command_id,
                       ui::Accelerator* accelerator) const override;
   const ui::ThemeProvider* GetThemeProvider() const override;
+  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+      const override;
   void OnNativeWidgetWorkspaceChanged() override;
 
   // views::ContextMenuController:
@@ -200,8 +206,6 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // model yet.
   int num_desks_ = -1;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_H_

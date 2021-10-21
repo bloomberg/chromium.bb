@@ -154,8 +154,8 @@ TEST_F(UserAddedRemovedReporterTest, TestAffiliatedUserAdded) {
   EXPECT_THAT(priority, testing::Eq(::reporting::Priority::IMMEDIATE));
   EXPECT_TRUE(record.has_event_timestamp_sec());
   EXPECT_TRUE(record.has_user_added_event());
-  EXPECT_TRUE(record.has_user());
-  ASSERT_EQ(record.user().email(), user_email);
+  EXPECT_TRUE(record.has_affiliated_user());
+  ASSERT_EQ(record.affiliated_user().user_email(), user_email);
 }
 
 TEST_F(UserAddedRemovedReporterTest, TestUnaffiliatedUserAdded) {
@@ -187,7 +187,7 @@ TEST_F(UserAddedRemovedReporterTest, TestUnaffiliatedUserAdded) {
   EXPECT_THAT(priority, testing::Eq(::reporting::Priority::IMMEDIATE));
   EXPECT_TRUE(record.has_event_timestamp_sec());
   EXPECT_TRUE(record.has_user_added_event());
-  ASSERT_FALSE(record.has_user());
+  ASSERT_FALSE(record.has_affiliated_user());
 }
 
 TEST_F(UserAddedRemovedReporterTest, TestReportingDisabled) {
@@ -302,8 +302,9 @@ TEST_F(UserAddedRemovedReporterTest, TestAffiliatedUserRemoval) {
   EXPECT_THAT(priority, testing::Eq(::reporting::Priority::IMMEDIATE));
   EXPECT_TRUE(record.has_event_timestamp_sec());
   EXPECT_TRUE(record.has_user_removed_event());
-  EXPECT_TRUE(record.has_user());
-  EXPECT_THAT(record.user().email(), ::testing::StrEq(user_email));
+  EXPECT_TRUE(record.has_affiliated_user());
+  EXPECT_THAT(record.affiliated_user().user_email(),
+              ::testing::StrEq(user_email));
   EXPECT_THAT(record.user_removed_event().reason(),
               ::testing::Eq(UserRemovalReason::GAIA_REMOVED));
 }
@@ -341,7 +342,7 @@ TEST_F(UserAddedRemovedReporterTest, TestUnaffiliatedUserRemoval) {
   EXPECT_THAT(priority, testing::Eq(::reporting::Priority::IMMEDIATE));
   EXPECT_TRUE(record.has_event_timestamp_sec());
   EXPECT_TRUE(record.has_user_removed_event());
-  EXPECT_FALSE(record.has_user());
+  EXPECT_FALSE(record.has_affiliated_user());
   EXPECT_THAT(record.user_removed_event().reason(),
               ::testing::Eq(UserRemovalReason::GAIA_REMOVED));
 }
@@ -365,5 +366,41 @@ TEST_F(UserAddedRemovedReporterTest, TestKioskUserRemoved) {
                          user_manager::UserRemovalReason::GAIA_REMOVED);
 
   EXPECT_CALL(*mock_queue, AddRecord).Times(0);
+}
+
+TEST_F(UserAddedRemovedReporterTest, TestRemoteRemoval) {
+  static constexpr char user_email[] = "user@managed.org";
+  ash::ChromeUserManager::Get()->CacheRemovedUser(
+      user_email, user_manager::UserRemovalReason::REMOTE_ADMIN_INITIATED);
+
+  auto dummy_queue =
+      std::unique_ptr<::reporting::ReportQueue, base::OnTaskRunnerDeleter>(
+          nullptr,
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+  auto mock_queue = weak_mock_queue_factory_->GetWeakPtr();
+
+  ::reporting::UserAddedRemovedRecord record;
+  ::reporting::UserAddedRemovedRecord record_a;
+  ::reporting::Priority priority;
+  EXPECT_CALL(*mock_queue, AddRecord)
+      .WillOnce(
+          [&record, &priority](base::StringPiece record_string,
+                               ::reporting::Priority event_priority,
+                               ::reporting::ReportQueue::EnqueueCallback) {
+            record.ParseFromString(std::string(record_string));
+            priority = event_priority;
+          });
+
+  UserAddedRemovedReporter reporter(std::make_unique<TestHelper>(
+      std::move(dummy_queue), mock_queue, /* report_event */ true,
+      /* report_user */ false, /* user_new */ true));
+
+  EXPECT_THAT(priority, testing::Eq(::reporting::Priority::IMMEDIATE));
+  EXPECT_TRUE(record.has_event_timestamp_sec());
+  EXPECT_TRUE(record.has_user_removed_event());
+  EXPECT_TRUE(record.has_affiliated_user());
+  EXPECT_EQ(record.affiliated_user().user_email(), user_email);
+  EXPECT_THAT(record.user_removed_event().reason(),
+              ::testing::Eq(UserRemovalReason::REMOTE_ADMIN_INITIATED));
 }
 }  // namespace reporting

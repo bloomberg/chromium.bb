@@ -148,7 +148,11 @@
   "externally_connectable": {
     "channel": "stable",
     "extension_types": [
-      "extension", "hosted_app", "legacy_packaged_app", "platform_app"
+      "extension",
+      "hosted_app",
+      "legacy_packaged_app",
+      "platform_app",
+      "chromeos_system_extension"
     ]
   },
   "file_handlers": [
@@ -305,7 +309,8 @@
       "legacy_packaged_app",
       "hosted_app",
       "platform_app",
-      "login_screen_extension"
+      "login_screen_extension",
+      "chromeos_system_extension"
     ]
   },
   "replacement_android_app": {

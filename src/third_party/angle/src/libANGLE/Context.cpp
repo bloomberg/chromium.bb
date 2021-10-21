@@ -47,6 +47,11 @@
 #include "libANGLE/renderer/Format.h"
 #include "libANGLE/validationES.h"
 
+#if defined(ANGLE_PLATFORM_APPLE)
+#    include <dispatch/dispatch.h>
+#    include "common/tls.h"
+#endif
+
 namespace gl
 {
 namespace
@@ -315,7 +320,35 @@ bool GetSaveAndRestoreState(const egl::AttributeMap &attribs)
 
 }  // anonymous namespace
 
+#if defined(ANGLE_PLATFORM_APPLE)
+// TODO(angleproject:6479): Due to a bug in Apple's dyld loader, `thread_local` will cause
+// excessive memory use. Temporarily avoid it by using pthread's thread
+// local storage instead.
+static TLSIndex GetCurrentValidContextTLSIndex()
+{
+    static TLSIndex CurrentValidContextIndex = TLS_INVALID_INDEX;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+      ASSERT(CurrentValidContextIndex == TLS_INVALID_INDEX);
+      CurrentValidContextIndex = CreateTLSIndex();
+    });
+    return CurrentValidContextIndex;
+}
+Context *GetCurrentValidContextTLS()
+{
+    TLSIndex CurrentValidContextIndex = GetCurrentValidContextTLSIndex();
+    ASSERT(CurrentValidContextIndex != TLS_INVALID_INDEX);
+    return static_cast<Context *>(GetTLSValue(CurrentValidContextIndex));
+}
+void SetCurrentValidContextTLS(Context *context)
+{
+    TLSIndex CurrentValidContextIndex = GetCurrentValidContextTLSIndex();
+    ASSERT(CurrentValidContextIndex != TLS_INVALID_INDEX);
+    SetTLSValue(CurrentValidContextIndex, context);
+}
+#else
 thread_local Context *gCurrentValidContext = nullptr;
+#endif
 
 Context::Context(egl::Display *display,
                  const egl::Config *config,
@@ -456,7 +489,7 @@ void Context::initializeDefaultResources()
             new Texture(mImplementation.get(), {0}, TextureType::_2DArray);
         mZeroTextures[TextureType::_2DArray].set(this, zeroTexture2DArray);
     }
-    if (getClientVersion() >= Version(3, 1) || mSupportedExtensions.textureMultisample)
+    if (getClientVersion() >= Version(3, 1) || mSupportedExtensions.textureMultisampleANGLE)
     {
         Texture *zeroTexture2DMultisample =
             new Texture(mImplementation.get(), {0}, TextureType::_2DMultisample);
@@ -492,15 +525,15 @@ void Context::initializeDefaultResources()
         mZeroTextures[TextureType::Buffer].set(this, zeroTextureBuffer);
     }
 
-    if (mSupportedExtensions.textureRectangle)
+    if (mSupportedExtensions.textureRectangleANGLE)
     {
         Texture *zeroTextureRectangle =
             new Texture(mImplementation.get(), {0}, TextureType::Rectangle);
         mZeroTextures[TextureType::Rectangle].set(this, zeroTextureRectangle);
     }
 
-    if (mSupportedExtensions.eglImageExternalOES ||
-        mSupportedExtensions.eglStreamConsumerExternalNV)
+    if (mSupportedExtensions.EGLImageExternalOES ||
+        mSupportedExtensions.EGLStreamConsumerExternalNV)
     {
         Texture *zeroTextureExternal =
             new Texture(mImplementation.get(), {0}, TextureType::External);
@@ -510,7 +543,7 @@ void Context::initializeDefaultResources()
     // This may change native TEXTURE_2D, TEXTURE_EXTERNAL_OES and TEXTURE_RECTANGLE,
     // binding states. Ensure state manager is aware of this when binding
     // this texture type.
-    if (mSupportedExtensions.webglVideoTexture)
+    if (mSupportedExtensions.videoTextureWEBGL)
     {
         Texture *zeroTextureVideoImage =
             new Texture(mImplementation.get(), {0}, TextureType::VideoImage);
@@ -1334,10 +1367,10 @@ void Context::getQueryiv(QueryType target, GLenum pname, GLint *params)
             switch (target)
             {
                 case QueryType::TimeElapsed:
-                    params[0] = getExtensions().queryCounterBitsTimeElapsed;
+                    params[0] = getCaps().queryCounterBitsTimeElapsed;
                     break;
                 case QueryType::Timestamp:
-                    params[0] = getExtensions().queryCounterBitsTimestamp;
+                    params[0] = getCaps().queryCounterBitsTimestamp;
                     break;
                 default:
                     UNREACHABLE();
@@ -1524,8 +1557,8 @@ void Context::getFloatvImpl(GLenum pname, GLfloat *params) const
             params[1] = mState.mCaps.maxSmoothLineWidth;
             break;
         case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
-            ASSERT(mState.mExtensions.textureFilterAnisotropic);
-            *params = mState.mExtensions.maxTextureAnisotropy;
+            ASSERT(mState.mExtensions.textureFilterAnisotropicEXT);
+            *params = mState.mCaps.maxTextureAnisotropy;
             break;
         case GL_MAX_TEXTURE_LOD_BIAS:
             *params = mState.mCaps.maxLODBias;
@@ -1725,21 +1758,21 @@ void Context::getIntegervImpl(GLenum pname, GLint *params) const
 
         // GL_KHR_debug
         case GL_MAX_DEBUG_MESSAGE_LENGTH:
-            *params = mState.mExtensions.maxDebugMessageLength;
+            *params = mState.mCaps.maxDebugMessageLength;
             break;
         case GL_MAX_DEBUG_LOGGED_MESSAGES:
-            *params = mState.mExtensions.maxDebugLoggedMessages;
+            *params = mState.mCaps.maxDebugLoggedMessages;
             break;
         case GL_MAX_DEBUG_GROUP_STACK_DEPTH:
-            *params = mState.mExtensions.maxDebugGroupStackDepth;
+            *params = mState.mCaps.maxDebugGroupStackDepth;
             break;
         case GL_MAX_LABEL_LENGTH:
-            *params = mState.mExtensions.maxLabelLength;
+            *params = mState.mCaps.maxLabelLength;
             break;
 
         // GL_OVR_multiview2
         case GL_MAX_VIEWS_OVR:
-            *params = mState.mExtensions.maxViews;
+            *params = mState.mCaps.maxViews;
             break;
 
         // GL_EXT_disjoint_timer_query
@@ -2063,7 +2096,7 @@ void Context::getIntegervImpl(GLenum pname, GLint *params) const
 
         // GL_EXT_blend_func_extended
         case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:
-            *params = mState.mExtensions.maxDualSourceDrawBuffers;
+            *params = mState.mCaps.maxDualSourceDrawBuffers;
             break;
 
         // OES_shader_multisample_interpolation
@@ -2775,7 +2808,11 @@ void Context::setContextLost()
     mSkipValidation = false;
 
     // Make sure we update TLS.
+#if defined(ANGLE_PLATFORM_APPLE)
+    SetCurrentValidContextTLS(nullptr);
+#else
     gCurrentValidContext = nullptr;
+#endif
 }
 
 GLenum Context::getGraphicsResetStatus()
@@ -3401,62 +3438,61 @@ Extensions Context::generateSupportedExtensions() const
     Extensions supportedExtensions = mImplementation->getNativeExtensions();
 
     // Explicitly enable GL_KHR_parallel_shader_compile
-    supportedExtensions.parallelShaderCompile = true;
+    supportedExtensions.parallelShaderCompileKHR = true;
 
     if (getClientVersion() < ES_2_0)
     {
         // Default extensions for GLES1
-        supportedExtensions.pointSizeArrayOES     = true;
-        supportedExtensions.textureCubeMapOES     = true;
-        supportedExtensions.pointSpriteOES        = true;
-        supportedExtensions.drawTextureOES        = true;
-        supportedExtensions.framebufferObjectOES  = true;
-        supportedExtensions.parallelShaderCompile = false;
-        supportedExtensions.texture3DOES          = false;
-        supportedExtensions.clipDistanceAPPLE     = false;
+        supportedExtensions.pointSizeArrayOES        = true;
+        supportedExtensions.textureCubeMapOES        = true;
+        supportedExtensions.pointSpriteOES           = true;
+        supportedExtensions.drawTextureOES           = true;
+        supportedExtensions.framebufferObjectOES     = true;
+        supportedExtensions.parallelShaderCompileKHR = false;
+        supportedExtensions.texture3DOES             = false;
+        supportedExtensions.clipDistanceAPPLE        = false;
     }
 
     if (getClientVersion() < ES_3_0)
     {
         // Disable ES3+ extensions
-        supportedExtensions.colorBufferFloat         = false;
-        supportedExtensions.eglImageExternalEssl3OES = false;
-        supportedExtensions.textureNorm16            = false;
-        supportedExtensions.multiview                = false;
-        supportedExtensions.multiview2               = false;
-        supportedExtensions.maxViews                 = 1u;
-        supportedExtensions.copyTexture3d            = false;
-        supportedExtensions.textureMultisample       = false;
-        supportedExtensions.drawBuffersIndexedEXT    = false;
-        supportedExtensions.drawBuffersIndexedOES    = false;
-        supportedExtensions.eglImageArray            = false;
-        supportedExtensions.textureSRGBOverride      = false;
+        supportedExtensions.colorBufferFloatEXT          = false;
+        supportedExtensions.EGLImageExternalEssl3OES     = false;
+        supportedExtensions.textureNorm16EXT             = false;
+        supportedExtensions.multiviewOVR                 = false;
+        supportedExtensions.multiview2OVR                = false;
+        supportedExtensions.copyTexture3dANGLE           = false;
+        supportedExtensions.textureMultisampleANGLE      = false;
+        supportedExtensions.drawBuffersIndexedEXT        = false;
+        supportedExtensions.drawBuffersIndexedOES        = false;
+        supportedExtensions.EGLImageArrayEXT             = false;
+        supportedExtensions.textureFormatSRGBOverrideEXT = false;
 
         // Requires glCompressedTexImage3D
-        supportedExtensions.textureCompressionASTCOES = false;
+        supportedExtensions.textureCompressionAstcOES = false;
 
         // Don't expose GL_EXT_texture_sRGB_decode without sRGB texture support
-        if (!supportedExtensions.sRGB)
+        if (!supportedExtensions.sRGBEXT)
         {
-            supportedExtensions.textureSRGBDecode = false;
+            supportedExtensions.textureSRGBDecodeEXT = false;
         }
 
         // Don't expose GL_OES_texture_float_linear without full legacy float texture support
         // The renderer may report OES_texture_float_linear without OES_texture_float
         // This is valid in a GLES 3.0 context, but not in a GLES 2.0 context
-        if (!(supportedExtensions.textureFloatOES && supportedExtensions.textureHalfFloat))
+        if (!(supportedExtensions.textureFloatOES && supportedExtensions.textureHalfFloatOES))
         {
-            supportedExtensions.textureFloatLinearOES  = false;
-            supportedExtensions.textureHalfFloatLinear = false;
+            supportedExtensions.textureFloatLinearOES     = false;
+            supportedExtensions.textureHalfFloatLinearOES = false;
         }
 
         // Because of the difference in the SNORM to FLOAT conversion formula
         // between GLES 2.0 and 3.0, vertex type 10_10_10_2 is disabled
         // when the context version is lower than 3.0
-        supportedExtensions.vertexAttribType1010102OES = false;
+        supportedExtensions.vertexType1010102OES = false;
 
         // GL_EXT_YUV_target requires ESSL3
-        supportedExtensions.yuvTargetEXT = false;
+        supportedExtensions.YUVTargetEXT = false;
 
         // GL_EXT_clip_cull_distance requires ESSL3
         supportedExtensions.clipCullDistanceEXT = false;
@@ -3471,7 +3507,7 @@ Extensions Context::generateSupportedExtensions() const
 
         // TODO(http://anglebug.com/2775): Multisample arrays could be supported on ES 3.0 as well
         // once 2D multisample texture extension is exposed there.
-        supportedExtensions.textureStorageMultisample2DArrayOES = false;
+        supportedExtensions.textureStorageMultisample2dArrayOES = false;
     }
 
     if (getClientVersion() > ES_2_0)
@@ -3479,75 +3515,71 @@ Extensions Context::generateSupportedExtensions() const
         // FIXME(geofflang): Don't support EXT_sRGB in non-ES2 contexts
         // supportedExtensions.sRGB = false;
 
-        // If colorBufferFloat is disabled but colorBufferHalfFloat is enabled, then we will expose
-        // some floating-point formats as color buffer targets but reject blits between fixed-point
-        // and floating-point formats (this behavior is only enabled in colorBufferFloat, and must
-        // be rejected if only colorBufferHalfFloat is enabled).
+        // If colorBufferFloatEXT is disabled but colorBufferHalfFloatEXT is enabled, then we will
+        // expose some floating-point formats as color buffer targets but reject blits between
+        // fixed-point and floating-point formats (this behavior is only enabled in
+        // colorBufferFloatEXT, and must be rejected if only colorBufferHalfFloatEXT is enabled).
         // dEQP does not check for this, and will assume that floating-point and fixed-point formats
         // can be blit onto each other if the format is available.
-        // We require colorBufferFloat to be present in order to enable colorBufferHalfFloat, so
-        // that blitting is always allowed if the requested formats are exposed and have the correct
-        // feature capabilities.
-        // WebGL 2 wants to support colorBufferHalfFloat without colorBufferFloat.
-        if (!supportedExtensions.colorBufferFloat && !mWebGLContext)
+        // We require colorBufferFloatEXT to be present in order to enable colorBufferHalfFloatEXT,
+        // so that blitting is always allowed if the requested formats are exposed and have the
+        // correct feature capabilities. WebGL 2 wants to support colorBufferHalfFloatEXT without
+        // colorBufferFloatEXT.
+        if (!supportedExtensions.colorBufferFloatEXT && !mWebGLContext)
         {
-            supportedExtensions.colorBufferHalfFloat = false;
+            supportedExtensions.colorBufferHalfFloatEXT = false;
         }
 
         // Disable support for CHROMIUM_color_buffer_float_rgb[a] in ES 3.0+, these extensions are
         // non-conformant in ES 3.0 and superseded by EXT_color_buffer_float.
-        supportedExtensions.colorBufferFloatRGB  = false;
-        supportedExtensions.colorBufferFloatRGBA = false;
+        supportedExtensions.colorBufferFloatRgbCHROMIUM  = false;
+        supportedExtensions.colorBufferFloatRgbaCHROMIUM = false;
     }
 
     if (getFrontendFeatures().disableAnisotropicFiltering.enabled)
     {
-        supportedExtensions.textureFilterAnisotropic = false;
+        supportedExtensions.textureFilterAnisotropicEXT = false;
     }
 
     // Some extensions are always available because they are implemented in the GL layer.
-    supportedExtensions.bindUniformLocation   = true;
-    supportedExtensions.vertexArrayObjectOES  = true;
-    supportedExtensions.bindGeneratesResource = true;
-    supportedExtensions.clientArrays          = true;
-    supportedExtensions.requestExtension      = true;
-    supportedExtensions.multiDraw             = true;
+    supportedExtensions.bindUniformLocationCHROMIUM   = true;
+    supportedExtensions.vertexArrayObjectOES          = true;
+    supportedExtensions.bindGeneratesResourceCHROMIUM = true;
+    supportedExtensions.clientArraysANGLE             = true;
+    supportedExtensions.requestExtensionANGLE         = true;
+    supportedExtensions.multiDrawANGLE                = true;
 
     // Enable the no error extension if the context was created with the flag.
-    supportedExtensions.noError = mSkipValidation;
+    supportedExtensions.noErrorKHR = mSkipValidation;
 
     // Enable surfaceless to advertise we'll have the correct behavior when there is no default FBO
     supportedExtensions.surfacelessContextOES = mSurfacelessSupported;
 
     // Explicitly enable GL_KHR_debug
-    supportedExtensions.debug                   = true;
-    supportedExtensions.maxDebugMessageLength   = 1024;
-    supportedExtensions.maxDebugLoggedMessages  = 1024;
-    supportedExtensions.maxDebugGroupStackDepth = 1024;
-    supportedExtensions.maxLabelLength          = 1024;
+    supportedExtensions.debugKHR = true;
 
     // Explicitly enable GL_EXT_debug_label
-    supportedExtensions.debugLabel = true;
+    supportedExtensions.debugLabelEXT = true;
 
     // Explicitly enable GL_ANGLE_robust_client_memory if the context supports validation.
-    supportedExtensions.robustClientMemory = !mSkipValidation;
+    supportedExtensions.robustClientMemoryANGLE = !mSkipValidation;
 
     // Determine robust resource init availability from EGL.
-    supportedExtensions.robustResourceInitialization = mState.isRobustResourceInitEnabled();
+    supportedExtensions.robustResourceInitializationANGLE = mState.isRobustResourceInitEnabled();
 
-    // mState.mExtensions.robustBufferAccessBehavior is true only if robust access is true and the
-    // backend supports it.
-    supportedExtensions.robustBufferAccessBehavior =
-        mRobustAccess && supportedExtensions.robustBufferAccessBehavior;
+    // mState.mExtensions.robustBufferAccessBehaviorKHR is true only if robust access is true and
+    // the backend supports it.
+    supportedExtensions.robustBufferAccessBehaviorKHR =
+        mRobustAccess && supportedExtensions.robustBufferAccessBehaviorKHR;
 
     // Enable the cache control query unconditionally.
-    supportedExtensions.programCacheControl = true;
+    supportedExtensions.programCacheControlANGLE = true;
 
     // If EGL_KHR_fence_sync is not enabled, don't expose GL_OES_EGL_sync.
     ASSERT(mDisplay);
     if (!mDisplay->getExtensions().fenceSync)
     {
-        supportedExtensions.eglSyncOES = false;
+        supportedExtensions.EGLSyncOES = false;
     }
 
     if (mDisplay->getExtensions().robustnessVideoMemoryPurgeNV)
@@ -3555,26 +3587,26 @@ Extensions Context::generateSupportedExtensions() const
         supportedExtensions.robustnessVideoMemoryPurgeNV = true;
     }
 
-    supportedExtensions.memorySize = true;
+    supportedExtensions.memorySizeANGLE = true;
 
     // GL_CHROMIUM_lose_context is implemented in the frontend
     supportedExtensions.loseContextCHROMIUM = true;
 
     // The ASTC texture extensions have dependency requirements.
-    if (supportedExtensions.textureCompressionASTCHDRKHR ||
-        supportedExtensions.textureCompressionSliced3dASTCKHR)
+    if (supportedExtensions.textureCompressionAstcHdrKHR ||
+        supportedExtensions.textureCompressionAstcSliced3dKHR)
     {
         // GL_KHR_texture_compression_astc_hdr cannot be exposed without also exposing
         // GL_KHR_texture_compression_astc_ldr
-        ASSERT(supportedExtensions.textureCompressionASTCLDRKHR);
+        ASSERT(supportedExtensions.textureCompressionAstcLdrKHR);
     }
 
-    if (supportedExtensions.textureCompressionASTCOES)
+    if (supportedExtensions.textureCompressionAstcOES)
     {
         // GL_OES_texture_compression_astc cannot be exposed without also exposing
         // GL_KHR_texture_compression_astc_ldr and GL_KHR_texture_compression_astc_hdr
-        ASSERT(supportedExtensions.textureCompressionASTCLDRKHR);
-        ASSERT(supportedExtensions.textureCompressionASTCHDRKHR);
+        ASSERT(supportedExtensions.textureCompressionAstcLdrKHR);
+        ASSERT(supportedExtensions.textureCompressionAstcHdrKHR);
     }
 
     // GL_KHR_protected_textures
@@ -3585,7 +3617,7 @@ Extensions Context::generateSupportedExtensions() const
         supportedExtensions.protectedTexturesEXT = false;
     }
 
-    // GL_ANGLE_get_tex_level_parameter is implemented in the frontend
+    // GL_ANGLE_get_tex_level_parameter is implemented in the front-end
     supportedExtensions.getTexLevelParameterANGLE = true;
 
     // Always enabled. Will return a default string if capture is not enabled.
@@ -3609,29 +3641,29 @@ void Context::initCaps()
         mSupportedExtensions.compressedEACR11UnsignedTextureOES              = false;
         mSupportedExtensions.compressedEACRG11SignedTextureOES               = false;
         mSupportedExtensions.compressedEACRG11UnsignedTextureOES             = false;
-        mSupportedExtensions.compressedETC1RGB8SubTexture                    = false;
+        mSupportedExtensions.compressedETC1RGB8SubTextureEXT                 = false;
         mSupportedExtensions.compressedETC1RGB8TextureOES                    = false;
-        mSupportedExtensions.compressedETC2PunchthroughARGB8TextureOES       = false;
-        mSupportedExtensions.compressedETC2PunchthroughAsRGB8AlphaTextureOES = false;
+        mSupportedExtensions.compressedETC2PunchthroughARGBA8TextureOES      = false;
+        mSupportedExtensions.compressedETC2PunchthroughASRGB8AlphaTextureOES = false;
         mSupportedExtensions.compressedETC2RGB8TextureOES                    = false;
         mSupportedExtensions.compressedETC2RGBA8TextureOES                   = false;
-        mSupportedExtensions.compressedETC2sRGB8Alpha8TextureOES             = false;
-        mSupportedExtensions.compressedETC2sRGB8TextureOES                   = false;
-        mSupportedExtensions.compressedTextureETC                            = false;
-        mSupportedExtensions.compressedTexturePVRTC                          = false;
-        mSupportedExtensions.compressedTexturePVRTCsRGB                      = false;
-        mSupportedExtensions.copyCompressedTexture                           = false;
-        mSupportedExtensions.textureCompressionASTCHDRKHR                    = false;
-        mSupportedExtensions.textureCompressionASTCLDRKHR                    = false;
-        mSupportedExtensions.textureCompressionASTCOES                       = false;
-        mSupportedExtensions.textureCompressionBPTC                          = false;
-        mSupportedExtensions.textureCompressionDXT1                          = false;
-        mSupportedExtensions.textureCompressionDXT3                          = false;
-        mSupportedExtensions.textureCompressionDXT5                          = false;
-        mSupportedExtensions.textureCompressionRGTC                          = false;
-        mSupportedExtensions.textureCompressionS3TCsRGB                      = false;
-        mSupportedExtensions.textureCompressionSliced3dASTCKHR               = false;
-        mSupportedExtensions.textureFilteringCHROMIUM                        = false;
+        mSupportedExtensions.compressedETC2SRGB8Alpha8TextureOES             = false;
+        mSupportedExtensions.compressedETC2SRGB8TextureOES                   = false;
+        mSupportedExtensions.compressedTextureEtcANGLE                       = false;
+        mSupportedExtensions.textureCompressionPvrtcIMG                      = false;
+        mSupportedExtensions.pvrtcSRGBEXT                                    = false;
+        mSupportedExtensions.copyCompressedTextureCHROMIUM                   = false;
+        mSupportedExtensions.textureCompressionAstcHdrKHR                    = false;
+        mSupportedExtensions.textureCompressionAstcLdrKHR                    = false;
+        mSupportedExtensions.textureCompressionAstcOES                       = false;
+        mSupportedExtensions.textureCompressionBptcEXT                       = false;
+        mSupportedExtensions.textureCompressionDxt1EXT                       = false;
+        mSupportedExtensions.textureCompressionDxt3ANGLE                     = false;
+        mSupportedExtensions.textureCompressionDxt5ANGLE                     = false;
+        mSupportedExtensions.textureCompressionRgtcEXT                       = false;
+        mSupportedExtensions.textureCompressionS3tcSrgbEXT                   = false;
+        mSupportedExtensions.textureCompressionAstcSliced3dKHR               = false;
+        mSupportedExtensions.textureFilteringHintCHROMIUM                    = false;
 
         mState.mCaps.compressedTextureFormats.clear();
     }
@@ -3653,6 +3685,16 @@ void Context::initCaps()
         mState.mCaps.maxSmoothPointSize            = 1.0f;
         mState.mCaps.minSmoothLineWidth            = 1.0f;
         mState.mCaps.maxSmoothLineWidth            = 1.0f;
+    }
+
+    mState.mCaps.maxDebugMessageLength   = 1024;
+    mState.mCaps.maxDebugLoggedMessages  = 1024;
+    mState.mCaps.maxDebugGroupStackDepth = 1024;
+    mState.mCaps.maxLabelLength          = 1024;
+
+    if (getClientVersion() < Version(3, 0))
+    {
+        mState.mCaps.maxViews = 1u;
     }
 
 #if 0
@@ -3771,13 +3813,13 @@ void Context::initCaps()
 
     ANGLE_LIMIT_CAP(mState.mCaps.maxSampleMaskWords, MAX_SAMPLE_MASK_WORDS);
 
-    ANGLE_LIMIT_CAP(mState.mExtensions.maxViews, IMPLEMENTATION_ANGLE_MULTIVIEW_MAX_VIEWS);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxViews, IMPLEMENTATION_ANGLE_MULTIVIEW_MAX_VIEWS);
 
-    ANGLE_LIMIT_CAP(mState.mExtensions.maxDualSourceDrawBuffers,
+    ANGLE_LIMIT_CAP(mState.mCaps.maxDualSourceDrawBuffers,
                     IMPLEMENTATION_MAX_DUAL_SOURCE_DRAW_BUFFERS);
 
     // WebGL compatibility
-    mState.mExtensions.webglCompatibility = mWebGLContext;
+    mState.mExtensions.webglCompatibilityANGLE = mWebGLContext;
     for (const auto &extensionInfo : GetExtensionInfoMap())
     {
         // If the user has requested that extensions start disabled and they are requestable,
@@ -3838,18 +3880,18 @@ void Context::initCaps()
 
         INFO() << "Disabling GL_EXT_map_buffer_range and GL_OES_mapbuffer during capture, which "
                   "are not supported on some native drivers";
-        mState.mExtensions.mapBufferRange = false;
-        mState.mExtensions.mapBufferOES   = false;
+        mState.mExtensions.mapBufferRangeEXT = false;
+        mState.mExtensions.mapbufferOES      = false;
 
         INFO() << "Disabling GL_CHROMIUM_bind_uniform_location during capture, which is not "
                   "supported on native drivers";
-        mState.mExtensions.bindUniformLocation = false;
+        mState.mExtensions.bindUniformLocationCHROMIUM = false;
 
         INFO() << "Disabling GL_NV_shader_noperspective_interpolation during capture, which is not "
                   "supported on some native drivers";
-        mState.mExtensions.noperspectiveInterpolationNV = false;
+        mState.mExtensions.shaderNoperspectiveInterpolationNV = false;
 
-        // Nvidia's Vulkan driver only supports 4 draw buffers
+        // NVIDIA's Vulkan driver only supports 4 draw buffers
         constexpr GLint maxDrawBuffers = 4;
         INFO() << "Limiting draw buffer count to " << maxDrawBuffers;
         ANGLE_LIMIT_CAP(mState.mCaps.maxDrawBuffers, maxDrawBuffers);
@@ -3861,9 +3903,9 @@ void Context::initCaps()
         // prevents writing invalid calls to the capture.
         INFO() << "Enabling validation to prevent invalid calls from being captured. This "
                   "effectively disables GL_KHR_no_error and enables GL_ANGLE_robust_client_memory.";
-        mSkipValidation                       = false;
-        mState.mExtensions.noError            = mSkipValidation;
-        mState.mExtensions.robustClientMemory = !mSkipValidation;
+        mSkipValidation                            = false;
+        mState.mExtensions.noErrorKHR              = mSkipValidation;
+        mState.mExtensions.robustClientMemoryANGLE = !mSkipValidation;
 
         INFO() << "Disabling GL_OES_depth32 during capture, which is not widely supported on "
                   "mobile";
@@ -3915,7 +3957,7 @@ void Context::updateCaps()
         // OpenGL ES does not support multisampling with non-rendererable formats
         // OpenGL ES 3.0 or prior does not support multisampling with integer formats
         if (!formatCaps.renderbuffer ||
-            (getClientVersion() < ES_3_1 && !mSupportedExtensions.textureMultisample &&
+            (getClientVersion() < ES_3_1 && !mSupportedExtensions.textureMultisampleANGLE &&
              formatInfo.isInt()))
         {
             formatCaps.sampleCounts.clear();
@@ -3937,7 +3979,7 @@ void Context::updateCaps()
             }
 
             // Handle GLES 3.1 MAX_*_SAMPLES values similarly to MAX_SAMPLES.
-            if (getClientVersion() >= ES_3_1 || mSupportedExtensions.textureMultisample)
+            if (getClientVersion() >= ES_3_1 || mSupportedExtensions.textureMultisampleANGLE)
             {
                 // GLES 3.1 section 9.2.5: "Implementations must support creation of renderbuffers
                 // in these required formats with up to the value of MAX_SAMPLES multisamples, with
@@ -4016,7 +4058,7 @@ void Context::updateCaps()
     }
 
     mThreadPool = angle::WorkerThreadPool::Create(
-        mState.mExtensions.parallelShaderCompile ||
+        mState.mExtensions.parallelShaderCompileKHR ||
         getFrontendFeatures().enableCompressingPipelineCacheInThreadPool.enabled);
 
     // Reinitialize some dirty bits that depend on extensions.
@@ -4036,8 +4078,8 @@ void Context::updateCaps()
 
     // We need to validate buffer bounds if we are in a WebGL or robust access context and the
     // back-end does not support robust buffer access behaviour.
-    mBufferAccessValidationEnabled =
-        (!mSupportedExtensions.robustBufferAccessBehavior && (mState.isWebGL() || mRobustAccess));
+    mBufferAccessValidationEnabled = (!mSupportedExtensions.robustBufferAccessBehaviorKHR &&
+                                      (mState.isWebGL() || mRobustAccess));
 
     // Cache this in the VertexArrays. They need to check it in state change notifications.
     for (auto vaoIter : mVertexArrayMap)
@@ -5546,7 +5588,7 @@ void Context::pixelStorei(GLenum pname, GLint param)
             break;
 
         case GL_UNPACK_ROW_LENGTH:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimageEXT);
             mState.setUnpackRowLength(param);
             break;
 
@@ -5561,27 +5603,27 @@ void Context::pixelStorei(GLenum pname, GLint param)
             break;
 
         case GL_UNPACK_SKIP_ROWS:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimageEXT);
             mState.setUnpackSkipRows(param);
             break;
 
         case GL_UNPACK_SKIP_PIXELS:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().unpackSubimageEXT);
             mState.setUnpackSkipPixels(param);
             break;
 
         case GL_PACK_ROW_LENGTH:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimageNV);
             mState.setPackRowLength(param);
             break;
 
         case GL_PACK_SKIP_ROWS:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimageNV);
             mState.setPackSkipRows(param);
             break;
 
         case GL_PACK_SKIP_PIXELS:
-            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimage);
+            ASSERT((getClientMajorVersion() >= 3) || getExtensions().packSubimageNV);
             mState.setPackSkipPixels(param);
             break;
 
@@ -5750,7 +5792,7 @@ void Context::vertexAttribBinding(GLuint attribIndex, GLuint bindingIndex)
 
 void Context::vertexBindingDivisor(GLuint bindingIndex, GLuint divisor)
 {
-    mState.setVertexBindingDivisor(bindingIndex, divisor);
+    mState.setVertexBindingDivisor(this, bindingIndex, divisor);
     mStateCache.onVertexArrayFormatChange(this);
 }
 
@@ -8836,8 +8878,7 @@ bool Context::usingDisplaySemaphoreShareGroup() const
 
 GLenum Context::getConvertedRenderbufferFormat(GLenum internalformat) const
 {
-    if (mState.mExtensions.webglCompatibility && mState.mClientVersion.major == 2 &&
-        internalformat == GL_DEPTH_STENCIL)
+    if (isWebGL() && mState.mClientVersion.major == 2 && internalformat == GL_DEPTH_STENCIL)
     {
         return GL_DEPTH24_STENCIL8;
     }
@@ -9084,6 +9125,14 @@ void Context::getTexImage(TextureTarget target,
     Buffer *packBuffer = mState.getTargetBuffer(BufferBinding::PixelPack);
     ANGLE_CONTEXT_TRY(texture->getTexImage(this, mState.getPackState(), packBuffer, target, level,
                                            format, type, pixels));
+}
+
+void Context::getCompressedTexImage(TextureTarget target, GLint level, void *pixels)
+{
+    Texture *texture   = getTextureByTarget(target);
+    Buffer *packBuffer = mState.getTargetBuffer(BufferBinding::PixelPack);
+    ANGLE_CONTEXT_TRY(texture->getCompressedTexImage(this, mState.getPackState(), packBuffer,
+                                                     target, level, pixels));
 }
 
 void Context::getRenderbufferImage(GLenum target, GLenum format, GLenum type, void *pixels)
@@ -9514,14 +9563,14 @@ void StateCache::updateValidBindTextureTypes(Context *context)
     mCachedValidBindTextureTypes = {{
         {TextureType::_2D, true},
         {TextureType::_2DArray, isGLES3},
-        {TextureType::_2DMultisample, isGLES31 || exts.textureMultisample},
-        {TextureType::_2DMultisampleArray, exts.textureStorageMultisample2DArrayOES},
+        {TextureType::_2DMultisample, isGLES31 || exts.textureMultisampleANGLE},
+        {TextureType::_2DMultisampleArray, exts.textureStorageMultisample2dArrayOES},
         {TextureType::_3D, isGLES3 || exts.texture3DOES},
-        {TextureType::External, exts.eglImageExternalOES || exts.eglStreamConsumerExternalNV},
-        {TextureType::Rectangle, exts.textureRectangle},
+        {TextureType::External, exts.EGLImageExternalOES || exts.EGLStreamConsumerExternalNV},
+        {TextureType::Rectangle, exts.textureRectangleANGLE},
         {TextureType::CubeMap, true},
         {TextureType::CubeMapArray, exts.textureCubeMapArrayAny()},
-        {TextureType::VideoImage, exts.webglVideoTexture},
+        {TextureType::VideoImage, exts.videoTextureWEBGL},
         {TextureType::Buffer, exts.textureBufferAny()},
     }};
 }
@@ -9550,9 +9599,9 @@ void StateCache::updateVertexAttribTypesValidation(Context *context)
                                                  ? VertexAttribTypeCase::Valid
                                                  : VertexAttribTypeCase::Invalid;
 
-    VertexAttribTypeCase vertexType1010102Validity =
-        (context->getExtensions().vertexAttribType1010102OES) ? VertexAttribTypeCase::ValidSize3or4
-                                                              : VertexAttribTypeCase::Invalid;
+    VertexAttribTypeCase vertexType1010102Validity = (context->getExtensions().vertexType1010102OES)
+                                                         ? VertexAttribTypeCase::ValidSize3or4
+                                                         : VertexAttribTypeCase::Invalid;
 
     if (context->getClientMajorVersion() <= 2)
     {

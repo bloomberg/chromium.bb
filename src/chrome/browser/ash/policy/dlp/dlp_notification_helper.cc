@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ash/policy/dlp/dlp_notification_helper.h"
 
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "chrome/browser/ash/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +33,15 @@ constexpr char kScreenCaptureResumedNotificationPrefix[] =
     "screen_capture_dlp_resumed-";
 constexpr char kDlpPolicyNotifierId[] = "policy.dlp";
 
+void OnNotificationClicked(const std::string id) {
+  ash::NewWindowDelegate::GetInstance()->OpenUrl(
+      GURL(kDlpLearnMoreUrl), /*from_user_interaction=*/true);
+
+  NotificationDisplayService::GetForProfile(
+      ProfileManager::GetActiveUserProfile())
+      ->Close(NotificationHandler::Type::TRANSIENT, id);
+}
+
 void ShowDlpNotification(const std::string& id,
                          const std::u16string& title,
                          const std::u16string& message) {
@@ -42,7 +53,8 @@ void ShowDlpNotification(const std::string& id,
               message_center::NotifierType::SYSTEM_COMPONENT,
               kDlpPolicyNotifierId),
           message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::NotificationDelegate>(),
+          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+              base::BindRepeating(&OnNotificationClicked, id)),
           vector_icons::kBusinessIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_renotify(true);
@@ -50,6 +62,16 @@ void ShowDlpNotification(const std::string& id,
       ProfileManager::GetActiveUserProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification,
                 /*metadata=*/nullptr);
+}
+
+void ShowDlpWarnDialog(base::OnceClosure continue_cb,
+                       base::OnceClosure cancel_cb,
+                       DlpWarnDialog::Restriction restriction) {
+  views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
+      new DlpWarnDialog(std::move(continue_cb), std::move(cancel_cb),
+                        restriction),
+      /*context=*/nullptr, /*parent=*/nullptr);
+  widget->Show();
 }
 
 std::string GetCapturePausedNotificationId(const std::string& capture_id) {
@@ -71,10 +93,8 @@ void ShowDlpPrintDisabledNotification() {
 
 void ShowDlpPrintWarningDialog(base::OnceClosure continue_cb,
                                base::OnceClosure cancel_cb) {
-  views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-      new PrintWarnDialog(std::move(continue_cb), std::move(cancel_cb)),
-      nullptr, nullptr);
-  widget->Show();
+  ShowDlpWarnDialog(std::move(continue_cb), std::move(cancel_cb),
+                    DlpWarnDialog::Restriction::kPrinting);
 }
 
 void HideDlpScreenCapturePausedNotification(const std::string& capture_id) {
@@ -107,6 +127,18 @@ void ShowDlpScreenCaptureResumedNotification(const std::string& capture_id,
       l10n_util::GetStringUTF16(IDS_POLICY_DLP_SCREEN_CAPTURE_RESUMED_TITLE),
       l10n_util::GetStringFUTF16(IDS_POLICY_DLP_SCREEN_CAPTURE_RESUMED_MESSAGE,
                                  app_title));
+}
+
+void ShowDlpScreenCaptureWarningDialog(base::OnceClosure continue_cb,
+                                       base::OnceClosure cancel_cb) {
+  ShowDlpWarnDialog(std::move(continue_cb), std::move(cancel_cb),
+                    DlpWarnDialog::Restriction::kScreenCapture);
+}
+
+void ShowDlpVideoCaptureWarningDialog(base::OnceClosure continue_cb,
+                                      base::OnceClosure cancel_cb) {
+  ShowDlpWarnDialog(std::move(continue_cb), std::move(cancel_cb),
+                    DlpWarnDialog::Restriction::kVideoCapture);
 }
 
 }  // namespace policy

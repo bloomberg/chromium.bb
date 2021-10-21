@@ -47,6 +47,9 @@ bool av1_ext_part_send_partition_stats(ExtPartController *ext_part_controller,
 bool av1_ext_part_send_features(ExtPartController *ext_part_controller,
                                 const aom_partition_features_t *features);
 
+aom_ext_part_decision_mode_t av1_get_ext_part_decision_mode(
+    const ExtPartController *ext_part_controller);
+
 /*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"

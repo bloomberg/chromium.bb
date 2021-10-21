@@ -24,7 +24,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_tab_manager.h"
-#include "chrome/browser/android/feed/v2/feed_service_factory.h"
+#include "chrome/browser/feed/android/feed_service_factory.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #else
@@ -159,7 +159,14 @@ history::HistoryAddPageArgs HistoryTabHelper::CreateHistoryAddPageArgs(
       // WebContents.
       navigation_handle->GetPreviousMainFrameURL().is_empty()
           ? GetHistoryOpenerFromOpenerWebContents(opener_web_contents_)
-          : absl::nullopt);
+          // Or use the opener for same-document navigations to connect these
+          // visits.
+          : (navigation_handle->IsSameDocument()
+                 ? absl::make_optional(history::Opener(
+                       history::ContextIDForWebContents(web_contents()),
+                       nav_entry_id,
+                       navigation_handle->GetPreviousMainFrameURL()))
+                 : absl::nullopt));
 
   if (ui::PageTransitionIsMainFrame(page_transition) &&
       virtual_url != navigation_handle->GetURL()) {
@@ -374,7 +381,7 @@ void HistoryTabHelper::WebContentsDestroyed() {
 
 bool HistoryTabHelper::IsEligibleTab(
     const history::HistoryAddPageArgs& add_page_args) const {
-  if (force_eligibile_tab_for_testing_)
+  if (force_eligible_tab_for_testing_)
     return true;
 
 #if defined(OS_ANDROID)
@@ -392,4 +399,4 @@ bool HistoryTabHelper::IsEligibleTab(
 #endif
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryTabHelper);

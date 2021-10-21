@@ -8,6 +8,7 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_CONTEXT_H_
 #define NET_URL_REQUEST_URL_REQUEST_CONTEXT_H_
 
+#include <stdint.h>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/net_export.h"
@@ -24,12 +24,7 @@
 #include "net/net_buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
-
-namespace base {
-namespace trace_event {
-class ProcessMemoryDump;
-}
-}
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class CertVerifier;
@@ -66,11 +61,14 @@ class ReportingService;
 // automatic lifetime management. Most callers should use an existing
 // URLRequestContext rather than creating a new one, as guaranteeing that the
 // URLRequestContext is destroyed before its members can be difficult.
-class NET_EXPORT URLRequestContext
-    : public base::trace_event::MemoryDumpProvider {
+class NET_EXPORT URLRequestContext {
  public:
   URLRequestContext();
-  ~URLRequestContext() override;
+
+  URLRequestContext(const URLRequestContext&) = delete;
+  URLRequestContext& operator=(const URLRequestContext&) = delete;
+
+  virtual ~URLRequestContext();
 
   // May return nullptr if this context doesn't have an associated network
   // session.
@@ -107,12 +105,17 @@ class NET_EXPORT URLRequestContext
   // `is_for_websockets` should be true iff this was created for use by a
   // websocket. HTTP/HTTPS requests fail if it's true, and WS/WSS requests fail
   // if it's false. This is to protect against broken consumers.
+  //
+  // `net_log_source_id` is used to construct NetLogWithSource using the
+  // specified Source ID. This method is expected to be used when URLRequest
+  // wants to take over existing NetLogSource.
   std::unique_ptr<URLRequest> CreateRequest(
       const GURL& url,
       RequestPriority priority,
       URLRequest::Delegate* delegate,
       NetworkTrafficAnnotationTag traffic_annotation,
-      bool is_for_websockets = false) const;
+      bool is_for_websockets = false,
+      const absl::optional<uint32_t> net_log_source_id = absl::nullopt) const;
 
   NetLog* net_log() const { return net_log_; }
 
@@ -296,18 +299,6 @@ class NET_EXPORT URLRequestContext
     return require_network_isolation_key_;
   }
 
-  // Sets a name for this URLRequestContext. Currently the name is used in
-  // MemoryDumpProvier to annotate memory usage. The name does not need to be
-  // unique.
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
-
-  // MemoryDumpProvider implementation:
-  // This is reported as
-  // "memory:chrome:all_processes:reported_by_chrome:net:effective_size_avg."
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
   void AssertCalledOnValidThread() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
@@ -351,14 +342,7 @@ class NET_EXPORT URLRequestContext
   // a request when true.
   bool require_network_isolation_key_;
 
-  // An optional name which can be set to describe this URLRequestContext.
-  // Used in MemoryDumpProvier to annotate memory usage. The name does not need
-  // to be unique.
-  std::string name_;
-
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };
 
 }  // namespace net

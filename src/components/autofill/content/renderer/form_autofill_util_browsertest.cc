@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -47,6 +48,7 @@ using blink::WebSelectElement;
 using blink::WebString;
 using blink::WebVector;
 using ::testing::ElementsAre;
+using ::testing::Values;
 
 namespace autofill {
 namespace form_util {
@@ -379,9 +381,9 @@ TEST_F(FormAutofillUtilsTest, GetButtonTitles_TooLongTitle) {
       GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
 
   int total_length = 0;
-  for (auto title : actual) {
-    EXPECT_GE(30u, title.first.length());
-    total_length += title.first.length();
+  for (auto button_title : actual) {
+    EXPECT_GE(30u, button_title.first.length());
+    total_length += button_title.first.length();
   }
   EXPECT_EQ(200, total_length);
 }
@@ -570,17 +572,19 @@ TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {
   WebDocument doc = GetMainFrame()->GetDocument();
   WebVector<WebFormElement> forms = doc.Forms();
 
-  for (const auto& form : forms) {
-    EXPECT_EQ(form, FindFormByUniqueRendererId(
-                        doc, FormRendererId(form.UniqueRendererFormId())));
-  }
+  for (const auto& form : forms)
+    EXPECT_EQ(form, FindFormByUniqueRendererId(doc, GetFormRendererId(form)));
 
   // Expect null form element for non-existing form id.
   FormRendererId non_existing_id(forms[0].UniqueRendererFormId() + 1000);
   EXPECT_TRUE(FindFormByUniqueRendererId(doc, non_existing_id).IsNull());
 }
 
-TEST_F(FormAutofillUtilsTest, FindFormControlByUniqueId) {
+// Tests FindFormControlElementByUniqueRendererId().
+// TODO(crbug/1201875): Delete once
+// `features::kAutofillUseUnassociatedListedElements` is enabled.
+TEST_F(FormAutofillUtilsTest,
+       FindFormControlElementByUniqueRendererId_WithoutFeature) {
   LoadHTML(
       "<body><form id='form1'><input id='i1'></form><input id='i2'></body>");
   WebDocument doc = GetMainFrame()->GetDocument();
@@ -588,15 +592,93 @@ TEST_F(FormAutofillUtilsTest, FindFormControlByUniqueId) {
   auto input2 = doc.GetElementById("i2").To<WebInputElement>();
   FieldRendererId non_existing_id(input2.UniqueRendererFormControlId() + 1000);
 
-  EXPECT_EQ(input1,
-            FindFormControlElementByUniqueRendererId(
-                doc, FieldRendererId(input1.UniqueRendererFormControlId())));
-  EXPECT_EQ(input2,
-            FindFormControlElementByUniqueRendererId(
-                doc, FieldRendererId(input2.UniqueRendererFormControlId())));
+  EXPECT_EQ(input1, FindFormControlElementByUniqueRendererId(
+                        doc, GetFieldRendererId(input1)));
+  EXPECT_EQ(input2, FindFormControlElementByUniqueRendererId(
+                        doc, GetFieldRendererId(input2)));
   EXPECT_TRUE(
       FindFormControlElementByUniqueRendererId(doc, non_existing_id).IsNull());
 }
+
+// Used in ParameterizedFindFormControlByRendererIdTest.
+struct FindFormControlTestParam {
+  std::string queried_field;
+  absl::optional<std::string> form_to_be_searched;
+  bool expectation;
+};
+
+// Tests FindFormControlElementByUniqueRendererId() with
+// `features::kAutofillUseUnassociatedListedElements` enabled.
+class ParameterizedFindFormControlByRendererIdTest
+    : public FormAutofillUtilsTest,
+      public testing::WithParamInterface<FindFormControlTestParam> {
+ public:
+  ParameterizedFindFormControlByRendererIdTest() {
+    scoped_features_.InitAndEnableFeature(
+        features::kAutofillUseUnassociatedListedElements);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+TEST_P(ParameterizedFindFormControlByRendererIdTest,
+       FindFormControlElementByUniqueRendererId) {
+  LoadHTML(R"(
+    <body>
+      <input id="nonexistentField">
+      <form id="form1"><input id="ownedField1"></form>
+      <form id="form2"><input id="ownedField2"></form>
+      <input id="unownedField">
+    </body>
+  )");
+  WebDocument doc = GetMainFrame()->GetDocument();
+
+  absl::optional<FormRendererId> form_to_be_searched_id;
+  if (GetParam().form_to_be_searched.has_value()) {
+    if (GetParam().form_to_be_searched.value().empty()) {
+      // Only the unowned form will be searched.
+      form_to_be_searched_id = FormRendererId();
+    } else {
+      // Only the given form will be searched.
+      form_to_be_searched_id = GetFormRendererId(
+          GetFormElementById(doc, GetParam().form_to_be_searched.value()));
+    }
+  }
+
+  WebFormControlElement queried_field =
+      GetFormControlElementById(doc, GetParam().queried_field);
+  FieldRendererId queried_field_id = GetFieldRendererId(queried_field);
+
+  ExecuteJavaScriptForTests(
+      R"(document.getElementById('nonexistentField').remove();)");
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(
+      GetParam().expectation,
+      queried_field == FindFormControlElementByUniqueRendererId(
+                           doc, queried_field_id, form_to_be_searched_id));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ParameterizedFindFormControlByRendererIdTest,
+    Values(FindFormControlTestParam{"nonexistentField", absl::nullopt, false},
+           FindFormControlTestParam{"nonexistentField", std::string(), false},
+           FindFormControlTestParam{"nonexistentField", "form1", false},
+           FindFormControlTestParam{"nonexistentField", "form2", false},
+           FindFormControlTestParam{"ownedField1", absl::nullopt, true},
+           FindFormControlTestParam{"ownedField1", std::string(), false},
+           FindFormControlTestParam{"ownedField1", "form1", true},
+           FindFormControlTestParam{"ownedField1", "form2", false},
+           FindFormControlTestParam{"ownedField2", absl::nullopt, true},
+           FindFormControlTestParam{"ownedField2", std::string(), false},
+           FindFormControlTestParam{"ownedField2", "form1", false},
+           FindFormControlTestParam{"ownedField2", "form2", true},
+           FindFormControlTestParam{"unownedField", absl::nullopt, true},
+           FindFormControlTestParam{"unownedField", std::string(), true},
+           FindFormControlTestParam{"unownedField", "form1", false},
+           FindFormControlTestParam{"unownedField", "form2", false}));
 
 TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdNoForm) {
   LoadHTML("<body><input id='i1'><input id='i2'><input id='i3'></body>");
@@ -606,8 +688,7 @@ TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdNoForm) {
   FieldRendererId non_existing_id(input3.UniqueRendererFormControlId() + 1000);
 
   std::vector<FieldRendererId> renderer_ids = {
-      FieldRendererId(input3.UniqueRendererFormControlId()), non_existing_id,
-      FieldRendererId(input1.UniqueRendererFormControlId())};
+      GetFieldRendererId(input3), non_existing_id, GetFieldRendererId(input1)};
 
   auto elements = FindFormControlElementsByUniqueRendererId(doc, renderer_ids);
 
@@ -628,11 +709,10 @@ TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdWithForm) {
   FieldRendererId non_existing_id(input3.UniqueRendererFormControlId() + 1000);
 
   std::vector<FieldRendererId> renderer_ids = {
-      FieldRendererId(input3.UniqueRendererFormControlId()), non_existing_id,
-      FieldRendererId(input1.UniqueRendererFormControlId())};
+      GetFieldRendererId(input3), non_existing_id, GetFieldRendererId(input1)};
 
   auto elements = FindFormControlElementsByUniqueRendererId(
-      doc, FormRendererId(form.UniqueRendererFormId()), renderer_ids);
+      doc, GetFormRendererId(form), renderer_ids);
 
   // |input3| is not in the form, so it shouldn't be returned.
   ASSERT_EQ(3u, elements.size());
@@ -801,33 +881,6 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled, IsOwnedByFrame) {
   ExecuteJavaScriptForTests(R"(document.getElementById('div').remove();)");
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsOwnedByFrame(div, main_frame));
-}
-
-TEST_F(FormAutofillUtilsTest, IsFormVisible) {
-  LoadHTML("<body><form id='form1'><input id='i1'></form></body>");
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto form = doc.GetElementById("form1").To<WebFormElement>();
-  FormRendererId form_id(form.UniqueRendererFormId());
-
-  EXPECT_TRUE(autofill::form_util::IsFormVisible(GetMainFrame(), form_id));
-
-  // Hide a form.
-  form.SetAttribute("style", "display:none");
-  EXPECT_FALSE(autofill::form_util::IsFormVisible(GetMainFrame(), form_id));
-}
-
-TEST_F(FormAutofillUtilsTest, IsFormControlVisible) {
-  LoadHTML("<body><input id='input1'></body>");
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto input = doc.GetElementById("input1").To<WebFormControlElement>();
-  FieldRendererId input_id(input.UniqueRendererFormControlId());
-
-  EXPECT_TRUE(IsFormControlVisible(GetMainFrame(), input_id));
-
-  // Hide a field.
-  input.SetAttribute("style", "display:none");
-  EXPECT_FALSE(
-      autofill::form_util::IsFormControlVisible(GetMainFrame(), input_id));
 }
 
 TEST_F(FormAutofillUtilsTest, IsActionEmptyFalse) {
@@ -1278,7 +1331,7 @@ TEST_P(FieldFramesTest, ExtractFieldsAndFrames) {
     ASSERT_TRUE(WebFormElementToFormData(form_element, WebFormControlElement(),
                                          nullptr, EXTRACT_NONE, &form_data,
                                          nullptr));
-    host_form = FormRendererId(form_element.UniqueRendererFormId());
+    host_form = GetFormRendererId(form_element);
   }
 
   // Check that all fields and iframes were extracted.

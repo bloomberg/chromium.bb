@@ -24,7 +24,7 @@ class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
 // Responsible for dispatching the Background Fetch API events on a given
-// Service Worker. Must only be used on the service worker core thread.
+// Service Worker. Must only be used on the UI thread.
 class CONTENT_EXPORT BackgroundFetchEventDispatcher {
  public:
   // This enumeration is used for recording histograms. Treat as append-only.
@@ -41,6 +41,12 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       BackgroundFetchContext* background_fetch_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       DevToolsBackgroundServicesContextImpl* devtools_context);
+
+  BackgroundFetchEventDispatcher(const BackgroundFetchEventDispatcher&) =
+      delete;
+  BackgroundFetchEventDispatcher& operator=(
+      const BackgroundFetchEventDispatcher&) = delete;
+
   ~BackgroundFetchEventDispatcher();
 
   // Dispatches one of the update, fail, or success events depending on the
@@ -151,8 +157,6 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
 
   // Owned by BackgroundFetchContext.
   DevToolsBackgroundServicesContextImpl* devtools_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEventDispatcher);
 };
 
 }  // namespace content

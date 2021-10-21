@@ -27,6 +27,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
@@ -61,6 +62,9 @@ class WtsSessionProcessDelegate::Core
        bool launch_elevated,
        const std::string& channel_security);
 
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   // Initializes the object returning true on success.
   bool Initialize(uint32_t session_id);
 
@@ -86,6 +90,9 @@ class WtsSessionProcessDelegate::Core
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // The actual implementation of LaunchProcess()
   void DoLaunchProcess();
@@ -158,8 +165,6 @@ class WtsSessionProcessDelegate::Core
 
   // The pending process connection for the process being launched.
   mojo::OutgoingInvitation mojo_invitation_;
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 WtsSessionProcessDelegate::Core::Core(
@@ -359,6 +364,15 @@ void WtsSessionProcessDelegate::Core::OnChannelError() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   event_handler_->OnChannelError();
+}
+
+void WtsSessionProcessDelegate::Core::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  event_handler_->OnAssociatedInterfaceRequest(interface_name,
+                                               std::move(handle));
 }
 
 void WtsSessionProcessDelegate::Core::DoLaunchProcess() {

@@ -150,21 +150,21 @@ constexpr base::FeatureParam<std::string> kPurchaseButtonPatternMapping{
 
 constexpr base::FeatureParam<base::TimeDelta> kCartExtractionGapTime{
     &ntp_features::kNtpChromeCartModule, "cart-extraction-gap-time",
-    base::TimeDelta::FromSecondsD(2)};
+    base::Seconds(2)};
 
 constexpr base::FeatureParam<int> kCartExtractionMaxCount{
     &ntp_features::kNtpChromeCartModule, "cart-extraction-max-count", 20};
 
 constexpr base::FeatureParam<base::TimeDelta> kCartExtractionMinTaskTime{
     &ntp_features::kNtpChromeCartModule, "cart-extraction-min-task-time",
-    base::TimeDelta::FromSecondsD(0.01)};
+    base::Seconds(0.01)};
 
 constexpr base::FeatureParam<double> kCartExtractionDutyCycle{
     &ntp_features::kNtpChromeCartModule, "cart-extraction-duty-cycle", 0.05};
 
 constexpr base::FeatureParam<base::TimeDelta> kCartExtractionTimeout{
     &ntp_features::kNtpChromeCartModule, "cart-extraction-timeout",
-    base::TimeDelta::FromSecondsD(0.25)};
+    base::Seconds(0.25)};
 
 constexpr base::FeatureParam<std::string> kProductIdPatternMapping{
     &ntp_features::kNtpChromeCartModule, "product-id-pattern-mapping",

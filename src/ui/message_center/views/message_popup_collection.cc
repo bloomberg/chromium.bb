@@ -26,15 +26,13 @@ namespace message_center {
 namespace {
 
 // Animation duration for FADE_IN and FADE_OUT.
-constexpr base::TimeDelta kFadeInFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kFadeInFadeOutDuration = base::Milliseconds(200);
 
 // Animation duration for MOVE_DOWN.
-constexpr base::TimeDelta kMoveDownDuration =
-    base::TimeDelta::FromMilliseconds(120);
+constexpr base::TimeDelta kMoveDownDuration = base::Milliseconds(120);
 
 // Time to wait until we reset |recently_closed_by_user_|.
-constexpr base::TimeDelta kWaitForReset = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kWaitForReset = base::Seconds(10);
 
 }  // namespace
 
@@ -699,8 +697,18 @@ bool MessagePopupCollection::HasAddedPopup() const {
     existing_ids.insert(item.id);
 
   for (Notification* notification : GetPopupNotifications()) {
-    if (!existing_ids.count(notification->id()))
+    if (!existing_ids.count(notification->id())) {
+      // A new popup is not added for a group child if it's parent
+      // notification has an existing popup.
+      if (notification->group_child()) {
+        auto* parent_notification =
+            MessageCenter::Get()->FindOldestNotificationByNotiferId(
+                notification->notifier_id());
+
+        return !existing_ids.count(parent_notification->id());
+      }
       return true;
+    }
   }
   return false;
 }

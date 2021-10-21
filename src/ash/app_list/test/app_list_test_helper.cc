@@ -106,7 +106,8 @@ void AppListTestHelper::AddPageBreakItem() {
 }
 
 bool AppListTestHelper::IsInFolderView() {
-  if (!Shell::Get()->IsInTabletMode() && features::IsAppListBubbleEnabled()) {
+  if (!Shell::Get()->IsInTabletMode() &&
+      features::IsProductivityLauncherEnabled()) {
     return GetBubbleView()->showing_folder_for_test();
   }
   return GetAppListView()
@@ -120,20 +121,23 @@ AppListView* AppListTestHelper::GetAppListView() {
   return app_list_controller_->presenter()->GetView();
 }
 
-AppListFolderView* AppListTestHelper::GetFullscreenFolderView() {
+AppsContainerView* AppListTestHelper::GetAppsContainerView() {
   return GetAppListView()
       ->app_list_main_view()
       ->contents_view()
-      ->apps_container_view()
-      ->app_list_folder_view();
+      ->apps_container_view();
+}
+
+AppListFolderView* AppListTestHelper::GetFullscreenFolderView() {
+  return GetAppsContainerView()->app_list_folder_view();
+}
+
+RecentAppsView* AppListTestHelper::GetFullscreenRecentAppsView() {
+  return GetAppsContainerView()->recent_apps();
 }
 
 PagedAppsGridView* AppListTestHelper::GetRootPagedAppsGridView() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->apps_container_view()
-      ->apps_grid_view();
+  return GetAppsContainerView()->apps_grid_view();
 }
 
 AppListBubbleView* AppListTestHelper::GetBubbleView() {

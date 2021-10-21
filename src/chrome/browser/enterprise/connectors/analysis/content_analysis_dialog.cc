@@ -22,13 +22,14 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -42,12 +43,16 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 
+// This should be after all other #includes.
+#if defined(_WINDOWS_)  // Detect whether windows.h was included.
+#include "base/win/windows_h_disallowed.h"
+#endif  // defined(_WINDOWS_)
+
 namespace enterprise_connectors {
 
 namespace {
 
-constexpr base::TimeDelta kResizeAnimationDuration =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kResizeAnimationDuration = base::Milliseconds(100);
 
 constexpr int kSideImageSize = 24;
 constexpr int kLineHeight = 20;
@@ -59,8 +64,8 @@ constexpr int kSideIconBetweenChildSpacing = 16;
 
 // These time values are non-const in order to be overridden in test so they
 // complete faster.
-base::TimeDelta minimum_pending_dialog_time_ = base::TimeDelta::FromSeconds(2);
-base::TimeDelta success_dialog_timeout_ = base::TimeDelta::FromSeconds(1);
+base::TimeDelta minimum_pending_dialog_time_ = base::Seconds(2);
+base::TimeDelta success_dialog_timeout_ = base::Seconds(1);
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -81,8 +86,7 @@ class CircleBackground : public views::Background {
 };
 
 SkColor GetBackgroundColor(const views::View* view) {
-  return view->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
+  return view->GetColorProvider()->GetColor(ui::kColorDialogBackground);
 }
 
 ContentAnalysisDialog::TestObserver* observer_for_testing = nullptr;

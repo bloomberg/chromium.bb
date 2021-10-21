@@ -255,7 +255,8 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
           /*is_parent_frame_secure=*/true, helper_->context()->AsWeakPtr(),
           &remote_endpoint);
   container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
-                             url::Origin::Create(scope));
+                             url::Origin::Create(scope),
+                             blink::StorageKey(url::Origin::Create(scope)));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
@@ -291,8 +292,8 @@ TEST_F(ServiceWorkerObjectHostTest,
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version_.get()));
 
-  const base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
-  const base::TimeDelta kFourSeconds = base::TimeDelta::FromSeconds(4);
+  const base::TimeDelta kRequestTimeout = base::Minutes(5);
+  const base::TimeDelta kFourSeconds = base::Seconds(4);
 
   // After startup, the remaining timeout is expected to be kRequestTimeout.
   EXPECT_EQ(kRequestTimeout, version_->remaining_timeout());
@@ -407,7 +408,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
           frame_host->GetGlobalId(), /*is_parent_frame_secure=*/true,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
   container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
-                             url::Origin::Create(scope));
+                             url::Origin::Create(scope), key);
 
   // Prepare a ServiceWorkerObjectHost for the worker.
   blink::mojom::ServiceWorkerObjectInfoPtr info =

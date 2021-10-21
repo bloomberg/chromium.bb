@@ -1072,7 +1072,7 @@ export function scanningAppTest() {
   // Verify the correct page can be removed from a multi-page scan job by
   // scanning three pages then removing the second page.
   test('MultiPageScanPageRemoved', () => {
-    const pageNumberToRemove = 2;
+    const pageIndexToRemove = 1;
     let expectedObjectUrls;
     let newPageIndex = 0;
 
@@ -1121,7 +1121,7 @@ export function scanningAppTest() {
           scanningApp.$$('#scanPreview')
               .$$('action-toolbar')
               .dispatchEvent(new CustomEvent(
-                  'show-remove-page-dialog', {detail: pageNumberToRemove}));
+                  'show-remove-page-dialog', {detail: pageIndexToRemove}));
           return flushTasks();
         })
         .then(() => {
@@ -1130,12 +1130,12 @@ export function scanningAppTest() {
         })
         .then(() => {
           assertEquals(
-              pageNumberToRemove - 1,
+              pageIndexToRemove,
               fakeMultiPageScanController_.getPageIndexToRemove());
 
           // Remove the second page from the expected scanned images and verify
           // the correct image was removed from the actual scanned images.
-          expectedObjectUrls.splice(pageNumberToRemove - 1, 1);
+          expectedObjectUrls.splice(pageIndexToRemove, 1);
           assertArrayEquals(
               expectedObjectUrls, scanningApp.$$('#scanPreview').objectUrls);
         });
@@ -1172,7 +1172,7 @@ export function scanningAppTest() {
           scanningApp.$$('#scanPreview')
               .$$('action-toolbar')
               .dispatchEvent(
-                  new CustomEvent('show-remove-page-dialog', {detail: 1}));
+                  new CustomEvent('show-remove-page-dialog', {detail: 0}));
           return flushTasks();
         })
         .then(() => {
@@ -1208,7 +1208,7 @@ export function scanningAppTest() {
   test('MultiPageScanRescanOnePage', () => {
     /** @type {!Array<!mojoBase.mojom.FilePath>} */
     const scannedFilePaths = [{'path': '/test/path/scan1.pdf'}];
-    const pageNumberToRescan = 1;
+    const pageIndexToRescan = 0;
 
     let scanPreview;
     let expectedObjectUrls;
@@ -1243,17 +1243,14 @@ export function scanningAppTest() {
           // Open the rescan page dialog.
           scanPreview.$$('action-toolbar')
               .dispatchEvent(new CustomEvent(
-                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+                  'show-rescan-page-dialog', {detail: pageIndexToRescan}));
           return flushTasks();
         })
         .then(() => {
           // Verify the dialog shows we are rescanning the correct page number.
           assertEquals(
-              'Rescan page ' + pageNumberToRescan,
+              'Rescan page?',
               scanPreview.$$('#dialogTitle').textContent.trim());
-          assertEquals(
-              'Rescan page ' + pageNumberToRescan,
-              scanPreview.$$('#actionButton').textContent.trim());
 
           scanPreview.$$('#actionButton').click();
           return fakeMultiPageScanController_.whenCalled('rescanPage');
@@ -1264,7 +1261,7 @@ export function scanningAppTest() {
           progressText = scanPreview.$$('#progressText');
           assertEquals('Scanning page 1', progressText.textContent.trim());
           assertEquals(
-              pageNumberToRescan - 1,
+              pageIndexToRescan,
               fakeMultiPageScanController_.getPageIndexToRescan());
           return fakeScanService_.simulatePageComplete(
               /*pageNumber=*/ 1, /*newPageIndex=*/ 0);
@@ -1301,7 +1298,7 @@ export function scanningAppTest() {
   // simulates scanning two pages, rescanning the first page, then scanning a
   // third page.
   test('MultiPageScanPageRescanned', () => {
-    const pageNumberToRescan = 1;
+    const pageIndexToRescan = 0;
 
     let scanPreview;
     let expectedObjectUrls;
@@ -1344,17 +1341,14 @@ export function scanningAppTest() {
           // Open the rescan page dialog.
           scanPreview.$$('action-toolbar')
               .dispatchEvent(new CustomEvent(
-                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+                  'show-rescan-page-dialog', {detail: pageIndexToRescan}));
           return flushTasks();
         })
         .then(() => {
           // Verify the dialog shows we are rescanning the correct page number.
           assertEquals(
-              'Rescan page ' + pageNumberToRescan,
+              'Rescan page 1?',
               scanPreview.$$('#dialogTitle').textContent.trim());
-          assertEquals(
-              'Rescan page ' + pageNumberToRescan,
-              scanPreview.$$('#actionButton').textContent.trim());
 
           scanPreview.$$('#actionButton').click();
           return fakeMultiPageScanController_.whenCalled('rescanPage');
@@ -1365,7 +1359,7 @@ export function scanningAppTest() {
           progressText = scanPreview.$$('#progressText');
           assertEquals('Scanning page 1', progressText.textContent.trim());
           assertEquals(
-              pageNumberToRescan - 1,
+              pageIndexToRescan,
               fakeMultiPageScanController_.getPageIndexToRescan());
           return fakeScanService_.simulatePageComplete(
               /*pageNumber=*/ 1, /*newPageIndex=*/ 0);
@@ -1401,7 +1395,7 @@ export function scanningAppTest() {
 
   // Verify that if rescanning a page fails, the page numbers update correctly.
   test('MultiPageScanPageRescanFail', () => {
-    const pageNumberToRescan = 1;
+    const pageIndexToRescan = 0;
     let scanPreview;
     let expectedObjectUrls;
     let newPageIndex = 0;
@@ -1443,7 +1437,7 @@ export function scanningAppTest() {
           // Open the rescan page dialog.
           scanPreview.$$('action-toolbar')
               .dispatchEvent(new CustomEvent(
-                  'show-rescan-page-dialog', {detail: pageNumberToRescan}));
+                  'show-rescan-page-dialog', {detail: pageIndexToRescan}));
           return flushTasks();
         })
         .then(() => {
@@ -2451,6 +2445,72 @@ export function scanningAppTest() {
           assertTrue(isVisible(
               /** @type {!HTMLElement} */ (
                   scanningApp.$$('#multiPageCheckbox').$$('#checkboxDiv'))));
+        });
+  });
+
+  // Verify a normal scan is started when the multi-page checkbox is checked
+  // while a non-PDF file type is selected.
+  test('OnlyMultiPageScanWhenPDFIsSelected', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return flushTasks();
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          assertEquals(
+              'Scan page 1', scanningApp.$$('#scanButton').textContent.trim());
+
+          // Leave the multi-page checkbox checked but switch the file type.
+          scanningApp.selectedFileType = FileType.PNG.toString();
+          return flushTasks();
+        })
+        .then(() => {
+          const scanButton = scanningApp.$$('#scanButton');
+          assertEquals('Scan', scanButton.textContent.trim());
+
+          // When scan button is clicked expect a normal scan to start.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        });
+  });
+
+  // Verify a normal scan is started when the multi-page checkbox is checked
+  // while a non-Flatbed source type is selected.
+  test('OnlyMultiPageScanWhenFlatbedIsSelected', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return flushTasks();
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          assertEquals(
+              'Scan page 1', scanningApp.$$('#scanButton').textContent.trim());
+
+          // Leave the multi-page checkbox checked but switch the source.
+          scanningApp.selectedSource = ADF_SIMPLEX;
+          return flushTasks();
+        })
+        .then(() => {
+          const scanButton = scanningApp.$$('#scanButton');
+          assertEquals('Scan', scanButton.textContent.trim());
+
+          // When scan button is clicked expect a normal scan to start.
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
         });
   });
 }

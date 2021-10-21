@@ -4,6 +4,8 @@
 
 #include "components/pdf/browser/fake_pdf_stream_delegate.h"
 
+#include <utility>
+
 #include "components/pdf/browser/pdf_stream_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -18,16 +20,23 @@ constexpr char FakePdfStreamDelegate::kDefaultStreamUrl[];
 // static
 constexpr char FakePdfStreamDelegate::kDefaultOriginalUrl[];
 
-FakePdfStreamDelegate::FakePdfStreamDelegate()
-    : stream_info_({
-          .stream_url = GURL(kDefaultStreamUrl),
-          .original_url = GURL(kDefaultOriginalUrl),
-          .background_color = SK_ColorTRANSPARENT,
-          .full_frame = false,
-          .allow_javascript = true,
-      }) {}
+FakePdfStreamDelegate::FakePdfStreamDelegate() {
+  StreamInfo info;
+  info.stream_url = GURL(kDefaultStreamUrl);
+  info.original_url = GURL(kDefaultOriginalUrl);
+  stream_info_ = std::move(info);
+}
 
 FakePdfStreamDelegate::~FakePdfStreamDelegate() = default;
+
+absl::optional<GURL> FakePdfStreamDelegate::MapToOriginalUrl(
+    content::WebContents* contents,
+    const GURL& stream_url) {
+  if (!stream_info_ || stream_info_->stream_url != stream_url)
+    return absl::nullopt;
+
+  return stream_info_->original_url;
+}
 
 absl::optional<PdfStreamDelegate::StreamInfo>
 FakePdfStreamDelegate::GetStreamInfo(content::WebContents* contents) {

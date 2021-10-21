@@ -24,6 +24,7 @@
 #include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/IntegerTypes.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/PerStage.h"
 #include "dawn_native/VertexFormat.h"
 #include "dawn_native/dawn_platform.h"
@@ -110,7 +111,7 @@ namespace dawn_native {
                                                OwnedCompilationMessages* messages);
 
     /// Creates and adds the tint::transform::VertexPulling::Config to transformInputs.
-    void AddVertexPullingTransformConfig(const VertexState& vertexState,
+    void AddVertexPullingTransformConfig(const RenderPipelineBase& renderPipeline,
                                          const std::string& entryPoint,
                                          BindGroupIndex pullingBufferBindingSet,
                                          tint::transform::DataMap* transformInputs);
@@ -193,14 +194,26 @@ namespace dawn_native {
 
         // The shader stage for this binding.
         SingleShaderStage stage;
+
+        struct OverridableConstant {
+            uint32_t id;
+            // Match tint::inspector::OverridableConstant::Type
+            // Bool is defined as a macro on linux X11 and cannot compile
+            enum class Type { Boolean, Float32, Uint32, Int32 } type;
+        };
+
+        // Store overridableConstants from tint program
+        std::unordered_map<std::string, OverridableConstant> overridableConstants;
     };
 
-    class ShaderModuleBase : public CachedObject {
+    class ShaderModuleBase : public ApiObjectBase, public CachedObject {
       public:
         ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModuleBase() override;
 
         static Ref<ShaderModuleBase> MakeError(DeviceBase* device);
+
+        ObjectType GetType() const override;
 
         // Return true iff the program has an entrypoint called `entryPoint`.
         bool HasEntryPoint(const std::string& entryPoint) const;

@@ -40,6 +40,10 @@ class LoadingPredictorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<LoadingPredictorTabHelper> {
  public:
+  LoadingPredictorTabHelper(const LoadingPredictorTabHelper&) = delete;
+  LoadingPredictorTabHelper& operator=(const LoadingPredictorTabHelper&) =
+      delete;
+
   ~LoadingPredictorTabHelper() override;
 
   // content::WebContentsObserver implementation
@@ -126,7 +130,6 @@ class LoadingPredictorTabHelper
     RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 
     scoped_refptr<PageData> page_data_;
-    content::RenderFrameHost* render_frame_host_;
     base::WeakPtrFactory<DocumentPageDataHolder> weak_factory_{this};
   };
 
@@ -168,8 +171,6 @@ class LoadingPredictorTabHelper
   base::WeakPtrFactory<LoadingPredictorTabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(LoadingPredictorTabHelper);
 };
 
 }  // namespace predictors

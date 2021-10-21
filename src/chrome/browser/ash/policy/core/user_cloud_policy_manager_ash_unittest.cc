@@ -124,6 +124,10 @@ constexpr char kDeviceId[] = "id987";
 class UserCloudPolicyManagerAshTest
     : public testing::TestWithParam<std::vector<base::Feature>> {
  public:
+  UserCloudPolicyManagerAshTest(const UserCloudPolicyManagerAshTest&) = delete;
+  UserCloudPolicyManagerAshTest& operator=(
+      const UserCloudPolicyManagerAshTest&) = delete;
+
   // Note: This method has to be public, so that a pointer to it may be obtained
   // in the test.
   void MakeManagerWithPreloadedStore(const base::TimeDelta& fetch_timeout) {
@@ -300,8 +304,7 @@ class UserCloudPolicyManagerAshTest
       identity_test_env()
           ->WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
               kOAuthToken,
-              base::Time::Now() +
-                  base::TimeDelta::FromSeconds(3600) /*expiration*/,
+              base::Time::Now() + base::Seconds(3600) /*expiration*/,
               std::string() /*id_token*/, scopes);
     }
 
@@ -468,8 +471,6 @@ class UserCloudPolicyManagerAshTest
       test_system_shared_loader_factory_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerAshTest);
 };
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
@@ -510,7 +511,7 @@ TEST_P(UserCloudPolicyManagerAshTest, BlockingRefreshFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // refresh fetch, when a previously cached policy and DMToken already exist.
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(1000), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(1000), PolicyEnforcement::kPolicyRequired));
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.
@@ -796,7 +797,7 @@ TEST_P(UserCloudPolicyManagerAshTest, BlockingRefreshFetchWithTimeout) {
   // fails (times out) - ensures that we don't mark the profile as initialized
   // until after the timeout.
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(1000), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(1000), PolicyEnforcement::kPolicyRequired));
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.
@@ -827,7 +828,7 @@ TEST_P(UserCloudPolicyManagerAshTest, SynchronousLoadWithPreloadedStore) {
 
 TEST_P(UserCloudPolicyManagerAshTest, TestLifetimeReportingRegular) {
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(1000), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(1000), PolicyEnforcement::kPolicyRequired));
 
   store_->NotifyStoreLoaded();
 
@@ -846,7 +847,7 @@ TEST_P(UserCloudPolicyManagerAshTest, TestLifetimeReportingEphemeralUser) {
   user_manager_->set_current_user_ephemeral(true);
 
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(1000), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(1000), PolicyEnforcement::kPolicyRequired));
 
   store_->NotifyStoreLoaded();
 
@@ -1148,6 +1149,11 @@ TEST_P(UserCloudPolicyManagerAshTest, ReregistrationFails) {
 class UserCloudPolicyManagerAshChildTest
     : public UserCloudPolicyManagerAshTest {
  public:
+  UserCloudPolicyManagerAshChildTest(
+      const UserCloudPolicyManagerAshChildTest&) = delete;
+  UserCloudPolicyManagerAshChildTest& operator=(
+      const UserCloudPolicyManagerAshChildTest&) = delete;
+
   // Issues OAuthToken for device management scopes.
   void IssueOAuth2AccessToken(base::TimeDelta token_lifetime) {
     signin::ScopeSet scopes;
@@ -1179,9 +1185,6 @@ class UserCloudPolicyManagerAshChildTest
     store_->NotifyStoreLoaded();
     EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerAshChildTest);
 };
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
@@ -1195,7 +1198,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(UserCloudPolicyManagerAshChildTest, RefreshFetchDoesNotBlock) {
   // Tests the profile initialization is not blocked on policy refresh.
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(0), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(0), PolicyEnforcement::kPolicyRequired));
   EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   LoadStoreWithCachedData();
@@ -1205,11 +1208,11 @@ TEST_P(UserCloudPolicyManagerAshChildTest, RefreshFetchDoesNotBlock) {
 TEST_P(UserCloudPolicyManagerAshChildTest, RefreshSchedulerStart) {
   // Tests that refresh scheduler is started after OAuth token is available.
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(0), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(0), PolicyEnforcement::kPolicyRequired));
   LoadStoreWithCachedData();
   EXPECT_FALSE(manager_->core()->refresh_scheduler());
 
-  IssueOAuth2AccessToken(base::TimeDelta::FromSeconds(3600));
+  IssueOAuth2AccessToken(base::Seconds(3600));
 
   EXPECT_TRUE(manager_->core()->refresh_scheduler());
 }
@@ -1217,11 +1220,11 @@ TEST_P(UserCloudPolicyManagerAshChildTest, RefreshSchedulerStart) {
 TEST_P(UserCloudPolicyManagerAshChildTest, RefreshScheduler) {
   // Tests that refresh schedule isn't affected by periodic OAuth token updates.
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
-      base::TimeDelta::FromSeconds(0), PolicyEnforcement::kPolicyRequired));
+      base::Seconds(0), PolicyEnforcement::kPolicyRequired));
   LoadStoreWithCachedData();
 
   // This starts refresh scheduler.
-  const base::TimeDelta token_lifetime = base::TimeDelta::FromMinutes(50);
+  const base::TimeDelta token_lifetime = base::Minutes(50);
   IssueOAuth2AccessToken(token_lifetime);
 
   // First refresh is scheduled with delay of 0s - let it execute.
@@ -1233,7 +1236,7 @@ TEST_P(UserCloudPolicyManagerAshChildTest, RefreshScheduler) {
   // longer than token lifetime. If default delay changes and is lesser the rest
   // of the test will work incorrectly and should be updated.
   const int iterations = 3;
-  base::TimeDelta refresh_delay = base::TimeDelta::FromMilliseconds(
+  base::TimeDelta refresh_delay = base::Milliseconds(
       manager_->core()->refresh_scheduler()->GetActualRefreshDelay() +
       manager_->core()->refresh_scheduler()->GetSaltDelayForTesting());
   ASSERT_GT(refresh_delay, iterations * token_lifetime);

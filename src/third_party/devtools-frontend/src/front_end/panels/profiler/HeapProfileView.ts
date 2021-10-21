@@ -14,8 +14,8 @@ import type * as Protocol from '../../generated/protocol.js';
 
 import {ProfileFlameChartDataProvider} from './CPUProfileFlameChart.js';
 
-import type {Samples} from './HeapTimelineOverview.js';
-import {HeapTimelineOverview, IdsRangeChanged} from './HeapTimelineOverview.js';
+import type {Samples, IdsRangeChangedEvent} from './HeapTimelineOverview.js';
+import {Events, HeapTimelineOverview} from './HeapTimelineOverview.js';
 import type {Formatter, ProfileDataGridNode} from './ProfileDataGrid.js';
 import type {ProfileHeader} from './ProfileHeader.js';
 import {ProfileType, ProfileEvents} from './ProfileHeader.js';
@@ -123,7 +123,7 @@ function convertToSamplingHeapProfile(profileHeader: SamplingHeapProfileHeader):
 
 export class HeapProfileView extends ProfileView implements UI.SearchableView.Searchable {
   profileHeader: SamplingHeapProfileHeader;
-  readonly profileType: ProfileType;
+  readonly profileType: SamplingHeapProfileTypeBase;
   adjustedTotal: number;
   readonly selectedSizeText: UI.Toolbar.ToolbarText;
   timestamps: number[];
@@ -155,7 +155,7 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
     this.timelineOverview = new HeapTimelineOverview();
 
     if (Root.Runtime.experiments.isEnabled('samplingHeapProfilerTimeline')) {
-      this.timelineOverview.addEventListener(IdsRangeChanged, this.onIdsRangeChanged.bind(this));
+      this.timelineOverview.addEventListener(Events.IdsRangeChanged, this.onIdsRangeChanged.bind(this));
       this.timelineOverview.show(this.element, this.element.firstChild);
       this.timelineOverview.start();
 
@@ -172,9 +172,8 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
     return [...await super.toolbarItems(), this.selectedSizeText];
   }
 
-  onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const minId = (event.data.minId as number);
-    const maxId = (event.data.maxId as number);
+  onIdsRangeChanged(event: Common.EventTarget.EventTargetEvent<IdsRangeChangedEvent>): void {
+    const {minId, maxId} = event.data;
     this.selectedSizeText.setText(
         i18nString(UIStrings.selectedSizeS, {PH1: Platform.NumberUtilities.bytesToString(event.data.size)}));
     this.setSelectionRange(minId, maxId);
@@ -187,7 +186,7 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
     this.setProfile(profile);
   }
 
-  onStatsUpdate(event: Common.EventTarget.EventTargetEvent): void {
+  onStatsUpdate(event: Common.EventTarget.EventTargetEvent<Protocol.HeapProfiler.SamplingHeapProfile|null>): void {
     const profile = event.data;
 
     if (!this.totalTime) {
@@ -203,7 +202,7 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
     this.sizes.push(0);
     this.timestamps.push(Date.now());
     this.ordinals.push(this.lastOrdinal + 1);
-    for (const sample of profile.samples) {
+    for (const sample of profile?.samples ?? []) {
       this.lastOrdinal = Math.max(this.lastOrdinal, sample.ordinal);
       const bucket = Platform.ArrayUtilities.upperBound(
                          this.ordinals, sample.ordinal, Platform.ArrayUtilities.DEFAULT_COMPARATOR) -
@@ -244,7 +243,8 @@ export class HeapProfileView extends ProfileView implements UI.SearchableView.Se
   }
 }
 
-export class SamplingHeapProfileTypeBase extends ProfileType {
+export class SamplingHeapProfileTypeBase extends
+    Common.ObjectWrapper.eventMixin<SamplingHeapProfileType.EventTypes, typeof ProfileType>(ProfileType) {
   recording: boolean;
   clearedDuringRecording: boolean;
 
@@ -446,6 +446,11 @@ export namespace SamplingHeapProfileType {
     RecordingStopped = 'RecordingStopped',
     StatsUpdate = 'StatsUpdate',
   }
+
+  export type EventTypes = {
+    [Events.RecordingStopped]: void,
+    [Events.StatsUpdate]: Protocol.HeapProfiler.SamplingHeapProfile|null,
+  };
 }
 
 export class SamplingHeapProfileHeader extends WritableProfileHeader {
@@ -505,6 +510,10 @@ export class SamplingHeapProfileHeader extends WritableProfileHeader {
 
   heapProfilerModel(): SDK.HeapProfilerModel.HeapProfilerModel|null {
     return this.heapProfilerModelInternal;
+  }
+
+  override profileType(): SamplingHeapProfileTypeBase {
+    return super.profileType() as SamplingHeapProfileTypeBase;
   }
 }
 

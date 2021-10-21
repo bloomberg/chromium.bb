@@ -89,7 +89,7 @@ public:
         return fGLSLGeneration > k110_GrGLSLGeneration;
     }
 
-    bool fFBFetchSupport = true;
+    bool fFBFetchSupport = false;
     bool fbFetchSupport() const {
         return fFBFetchSupport;
     }
@@ -257,6 +257,11 @@ public:
         return fRewriteDoWhileLoops;
     }
 
+    bool fRewriteSwitchStatements = false;
+    bool rewriteSwitchStatements() const {
+        return fRewriteSwitchStatements;
+    }
+
     bool fRemovePowWithConstantExponent = false;
     bool removePowWithConstantExponent() const {
         return fRemovePowWithConstantExponent;
@@ -346,6 +351,13 @@ public:
         return result;
     }
 
+    static ShaderCapsPointer FramebufferFetchSupport() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fFBFetchSupport = true;
+        result->fFBFetchColorName = "gl_LastFragData[0]";
+        return result;
+    }
+
     static ShaderCapsPointer IncompleteShortIntPrecision() {
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 310es";
@@ -399,6 +411,13 @@ public:
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 400";
         result->fRewriteMatrixVectorMultiply = true;
+        return result;
+    }
+
+    static ShaderCapsPointer RewriteSwitchStatements() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fVersionDeclString = "#version 400";
+        result->fRewriteSwitchStatements = true;
         return result;
     }
 

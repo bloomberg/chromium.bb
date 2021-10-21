@@ -302,8 +302,8 @@ component("core") {
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
-    "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",
+    "//ui/gfx/geometry:geometry_skia",
   ]
 
   if (is_mac) {
@@ -311,7 +311,7 @@ component("core") {
   }
 
   if (enable_basic_printing) {
-    deps += [ "//printing" ]
+    deps += [ "//printing:metafile" ]
   }
 
   allow_circular_includes_from = [
@@ -462,6 +462,7 @@ source_set("testing") {
 
 generate_event_interfaces("core_event_interfaces") {
   sources = [
+    "app_history/app_history_current_change_event.idl",
     "app_history/app_history_navigate_event.idl",
     "css/font_face_set_load_event.idl",
     "css/media_query_list_event.idl",
@@ -471,7 +472,6 @@ generate_event_interfaces("core_event_interfaces") {
     "editing/ime/text_update_event.idl",
     "events/animation_event.idl",
     "events/animation_playback_event.idl",
-    "events/application_cache_error_event.idl",
     "events/before_create_policy_event.idl",
     "events/before_unload_event.idl",
     "events/clipboard_event.idl",
@@ -1463,17 +1463,14 @@ source_set("unit_tests") {
     "script/module_record_resolver_impl_test.cc",
     "script/module_script_test.cc",
     "script/script_runner_test.cc",
-    "scroll/scroll_animator_test.cc",
-    "scroll/scroll_test.cc",
-    "scroll/scrollable_area_test.cc",
-    "scroll/scrollbar_test_suite.h",
-    "scroll/scrollbar_theme_overlay_test.cc",
     "speculation_rules/speculation_rule_set_test.cc",
     "speculation_rules/speculation_rules_origin_trial_test.cc",
     "streams/miscellaneous_operations_test.cc",
     "streams/queue_with_sizes_test.cc",
     "streams/readable_stream_test.cc",
     "streams/stream_promise_resolver_test.cc",
+    "streams/test_utils.cc",
+    "streams/test_utils.h",
     "streams/transferable_streams_test.cc",
     "streams/transform_stream_test.cc",
     "streams/writable_stream_test.cc",
@@ -1500,6 +1497,7 @@ source_set("unit_tests") {
     "timing/window_performance_test.cc",
     "trustedtypes/trusted_types_util_test.cc",
     "typed_arrays/array_buffer/array_buffer_contents_test.cc",
+    "typed_arrays/dom_array_buffer_test.cc",
     "url/url_search_params_test.cc",
     "workers/dedicated_worker_test.cc",
     "workers/dedicated_worker_test.h",
@@ -1525,6 +1523,7 @@ source_set("unit_tests") {
   sources += rebase_path(blink_core_tests_fileapi, "", "fileapi")
   sources += rebase_path(blink_core_tests_html, "", "html")
   sources += rebase_path(blink_core_tests_layout, "", "layout")
+  sources += rebase_path(blink_core_tests_scroll, "", "scroll")
   sources += rebase_path(blink_core_tests_style, "", "style")
 
   if (is_debug || dcheck_always_on) {

@@ -14,6 +14,7 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/share/android/jni_headers/NotificationManager_jni.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -89,7 +90,8 @@ AndroidNotificationHandler::~AndroidNotificationHandler() {
 void AndroidNotificationHandler::DisplayNewEntries(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
   for (const SendTabToSelfEntry* entry : new_entries) {
-    if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2)) {
+    if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) ||
+        share::AreUpcomingSharingFeaturesEnabled()) {
       web_contents_ = GetWebContentsForProfile(profile_);
 
       std::unique_ptr<messages::MessageWrapper> message =
@@ -127,8 +129,7 @@ void AndroidNotificationHandler::DisplayNewEntries(
       JNIEnv* env = AttachCurrentThread();
 
       // Set the expiration to 10 days from when the notification is displayed.
-      base::Time expiraton_time =
-          entry->GetSharedTime() + base::TimeDelta::FromDays(10);
+      base::Time expiraton_time = entry->GetSharedTime() + base::Days(10);
 
       ScopedJavaLocalRef<jclass> send_tab_to_self_notification_receiver_class =
           Java_SendTabToSelfNotificationReceiver_getSendTabToSelfNotificationReciever(

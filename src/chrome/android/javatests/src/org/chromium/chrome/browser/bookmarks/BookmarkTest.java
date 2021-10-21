@@ -99,7 +99,6 @@ import org.chromium.components.profile_metrics.BrowserProfileType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
@@ -127,9 +126,6 @@ public class BookmarkTest {
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
-
-    @Rule
-    public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
 
     private static final String TEST_PAGE_URL_GOOGLE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_TITLE_GOOGLE = "The Google";
@@ -181,8 +177,8 @@ public class BookmarkTest {
             SyncService.overrideForTests(mSyncService);
         });
         // Use a custom port so the links are consistent for render tests.
-        mEmbeddedTestServerRule.setServerPort(TEST_PORT);
-        mTestServer = mEmbeddedTestServerRule.getServer();
+        mActivityTestRule.getEmbeddedTestServerRule().setServerPort(TEST_PORT);
+        mTestServer = mActivityTestRule.getTestServer();
         mTestUrlA = new GURL("http://a.com");
         mTestPage = new GURL(mTestServer.getURL(TEST_PAGE_URL_GOOGLE));
         mTestPageFoo = new GURL(mTestServer.getURL(TEST_PAGE_URL_FOO));
@@ -442,7 +438,7 @@ public class BookmarkTest {
         BookmarkActionBar toolbar = ((BookmarkManager) delegate).getToolbarForTests();
 
         // We should default to the root bookmark.
-        Assert.assertTrue(BookmarkUtils.shouldUseRootFolderAsDefaultForReadLater());
+        Assert.assertTrue(ReadingListFeatures.shouldUseRootFolderAsDefaultForReadLater());
         Assert.assertEquals(BookmarkUIState.STATE_FOLDER, delegate.getCurrentState());
         Assert.assertEquals("chrome-native://bookmarks/folder/0",
                 BookmarkUtils.getLastUsedUrl(mActivityTestRule.getActivity()));
@@ -494,6 +490,12 @@ public class BookmarkTest {
         Assert.assertEquals(SelectableListToolbar.NAVIGATION_BUTTON_BACK,
                 toolbar.getNavigationButtonForTests());
         Assert.assertTrue(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.setBookmarkTitle(testFolder, TEST_FOLDER_TITLE2));
+
+        // Check that the test folder reflects name changes.
+        Assert.assertEquals(TEST_FOLDER_TITLE2, toolbar.getTitle());
 
         // Call BookmarkActionBar#onClick() to activate the navigation button.
         TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onClick(toolbar));
@@ -1892,6 +1894,33 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:add_to_reading_list_in_app_menu/true"})
+    public void
+    testAddToReadingListFromAppMenu() throws Exception {
+        mActivityTestRule.loadUrl(mTestPage);
+
+        // Click "Add to Reading List" to add the current tab.
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                mActivityTestRule.getActivity(), R.id.add_to_reading_list_menu_id);
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(mTestPage) != null);
+
+        // All actions with BookmarkModel needs to run on UI thread.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkItem item = mBookmarkBridge.getReadingListItem(mTestPage);
+            Assert.assertEquals(BookmarkType.READING_LIST, item.getId().getType());
+            Assert.assertEquals(mTestPage, item.getUrl());
+            Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE, item.getTitle());
+        });
+
+        waitForOfflinePageSaved(mTestPage);
+    }
+
+    @Test
+    @MediumTest
     public void testBookmarksDoesNotRecordLaunchMetrics() throws Throwable {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -1979,8 +2008,11 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
-    public void testBookmarksVisualRefreshFolders() throws Exception {
+    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:bookmark_visuals_enabled/true"})
+    public void
+    testBookmarksVisualRefreshFolders() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
         addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_FOLDER_TITLE);
@@ -2006,8 +2038,11 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
-    public void testBookmarksVisualRefreshBookmarks() throws Exception {
+    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:bookmark_visuals_enabled/true"})
+    public void
+    testBookmarksVisualRefreshBookmarks() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
@@ -2033,8 +2068,11 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
-    public void testBookmarksVisualRefreshBookmarksAndFolder() throws Exception {
+    @Features.EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:bookmark_visuals_enabled/true"})
+    public void
+    testBookmarksVisualRefreshBookmarksAndFolder() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addFolder(TEST_FOLDER_TITLE);

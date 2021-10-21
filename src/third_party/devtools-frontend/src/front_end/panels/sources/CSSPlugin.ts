@@ -261,12 +261,12 @@ export class CSSPlugin extends Plugin {
     this.swatchPopoverHelper.show(this.spectrum, swatch, this.swatchPopoverHidden.bind(this));
   }
 
-  private spectrumResized(_event: Common.EventTarget.EventTargetEvent): void {
+  private spectrumResized(): void {
     this.swatchPopoverHelper.reposition();
   }
 
-  private spectrumChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const colorString = (event.data as string);
+  private spectrumChanged(event: Common.EventTarget.EventTargetEvent<string>): void {
+    const colorString = event.data;
     const color = Common.Color.Color.parse(colorString);
     if (!color || !this.currentSwatch) {
       return;
@@ -291,8 +291,8 @@ export class CSSPlugin extends Plugin {
     this.swatchPopoverHelper.show(this.bezierEditor, swatch.iconElement(), this.swatchPopoverHidden.bind(this));
   }
 
-  private bezierChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const bezierString = (event.data as string);
+  private bezierChanged(event: Common.EventTarget.EventTargetEvent<string>): void {
+    const bezierString = event.data;
     if (this.currentSwatch instanceof InlineEditor.Swatches.BezierSwatch) {
       this.currentSwatch.setBezierText(bezierString);
     }
@@ -313,7 +313,7 @@ export class CSSPlugin extends Plugin {
     }
   }
 
-  private onTextChanged(event: Common.EventTarget.EventTargetEvent): void {
+  private onTextChanged(event: Common.EventTarget.EventTargetEvent<UI.TextEditor.TextChangedEvent>): void {
     if (!this.muteSwatchProcessing) {
       this.updateSwatches(event.data.newRange.startLine, event.data.newRange.endLine);
     }

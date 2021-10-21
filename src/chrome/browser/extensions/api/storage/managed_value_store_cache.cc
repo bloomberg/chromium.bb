@@ -25,6 +25,8 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
+#include "components/value_store/value_store_change.h"
+#include "components/value_store/value_store_factory.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
@@ -34,8 +36,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/value_store/value_store_change.h"
-#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/api/storage.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -71,6 +71,10 @@ class ManagedValueStoreCache::ExtensionTracker
     : public ExtensionRegistryObserver {
  public:
   ExtensionTracker(Profile* profile, policy::PolicyDomain policy_domain);
+
+  ExtensionTracker(const ExtensionTracker&) = delete;
+  ExtensionTracker& operator=(const ExtensionTracker&) = delete;
+
   ~ExtensionTracker() override {}
 
  private:
@@ -104,8 +108,6 @@ class ManagedValueStoreCache::ExtensionTracker
       extension_registry_observation_{this};
   policy::SchemaRegistry* schema_registry_;
   base::WeakPtrFactory<ExtensionTracker> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTracker);
 };
 
 ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(
