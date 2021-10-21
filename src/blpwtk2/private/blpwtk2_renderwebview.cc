@@ -2342,7 +2342,10 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
         if (d_currentCursor.cursor().type() != ui::mojom::CursorType::kCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
-            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
+            auto cursor_platform = native_cursor.platform();
+            if (cursor_platform) {
+              platformCursor = static_cast<ui::WinCursor*>(cursor_platform.get())->hcursor();
+            }
         }
         else {
             ui::Cursor uiCursor(ui::mojom::CursorType::kCustom);
@@ -2355,8 +2358,10 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
             uiCursor.set_custom_hotspot(hotspot);
             uiCursor.set_image_scale_factor(scale_factor);
 
-            auto native_cursor = d_currentCursor.GetNativeCursor();
-            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
+            auto cursor_platform = d_currentCursor.GetNativeCursor().platform();
+            if (cursor_platform) {
+              platformCursor = static_cast<ui::WinCursor*>(cursor_platform.get())->hcursor();
+            }
         }
 
         setPlatformCursor(platformCursor);
