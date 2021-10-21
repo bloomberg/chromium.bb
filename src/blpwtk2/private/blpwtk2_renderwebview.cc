@@ -848,6 +848,7 @@ void RenderWebView::initializeBrowserLike()
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
 
+    d_cursorFactory = std::make_unique<ui::CursorFactory>();
     d_cursorLoader = std::make_unique<ui::CursorLoader>();
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 
