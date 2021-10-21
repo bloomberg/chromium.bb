@@ -180,7 +180,6 @@ struct packet_traits<double> : default_packet_traits {
     HasRint = 1
   };
 };
-#endif
 template<> struct packet_traits<int>    : default_packet_traits
 {
   typedef Packet4i type;
@@ -194,7 +193,7 @@ template<> struct packet_traits<int>    : default_packet_traits
     HasBlend = 1
   };
 };
-
+#endif
 template<> struct packet_traits<bool> : default_packet_traits
 {
   typedef Packet16b type;
@@ -233,7 +232,7 @@ template<> struct unpacket_traits<Packet2d> {
 template<> struct unpacket_traits<Packet4i> {
   typedef int       type;
   typedef Packet4i  half;
-  enum {size=4, alignment=Aligned16, vectorizable=false, masked_load_available=false, masked_store_available=false};
+  enum {size=4, alignment=Aligned16, vectorizable=true, masked_load_available=false, masked_store_available=false};
 };
 template<> struct unpacket_traits<Packet16b> {
   typedef bool       type;

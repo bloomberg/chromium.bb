@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
@@ -16,6 +17,10 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+
+#if defined(OS_MAC)
+#include "chrome/browser/image_editor/event_capture_mac.h"
+#endif
 
 namespace content {
 class WebContents;
@@ -31,12 +36,26 @@ class Layer;
 
 namespace image_editor {
 
+// Result codes to distinguish between how the capture mode was closed.
+enum class ScreenshotCaptureResultCode {
+  // Successful capture.
+  SUCCESS = 0,
+  // User navigated away from the primary web contents page while the capture
+  // mode was active.
+  USER_NAVIGATED_EXIT = 1,
+  // User exited the capture mode via key press.
+  USER_ESCAPE_EXIT = 2,
+  kMaxValue = USER_ESCAPE_EXIT
+};
+
 // Structure containing image data and any future metadata.
 struct ScreenshotCaptureResult {
   // The image obtained from capture. Empty on failure.
   gfx::Image image;
   // The bounds of the screen during which capture took place. Empty on failure.
   gfx::Rect screen_bounds;
+  // The result code of the capture describing why the user exited.
+  ScreenshotCaptureResultCode result_code;
 };
 
 // Callback for obtaining image data.
@@ -77,6 +96,9 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
   // Exits capture mode without running any callbacks.
   void CancelCapture();
 
+  // Returns whether the capture mode is open or not.
+  bool IsCaptureModeActive();
+
  private:
   class UnderlyingWebContentsObserver;
 
@@ -102,15 +124,20 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
 
   // Captures a new screenshot for the chosen region, and runs the completion
   // callback.
-  void CaptureAndRunScreenshotCompleteCallback(gfx::Rect region);
+  void CaptureAndRunScreenshotCompleteCallback(
+      ScreenshotCaptureResultCode result_code,
+      gfx::Rect region);
 
   // Completes the capture process for |region| and runs the callback provided
   // to Start().
-  void CompleteCapture(const gfx::Rect& region);
+  void CompleteCapture(ScreenshotCaptureResultCode result_code,
+                       const gfx::Rect& region);
 
   // Completes the capture process and runs the |flow_callback| with provided
   // |image| data sourced from |bounds|.
-  void RunScreenshotCompleteCallback(gfx::Rect bounds, gfx::Image image);
+  void RunScreenshotCompleteCallback(ScreenshotCaptureResultCode result_code,
+                                     gfx::Rect bounds,
+                                     gfx::Image image);
 
   // Paints the screenshot selection layer. The user's selection is left
   // unpainted to be hollowed out. |invalidation_region| specifies an optional
@@ -136,6 +163,11 @@ class ScreenshotFlow : public ui::LayerDelegate, public ui::EventHandler {
 
   // Callback provided to Start().
   ScreenshotCaptureCallback flow_callback_;
+
+  // Mac-specific
+#if defined(OS_MAC)
+  std::unique_ptr<EventCaptureMac> event_capture_mac_;
+#endif
 
   // Selection rectangle coordinates.
   gfx::Point drag_start_;

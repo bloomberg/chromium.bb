@@ -271,17 +271,17 @@ namespace Eigen
 
 	}  // namespace internal
 
-	template <typename _MatrixType, typename _Preconditioner = DiagonalPreconditioner<typename _MatrixType::Scalar> >
+	template <typename MatrixType_, typename Preconditioner_ = DiagonalPreconditioner<typename MatrixType_::Scalar> >
 	class IDRS;
 
 	namespace internal
 	{
 
-		template <typename _MatrixType, typename _Preconditioner>
-		struct traits<Eigen::IDRS<_MatrixType, _Preconditioner> >
+		template <typename MatrixType_, typename Preconditioner_>
+		struct traits<Eigen::IDRS<MatrixType_, Preconditioner_> >
 		{
-			typedef _MatrixType MatrixType;
-			typedef _Preconditioner Preconditioner;
+			typedef MatrixType_ MatrixType;
+			typedef Preconditioner_ Preconditioner;
 		};
 
 	}  // namespace internal
@@ -305,8 +305,8 @@ namespace Eigen
   * and uses 7 vectors. GMRES terminates in at most N iterations, and uses I+3 vectors, with I the number of iterations. 
   * Restarting GMRES limits the memory consumption, but destroys the finite termination property.
   *
-  * \tparam _MatrixType the type of the sparse matrix A, can be a dense or a sparse matrix.
-  * \tparam _Preconditioner the type of the preconditioner. Default is DiagonalPreconditioner
+  * \tparam MatrixType_ the type of the sparse matrix A, can be a dense or a sparse matrix.
+  * \tparam Preconditioner_ the type of the preconditioner. Default is DiagonalPreconditioner
   *
   * \implsparsesolverconcept
   *
@@ -327,15 +327,15 @@ namespace Eigen
   *
   * \sa class SimplicialCholesky, DiagonalPreconditioner, IdentityPreconditioner
   */
-	template <typename _MatrixType, typename _Preconditioner>
-	class IDRS : public IterativeSolverBase<IDRS<_MatrixType, _Preconditioner> >
+	template <typename MatrixType_, typename Preconditioner_>
+	class IDRS : public IterativeSolverBase<IDRS<MatrixType_, Preconditioner_> >
 	{
 
 		public:
-			typedef _MatrixType MatrixType;
+			typedef MatrixType_ MatrixType;
 			typedef typename MatrixType::Scalar Scalar;
 			typedef typename MatrixType::RealScalar RealScalar;
-			typedef _Preconditioner Preconditioner;
+			typedef Preconditioner_ Preconditioner;
 
 		private:
 			typedef IterativeSolverBase<IDRS> Base;

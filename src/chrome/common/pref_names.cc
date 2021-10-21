@@ -1377,6 +1377,10 @@ const char kPrintPdfAsImageAvailability[] =
 // An integer resolution to use for DPI when rasterizing PDFs with "Print to
 // image".
 const char kPrintRasterizePdfDpi[] = "printing.rasterize_pdf_dpi";
+
+// Boolean controlling whether the "Print as image" option should default to set
+// in Print Preview when printing a PDF.
+const char kPrintPdfAsImageDefault[] = "printing.print_pdf_as_image_default";
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
@@ -3270,6 +3274,9 @@ const char kCartDiscountAcknowledged[] = "cart_discount_acknowledged";
 const char kCartDiscountEnabled[] = "cart_discount_enabled";
 // Map pref recording the discounts used by users.
 const char kCartUsedDiscounts[] = "cart_used_discounts";
+// A time pref indicating the timestamp of when last cart discount fetch
+// happened.
+const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 #endif
 
 #if defined(OS_ANDROID)

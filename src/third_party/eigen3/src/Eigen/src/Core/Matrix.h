@@ -14,34 +14,34 @@
 namespace Eigen {
 
 namespace internal {
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-struct traits<Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct traits<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
 {
 private:
-  enum { size = internal::size_at_compile_time<_Rows,_Cols>::ret };
-  typedef typename find_best_packet<_Scalar,size>::type PacketScalar;
+  enum { size = internal::size_at_compile_time<Rows_,Cols_>::ret };
+  typedef typename find_best_packet<Scalar_,size>::type PacketScalar;
   enum {
-      row_major_bit = _Options&RowMajor ? RowMajorBit : 0,
-      is_dynamic_size_storage = _MaxRows==Dynamic || _MaxCols==Dynamic,
-      max_size = is_dynamic_size_storage ? Dynamic : _MaxRows*_MaxCols,
-      default_alignment = compute_default_alignment<_Scalar,max_size>::value,
-      actual_alignment = ((_Options&DontAlign)==0) ? default_alignment : 0,
+      row_major_bit = Options_&RowMajor ? RowMajorBit : 0,
+      is_dynamic_size_storage = MaxRows_==Dynamic || MaxCols_==Dynamic,
+      max_size = is_dynamic_size_storage ? Dynamic : MaxRows_*MaxCols_,
+      default_alignment = compute_default_alignment<Scalar_,max_size>::value,
+      actual_alignment = ((Options_&DontAlign)==0) ? default_alignment : 0,
       required_alignment = unpacket_traits<PacketScalar>::alignment,
-      packet_access_bit = (packet_traits<_Scalar>::Vectorizable && (EIGEN_UNALIGNED_VECTORIZE || (actual_alignment>=required_alignment))) ? PacketAccessBit : 0
+      packet_access_bit = (packet_traits<Scalar_>::Vectorizable && (EIGEN_UNALIGNED_VECTORIZE || (actual_alignment>=required_alignment))) ? PacketAccessBit : 0
     };
 
 public:
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef Dense StorageKind;
   typedef Eigen::Index StorageIndex;
   typedef MatrixXpr XprKind;
   enum {
-    RowsAtCompileTime = _Rows,
-    ColsAtCompileTime = _Cols,
-    MaxRowsAtCompileTime = _MaxRows,
-    MaxColsAtCompileTime = _MaxCols,
-    Flags = compute_matrix_flags<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::ret,
-    Options = _Options,
+    RowsAtCompileTime = Rows_,
+    ColsAtCompileTime = Cols_,
+    MaxRowsAtCompileTime = MaxRows_,
+    MaxColsAtCompileTime = MaxCols_,
+    Flags = compute_matrix_flags<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_>::ret,
+    Options = Options_,
     InnerStrideAtCompileTime = 1,
     OuterStrideAtCompileTime = (Options&RowMajor) ? ColsAtCompileTime : RowsAtCompileTime,
 
@@ -63,18 +63,18 @@ public:
   * The %Matrix class encompasses \em both fixed-size and dynamic-size objects (\ref fixedsize "note").
   *
   * The first three template parameters are required:
-  * \tparam _Scalar Numeric type, e.g. float, double, int or std::complex<float>.
+  * \tparam Scalar_ Numeric type, e.g. float, double, int or std::complex<float>.
   *                 User defined scalar types are supported as well (see \ref user_defined_scalars "here").
-  * \tparam _Rows Number of rows, or \b Dynamic
-  * \tparam _Cols Number of columns, or \b Dynamic
+  * \tparam Rows_ Number of rows, or \b Dynamic
+  * \tparam Cols_ Number of columns, or \b Dynamic
   *
   * The remaining template parameters are optional -- in most cases you don't have to worry about them.
-  * \tparam _Options A combination of either \b #RowMajor or \b #ColMajor, and of either
+  * \tparam Options_ A combination of either \b #RowMajor or \b #ColMajor, and of either
   *                 \b #AutoAlign or \b #DontAlign.
   *                 The former controls \ref TopicStorageOrders "storage order", and defaults to column-major. The latter controls alignment, which is required
   *                 for vectorization. It defaults to aligning matrices except for fixed sizes that aren't a multiple of the packet size.
-  * \tparam _MaxRows Maximum number of rows. Defaults to \a _Rows (\ref maxrows "note").
-  * \tparam _MaxCols Maximum number of columns. Defaults to \a _Cols (\ref maxrows "note").
+  * \tparam MaxRows_ Maximum number of rows. Defaults to \a Rows_ (\ref maxrows "note").
+  * \tparam MaxCols_ Maximum number of columns. Defaults to \a Cols_ (\ref maxrows "note").
   *
   * Eigen provides a number of typedefs covering the usual cases. Here are some examples:
   *
@@ -128,12 +128,12 @@ public:
   * Note that \em dense matrices, be they Fixed-size or Dynamic-size, <em>do not</em> expand dynamically in the sense of a std::map.
   * If you want this behavior, see the Sparse module.</dd>
   *
-  * <dt><b>\anchor maxrows _MaxRows and _MaxCols:</b></dt>
+  * <dt><b>\anchor maxrows MaxRows_ and MaxCols_:</b></dt>
   * <dd>In most cases, one just leaves these parameters to the default values.
   * These parameters mean the maximum size of rows and columns that the matrix may have. They are useful in cases
   * when the exact numbers of rows and columns are not known are compile-time, but it is known at compile-time that they cannot
-  * exceed a certain value. This happens when taking dynamic-size blocks inside fixed-size matrices: in this case _MaxRows and _MaxCols
-  * are the dimensions of the original matrix, while _Rows and _Cols are Dynamic.</dd>
+  * exceed a certain value. This happens when taking dynamic-size blocks inside fixed-size matrices: in this case MaxRows_ and MaxCols_
+  * are the dimensions of the original matrix, while Rows_ and Cols_ are Dynamic.</dd>
   * </dl>
   *
   * <i><b>ABI and storage layout</b></i>
@@ -174,9 +174,9 @@ public:
   * \ref TopicStorageOrders
   */
 
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
 class Matrix
-  : public PlainObjectBase<Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+  : public PlainObjectBase<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
 {
   public:
 
@@ -185,7 +185,7 @@ class Matrix
       */
     typedef PlainObjectBase<Matrix> Base;
 
-    enum { Options = _Options };
+    enum { Options = Options_ };
 
     EIGEN_DENSE_PUBLIC_INTERFACE(Matrix)
 

@@ -173,10 +173,10 @@ namespace internal {
       }
   };
 
-  template <typename _Scalar>
+  template <typename Scalar_>
   struct fftw_impl
   {
-      typedef _Scalar Scalar;
+      typedef Scalar_ Scalar;
       typedef std::complex<Scalar> Complex;
 
       inline

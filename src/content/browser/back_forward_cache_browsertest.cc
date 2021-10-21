@@ -64,6 +64,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/idle_test_utils.h"
+#include "content/public/test/media_start_stop_observer.h"
 #include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -77,6 +78,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/echo.test-mojom.h"
 #include "content/test/web_contents_observer_test_utils.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -1315,6 +1317,86 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
     EXPECT_EQ(i >= kBackForwardCacheSize + 1, delete_observer_rfh_a.deleted());
     EXPECT_EQ(i >= kBackForwardCacheSize + 2, delete_observer_rfh_b.deleted());
   }
+}
+
+// Tests that evicting a page in between the time the back/forward cache
+// NavigationRequest restore was created and when the NavigationRequest actually
+// starts after finishing beforeunload won't result in a crash.
+// See https://crbug.com/1218114.
+IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
+                       EvictedWhileWaitingForBeforeUnload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title3.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameDeletedObserver delete_observer(rfh_a.get());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImplWrapper rfh_b(current_frame_host());
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b.get());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 3) Navigate to C, which has a beforeunload handler that never finishes.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImplWrapper rfh_c(current_frame_host());
+  EXPECT_TRUE(ExecJs(rfh_c.get(), R"(
+    window.onbeforeunload = () => {
+      while (true) {}
+    }
+  )"));
+  // Both A & B are in the back/forward cache.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+
+  // 4) Evict entry A. This will post a task that destroys all evicted entries
+  // when it runs (task #1).
+  DisableBFCacheForRFHForTesting(rfh_a->GetGlobalId());
+  EXPECT_FALSE(rfh_a.IsDestroyed());
+  EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
+
+  // 5) Trigger a back navigation to B. This will create a BFCache restore
+  // navigation to B, but will wait for C's beforeunload handler to finish
+  // running before continuing.
+  web_contents()->GetController().GoBack();
+
+  // 6) Post a task to run BeforeUnloadCompleted (task #2). This will continue
+  // the BFCache restore navigation to B from step 5, which is currently waiting
+  // for a BeforeUnloadCompleted call.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        root->navigator().BeforeUnloadCompleted(root, true /* proceed */,
+                                                base::TimeTicks::Now());
+      }));
+
+  // 7) Evict entry B. This will post a task (task #3) to restart the navigation
+  // to B, and also another task (task #4) to destroy all evicted entries.
+  DisableBFCacheForRFHForTesting(rfh_b->GetGlobalId());
+  EXPECT_FALSE(rfh_b.IsDestroyed());
+  EXPECT_TRUE(rfh_b->is_evicted_from_back_forward_cache());
+
+  // 8) Wait until the back navigation to B finishes. This will run posted tasks
+  // in order. So:
+  // - Task #1 from step 4 will run and destroy all evicted entries. As both the
+  // entries for A & B have been evicted, they are both destroyed.
+  // - Task #2 from step 6 will run and continue the back/forward cache restore
+  // NavigationRequest to B. However, it would notice that the entry for B is
+  // now gone, and should handle it gracefully.
+  // - Task #3 from step 7 to restart navigation to B runs, and should create a
+  // NavigationRequest to replace the previous NavigationRequest to B.
+  // - Task #4 from step 7 to destroy evicted entries runs and won't destroy
+  // any entry since there's no longer any entry in the back/forward cache.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), url_b);
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {RenderFrameHostDisabledForTestingReason()},
+                    FROM_HERE);
 }
 
 class BackgroundForegroundProcessLimitBackForwardCacheBrowserTest
@@ -10181,6 +10263,74 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
+// Tests that trying to focus on a BFCached cross-site iframe won't crash.
+// See https://crbug.com/1250218.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FocusSameSiteSubframeOnPagehide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL main_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to a page with a same-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper rfh_1(current_frame_host());
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 2) Navigate away from the page while trying to focus the subframe on
+  // pagehide. The DidFocusFrame IPC should arrive after the page gets into
+  // BFCache and should be ignored by the browser. The focus after navigation
+  // should go to the new main frame.
+  EXPECT_TRUE(ExecJs(rfh_1.get(), R"(
+    window.onpagehide = function(e) {
+      document.getElementById("test_iframe").focus();
+  })"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  EXPECT_NE(rfh_1.get(), web_contents()->GetFocusedFrame());
+  EXPECT_EQ(current_frame_host(), web_contents()->GetFocusedFrame());
+
+  // 3) Navigate back to the page. The focus should be on the main frame.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+  ExpectRestored(FROM_HERE);
+}
+
+// Tests that trying to focus on a BFCached cross-site iframe won't crash.
+// See https://crbug.com/1250218.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FocusCrossSiteSubframeOnPagehide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL main_url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to a page with a cross-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper rfh_1(current_frame_host());
+  EXPECT_EQ(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 2) Navigate away from the page while trying to focus the subframe on
+  // pagehide. The DidFocusFrame IPC should arrive after the page gets into
+  // BFCache and should be ignored by the browser. The focus after navigation
+  // should go to the new main frame.
+  EXPECT_TRUE(ExecJs(rfh_1.get(), R"(
+    window.onpagehide = function(e) {
+      document.getElementById("child-0").focus();
+    })"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  EXPECT_TRUE(rfh_1->IsInBackForwardCache());
+  EXPECT_NE(rfh_1.get(), web_contents()->GetFocusedFrame());
+
+  // 3) Navigate back to the page. The focus should be on the original page's
+  // main frame.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_1.get(), current_frame_host());
+  ExpectRestored(FROM_HERE);
+}
+
 // We should try to reuse process on same-site renderer-initiated navigations.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        RendererInitiatedSameSiteNavigationReusesProcess) {
@@ -11364,16 +11514,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   shell->Close();
 }
 
-// Fails under address-sanitizer.  http://crbug.com/1243159
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged \
-  DISABLED_DoNotCacheIfMediaSessionPlaybackStateChanged
-#else
-#define MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged \
-  DoNotCacheIfMediaSessionPlaybackStateChanged
-#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_DoNotCacheIfMediaSessionPlaybackStateChanged) {
+                       DoNotCacheIfMediaSessionPlaybackStateChanged) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // 1) Navigate to a page using MediaSession.
@@ -11417,6 +11559,83 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // The page is not restored due to the playback.
   auto reason = BackForwardCacheDisable::DisabledReason(
       BackForwardCacheDisable::DisabledReasonId::kMediaSession);
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {reason}, FROM_HERE);
+}
+
+class BackForwardCacheBrowserTestWithMediaSessionPlaybackStateChangeSupported
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(kBackForwardCacheMediaSessionPlaybackStateChange,
+                              "", "");
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void PlayVideoNavigateAndGoBack() {
+    MediaSession* media_session = MediaSession::Get(shell()->web_contents());
+    ASSERT_TRUE(media_session);
+
+    content::MediaStartStopObserver start_observer(
+        shell()->web_contents(), MediaStartStopObserver::Type::kStart);
+    EXPECT_TRUE(ExecJs(current_frame_host(),
+                       "document.querySelector('#long-video').play();"));
+    start_observer.Wait();
+
+    content::MediaStartStopObserver stop_observer(
+        shell()->web_contents(), MediaStartStopObserver::Type::kStop);
+    media_session->Suspend(MediaSession::SuspendType::kSystem);
+    stop_observer.Wait();
+
+    // Navigate away.
+    EXPECT_TRUE(NavigateToURL(
+        shell(), embedded_test_server()->GetURL("b.test", "/title1.html")));
+
+    // Go back.
+    web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestWithMediaSessionPlaybackStateChangeSupported,
+    CacheWhenMediaSessionServiceIsNotUsed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page using MediaSession.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.test", "/media/session/media-session.html")));
+
+  // Play the media once, but without setting any callbacks to the MediaSession.
+  // In this case, a MediaSession service is not used.
+  PlayVideoNavigateAndGoBack();
+
+  // The page is restored since a MediaSession service is not used.
+  ExpectRestored(FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestWithMediaSessionPlaybackStateChangeSupported,
+    DontCacheWhenMediaSessionServiceIsUsed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page using MediaSession.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.test", "/media/session/media-session.html")));
+  RenderFrameHostWrapper rfh_a(current_frame_host());
+  // Register a callback explicitly to use a MediaSession service.
+  EXPECT_TRUE(ExecJs(rfh_a.get(), R"(
+    navigator.mediaSession.setActionHandler('play', () => {});
+  )"));
+
+  PlayVideoNavigateAndGoBack();
+
+  // The page is not restored since a MediaSession service is used.
+  auto reason = BackForwardCacheDisable::DisabledReason(
+      BackForwardCacheDisable::DisabledReasonId::kMediaSessionService);
   ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
                          kDisableForRenderFrameHostCalled},
                     {}, {}, {reason}, FROM_HERE);
@@ -12544,6 +12763,99 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(web_contents()->IsCrashed());
 
   ExpectRestored(FROM_HERE);
+}
+
+// Injects a blank subframe into the current document just before processing
+// DidCommitNavigation for a specified URL.
+class InjectCreateChildFrame : public DidCommitNavigationInterceptor {
+ public:
+  InjectCreateChildFrame(WebContents* web_contents, const GURL& url)
+      : DidCommitNavigationInterceptor(web_contents), url_(url) {}
+
+  InjectCreateChildFrame(const InjectCreateChildFrame&) = delete;
+  InjectCreateChildFrame& operator=(const InjectCreateChildFrame&) = delete;
+
+  bool was_called() { return was_called_; }
+
+ private:
+  // DidCommitNavigationInterceptor implementation.
+  bool WillProcessDidCommitNavigation(
+      RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
+      mojom::DidCommitProvisionalLoadParamsPtr*,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
+      override {
+    if (!was_called_ && navigation_request &&
+        navigation_request->GetURL() == url_) {
+      EXPECT_TRUE(ExecuteScript(
+          web_contents(),
+          "document.body.appendChild(document.createElement('iframe'));"));
+    }
+    was_called_ = true;
+    return true;
+  }
+
+  bool was_called_ = false;
+  GURL url_;
+};
+
+// Verify that when A navigates to B, and A creates a subframe just before B
+// commits, the subframe does not inherit a proxy in B's process from its
+// parent.  Otherwise, if A gets bfcached and later restored, the subframe's
+// proxy would be (1) in a different BrowsingInstance than the rest of its
+// page, and (2) preserved after the restore, which would cause crashes when
+// later using that proxy (for example, when creating more subframes). See
+// https://crbug.com/1243541.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    InjectSubframeDuringPendingCrossBrowsingInstanceNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  EXPECT_EQ(0U, rfh_a->child_count());
+
+  // 2) Navigate to B, and inject a blank subframe just before it commits.
+  {
+    InjectCreateChildFrame injector(shell()->web_contents(), url_b);
+    ASSERT_TRUE(NavigateToURL(shell(), url_b));
+    EXPECT_TRUE(injector.was_called());
+  }
+
+  // `rfh_a` should be in BackForwardCache, and it should have a subframe.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  ASSERT_EQ(1U, rfh_a->child_count());
+
+  // The new subframe should not have any proxies at this point.  In
+  // particular, it shouldn't inherit a proxy in b.com from its parent.
+  EXPECT_TRUE(rfh_a->child_at(0)
+                  ->render_manager()
+                  ->GetAllProxyHostsForTesting()
+                  .empty());
+
+  RenderFrameHostImplWrapper rfh_b(current_frame_host());
+
+  // 3) Go back.  This should restore `rfh_a` from the cache, and `rfh_b`
+  // should go into the cache.
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(rfh_a.get(), current_frame_host());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+
+  // 4) Add a grandchild frame to `rfh_a`.  This shouldn't crash.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      rfh_a->child_at(0),
+      "document.body.appendChild(document.createElement('iframe'));"));
+  frame_observer.Wait();
+  EXPECT_EQ(1U, rfh_a->child_at(0)->child_count());
+
+  // Make sure the grandchild is live.
+  EXPECT_TRUE(ExecuteScript(rfh_a->child_at(0)->child_at(0), "true"));
 }
 
 }  // namespace content

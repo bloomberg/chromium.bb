@@ -332,7 +332,6 @@
 <translation id="1354045473509304750"><ph name="HOST" /> sitesine, kameramı hem kullanması hem de hareket ettirmesi için izni vermeye devam et</translation>
 <translation id="1355088139103479645">Tüm veriler silinsin mi?</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> engellendi</translation>
-<translation id="1356178530321889280">Web'de gezinip alışveriş yaparken gördüğünüz görsel içerik hakkında daha fazla bilgi edinmek isterseniz sitenin herhangi bir bölgesinde arama yapmak için sağ tıklayıp "Google Lens ile sayfanın bir kısmında arama yap" seçeneğini belirleyin.</translation>
 <translation id="1358741672408003399">Yazım ve Dilbilgisi</translation>
 <translation id="1359923111303110318">Cihazınızın kilidi Smart Lock ile açılabilir. Kilidi açmak için Enter tuşuna basın.</translation>
 <translation id="1361164813881551742">Manuel Olarak Ekle</translation>
@@ -2272,6 +2271,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="339178315942519818">Sohbet uygulamalarınızdaki bildirimleri <ph name="DEVICE_TYPE" /> cihazınızda görüntüleyin</translation>
 <translation id="3393554941209044235">Chrome Doküman Analizi</translation>
 <translation id="3394850431319394743">Korumalı içeriği oynatmak için tanımlayıcı kullanımına izin verildi</translation>
+<translation id="3396744558790608201">Web'de gezinip alışveriş yaparken sitenin herhangi bir yerinde gördüğünüz görsel içerikler hakkında daha fazla bilgi edinmek için sağ tıklayıp "Google Lens ile görsel arama"yı seçin.</translation>
 <translation id="3396800784455899911">"Kabul et ve devam et" düğmesini tıklayarak bu Google hizmetleri ile ilgili yukarıda açıklanan işlemleri kabul etmiş olursunuz.</translation>
 <translation id="339722927132407568">Donuyor</translation>
 <translation id="3399432415385675819">Bildirimler devre dışı bırakılacak</translation>
@@ -2942,6 +2942,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4066207411788646768">Ağınızdaki kullanılabilir yazıcıları görmek için lütfen bağlantınızı kontrol edin</translation>
 <translation id="4068776064906523561">Kayıtlı parmak izleri</translation>
 <translation id="407173827865827707">Tıklandığında</translation>
+<translation id="4072701974556190758">Şifreniz <ph name="ACCOUNT" /> Google Hesabınızda kaydedilir. Ezberlemeniz gerekmiyor.</translation>
 <translation id="4074900173531346617">E-posta İmza Sahibi Sertifikası</translation>
 <translation id="407520071244661467">Ölçek</translation>
 <translation id="407543464472585404"><ph name="NAME" /> adlı kişinin profili <ph name="EMAIL" /> hesabına bağlı</translation>
@@ -3181,6 +3182,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, bir pencereyi paylaşıyor.</translation>
 <translation id="4364830672918311045">Bildirimleri görüntüleme</translation>
 <translation id="4366138410738374926">Yazdırma başladı</translation>
+<translation id="4369121877634339065">Arama yapmak için herhangi bir görselin üzerine sürükleyin</translation>
 <translation id="4370975561335139969">Girdiğiniz e-posta ve şifre eşleşmiyor</translation>
 <translation id="4371452868325715552">Sunucuyla bağlantı kurulamadı. Lütfen ağ bağlantınızı kontrol edip tekrar deneyin. Sorun devam ederse Chromebook'unuzu yeniden başlatmayı deneyin. Hata kodu: <ph name="ERROR_CODE" />.</translation>
 <translation id="4373966964907728675">Masaüstü yayınlanıyor</translation>
@@ -4634,7 +4636,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5971037678316050792">Bluetooth adaptörü durumunu ve eşlemeyi kontrol etme</translation>
 <translation id="597235323114979258">Diğer hedefleri göster</translation>
 <translation id="5972666587303800813">İşlemsiz Hizmet</translation>
-<translation id="5972708806901999743">Yukarı taşı</translation>
+<translation id="5972708806901999743">En üste taşı</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> uygulamasını başlat</translation>
 <translation id="5973041996755340290">"<ph name="CLIENT_NAME" />", bu tarayıcıda hata ayıklama işlemine başladı</translation>
 <translation id="5973605538625120605">PIN'i değiştirin</translation>
@@ -7283,7 +7285,7 @@ Atamayı kaldırmak için atanmış bir anahtara basın</translation>
 <translation id="8813277370772331957">Sonra hatırlat</translation>
 <translation id="8813698869395535039"><ph name="USERNAME" /> hesabında oturum açılamıyor</translation>
 <translation id="8813872945700551674">Ebeveyninizden "<ph name="EXTENSION_NAME" />" uzantısını onaylamasını isteyin</translation>
-<translation id="8814190375133053267">Kablosuz</translation>
+<translation id="8814190375133053267">Kablosuz Ağ</translation>
 <translation id="8814319344131658221">Yazım denetimi dilleri, dil tercihinize dayalıdır</translation>
 <translation id="8814644416678422095">Sabit sürücü</translation>
 <translation id="881782782501875829">Bağlantı noktası numarası ekleyin</translation>

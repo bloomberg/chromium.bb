@@ -23,19 +23,19 @@ namespace Eigen {
   * direction vector \f$ \mathbf{d} \f$ such that the line corresponds to
   * the set \f$ l(t) = \mathbf{o} + t \mathbf{d} \f$, \f$ t \in \mathbf{R} \f$.
   *
-  * \tparam _Scalar the scalar type, i.e., the type of the coefficients
+  * \tparam Scalar_ the scalar type, i.e., the type of the coefficients
   * \tparam _AmbientDim the dimension of the ambient space, can be a compile time value or Dynamic.
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
+template <typename Scalar_, int _AmbientDim, int Options_>
 class ParametrizedLine
 {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_AmbientDim)
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_AmbientDim)
   enum {
     AmbientDimAtCompileTime = _AmbientDim,
-    Options = _Options
+    Options = Options_
   };
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef typename NumTraits<Scalar>::Real RealScalar;
   typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
   typedef Matrix<Scalar,AmbientDimAtCompileTime,1,Options> VectorType;
@@ -59,7 +59,7 @@ public:
     : m_origin(origin), m_direction(direction) {}
 
   template <int OtherOptions>
-  EIGEN_DEVICE_FUNC explicit ParametrizedLine(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane);
+  EIGEN_DEVICE_FUNC explicit ParametrizedLine(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane);
 
   /** Constructs a parametrized line going from \a p0 to \a p1. */
   EIGEN_DEVICE_FUNC static inline ParametrizedLine Through(const VectorType& p0, const VectorType& p1)
@@ -96,13 +96,13 @@ public:
   EIGEN_DEVICE_FUNC VectorType pointAt(const Scalar& t) const;
   
   template <int OtherOptions>
-  EIGEN_DEVICE_FUNC Scalar intersectionParameter(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const;
+  EIGEN_DEVICE_FUNC Scalar intersectionParameter(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const;
  
   template <int OtherOptions>
-  EIGEN_DEVICE_FUNC Scalar intersection(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const;
+  EIGEN_DEVICE_FUNC Scalar intersection(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const;
   
   template <int OtherOptions>
-  EIGEN_DEVICE_FUNC VectorType intersectionPoint(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const;
+  EIGEN_DEVICE_FUNC VectorType intersectionPoint(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const;
 
   /** Applies the transformation matrix \a mat to \c *this and returns a reference to \c *this.
     *
@@ -178,9 +178,9 @@ protected:
   *
   * \warning the ambient space must have dimension 2 such that the hyperplane actually describes a line
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
+template <typename Scalar_, int _AmbientDim, int Options_>
 template <int OtherOptions>
-EIGEN_DEVICE_FUNC inline ParametrizedLine<_Scalar, _AmbientDim,_Options>::ParametrizedLine(const Hyperplane<_Scalar, _AmbientDim,OtherOptions>& hyperplane)
+EIGEN_DEVICE_FUNC inline ParametrizedLine<Scalar_, _AmbientDim,Options_>::ParametrizedLine(const Hyperplane<Scalar_, _AmbientDim,OtherOptions>& hyperplane)
 {
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(VectorType, 2)
   direction() = hyperplane.normal().unitOrthogonal();
@@ -189,18 +189,18 @@ EIGEN_DEVICE_FUNC inline ParametrizedLine<_Scalar, _AmbientDim,_Options>::Parame
 
 /** \returns the point at \a t along this line
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
-EIGEN_DEVICE_FUNC inline typename ParametrizedLine<_Scalar, _AmbientDim,_Options>::VectorType
-ParametrizedLine<_Scalar, _AmbientDim,_Options>::pointAt(const _Scalar& t) const
+template <typename Scalar_, int _AmbientDim, int Options_>
+EIGEN_DEVICE_FUNC inline typename ParametrizedLine<Scalar_, _AmbientDim,Options_>::VectorType
+ParametrizedLine<Scalar_, _AmbientDim,Options_>::pointAt(const Scalar_& t) const
 {
   return origin() + (direction()*t); 
 }
 
 /** \returns the parameter value of the intersection between \c *this and the given \a hyperplane
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
+template <typename Scalar_, int _AmbientDim, int Options_>
 template <int OtherOptions>
-EIGEN_DEVICE_FUNC inline _Scalar ParametrizedLine<_Scalar, _AmbientDim,_Options>::intersectionParameter(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const
+EIGEN_DEVICE_FUNC inline Scalar_ ParametrizedLine<Scalar_, _AmbientDim,Options_>::intersectionParameter(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const
 {
   return -(hyperplane.offset()+hyperplane.normal().dot(origin()))
           / hyperplane.normal().dot(direction());
@@ -210,19 +210,19 @@ EIGEN_DEVICE_FUNC inline _Scalar ParametrizedLine<_Scalar, _AmbientDim,_Options>
 /** \deprecated use intersectionParameter()
   * \returns the parameter value of the intersection between \c *this and the given \a hyperplane
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
+template <typename Scalar_, int _AmbientDim, int Options_>
 template <int OtherOptions>
-EIGEN_DEVICE_FUNC inline _Scalar ParametrizedLine<_Scalar, _AmbientDim,_Options>::intersection(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const
+EIGEN_DEVICE_FUNC inline Scalar_ ParametrizedLine<Scalar_, _AmbientDim,Options_>::intersection(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const
 {
   return intersectionParameter(hyperplane);
 }
 
 /** \returns the point of the intersection between \c *this and the given hyperplane
   */
-template <typename _Scalar, int _AmbientDim, int _Options>
+template <typename Scalar_, int _AmbientDim, int Options_>
 template <int OtherOptions>
-EIGEN_DEVICE_FUNC inline typename ParametrizedLine<_Scalar, _AmbientDim,_Options>::VectorType
-ParametrizedLine<_Scalar, _AmbientDim,_Options>::intersectionPoint(const Hyperplane<_Scalar, _AmbientDim, OtherOptions>& hyperplane) const
+EIGEN_DEVICE_FUNC inline typename ParametrizedLine<Scalar_, _AmbientDim,Options_>::VectorType
+ParametrizedLine<Scalar_, _AmbientDim,Options_>::intersectionPoint(const Hyperplane<Scalar_, _AmbientDim, OtherOptions>& hyperplane) const
 {
   return pointAt(intersectionParameter(hyperplane));
 }

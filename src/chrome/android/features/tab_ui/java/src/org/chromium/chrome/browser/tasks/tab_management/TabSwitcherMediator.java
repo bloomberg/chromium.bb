@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -570,6 +571,14 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
             }
         }
+        if (mMode == TabListCoordinator.TabListMode.GRID
+                && PriceTrackingUtilities.isTabModelPriceTrackingEligible(
+                        mTabModelSelector.getCurrentModel())
+                && PriceTrackingUtilities.isTrackPricesOnTabsEnabled()) {
+            RecordUserAction.record("Commerce.TabGridSwitched."
+                    + (ShoppingPersistedTabData.hasPriceDrop(tab) ? "HasPriceDrop"
+                                                                  : "NoPriceDrop"));
+        }
     }
 
     @Override
@@ -844,6 +853,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
             Tab newlySelectedTab =
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
             StartSurfaceUserData.setKeepTab(newlySelectedTab, true);
+            if (mMode == TabListMode.CAROUSEL) {
+                StartSurfaceUserData.setOpenedFromStart(newlySelectedTab);
+            }
         }
         mIsSelectingInTabSwitcher = true;
         if (mOnTabSelectingListener != null) {

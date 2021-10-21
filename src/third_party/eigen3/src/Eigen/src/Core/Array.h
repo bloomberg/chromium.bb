@@ -13,11 +13,11 @@
 namespace Eigen {
 
 namespace internal {
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-struct traits<Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> > : traits<Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct traits<Array<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> > : traits<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
 {
   typedef ArrayXpr XprKind;
-  typedef ArrayBase<Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> > XprBase;
+  typedef ArrayBase<Array<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> > XprBase;
 };
 }
 
@@ -41,16 +41,16 @@ struct traits<Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> > : tra
   *
   * \sa \blank \ref TutorialArrayClass, \ref TopicClassHierarchy
   */
-template<typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
 class Array
-  : public PlainObjectBase<Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+  : public PlainObjectBase<Array<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
 {
   public:
 
     typedef PlainObjectBase<Array> Base;
     EIGEN_DENSE_PUBLIC_INTERFACE(Array)
 
-    enum { Options = _Options };
+    enum { Options = Options_ };
     typedef typename Base::PlainObject PlainObject;
 
   protected:

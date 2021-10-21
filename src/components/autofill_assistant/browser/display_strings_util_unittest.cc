@@ -20,8 +20,13 @@ void AddDisplayStringToProto(ClientSettingsProto::DisplayStringId id,
 
 TEST(DisplayStringsUtilTest, FallbackToChromeStringsByDefault) {
   ClientSettings client_settings;
-  for (int i = 0; i < ClientSettingsProto::DisplayStringId_MAX; i++) {
+  for (int i = 0; i < ClientSettingsProto::DisplayStringId_MAX + 1; i++) {
     switch (static_cast<ClientSettingsProto::DisplayStringId>(i)) {
+      case ClientSettingsProto::UNSPECIFIED:
+        EXPECT_EQ(GetDisplayStringUTF8(ClientSettingsProto::UNSPECIFIED,
+                                       client_settings),
+                  "");
+        break;
       case ClientSettingsProto::GIVE_UP:
         EXPECT_EQ(
             GetDisplayStringUTF8(ClientSettingsProto::GIVE_UP, client_settings),
@@ -72,6 +77,11 @@ TEST(DisplayStringsUtilTest, FallbackToChromeStringsByDefault) {
         EXPECT_EQ(GetDisplayStringUTF8(ClientSettingsProto::SETTINGS,
                                        client_settings),
                   l10n_util::GetStringUTF8(IDS_SETTINGS_TITLE));
+        break;
+      case ClientSettingsProto::UNDO:
+        EXPECT_EQ(
+            GetDisplayStringUTF8(ClientSettingsProto::UNDO, client_settings),
+            "");
         break;
     }
   }

@@ -29,6 +29,10 @@ extern const base::Feature kEnableFREDefaultBrowserScreen;
 // Feature flag that enables using the FRE UI module to show first run screens.
 extern const base::Feature kEnableFREUIModuleIOS;
 
+// Feature flag that enables using the strings of the previous sync screen in
+// the current FRE.
+extern const base::Feature kOldSyncStringFRE;
+
 // Feature flag that enables taking fullpage screenshots of a webpage.
 extern const base::Feature kEnableFullPageScreenshot;
 
@@ -59,6 +63,9 @@ extern const base::Feature kDefaultPromoTailored;
 
 // Feature flag that swaps the omnibox textfield implementation.
 extern const base::Feature kIOSNewOmniboxImplementation;
+
+// Feature flag that fixes omnibox behavior when using iOS native dictation
+extern const base::Feature kIOSOmniboxAllowEditsDuringDictation;
 
 // Feature flag that enables persisting the Crash Restore Infobar across
 // navigations.

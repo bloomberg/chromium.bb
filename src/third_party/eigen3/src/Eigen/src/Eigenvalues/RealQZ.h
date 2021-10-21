@@ -19,7 +19,7 @@ namespace Eigen {
    *
    * \brief Performs a real QZ decomposition of a pair of square matrices
    *
-   * \tparam _MatrixType the type of the matrix of which we are computing the
+   * \tparam MatrixType_ the type of the matrix of which we are computing the
    * real QZ decomposition; this is expected to be an instantiation of the
    * Matrix class template.
    *
@@ -54,10 +54,10 @@ namespace Eigen {
    * \sa class RealSchur, class ComplexSchur, class EigenSolver, class ComplexEigenSolver
    */
 
-  template<typename _MatrixType> class RealQZ
+  template<typename MatrixType_> class RealQZ
   {
     public:
-      typedef _MatrixType MatrixType;
+      typedef MatrixType_ MatrixType;
       enum {
         RowsAtCompileTime = MatrixType::RowsAtCompileTime,
         ColsAtCompileTime = MatrixType::ColsAtCompileTime,

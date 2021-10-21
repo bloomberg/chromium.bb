@@ -24,6 +24,7 @@
 #include "ui/views/background.h"
 
 #if defined(OS_MAC)
+#include "chrome/browser/image_editor/event_capture_mac.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -37,7 +38,7 @@ namespace image_editor {
 
 // Colors for semitransparent overlay.
 static constexpr SkColor kColorSemitransparentOverlayMask =
-    SkColorSetARGB(0x30, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x7F, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSemitransparentOverlayVisible =
     SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSelectionRect = SkColorSetRGB(0xEE, 0xEE, 0xEE);
@@ -74,17 +75,13 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
   const gfx::Rect offset_bounds = widget->GetWindowBoundsInScreen();
   bounds.Offset(-offset_bounds.x(), -offset_bounds.y());
 
-  views::Widget* top_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(web_contents_view);
-  views::View* root_view = top_widget->GetRootView();
-  root_view->AddPreTargetHandler(this);
+  event_capture_mac_ = std::make_unique<EventCaptureMac>(
+      this, web_contents_->GetTopLevelNativeWindow());
 #else
   const gfx::NativeWindow& native_window = web_contents_->GetNativeView();
   ui::Layer* content_layer = native_window->layer();
   const gfx::Rect bounds = native_window->bounds();
   // Capture mouse down and drag events on our window.
-  // TODO(skare): We should exit from this mode when moving between tabs,
-  // clicking on browser chrome, etc.
   native_window->AddPreTargetHandler(this);
 #endif
   content_layer->Add(screen_capture_layer_.get());
@@ -93,9 +90,13 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
   screen_capture_layer_->SetVisible(true);
 
   SetCursor(ui::mojom::CursorType::kCross);
+
+  // After setup is done, we should set the capture mode to active.
+  capture_mode_ = CaptureMode::SELECTION_RECTANGLE;
 }
 
 void ScreenshotFlow::RemoveUIOverlay() {
+  capture_mode_ = CaptureMode::NOT_CAPTURING;
   if (!web_contents_ || !screen_capture_layer_)
     return;
 
@@ -103,8 +104,7 @@ void ScreenshotFlow::RemoveUIOverlay() {
   views::Widget* widget = views::Widget::GetWidgetForNativeView(
       web_contents_->GetContentNativeView());
   ui::Layer* content_layer = widget->GetLayer();
-  views::View* root_view = widget->GetRootView();
-  root_view->RemovePreTargetHandler(this);
+  event_capture_mac_.reset();
 #else
   const gfx::NativeWindow& native_window = web_contents_->GetNativeView();
   native_window->RemovePreTargetHandler(this);
@@ -133,12 +133,15 @@ void ScreenshotFlow::StartFullscreenCapture(
   // Start and finish the capture process by screenshotting the full window.
   // There is no region selection step in this mode.
   flow_callback_ = std::move(flow_callback);
-  CaptureAndRunScreenshotCompleteCallback(gfx::Rect(web_contents_->GetSize()));
+  CaptureAndRunScreenshotCompleteCallback(ScreenshotCaptureResultCode::SUCCESS,
+                                          gfx::Rect(web_contents_->GetSize()));
 }
 
-void ScreenshotFlow::CaptureAndRunScreenshotCompleteCallback(gfx::Rect region) {
+void ScreenshotFlow::CaptureAndRunScreenshotCompleteCallback(
+    ScreenshotCaptureResultCode result_code,
+    gfx::Rect region) {
   if (region.IsEmpty()) {
-    RunScreenshotCompleteCallback(gfx::Rect(), gfx::Image());
+    RunScreenshotCompleteCallback(result_code, gfx::Rect(), gfx::Image());
     return;
   }
 
@@ -150,10 +153,11 @@ void ScreenshotFlow::CaptureAndRunScreenshotCompleteCallback(gfx::Rect region) {
   // If |img| is empty, clients should treat it as a canceled action, but
   // we have a DCHECK for development as we expected this call to succeed.
   DCHECK(rval);
-  RunScreenshotCompleteCallback(bounds, img);
+  RunScreenshotCompleteCallback(result_code, bounds, img);
 #else
-  ui::GrabWindowSnapshotAsyncCallback screenshot_callback = base::BindOnce(
-      &ScreenshotFlow::RunScreenshotCompleteCallback, weak_this_, bounds);
+  ui::GrabWindowSnapshotAsyncCallback screenshot_callback =
+      base::BindOnce(&ScreenshotFlow::RunScreenshotCompleteCallback, weak_this_,
+                     result_code, bounds);
   const gfx::NativeWindow& native_window = web_contents_->GetNativeView();
   ui::GrabWindowSnapshotAsync(native_window, region,
                               std::move(screenshot_callback));
@@ -167,8 +171,8 @@ void ScreenshotFlow::CancelCapture() {
 void ScreenshotFlow::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
-    CompleteCapture(gfx::Rect());
     event->StopPropagation();
+    CompleteCapture(ScreenshotCaptureResultCode::USER_ESCAPE_EXIT, gfx::Rect());
   }
 }
 
@@ -180,13 +184,33 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   gfx::Point location = located_event->location();
+#if defined(OS_MAC)
+  // Offset |location| be relative to the WebContents widget, vs the parent
+  // window, recomputed rather than cached in case e.g. user disables
+  // bookmarks bar from another window.
+  gfx::Rect web_contents_bounds = web_contents_->GetViewBounds();
+  const gfx::NativeView web_contents_view =
+      web_contents_->GetContentNativeView();
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeView(web_contents_view);
+  const gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
+  location.set_x(location.x() + (widget_bounds.x() - web_contents_bounds.x()));
+  location.set_y(location.y() + (widget_bounds.y() - web_contents_bounds.y()));
+  // Don't capture clicks on browser ui outside the webcontents.
+  if (location.x() < 0 || location.y() < 0 ||
+      location.x() > web_contents_bounds.width() ||
+      location.y() > web_contents_bounds.height()) {
+    return;
+  }
+#endif
+
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       SetCursor(ui::mojom::CursorType::kCross);
+      event->SetHandled();
       break;
     case ui::ET_MOUSE_PRESSED:
       if (event->IsLeftMouseButton()) {
-        capture_mode_ = CaptureMode::SELECTION_RECTANGLE;
         drag_start_ = location;
         drag_end_ = location;
         event->SetHandled();
@@ -202,14 +226,14 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_RELEASED:
       if (capture_mode_ == CaptureMode::SELECTION_RECTANGLE ||
           capture_mode_ == CaptureMode::SELECTION_ELEMENT) {
-        capture_mode_ = CaptureMode::NOT_CAPTURING;
         event->SetHandled();
         gfx::Rect selection = gfx::BoundingRect(drag_start_, drag_end_);
         drag_start_.SetPoint(0, 0);
         drag_end_.SetPoint(0, 0);
         if (selection.width() >= kMinimumValidSelectionEdgePixels &&
             selection.height() >= kMinimumValidSelectionEdgePixels) {
-          CompleteCapture(selection);
+          capture_mode_ = CaptureMode::NOT_CAPTURING;
+          CompleteCapture(ScreenshotCaptureResultCode::SUCCESS, selection);
         } else {
           RequestRepaint(gfx::Rect());
         }
@@ -220,15 +244,18 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void ScreenshotFlow::CompleteCapture(const gfx::Rect& region) {
+void ScreenshotFlow::CompleteCapture(ScreenshotCaptureResultCode result_code,
+                                     const gfx::Rect& region) {
   RemoveUIOverlay();
-  CaptureAndRunScreenshotCompleteCallback(region);
+  CaptureAndRunScreenshotCompleteCallback(result_code, region);
 }
 
-void ScreenshotFlow::RunScreenshotCompleteCallback(gfx::Rect bounds,
-                                                   gfx::Image image) {
+void ScreenshotFlow::RunScreenshotCompleteCallback(
+    ScreenshotCaptureResultCode result_code,
+    gfx::Rect bounds,
+    gfx::Image image) {
   ScreenshotCaptureResult result;
-
+  result.result_code = result_code;
   result.image = image;
   result.screen_bounds = bounds;
 
@@ -292,6 +319,10 @@ void ScreenshotFlow::SetCursor(ui::mojom::CursorType cursor_type) {
   }
 }
 
+bool ScreenshotFlow::IsCaptureModeActive() {
+  return capture_mode_ != CaptureMode::NOT_CAPTURING;
+}
+
 // UnderlyingWebContentsObserver monitors the WebContents and exits screen
 // capture mode if a navigation occurs.
 class ScreenshotFlow::UnderlyingWebContentsObserver
@@ -310,7 +341,11 @@ class ScreenshotFlow::UnderlyingWebContentsObserver
 
   // content::WebContentsObserver
   void PrimaryPageChanged(content::Page& page) override {
-    screenshot_flow_->CancelCapture();
+    // We only care to complete/cancel a capture if the capture mode is
+    // currently active.
+    if (screenshot_flow_->IsCaptureModeActive())
+      screenshot_flow_->CompleteCapture(
+          ScreenshotCaptureResultCode::USER_NAVIGATED_EXIT, gfx::Rect());
   }
 
  private:

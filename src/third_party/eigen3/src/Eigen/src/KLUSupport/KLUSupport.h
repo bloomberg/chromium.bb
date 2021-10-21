@@ -23,7 +23,7 @@ namespace Eigen {
   *
   * \warning The input matrix A should be in a \b compressed and \b column-major form.
   * Otherwise an expensive copy will be made. You can call the inexpensive makeCompressed() to get a compressed matrix.
-  * \tparam _MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
+  * \tparam MatrixType_ the type of the sparse matrix A, it must be a SparseMatrix<>
   *
   * \implsparsesolverconcept
   *
@@ -56,15 +56,15 @@ inline klu_numeric* klu_factor(int Ap[], int Ai[], std::complex<double> Ax[], kl
 }
 
 
-template<typename _MatrixType>
-class KLU : public SparseSolverBase<KLU<_MatrixType> >
+template<typename MatrixType_>
+class KLU : public SparseSolverBase<KLU<MatrixType_> >
 {
   protected:
-    typedef SparseSolverBase<KLU<_MatrixType> > Base;
+    typedef SparseSolverBase<KLU<MatrixType_> > Base;
     using Base::m_isInitialized;
   public:
     using Base::_solve_impl;
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef typename MatrixType::Scalar Scalar;
     typedef typename MatrixType::RealScalar RealScalar;
     typedef typename MatrixType::StorageIndex StorageIndex;

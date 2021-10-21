@@ -1002,7 +1002,7 @@
 <translation id="4331519897422864041">堆叠出纸器 5</translation>
 <translation id="4331708818696583467">不安全</translation>
 <translation id="4340575312453649552">对于您的设备来说，此广告占用了太多资源，因此 Chrome 已将其移除。</translation>
-<translation id="4340982228985273705">系统检测到，此计算机不是由企业管理，因此政策只能自动安装 Chrome 网上应用店中托管的扩展程序。对应的 Chrome 网上应用店更新网址为“<ph name="CWS_UPDATE_URL" />”。</translation>
+<translation id="4340982228985273705">系统检测到，此计算机不是由企业管理，因此政策只能自动安装 Chrome 网上应用店中的扩展程序。对应的 Chrome 网上应用店更新网址为“<ph name="CWS_UPDATE_URL" />”。</translation>
 <translation id="4346197816712207223">接受的信用卡</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4348834659292907206">与 <ph name="SITE" /> 的连接不安全</translation>
@@ -1089,7 +1089,7 @@
 <translation id="464342062220857295">搜索功能</translation>
 <translation id="4644670975240021822">逆转顺序，正面朝下</translation>
 <translation id="4646534391647090355">立即前往</translation>
-<translation id="4652266463001779298">不得使用</translation>
+<translation id="4652266463001779298">不允许</translation>
 <translation id="4658638640878098064">钉装（左上角）</translation>
 <translation id="4660119392514473465">现在，您便可进行私密浏览了。与您共用此设备的其他用户将不会看到您的活动，但您的下载内容、书签和阅读清单项将会保存在此设备上。</translation>
 <translation id="4668929960204016307">,</translation>
@@ -1148,7 +1148,7 @@
 <translation id="4819347708020428563">在默认视图中修改注释？</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />，依次按 Tab 键和 Enter 键即可快速创建新的 Google 表格</translation>
 <translation id="4825507807291741242">强大</translation>
-<translation id="4827402517081186284">无痕模式不会使您在网上处于隐身状态：
+<translation id="4827402517081186284">无痕模式无法让您在网上处于隐身状态：
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />网站会知道您何时访问了它们<ph name="END_LIST_ITEM" />
           <ph name="LIST_ITEM" />雇主或学校可以跟踪浏览活动<ph name="END_LIST_ITEM" />

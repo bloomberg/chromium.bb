@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.share.long_screenshots.bitmap_generation;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.util.Size;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsMetrics;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.paint_preview.common.proto.PaintPreview.PaintPreviewProto;
 import org.chromium.components.paintpreview.player.CompositorStatus;
 import org.chromium.url.GURL;
 
@@ -22,9 +22,6 @@ import org.chromium.url.GURL;
  * Callers of this class should supply a GeneratorCallback to receive status updates.
  */
 public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcessor {
-    // Response with a pointer to the skia image
-    private PaintPreviewProto mProtoResponse;
-
     // Compositor delegate responsible for compositing the skia
     private LongScreenshotsCompositor mCompositor;
     private LongScreenshotsTabService mTabService;
@@ -66,13 +63,14 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
 
     /**
      * Starts the capture of the screenshot.
+     * @param inMemory Capture the contents of the tab in memory rather than using temporary files.
      */
-    public void captureTab() {
+    public void captureTab(boolean inMemory) {
         if (mTabService == null) {
             mTabService = LongScreenshotsTabServiceFactory.getServiceInstance();
         }
         mTabService.setCaptureProcessor(this);
-        mTabService.captureTab(mTab, mBoundsManager.getCaptureBounds());
+        mTabService.captureTab(mTab, mBoundsManager.getCaptureBounds(), inMemory);
         mScaleFactor = 0f;
     }
 
@@ -80,15 +78,16 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
      * Called from native after the tab has been captured. If status is OK, then calls the
      * compositor on the response. Otherwise, calls the GeneratorCallback with the status.
      *
-     * @param response Response with details about the capture.
+     * @param nativeCaptureResultPtr Response with details about the capture.
      * @param status Status of the capture.
      */
     @Override
-    public void processCapturedTab(PaintPreviewProto response, @Status int status) {
+    public void processCapturedTab(long nativeCaptureResultPtr, @Status int status) {
         if (status == Status.OK && mCompositor == null) {
-            mCompositor = new LongScreenshotsCompositor(new GURL(response.getMetadata().getUrl()),
-                    mTabService, DIR_NAME, response, this::onCompositorResult);
+            mCompositor = new LongScreenshotsCompositor(GURL.emptyGURL(), mTabService, DIR_NAME,
+                    nativeCaptureResultPtr, this::onCompositorResult);
         } else {
+            mTabService.releaseNativeCaptureResultPtr(nativeCaptureResultPtr);
             onCaptureResult(status);
         }
     }
@@ -100,17 +99,20 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
      * @param rect The bounds of the webpage (not capture) to composite into bitmap.
      * @param errorCallback Callback for when an error is encountered
      * @param onBitmapGenerated Called with the generated bitmap.
+     * @param boundsRelativeToCapture Whether the passed bounds are relative to capture to the page.
      * @return id of the request.
      */
-    public int compositeBitmap(
-            Rect rect, Runnable errorCallback, Callback<Bitmap> onBitmapGenerated) {
+    public int compositeBitmap(Rect rect, Runnable errorCallback,
+            Callback<Bitmap> onBitmapGenerated, boolean boundsRelativeToCapture) {
         // Check if the compositor is ready and whether the rect is within the bounds of the
         // the capture.
         if (mScaleFactor == 0f) {
-            mScaleFactor =
-                    mBoundsManager.getBitmapScaleFactorFromCompositedWidth(mCompositor.getWidth());
+            mScaleFactor = mBoundsManager.getBitmapScaleFactorFromCompositedWidth(
+                    getContentSize().getWidth());
         }
-        return mCompositor.requestBitmap(mBoundsManager.calculateBoundsRelativeToCapture(rect),
+        return mCompositor.requestBitmap(boundsRelativeToCapture
+                        ? rect
+                        : mBoundsManager.calculateBoundsRelativeToCapture(rect),
                 mScaleFactor, errorCallback, onBitmapGenerated);
     }
 
@@ -125,6 +127,14 @@ public class BitmapGenerator implements LongScreenshotsTabService.CaptureProcess
         if (mTabService != null) {
             mTabService.longScreenshotsClosed();
         }
+    }
+
+    public Size getContentSize() {
+        return mCompositor.getContentSize();
+    }
+
+    public Size getScrollOffset() {
+        return mCompositor.getScrollOffset();
     }
 
     @VisibleForTesting

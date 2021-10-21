@@ -6,13 +6,18 @@
 
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/cart/fetch_discount_worker.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/persisted_state_db/profile_proto_db.h"
 #include "chrome/browser/persisted_state_db/profile_proto_db_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -125,7 +130,7 @@ const std::vector<cart_db::RuleDiscountInfoProto> kMockMerchantADiscounts =
 class CartServiceTest : public testing::Test {
  public:
   CartServiceTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -1305,10 +1310,17 @@ class CartServiceDiscountTest : public CartServiceTest {
   // Features need to be initialized before CartServiceTest::SetUp runs, in
   // order to avoid tsan data race error on FeatureList.
   CartServiceDiscountTest() {
-    features_.InitAndEnableFeatureWithParameters(
-        ntp_features::kNtpChromeCartModule,
-        {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"},
-         {"partner-merchant-pattern", "(foo.com)"}});
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        enabled_features;
+    base::FieldTrialParams cart_params, coupon_params;
+    cart_params["NtpChromeCartModuleAbandonedCartDiscountParam"] = "true";
+    cart_params["partner-merchant-pattern"] = "(foo.com)";
+    enabled_features.emplace_back(ntp_features::kNtpChromeCartModule,
+                                  cart_params);
+    coupon_params["coupon-partner-merchant-pattern"] = "(bar.com)";
+    enabled_features.emplace_back(commerce::kRetailCoupons, coupon_params);
+    features_.InitWithFeaturesAndParameters(enabled_features,
+                                            /*disabled_features*/ {});
   }
 
   void SetUp() override {
@@ -1377,7 +1389,7 @@ TEST_F(CartServiceDiscountTest, TestReadConsentFromPrefs) {
 
 // Tests discount consent doesn't show when there is no partner merchant cart.
 TEST_F(CartServiceDiscountTest, TestNoConsentWithoutPartnerCart) {
-  base::RunLoop run_loop[2];
+  base::RunLoop run_loop[3];
   for (int i = 0; i < CartService::kWelcomSurfaceShowLimit + 1; i++) {
     service_->IncreaseWelcomeSurfaceCounter();
   }
@@ -1394,6 +1406,14 @@ TEST_F(CartServiceDiscountTest, TestNoConsentWithoutPartnerCart) {
       base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
                      base::Unretained(this), run_loop[1].QuitClosure(), false));
   run_loop[1].Run();
+
+  service_->AddCart(kMockMerchantB, absl::nullopt, kMockProtoB);
+  task_environment_.RunUntilIdle();
+
+  service_->ShouldShowDiscountConsent(
+      base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[2].QuitClosure(), true));
+  run_loop[2].Run();
 }
 
 // Tests updating whether rule-based discount is enabled in profile prefs.
@@ -1612,7 +1632,7 @@ class CartServiceRbdFastPathTest : public CartServiceTest {
         ntp_features::kNtpChromeCartModule,
         {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"},
          {"partner-merchant-pattern", "(foo.com)"},
-         {ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+         {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
           "true"}});
   }
   void TearDown() override {
@@ -1643,4 +1663,113 @@ TEST_F(CartServiceRbdFastPathTest, TestAppendUTMAvoidDuplicates) {
   EXPECT_TRUE(service_->IsCartDiscountEnabled());
   EXPECT_EQ(GURL("https://www.foo.com?utm_source=chrome_cart_rbd"),
             CartService::AppendUTM(GURL(kMockMerchantURLA), true));
+}
+
+class FakeFetchDiscountWorker : public FetchDiscountWorker {
+ public:
+  FakeFetchDiscountWorker(
+      scoped_refptr<network::SharedURLLoaderFactory>
+          browserProcessURLLoaderFactory,
+      std::unique_ptr<CartDiscountFetcherFactory> fetcher_factory,
+      std::unique_ptr<CartServiceDelegate> cart_service_delegate,
+      signin::IdentityManager* const identity_manager,
+      variations::VariationsClient* const chrome_variations_client)
+      : FetchDiscountWorker(browserProcessURLLoaderFactory,
+                            std::move(fetcher_factory),
+                            std::move(cart_service_delegate),
+                            identity_manager,
+                            chrome_variations_client) {}
+
+  // Simulate FetchDiscountWorker posting a task to fetch, except that here we
+  // only record fetch timestamp instead of actually fetching.
+  void Start(base::TimeDelta delay) override {
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostDelayedTask(FROM_HERE,
+                          base::BindOnce(&FakeFetchDiscountWorker::FakeFetch,
+                                         weak_ptr_factory_.GetWeakPtr()),
+                          delay);
+  }
+
+ private:
+  void FakeFetch() { cart_service_delegate_->RecordFetchTimestamp(); }
+
+  base::WeakPtrFactory<FakeFetchDiscountWorker> weak_ptr_factory_{this};
+};
+
+class CartServiceDiscountFetchTest : public CartServiceTest {
+ public:
+  CartServiceDiscountFetchTest() {
+    // This needs to be called before any tasks that run on other threads check
+    // if a feature is enabled.
+    features_.InitAndEnableFeatureWithParameters(
+        ntp_features::kNtpChromeCartModule,
+        {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"},
+         {"discount-fetch-delay", "2s"}});
+  }
+
+  void SetUp() override {
+    CartServiceTest::SetUp();
+    profile_.GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
+    // Only initialize CartServiceDelegate which is relevant to this test.
+    fetch_discount_worker_ = std::make_unique<FakeFetchDiscountWorker>(
+        nullptr, nullptr, std::make_unique<CartServiceDelegate>(service_),
+        nullptr, nullptr);
+    service_->SetFetchDiscountWorkerForTesting(
+        std::move(fetch_discount_worker_));
+  }
+
+  void TearDown() override {
+    // Reset the last fetch timestamp.
+    profile_.GetPrefs()->SetTime(prefs::kCartDiscountLastFetchedTime,
+                                 base::Time());
+    // Reset FetchDiscountWorker for testing.
+    service_->SetFetchDiscountWorkerForTesting(nullptr);
+  }
+
+  void StartGettingDiscount() { service_->StartGettingDiscount(); }
+
+ private:
+  std::unique_ptr<FakeFetchDiscountWorker> fetch_discount_worker_;
+};
+
+TEST_F(CartServiceDiscountFetchTest, TestFreshFetch) {
+  EXPECT_EQ(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            base::Time());
+  StartGettingDiscount();
+  task_environment_.RunUntilIdle();
+  EXPECT_NE(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            base::Time());
+}
+
+TEST_F(CartServiceDiscountFetchTest, TestFetchWhenBeyondEnforcedDelay) {
+  // Set last fetch timestamp so that the current time is beyond the enforced
+  // delay.
+  base::Time last_fetch_time =
+      base::Time::Now() - base::TimeDelta::FromSeconds(20);
+  profile_.GetPrefs()->SetTime(prefs::kCartDiscountLastFetchedTime,
+                               last_fetch_time);
+  StartGettingDiscount();
+  task_environment_.RunUntilIdle();
+  EXPECT_NE(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            last_fetch_time);
+}
+
+TEST_F(CartServiceDiscountFetchTest, TestNoFetchWithinEnforcedDelay) {
+  EXPECT_EQ(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            base::Time());
+  base::Time last_fetch_time = base::Time::Now();
+  profile_.GetPrefs()->SetTime(prefs::kCartDiscountLastFetchedTime,
+                               last_fetch_time);
+  // Set last fetch timestamp so that the current time is within the enforced
+  // delay.
+  StartGettingDiscount();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            last_fetch_time);
+  // Wait so that the current time is beyond the enforced delay.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  StartGettingDiscount();
+  task_environment_.RunUntilIdle();
+  EXPECT_NE(profile_.GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime),
+            last_fetch_time);
 }

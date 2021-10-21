@@ -984,9 +984,6 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
     const ElementId& id,
     const gfx::ScrollOffset& delta,
     const absl::optional<TargetSnapAreaElementIds>& snap_target_ids) {
-  if (mutator_host_->WillCancelScrollAnimation(id))
-    return;
-
   if (IsUsingLayerLists()) {
     auto& scroll_tree = property_trees()->scroll_tree;
     auto new_offset = scroll_tree.current_scroll_offset(id) + delta;
@@ -1438,6 +1435,18 @@ void LayerTreeHost::SetPrefersReducedMotion(bool prefers_reduced_motion) {
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetMayThrottleIfUndrawnFrames(
+    bool may_throttle_if_undrawn_frames) {
+  if (may_throttle_if_undrawn_frames_ == may_throttle_if_undrawn_frames)
+    return;
+  may_throttle_if_undrawn_frames_ = may_throttle_if_undrawn_frames;
+  SetNeedsCommit();
+}
+
+bool LayerTreeHost::GetMayThrottleIfUndrawnFramesForTesting() const {
+  return may_throttle_if_undrawn_frames_;
+}
+
 void LayerTreeHost::SetExternalPageScaleFactor(
     float page_scale_factor,
     bool is_external_pinch_gesture_active) {
@@ -1515,6 +1524,11 @@ bool LayerTreeHost::TakeNewLocalSurfaceIdRequest() {
   bool new_local_surface_id_request = new_local_surface_id_request_;
   new_local_surface_id_request_ = false;
   return new_local_surface_id_request;
+}
+
+void LayerTreeHost::SetVisualPropertiesUpdateDuration(
+    base::TimeDelta visual_properties_update_duration) {
+  visual_properties_update_duration_ = visual_properties_update_duration;
 }
 
 void LayerTreeHost::RegisterLayer(Layer* layer) {
@@ -1690,6 +1704,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->RequestNewLocalSurfaceId();
 
   tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
+  tree_impl->SetVisualPropertiesUpdateDuration(
+      visual_properties_update_duration_);
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
@@ -1750,6 +1766,7 @@ void LayerTreeHost::PushLayerTreeHostPropertiesTo(
   host_impl->SetVisualDeviceViewportSize(visual_device_viewport_size_);
   host_impl->set_viewport_mobile_optimized(is_viewport_mobile_optimized_);
   host_impl->SetPrefersReducedMotion(prefers_reduced_motion_);
+  host_impl->SetMayThrottleIfUndrawnFrames(may_throttle_if_undrawn_frames_);
 }
 
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) const {

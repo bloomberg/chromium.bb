@@ -130,6 +130,9 @@ extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsName[];
 extern const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[];
 
+extern const char kU2FSecurityKeyAPIName[];
+extern const char kU2FSecurityKeyAPIDescription[];
+
 extern const char kUseLookalikesForNavigationSuggestionsName[];
 extern const char kUseLookalikesForNavigationSuggestionsDescription[];
 
@@ -663,6 +666,9 @@ extern const char kEnableSRPIsolatedPrerendersNSPDescription[];
 extern const char kReduceHorizontalFlingVelocityName[];
 extern const char kReduceHorizontalFlingVelocityDescription[];
 
+extern const char kRetailCouponsName[];
+extern const char kRetailCouponsDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
@@ -984,6 +990,9 @@ extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
+extern const char kOmniboxBookmarkPathsName[];
+extern const char kOmniboxBookmarkPathsDescription[];
+
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
@@ -1032,6 +1041,9 @@ extern const char kOmniboxOnFocusSuggestionsContextualWebAllowSRPDescription[];
 
 extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
+
+extern const char kOmniboxShortBookmarkSuggestionsName[];
+extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
@@ -1393,6 +1405,9 @@ extern const char kTabEngagementReportingDescription[];
 
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
+
+extern const char kCommerceDeveloperName[];
+extern const char kCommerceDeveloperDescription[];
 
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];

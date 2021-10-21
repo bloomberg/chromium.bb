@@ -1932,6 +1932,7 @@ static_library("browser") {
     "//chrome/app/vector_icons",
     "//chrome/browser/breadcrumbs",
     "//chrome/browser/browsing_data:constants",
+    "//chrome/browser/commerce:feature_list",
     "//chrome/browser/devtools",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media:media_engagement_preload_proto",
@@ -3591,6 +3592,8 @@ static_library("browser") {
       "cart/cart_discount_link_fetcher.h",
       "cart/cart_discount_metric_collector.cc",
       "cart/cart_discount_metric_collector.h",
+      "cart/cart_features.cc",
+      "cart/cart_features.h",
       "cart/cart_handler.cc",
       "cart/cart_handler.h",
       "cart/cart_metrics_tracker.cc",
@@ -5653,8 +5656,7 @@ static_library("browser") {
     ]
   }
 
-  if ((is_win || is_linux || is_chromeos) && is_chrome_branded) {
-    # TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
+  if (!is_android && is_chrome_branded) {
     deps += [ "//chrome/browser/lens/region_search" ]
   }
 

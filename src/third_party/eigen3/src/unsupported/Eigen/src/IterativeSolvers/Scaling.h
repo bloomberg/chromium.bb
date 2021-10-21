@@ -38,17 +38,17 @@ namespace Eigen {
   * x = scal.RightScaling().cwiseProduct(x); 
   * \endcode
   * 
-  * \tparam _MatrixType the type of the matrix. It should be a real square sparsematrix
+  * \tparam MatrixType_ the type of the matrix. It should be a real square sparsematrix
   * 
   * References : D. Ruiz and B. Ucar, A Symmetry Preserving Algorithm for Matrix Scaling, INRIA Research report RR-7552
   * 
   * \sa \ref IncompleteLUT 
   */
-template<typename _MatrixType>
+template<typename MatrixType_>
 class IterScaling
 {
   public:
-    typedef _MatrixType MatrixType; 
+    typedef MatrixType_ MatrixType;
     typedef typename MatrixType::Scalar Scalar;
     typedef typename MatrixType::Index Index;
     

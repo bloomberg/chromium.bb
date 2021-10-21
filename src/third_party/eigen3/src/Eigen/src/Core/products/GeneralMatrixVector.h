@@ -29,7 +29,7 @@ struct gemv_packet_cond<GEMVPacketFull, T1, T2, T3> { typedef T1 type; };
 template <typename T1, typename T2, typename T3>
 struct gemv_packet_cond<GEMVPacketHalf, T1, T2, T3> { typedef T2 type; };
 
-template<typename LhsScalar, typename RhsScalar, int _PacketSize=GEMVPacketFull>
+template<typename LhsScalar, typename RhsScalar, int PacketSize_=GEMVPacketFull>
 class gemv_traits
 {
   typedef typename ScalarBinaryOpTraits<LhsScalar, RhsScalar>::ReturnType ResScalar;
@@ -41,9 +41,9 @@ class gemv_traits
                                     typename unpacket_traits<typename packet_traits<name ## Scalar>::half>::half>::type \
   prefix ## name ## Packet
 
-  PACKET_DECL_COND_PREFIX(_, Lhs, _PacketSize);
-  PACKET_DECL_COND_PREFIX(_, Rhs, _PacketSize);
-  PACKET_DECL_COND_PREFIX(_, Res, _PacketSize);
+  PACKET_DECL_COND_PREFIX(_, Lhs, PacketSize_);
+  PACKET_DECL_COND_PREFIX(_, Rhs, PacketSize_);
+  PACKET_DECL_COND_PREFIX(_, Res, PacketSize_);
 #undef PACKET_DECL_COND_PREFIX
 
 public:

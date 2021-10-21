@@ -22,6 +22,9 @@ const base::Feature kEnableFREDefaultBrowserScreen{
 const base::Feature kEnableFREUIModuleIOS{"EnableFREUIModuleIOS",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOldSyncStringFRE{"OldSyncStringFRE",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableFullPageScreenshot{"EnableFullPageScreenshot",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -54,6 +57,9 @@ const base::Feature kDefaultPromoTailored{"DefaultPromoTailored",
 
 const base::Feature kIOSNewOmniboxImplementation{
     "kIOSNewOmniboxImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIOSOmniboxAllowEditsDuringDictation{
+    "IOSOmniboxAllowEditsDuringDictation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kIOSPersistCrashRestore{"IOSPersistCrashRestore",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

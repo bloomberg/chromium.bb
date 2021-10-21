@@ -11,7 +11,8 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
-#include "chrome/browser/cart/fetch_discount_worker.h"
+#include "chrome/browser/cart/cart_features.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -36,14 +37,8 @@
 
 namespace {
 constexpr char kFakeDataPrefix[] = "Fake:";
-const int kDelayStartMs = 10;
 constexpr char kNoRbdUtmTag[] = "chrome_cart_no_rbd";
 constexpr char kRbdUtmTag[] = "chrome_cart_rbd";
-
-constexpr base::FeatureParam<std::string> kPartnerMerchantPattern{
-    &ntp_features::kNtpChromeCartModule, "partner-merchant-pattern",
-    // This regex does not match anything.
-    "\\b\\B"};
 
 constexpr base::FeatureParam<std::string> kSkipCartExtractionPattern{
     &ntp_features::kNtpChromeCartModule, "skip-cart-extraction-pattern",
@@ -52,7 +47,10 @@ constexpr base::FeatureParam<std::string> kSkipCartExtractionPattern{
 
 constexpr base::FeatureParam<bool> kRbdUtmParam{
     &ntp_features::kNtpChromeCartModule,
-    ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam, false};
+    ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam, false};
+
+constexpr base::FeatureParam<bool> kBypassDisocuntFetchingThreshold{
+    &commerce::kCommerceDeveloper, "bypass-discount-fetching-threshold", false};
 
 std::string eTLDPlusOne(const GURL& url) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
@@ -86,21 +84,6 @@ absl::optional<base::Value> JSONToDictionary(int resource_id) {
 bool IsExpired(const cart_db::ChromeCartContentProto& proto) {
   return (base::Time::Now() - base::Time::FromDoubleT(proto.timestamp()))
              .InDays() > 14;
-}
-
-const re2::RE2& GetPartnerMerchantPattern() {
-  re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(kPartnerMerchantPattern.Get(),
-                                               options);
-  return *instance;
-}
-
-bool IsPartnerMerchant(const GURL& url) {
-  const std::string& url_string = url.spec();
-  return RE2::PartialMatch(
-      re2::StringPiece(url_string.data(), url_string.size()),
-      GetPartnerMerchantPattern());
 }
 
 const re2::RE2& GetSkipCartExtractionPattern() {
@@ -155,10 +138,12 @@ void CartService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kCartDiscountAcknowledged, false);
   registry->RegisterBooleanPref(prefs::kCartDiscountEnabled, false);
   registry->RegisterDictionaryPref(prefs::kCartUsedDiscounts);
+  registry->RegisterTimePref(prefs::kCartDiscountLastFetchedTime, base::Time());
 }
 
 GURL CartService::AppendUTM(const GURL& base_url, bool is_discount_enabled) {
-  DCHECK(base_url.is_valid() && IsPartnerMerchant(base_url));
+  DCHECK(base_url.is_valid() &&
+         cart_features::IsRuleDiscountPartnerMerchant(base_url));
 
   if (kRbdUtmParam.Get()) {
     return net::AppendOrReplaceQueryParameter(
@@ -313,7 +298,8 @@ void CartService::HasPartnerCarts(
     bool success,
     std::vector<CartDB::KeyAndValue> proto_pairs) {
   for (auto proto_pair : proto_pairs) {
-    if (IsPartnerMerchant(GURL(proto_pair.second.merchant_cart_url()))) {
+    if (cart_features::IsPartnerMerchant(
+            GURL(proto_pair.second.merchant_cart_url()))) {
       std::move(callback).Run(true);
       return;
     }
@@ -351,11 +337,12 @@ void CartService::GetDiscountURL(
     const GURL& cart_url,
     base::OnceCallback<void(const ::GURL&)> callback) {
   auto url = cart_url;
-  if (IsPartnerMerchant(cart_url)) {
+  if (cart_features::IsRuleDiscountPartnerMerchant(cart_url)) {
     url = AppendUTM(cart_url, IsCartDiscountEnabled());
   }
 
-  if (!IsPartnerMerchant(cart_url) || !IsCartDiscountEnabled()) {
+  if (!cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
+      !IsCartDiscountEnabled()) {
     std::move(callback).Run(url);
     CartDiscountMetricCollector::RecordClickedOnDiscount(false);
     return;
@@ -414,7 +401,8 @@ void CartService::OnDiscountURLFetched(
 void CartService::PrepareForNavigation(const GURL& cart_url,
                                        bool is_navigating) {
   metrics_tracker_->PrepareToRecordUKM(cart_url);
-  if (is_navigating || !IsPartnerMerchant(cart_url) ||
+  if (is_navigating ||
+      !cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
       !IsCartDiscountEnabled()) {
     return;
   }
@@ -856,21 +844,40 @@ void CartService::StartGettingDiscount() {
   DCHECK(!fetch_discount_worker_)
       << "fetch_discount_worker_ should not be valid at this point.";
 
+  base::Time last_fetched_time =
+      profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime);
+  base::TimeDelta fetch_delay = cart_features::kDiscountFetchDelayParam.Get() -
+                                (base::Time::Now() - last_fetched_time);
+  if (last_fetched_time == base::Time() || fetch_delay < base::TimeDelta() ||
+      kBypassDisocuntFetchingThreshold.Get()) {
+    fetch_delay = base::TimeDelta();
+  }
+
+  if (fetch_discount_worker_for_testing_) {
+    fetch_discount_worker_for_testing_->Start(fetch_delay);
+    return;
+  }
+
   fetch_discount_worker_ = std::make_unique<FetchDiscountWorker>(
       profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       std::make_unique<CartDiscountFetcherFactory>(),
-      std::make_unique<CartLoaderAndUpdaterFactory>(profile_),
-      IdentityManagerFactory::GetForProfile(profile_));
+      std::make_unique<CartServiceDelegate>(this),
+      IdentityManagerFactory::GetForProfile(profile_),
+      profile_->GetVariationsClient());
 
-  fetch_discount_worker_->Start(
-      base::TimeDelta::FromMilliseconds(kDelayStartMs));
+  fetch_discount_worker_->Start(fetch_delay);
 }
 
 bool CartService::IsDiscountUsed(const std::string& rule_id) {
   return profile_->GetPrefs()
              ->GetDictionary(prefs::kCartUsedDiscounts)
              ->FindBoolKey(rule_id) != absl::nullopt;
+}
+
+void CartService::RecordFetchTimestamp() {
+  profile_->GetPrefs()->SetTime(prefs::kCartDiscountLastFetchedTime,
+                                base::Time::Now());
 }
 
 void CartService::CacheUsedDiscounts(
@@ -921,4 +928,9 @@ void CartService::OnDeleteCart(bool success,
 void CartService::SetCartDiscountLinkFetcherForTesting(
     std::unique_ptr<CartDiscountLinkFetcher> discount_link_fetcher) {
   discount_link_fetcher_ = std::move(discount_link_fetcher);
+}
+
+void CartService::SetFetchDiscountWorkerForTesting(
+    std::unique_ptr<FetchDiscountWorker> fetch_discount_worker) {
+  fetch_discount_worker_for_testing_ = std::move(fetch_discount_worker);
 }

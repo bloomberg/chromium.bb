@@ -248,7 +248,7 @@
 <translation id="1254593899333212300">直接连接到互联网</translation>
 <translation id="1258491128795710625">新变化</translation>
 <translation id="1259152067760398571">昨天运行过安全检查</translation>
-<translation id="1260451001046713751">始终允许 <ph name="HOST" /> 显示弹出式窗口和重定向</translation>
+<translation id="1260451001046713751">始终允许 <ph name="HOST" /> 显示弹出式窗口和进行重定向</translation>
 <translation id="1261380933454402672">小改</translation>
 <translation id="126156426083987769">演示模式设备许可出问题了。</translation>
 <translation id="1263231323834454256">阅读清单</translation>
@@ -332,7 +332,6 @@
 <translation id="1354045473509304750">继续允许 <ph name="HOST" /> 使用和移动您的摄像头</translation>
 <translation id="1355088139103479645">删除所有数据？</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> 已被屏蔽</translation>
-<translation id="1356178530321889280">在网络上浏览和购物时，如果您想详细了解所看到的视觉内容，只需右键点击相应内容并选择“使用 Google 智能镜头搜索网页的某个部分”，即可在网站上的任何区域中进行搜索。</translation>
 <translation id="1358741672408003399">拼写和语法</translation>
 <translation id="1359923111303110318">您的设备可通过 Smart Lock 解锁。按 Enter 键即可解锁。</translation>
 <translation id="1361164813881551742">手动添加</translation>
@@ -2270,6 +2269,7 @@
 <translation id="339178315942519818">在 <ph name="DEVICE_TYPE" /> 上查看聊天应用内的通知</translation>
 <translation id="3393554941209044235">Chrome 文档分析</translation>
 <translation id="3394850431319394743">可以使用标识符来播放受保护内容</translation>
+<translation id="3396744558790608201">在网络上浏览和购物时，如果您想详细了解所看到的视觉内容，只需右键点击相应内容并选择“使用 Google 智能镜头搜索图片”，即可搜索网站的任何区域。</translation>
 <translation id="3396800784455899911">点击“接受并继续”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="339722927132407568">卡顿</translation>
 <translation id="3399432415385675819">通知将被停用</translation>
@@ -2939,6 +2939,7 @@
 <translation id="4066207411788646768">请检查您的网络连接状况，以查看网络中可用的打印机</translation>
 <translation id="4068776064906523561">已保存的指纹</translation>
 <translation id="407173827865827707">点击时</translation>
+<translation id="4072701974556190758">系统会将该密码保存在您的 Google 帐号 (<ph name="ACCOUNT" />) 中。您无需记住该密码。</translation>
 <translation id="4074900173531346617">电子邮件签名人证书</translation>
 <translation id="407520071244661467">缩放</translation>
 <translation id="407543464472585404"><ph name="NAME" />的个人资料已关联到 <ph name="EMAIL" /></translation>
@@ -3178,6 +3179,7 @@
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
 <translation id="4366138410738374926">已开始打印</translation>
+<translation id="4369121877634339065">在任一图片上拖动光标即可搜索</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
 <translation id="4371452868325715552">无法连接到服务器。请检查您的网络连接状况，然后重试。如果问题仍然存在，请尝试重启 Chromebook。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="4373966964907728675">正在投射桌面</translation>
@@ -3823,7 +3825,7 @@
 <translation id="5070773577685395116">未收到该通知？</translation>
 <translation id="5071892329440114717">显示标准保护详情</translation>
 <translation id="5072052264945641674">调整光标大小</translation>
-<translation id="5072836811783999860">显示托管书签</translation>
+<translation id="5072836811783999860">显示受管理的书签</translation>
 <translation id="5072900412896857127">无法加载《Google Play 服务条款》。请检查您的网络连接状况，然后重试。</translation>
 <translation id="5073956501367595100">{0,plural,offset:2 =1{<ph name="FILE1" />}=2{<ph name="FILE1" />、<ph name="FILE2" />}other{<ph name="FILE1" />、<ph name="FILE2" /> 以及另外 # 个文件}}</translation>
 <translation id="5074318175948309511">您可能需要重新加载此页面，才能使新设置生效。</translation>
@@ -5523,7 +5525,7 @@
 <translation id="6945221475159498467">选择</translation>
 <translation id="694592694773692225">已在此网页上阻止重定向。</translation>
 <translation id="6949434160682548041">密码（选填）</translation>
-<translation id="6950627417367801484">恢复应用</translation>
+<translation id="6950627417367801484">还原应用</translation>
 <translation id="6950943362443484797">我们将为您安装这款应用</translation>
 <translation id="6952242901357037157">您还可在此处显示您 <ph name="BEGIN_LINK" />Google 帐号<ph name="END_LINK" />中存储的密码</translation>
 <translation id="6955446738988643816">审查弹出内容</translation>
@@ -5686,7 +5688,7 @@
 <translation id="7115361495406486998">没有可设为分享对象的联系人</translation>
 <translation id="7117228822971127758">请稍后重试</translation>
 <translation id="7117247127439884114">重新登录...</translation>
-<translation id="711840821796638741">显示托管书签</translation>
+<translation id="711840821796638741">显示受管理的书签</translation>
 <translation id="711902386174337313">读取您登录过的设备的列表</translation>
 <translation id="711985611146095797">您可在此页面中管理您已登录的 Google 帐号。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="7120762240626567834">除非已连接 VPN，否则 Chrome 浏览器和 Android 流量将被屏蔽</translation>
@@ -5981,7 +5983,7 @@
 <translation id="7457384018036134905">在 Chrome 操作系统设置中管理语言</translation>
 <translation id="7457831169406914076">{COUNT,plural, =1{1 个链接}other{# 个链接}}</translation>
 <translation id="7458168200501453431">使用 Google 搜索所用的拼写检查工具。您在浏览器中输入的文字会被发送给 Google。</translation>
-<translation id="7458715171471938198">恢复应用？</translation>
+<translation id="7458715171471938198">还原应用？</translation>
 <translation id="7460045493116006516">您已安装的当前主题背景</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="746216226901520237">下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>

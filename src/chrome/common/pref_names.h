@@ -449,6 +449,7 @@ extern const char kPrintPdfAsImageAvailability[];
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const char kPrintRasterizePdfDpi[];
+extern const char kPrintPdfAsImageDefault[];
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
@@ -1155,6 +1156,7 @@ extern const char kCartModuleWelcomeSurfaceShownTimes[];
 extern const char kCartDiscountAcknowledged[];
 extern const char kCartDiscountEnabled[];
 extern const char kCartUsedDiscounts[];
+extern const char kCartDiscountLastFetchedTime[];
 #endif
 
 #if defined(OS_ANDROID)

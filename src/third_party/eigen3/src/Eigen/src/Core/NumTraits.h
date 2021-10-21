@@ -252,15 +252,15 @@ template<> struct NumTraits<long double>
   static inline long double dummy_precision() { return 1e-15l; }
 };
 
-template<typename _Real> struct NumTraits<std::complex<_Real> >
-  : GenericNumTraits<std::complex<_Real> >
+template<typename Real_> struct NumTraits<std::complex<Real_> >
+  : GenericNumTraits<std::complex<Real_> >
 {
-  typedef _Real Real;
-  typedef typename NumTraits<_Real>::Literal Literal;
+  typedef Real_ Real;
+  typedef typename NumTraits<Real_>::Literal Literal;
   enum {
     IsComplex = 1,
-    RequireInitialization = NumTraits<_Real>::RequireInitialization,
-    ReadCost = 2 * NumTraits<_Real>::ReadCost,
+    RequireInitialization = NumTraits<Real_>::RequireInitialization,
+    ReadCost = 2 * NumTraits<Real_>::ReadCost,
     AddCost = 2 * NumTraits<Real>::AddCost,
     MulCost = 4 * NumTraits<Real>::MulCost + 2 * NumTraits<Real>::AddCost
   };

@@ -637,21 +637,21 @@ struct enumerate_group_elements_noid<Multiply, Equality, id, type_list<>, initia
   * \tparam Equality      The equality check operation that checks if two group elements
   *                       are equal to another.
   * \tparam id            The identity element
-  * \tparam _generators   A list of (possibly redundant) generators of the group
+  * \tparam Generators_   A list of (possibly redundant) generators of the group
   */
 template<
   template<typename, typename> class Multiply,
   template<typename, typename> class Equality,
   typename id,
-  typename _generators
+  typename Generators_
 >
 struct enumerate_group_elements
   : public enumerate_group_elements_noid<
       Multiply,
       Equality,
       id,
-      typename strip_identities<Equality, id, _generators>::type,
-      strip_identities<Equality, id, _generators>::global_flags
+      typename strip_identities<Equality, id, Generators_>::type,
+      strip_identities<Equality, id, Generators_>::global_flags
     >
 {
 };

@@ -206,11 +206,21 @@ public class FeedSurfaceMediator
             // blocking the UI thread for several seconds if the accounts cache is not populated
             // yet.
             if (isVisible()) {
+                SigninPromoController.OnDismissListener dismissListener = null;
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_SIGNIN_PROMO_DISMISS)) {
+                    dismissListener = this::onDismissPromo;
+                }
                 mSigninPromoController.setUpSyncPromoView(mProfileDataCache,
                         mCoordinator.getSigninPromoView().findViewById(
                                 R.id.signin_promo_view_container),
-                        null);
+                        dismissListener);
             }
+        }
+
+        @Override
+        public void onDismissPromo() {
+            super.onDismissPromo();
+            mCoordinator.updateHeaderViews(false, null);
         }
     }
 
@@ -668,6 +678,7 @@ public class FeedSurfaceMediator
      * @return Whether the SignPromo should be visible.
      */
     private boolean createSignInPromoIfNeeded() {
+        SigninPromoController.resetNTPSyncPromoLimitsIfHiddenForTooLong();
         if (!SignInPromo.shouldCreatePromo()
                 || !SigninPromoController.canShowSyncPromo(
                         SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)) {

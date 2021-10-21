@@ -88,7 +88,7 @@ public class BitmapGeneratorTest {
                 Assert.assertEquals(CompositorStatus.OK, status);
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     mGenerator.compositeBitmap(
-                            new Rect(0, 0, 100, 100), onErrorCallback, onBitmapGenerated);
+                            new Rect(0, 0, 100, 100), onErrorCallback, onBitmapGenerated, false);
                 });
             }
 
@@ -107,7 +107,7 @@ public class BitmapGeneratorTest {
                     new Listener());
             PaintPreviewCompositorUtils.warmupCompositor();
             mTab.loadUrl(new LoadUrlParams(url));
-            mGenerator.captureTab();
+            mGenerator.captureTab(/*inMemory=*/false);
         });
     }
 }

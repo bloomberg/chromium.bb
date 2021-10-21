@@ -6,77 +6,63 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cart/cart_discount_fetcher.h"
+#include "chrome/browser/cart/cart_features.h"
 #include "components/search/ntp_features.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/variations/variations.mojom.h"
+#include "components/variations/variations_client.h"
+#include "components/variations/variations_features.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
-// Default value is 6 hours.
-constexpr base::FeatureParam<base::TimeDelta> kDelayFetchParam(
-    &ntp_features::kNtpChromeCartModule,
-    "delay-fetch-discount",
-    base::TimeDelta::FromHours(6));
-
 const char kOauthName[] = "rbd";
 const char kOauthScopes[] = "https://www.googleapis.com/auth/chromememex";
 const char kEmptyToken[] = "";
 }  // namespace
 
-CartLoader::CartLoader(Profile* profile)
-    : cart_service_(CartServiceFactory::GetForProfile(profile)) {}
+CartServiceDelegate::CartServiceDelegate(CartService* cart_service)
+    : cart_service_(cart_service) {}
 
-CartLoader::~CartLoader() = default;
+CartServiceDelegate::~CartServiceDelegate() = default;
 
-void CartLoader::LoadAllCarts(CartDB::LoadCallback callback) {
+void CartServiceDelegate::LoadAllCarts(CartDB::LoadCallback callback) {
   cart_service_->LoadAllActiveCarts(std::move(callback));
 }
 
-CartDiscountUpdater::CartDiscountUpdater(Profile* profile)
-    : cart_service_(CartServiceFactory::GetForProfile(profile)) {}
-
-CartDiscountUpdater::~CartDiscountUpdater() = default;
-
-void CartDiscountUpdater::update(
+void CartServiceDelegate::UpdateCart(
     const std::string& cart_url,
     const cart_db::ChromeCartContentProto new_proto,
     const bool is_tester) {
-  GURL url(cart_url);
-  cart_service_->UpdateDiscounts(url, std::move(new_proto), is_tester);
+  cart_service_->UpdateDiscounts(GURL(cart_url), std::move(new_proto),
+                                 is_tester);
 }
 
-CartLoaderAndUpdaterFactory::CartLoaderAndUpdaterFactory(Profile* profile)
-    : profile_(profile) {}
-
-CartLoaderAndUpdaterFactory::~CartLoaderAndUpdaterFactory() = default;
-
-std::unique_ptr<CartLoader> CartLoaderAndUpdaterFactory::createCartLoader() {
-  return std::make_unique<CartLoader>(profile_);
-}
-
-std::unique_ptr<CartDiscountUpdater>
-CartLoaderAndUpdaterFactory::createCartDiscountUpdater() {
-  return std::make_unique<CartDiscountUpdater>(profile_);
+void CartServiceDelegate::RecordFetchTimestamp() {
+  cart_service_->RecordFetchTimestamp();
 }
 
 FetchDiscountWorker::FetchDiscountWorker(
     scoped_refptr<network::SharedURLLoaderFactory>
         browserProcessURLLoaderFactory,
     std::unique_ptr<CartDiscountFetcherFactory> fetcher_factory,
-    std::unique_ptr<CartLoaderAndUpdaterFactory>
-        cart_loader_and_updater_factory,
-    signin::IdentityManager* const identity_manager)
+    std::unique_ptr<CartServiceDelegate> cart_service_delegate,
+    signin::IdentityManager* const identity_manager,
+    variations::VariationsClient* const chrome_variations_client)
     : browserProcessURLLoaderFactory_(browserProcessURLLoaderFactory),
       fetcher_factory_(std::move(fetcher_factory)),
-      cart_loader_and_updater_factory_(
-          std::move(cart_loader_and_updater_factory)),
-      identity_manager_(identity_manager) {
+      cart_service_delegate_(std::move(cart_service_delegate)),
+      identity_manager_(identity_manager),
+      chrome_variations_client_(chrome_variations_client) {
   backend_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::BEST_EFFORT});
 }
@@ -84,8 +70,6 @@ FetchDiscountWorker::FetchDiscountWorker(
 FetchDiscountWorker::~FetchDiscountWorker() = default;
 
 void FetchDiscountWorker::Start(base::TimeDelta delay) {
-  // Post a delay task to avoid an infinite loop for creating the CartService.
-  // Since CartLoader and CartDiscountUpdater both depend on CartService.
   content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
       ->PostDelayedTask(FROM_HERE,
                         base::BindOnce(&FetchDiscountWorker::PrepareToFetch,
@@ -95,7 +79,6 @@ void FetchDiscountWorker::Start(base::TimeDelta delay) {
 
 void FetchDiscountWorker::PrepareToFetch() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
   if (identity_manager_ &&
       identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     FetchOauthToken();
@@ -139,8 +122,7 @@ void FetchDiscountWorker::LoadAllActiveCarts(
   auto cart_loaded_callback = base::BindOnce(
       &FetchDiscountWorker::ReadyToFetch, weak_ptr_factory_.GetWeakPtr(),
       is_oauth_fetch, std::move(access_token_str));
-  auto loader = cart_loader_and_updater_factory_->createCartLoader();
-  loader->LoadAllCarts(std::move(cart_loaded_callback));
+  cart_service_delegate_->LoadAllCarts(std::move(cart_loaded_callback));
 }
 
 void FetchDiscountWorker::ReadyToFetch(
@@ -156,13 +138,44 @@ void FetchDiscountWorker::ReadyToFetch(
       base::BindOnce(&FetchDiscountWorker::AfterDiscountFetched,
                      weak_ptr_factory_.GetWeakPtr());
 
+  cart_service_delegate_->RecordFetchTimestamp();
+  // If there is no partner merchant cart, don't fetch immediately; instead,
+  // post another delayed fetch.
+  bool has_partner_merchant = false;
+  for (auto pair : proto_pairs) {
+    if (cart_features::IsPartnerMerchant(
+            GURL(pair.second.merchant_cart_url()))) {
+      has_partner_merchant = true;
+      break;
+    }
+  }
+  if (!has_partner_merchant) {
+    Start(cart_features::kDiscountFetchDelayParam.Get());
+    return;
+  }
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FetchInBackground, std::move(pending_factory),
-                     std::move(fetcher), std::move(done_fetching_callback),
-                     std::move(proto_pairs), is_oauth_fetch,
-                     std::move(access_token_str),
-                     g_browser_process->GetApplicationLocale()));
+      base::BindOnce(
+          &FetchInBackground, std::move(pending_factory), std::move(fetcher),
+          std::move(done_fetching_callback), std::move(proto_pairs),
+          is_oauth_fetch, std::move(access_token_str),
+          g_browser_process->GetApplicationLocale(), GetVariationsHeaders()));
+}
+
+std::string FetchDiscountWorker::GetVariationsHeaders() {
+  if (!chrome_variations_client_) {
+    return "";
+  }
+
+  variations::mojom::VariationsHeadersPtr variations_headers =
+      chrome_variations_client_->GetVariationsHeaders();
+
+  if (variations_headers.is_null()) {
+    return "";
+  }
+
+  return variations_headers->headers_map.at(
+      variations::mojom::GoogleWebVisibility::FIRST_PARTY);
 }
 
 void FetchDiscountWorker::FetchInBackground(
@@ -172,14 +185,16 @@ void FetchDiscountWorker::FetchInBackground(
     std::vector<CartDB::KeyAndValue> proto_pairs,
     const bool is_oauth_fetch,
     const std::string access_token_str,
-    const std::string fetch_for_locale) {
+    const std::string fetch_for_locale,
+    const std::string variation_headers) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   auto done_fetching_callback = base::BindOnce(
       &DoneFetchingInBackground, std::move(after_fetching_callback));
   fetcher->Fetch(std::move(pending_factory), std::move(done_fetching_callback),
                  std::move(proto_pairs), is_oauth_fetch,
-                 std::move(access_token_str), std::move(fetch_for_locale));
+                 std::move(access_token_str), std::move(fetch_for_locale),
+                 std::move(variation_headers));
 }
 
 // TODO(meiliang): Follow up to use BindPostTask.
@@ -208,8 +223,7 @@ void FetchDiscountWorker::AfterDiscountFetched(
   auto update_discount_callback = base::BindOnce(
       &FetchDiscountWorker::OnUpdatingDiscounts, weak_ptr_factory_.GetWeakPtr(),
       std::move(discounts), is_tester);
-  auto loader = cart_loader_and_updater_factory_->createCartLoader();
-  loader->LoadAllCarts(std::move(update_discount_callback));
+  cart_service_delegate_->LoadAllCarts(std::move(update_discount_callback));
 }
 
 void FetchDiscountWorker::OnUpdatingDiscounts(
@@ -221,8 +235,6 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
   if (!success || !proto_pairs.size()) {
     return;
   }
-
-  auto updater = cart_loader_and_updater_factory_->createCartDiscountUpdater();
 
   double current_timestamp = base::Time::Now().ToDoubleT();
 
@@ -238,7 +250,9 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
     if (!discounts.count(cart_url)) {
       cart_discount_proto->clear_discount_text();
       cart_discount_proto->clear_rule_discount_info();
-      updater->update(cart_url, std::move(cart_proto), is_tester);
+      cart_discount_proto->clear_has_coupons();
+      cart_service_delegate_->UpdateCart(cart_url, std::move(cart_proto),
+                                         is_tester);
       continue;
     }
 
@@ -252,8 +266,10 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
         merchant_discounts.highest_discount_string);
     *cart_discount_proto->mutable_rule_discount_info() = {
         discount_infos.begin(), discount_infos.end()};
+    cart_discount_proto->set_has_coupons(merchant_discounts.has_coupons);
 
-    updater->update(cart_url, std::move(cart_proto), is_tester);
+    cart_service_delegate_->UpdateCart(cart_url, std::move(cart_proto),
+                                       is_tester);
   }
 
   // TODO(crbug.com/1240341): Update the coupon proto.
@@ -262,7 +278,7 @@ void FetchDiscountWorker::OnUpdatingDiscounts(
           ntp_features::kNtpChromeCartModule,
           ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam,
           false)) {
-    // Continue to work
-    Start(kDelayFetchParam.Get());
+    // Continue to work.
+    Start(cart_features::kDiscountFetchDelayParam.Get());
   }
 }

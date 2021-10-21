@@ -49,24 +49,24 @@ template<typename Derived> class DenseBase;
 template<typename Derived> class PlainObjectBase;
 template<typename Derived, int Level> class DenseCoeffsBase;
 
-template<typename _Scalar, int _Rows, int _Cols,
-         int _Options = AutoAlign |
+template<typename Scalar_, int Rows_, int Cols_,
+         int Options_ = AutoAlign |
 #if EIGEN_GNUC_AT(3,4)
     // workaround a bug in at least gcc 3.4.6
     // the innermost ?: ternary operator is misparsed. We write it slightly
     // differently and this makes gcc 3.4.6 happy, but it's ugly.
     // The error would only show up with EIGEN_DEFAULT_TO_ROW_MAJOR is defined
     // (when EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION is RowMajor)
-                          ( (_Rows==1 && _Cols!=1) ? Eigen::RowMajor
-                          : !(_Cols==1 && _Rows!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
+                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
+                          : !(Cols_==1 && Rows_!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
                           : Eigen::ColMajor ),
 #else
-                          ( (_Rows==1 && _Cols!=1) ? Eigen::RowMajor
-                          : (_Cols==1 && _Rows!=1) ? Eigen::ColMajor
+                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
+                          : (Cols_==1 && Rows_!=1) ? Eigen::ColMajor
                           : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION ),
 #endif
-         int _MaxRows = _Rows,
-         int _MaxCols = _Cols
+         int MaxRows_ = Rows_,
+         int MaxCols_ = Cols_
 > class Matrix;
 
 template<typename Derived> class MatrixBase;
@@ -97,15 +97,15 @@ template<typename Lhs, typename Rhs, int Option = DefaultProduct> class Product;
 
 template<typename Derived> class DiagonalBase;
 template<typename _DiagonalVectorType> class DiagonalWrapper;
-template<typename _Scalar, int SizeAtCompileTime, int MaxSizeAtCompileTime=SizeAtCompileTime> class DiagonalMatrix;
+template<typename Scalar_, int SizeAtCompileTime, int MaxSizeAtCompileTime=SizeAtCompileTime> class DiagonalMatrix;
 template<typename MatrixType, typename DiagonalType, int ProductOrder> class DiagonalProduct;
 template<typename MatrixType, int Index = 0> class Diagonal;
 template<int SizeAtCompileTime, int MaxSizeAtCompileTime = SizeAtCompileTime, typename IndexType=int> class PermutationMatrix;
 template<int SizeAtCompileTime, int MaxSizeAtCompileTime = SizeAtCompileTime, typename IndexType=int> class Transpositions;
 template<typename Derived> class PermutationBase;
 template<typename Derived> class TranspositionsBase;
-template<typename _IndicesType> class PermutationWrapper;
-template<typename _IndicesType> class TranspositionsWrapper;
+template<typename IndicesType_> class PermutationWrapper;
+template<typename IndicesType_> class TranspositionsWrapper;
 
 template<typename Derived,
          int Level = internal::accessors_level<Derived>::has_write_access ? WriteAccessors : ReadOnlyAccessors
@@ -142,7 +142,7 @@ template<typename DecompositionType> struct image_retval;
 } // end namespace internal
 
 namespace internal {
-template<typename _Scalar, int Rows=Dynamic, int Cols=Dynamic, int Supers=Dynamic, int Subs=Dynamic, int Options=0> class BandMatrix;
+template<typename Scalar_, int Rows=Dynamic, int Cols=Dynamic, int Supers=Dynamic, int Subs=Dynamic, int Options=0> class BandMatrix;
 }
 
 namespace internal {
@@ -242,23 +242,23 @@ template<typename Scalar> struct scalar_bessel_k1e_op;
 struct IOFormat;
 
 // Array module
-template<typename _Scalar, int _Rows, int _Cols,
-         int _Options = AutoAlign |
+template<typename Scalar_, int Rows_, int Cols_,
+         int Options_ = AutoAlign |
 #if EIGEN_GNUC_AT(3,4)
     // workaround a bug in at least gcc 3.4.6
     // the innermost ?: ternary operator is misparsed. We write it slightly
     // differently and this makes gcc 3.4.6 happy, but it's ugly.
     // The error would only show up with EIGEN_DEFAULT_TO_ROW_MAJOR is defined
     // (when EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION is RowMajor)
-                          ( (_Rows==1 && _Cols!=1) ? Eigen::RowMajor
-                          : !(_Cols==1 && _Rows!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
+                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
+                          : !(Cols_==1 && Rows_!=1) ?  EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION
                           : Eigen::ColMajor ),
 #else
-                          ( (_Rows==1 && _Cols!=1) ? Eigen::RowMajor
-                          : (_Cols==1 && _Rows!=1) ? Eigen::ColMajor
+                          ( (Rows_==1 && Cols_!=1) ? Eigen::RowMajor
+                          : (Cols_==1 && Rows_!=1) ? Eigen::ColMajor
                           : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION ),
 #endif
-         int _MaxRows = _Rows, int _MaxCols = _Cols> class Array;
+         int MaxRows_ = Rows_, int MaxCols_ = Cols_> class Array;
 template<typename ConditionMatrixType, typename ThenMatrixType, typename ElseMatrixType> class Select;
 template<typename MatrixType, typename BinaryOp, int Direction> class PartialReduxExpr;
 template<typename ExpressionType, int Direction> class VectorwiseOp;
@@ -283,7 +283,7 @@ template<typename VectorsType, typename CoeffsType, int Side=OnTheLeft> class Ho
 template<typename Scalar>     class JacobiRotation;
 
 // Geometry module:
-template<typename Derived, int _Dim> class RotationBase;
+template<typename Derived, int Dim_> class RotationBase;
 template<typename Lhs, typename Rhs> class Cross;
 template<typename Derived> class QuaternionBase;
 template<typename Scalar> class Rotation2D;
@@ -291,9 +291,9 @@ template<typename Scalar> class AngleAxis;
 template<typename Scalar,int Dim> class Translation;
 template<typename Scalar,int Dim> class AlignedBox;
 template<typename Scalar, int Options = AutoAlign> class Quaternion;
-template<typename Scalar,int Dim,int Mode,int _Options=AutoAlign> class Transform;
-template <typename _Scalar, int _AmbientDim, int Options=AutoAlign> class ParametrizedLine;
-template <typename _Scalar, int _AmbientDim, int Options=AutoAlign> class Hyperplane;
+template<typename Scalar,int Dim,int Mode,int Options_=AutoAlign> class Transform;
+template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class ParametrizedLine;
+template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class Hyperplane;
 template<typename Scalar> class UniformScaling;
 template<typename MatrixType,int Direction> class Homogeneous;
 

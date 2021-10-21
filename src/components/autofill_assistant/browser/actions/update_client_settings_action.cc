@@ -44,7 +44,9 @@ void UpdateClientSettingsAction::InternalProcessAction(
     std::set<ClientSettingsProto::DisplayStringId> incoming_string_ids;
     for (const ClientSettingsProto::DisplayString& display_string :
          client_settings.display_strings()) {
-      incoming_string_ids.insert(display_string.id());
+      if (display_string.id() != ClientSettingsProto::UNSPECIFIED) {
+        incoming_string_ids.insert(display_string.id());
+      }
     }
     if (incoming_string_ids.size() < ClientSettingsProto::DisplayStringId_MAX) {
       VLOG(1) << "Rejecting client settings update: Expected "

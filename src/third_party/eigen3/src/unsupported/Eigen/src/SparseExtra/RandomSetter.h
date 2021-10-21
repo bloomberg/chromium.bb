@@ -33,21 +33,8 @@ template<typename Scalar> struct StdMapTraits
   static void setInvalidKey(Type&, const KeyType&) {}
 };
 
-#ifdef EIGEN_UNORDERED_MAP_SUPPORT
+
 /** Represents a std::unordered_map
-  *
-  * To use it you need to both define EIGEN_UNORDERED_MAP_SUPPORT and include the unordered_map header file
-  * yourself making sure that unordered_map is defined in the std namespace.
-  *
-  * For instance, with current version of gcc you can either enable C++0x standard (-std=c++0x) or do:
-  * \code
-  * #include <tr1/unordered_map>
-  * #define EIGEN_UNORDERED_MAP_SUPPORT
-  * namespace std {
-  *   using std::tr1::unordered_map;
-  * }
-  * \endcode
-  *
   * \see RandomSetter
   */
 template<typename Scalar> struct StdUnorderedMapTraits
@@ -60,7 +47,6 @@ template<typename Scalar> struct StdUnorderedMapTraits
 
   static void setInvalidKey(Type&, const KeyType&) {}
 };
-#endif // EIGEN_UNORDERED_MAP_SUPPORT
 
 #if defined(EIGEN_GOOGLEHASH_SUPPORT)
 
@@ -149,12 +135,12 @@ template<typename Scalar> struct GoogleSparseHashMapTraits
   *
   * The possible values for the template parameter MapTraits are:
   *  - \b StdMapTraits: corresponds to std::map. (does not perform very well)
-  *  - \b GnuHashMapTraits: corresponds to __gnu_cxx::hash_map (available only with GCC)
+  *  - \b StdUnorderedMapTraits: corresponds to std::unordered_map
   *  - \b GoogleDenseHashMapTraits: corresponds to google::dense_hash_map (best efficiency, reasonable memory consumption)
   *  - \b GoogleSparseHashMapTraits: corresponds to google::sparse_hash_map (best memory consumption, relatively good performance)
   *
   * The default map implementation depends on the availability, and the preferred order is:
-  * GoogleSparseHashMapTraits, GnuHashMapTraits, and finally StdMapTraits.
+  * GoogleSparseHashMapTraits, StdUnorderedMapTraits, and finally StdMapTraits.
   *
   * For performance and memory consumption reasons it is highly recommended to use one of
   * Google's hash_map implementations. To enable the support for them, you must define
@@ -167,10 +153,8 @@ template<typename SparseMatrixType,
          template <typename T> class MapTraits =
 #if defined(EIGEN_GOOGLEHASH_SUPPORT)
           GoogleDenseHashMapTraits
-#elif defined(_HASH_MAP)
-          GnuHashMapTraits
 #else
-          StdMapTraits
+          StdUnorderedMapTraits
 #endif
          ,int OuterPacketBits = 6>
 class RandomSetter

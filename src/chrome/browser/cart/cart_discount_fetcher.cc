@@ -26,6 +26,8 @@ namespace {
 const char kPostMethod[] = "POST";
 const char kContentType[] = "application/json; charset=UTF-8";
 const char kAcceptLanguageKey[] = "Accept-Language";
+// The name string for the header for variations information.
+const char kClientDataHeader[] = "X-Client-Data";
 
 const char kFetchDiscountsEndpoint[] =
     "https://memex-pa.googleapis.com/v1/shopping/cart/discounts";
@@ -234,10 +236,12 @@ bool ValidateResponse(const absl::optional<base::Value>& response) {
 MerchantIdAndDiscounts::MerchantIdAndDiscounts(
     std::string merchant_id,
     std::vector<cart_db::RuleDiscountInfoProto> rule_discount_list,
-    std::string discount_string)
+    std::string discount_string,
+    bool has_coupons)
     : merchant_id(std::move(merchant_id)),
       rule_discount_list(std::move(rule_discount_list)),
-      highest_discount_string(std::move(discount_string)) {}
+      highest_discount_string(std::move(discount_string)),
+      has_coupons(has_coupons) {}
 
 MerchantIdAndDiscounts::MerchantIdAndDiscounts(
     const MerchantIdAndDiscounts& other) = default;
@@ -268,10 +272,12 @@ void CartDiscountFetcher::Fetch(
     std::vector<CartDB::KeyAndValue> proto_pairs,
     bool is_oauth_fetch,
     const std::string access_token,
-    const std::string fetch_for_locale) {
+    const std::string fetch_for_locale,
+    const std::string variation_headers) {
   CartDiscountFetcher::FetchForDiscounts(
       std::move(pending_factory), std::move(callback), std::move(proto_pairs),
-      is_oauth_fetch, std::move(access_token), std::move(fetch_for_locale));
+      is_oauth_fetch, std::move(access_token), std::move(fetch_for_locale),
+      std::move(variation_headers));
 }
 
 void CartDiscountFetcher::FetchForDiscounts(
@@ -280,10 +286,11 @@ void CartDiscountFetcher::FetchForDiscounts(
     std::vector<CartDB::KeyAndValue> proto_pairs,
     bool is_oauth_fetch,
     const std::string access_token,
-    const std::string fetch_for_locale) {
-  auto fetcher =
-      CreateEndpointFetcher(std::move(pending_factory), std::move(proto_pairs),
-                            is_oauth_fetch, std::move(fetch_for_locale));
+    const std::string fetch_for_locale,
+    const std::string variation_headers) {
+  auto fetcher = CreateEndpointFetcher(
+      std::move(pending_factory), std::move(proto_pairs), is_oauth_fetch,
+      std::move(fetch_for_locale), std::move(variation_headers));
 
   auto* const fetcher_ptr = fetcher.get();
   fetcher_ptr->PerformRequest(
@@ -297,7 +304,8 @@ std::unique_ptr<EndpointFetcher> CartDiscountFetcher::CreateEndpointFetcher(
     std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
     std::vector<CartDB::KeyAndValue> proto_pairs,
     bool is_oauth_fetch,
-    const std::string fetch_for_locale) {
+    const std::string fetch_for_locale,
+    const std::string variation_headers) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("chrome_cart_discounts_lookup", R"(
         semantics {
@@ -328,12 +336,14 @@ std::unique_ptr<EndpointFetcher> CartDiscountFetcher::CreateEndpointFetcher(
         })");
 
   const std::vector<std::string> headers{kAcceptLanguageKey, std::move(fetch_for_locale)};
+  const std::vector<std::string>& cors_exempt_headers{
+      kClientDataHeader, std::move(variation_headers)};
 
   return std::make_unique<EndpointFetcher>(
       GURL(kDiscountFetcherServerConfigEndpoint.Get()), kPostMethod,
       kContentType, kTimeoutMs,
       generatePostData(proto_pairs, base::Time::Now()), headers,
-      traffic_annotation,
+      cors_exempt_headers, traffic_annotation,
       network::SharedURLLoaderFactory::Create(std::move(pending_factory)),
       is_oauth_fetch);
 }
@@ -470,11 +480,13 @@ void CartDiscountFetcher::OnDiscountsAvailable(
 
     // TODO(crbug.com/1240341): Parse couponDiscounts, which is an optional
     // field.
+    const base::Value* coupon_discounts =
+        merchant_discount.FindKey("couponDiscounts");
 
     MerchantIdAndDiscounts merchant_id_and_discounts(
         std::move(merchant_id),
         std::move(cart_rule_based_discounts_info.discount_list),
-        std::move(discount_string));
+        std::move(discount_string), coupon_discounts != nullptr);
     cart_discount_map.emplace(merchant_url,
                               std::move(merchant_id_and_discounts));
   }

@@ -55,20 +55,20 @@ namespace Eigen {
   *
   * \brief An axis aligned box
   *
-  * \tparam _Scalar the type of the scalar coefficients
+  * \tparam Scalar_ the type of the scalar coefficients
   * \tparam _AmbientDim the dimension of the ambient space, can be a compile time value or Dynamic.
   *
   * This class represents an axis aligned box as a pair of the minimal and maximal corners.
   * \warning The result of most methods is undefined when applied to an empty box. You can check for empty boxes using isEmpty().
   * \sa alignedboxtypedefs
   */
-template <typename _Scalar, int _AmbientDim>
+template <typename Scalar_, int _AmbientDim>
 class AlignedBox
 {
 public:
-EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_AmbientDim)
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_AmbientDim)
   enum { AmbientDimAtCompileTime = _AmbientDim };
-  typedef _Scalar                                   Scalar;
+  typedef Scalar_                                   Scalar;
   typedef NumTraits<Scalar>                         ScalarTraits;
   typedef Eigen::Index                              Index; ///< \deprecated since Eigen 3.3
   typedef typename ScalarTraits::Real               RealScalar;

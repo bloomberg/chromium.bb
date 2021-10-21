@@ -190,6 +190,19 @@ public class ContextualSearchManagerTest {
     private static final String LOW_PRIORITY_INVALID_SEARCH_ENDPOINT = "/s/invalid";
     private static final String CONTEXTUAL_SEARCH_PREFETCH_PARAM = "&pf=c";
 
+    // DOM element IDs in our test page based on what functions they trigger.
+    // TODO(donnd): add more, and also the associated Search Term, or build a similar mapping.
+    /**
+     * The DOM node for the word "search" on the test page, which causes a plain search response
+     * with the Search Term "Search" from the Fake server.
+     */
+    private static final String SIMPLE_SEARCH_NODE_ID = "search";
+    /**
+     * The DOM node for the word "intelligence" on the test page, which causes a search response
+     * for the Search Term "Intelligence" and also includes Related Searches suggestions.
+     */
+    private static final String RELATED_SEARCHES_NODE_ID = "intelligence";
+
     /**
      * Feature maps that we use for parameterized tests.
      */
@@ -3244,10 +3257,37 @@ public class ContextualSearchManagerTest {
         Assert.assertTrue(mManager.getRequest().isTranslationForced());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testSerpTranslationDisabledWhenPartialTranslationEnabled(
+            @EnabledFeature int enabledFeature) throws Exception {
+        FeatureList.setTestFeatures(DISABLE_FORCE_CAPTION);
+        // Resolving a German word should trigger translation.
+        simulateResolveSearch("german");
+        // Simulate a JavaScript translate message from the SERP to the manager
+        TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSetCaption("caption", true));
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS)) {
+            Assert.assertFalse(
+                    "The SERP Translation caption should not show when Partial Translations "
+                            + "is enabled!",
+                    mPanel.getSearchBarControl().getCaptionVisible());
+        } else {
+            Assert.assertTrue(
+                    "The SERP Translation caption should show without Partial Translations "
+                            + "enabled!",
+                    mPanel.getSearchBarControl().getCaptionVisible());
+        }
+    }
+
     /**
      * Tests the Translate Caption on a resolve gesture.
      * This test is disabled because it relies on the network and a live search result,
      * which would be flaky for bots.
+     * TODO(donnd) Load a fake SERP into the panel to trigger SERP-translation and similar
+     * features.
      */
     @DisabledTest(message = "Useful for manual testing when a network is connected.")
     @Test
@@ -4047,6 +4087,37 @@ public class ContextualSearchManagerTest {
         // TODO(donnd): Validate UMA metrics once we log in-bar selections.
     }
 
+    /**
+     * Tests that the offset of the SERP is unaffected by whether we are showing Related Searches
+     * in the Bar or not. See https://crbug.com/1250546.
+     * @throws Exception
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    public void testRelatedSearchesInBarSerpOffset() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
+        mFakeServer.reset();
+        simulateResolveSearch(SIMPLE_SEARCH_NODE_ID);
+        float plainSearchBarHeight = mPanel.getBarHeight();
+        float plainSearchContentY = mPanel.getContentY();
+        closePanel();
+
+        // Bring up a panel with Related Searches in order to expand the Bar
+        simulateResolveSearch(RELATED_SEARCHES_NODE_ID);
+        // Wait for the animation to start growing the Bar.
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mPanel.getInBarRelatedSearchesAnimatedHeightDps(), Matchers.greaterThan(0f));
+        });
+        // We should have a taller Bar, but that should not affect the Y offset of the content.
+        Assert.assertNotEquals(
+                "Test code failure - unable to open panels with differing Bar heights!",
+                plainSearchBarHeight, mPanel.getBarHeight(), 0.1f);
+        Assert.assertEquals("SERP content offsets with and without Related Searches should match!",
+                plainSearchContentY, mPanel.getContentY(), 0.1f);
+    }
+
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -4175,6 +4246,39 @@ public class ContextualSearchManagerTest {
         // Clean up
         closePanel();
         CompositorAnimationHandler.setTestingMode(false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @DisabledTest(message = "https://crbug.com/1251774")
+    public void testRelatedSearchesDismissDuringAnimation() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
+        mFakeServer.reset();
+        // Use the "intelligence" node to generate Related Searches suggestions.
+        simulateResolveSearch("intelligence");
+
+        // Wait for the animation to start growing the Bar.
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mPanel.getInBarRelatedSearchesAnimatedHeightDps(), Matchers.greaterThan(0f));
+        });
+
+        // Wait for the animation to change to make sure that doesn't bring the Bar back
+        final boolean[] didAnimationChange = {false};
+        mPanel.getSearchBarControl().setInBarAnimationTestNotifier(
+                () -> { didAnimationChange[0] = true; });
+        CriteriaHelper.pollUiThread(
+                () -> { Criteria.checkThat(didAnimationChange[0], Matchers.is(true)); });
+        // Repeatedly closing the panel should not bring it back even during ongoing animation.
+        closePanel();
+        Assert.assertFalse("The panel is showing again due to Animation!", mPanel.isShowing());
+        // Another scroll might try to close the panel when it thinks it's already closed, which
+        // could fail due to inconsistencies in internal logic, so test that too.
+        closePanel();
+        Assert.assertFalse("Expected the panel to not be showing after a close! "
+                        + "Animation of the Bar height is the likely cause.",
+                mPanel.isShowing());
     }
 
     // --------------------------------------------------------------------------------------------

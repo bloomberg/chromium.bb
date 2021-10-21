@@ -17,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -45,6 +46,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -59,6 +61,10 @@ import java.util.List;
  */
 public final class ReturnToChromeExperimentsUtil {
     private static final String TAG = "TabSwitcherOnReturn";
+
+    @VisibleForTesting
+    public static final long INVALID_DECISION_TIMESTAMP = -1L;
+    public static final long MILLISECONDS_PER_DAY = TimeUtils.SECONDS_PER_DAY * 1000;
 
     /** An inner class to monitor the state of a newly create Tab. */
     private static class TabStateObserver implements UrlFocusChangeListener {
@@ -322,7 +328,8 @@ public final class ReturnToChromeExperimentsUtil {
         }
 
         if (params.getTransitionType() == PageTransition.AUTO_BOOKMARK) {
-            if (params.getReferrer() == null) {
+            if (!TextUtils.equals(UrlConstants.RECENT_TABS_URL, params.getUrl())
+                    && params.getReferrer() == null) {
                 RecordUserAction.record("Suggestions.Tile.Tapped.StartSurface");
             }
         } else if (url == null) {
@@ -467,8 +474,11 @@ public final class ReturnToChromeExperimentsUtil {
         // If user launches Chrome by tapping the app icon, the intentUrl is NULL;
         // If user taps the "New Tab" item from the app icon, the intentUrl will be chrome://newtab,
         // and UrlUtilities.isCanonicalizedNTPUrl(intentUrl) returns true.
+        // If user taps the "New Incognito Tab" item from the app icon, skip here and continue the
+        // following checks.
         if (UrlUtilities.isCanonicalizedNTPUrl(intentUrl)
-                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage(context)) {
+                && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage(context)
+                && !intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)) {
             return true;
         }
         if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePageNoTabs(context)
@@ -487,15 +497,20 @@ public final class ReturnToChromeExperimentsUtil {
         // If the overview page won't be shown on startup, stops here.
         if (!tabSwitcherOnReturn) return false;
 
-        // We only check the sync status when flag CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP and the
-        // Start surface are both enabled.
-        if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()
-                && ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
-            return ReturnToChromeExperimentsUtil.isPrimaryAccountSync();
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+            if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()) {
+                // We only check the sync status when flag CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP
+                // and the Start surface are both enabled.
+                return ReturnToChromeExperimentsUtil.isPrimaryAccountSync();
+            } else if (!TextUtils.isEmpty(
+                               StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
+                return ReturnToChromeExperimentsUtil.userBehaviourSupported();
+            }
         }
 
         // If Start surface is disable and should show the Grid tab switcher at startup, or flag
-        // CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP isn't enabled, return true here.
+        // CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP and behavioural targeting flag aren't enabled,
+        // return true here.
         return true;
     }
 
@@ -519,6 +534,174 @@ public final class ReturnToChromeExperimentsUtil {
                         .hasPrimaryAccount(ConsentLevel.SYNC);
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.PRIMARY_ACCOUNT_SYNC, isPrimaryAccountSync);
+    }
+
+    /**
+     * Returns whether to show the Start surface at startup based on whether user has done the
+     * targeted behaviour.
+     */
+    public static boolean userBehaviourSupported() {
+        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
+        long nextDecisionTimestamp =
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        INVALID_DECISION_TIMESTAMP);
+        boolean noPreviousHistory = nextDecisionTimestamp == INVALID_DECISION_TIMESTAMP;
+        // If this is the first time we make a decision, don't show the Start surface at startup.
+        if (noPreviousHistory) {
+            resetTargetBehaviourAndNextDecisionTime(false, null);
+            return false;
+        }
+
+        // Returns the current decision before the next decision timestamp.
+        if (System.currentTimeMillis() < nextDecisionTimestamp) {
+            return SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
+        }
+
+        // Shows the start surface st startup for a period of time If the user has clicked the UI;
+        // otherwise, hides it.
+        boolean showStartOnStartup = false;
+        int threshold = StartSurfaceConfiguration.USER_CLICK_THRESHOLD.getValue();
+        if (TextUtils.equals("all", StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
+            showStartOnStartup =
+                    manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT) >= threshold
+                    || manager.readInt(ChromePreferenceKeys.TAP_FEED_CARDS_COUNT) >= threshold
+                    || manager.readInt(ChromePreferenceKeys.OPEN_NEW_TAB_PAGE_COUNT) >= threshold
+                    || manager.readInt(ChromePreferenceKeys.OPEN_RECENT_TABS_COUNT) >= threshold
+                    || manager.readInt(ChromePreferenceKeys.OPEN_HISTORY_COUNT) >= threshold;
+            resetTargetBehaviourAndNextDecisionTimeForAllCounts(showStartOnStartup);
+        } else {
+            String key =
+                    getBehaviourType(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue());
+            showStartOnStartup = manager.readInt(key, 0) >= threshold;
+            resetTargetBehaviourAndNextDecisionTime(showStartOnStartup, key);
+        }
+        return showStartOnStartup;
+    }
+
+    /**
+     * Returns the ChromePreferenceKeys of the type to record in the SharedPreference.
+     * @param behaviourType: the type of targeted behaviour.
+     */
+    private static @Nullable String getBehaviourType(String behaviourType) {
+        switch (behaviourType) {
+            case "mv_tiles":
+                return ChromePreferenceKeys.TAP_MV_TILES_COUNT;
+            case "feeds":
+                return ChromePreferenceKeys.TAP_FEED_CARDS_COUNT;
+            case "open_new_tab":
+                return ChromePreferenceKeys.OPEN_NEW_TAB_PAGE_COUNT;
+            case "open_history":
+                return ChromePreferenceKeys.OPEN_HISTORY_COUNT;
+            case "open_recent_tabs":
+                return ChromePreferenceKeys.OPEN_RECENT_TABS_COUNT;
+            default:
+                return null;
+        }
+    }
+
+    private static void resetTargetBehaviourAndNextDecisionTime(
+            boolean showStartOnStartup, @Nullable String behaviourTypeKey) {
+        resetTargetBehaviourAndNextDecisionTimeImpl(showStartOnStartup);
+
+        if (behaviourTypeKey != null) {
+            SharedPreferencesManager.getInstance().removeKey(behaviourTypeKey);
+        }
+    }
+
+    private static void resetTargetBehaviourAndNextDecisionTimeForAllCounts(
+            boolean showStartOnStartup) {
+        resetTargetBehaviourAndNextDecisionTimeImpl(showStartOnStartup);
+        resetAllCounts();
+    }
+
+    private static void resetTargetBehaviourAndNextDecisionTimeImpl(boolean showStartOnStartup) {
+        long nextDecisionTime = System.currentTimeMillis();
+
+        if (showStartOnStartup) {
+            nextDecisionTime += MILLISECONDS_PER_DAY
+                    * StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue();
+        } else {
+            nextDecisionTime += MILLISECONDS_PER_DAY
+                    * StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue();
+        }
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.START_SHOW_ON_STARTUP, showStartOnStartup);
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS, nextDecisionTime);
+    }
+
+    private static void resetAllCounts() {
+        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.TAP_MV_TILES_COUNT);
+        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.TAP_FEED_CARDS_COUNT);
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.OPEN_NEW_TAB_PAGE_COUNT);
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.OPEN_RECENT_TABS_COUNT);
+        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.OPEN_HISTORY_COUNT);
+    }
+
+    /**
+     * Called when a targeted behaviour happens. It may increase the count if the corresponding
+     * behaviour targeting type is set.
+     */
+    @VisibleForTesting
+    public static void onUIClicked(String chromePreferenceKey) {
+        String type = StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue();
+        if (TextUtils.isEmpty(type)
+                || (!TextUtils.equals("all", type)
+                        && !TextUtils.equals(getBehaviourType(type), chromePreferenceKey))) {
+            return;
+        }
+
+        int currentCount = SharedPreferencesManager.getInstance().readInt(chromePreferenceKey, 0);
+        SharedPreferencesManager.getInstance().writeInt(chromePreferenceKey, currentCount + 1);
+    }
+
+    /**
+     * Called when the "New Tab" from menu or "+" button is clicked. The count is only recorded when
+     * the behavioural targeting is enabled on the Start surface.
+     */
+    public static void onNewTabOpened() {
+        onUIClicked(ChromePreferenceKeys.OPEN_NEW_TAB_PAGE_COUNT);
+    }
+
+    /**
+     * Called when the "History" menu is clicked. The count is only recorded when the behavioural
+     * targeting is enabled on the Start surface.
+     */
+    public static void onHistoryOpened() {
+        onUIClicked(ChromePreferenceKeys.OPEN_HISTORY_COUNT);
+    }
+
+    /**
+     * Called when the "Recent tabs" menu is clicked. The count is only recorded when the
+     * behavioural targeting is enabled on the Start surface.
+     */
+    public static void onRecentTabsOpened() {
+        onUIClicked(ChromePreferenceKeys.OPEN_RECENT_TABS_COUNT);
+    }
+
+    /**
+     * Called when a Feed card is opened in 1) a foreground tab; 2) a background tab and 3) an
+     * incognito tab. The count is only recorded when the behavioural targeting is enabledf on the
+     * Start surface.
+     */
+    public static void onFeedCardOpened() {
+        onUIClicked(ChromePreferenceKeys.TAP_FEED_CARDS_COUNT);
+    }
+
+    /**
+     * Called when a MV tile is opened. The count is only recorded when the behavioural targeting is
+     * enabled on the Start surface.
+     */
+    public static void onMVTileOpened() {
+        onUIClicked(ChromePreferenceKeys.TAP_MV_TILES_COUNT);
+    }
+
+    @VisibleForTesting
+    public static String getBehaviourTypeKeyForTesting(String key) {
+        return getBehaviourType(key);
     }
 
     @VisibleForTesting

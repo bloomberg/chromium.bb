@@ -723,8 +723,16 @@ typedef enum avifStrictFlag
     // function returns AVIF_FALSE and this strict flag is set, the decode will fail.
     AVIF_STRICT_CLAP_VALID = (1 << 1),
 
+    // Requires the ImageSpatialExtentsProperty ('ispe') be present in alpha auxiliary image items.
+    // avif-serialize 0.7.3 or older does not add the 'ispe' item property to alpha auxiliary image
+    // items. If you need to decode AVIF images encoded by the cavif encoder with avif-serialize
+    // 0.7.3 or older, be sure to disable this bit. (This issue has been corrected in avif-serialize
+    // 0.7.4.) See https://github.com/kornelski/avif-serialize/issues/3 and
+    // https://crbug.com/1246678.
+    AVIF_STRICT_ALPHA_ISPE_REQUIRED = (1 << 2),
+
     // Maximum strictness; enables all bits above. This is avifDecoder's default.
-    AVIF_STRICT_ENABLED = AVIF_STRICT_PIXI_REQUIRED | AVIF_STRICT_CLAP_VALID
+    AVIF_STRICT_ENABLED = AVIF_STRICT_PIXI_REQUIRED | AVIF_STRICT_CLAP_VALID | AVIF_STRICT_ALPHA_ISPE_REQUIRED
 } avifStrictFlag;
 typedef uint32_t avifStrictFlags;
 
@@ -739,7 +747,9 @@ struct avifDecoderData;
 
 typedef enum avifDecoderSource
 {
-    // If a moov box is present in the .avif(s), use the tracks in it, otherwise decode the primary item.
+    // Honor the major brand signaled in the beginning of the file to pick between an AVIF sequence
+    // ('avis', tracks-based) or a single image ('avif', item-based). If the major brand is neither
+    // of these, prefer the AVIF sequence ('avis', tracks-based), if present.
     AVIF_DECODER_SOURCE_AUTO = 0,
 
     // Use the primary item and the aux (alpha) item in the avif(s).

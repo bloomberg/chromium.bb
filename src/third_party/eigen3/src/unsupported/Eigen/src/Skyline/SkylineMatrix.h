@@ -24,16 +24,16 @@ namespace Eigen {
  * This class implements a skyline matrix using the very uncommon storage
  * scheme.
  *
- * \param _Scalar the scalar type, i.e. the type of the coefficients
- * \param _Options Union of bit flags controlling the storage scheme. Currently the only possibility
+ * \param Scalar_ the scalar type, i.e. the type of the coefficients
+ * \param Options_ Union of bit flags controlling the storage scheme. Currently the only possibility
  *                 is RowMajor. The default is 0 which means column-major.
  *
  *
  */
 namespace internal {
-template<typename _Scalar, int _Options>
-struct traits<SkylineMatrix<_Scalar, _Options> > {
-    typedef _Scalar Scalar;
+template<typename Scalar_, int Options_>
+struct traits<SkylineMatrix<Scalar_, Options_> > {
+    typedef Scalar_ Scalar;
     typedef Sparse StorageKind;
 
     enum {
@@ -41,15 +41,15 @@ struct traits<SkylineMatrix<_Scalar, _Options> > {
         ColsAtCompileTime = Dynamic,
         MaxRowsAtCompileTime = Dynamic,
         MaxColsAtCompileTime = Dynamic,
-        Flags = SkylineBit | _Options,
+        Flags = SkylineBit | Options_,
         CoeffReadCost = NumTraits<Scalar>::ReadCost,
     };
 };
 }
 
-template<typename _Scalar, int _Options>
+template<typename Scalar_, int Options_>
 class SkylineMatrix
-: public SkylineMatrixBase<SkylineMatrix<_Scalar, _Options> > {
+: public SkylineMatrixBase<SkylineMatrix<Scalar_, Options_> > {
 public:
     EIGEN_SKYLINE_GENERIC_PUBLIC_INTERFACE(SkylineMatrix)
     EIGEN_SKYLINE_INHERIT_ASSIGNMENT_OPERATOR(SkylineMatrix, +=)
@@ -731,15 +731,15 @@ public:
     Scalar sum() const;
 };
 
-template<typename Scalar, int _Options>
-class SkylineMatrix<Scalar, _Options>::InnerUpperIterator {
+template<typename Scalar, int Options_>
+class SkylineMatrix<Scalar, Options_>::InnerUpperIterator {
 public:
 
     InnerUpperIterator(const SkylineMatrix& mat, Index outer)
     : m_matrix(mat), m_outer(outer),
-    m_id(_Options == RowMajor ? mat.m_colStartIndex[outer] : mat.m_rowStartIndex[outer] + 1),
+    m_id(Options_ == RowMajor ? mat.m_colStartIndex[outer] : mat.m_rowStartIndex[outer] + 1),
     m_start(m_id),
-    m_end(_Options == RowMajor ? mat.m_colStartIndex[outer + 1] : mat.m_rowStartIndex[outer + 1] + 1) {
+    m_end(Options_ == RowMajor ? mat.m_colStartIndex[outer + 1] : mat.m_rowStartIndex[outer + 1] + 1) {
     }
 
     inline InnerUpperIterator & operator++() {
@@ -793,16 +793,16 @@ protected:
     const Index m_end;
 };
 
-template<typename Scalar, int _Options>
-class SkylineMatrix<Scalar, _Options>::InnerLowerIterator {
+template<typename Scalar, int Options_>
+class SkylineMatrix<Scalar, Options_>::InnerLowerIterator {
 public:
 
     InnerLowerIterator(const SkylineMatrix& mat, Index outer)
     : m_matrix(mat),
     m_outer(outer),
-    m_id(_Options == RowMajor ? mat.m_rowStartIndex[outer] : mat.m_colStartIndex[outer] + 1),
+    m_id(Options_ == RowMajor ? mat.m_rowStartIndex[outer] : mat.m_colStartIndex[outer] + 1),
     m_start(m_id),
-    m_end(_Options == RowMajor ? mat.m_rowStartIndex[outer + 1] : mat.m_colStartIndex[outer + 1] + 1) {
+    m_end(Options_ == RowMajor ? mat.m_rowStartIndex[outer + 1] : mat.m_colStartIndex[outer + 1] + 1) {
     }
 
     inline InnerLowerIterator & operator++() {

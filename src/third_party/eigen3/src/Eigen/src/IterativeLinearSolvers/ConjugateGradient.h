@@ -92,17 +92,17 @@ void conjugate_gradient(const MatrixType& mat, const Rhs& rhs, Dest& x,
 
 }
 
-template< typename _MatrixType, int _UpLo=Lower,
-          typename _Preconditioner = DiagonalPreconditioner<typename _MatrixType::Scalar> >
+template< typename MatrixType_, int UpLo_=Lower,
+          typename Preconditioner_ = DiagonalPreconditioner<typename MatrixType_::Scalar> >
 class ConjugateGradient;
 
 namespace internal {
 
-template< typename _MatrixType, int _UpLo, typename _Preconditioner>
-struct traits<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
+template< typename MatrixType_, int UpLo_, typename Preconditioner_>
+struct traits<ConjugateGradient<MatrixType_,UpLo_,Preconditioner_> >
 {
-  typedef _MatrixType MatrixType;
-  typedef _Preconditioner Preconditioner;
+  typedef MatrixType_ MatrixType;
+  typedef Preconditioner_ Preconditioner;
 };
 
 }
@@ -113,11 +113,11 @@ struct traits<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
   * This class allows to solve for A.x = b linear problems using an iterative conjugate gradient algorithm.
   * The matrix A must be selfadjoint. The matrix A and the vectors x and b can be either dense or sparse.
   *
-  * \tparam _MatrixType the type of the matrix A, can be a dense or a sparse matrix.
-  * \tparam _UpLo the triangular part that will be used for the computations. It can be Lower,
+  * \tparam MatrixType_ the type of the matrix A, can be a dense or a sparse matrix.
+  * \tparam UpLo_ the triangular part that will be used for the computations. It can be Lower,
   *               \c Upper, or \c Lower|Upper in which the full matrix entries will be considered.
   *               Default is \c Lower, best performance is \c Lower|Upper.
-  * \tparam _Preconditioner the type of the preconditioner. Default is DiagonalPreconditioner
+  * \tparam Preconditioner_ the type of the preconditioner. Default is DiagonalPreconditioner
   *
   * \implsparsesolverconcept
   *
@@ -127,8 +127,8 @@ struct traits<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
   * 
   * The tolerance corresponds to the relative residual error: |Ax-b|/|b|
   * 
-  * \b Performance: Even though the default value of \c _UpLo is \c Lower, significantly higher performance is
-  * achieved when using a complete matrix and \b Lower|Upper as the \a _UpLo template parameter. Moreover, in this
+  * \b Performance: Even though the default value of \c UpLo_ is \c Lower, significantly higher performance is
+  * achieved when using a complete matrix and \b Lower|Upper as the \a UpLo_ template parameter. Moreover, in this
   * case multi-threading can be exploited if the user code is compiled with OpenMP enabled.
   * See \ref TopicMultiThreading for details.
   * 
@@ -154,8 +154,8 @@ struct traits<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
   *
   * \sa class LeastSquaresConjugateGradient, class SimplicialCholesky, DiagonalPreconditioner, IdentityPreconditioner
   */
-template< typename _MatrixType, int _UpLo, typename _Preconditioner>
-class ConjugateGradient : public IterativeSolverBase<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
+template< typename MatrixType_, int UpLo_, typename Preconditioner_>
+class ConjugateGradient : public IterativeSolverBase<ConjugateGradient<MatrixType_,UpLo_,Preconditioner_> >
 {
   typedef IterativeSolverBase<ConjugateGradient> Base;
   using Base::matrix;
@@ -164,13 +164,13 @@ class ConjugateGradient : public IterativeSolverBase<ConjugateGradient<_MatrixTy
   using Base::m_info;
   using Base::m_isInitialized;
 public:
-  typedef _MatrixType MatrixType;
+  typedef MatrixType_ MatrixType;
   typedef typename MatrixType::Scalar Scalar;
   typedef typename MatrixType::RealScalar RealScalar;
-  typedef _Preconditioner Preconditioner;
+  typedef Preconditioner_ Preconditioner;
 
   enum {
-    UpLo = _UpLo
+    UpLo = UpLo_
   };
 
 public:

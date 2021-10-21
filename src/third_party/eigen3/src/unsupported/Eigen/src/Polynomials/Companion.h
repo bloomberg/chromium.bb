@@ -29,18 +29,18 @@ struct decrement_if_fixed_size
 
 #endif
 
-template< typename _Scalar, int _Deg >
+template< typename Scalar_, int _Deg >
 class companion
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
 
     enum {
       Deg = _Deg,
       Deg_1=decrement_if_fixed_size<Deg>::ret
     };
 
-    typedef _Scalar                                Scalar;
+    typedef Scalar_                                Scalar;
     typedef typename NumTraits<Scalar>::Real       RealScalar;
     typedef Matrix<Scalar, Deg, 1>                 RightColumn;
     //typedef DiagonalMatrix< Scalar, Deg_1, Deg_1 > BottomLeftDiagonal;
@@ -54,7 +54,7 @@ class companion
     typedef DenseIndex Index;
 
   public:
-    EIGEN_STRONG_INLINE const _Scalar operator()(Index row, Index col ) const
+    EIGEN_STRONG_INLINE const Scalar_ operator()(Index row, Index col ) const
     {
       if( m_bl_diag.rows() > col )
       {
@@ -130,9 +130,9 @@ class companion
 
 
 
-template< typename _Scalar, int _Deg >
+template< typename Scalar_, int _Deg >
 inline
-bool companion<_Scalar,_Deg>::balanced( RealScalar colNorm, RealScalar rowNorm,
+bool companion<Scalar_,_Deg>::balanced( RealScalar colNorm, RealScalar rowNorm,
     bool& isBalanced, RealScalar& colB, RealScalar& rowB )
 {
   if( RealScalar(0) == colNorm || RealScalar(0) == rowNorm 
@@ -184,9 +184,9 @@ bool companion<_Scalar,_Deg>::balanced( RealScalar colNorm, RealScalar rowNorm,
   }
 }
 
-template< typename _Scalar, int _Deg >
+template< typename Scalar_, int _Deg >
 inline
-bool companion<_Scalar,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
+bool companion<Scalar_,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
     bool& isBalanced, RealScalar& colB, RealScalar& rowB )
 {
   if( RealScalar(0) == colNorm || RealScalar(0) == rowNorm ){ return true; }
@@ -197,7 +197,7 @@ bool companion<_Scalar,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
      * of the row and column norm
      */
     const RealScalar q = colNorm/rowNorm;
-    if( !isApprox( q, _Scalar(1) ) )
+    if( !isApprox( q, Scalar_(1) ) )
     {
       rowB = sqrt( colNorm/rowNorm );
       colB = RealScalar(1)/rowB;
@@ -211,8 +211,8 @@ bool companion<_Scalar,_Deg>::balancedR( RealScalar colNorm, RealScalar rowNorm,
 }
 
 
-template< typename _Scalar, int _Deg >
-void companion<_Scalar,_Deg>::balance()
+template< typename Scalar_, int _Deg >
+void companion<Scalar_,_Deg>::balance()
 {
   using std::abs;
   EIGEN_STATIC_ASSERT( Deg == Dynamic || 1 < Deg, YOU_MADE_A_PROGRAMMING_MISTAKE );

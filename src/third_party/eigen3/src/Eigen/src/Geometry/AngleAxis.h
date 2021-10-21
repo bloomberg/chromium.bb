@@ -18,7 +18,7 @@ namespace Eigen {
   *
   * \brief Represents a 3D rotation as a rotation angle around an arbitrary 3D axis
   *
-  * \param _Scalar the scalar type, i.e., the type of the coefficients.
+  * \param Scalar_ the scalar type, i.e., the type of the coefficients.
   *
   * \warning When setting up an AngleAxis object, the axis vector \b must \b be \b normalized.
   *
@@ -39,16 +39,16 @@ namespace Eigen {
   */
 
 namespace internal {
-template<typename _Scalar> struct traits<AngleAxis<_Scalar> >
+template<typename Scalar_> struct traits<AngleAxis<Scalar_> >
 {
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
 };
 }
 
-template<typename _Scalar>
-class AngleAxis : public RotationBase<AngleAxis<_Scalar>,3>
+template<typename Scalar_>
+class AngleAxis : public RotationBase<AngleAxis<Scalar_>,3>
 {
-  typedef RotationBase<AngleAxis<_Scalar>,3> Base;
+  typedef RotationBase<AngleAxis<Scalar_>,3> Base;
 
 public:
 
@@ -56,7 +56,7 @@ public:
 
   enum { Dim = 3 };
   /** the scalar type of the coefficients */
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef Matrix<Scalar,3,3> Matrix3;
   typedef Matrix<Scalar,3,1> Vector3;
   typedef Quaternion<Scalar> QuaternionType;

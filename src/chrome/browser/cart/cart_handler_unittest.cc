@@ -466,6 +466,10 @@ TEST_F(CartHandlerNtpModuleDiscountTest, TestGetDiscountConsentCardVisible) {
 
 // Test OnDiscountConsentAcknowledged can update status in CartService.
 TEST_F(CartHandlerNtpModuleDiscountTest, TestOnDiscountConsentAcknowledged) {
+  // Update fetch timestamp to avoid fetching triggered by consent
+  // acknowledgement.
+  profile_.GetPrefs()->SetTime(prefs::kCartDiscountLastFetchedTime,
+                               base::Time::Now());
   CartDB* cart_db = service_->GetDB();
   base::RunLoop run_loop[4];
   // Add a partner cart.
@@ -573,6 +577,34 @@ TEST_F(CartHandlerNtpModuleDiscountTest, TestDiscountDataWithFeature) {
   run_loop[run_loop_index++].Run();
 }
 
+// Verifies discount data showing when coupons is available.
+TEST_F(CartHandlerNtpModuleDiscountTest, TestDiscountDataShows) {
+  profile_.GetPrefs()->SetInteger(prefs::kCartModuleWelcomeSurfaceShownTimes,
+                                  3);
+  profile_.GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
+
+  base::RunLoop run_loop;
+
+  // Add a cart with discount.
+  cart_db::ChromeCartContentProto merchant_proto =
+      BuildProto(kMockMerchantBKey, kMockMerchantB, kMockMerchantURLB);
+  merchant_proto.mutable_discount_info()->set_discount_text("15% off");
+  merchant_proto.mutable_discount_info()->set_has_coupons(true);
+  service_->AddCart(kMockMerchantBKey, absl::nullopt, merchant_proto);
+  task_environment_.RunUntilIdle();
+
+  // Discount should show.
+  auto expect_cart = chrome_cart::mojom::MerchantCart::New();
+  expect_cart->merchant = kMockMerchantB;
+  expect_cart->cart_url = GURL(kMockMerchantURLB);
+  expect_cart->discount_text = "15% off";
+  std::vector<chrome_cart::mojom::MerchantCartPtr> carts;
+  carts.push_back(std::move(expect_cart));
+  handler_->GetMerchantCarts(base::BindOnce(
+      &GetEvaluationMerchantCarts, run_loop.QuitClosure(), std::move(carts)));
+  run_loop.Run();
+}
+
 // Override CartHandlerTest so that we can initialize feature_list_ in our
 // constructor, before CartHandlerTest::SetUp is called.
 class CartHandlerNtpModuleDiscountFastPathTest : public CartHandlerTest {
@@ -584,7 +616,7 @@ class CartHandlerNtpModuleDiscountFastPathTest : public CartHandlerTest {
         ntp_features::kNtpChromeCartModule,
         {{"NtpChromeCartModuleAbandonedCartDiscountParam", "true"},
          {"partner-merchant-pattern", "(foo.com)"},
-         {ntp_features::NtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
+         {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountUseUtmParam,
           "true"}});
   }
 };

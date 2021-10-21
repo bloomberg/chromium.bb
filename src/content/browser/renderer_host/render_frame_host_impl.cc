@@ -747,29 +747,6 @@ DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
              : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
 
-// Returns the string corresponding to LifecycleStateImpl, used for logging
-// crash keys.
-const char* LifecycleStateImplToString(
-    RenderFrameHostImpl::LifecycleStateImpl state) {
-  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
-  switch (state) {
-    case LifecycleStateImpl::kSpeculative:
-      return "Speculative";
-    case LifecycleStateImpl::kPrerendering:
-      return "Prerendering";
-    case LifecycleStateImpl::kPendingCommit:
-      return "PendingCommit";
-    case LifecycleStateImpl::kActive:
-      return "Active";
-    case LifecycleStateImpl::kInBackForwardCache:
-      return "InBackForwardCache";
-    case LifecycleStateImpl::kRunningUnloadHandlers:
-      return "RunningUnloadHandlers";
-    case LifecycleStateImpl::kReadyToBeDeleted:
-      return "ReadyToBeDeleted";
-  }
-}
-
 // Verify that |browser_side_origin| and |renderer_side_origin| match.  See also
 // https://crbug.com/888079.
 void VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
@@ -3408,6 +3385,17 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         GetProcess(), bad_message::RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE);
     return;
   }
+  if (owner_type == blink::mojom::FrameOwnerElementType::kPortal ||
+      (owner_type == blink::mojom::FrameOwnerElementType::kFencedframe &&
+       blink::features::kFencedFramesImplementationTypeParam.Get() ==
+           blink::features::FencedFramesImplementationType::kMPArch)) {
+    // Portals and MPArch based fenced frames are not created through this child
+    // frame code path.
+    bad_message::ReceivedBadMessage(
+        GetProcess(),
+        bad_message::RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE);
+    return;
+  }
 
   DCHECK(devtools_frame_token);
 
@@ -3427,55 +3415,112 @@ void RenderFrameHostImpl::OnCreateChildFrame(
       return;
   }
 
-  if (RenderFrameProxyHost* proxy = frame_tree_node_->render_manager()
-                                        ->GetProxyHostWithoutRenderViewHost()) {
+  if (RenderFrameProxyHost* proxy =
+          frame_tree_node_->render_manager()
+              ->GetProxyHostWithoutRenderViewHostForDebugging()) {
     // If there's no RenderViewHost for one of the RenderFrameProxyHost for the
     // parent of the new subframe, we can't create all the proxies needed for
     // this new subframe. Ignore the call because otherwise we will hit a
     // browser CHECK. Also trigger a DumpWithoutCrashing for debugging purposes.
     // TODO(https://crbug.com/1243541): Add tracing, debug, and remove this.
-    SCOPED_CRASH_KEY_BOOL("NoRVH", "is_main_frame",
-                          frame_tree_node_->IsMainFrame());
-    SCOPED_CRASH_KEY_BOOL("NoRVH", "is_created_by_script",
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "target_is_main_frame", is_main_frame());
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "target_is_main_frame_child",
+                          GetParent() == GetMainFrame());
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "new_frame_is_created_by_script",
                           is_created_by_script);
-    SCOPED_CRASH_KEY_STRING32("NoRVH", "lifecycle_state",
+    SCOPED_CRASH_KEY_STRING32("NoRVH", "target_lifecycle_state",
                               LifecycleStateImplToString(lifecycle_state()));
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "target_was_bfcache_restored",
+                          was_restored_from_back_forward_cache_for_debugging_);
     SCOPED_CRASH_KEY_STRING32(
         "NoRVH", "main_frame_lifecycle_state",
         LifecycleStateImplToString(GetMainFrame()->lifecycle_state()));
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "main_frame_was_bfcache_restored",
+        GetMainFrame()->was_restored_from_back_forward_cache_for_debugging());
+    BackForwardCacheImpl& back_forward_cache =
+        frame_tree()->controller().GetBackForwardCache();
+    SCOPED_CRASH_KEY_NUMBER("NoRVH", "bfcache_entries_size",
+                            back_forward_cache.GetEntries().size());
 
-    SCOPED_CRASH_KEY_NUMBER("NoRVH", "site_instance",
-                            GetSiteInstance()->GetId().value());
-    SCOPED_CRASH_KEY_BOOL("NoRVH", "site_instance_default",
-                          GetSiteInstance()->IsDefaultSiteInstance());
-    SCOPED_CRASH_KEY_STRING256("NoRVH", "site_instance_url",
-                               GetSiteInstance()->GetSiteURL().spec());
+    SiteInstanceImpl* target_si = GetSiteInstance();
+    SCOPED_CRASH_KEY_NUMBER("NoRVH", "target_site_instance",
+                            target_si->GetId().value());
+    SCOPED_CRASH_KEY_NUMBER("NoRVH", "target_browsing_instance",
+                            target_si->GetBrowsingInstanceId().value());
+    SCOPED_CRASH_KEY_BOOL("NoRVH", "target_site_instance_default",
+                          target_si->IsDefaultSiteInstance());
+    SCOPED_CRASH_KEY_STRING256("NoRVH", "target_site_info",
+                               target_si->GetSiteInfo().GetDebugString());
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "target_si_in_bfcache",
+        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
+            target_si->GetId()));
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "target_bi_in_bfcache",
+        back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
+            target_si->GetBrowsingInstanceId()));
 
     SiteInstanceImpl* main_frame_si = GetMainFrame()->GetSiteInstance();
     SCOPED_CRASH_KEY_NUMBER("NoRVH", "main_frame_site_instance",
                             main_frame_si->GetId().value());
+    SCOPED_CRASH_KEY_NUMBER("NoRVH", "main_frame_browsing_instance",
+                            main_frame_si->GetBrowsingInstanceId().value());
     SCOPED_CRASH_KEY_BOOL("NoRVH", "main_frame_site_instance_default",
                           main_frame_si->IsDefaultSiteInstance());
-    SCOPED_CRASH_KEY_STRING256("NoRVH", "main_frame_site_instance_url",
-                               main_frame_si->GetSiteURL().spec());
+    SCOPED_CRASH_KEY_STRING256("NoRVH", "main_frame_site_info",
+                               main_frame_si->GetSiteInfo().GetDebugString());
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "main_frame_has_proxy_without_rvh",
+        !!GetMainFrame()
+              ->frame_tree_node()
+              ->render_manager()
+              ->GetProxyHostWithoutRenderViewHostForDebugging());
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "main_frame_si_in_bfcache",
+        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
+            main_frame_si->GetId()));
 
     SiteInstanceImpl* proxy_si =
         static_cast<SiteInstanceImpl*>(proxy->GetSiteInstance());
     SCOPED_CRASH_KEY_NUMBER("NoRVH", "proxy_site_instance",
                             proxy_si->GetId().value());
+    SCOPED_CRASH_KEY_NUMBER("NoRVH", "proxy_browsing_instance",
+                            proxy_si->GetBrowsingInstanceId().value());
     SCOPED_CRASH_KEY_BOOL("NoRVH", "proxy_site_instance_default",
                           proxy_si->IsDefaultSiteInstance());
-    SCOPED_CRASH_KEY_STRING256("NoRVH", "proxy_site_instance_url",
-                               proxy_si->GetSiteURL().spec());
+    SCOPED_CRASH_KEY_STRING256("NoRVH", "proxy_site_info",
+                               proxy_si->GetSiteInfo().GetDebugString());
     SCOPED_CRASH_KEY_BOOL("NoRVH", "proxy_live",
                           proxy->is_render_frame_proxy_live());
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "proxy_bi_in_bfcache",
+        back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
+            proxy_si->GetBrowsingInstanceId()));
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "proxy_si_in_bfcache",
+        back_forward_cache.IsSiteInstanceInBackForwardCacheForDebugging(
+            proxy_si->GetId()));
+    SCOPED_CRASH_KEY_BOOL(
+        "NoRVH", "proxy_in_bfcache",
+        back_forward_cache.IsProxyInBackForwardCacheForDebugging(proxy));
+
     base::debug::DumpWithoutCrashing();
 
-    TRACE_EVENT_INSTANT("navigation", "RenderFrameHostImpl::OnCreateChildFrame",
+    TRACE_EVENT_INSTANT("navigation",
+                        "RenderFrameHostImpl::OnCreateChildFrame_Target",
+                        ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_,
+                        ChromeTrackEvent::kSiteInstance, *target_si);
+    TRACE_EVENT_INSTANT("navigation",
+                        "RenderFrameHostImpl::OnCreateChildFrame_MainFrame",
+                        ChromeTrackEvent::kFrameTreeNodeInfo,
+                        *GetMainFrame()->frame_tree_node(),
+                        ChromeTrackEvent::kSiteInstance, *main_frame_si);
+    TRACE_EVENT_INSTANT("navigation",
+                        "RenderFrameHostImpl::OnCreateChildFrame_Proxy",
                         ChromeTrackEvent::kRenderFrameProxyHost, *proxy);
     CaptureTraceForNavigationDebugScenario(
         DebugScenario::kDebugSubframeProxyCreationWithNoRVH);
-    return;
   }
 
   // |new_routing_id|, |browser_interface_broker_receiver| and
@@ -3998,12 +4043,12 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
+  TRACE_EVENT("navigation", "RenderFrameHostImpl::DidFocusFrame",
+              ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_,
+              ChromeTrackEvent::kSiteInstance,
+              *static_cast<SiteInstanceImpl*>(GetSiteInstance()));
   // We don't handle this IPC signal for non-active RenderFrameHost.
-  //
-  // For RenderFrameHost in BackForwardCache, it is safe to ignore this IPC as
-  // there is a renderer side check (see Document::IsFocusedAllowed) which
-  // returns false.
-  if (lifecycle_state() != LifecycleStateImpl::kActive)
+  if (!IsActive())
     return;
 
   delegate_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
@@ -5384,31 +5429,6 @@ void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
     const gfx::Rect& keyboard_rect) {
   DCHECK(ShouldVirtualKeyboardOverlayContent());
 
-  RenderFrameHostImpl* root_frame_host = GetMainFrame();
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      root_frame_host->render_view_host_->GetWidget()->GetView());
-  if (!view)
-    return;
-
-  gfx::PointF root_widget_origin(0.f, 0.f);
-  view->TransformPointToRootSurface(&root_widget_origin);
-
-  gfx::Rect root_widget_rect;
-  if (!keyboard_rect.IsEmpty()) {
-    // If the rect is non-empty, we need to transform it to be widget-relative
-    // window (DIP coordinates). The input is client coordinates for the root
-    // window.
-    // Transform the widget rect origin to root relative coords.
-    root_widget_rect = gfx::Rect(root_widget_origin.x(), root_widget_origin.y(),
-                                 view->GetViewBounds().width(),
-                                 view->GetViewBounds().height());
-
-    // Intersect with the keyboard rect and transform back to widget-relative
-    // coordinates, which will be sent to the renderer.
-    root_widget_rect.Intersect(keyboard_rect);
-    root_widget_rect.Offset(-root_widget_origin.x(), -root_widget_origin.y());
-  }
-
   // Notify each SiteInstance a single time. Renderer will take care of ensuring
   // the event is dispatched to all relevant listeners in the grouping of frames
   // for the SiteInstance.
@@ -5422,7 +5442,7 @@ void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
       continue;
 
     node->GetAssociatedLocalFrame()->NotifyVirtualKeyboardOverlayRect(
-        root_widget_rect);
+        keyboard_rect);
     notified_instances.insert(site_instance);
   }
 }
@@ -12207,6 +12227,9 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
     }
   }
 
+  if (IsInBackForwardCache())
+    was_restored_from_back_forward_cache_for_debugging_ = true;
+
   SetLifecycleState(LifecycleStateImpl::kActive);
 }
 
@@ -12635,6 +12658,29 @@ bool RenderFrameHostImpl::IsInPrimaryMainFrame() {
   return !GetParent() && GetPage().IsPrimary();
 }
 
+// Returns the string corresponding to LifecycleStateImpl, used for logging
+// crash keys.
+const char* RenderFrameHostImpl::LifecycleStateImplToString(
+    RenderFrameHostImpl::LifecycleStateImpl state) {
+  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
+  switch (state) {
+    case LifecycleStateImpl::kSpeculative:
+      return "Speculative";
+    case LifecycleStateImpl::kPrerendering:
+      return "Prerendering";
+    case LifecycleStateImpl::kPendingCommit:
+      return "PendingCommit";
+    case LifecycleStateImpl::kActive:
+      return "Active";
+    case LifecycleStateImpl::kInBackForwardCache:
+      return "InBackForwardCache";
+    case LifecycleStateImpl::kRunningUnloadHandlers:
+      return "RunningUnloadHandlers";
+    case LifecycleStateImpl::kReadyToBeDeleted:
+      return "ReadyToBeDeleted";
+  }
+}
+
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(
     RenderFrameHostImpl& document) {
   // Only create page object for the main document as the PageImpl is 1:1 with
@@ -12651,7 +12697,7 @@ RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() =
 
 std::ostream& operator<<(std::ostream& o,
                          const RenderFrameHostImpl::LifecycleStateImpl& s) {
-  return o << LifecycleStateImplToString(s);
+  return o << RenderFrameHostImpl::LifecycleStateImplToString(s);
 }
 
 }  // namespace content

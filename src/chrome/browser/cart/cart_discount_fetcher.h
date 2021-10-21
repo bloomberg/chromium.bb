@@ -21,12 +21,14 @@ struct MerchantIdAndDiscounts {
   std::string merchant_id;
   std::vector<cart_db::RuleDiscountInfoProto> rule_discount_list;
   std::string highest_discount_string;
+  bool has_coupons;
   // TODO(crbug.com/1240341): Include a list of coupon info.
 
   explicit MerchantIdAndDiscounts(
       std::string merchant_id,
       std::vector<cart_db::RuleDiscountInfoProto> rule_discount_list,
-      std::string discount_string);
+      std::string discount_string,
+      bool has_coupons);
   MerchantIdAndDiscounts(const MerchantIdAndDiscounts& other);
   MerchantIdAndDiscounts& operator=(const MerchantIdAndDiscounts& other);
   MerchantIdAndDiscounts(MerchantIdAndDiscounts&& other);
@@ -52,7 +54,8 @@ class CartDiscountFetcher {
       std::vector<CartDB::KeyAndValue> proto_pairs,
       bool is_oauth_fetch,
       const std::string access_token,
-      const std::string fetch_for_locale);
+      const std::string fetch_for_locale,
+      const std::string variation_headers);
 
  private:
   friend class CartDiscountFetcherTest;
@@ -62,7 +65,8 @@ class CartDiscountFetcher {
       std::vector<CartDB::KeyAndValue> proto_pairs,
       bool is_oauth_fetch,
       const std::string access_token,
-      const std::string fetch_for_locale);
+      const std::string fetch_for_locale,
+      const std::string variation_headers);
   static void OnDiscountsAvailable(
       std::unique_ptr<EndpointFetcher> endpoint_fetcher,
       CartDiscountFetcherCallback callback,
@@ -71,7 +75,8 @@ class CartDiscountFetcher {
       std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
       std::vector<CartDB::KeyAndValue> proto_pairs,
       bool is_oauth_fetch,
-      const std::string fetch_for_locale);
+      const std::string fetch_for_locale,
+      const std::string variation_headers);
   static std::string generatePostData(
       std::vector<CartDB::KeyAndValue> proto_pairs,
       base::Time current_timestamp);

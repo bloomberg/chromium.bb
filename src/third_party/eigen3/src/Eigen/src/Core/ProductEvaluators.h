@@ -836,13 +836,13 @@ public:
     MatrixFlags = evaluator<MatrixType>::Flags,
     DiagFlags = evaluator<DiagonalType>::Flags,
 
-    _StorageOrder = (Derived::MaxRowsAtCompileTime==1 && Derived::MaxColsAtCompileTime!=1) ? RowMajor
+    StorageOrder_ = (Derived::MaxRowsAtCompileTime==1 && Derived::MaxColsAtCompileTime!=1) ? RowMajor
                   : (Derived::MaxColsAtCompileTime==1 && Derived::MaxRowsAtCompileTime!=1) ? ColMajor
                   : MatrixFlags & RowMajorBit ? RowMajor : ColMajor,
-    _SameStorageOrder = _StorageOrder == (MatrixFlags & RowMajorBit ? RowMajor : ColMajor),
+    _SameStorageOrder = StorageOrder_ == (MatrixFlags & RowMajorBit ? RowMajor : ColMajor),
 
-    _ScalarAccessOnDiag =  !((int(_StorageOrder) == ColMajor && int(ProductOrder) == OnTheLeft)
-                           ||(int(_StorageOrder) == RowMajor && int(ProductOrder) == OnTheRight)),
+    _ScalarAccessOnDiag =  !((int(StorageOrder_) == ColMajor && int(ProductOrder) == OnTheLeft)
+                           ||(int(StorageOrder_) == RowMajor && int(ProductOrder) == OnTheRight)),
     _SameTypes = is_same<typename MatrixType::Scalar, typename DiagonalType::Scalar>::value,
     // FIXME currently we need same types, but in the future the next rule should be the one
     //_Vectorizable = bool(int(MatrixFlags)&PacketAccessBit) && ((!_PacketOnDiag) || (_SameTypes && bool(int(DiagFlags)&PacketAccessBit))),
@@ -913,7 +913,7 @@ struct product_evaluator<Product<Lhs, Rhs, ProductKind>, ProductTag, DiagonalSha
   typedef typename Lhs::DiagonalVectorType DiagonalType;
 
 
-  enum { StorageOrder = Base::_StorageOrder };
+  enum { StorageOrder = Base::StorageOrder_ };
 
   EIGEN_DEVICE_FUNC explicit product_evaluator(const XprType& xpr)
     : Base(xpr.rhs(), xpr.lhs().diagonal())
@@ -957,7 +957,7 @@ struct product_evaluator<Product<Lhs, Rhs, ProductKind>, ProductTag, DenseShape,
   typedef Product<Lhs, Rhs, ProductKind> XprType;
   typedef typename XprType::PlainObject PlainObject;
 
-  enum { StorageOrder = Base::_StorageOrder };
+  enum { StorageOrder = Base::StorageOrder_ };
 
   EIGEN_DEVICE_FUNC explicit product_evaluator(const XprType& xpr)
     : Base(xpr.lhs(), xpr.rhs().diagonal())

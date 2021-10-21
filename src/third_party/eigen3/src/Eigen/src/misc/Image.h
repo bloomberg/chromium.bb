@@ -32,10 +32,10 @@ struct traits<image_retval_base<DecompositionType> >
   > ReturnType;
 };
 
-template<typename _DecompositionType> struct image_retval_base
- : public ReturnByValue<image_retval_base<_DecompositionType> >
+template<typename DecompositionType_> struct image_retval_base
+ : public ReturnByValue<image_retval_base<DecompositionType_> >
 {
-  typedef _DecompositionType DecompositionType;
+  typedef DecompositionType_ DecompositionType;
   typedef typename DecompositionType::MatrixType MatrixType;
   typedef ReturnByValue<image_retval_base> Base;
 

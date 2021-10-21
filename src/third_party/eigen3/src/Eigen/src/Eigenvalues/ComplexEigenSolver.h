@@ -23,7 +23,7 @@ namespace Eigen {
   *
   * \brief Computes eigenvalues and eigenvectors of general complex matrices
   *
-  * \tparam _MatrixType the type of the matrix of which we are
+  * \tparam MatrixType_ the type of the matrix of which we are
   * computing the eigendecomposition; this is expected to be an
   * instantiation of the Matrix class template.
   *
@@ -42,12 +42,12 @@ namespace Eigen {
   *
   * \sa class EigenSolver, class SelfAdjointEigenSolver
   */
-template<typename _MatrixType> class ComplexEigenSolver
+template<typename MatrixType_> class ComplexEigenSolver
 {
   public:
 
-    /** \brief Synonym for the template parameter \p _MatrixType. */
-    typedef _MatrixType MatrixType;
+    /** \brief Synonym for the template parameter \p MatrixType_. */
+    typedef MatrixType_ MatrixType;
 
     enum {
       RowsAtCompileTime = MatrixType::RowsAtCompileTime,

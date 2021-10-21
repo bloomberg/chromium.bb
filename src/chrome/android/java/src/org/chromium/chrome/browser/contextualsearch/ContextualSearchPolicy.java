@@ -18,6 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelInterface;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma.ContextualSearchPreference;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -59,8 +60,8 @@ class ContextualSearchPolicy {
     private ContextualSearchPanelInterface mSearchPanel;
 
     // Members used only for testing purposes.
-    private boolean mDidOverrideDecidedStateForTesting;
-    private boolean mDecidedStateForTesting;
+    private boolean mDidOverrideFullyEnabledForTesting;
+    private boolean mFullyEnabledForTesting;
     private Integer mTapTriggeredPromoLimitForTesting;
     private boolean mDidOverrideAllowSendingPageUrlForTesting;
     private boolean mAllowSendingPageUrlForTesting;
@@ -121,7 +122,7 @@ class ContextualSearchPolicy {
      * @return Whether a Tap gesture is currently supported as a trigger for the feature.
      */
     boolean isTapSupported() {
-        return (!isUserUndecided()
+        return (isContextualSearchFullyEnabled()
                        || ContextualSearchFieldTrial.getSwitch(
                                ContextualSearchSwitch
                                        .IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED))
@@ -167,7 +168,7 @@ class ContextualSearchPolicy {
         }
 
         // The user must have decided on privacy to resolve page content on HTTPS.
-        return !isUserUndecided() || doesLegacyHttpPolicyApply();
+        return isContextualSearchFullyEnabled() || doesLegacyHttpPolicyApply();
     }
 
     /** @return Whether a long-press gesture can resolve. */
@@ -181,10 +182,8 @@ class ContextualSearchPolicy {
      * @return Whether surroundings are available.
      */
     boolean canSendSurroundings() {
-        if (mDidOverrideDecidedStateForTesting) return mDecidedStateForTesting;
-
         // The user must have decided on privacy to send page content on HTTPS.
-        return !isUserUndecided() || doesLegacyHttpPolicyApply();
+        return isContextualSearchFullyEnabled() || doesLegacyHttpPolicyApply();
     }
 
     /**
@@ -358,7 +357,7 @@ class ContextualSearchPolicy {
         // Otherwise we'll get skewed data; more HTTP pages than HTTPS (since those don't resolve),
         // and it's also possible that public pages, e.g. news, have more searches for multi-word
         // entities like people.
-        if (!isUserUndecided()) {
+        if (isContextualSearchFullyEnabled()) {
             GURL url = mNetworkCommunicator.getBasePageUrl();
             ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(url));
             boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(searchTerm.trim()).find();
@@ -386,7 +385,7 @@ class ContextualSearchPolicy {
      * @return {@code true} if the URL should be sent.
      */
     boolean doSendBasePageUrl() {
-        if (isUserUndecided()) return false;
+        if (!isContextualSearchFullyEnabled()) return false;
 
         // Check whether there is a Field Trial setting preventing us from sending the page URL.
         if (ContextualSearchFieldTrial.getSwitch(
@@ -454,6 +453,23 @@ class ContextualSearchPolicy {
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether a transition that is both from and to the given state should be done.
+     * This allows prevention of the short-circuiting that ignores a state transition to the current
+     * state in cases where rerunning the current state might safeguard against problematic
+     * behavior.
+     * @param state The current state, which is also the state being transitioned into.
+     * @return {@code true} to go ahead with the logic for that state transition even though we're
+     *     already in that state. {@code false} indicates that ignoring this redundant state
+     *     transition is fine.
+     */
+    boolean shouldRetryCurrentState(@InternalState int state) {
+        // Make sure we don't get stuck in the IDLE state if the panel is still showing.
+        // See https://crbug.com/1251774
+        return state == InternalState.IDLE && mSearchPanel != null
+                && (mSearchPanel.isShowing() || mSearchPanel.isActive());
     }
 
     /**
@@ -572,9 +588,14 @@ class ContextualSearchPolicy {
     }
 
     /**
-     * @return Whether the Contextual Search feature was opted in by the user explicitly.
+     * @return Whether the Contextual Search feature was fully opted in based on the preference
+     *         itself.
      */
-    static boolean isContextualSearchFullyOptedIn() {
+    static boolean isContextualSearchPrefFullyOptedIn() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)
+                && !isContextualSearchOptInUninitialized()) {
+            return isContextualSearchOptInEnabled();
+        }
         return isContextualSearchEnabled();
     }
 
@@ -646,8 +667,8 @@ class ContextualSearchPolicy {
      */
     @VisibleForTesting
     void overrideDecidedStateForTesting(boolean decidedState) {
-        mDidOverrideDecidedStateForTesting = true;
-        mDecidedStateForTesting = decidedState;
+        mDidOverrideFullyEnabledForTesting = true;
+        mFullyEnabledForTesting = decidedState;
     }
 
     /**
@@ -705,13 +726,22 @@ class ContextualSearchPolicy {
      *         on enabling or disabling the feature.
      */
     boolean isUserUndecided() {
-        if (mDidOverrideDecidedStateForTesting) return !mDecidedStateForTesting;
+        if (mDidOverrideFullyEnabledForTesting) return !mFullyEnabledForTesting;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_NEW_SETTINGS)) {
             return isContextualSearchUninitialized() && isContextualSearchOptInUninitialized();
         }
 
         return isContextualSearchUninitialized();
+    }
+
+    /**
+     * @return Whether a user explicitly enabled the Contextual Search feature.
+     */
+    boolean isContextualSearchFullyEnabled() {
+        if (mDidOverrideFullyEnabledForTesting) return mFullyEnabledForTesting;
+
+        return isContextualSearchEnabled();
     }
 
     /**

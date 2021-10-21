@@ -795,7 +795,19 @@ public final class ChromePreferenceKeys {
      */
     public static final String QUERY_TILES_SHOW_ON_NTP = "Chrome.Querytiles.ShowOnNTP";
 
+    /**
+     * Keys used to store user actions for behavioral targeting of showing Start surface on startup.
+     */
     public static final String PRIMARY_ACCOUNT_SYNC = "Chrome.StartSurface.PrimaryAccountSync";
+    public static final String START_SHOW_ON_STARTUP = "Chrome.StartSurface.ShownOnStartup";
+    public static final String START_NEXT_SHOW_ON_STARTUP_DECISION_MS =
+            "Chrome.StartSurface.ShownOnStartupDecisionMs";
+    public static final String TAP_MV_TILES_COUNT = "Chrome.StartSurface.TapMVTilesCount";
+    public static final String TAP_FEED_CARDS_COUNT = "Chrome.StartSurface.TapFeedCardsCount";
+    public static final String OPEN_NEW_TAB_PAGE_COUNT = "Chrome.StartSurface.OpenNewTabPageCount";
+    public static final String OPEN_HISTORY_COUNT = "Chrome.StartSurface.OpenHistoryCount";
+    public static final String OPEN_RECENT_TABS_COUNT = "Chrome.StartSurface.OpenRecentTabCount";
+
     /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
      * enabled.
@@ -883,7 +895,7 @@ public final class ChromePreferenceKeys {
             "signin_promo_last_shown_account_names";
     public static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
             "signin_promo_last_shown_chrome_version";
-    public static final String SIGNIN_PROMO_NTP_PROMO_EXPIRED = "Chrome.SigninPromo.Expired";
+
     /**
      * Whether the user dismissed the personalized sign in promo from the new tab page.
      * Default value is false.
@@ -892,6 +904,11 @@ public final class ChromePreferenceKeys {
             "ntp.personalized_signin_promo_dismissed";
     public static final String SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START =
             "ntp.signin_promo_suppression_period_start";
+    public static final String SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME =
+            "Chrome.SigninPromoNTP.FirstShownTime";
+    public static final String SIGNIN_PROMO_NTP_LAST_SHOWN_TIME =
+            "Chrome.SigninPromoNTP.LastShownTime";
+
     /**
      * Personalized signin promo preference.
      */
@@ -1107,6 +1124,9 @@ public final class ChromePreferenceKeys {
                 OFFLINE_MEASUREMENTS_LAST_CHECK_MILLIS,
                 OFFLINE_MEASUREMENTS_SYSTEM_STATE_LIST,
                 OFFLINE_MEASUREMENTS_USER_AGENT_STRING,
+                OPEN_HISTORY_COUNT,
+                OPEN_NEW_TAB_PAGE_COUNT,
+                OPEN_RECENT_TABS_COUNT,
                 OPTIMIZATION_GUIDE_PUSH_NOTIFICATION_CACHE.pattern(),
                 PERSISTENT_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 PRICE_TRACKING_PRICE_ALERTS_MESSAGE_CARD,
@@ -1125,7 +1145,12 @@ public final class ChromePreferenceKeys {
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 SHARING_LAST_SHARED_COMPONENT_NAME,
                 SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP,
-                SIGNIN_PROMO_NTP_PROMO_EXPIRED,
+                SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME,
+                SIGNIN_PROMO_NTP_LAST_SHOWN_TIME,
+                START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                START_SHOW_ON_STARTUP,
+                TAP_FEED_CARDS_COUNT,
+                TAP_MV_TILES_COUNT,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,

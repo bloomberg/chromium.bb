@@ -63,15 +63,15 @@ struct transform_construct_from_matrix;
 
 template<typename TransformType> struct transform_take_affine_part;
 
-template<typename _Scalar, int _Dim, int _Mode, int _Options>
-struct traits<Transform<_Scalar,_Dim,_Mode,_Options> >
+template<typename Scalar_, int Dim_, int _Mode, int Options_>
+struct traits<Transform<Scalar_,Dim_,_Mode,Options_> >
 {
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef Eigen::Index StorageIndex;
   typedef Dense StorageKind;
   enum {
-    Dim1 = _Dim==Dynamic ? _Dim : _Dim + 1,
-    RowsAtCompileTime = _Mode==Projective ? Dim1 : _Dim,
+    Dim1 = Dim_==Dynamic ? Dim_ : Dim_ + 1,
+    RowsAtCompileTime = _Mode==Projective ? Dim1 : Dim_,
     ColsAtCompileTime = Dim1,
     MaxRowsAtCompileTime = RowsAtCompileTime,
     MaxColsAtCompileTime = ColsAtCompileTime,
@@ -89,8 +89,8 @@ template<int Mode> struct transform_make_affine;
   *
   * \brief Represents an homogeneous transformation in a N dimensional space
   *
-  * \tparam _Scalar the scalar type, i.e., the type of the coefficients
-  * \tparam _Dim the dimension of the space
+  * \tparam Scalar_ the scalar type, i.e., the type of the coefficients
+  * \tparam Dim_ the dimension of the space
   * \tparam _Mode the type of the transformation. Can be:
   *              - #Affine: the transformation is stored as a (Dim+1)^2 matrix,
   *                         where the last row is assumed to be [0 ... 0 1].
@@ -100,7 +100,7 @@ template<int Mode> struct transform_make_affine;
   *              - #Isometry: same as #Affine with the additional assumption that
   *                           the linear part represents a rotation. This assumption is exploited
   *                           to speed up some functions such as inverse() and rotation().
-  * \tparam _Options has the same meaning as in class Matrix. It allows to specify DontAlign and/or RowMajor.
+  * \tparam Options_ has the same meaning as in class Matrix. It allows to specify DontAlign and/or RowMajor.
   *                  These Options are passed directly to the underlying matrix type.
   *
   * The homography is internally represented and stored by a matrix which
@@ -200,20 +200,20 @@ template<int Mode> struct transform_make_affine;
   *
   * \sa class Matrix, class Quaternion
   */
-template<typename _Scalar, int _Dim, int _Mode, int _Options>
+template<typename Scalar_, int Dim_, int _Mode, int Options_>
 class Transform
 {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_Dim==Dynamic ? Dynamic : (_Dim+1)*(_Dim+1))
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,Dim_==Dynamic ? Dynamic : (Dim_+1)*(Dim_+1))
   enum {
     Mode = _Mode,
-    Options = _Options,
-    Dim = _Dim,     ///< space dimension in which the transformation holds
-    HDim = _Dim+1,  ///< size of a respective homogeneous vector
+    Options = Options_,
+    Dim = Dim_,     ///< space dimension in which the transformation holds
+    HDim = Dim_+1,  ///< size of a respective homogeneous vector
     Rows = int(Mode)==(AffineCompact) ? Dim : HDim
   };
   /** the scalar type of the coefficients */
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   typedef Eigen::Index StorageIndex;
   typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
   /** type of the matrix used to represent the transformation */
@@ -443,7 +443,7 @@ public:
     * \li a general transformation matrix of size Dim+1 x Dim+1.
     */
   template<typename OtherDerived> friend
-  EIGEN_DEVICE_FUNC inline const typename internal::transform_left_product_impl<OtherDerived,Mode,Options,_Dim,_Dim+1>::ResultType
+  EIGEN_DEVICE_FUNC inline const typename internal::transform_left_product_impl<OtherDerived,Mode,Options,Dim_,Dim_+1>::ResultType
     operator * (const EigenBase<OtherDerived> &a, const Transform &b)
   { return internal::transform_left_product_impl<OtherDerived,Mode,Options,Dim,HDim>::run(a.derived(),b); }
 

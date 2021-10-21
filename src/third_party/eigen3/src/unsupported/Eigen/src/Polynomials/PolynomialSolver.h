@@ -25,13 +25,13 @@ namespace Eigen {
  * It stores the set of roots as a vector of complexes.
  *
  */
-template< typename _Scalar, int _Deg >
+template< typename Scalar_, int _Deg >
 class PolynomialSolverBase
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
 
-    typedef _Scalar                             Scalar;
+    typedef Scalar_                             Scalar;
     typedef typename NumTraits<Scalar>::Real    RealScalar;
     typedef std::complex<RealScalar>            RootType;
     typedef Matrix<RootType,_Deg,1>             RootsType;
@@ -59,7 +59,7 @@ class PolynomialSolverBase
      * i.e. the real part of the complex roots that have an imaginary part which
      * absolute value is smaller than absImaginaryThreshold.
      * absImaginaryThreshold takes the dummy_precision associated
-     * with the _Scalar template parameter of the PolynomialSolver class as the default value.
+     * with the Scalar_ template parameter of the PolynomialSolver class as the default value.
      *
      * \param[out] bi_seq : the back insertion sequence (stl concept)
      * \param[in]  absImaginaryThreshold : the maximum bound of the imaginary part of a complex
@@ -200,7 +200,7 @@ class PolynomialSolverBase
      * A real root is defined as the real part of a complex root with absolute imaginary
      * part smallest than absImaginaryThreshold.
      * absImaginaryThreshold takes the dummy_precision associated
-     * with the _Scalar template parameter of the PolynomialSolver class as the default value.
+     * with the Scalar_ template parameter of the PolynomialSolver class as the default value.
      * If no real root is found the boolean hasArealRoot is set to false and the real part of
      * the root with smallest absolute imaginary part is returned instead.
      *
@@ -223,7 +223,7 @@ class PolynomialSolverBase
      * A real root is defined as the real part of a complex root with absolute imaginary
      * part smallest than absImaginaryThreshold.
      * absImaginaryThreshold takes the dummy_precision associated
-     * with the _Scalar template parameter of the PolynomialSolver class as the default value.
+     * with the Scalar_ template parameter of the PolynomialSolver class as the default value.
      * If no real root is found the boolean hasArealRoot is set to false and the real part of
      * the root with smallest absolute imaginary part is returned instead.
      *
@@ -246,7 +246,7 @@ class PolynomialSolverBase
      * A real root is defined as the real part of a complex root with absolute imaginary
      * part smallest than absImaginaryThreshold.
      * absImaginaryThreshold takes the dummy_precision associated
-     * with the _Scalar template parameter of the PolynomialSolver class as the default value.
+     * with the Scalar_ template parameter of the PolynomialSolver class as the default value.
      * If no real root is found the boolean hasArealRoot is set to false and the real part of
      * the root with smallest absolute imaginary part is returned instead.
      *
@@ -269,7 +269,7 @@ class PolynomialSolverBase
      * A real root is defined as the real part of a complex root with absolute imaginary
      * part smallest than absImaginaryThreshold.
      * absImaginaryThreshold takes the dummy_precision associated
-     * with the _Scalar template parameter of the PolynomialSolver class as the default value.
+     * with the Scalar_ template parameter of the PolynomialSolver class as the default value.
      * If no real root is found the boolean hasArealRoot is set to false and the real part of
      * the root with smallest absolute imaginary part is returned instead.
      *
@@ -306,7 +306,7 @@ class PolynomialSolverBase
   *
   * Computes the complex roots of a real polynomial.
   *
-  * \param _Scalar the scalar type, i.e., the type of the polynomial coefficients
+  * \param Scalar_ the scalar type, i.e., the type of the polynomial coefficients
   * \param _Deg the degree of the polynomial, can be a compile time value or Dynamic.
   *             Notice that the number of polynomial coefficients is _Deg+1.
   *
@@ -327,13 +327,13 @@ class PolynomialSolverBase
   * However, almost always, correct accuracy is reached even in these cases for 64bit
   * (double) floating types and small polynomial degree (<20).
   */
-template<typename _Scalar, int _Deg>
-class PolynomialSolver : public PolynomialSolverBase<_Scalar,_Deg>
+template<typename Scalar_, int _Deg>
+class PolynomialSolver : public PolynomialSolverBase<Scalar_,_Deg>
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(_Scalar,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
 
-    typedef PolynomialSolverBase<_Scalar,_Deg>    PS_Base;
+    typedef PolynomialSolverBase<Scalar_,_Deg>    PS_Base;
     EIGEN_POLYNOMIAL_SOLVER_BASE_INHERITED_TYPES( PS_Base )
 
     typedef Matrix<Scalar,_Deg,_Deg>                 CompanionMatrixType;
@@ -395,11 +395,11 @@ class PolynomialSolver : public PolynomialSolverBase<_Scalar,_Deg>
 };
 
 
-template< typename _Scalar >
-class PolynomialSolver<_Scalar,1> : public PolynomialSolverBase<_Scalar,1>
+template< typename Scalar_ >
+class PolynomialSolver<Scalar_,1> : public PolynomialSolverBase<Scalar_,1>
 {
   public:
-    typedef PolynomialSolverBase<_Scalar,1>    PS_Base;
+    typedef PolynomialSolverBase<Scalar_,1>    PS_Base;
     EIGEN_POLYNOMIAL_SOLVER_BASE_INHERITED_TYPES( PS_Base )
 
   public:

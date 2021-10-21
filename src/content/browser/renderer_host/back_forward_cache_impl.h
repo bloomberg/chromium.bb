@@ -67,6 +67,17 @@ const base::Feature
         "CacheControlNoStoreRestoreFromBackForwardCache",
         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows pages with MediaSession's playback state change to stay eligible for
+// the back/forward cache.
+const base::Feature kBackForwardCacheMediaSessionPlaybackStateChange{
+    "BackForwardCacheMediaSessionPlaybackStateChange",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows pages that created a MediaSession service to stay eligible for the
+// back/forward cache.
+const base::Feature kBackForwardCacheMediaSessionService{
+    "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // BackForwardCache:
 //
 // After the user navigates away from a document, the old one goes into the
@@ -117,6 +128,10 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
     std::set<RenderViewHostImpl*> render_view_hosts() {
       return stored_page_->render_view_hosts;
+    }
+
+    const StoredPage::RenderFrameProxyHostMap& proxy_hosts() const {
+      return stored_page_->proxy_hosts;
     }
 
     size_t proxy_hosts_size() { return stored_page_->proxy_hosts.size(); }
@@ -289,6 +304,15 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // there are any.
   BackForwardCacheCanStoreDocumentResult CanRestorePageNowForTesting(
       RenderFrameHostImpl* render_frame_host);
+
+  // Returns true if one of the BFCache entries has a matching
+  // BrowsingInstanceId/SiteInstanceId/RenderFrameProxyHost.
+  // TODO(https://crbug.com/1243541): Remove these once the bug is fixed.
+  bool IsBrowsingInstanceInBackForwardCacheForDebugging(
+      BrowsingInstanceId browsing_instance_id);
+  bool IsSiteInstanceInBackForwardCacheForDebugging(
+      SiteInstanceId site_instance_id);
+  bool IsProxyInBackForwardCacheForDebugging(RenderFrameProxyHost* proxy);
 
  private:
   // Destroys all evicted frames in the BackForwardCache.

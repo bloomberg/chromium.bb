@@ -92,18 +92,18 @@ namespace Eigen
     *
     * More information about Euler angles: https://en.wikipedia.org/wiki/Euler_angles
     *
-    * \tparam _Scalar the scalar type, i.e. the type of the angles.
+    * \tparam Scalar_ the scalar type, i.e. the type of the angles.
     *
     * \tparam _System the EulerSystem to use, which represents the axes of rotation.
     */
-  template <typename _Scalar, class _System>
-  class EulerAngles : public RotationBase<EulerAngles<_Scalar, _System>, 3>
+  template <typename Scalar_, class _System>
+  class EulerAngles : public RotationBase<EulerAngles<Scalar_, _System>, 3>
   {
     public:
-      typedef RotationBase<EulerAngles<_Scalar, _System>, 3> Base;
+      typedef RotationBase<EulerAngles<Scalar_, _System>, 3> Base;
       
       /** the scalar type of the angles */
-      typedef _Scalar Scalar;
+      typedef Scalar_ Scalar;
       typedef typename NumTraits<Scalar>::Real RealScalar;
       
       /** the EulerSystem to use, which represents the axes of rotation. */
@@ -322,10 +322,10 @@ EIGEN_EULER_ANGLES_TYPEDEFS(double, d)
 
   namespace internal
   {
-    template<typename _Scalar, class _System>
-    struct traits<EulerAngles<_Scalar, _System> >
+    template<typename Scalar_, class _System>
+    struct traits<EulerAngles<Scalar_, _System> >
     {
-      typedef _Scalar Scalar;
+      typedef Scalar_ Scalar;
     };
     
     // set from a rotation matrix

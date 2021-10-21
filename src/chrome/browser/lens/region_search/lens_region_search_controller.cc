@@ -37,7 +37,8 @@ LensRegionSearchController::~LensRegionSearchController() {
   CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
-void LensRegionSearchController::Start() {
+void LensRegionSearchController::Start(bool is_google_default_search_provider) {
+  is_google_default_search_provider_ = is_google_default_search_provider;
   if (!web_contents() || !browser_)
     return;
 
@@ -47,13 +48,17 @@ void LensRegionSearchController::Start() {
 
   // Create user education bubble anchored to the toolbar container.
   bubble_widget_ = lens::OpenLensRegionSearchInstructions(
-      browser_, base::BindRepeating(&LensRegionSearchController::Close,
-                                    base::Unretained(this)));
+      browser_,
+      base::BindOnce(&LensRegionSearchController::Close,
+                     base::Unretained(this)),
+      base::BindOnce(&LensRegionSearchController::Escape,
+                     base::Unretained(this)));
   bubble_widget_->Show();
 
   base::OnceCallback<void(const image_editor::ScreenshotCaptureResult&)>
       callback = base::BindOnce(&LensRegionSearchController::OnCaptureCompleted,
                                 weak_this_);
+  in_capture_mode_ = true;
   screenshot_flow_->Start(std::move(callback));
 }
 
@@ -146,6 +151,17 @@ void LensRegionSearchController::OnCaptureCompleted(
     const image_editor::ScreenshotCaptureResult& result) {
   // Close all open UI overlays and bubbles.
   CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  image_editor::ScreenshotCaptureResultCode code = result.result_code;
+  if (code == image_editor::ScreenshotCaptureResultCode::USER_NAVIGATED_EXIT) {
+    RecordCaptureResult(
+        lens::LensRegionSearchCaptureResult::USER_NAVIGATED_FROM_CAPTURE);
+    return;
+  } else if (code ==
+             image_editor::ScreenshotCaptureResultCode::USER_ESCAPE_EXIT) {
+    RecordCaptureResult(
+        lens::LensRegionSearchCaptureResult::USER_EXITED_CAPTURE_ESCAPE);
+    return;
+  }
 
   const gfx::Image& captured_image = result.image;
   // If image is empty, then record UMA and close.
@@ -166,10 +182,16 @@ void LensRegionSearchController::OnCaptureCompleted(
         lens::LensRegionSearchCaptureResult::FAILED_TO_OPEN_TAB);
     return;
   }
-  core_tab_helper->SearchWithLensInNewTab(
-      image, captured_image.Size(),
-      lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM,
-      lens::features::kEnableSidePanelForLensRegionSearch.Get());
+
+  if (is_google_default_search_provider_) {
+    core_tab_helper->SearchWithLensInNewTab(
+        image, captured_image.Size(),
+        lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM,
+        lens::features::kEnableSidePanelForLensRegionSearch.Get());
+  } else {
+    core_tab_helper->SearchByImageInNewTab(image, captured_image.Size());
+  }
+
   RecordCaptureResult(lens::LensRegionSearchCaptureResult::SUCCESS);
 }
 
@@ -179,16 +201,32 @@ void LensRegionSearchController::WebContentsDestroyed() {
 
 void LensRegionSearchController::OnVisibilityChanged(
     content::Visibility visibility) {
-  if (visibility == content::Visibility::HIDDEN)
+  if (in_capture_mode_ && visibility == content::Visibility::HIDDEN) {
+    RecordCaptureResult(
+        lens::LensRegionSearchCaptureResult::USER_NAVIGATED_FROM_CAPTURE);
     CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  }
 }
 
 void LensRegionSearchController::Close() {
   CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  // Record a capture result when the instructional bubble is responsible for
+  // exiting out of the capture mode.
+  RecordCaptureResult(
+      LensRegionSearchCaptureResult::USER_EXITED_CAPTURE_CLOSE_BUTTON);
+}
+
+void LensRegionSearchController::Escape() {
+  CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
+  // Record a capture result when the instructional bubble is responsible for
+  // exiting out of the capture mode.
+  RecordCaptureResult(
+      LensRegionSearchCaptureResult::USER_EXITED_CAPTURE_ESCAPE);
 }
 
 void LensRegionSearchController::CloseWithReason(
     views::Widget::ClosedReason reason) {
+  in_capture_mode_ = false;
   if (bubble_widget_) {
     std::exchange(bubble_widget_, nullptr)->CloseWithReason(reason);
   }

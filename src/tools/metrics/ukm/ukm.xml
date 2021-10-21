@@ -8069,11 +8069,17 @@ be describing additional metrics about the same event.
 <event name="IOS.PageReadability">
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
-    Logged when the Distilibility score of the current page is returned.
-    Muliplied by 10X to get tenth digit granularity. 0.1 granularity will be
-    recorded for scores between 0.5 and 1.5. Otherwise, the granularity will be
-    0.5.
+    Logged when the Distilibility score of the current page is returned and the
+    Reading List Message is shown. Muliplied by 10X to get tenth digit
+    granularity. 0.1 granularity will be recorded for scores between 0.5 and
+    1.5. Otherwise, the granularity will be 0.5.
   </summary>
+  <metric name="DidAccept" enum="Boolean">
+    <summary>
+      True if the user tapped on the Messages prompt to save the current page to
+      Reading List.
+    </summary>
+  </metric>
   <metric name="DistilibilityLongScore">
     <summary>
       Distilibility score value indicating the &quot;long readability&quot; of
@@ -15297,6 +15303,20 @@ be describing additional metrics about the same event.
     <summary>
       Whether the form submission is a shopping transaction. This has 50% chance
       randomized.
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.WillSendRequest">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Recorded when an XHR is about to be sent.
+  </summary>
+  <metric name="IsAddToCart" enum="Boolean">
+    <summary>
+      Whether the XHR is to add a product to a shopping cart. This has 50%
+      chance randomized.
     </summary>
   </metric>
 </event>

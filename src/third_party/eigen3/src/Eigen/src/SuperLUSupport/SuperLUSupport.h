@@ -313,7 +313,7 @@ MappedSparseMatrix<Scalar,Flags,Index> map_superlu(SluMatrix& sluMat)
   * \class SuperLUBase
   * \brief The base class for the direct and incomplete LU factorization of SuperLU
   */
-template<typename _MatrixType, typename Derived>
+template<typename MatrixType_, typename Derived>
 class SuperLUBase : public SparseSolverBase<Derived>
 {
   protected:
@@ -321,7 +321,7 @@ class SuperLUBase : public SparseSolverBase<Derived>
     using Base::derived;
     using Base::m_isInitialized;
   public:
-    typedef _MatrixType MatrixType;
+    typedef MatrixType_ MatrixType;
     typedef typename MatrixType::Scalar Scalar;
     typedef typename MatrixType::RealScalar RealScalar;
     typedef typename MatrixType::StorageIndex StorageIndex;
@@ -476,7 +476,7 @@ class SuperLUBase : public SparseSolverBase<Derived>
   * using the SuperLU library. The sparse matrix A must be squared and invertible. The vectors or matrices
   * X and B can be either dense or sparse.
   *
-  * \tparam _MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
+  * \tparam MatrixType_ the type of the sparse matrix A, it must be a SparseMatrix<>
   *
   * \warning This class is only for the 4.x versions of SuperLU. The 3.x and 5.x versions are not supported.
   *
@@ -484,12 +484,12 @@ class SuperLUBase : public SparseSolverBase<Derived>
   *
   * \sa \ref TutorialSparseSolverConcept, class SparseLU
   */
-template<typename _MatrixType>
-class SuperLU : public SuperLUBase<_MatrixType,SuperLU<_MatrixType> >
+template<typename MatrixType_>
+class SuperLU : public SuperLUBase<MatrixType_,SuperLU<MatrixType_> >
 {
   public:
-    typedef SuperLUBase<_MatrixType,SuperLU> Base;
-    typedef _MatrixType MatrixType;
+    typedef SuperLUBase<MatrixType_,SuperLU> Base;
+    typedef MatrixType_ MatrixType;
     typedef typename Base::Scalar Scalar;
     typedef typename Base::RealScalar RealScalar;
     typedef typename Base::StorageIndex StorageIndex;
@@ -830,19 +830,19 @@ typename SuperLU<MatrixType>::Scalar SuperLU<MatrixType>::determinant() const
   *
   * \warning This class is only for the 4.x versions of SuperLU. The 3.x and 5.x versions are not supported.
   *
-  * \tparam _MatrixType the type of the sparse matrix A, it must be a SparseMatrix<>
+  * \tparam MatrixType_ the type of the sparse matrix A, it must be a SparseMatrix<>
   *
   * \implsparsesolverconcept
   *
   * \sa \ref TutorialSparseSolverConcept, class IncompleteLUT, class ConjugateGradient, class BiCGSTAB
   */
 
-template<typename _MatrixType>
-class SuperILU : public SuperLUBase<_MatrixType,SuperILU<_MatrixType> >
+template<typename MatrixType_>
+class SuperILU : public SuperLUBase<MatrixType_,SuperILU<MatrixType_> >
 {
   public:
-    typedef SuperLUBase<_MatrixType,SuperILU> Base;
-    typedef _MatrixType MatrixType;
+    typedef SuperLUBase<MatrixType_,SuperILU> Base;
+    typedef MatrixType_ MatrixType;
     typedef typename Base::Scalar Scalar;
     typedef typename Base::RealScalar RealScalar;
 

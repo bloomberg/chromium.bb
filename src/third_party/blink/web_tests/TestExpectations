@@ -3950,6 +3950,8 @@ crbug.com/1179585 svg/text/bbox-with-glyph-overflow.html [ Failure ]
 crbug.com/1179585 svg/text/bbox-with-glyph-overflow-on-path.html [ Failure ]
 crbug.com/1179585 svg/text/bbox-with-glyph-overflow-zoomed.html [ Failure ]
 crbug.com/1179585 svg/text/text-decorations-in-scaled-pattern.svg [ Failure ]
+crbug.com/1249499 svg/hittest/text-small-font-size.html [ Failure ]
+crbug.com/1249499 svg/hittest/text-small-font-size-and-viewbox.html [ Failure ]
 
 crbug.com/1236992 svg/dom/SVGListPropertyTearOff-gccrash.html [ Failure Pass ]
 
@@ -6860,3 +6862,9 @@ crbug.com/1247850 external/wpt/file-system-access/local_FileSystemBaseHandle-mov
 crbug.com/1247850 external/wpt/file-system-access/local_FileSystemBaseHandle-rename-manual.https.html [ Failure ]
 crbug.com/1247850 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-move-manual.https.html [ Failure ]
 crbug.com/1247850 virtual/file-system-access-access-handle-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-rename-manual.https.html [ Failure ]
+
+# Sheriff 2021-10-01
+crbug.com/1254963 [ Win ] external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Crash Pass ]
+
+# Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
+crbug.com/1255679 http/tests/devtools/service-workers/service-workers-wasm-test.js [ Skip ]

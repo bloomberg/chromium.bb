@@ -38,10 +38,10 @@ namespace LevenbergMarquardtSpace {
     };
 }
 
-template <typename _Scalar, int NX=Dynamic, int NY=Dynamic>
+template <typename Scalar_, int NX=Dynamic, int NY=Dynamic>
 struct DenseFunctor
 {
-  typedef _Scalar Scalar;
+  typedef Scalar_ Scalar;
   enum {
     InputsAtCompileTime = NX,
     ValuesAtCompileTime = NY
@@ -65,11 +65,11 @@ struct DenseFunctor
   // should be defined in derived classes
 };
 
-template <typename _Scalar, typename _Index>
+template <typename Scalar_, typename Index_>
 struct SparseFunctor
 {
-  typedef _Scalar Scalar;
-  typedef _Index Index;
+  typedef Scalar_ Scalar;
+  typedef Index_ Index;
   typedef Matrix<Scalar,Dynamic,1> InputType;
   typedef Matrix<Scalar,Dynamic,1> ValueType;
   typedef SparseMatrix<Scalar, ColMajor, Index> JacobianType;
@@ -106,11 +106,11 @@ void lmpar2(const QRSolver &qr, const VectorType  &diag, const VectorType  &qtb,
   * Check wikipedia for more information.
   * http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm
   */
-template<typename _FunctorType>
+template<typename FunctorType_>
 class LevenbergMarquardt : internal::no_assignment_operator
 {
   public:
-    typedef _FunctorType FunctorType;
+    typedef FunctorType_ FunctorType;
     typedef typename FunctorType::QRSolver QRSolver;
     typedef typename FunctorType::JacobianType JacobianType;
     typedef typename JacobianType::Scalar Scalar;

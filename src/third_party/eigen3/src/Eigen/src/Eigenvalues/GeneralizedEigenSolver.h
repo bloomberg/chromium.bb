@@ -23,7 +23,7 @@ namespace Eigen {
   *
   * \brief Computes the generalized eigenvalues and eigenvectors of a pair of general matrices
   *
-  * \tparam _MatrixType the type of the matrices of which we are computing the
+  * \tparam MatrixType_ the type of the matrices of which we are computing the
   * eigen-decomposition; this is expected to be an instantiation of the Matrix
   * class template. Currently, only real matrices are supported.
   *
@@ -55,12 +55,12 @@ namespace Eigen {
   *
   * \sa MatrixBase::eigenvalues(), class ComplexEigenSolver, class SelfAdjointEigenSolver
   */
-template<typename _MatrixType> class GeneralizedEigenSolver
+template<typename MatrixType_> class GeneralizedEigenSolver
 {
   public:
 
-    /** \brief Synonym for the template parameter \p _MatrixType. */
-    typedef _MatrixType MatrixType;
+    /** \brief Synonym for the template parameter \p MatrixType_. */
+    typedef MatrixType_ MatrixType;
 
     enum {
       RowsAtCompileTime = MatrixType::RowsAtCompileTime,

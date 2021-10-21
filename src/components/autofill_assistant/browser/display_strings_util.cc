@@ -30,6 +30,11 @@ int MapDisplayStringIdToChromeMessage(
       return IDS_CLOSE;
     case ClientSettingsProto::SETTINGS:
       return IDS_SETTINGS_TITLE;
+
+    case ClientSettingsProto::UNSPECIFIED:
+    case ClientSettingsProto::UNDO:
+      // This should not happen.
+      return -1;
   }
 }
 
@@ -42,6 +47,11 @@ const std::string GetDisplayStringUTF8(
   if (it != client_settings.display_strings.end()) {
     // Note that we return the string even if it is empty.
     return it->second;
+  }
+  if (display_string_id == ClientSettingsProto::UNSPECIFIED ||
+      display_string_id == ClientSettingsProto::UNDO) {
+    // TODO(b/201396990) Provide fallback string for UNDO.
+    return "";
   }
   return l10n_util::GetStringUTF8(
       MapDisplayStringIdToChromeMessage(display_string_id));

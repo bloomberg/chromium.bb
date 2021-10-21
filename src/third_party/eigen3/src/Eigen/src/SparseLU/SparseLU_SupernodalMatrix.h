@@ -29,12 +29,12 @@ namespace internal {
  * SuperInnerIterator to iterate through all supernodes 
  * Function for triangular solve
  */
-template <typename _Scalar, typename _StorageIndex>
+template <typename Scalar_, typename StorageIndex_>
 class MappedSuperNodalMatrix
 {
   public:
-    typedef _Scalar Scalar; 
-    typedef _StorageIndex StorageIndex;
+    typedef Scalar_ Scalar;
+    typedef StorageIndex_ StorageIndex;
     typedef Matrix<StorageIndex,Dynamic,1> IndexVector;
     typedef Matrix<Scalar,Dynamic,1> ScalarVector;
   public:

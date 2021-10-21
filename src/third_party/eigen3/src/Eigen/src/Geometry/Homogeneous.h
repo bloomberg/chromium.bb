@@ -57,13 +57,13 @@ template<typename MatrixType,typename Rhs> struct homogeneous_right_product_impl
 
 } // end namespace internal
 
-template<typename MatrixType,int _Direction> class Homogeneous
-  : public MatrixBase<Homogeneous<MatrixType,_Direction> >, internal::no_assignment_operator
+template<typename MatrixType,int Direction_> class Homogeneous
+  : public MatrixBase<Homogeneous<MatrixType,Direction_> >, internal::no_assignment_operator
 {
   public:
 
     typedef MatrixType NestedExpression;
-    enum { Direction = _Direction };
+    enum { Direction = Direction_ };
 
     typedef MatrixBase<Homogeneous> Base;
     EIGEN_DENSE_PUBLIC_INTERFACE(Homogeneous)
